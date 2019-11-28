@@ -3,3 +3,9 @@
 ################################################################################
 
 /.vs/NumberSearch
+/NumberSearch.Mvc/.vs/NumberSearch
+/NumberSearch.Mvc/bin/Debug/netcoreapp3.0
+/NumberSearch.Mvc/obj
+/NumberSearch.Tests/bin/Debug/netcoreapp3.0
+/NumberSearch.Tests/obj
+*.user

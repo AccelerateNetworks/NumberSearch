@@ -1,0 +1,77 @@
+﻿@model NumberSearch.Mvc.Models.SearchResults;
+
+@{
+    ViewData["Title"] = "Home Page";
+
+    var searchText = string.Empty;
+    if (Model?.Query != null)
+    {
+        searchText = Model.Query;
+    }
+}
+
+<div class="jumbotron">
+    <h1 class="display-4">Numbers for all your needs!</h1>
+    <p> Use * to pad your search, for example ***word to search for a number containing word, but exclude the area code. Conversely, 206******* will find 206 area code numbers.</p>
+    <form class="form-row justify-content-center" action="/Search">
+        <div class="form-group">
+            <div class="input-group mx-auto">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">+1</span>
+                </div>
+                <input type="text" name="query" class="form-control" placeholder="Search your word!" value="@searchText">
+                <button type="submit" class="btn btn-success">Search</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@{
+    if (Model != null && Model?.Count > 0)
+    {
+        var total = $"{Model.Count} available numbers found!";
+        <div class="alert alert-success" role="alert">
+            @total
+        </div>
+        <div class="row">
+            @{
+                foreach (var item in Model?.Dids)
+                {
+                    var match = Model?.Query.Replace("*", string.Empty);
+                    var location = $"{item.ratecenter}, {item.state}";
+                    var formattedNumber = $"+{item.tier} ({item.npa}) {item.nxx} {item.xxxx}";
+                    var number = item.number;
+                    if (item.number.Contains(match))
+                    {
+                        var start = item.number.IndexOf(match);
+                        var stop = match.Length;
+                        var beginning = item.number.Substring(0, start);
+                        var middle = item.number.Substring(start, stop);
+                        var end = item.number.Substring(start + stop);
+                        number = $"{beginning}<b class='text-success'>{middle}</b>{end}";
+                    }
+                    var mailToLink = $"mailto:support@acceleratenetworks.com?subject=Purchase%20{item.number}&body=I%20want%20to%20purchase%20phone%20number%20{item.number}.%20Thanks!";
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">@formattedNumber</h4>
+                                <h6 class="card-subtitle">@Html.Raw(number)</h6>
+                                <p class="card-text text-muted">@location</p>
+                                <a href="@mailToLink" target="_top">
+                                    <input type="button" class="btn btn-outline-primary" value="Buy Now">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+
+        </div>
+    }
+    else if (Model != null && Model?.Count == 0)
+    {
+        <div class="alert alert-danger" role="alert">
+            No available numbers found!
+        </div>
+    }
+}
