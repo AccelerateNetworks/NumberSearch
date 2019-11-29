@@ -37,7 +37,7 @@
             @{
                 foreach (var item in Model?.Dids)
                 {
-                    var match = Model?.Query.Replace("*", string.Empty);
+                    var match = Model?.CleanQuery.Replace("*", string.Empty);
                     var location = $"{item.ratecenter}, {item.state}";
                     var formattedNumber = $"+{item.tier} ({item.npa}) {item.nxx} {item.xxxx}";
                     var number = item.number;

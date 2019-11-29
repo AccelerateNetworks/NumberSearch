@@ -57,7 +57,7 @@ namespace NumberSearch.Mvc.Controllers
             }
 
             // Submit the parsed query to remote API.
-            var results = await SearchResults.GetAsync(new string(converted.ToArray()), token);
+            var results = await SearchResults.GetAsync(query, token, new string(converted.ToArray()));
 
             return View("Index", results);
         }
