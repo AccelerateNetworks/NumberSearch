@@ -9,3 +9,4 @@
 /NumberSearch.Tests/bin/Debug/netcoreapp3.0
 /NumberSearch.Tests/obj
 *.user
+/.vs

@@ -10,7 +10,7 @@
     }
 }
 
-<div class="jumbotron">
+<div class="jumbotron mb-3">
     <h1 class="display-4">Numbers for all your needs!</h1>
     <p> Use * to pad your search, for example ***word to search for a number containing word, but exclude the area code. Conversely, 206******* will find 206 area code numbers.</p>
     <form class="form-row justify-content-center" action="/Search">
@@ -20,11 +20,13 @@
                     <span class="input-group-text">+1</span>
                 </div>
                 <input type="text" name="query" class="form-control" placeholder="Search your word!" value="@searchText">
-                <button type="submit" class="btn btn-success">Search</button>
+                <button type="submit" class="btn btn-success" onclick="displayBusyIndicator()">Search</button>
             </div>
         </div>
     </form>
 </div>
+
+<partial name="_LoadingPartial" />
 
 @{
     if (Model != null && Model?.Count > 0)
