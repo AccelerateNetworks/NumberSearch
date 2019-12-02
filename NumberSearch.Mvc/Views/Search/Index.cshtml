@@ -37,10 +37,10 @@
         </div>
         <div class="row">
             @{
+                var match = Model?.CleanQuery.Replace("*", string.Empty);
                 foreach (var item in Model?.Dids)
                 {
-                    var match = Model?.CleanQuery.Replace("*", string.Empty);
-                    var location = $"{item.ratecenter}, {item.state}";
+                    var location = $"{item?.ratecenter ?? "Unknown City"}, {item?.state ?? "Unknown State"}";
                     var formattedNumber = $"({item.npa}) {item.nxx} {item.xxxx}";
                     var number = item.number;
                     if (item.number.Contains(match))

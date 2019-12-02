@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DIDManagement;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using NumberSearch.Mvc.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
@@ -11,11 +13,20 @@ namespace NumberSearch.Mvc.Controllers
     {
         private readonly IConfiguration configuration;
         private readonly Guid token;
+        private static DIDManagementSoapClient _client = new DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
+        private readonly DIDManagement.Credentials pComNetCredentials;
+        private static DIDInventorySearchResponse pComNetSearchResults;
+        private static SearchResults teleSearchResults;
 
         public SearchController(IConfiguration config)
         {
             configuration = config;
             token = Guid.Parse(configuration.GetConnectionString("TeleAPI"));
+            pComNetCredentials = new Credentials
+            {
+                Username = config.GetConnectionString("PComNetUsername"),
+                Password = config.GetConnectionString("PComNetPassword")
+            };
         }
 
         /// <summary>
@@ -56,10 +67,62 @@ namespace NumberSearch.Mvc.Controllers
                 // Drop everything else.
             }
 
-            // Submit the parsed query to remote API.
-            var results = await SearchResults.GetAsync(query, token, new string(converted.ToArray()));
+            // This service can't handle partial queries or queries containing wildcards.
+            if (!converted.Contains('*'))
+            {
+                var pComNetRequest = new DIDManagement.DIDInventorySearchRequest
+                {
+                    Auth = pComNetCredentials,
+                    DIDSearch = new DIDManagement.DIDOrderQuery
+                    {
+                        DID = string.Empty,
+                        NPA = string.Empty,
+                        NXX = string.Empty,
+                        RateCenter = string.Empty
+                    },
+                    ReturnAmount = 10000
+                };
 
-            return View("Index", results);
+                switch (converted.Count)
+                {
+                    case 10:
+                        // Supply the whole number if it exists.
+                        pComNetRequest.DIDSearch.DID = new string(converted.ToArray());
+                        pComNetSearchResults = await _client.DIDInventorySearchAsync(pComNetRequest);
+                        break;
+                    case 6:
+                        // Supply the first six of the number if it exists.
+                        pComNetRequest.DIDSearch.NPA = new string(converted.ToArray()).Substring(0, 3);
+                        pComNetRequest.DIDSearch.NXX = new string(converted.ToArray()).Substring(4);
+                        pComNetSearchResults = await _client.DIDInventorySearchAsync(pComNetRequest);
+                        break;
+                    case 3:
+                        // Supply the area code if it exists.
+                        pComNetRequest.DIDSearch.NPA = new string(converted.ToArray()).Substring(0);
+                        pComNetSearchResults = await _client.DIDInventorySearchAsync(pComNetRequest);
+                        break;
+                }
+            }
+
+            // Submit the parsed query to remote API.
+            teleSearchResults = await SearchResults.GetAsync(query, token, new string(converted.ToArray()));
+
+            // If we got results from PCom, add them to our Tele search results.
+            foreach (var did in pComNetSearchResults.DIDInventorySearchResult.DIDOrder)
+            {
+                teleSearchResults.Dids
+                    .Add(new LocalNumber.Did {
+                        // PCom numbers start with a country code.
+                        number = did.DID.Substring(1),
+                        npa = did.NPA,
+                        nxx = did.NXX,
+                        // The last four digits don't have their own field in the PCom repsonse.
+                        xxxx = did.DID.Substring(7)
+                    });
+                teleSearchResults.Count++;
+            }
+
+            return View("Index", teleSearchResults);
         }
 
         public static char LetterToKeypadDigit(char letter)
