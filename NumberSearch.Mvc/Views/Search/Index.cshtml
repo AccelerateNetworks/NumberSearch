@@ -29,30 +29,30 @@
 <partial name="_LoadingPartial" />
 
 @{
-    if (Model != null && Model?.Count > 0)
+    if (Model != null && Model?.PhoneNumbers?.Length > 0)
     {
-        var total = $"{Model.Count} available numbers found!";
+        var total = $"{Model.PhoneNumbers.Length} available numbers found!";
         <div class="alert alert-success" role="alert">
             @total
         </div>
         <div class="row">
             @{
                 var match = Model?.CleanQuery.Replace("*", string.Empty);
-                foreach (var item in Model?.Dids)
+                foreach (var item in Model?.PhoneNumbers)
                 {
-                    var location = $"{item?.ratecenter ?? "Unknown City"}, {item?.state ?? "Unknown State"}";
-                    var formattedNumber = $"({item.npa}) {item.nxx} {item.xxxx}";
-                    var number = item.number;
-                    if (item.number.Contains(match))
+                    var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
+                    var formattedNumber = $"({item.NPA}) {item.NXX} {item.XXXX}";
+                    var number = item.DialedNumber;
+                    if (item.DialedNumber.Contains(match))
                     {
-                        var start = item.number.IndexOf(match);
+                        var start = item.DialedNumber.IndexOf(match);
                         var stop = match.Length;
-                        var beginning = item.number.Substring(0, start);
-                        var middle = item.number.Substring(start, stop);
-                        var end = item.number.Substring(start + stop);
+                        var beginning = item.DialedNumber.Substring(0, start);
+                        var middle = item.DialedNumber.Substring(start, stop);
+                        var end = item.DialedNumber.Substring(start + stop);
                         number = $"{beginning}<b class='text-success'>{middle}</b>{end}";
                     }
-                    var mailToLink = $"mailto:support@acceleratenetworks.com?subject=Purchase%20{item.number}&body=I%20want%20to%20purchase%20phone%20number%20{item.number}.%20Thanks!";
+                    var mailToLink = $"mailto:support@acceleratenetworks.com?subject=Purchase%20{item.DialedNumber}&body=I%20want%20to%20purchase%20phone%20number%20{item.DialedNumber}.%20Thanks!";
                     <div class="col-md-6 mb-3">
                         <div class="card">
                             <div class="card-body">
@@ -70,7 +70,7 @@
 
         </div>
     }
-    else if (Model != null && Model?.Count == 0)
+    else if (Model != null && Model?.PhoneNumbers?.Length == 0)
     {
         <div class="alert alert-danger" role="alert">
             No available numbers found!

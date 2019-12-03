@@ -1,11 +1,17 @@
-﻿using DIDManagement;
+﻿using BulkVS;
+
+using DIDManagement;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+
 using NumberSearch.Mvc.Models;
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+
+using static BulkVS.DnSearchAreaCodeResponseResult;
 
 namespace NumberSearch.Mvc.Controllers
 {
@@ -13,10 +19,16 @@ namespace NumberSearch.Mvc.Controllers
     {
         private readonly IConfiguration configuration;
         private readonly Guid token;
-        private static DIDManagementSoapClient _client = new DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
+        private static readonly DIDManagementSoapClient _PComNetclient = new DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
+        private static readonly bulkvsPortClient _bulkvsPortClient = new bulkvsPortClient(bulkvsPortClient.EndpointConfiguration.bulkvsPort);
+
         private readonly DIDManagement.Credentials pComNetCredentials;
-        private static DIDInventorySearchResponse pComNetSearchResults;
-        private static SearchResults teleSearchResults;
+        private static IEnumerable<PhoneNumber> pComNetSearchResults;
+        private static IEnumerable<PhoneNumber> teleSearchResults;
+        private static IEnumerable<PhoneNumber> bulkVSSearchResults;
+        private static List<PhoneNumber> phoneNumbers;
+        private readonly string bulkVSKey;
+        private readonly string bulkVSSecret;
 
         public SearchController(IConfiguration config)
         {
@@ -27,6 +39,8 @@ namespace NumberSearch.Mvc.Controllers
                 Username = config.GetConnectionString("PComNetUsername"),
                 Password = config.GetConnectionString("PComNetPassword")
             };
+            bulkVSKey = config.GetConnectionString("BulkVSAPIKEY");
+            bulkVSSecret = config.GetConnectionString("BulkVSAPISecret");
         }
 
         /// <summary>
@@ -70,59 +84,53 @@ namespace NumberSearch.Mvc.Controllers
             // This service can't handle partial queries or queries containing wildcards.
             if (!converted.Contains('*'))
             {
-                var pComNetRequest = new DIDManagement.DIDInventorySearchRequest
-                {
-                    Auth = pComNetCredentials,
-                    DIDSearch = new DIDManagement.DIDOrderQuery
-                    {
-                        DID = string.Empty,
-                        NPA = string.Empty,
-                        NXX = string.Empty,
-                        RateCenter = string.Empty
-                    },
-                    ReturnAmount = 10000
-                };
-
                 switch (converted.Count)
                 {
                     case 10:
                         // Supply the whole number if it exists.
-                        pComNetRequest.DIDSearch.DID = new string(converted.ToArray());
-                        pComNetSearchResults = await _client.DIDInventorySearchAsync(pComNetRequest);
+                        pComNetSearchResults = await NpaNxxFirstPointCom
+                            .GetAsync(string.Empty, string.Empty, new string(converted.ToArray()), pComNetCredentials.Username, pComNetCredentials.Password);
                         break;
                     case 6:
                         // Supply the first six of the number if it exists.
-                        pComNetRequest.DIDSearch.NPA = new string(converted.ToArray()).Substring(0, 3);
-                        pComNetRequest.DIDSearch.NXX = new string(converted.ToArray()).Substring(4);
-                        pComNetSearchResults = await _client.DIDInventorySearchAsync(pComNetRequest);
+                        pComNetSearchResults = await NpaNxxFirstPointCom
+                            .GetAsync(new string(converted.ToArray()).Substring(0, 3), new string(converted.ToArray()).Substring(4), string.Empty, pComNetCredentials.Username, pComNetCredentials.Password);
                         break;
                     case 3:
                         // Supply the area code if it exists.
-                        pComNetRequest.DIDSearch.NPA = new string(converted.ToArray()).Substring(0);
-                        pComNetSearchResults = await _client.DIDInventorySearchAsync(pComNetRequest);
+                        pComNetSearchResults = await NpaNxxFirstPointCom
+                            .GetAsync(new string(converted.ToArray()), string.Empty, string.Empty, pComNetCredentials.Username, pComNetCredentials.Password);
+                        bulkVSSearchResults = await NpaNxxBulkVS.GetAsync(new string(converted.ToArray()), bulkVSKey, bulkVSSecret);
                         break;
                 }
             }
 
             // Submit the parsed query to remote API.
-            teleSearchResults = await SearchResults.GetAsync(query, token, new string(converted.ToArray()));
+            teleSearchResults = await LocalNumberTeleMessage.GetAsync(query, token);
 
-            // If we got results from PCom, add them to our Tele search results.
-            foreach (var did in pComNetSearchResults.DIDInventorySearchResult.DIDOrder)
+            foreach (var item in teleSearchResults)
             {
-                teleSearchResults.Dids
-                    .Add(new LocalNumber.Did {
-                        // PCom numbers start with a country code.
-                        number = did.DID.Substring(1),
-                        npa = did.NPA,
-                        nxx = did.NXX,
-                        // The last four digits don't have their own field in the PCom repsonse.
-                        xxxx = did.DID.Substring(7)
-                    });
-                teleSearchResults.Count++;
+                phoneNumbers.Add(item);
             }
 
-            return View("Index", teleSearchResults);
+            // If we got results from PCom, add them to our Tele search results.
+            foreach (var item in pComNetSearchResults)
+            {
+                phoneNumbers.Add(item);
+            }
+
+            // If we got results from BulkVS add them to our Tele search results.
+            foreach (var item in bulkVSSearchResults)
+            {
+                phoneNumbers.Add(item);
+            }
+
+            return View("Index", new SearchResults
+            {
+                CleanQuery = new string(converted.ToArray()),
+                PhoneNumbers = phoneNumbers.ToArray(),
+                Query = query
+            });
         }
 
         public static char LetterToKeypadDigit(char letter)

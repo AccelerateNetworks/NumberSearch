@@ -1,10 +1,11 @@
 ﻿using Flurl.Http;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Models
 {
-    public class LocalNumber
+    public class LocalNumberTeleMessage
     {
         public int code { get; set; }
         public string status { get; set; }
@@ -31,14 +32,37 @@ namespace NumberSearch.Mvc.Models
             public string per_minute_rate { get; set; }
         }
 
-        public static async Task<LocalNumber> GetAsync(string query, Guid token)
+        public static async Task<LocalNumberTeleMessage> GetRawAsync(string query, Guid token)
         {
             string baseUrl = "https://apiv1.teleapi.net/";
             string endpoint = "dids/list";
             string tokenParameter = $"?token={token}";
             string searchParameter = $"&search={query}";
             string url = $"{baseUrl}{endpoint}{tokenParameter}{searchParameter}";
-            return await url.GetJsonAsync<LocalNumber>();
+            return await url.GetJsonAsync<LocalNumberTeleMessage>();
+        }
+
+        public static async Task<IEnumerable<PhoneNumber>> GetAsync(string query, Guid token)
+        {
+            var results = await GetRawAsync(query, token);
+
+            var list = new List<PhoneNumber>();
+
+            foreach (var item in results.data.dids)
+            {
+                list.Add(new PhoneNumber
+                {
+                    NPA = item.npa,
+                    NXX = item.nxx,
+                    XXXX = item.xxxx,
+                    DialedNumber = item.number,
+                    City = item.ratecenter,
+                    State = item.state,
+                    IngestedFrom = "TeleMessage"
+                });
+            }
+
+            return list;
         }
     }
 }
