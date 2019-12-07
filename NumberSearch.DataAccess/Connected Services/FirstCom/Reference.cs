@@ -7,106 +7,106 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace DIDManagement
+namespace FirstCom
 {
     
     
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
-    [System.ServiceModel.ServiceContractAttribute(Namespace="https://api.1pcom.net/", ConfigurationName="DIDManagement.DIDManagementSoap")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ServiceModel.ServiceContractAttribute(Namespace="https://api.1pcom.net/", ConfigurationName="FirstCom.DIDManagementSoap")]
     public interface DIDManagementSoap
     {
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/DIDWebserviceHeartbeat", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.DIDWebserviceHeartbeatResponse> DIDWebserviceHeartbeatAsync(DIDManagement.DIDWebserviceHeartbeatRequest request);
+        System.Threading.Tasks.Task<FirstCom.DIDWebserviceHeartbeatResponse> DIDWebserviceHeartbeatAsync(FirstCom.DIDWebserviceHeartbeatRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/DIDAPIVersion", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.DIDAPIVersionResponse> DIDAPIVersionAsync(DIDManagement.DIDAPIVersionRequest request);
+        System.Threading.Tasks.Task<FirstCom.DIDAPIVersionResponse> DIDAPIVersionAsync(FirstCom.DIDAPIVersionRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/DIDOrder", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.DIDOrderResponse> DIDOrderAsync(DIDManagement.DIDOrderRequest request);
+        System.Threading.Tasks.Task<FirstCom.DIDOrderResponse> DIDOrderAsync(FirstCom.DIDOrderRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/DIDOrderBulkPattern", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.DIDOrderBulkPatternResponse> DIDOrderBulkPatternAsync(DIDManagement.DIDOrderBulkPatternRequest request);
+        System.Threading.Tasks.Task<FirstCom.DIDOrderBulkPatternResponse> DIDOrderBulkPatternAsync(FirstCom.DIDOrderBulkPatternRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/DIDSMSEnable", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.DIDSMSEnableResponse> DIDSMSEnableAsync(DIDManagement.DIDSMSEnableRequest request);
+        System.Threading.Tasks.Task<FirstCom.DIDSMSEnableResponse> DIDSMSEnableAsync(FirstCom.DIDSMSEnableRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/DIDInventorySearch", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.DIDInventorySearchResponse> DIDInventorySearchAsync(DIDManagement.DIDInventorySearchRequest request);
+        System.Threading.Tasks.Task<FirstCom.DIDInventorySearchResponse> DIDInventorySearchAsync(FirstCom.DIDInventorySearchRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/DIDInventoryGetAvailableCities", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.DIDInventoryGetAvailableCitiesResponse> DIDInventoryGetAvailableCitiesAsync(DIDManagement.DIDInventoryGetAvailableCitiesRequest request);
+        System.Threading.Tasks.Task<FirstCom.DIDInventoryGetAvailableCitiesResponse> DIDInventoryGetAvailableCitiesAsync(FirstCom.DIDInventoryGetAvailableCitiesRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/DIDInventoryGetAvailableStates", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.DIDInventoryGetAvailableStatesResponse> DIDInventoryGetAvailableStatesAsync(DIDManagement.DIDInventoryGetAvailableStatesRequest request);
+        System.Threading.Tasks.Task<FirstCom.DIDInventoryGetAvailableStatesResponse> DIDInventoryGetAvailableStatesAsync(FirstCom.DIDInventoryGetAvailableStatesRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/DIDInventoryGetAvailableNumbersByCity", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.DIDInventoryGetAvailableNumbersByCityResponse> DIDInventoryGetAvailableNumbersByCityAsync(DIDManagement.DIDInventoryGetAvailableNumbersByCityRequest request);
+        System.Threading.Tasks.Task<FirstCom.DIDInventoryGetAvailableNumbersByCityResponse> DIDInventoryGetAvailableNumbersByCityAsync(FirstCom.DIDInventoryGetAvailableNumbersByCityRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/DIDInventoryGetAvailableCountries", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.DIDInventoryGetAvailableCountriesResponse> DIDInventoryGetAvailableCountriesAsync(DIDManagement.DIDInventoryGetAvailableCountriesRequest request);
+        System.Threading.Tasks.Task<FirstCom.DIDInventoryGetAvailableCountriesResponse> DIDInventoryGetAvailableCountriesAsync(FirstCom.DIDInventoryGetAvailableCountriesRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/LongCodeSearchInAccount", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.LongCodeSearchInAccountResponse> LongCodeSearchInAccountAsync(DIDManagement.LongCodeSearchInAccountRequest request);
+        System.Threading.Tasks.Task<FirstCom.LongCodeSearchInAccountResponse> LongCodeSearchInAccountAsync(FirstCom.LongCodeSearchInAccountRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/DIDSearchInAccount", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.DIDSearchInAccountResponse> DIDSearchInAccountAsync(DIDManagement.DIDSearchInAccountRequest request);
+        System.Threading.Tasks.Task<FirstCom.DIDSearchInAccountResponse> DIDSearchInAccountAsync(FirstCom.DIDSearchInAccountRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/DIDDeleteFromAccount", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.DIDDeleteFromAccountResponse> DIDDeleteFromAccountAsync(DIDManagement.DIDDeleteFromAccountRequest request);
+        System.Threading.Tasks.Task<FirstCom.DIDDeleteFromAccountResponse> DIDDeleteFromAccountAsync(FirstCom.DIDDeleteFromAccountRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/DIDRouteVoiceToGatewayBasic", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.DIDRouteVoiceToGatewayBasicResponse> DIDRouteVoiceToGatewayBasicAsync(DIDManagement.DIDRouteVoiceToGatewayBasicRequest request);
+        System.Threading.Tasks.Task<FirstCom.DIDRouteVoiceToGatewayBasicResponse> DIDRouteVoiceToGatewayBasicAsync(FirstCom.DIDRouteVoiceToGatewayBasicRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/DIDRouteVoiceToRCFBasic", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.DIDRouteVoiceToRCFBasicResponse> DIDRouteVoiceToRCFBasicAsync(DIDManagement.DIDRouteVoiceToRCFBasicRequest request);
+        System.Threading.Tasks.Task<FirstCom.DIDRouteVoiceToRCFBasicResponse> DIDRouteVoiceToRCFBasicAsync(FirstCom.DIDRouteVoiceToRCFBasicRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/LongCodeShowRouting", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.LongCodeShowRoutingResponse> LongCodeShowRoutingAsync(DIDManagement.LongCodeShowRoutingRequest request);
+        System.Threading.Tasks.Task<FirstCom.LongCodeShowRoutingResponse> LongCodeShowRoutingAsync(FirstCom.LongCodeShowRoutingRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/DIDRouteSMSToEPIDBasic", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.DIDRouteSMSToEPIDBasicResponse> DIDRouteSMSToEPIDBasicAsync(DIDManagement.DIDRouteSMSToEPIDBasicRequest request);
+        System.Threading.Tasks.Task<FirstCom.DIDRouteSMSToEPIDBasicResponse> DIDRouteSMSToEPIDBasicAsync(FirstCom.DIDRouteSMSToEPIDBasicRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/DIDUnrouteSMS", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.DIDUnrouteSMSResponse> DIDUnrouteSMSAsync(DIDManagement.DIDUnrouteSMSRequest request);
+        System.Threading.Tasks.Task<FirstCom.DIDUnrouteSMSResponse> DIDUnrouteSMSAsync(FirstCom.DIDUnrouteSMSRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/DIDRouteSMSToEmail", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.DIDRouteSMSToEmailResponse> DIDRouteSMSToEmailAsync(DIDManagement.DIDRouteSMSToEmailRequest request);
+        System.Threading.Tasks.Task<FirstCom.DIDRouteSMSToEmailResponse> DIDRouteSMSToEmailAsync(FirstCom.DIDRouteSMSToEmailRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/DIDRouteSMSToXMPP", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.DIDRouteSMSToXMPPResponse> DIDRouteSMSToXMPPAsync(DIDManagement.DIDRouteSMSToXMPPRequest request);
+        System.Threading.Tasks.Task<FirstCom.DIDRouteSMSToXMPPResponse> DIDRouteSMSToXMPPAsync(FirstCom.DIDRouteSMSToXMPPRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/DIDRouteSMSToPUSHAPI", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.DIDRouteSMSToPUSHAPIResponse> DIDRouteSMSToPUSHAPIAsync(DIDManagement.DIDRouteSMSToPUSHAPIRequest request);
+        System.Threading.Tasks.Task<FirstCom.DIDRouteSMSToPUSHAPIResponse> DIDRouteSMSToPUSHAPIAsync(FirstCom.DIDRouteSMSToPUSHAPIRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="https://api.1pcom.net/DIDRouteSMSToPullAPI", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        System.Threading.Tasks.Task<DIDManagement.DIDRouteSMSToPullAPIResponse> DIDRouteSMSToPullAPIAsync(DIDManagement.DIDRouteSMSToPullAPIRequest request);
+        System.Threading.Tasks.Task<FirstCom.DIDRouteSMSToPullAPIResponse> DIDRouteSMSToPullAPIAsync(FirstCom.DIDRouteSMSToPullAPIRequest request);
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDWebserviceHeartbeat", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDWebserviceHeartbeatRequest
     {
@@ -117,7 +117,7 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDWebserviceHeartbeatResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDWebserviceHeartbeatResponse
     {
@@ -136,7 +136,7 @@ namespace DIDManagement
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="https://api.1pcom.net/")]
     public partial class QueryResult
@@ -176,7 +176,7 @@ namespace DIDManagement
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="https://api.1pcom.net/")]
     public partial class SMSLongcodeRoute
@@ -280,7 +280,7 @@ namespace DIDManagement
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="https://api.1pcom.net/")]
     public partial class LongcodeInfo
@@ -400,7 +400,7 @@ namespace DIDManagement
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="https://api.1pcom.net/")]
     public partial class LongcodeInfoArray
@@ -440,7 +440,7 @@ namespace DIDManagement
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="https://api.1pcom.net/")]
     public partial class DIDOrderInfo
@@ -576,7 +576,7 @@ namespace DIDManagement
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="https://api.1pcom.net/")]
     public partial class DIDOrderInfoArray
@@ -616,7 +616,7 @@ namespace DIDManagement
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="https://api.1pcom.net/")]
     public partial class DIDOrderQuery
@@ -688,7 +688,7 @@ namespace DIDManagement
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="https://api.1pcom.net/")]
     public partial class Credentials
@@ -728,7 +728,7 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDAPIVersion", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDAPIVersionRequest
     {
@@ -739,32 +739,32 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDAPIVersionResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDAPIVersionResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.QueryResult DIDAPIVersionResult;
+        public FirstCom.QueryResult DIDAPIVersionResult;
         
         public DIDAPIVersionResponse()
         {
         }
         
-        public DIDAPIVersionResponse(DIDManagement.QueryResult DIDAPIVersionResult)
+        public DIDAPIVersionResponse(FirstCom.QueryResult DIDAPIVersionResult)
         {
             this.DIDAPIVersionResult = DIDAPIVersionResult;
         }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDOrder", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDOrderRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.Credentials Auth;
+        public FirstCom.Credentials Auth;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=1)]
         public string DID;
@@ -776,7 +776,7 @@ namespace DIDManagement
         {
         }
         
-        public DIDOrderRequest(DIDManagement.Credentials Auth, string DID, bool SMSEnable)
+        public DIDOrderRequest(FirstCom.Credentials Auth, string DID, bool SMSEnable)
         {
             this.Auth = Auth;
             this.DID = DID;
@@ -785,35 +785,35 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDOrderResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDOrderResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.QueryResult DIDOrderResult;
+        public FirstCom.QueryResult DIDOrderResult;
         
         public DIDOrderResponse()
         {
         }
         
-        public DIDOrderResponse(DIDManagement.QueryResult DIDOrderResult)
+        public DIDOrderResponse(FirstCom.QueryResult DIDOrderResult)
         {
             this.DIDOrderResult = DIDOrderResult;
         }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDOrderBulkPattern", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDOrderBulkPatternRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.Credentials Auth;
+        public FirstCom.Credentials Auth;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=1)]
-        public DIDManagement.DIDOrderQuery DIDPattern;
+        public FirstCom.DIDOrderQuery DIDPattern;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=2)]
         public bool SMSEnable;
@@ -825,7 +825,7 @@ namespace DIDManagement
         {
         }
         
-        public DIDOrderBulkPatternRequest(DIDManagement.Credentials Auth, DIDManagement.DIDOrderQuery DIDPattern, bool SMSEnable, int amount)
+        public DIDOrderBulkPatternRequest(FirstCom.Credentials Auth, FirstCom.DIDOrderQuery DIDPattern, bool SMSEnable, int amount)
         {
             this.Auth = Auth;
             this.DIDPattern = DIDPattern;
@@ -835,32 +835,32 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDOrderBulkPatternResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDOrderBulkPatternResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.QueryResult DIDOrderBulkPatternResult;
+        public FirstCom.QueryResult DIDOrderBulkPatternResult;
         
         public DIDOrderBulkPatternResponse()
         {
         }
         
-        public DIDOrderBulkPatternResponse(DIDManagement.QueryResult DIDOrderBulkPatternResult)
+        public DIDOrderBulkPatternResponse(FirstCom.QueryResult DIDOrderBulkPatternResult)
         {
             this.DIDOrderBulkPatternResult = DIDOrderBulkPatternResult;
         }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDSMSEnable", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDSMSEnableRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.Credentials Auth;
+        public FirstCom.Credentials Auth;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=1)]
         public string DID;
@@ -869,7 +869,7 @@ namespace DIDManagement
         {
         }
         
-        public DIDSMSEnableRequest(DIDManagement.Credentials Auth, string DID)
+        public DIDSMSEnableRequest(FirstCom.Credentials Auth, string DID)
         {
             this.Auth = Auth;
             this.DID = DID;
@@ -877,35 +877,35 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDSMSEnableResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDSMSEnableResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.QueryResult DIDSMSEnableResult;
+        public FirstCom.QueryResult DIDSMSEnableResult;
         
         public DIDSMSEnableResponse()
         {
         }
         
-        public DIDSMSEnableResponse(DIDManagement.QueryResult DIDSMSEnableResult)
+        public DIDSMSEnableResponse(FirstCom.QueryResult DIDSMSEnableResult)
         {
             this.DIDSMSEnableResult = DIDSMSEnableResult;
         }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDInventorySearch", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDInventorySearchRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.Credentials Auth;
+        public FirstCom.Credentials Auth;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=1)]
-        public DIDManagement.DIDOrderQuery DIDSearch;
+        public FirstCom.DIDOrderQuery DIDSearch;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=2)]
         public int ReturnAmount;
@@ -914,7 +914,7 @@ namespace DIDManagement
         {
         }
         
-        public DIDInventorySearchRequest(DIDManagement.Credentials Auth, DIDManagement.DIDOrderQuery DIDSearch, int ReturnAmount)
+        public DIDInventorySearchRequest(FirstCom.Credentials Auth, FirstCom.DIDOrderQuery DIDSearch, int ReturnAmount)
         {
             this.Auth = Auth;
             this.DIDSearch = DIDSearch;
@@ -923,26 +923,26 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDInventorySearchResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDInventorySearchResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.DIDOrderInfoArray DIDInventorySearchResult;
+        public FirstCom.DIDOrderInfoArray DIDInventorySearchResult;
         
         public DIDInventorySearchResponse()
         {
         }
         
-        public DIDInventorySearchResponse(DIDManagement.DIDOrderInfoArray DIDInventorySearchResult)
+        public DIDInventorySearchResponse(FirstCom.DIDOrderInfoArray DIDInventorySearchResult)
         {
             this.DIDInventorySearchResult = DIDInventorySearchResult;
         }
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="https://api.1pcom.net/")]
     public partial class DIDInventoryGetAvailableCitiesResponseDIDInventoryGetAvailableCitiesResult
@@ -982,13 +982,13 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDInventoryGetAvailableCities", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDInventoryGetAvailableCitiesRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.Credentials Auth;
+        public FirstCom.Credentials Auth;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=1)]
         public string state;
@@ -997,7 +997,7 @@ namespace DIDManagement
         {
         }
         
-        public DIDInventoryGetAvailableCitiesRequest(DIDManagement.Credentials Auth, string state)
+        public DIDInventoryGetAvailableCitiesRequest(FirstCom.Credentials Auth, string state)
         {
             this.Auth = Auth;
             this.state = state;
@@ -1005,26 +1005,26 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDInventoryGetAvailableCitiesResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDInventoryGetAvailableCitiesResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.DIDInventoryGetAvailableCitiesResponseDIDInventoryGetAvailableCitiesResult DIDInventoryGetAvailableCitiesResult;
+        public FirstCom.DIDInventoryGetAvailableCitiesResponseDIDInventoryGetAvailableCitiesResult DIDInventoryGetAvailableCitiesResult;
         
         public DIDInventoryGetAvailableCitiesResponse()
         {
         }
         
-        public DIDInventoryGetAvailableCitiesResponse(DIDManagement.DIDInventoryGetAvailableCitiesResponseDIDInventoryGetAvailableCitiesResult DIDInventoryGetAvailableCitiesResult)
+        public DIDInventoryGetAvailableCitiesResponse(FirstCom.DIDInventoryGetAvailableCitiesResponseDIDInventoryGetAvailableCitiesResult DIDInventoryGetAvailableCitiesResult)
         {
             this.DIDInventoryGetAvailableCitiesResult = DIDInventoryGetAvailableCitiesResult;
         }
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="https://api.1pcom.net/")]
     public partial class DIDInventoryGetAvailableStatesResponseDIDInventoryGetAvailableStatesResult
@@ -1064,13 +1064,13 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDInventoryGetAvailableStates", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDInventoryGetAvailableStatesRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.Credentials Auth;
+        public FirstCom.Credentials Auth;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=1)]
         public string country;
@@ -1079,7 +1079,7 @@ namespace DIDManagement
         {
         }
         
-        public DIDInventoryGetAvailableStatesRequest(DIDManagement.Credentials Auth, string country)
+        public DIDInventoryGetAvailableStatesRequest(FirstCom.Credentials Auth, string country)
         {
             this.Auth = Auth;
             this.country = country;
@@ -1087,26 +1087,26 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDInventoryGetAvailableStatesResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDInventoryGetAvailableStatesResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.DIDInventoryGetAvailableStatesResponseDIDInventoryGetAvailableStatesResult DIDInventoryGetAvailableStatesResult;
+        public FirstCom.DIDInventoryGetAvailableStatesResponseDIDInventoryGetAvailableStatesResult DIDInventoryGetAvailableStatesResult;
         
         public DIDInventoryGetAvailableStatesResponse()
         {
         }
         
-        public DIDInventoryGetAvailableStatesResponse(DIDManagement.DIDInventoryGetAvailableStatesResponseDIDInventoryGetAvailableStatesResult DIDInventoryGetAvailableStatesResult)
+        public DIDInventoryGetAvailableStatesResponse(FirstCom.DIDInventoryGetAvailableStatesResponseDIDInventoryGetAvailableStatesResult DIDInventoryGetAvailableStatesResult)
         {
             this.DIDInventoryGetAvailableStatesResult = DIDInventoryGetAvailableStatesResult;
         }
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="https://api.1pcom.net/")]
     public partial class DIDInventoryGetAvailableNumbersByCityResponseDIDInventoryGetAvailableNumbersByCityResult
@@ -1146,13 +1146,13 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDInventoryGetAvailableNumbersByCity", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDInventoryGetAvailableNumbersByCityRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.Credentials Auth;
+        public FirstCom.Credentials Auth;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=1)]
         public string city;
@@ -1161,7 +1161,7 @@ namespace DIDManagement
         {
         }
         
-        public DIDInventoryGetAvailableNumbersByCityRequest(DIDManagement.Credentials Auth, string city)
+        public DIDInventoryGetAvailableNumbersByCityRequest(FirstCom.Credentials Auth, string city)
         {
             this.Auth = Auth;
             this.city = city;
@@ -1169,45 +1169,45 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDInventoryGetAvailableNumbersByCityResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDInventoryGetAvailableNumbersByCityResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.DIDInventoryGetAvailableNumbersByCityResponseDIDInventoryGetAvailableNumbersByCityResult DIDInventoryGetAvailableNumbersByCityResult;
+        public FirstCom.DIDInventoryGetAvailableNumbersByCityResponseDIDInventoryGetAvailableNumbersByCityResult DIDInventoryGetAvailableNumbersByCityResult;
         
         public DIDInventoryGetAvailableNumbersByCityResponse()
         {
         }
         
-        public DIDInventoryGetAvailableNumbersByCityResponse(DIDManagement.DIDInventoryGetAvailableNumbersByCityResponseDIDInventoryGetAvailableNumbersByCityResult DIDInventoryGetAvailableNumbersByCityResult)
+        public DIDInventoryGetAvailableNumbersByCityResponse(FirstCom.DIDInventoryGetAvailableNumbersByCityResponseDIDInventoryGetAvailableNumbersByCityResult DIDInventoryGetAvailableNumbersByCityResult)
         {
             this.DIDInventoryGetAvailableNumbersByCityResult = DIDInventoryGetAvailableNumbersByCityResult;
         }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDInventoryGetAvailableCountries", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDInventoryGetAvailableCountriesRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.Credentials Auth;
+        public FirstCom.Credentials Auth;
         
         public DIDInventoryGetAvailableCountriesRequest()
         {
         }
         
-        public DIDInventoryGetAvailableCountriesRequest(DIDManagement.Credentials Auth)
+        public DIDInventoryGetAvailableCountriesRequest(FirstCom.Credentials Auth)
         {
             this.Auth = Auth;
         }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDInventoryGetAvailableCountriesResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDInventoryGetAvailableCountriesResponse
     {
@@ -1226,16 +1226,16 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="LongCodeSearchInAccount", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class LongCodeSearchInAccountRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.Credentials Auth;
+        public FirstCom.Credentials Auth;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=1)]
-        public DIDManagement.DIDOrderQuery DIDSearch;
+        public FirstCom.DIDOrderQuery DIDSearch;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=2)]
         public int ReturnAmount;
@@ -1244,7 +1244,7 @@ namespace DIDManagement
         {
         }
         
-        public LongCodeSearchInAccountRequest(DIDManagement.Credentials Auth, DIDManagement.DIDOrderQuery DIDSearch, int ReturnAmount)
+        public LongCodeSearchInAccountRequest(FirstCom.Credentials Auth, FirstCom.DIDOrderQuery DIDSearch, int ReturnAmount)
         {
             this.Auth = Auth;
             this.DIDSearch = DIDSearch;
@@ -1253,35 +1253,35 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="LongCodeSearchInAccountResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class LongCodeSearchInAccountResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.LongcodeInfoArray LongCodeSearchInAccountResult;
+        public FirstCom.LongcodeInfoArray LongCodeSearchInAccountResult;
         
         public LongCodeSearchInAccountResponse()
         {
         }
         
-        public LongCodeSearchInAccountResponse(DIDManagement.LongcodeInfoArray LongCodeSearchInAccountResult)
+        public LongCodeSearchInAccountResponse(FirstCom.LongcodeInfoArray LongCodeSearchInAccountResult)
         {
             this.LongCodeSearchInAccountResult = LongCodeSearchInAccountResult;
         }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDSearchInAccount", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDSearchInAccountRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.Credentials Auth;
+        public FirstCom.Credentials Auth;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=1)]
-        public DIDManagement.DIDOrderQuery DIDSearch;
+        public FirstCom.DIDOrderQuery DIDSearch;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=2)]
         public int ReturnAmount;
@@ -1290,7 +1290,7 @@ namespace DIDManagement
         {
         }
         
-        public DIDSearchInAccountRequest(DIDManagement.Credentials Auth, DIDManagement.DIDOrderQuery DIDSearch, int ReturnAmount)
+        public DIDSearchInAccountRequest(FirstCom.Credentials Auth, FirstCom.DIDOrderQuery DIDSearch, int ReturnAmount)
         {
             this.Auth = Auth;
             this.DIDSearch = DIDSearch;
@@ -1299,32 +1299,32 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDSearchInAccountResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDSearchInAccountResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.DIDOrderInfoArray DIDSearchInAccountResult;
+        public FirstCom.DIDOrderInfoArray DIDSearchInAccountResult;
         
         public DIDSearchInAccountResponse()
         {
         }
         
-        public DIDSearchInAccountResponse(DIDManagement.DIDOrderInfoArray DIDSearchInAccountResult)
+        public DIDSearchInAccountResponse(FirstCom.DIDOrderInfoArray DIDSearchInAccountResult)
         {
             this.DIDSearchInAccountResult = DIDSearchInAccountResult;
         }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDDeleteFromAccount", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDDeleteFromAccountRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.Credentials Auth;
+        public FirstCom.Credentials Auth;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=1)]
         public string did;
@@ -1333,7 +1333,7 @@ namespace DIDManagement
         {
         }
         
-        public DIDDeleteFromAccountRequest(DIDManagement.Credentials Auth, string did)
+        public DIDDeleteFromAccountRequest(FirstCom.Credentials Auth, string did)
         {
             this.Auth = Auth;
             this.did = did;
@@ -1341,32 +1341,32 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDDeleteFromAccountResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDDeleteFromAccountResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.QueryResult DIDDeleteFromAccountResult;
+        public FirstCom.QueryResult DIDDeleteFromAccountResult;
         
         public DIDDeleteFromAccountResponse()
         {
         }
         
-        public DIDDeleteFromAccountResponse(DIDManagement.QueryResult DIDDeleteFromAccountResult)
+        public DIDDeleteFromAccountResponse(FirstCom.QueryResult DIDDeleteFromAccountResult)
         {
             this.DIDDeleteFromAccountResult = DIDDeleteFromAccountResult;
         }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDRouteVoiceToGatewayBasic", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDRouteVoiceToGatewayBasicRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.Credentials Auth;
+        public FirstCom.Credentials Auth;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=1)]
         public string DID;
@@ -1378,7 +1378,7 @@ namespace DIDManagement
         {
         }
         
-        public DIDRouteVoiceToGatewayBasicRequest(DIDManagement.Credentials Auth, string DID, string GatewayIP)
+        public DIDRouteVoiceToGatewayBasicRequest(FirstCom.Credentials Auth, string DID, string GatewayIP)
         {
             this.Auth = Auth;
             this.DID = DID;
@@ -1387,32 +1387,32 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDRouteVoiceToGatewayBasicResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDRouteVoiceToGatewayBasicResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.QueryResult DIDRouteVoiceToGatewayBasicResult;
+        public FirstCom.QueryResult DIDRouteVoiceToGatewayBasicResult;
         
         public DIDRouteVoiceToGatewayBasicResponse()
         {
         }
         
-        public DIDRouteVoiceToGatewayBasicResponse(DIDManagement.QueryResult DIDRouteVoiceToGatewayBasicResult)
+        public DIDRouteVoiceToGatewayBasicResponse(FirstCom.QueryResult DIDRouteVoiceToGatewayBasicResult)
         {
             this.DIDRouteVoiceToGatewayBasicResult = DIDRouteVoiceToGatewayBasicResult;
         }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDRouteVoiceToRCFBasic", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDRouteVoiceToRCFBasicRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.Credentials Auth;
+        public FirstCom.Credentials Auth;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=1)]
         public string did;
@@ -1424,7 +1424,7 @@ namespace DIDManagement
         {
         }
         
-        public DIDRouteVoiceToRCFBasicRequest(DIDManagement.Credentials Auth, string did, string RouteToNumber)
+        public DIDRouteVoiceToRCFBasicRequest(FirstCom.Credentials Auth, string did, string RouteToNumber)
         {
             this.Auth = Auth;
             this.did = did;
@@ -1433,32 +1433,32 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDRouteVoiceToRCFBasicResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDRouteVoiceToRCFBasicResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.QueryResult DIDRouteVoiceToRCFBasicResult;
+        public FirstCom.QueryResult DIDRouteVoiceToRCFBasicResult;
         
         public DIDRouteVoiceToRCFBasicResponse()
         {
         }
         
-        public DIDRouteVoiceToRCFBasicResponse(DIDManagement.QueryResult DIDRouteVoiceToRCFBasicResult)
+        public DIDRouteVoiceToRCFBasicResponse(FirstCom.QueryResult DIDRouteVoiceToRCFBasicResult)
         {
             this.DIDRouteVoiceToRCFBasicResult = DIDRouteVoiceToRCFBasicResult;
         }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="LongCodeShowRouting", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class LongCodeShowRoutingRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.Credentials Auth;
+        public FirstCom.Credentials Auth;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=1)]
         public string LongCode;
@@ -1467,7 +1467,7 @@ namespace DIDManagement
         {
         }
         
-        public LongCodeShowRoutingRequest(DIDManagement.Credentials Auth, string LongCode)
+        public LongCodeShowRoutingRequest(FirstCom.Credentials Auth, string LongCode)
         {
             this.Auth = Auth;
             this.LongCode = LongCode;
@@ -1475,32 +1475,32 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="LongCodeShowRoutingResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class LongCodeShowRoutingResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.SMSLongcodeRoute LongCodeShowRoutingResult;
+        public FirstCom.SMSLongcodeRoute LongCodeShowRoutingResult;
         
         public LongCodeShowRoutingResponse()
         {
         }
         
-        public LongCodeShowRoutingResponse(DIDManagement.SMSLongcodeRoute LongCodeShowRoutingResult)
+        public LongCodeShowRoutingResponse(FirstCom.SMSLongcodeRoute LongCodeShowRoutingResult)
         {
             this.LongCodeShowRoutingResult = LongCodeShowRoutingResult;
         }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDRouteSMSToEPIDBasic", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDRouteSMSToEPIDBasicRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.Credentials Auth;
+        public FirstCom.Credentials Auth;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=1)]
         public string DID;
@@ -1512,7 +1512,7 @@ namespace DIDManagement
         {
         }
         
-        public DIDRouteSMSToEPIDBasicRequest(DIDManagement.Credentials Auth, string DID, int EPID)
+        public DIDRouteSMSToEPIDBasicRequest(FirstCom.Credentials Auth, string DID, int EPID)
         {
             this.Auth = Auth;
             this.DID = DID;
@@ -1521,32 +1521,32 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDRouteSMSToEPIDBasicResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDRouteSMSToEPIDBasicResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.QueryResult DIDRouteSMSToEPIDBasicResult;
+        public FirstCom.QueryResult DIDRouteSMSToEPIDBasicResult;
         
         public DIDRouteSMSToEPIDBasicResponse()
         {
         }
         
-        public DIDRouteSMSToEPIDBasicResponse(DIDManagement.QueryResult DIDRouteSMSToEPIDBasicResult)
+        public DIDRouteSMSToEPIDBasicResponse(FirstCom.QueryResult DIDRouteSMSToEPIDBasicResult)
         {
             this.DIDRouteSMSToEPIDBasicResult = DIDRouteSMSToEPIDBasicResult;
         }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDUnrouteSMS", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDUnrouteSMSRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.Credentials Auth;
+        public FirstCom.Credentials Auth;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=1)]
         public string DID;
@@ -1555,7 +1555,7 @@ namespace DIDManagement
         {
         }
         
-        public DIDUnrouteSMSRequest(DIDManagement.Credentials Auth, string DID)
+        public DIDUnrouteSMSRequest(FirstCom.Credentials Auth, string DID)
         {
             this.Auth = Auth;
             this.DID = DID;
@@ -1563,32 +1563,32 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDUnrouteSMSResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDUnrouteSMSResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.QueryResult DIDUnrouteSMSResult;
+        public FirstCom.QueryResult DIDUnrouteSMSResult;
         
         public DIDUnrouteSMSResponse()
         {
         }
         
-        public DIDUnrouteSMSResponse(DIDManagement.QueryResult DIDUnrouteSMSResult)
+        public DIDUnrouteSMSResponse(FirstCom.QueryResult DIDUnrouteSMSResult)
         {
             this.DIDUnrouteSMSResult = DIDUnrouteSMSResult;
         }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDRouteSMSToEmail", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDRouteSMSToEmailRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.Credentials Auth;
+        public FirstCom.Credentials Auth;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=1)]
         public string DID;
@@ -1600,7 +1600,7 @@ namespace DIDManagement
         {
         }
         
-        public DIDRouteSMSToEmailRequest(DIDManagement.Credentials Auth, string DID, string emailaddress)
+        public DIDRouteSMSToEmailRequest(FirstCom.Credentials Auth, string DID, string emailaddress)
         {
             this.Auth = Auth;
             this.DID = DID;
@@ -1609,32 +1609,32 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDRouteSMSToEmailResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDRouteSMSToEmailResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.QueryResult DIDRouteSMSToEmailResult;
+        public FirstCom.QueryResult DIDRouteSMSToEmailResult;
         
         public DIDRouteSMSToEmailResponse()
         {
         }
         
-        public DIDRouteSMSToEmailResponse(DIDManagement.QueryResult DIDRouteSMSToEmailResult)
+        public DIDRouteSMSToEmailResponse(FirstCom.QueryResult DIDRouteSMSToEmailResult)
         {
             this.DIDRouteSMSToEmailResult = DIDRouteSMSToEmailResult;
         }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDRouteSMSToXMPP", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDRouteSMSToXMPPRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.Credentials Auth;
+        public FirstCom.Credentials Auth;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=1)]
         public string DID;
@@ -1646,7 +1646,7 @@ namespace DIDManagement
         {
         }
         
-        public DIDRouteSMSToXMPPRequest(DIDManagement.Credentials Auth, string DID, string XMPPUser)
+        public DIDRouteSMSToXMPPRequest(FirstCom.Credentials Auth, string DID, string XMPPUser)
         {
             this.Auth = Auth;
             this.DID = DID;
@@ -1655,32 +1655,32 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDRouteSMSToXMPPResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDRouteSMSToXMPPResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.QueryResult DIDRouteSMSToXMPPResult;
+        public FirstCom.QueryResult DIDRouteSMSToXMPPResult;
         
         public DIDRouteSMSToXMPPResponse()
         {
         }
         
-        public DIDRouteSMSToXMPPResponse(DIDManagement.QueryResult DIDRouteSMSToXMPPResult)
+        public DIDRouteSMSToXMPPResponse(FirstCom.QueryResult DIDRouteSMSToXMPPResult)
         {
             this.DIDRouteSMSToXMPPResult = DIDRouteSMSToXMPPResult;
         }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDRouteSMSToPUSHAPI", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDRouteSMSToPUSHAPIRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.Credentials Auth;
+        public FirstCom.Credentials Auth;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=1)]
         public string DID;
@@ -1692,7 +1692,7 @@ namespace DIDManagement
         {
         }
         
-        public DIDRouteSMSToPUSHAPIRequest(DIDManagement.Credentials Auth, string DID, string URL)
+        public DIDRouteSMSToPUSHAPIRequest(FirstCom.Credentials Auth, string DID, string URL)
         {
             this.Auth = Auth;
             this.DID = DID;
@@ -1701,32 +1701,32 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDRouteSMSToPUSHAPIResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDRouteSMSToPUSHAPIResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.QueryResult DIDRouteSMSToPUSHAPIResult;
+        public FirstCom.QueryResult DIDRouteSMSToPUSHAPIResult;
         
         public DIDRouteSMSToPUSHAPIResponse()
         {
         }
         
-        public DIDRouteSMSToPUSHAPIResponse(DIDManagement.QueryResult DIDRouteSMSToPUSHAPIResult)
+        public DIDRouteSMSToPUSHAPIResponse(FirstCom.QueryResult DIDRouteSMSToPUSHAPIResult)
         {
             this.DIDRouteSMSToPUSHAPIResult = DIDRouteSMSToPUSHAPIResult;
         }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDRouteSMSToPullAPI", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDRouteSMSToPullAPIRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.Credentials Auth;
+        public FirstCom.Credentials Auth;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=1)]
         public string DID;
@@ -1735,7 +1735,7 @@ namespace DIDManagement
         {
         }
         
-        public DIDRouteSMSToPullAPIRequest(DIDManagement.Credentials Auth, string DID)
+        public DIDRouteSMSToPullAPIRequest(FirstCom.Credentials Auth, string DID)
         {
             this.Auth = Auth;
             this.DID = DID;
@@ -1743,32 +1743,32 @@ namespace DIDManagement
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DIDRouteSMSToPullAPIResponse", WrapperNamespace="https://api.1pcom.net/", IsWrapped=true)]
     public partial class DIDRouteSMSToPullAPIResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="https://api.1pcom.net/", Order=0)]
-        public DIDManagement.QueryResult DIDRouteSMSToPullAPIResult;
+        public FirstCom.QueryResult DIDRouteSMSToPullAPIResult;
         
         public DIDRouteSMSToPullAPIResponse()
         {
         }
         
-        public DIDRouteSMSToPullAPIResponse(DIDManagement.QueryResult DIDRouteSMSToPullAPIResult)
+        public DIDRouteSMSToPullAPIResponse(FirstCom.QueryResult DIDRouteSMSToPullAPIResult)
         {
             this.DIDRouteSMSToPullAPIResult = DIDRouteSMSToPullAPIResult;
         }
     }
     
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
-    public interface DIDManagementSoapChannel : DIDManagement.DIDManagementSoap, System.ServiceModel.IClientChannel
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    public interface DIDManagementSoapChannel : FirstCom.DIDManagementSoap, System.ServiceModel.IClientChannel
     {
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
-    public partial class DIDManagementSoapClient : System.ServiceModel.ClientBase<DIDManagement.DIDManagementSoap>, DIDManagement.DIDManagementSoap
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    public partial class DIDManagementSoapClient : System.ServiceModel.ClientBase<FirstCom.DIDManagementSoap>, FirstCom.DIDManagementSoap
     {
         
         /// <summary>
@@ -1804,112 +1804,112 @@ namespace DIDManagement
         {
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.DIDWebserviceHeartbeatResponse> DIDWebserviceHeartbeatAsync(DIDManagement.DIDWebserviceHeartbeatRequest request)
+        public System.Threading.Tasks.Task<FirstCom.DIDWebserviceHeartbeatResponse> DIDWebserviceHeartbeatAsync(FirstCom.DIDWebserviceHeartbeatRequest request)
         {
             return base.Channel.DIDWebserviceHeartbeatAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.DIDAPIVersionResponse> DIDAPIVersionAsync(DIDManagement.DIDAPIVersionRequest request)
+        public System.Threading.Tasks.Task<FirstCom.DIDAPIVersionResponse> DIDAPIVersionAsync(FirstCom.DIDAPIVersionRequest request)
         {
             return base.Channel.DIDAPIVersionAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.DIDOrderResponse> DIDOrderAsync(DIDManagement.DIDOrderRequest request)
+        public System.Threading.Tasks.Task<FirstCom.DIDOrderResponse> DIDOrderAsync(FirstCom.DIDOrderRequest request)
         {
             return base.Channel.DIDOrderAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.DIDOrderBulkPatternResponse> DIDOrderBulkPatternAsync(DIDManagement.DIDOrderBulkPatternRequest request)
+        public System.Threading.Tasks.Task<FirstCom.DIDOrderBulkPatternResponse> DIDOrderBulkPatternAsync(FirstCom.DIDOrderBulkPatternRequest request)
         {
             return base.Channel.DIDOrderBulkPatternAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.DIDSMSEnableResponse> DIDSMSEnableAsync(DIDManagement.DIDSMSEnableRequest request)
+        public System.Threading.Tasks.Task<FirstCom.DIDSMSEnableResponse> DIDSMSEnableAsync(FirstCom.DIDSMSEnableRequest request)
         {
             return base.Channel.DIDSMSEnableAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.DIDInventorySearchResponse> DIDInventorySearchAsync(DIDManagement.DIDInventorySearchRequest request)
+        public System.Threading.Tasks.Task<FirstCom.DIDInventorySearchResponse> DIDInventorySearchAsync(FirstCom.DIDInventorySearchRequest request)
         {
             return base.Channel.DIDInventorySearchAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.DIDInventoryGetAvailableCitiesResponse> DIDInventoryGetAvailableCitiesAsync(DIDManagement.DIDInventoryGetAvailableCitiesRequest request)
+        public System.Threading.Tasks.Task<FirstCom.DIDInventoryGetAvailableCitiesResponse> DIDInventoryGetAvailableCitiesAsync(FirstCom.DIDInventoryGetAvailableCitiesRequest request)
         {
             return base.Channel.DIDInventoryGetAvailableCitiesAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.DIDInventoryGetAvailableStatesResponse> DIDInventoryGetAvailableStatesAsync(DIDManagement.DIDInventoryGetAvailableStatesRequest request)
+        public System.Threading.Tasks.Task<FirstCom.DIDInventoryGetAvailableStatesResponse> DIDInventoryGetAvailableStatesAsync(FirstCom.DIDInventoryGetAvailableStatesRequest request)
         {
             return base.Channel.DIDInventoryGetAvailableStatesAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.DIDInventoryGetAvailableNumbersByCityResponse> DIDInventoryGetAvailableNumbersByCityAsync(DIDManagement.DIDInventoryGetAvailableNumbersByCityRequest request)
+        public System.Threading.Tasks.Task<FirstCom.DIDInventoryGetAvailableNumbersByCityResponse> DIDInventoryGetAvailableNumbersByCityAsync(FirstCom.DIDInventoryGetAvailableNumbersByCityRequest request)
         {
             return base.Channel.DIDInventoryGetAvailableNumbersByCityAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.DIDInventoryGetAvailableCountriesResponse> DIDInventoryGetAvailableCountriesAsync(DIDManagement.DIDInventoryGetAvailableCountriesRequest request)
+        public System.Threading.Tasks.Task<FirstCom.DIDInventoryGetAvailableCountriesResponse> DIDInventoryGetAvailableCountriesAsync(FirstCom.DIDInventoryGetAvailableCountriesRequest request)
         {
             return base.Channel.DIDInventoryGetAvailableCountriesAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.LongCodeSearchInAccountResponse> LongCodeSearchInAccountAsync(DIDManagement.LongCodeSearchInAccountRequest request)
+        public System.Threading.Tasks.Task<FirstCom.LongCodeSearchInAccountResponse> LongCodeSearchInAccountAsync(FirstCom.LongCodeSearchInAccountRequest request)
         {
             return base.Channel.LongCodeSearchInAccountAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.DIDSearchInAccountResponse> DIDSearchInAccountAsync(DIDManagement.DIDSearchInAccountRequest request)
+        public System.Threading.Tasks.Task<FirstCom.DIDSearchInAccountResponse> DIDSearchInAccountAsync(FirstCom.DIDSearchInAccountRequest request)
         {
             return base.Channel.DIDSearchInAccountAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.DIDDeleteFromAccountResponse> DIDDeleteFromAccountAsync(DIDManagement.DIDDeleteFromAccountRequest request)
+        public System.Threading.Tasks.Task<FirstCom.DIDDeleteFromAccountResponse> DIDDeleteFromAccountAsync(FirstCom.DIDDeleteFromAccountRequest request)
         {
             return base.Channel.DIDDeleteFromAccountAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.DIDRouteVoiceToGatewayBasicResponse> DIDRouteVoiceToGatewayBasicAsync(DIDManagement.DIDRouteVoiceToGatewayBasicRequest request)
+        public System.Threading.Tasks.Task<FirstCom.DIDRouteVoiceToGatewayBasicResponse> DIDRouteVoiceToGatewayBasicAsync(FirstCom.DIDRouteVoiceToGatewayBasicRequest request)
         {
             return base.Channel.DIDRouteVoiceToGatewayBasicAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.DIDRouteVoiceToRCFBasicResponse> DIDRouteVoiceToRCFBasicAsync(DIDManagement.DIDRouteVoiceToRCFBasicRequest request)
+        public System.Threading.Tasks.Task<FirstCom.DIDRouteVoiceToRCFBasicResponse> DIDRouteVoiceToRCFBasicAsync(FirstCom.DIDRouteVoiceToRCFBasicRequest request)
         {
             return base.Channel.DIDRouteVoiceToRCFBasicAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.LongCodeShowRoutingResponse> LongCodeShowRoutingAsync(DIDManagement.LongCodeShowRoutingRequest request)
+        public System.Threading.Tasks.Task<FirstCom.LongCodeShowRoutingResponse> LongCodeShowRoutingAsync(FirstCom.LongCodeShowRoutingRequest request)
         {
             return base.Channel.LongCodeShowRoutingAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.DIDRouteSMSToEPIDBasicResponse> DIDRouteSMSToEPIDBasicAsync(DIDManagement.DIDRouteSMSToEPIDBasicRequest request)
+        public System.Threading.Tasks.Task<FirstCom.DIDRouteSMSToEPIDBasicResponse> DIDRouteSMSToEPIDBasicAsync(FirstCom.DIDRouteSMSToEPIDBasicRequest request)
         {
             return base.Channel.DIDRouteSMSToEPIDBasicAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.DIDUnrouteSMSResponse> DIDUnrouteSMSAsync(DIDManagement.DIDUnrouteSMSRequest request)
+        public System.Threading.Tasks.Task<FirstCom.DIDUnrouteSMSResponse> DIDUnrouteSMSAsync(FirstCom.DIDUnrouteSMSRequest request)
         {
             return base.Channel.DIDUnrouteSMSAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.DIDRouteSMSToEmailResponse> DIDRouteSMSToEmailAsync(DIDManagement.DIDRouteSMSToEmailRequest request)
+        public System.Threading.Tasks.Task<FirstCom.DIDRouteSMSToEmailResponse> DIDRouteSMSToEmailAsync(FirstCom.DIDRouteSMSToEmailRequest request)
         {
             return base.Channel.DIDRouteSMSToEmailAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.DIDRouteSMSToXMPPResponse> DIDRouteSMSToXMPPAsync(DIDManagement.DIDRouteSMSToXMPPRequest request)
+        public System.Threading.Tasks.Task<FirstCom.DIDRouteSMSToXMPPResponse> DIDRouteSMSToXMPPAsync(FirstCom.DIDRouteSMSToXMPPRequest request)
         {
             return base.Channel.DIDRouteSMSToXMPPAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.DIDRouteSMSToPUSHAPIResponse> DIDRouteSMSToPUSHAPIAsync(DIDManagement.DIDRouteSMSToPUSHAPIRequest request)
+        public System.Threading.Tasks.Task<FirstCom.DIDRouteSMSToPUSHAPIResponse> DIDRouteSMSToPUSHAPIAsync(FirstCom.DIDRouteSMSToPUSHAPIRequest request)
         {
             return base.Channel.DIDRouteSMSToPUSHAPIAsync(request);
         }
         
-        public System.Threading.Tasks.Task<DIDManagement.DIDRouteSMSToPullAPIResponse> DIDRouteSMSToPullAPIAsync(DIDManagement.DIDRouteSMSToPullAPIRequest request)
+        public System.Threading.Tasks.Task<FirstCom.DIDRouteSMSToPullAPIResponse> DIDRouteSMSToPullAPIAsync(FirstCom.DIDRouteSMSToPullAPIRequest request)
         {
             return base.Channel.DIDRouteSMSToPullAPIAsync(request);
         }

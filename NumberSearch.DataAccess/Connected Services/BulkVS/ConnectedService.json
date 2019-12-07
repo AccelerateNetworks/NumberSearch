@@ -1,0 +1,25 @@
+﻿{
+  "ProviderId": "Microsoft.VisualStudio.ConnectedService.Wcf",
+  "Version": "15.0.31022.994",
+  "ExtendedData": {
+    "inputs": [
+      "https://portal.bulkvs.com/api?wsdl"
+    ],
+    "collectionTypes": [
+      "System.Array",
+      "System.Collections.Generic.Dictionary`2"
+    ],
+    "namespaceMappings": [
+      "*, BulkVS"
+    ],
+    "references": [
+      "Flurl, {Flurl, 2.8.2}",
+      "Flurl.Http, {Flurl.Http, 2.4.2}",
+      "Newtonsoft.Json, {Newtonsoft.Json, 12.0.2}",
+      "System.Runtime.CompilerServices.Unsafe, {System.Runtime.CompilerServices.Unsafe, 4.5.2}",
+      "System.Text.Encoding.CodePages, {System.Text.Encoding.CodePages, 4.5.1}"
+    ],
+    "targetFramework": "netstandard2.0",
+    "typeReuseMode": "All"
+  }
+}

@@ -7,6 +7,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NumberSearch.Mvc", "NumberS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NumberSearch.Tests", "NumberSearch.Tests\NumberSearch.Tests.csproj", "{508A07B4-358A-4EFB-86A4-17E9E8B6FE1E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NumberSearch.Ingest", "NumberSearch.Ingest\NumberSearch.Ingest.csproj", "{409F1752-B4FF-47AE-932D-7EFAD5509ACB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NumberSearch.DataAccess", "NumberSearch.DataAccess\NumberSearch.DataAccess.csproj", "{D648CD01-2A1A-418A-932D-07987557E749}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{508A07B4-358A-4EFB-86A4-17E9E8B6FE1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{508A07B4-358A-4EFB-86A4-17E9E8B6FE1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{508A07B4-358A-4EFB-86A4-17E9E8B6FE1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{409F1752-B4FF-47AE-932D-7EFAD5509ACB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{409F1752-B4FF-47AE-932D-7EFAD5509ACB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{409F1752-B4FF-47AE-932D-7EFAD5509ACB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{409F1752-B4FF-47AE-932D-7EFAD5509ACB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D648CD01-2A1A-418A-932D-07987557E749}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D648CD01-2A1A-418A-932D-07987557E749}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D648CD01-2A1A-418A-932D-07987557E749}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D648CD01-2A1A-418A-932D-07987557E749}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

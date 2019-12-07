@@ -3,20 +3,24 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace NumberSearch.Mvc.Models
+namespace NumberSearch.DataAccess
 {
     public class LocalNumberTeleMessage
     {
         public int code { get; set; }
         public string status { get; set; }
-        public Data data { get; set; }
 
-        public class Data
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Mirrors the external API")]
+        public TeleResults data { get; set; }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Mirrors the external API")]
+        public class TeleResults
         {
-            public Did[] dids { get; set; }
+            public IEnumerable<Did> dids { get; set; }
             public int count { get; set; }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Mirrors the external API")]
         public class Did
         {
             public string id { get; set; }
@@ -27,8 +31,14 @@ namespace NumberSearch.Mvc.Models
             public string state { get; set; }
             public string ratecenter { get; set; }
             public string tier { get; set; }
+
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Mirrors the external API")]
             public string setup_rate { get; set; }
+
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Mirrors the external API")]
             public string monthly_rate { get; set; }
+
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Mirrors the external API")]
             public string per_minute_rate { get; set; }
         }
 

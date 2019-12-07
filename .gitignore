@@ -10,3 +10,9 @@
 /NumberSearch.Tests/obj
 *.user
 /.vs
+/NumberSearch.DataAccess/bin/Debug/netstandard2.0
+/NumberSearch.DataAccess/obj
+/NumberSearch.Ingest/bin/Debug/netcoreapp3.1
+/NumberSearch.Ingest/obj
+/NumberSearch.Mvc/bin/Debug/netcoreapp3.1
+/NumberSearch.Tests/bin/Debug/netcoreapp3.1

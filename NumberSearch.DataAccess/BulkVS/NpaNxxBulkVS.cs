@@ -1,25 +1,16 @@
-﻿using BulkVS;
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using static BulkVS.DnSearchAreaCodeResponseResult;
 
-namespace NumberSearch.Mvc.Models
+namespace NumberSearch.DataAccess
 {
-    public class NpaNxxBulkVS
+    public sealed class NpaNxxBulkVS
     {
         public static async Task<IEnumerable<PhoneNumber>> GetAsync(string npaNxx, string apiKey, string secret)
         {
-            var request = new DnSearchNpaNxxRequest
-            {
-                apikey = apiKey,
-                apisecret = secret,
-                NpaNxx = npaNxx
-            };
-
-            var client = new bulkvsPortClient(bulkvsPortClient.EndpointConfiguration.bulkvsPort);
-            var result = await client.DnSearchNpaNxxAsync(request);
+            using var client = new BulkVS.bulkvsPortClient(BulkVS.bulkvsPortClient.EndpointConfiguration.bulkvsPort);
+            var result = await client.DnSearchNpaNxxAsync(apiKey, secret, npaNxx);
             var list = new List<resultEntry>();
 
             #region nonsense
@@ -1034,7 +1025,7 @@ namespace NumberSearch.Mvc.Models
                     NPA = $"{item.dn.Substring(1, 3)}",
                     NXX = $"{item.dn.Substring(4, 3)}",
                     XXXX = $"{item.dn.Substring(7)}",
-                    DialedNumber = item.dn,
+                    DialedNumber = item.dn.Substring(1),
                     City = item.city,
                     State = item.state,
                     IngestedFrom = "BulkVS"

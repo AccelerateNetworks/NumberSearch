@@ -1,4 +1,4 @@
-﻿namespace NumberSearch.Mvc.Models
+﻿namespace NumberSearch.DataAccess
 {
     public class PhoneNumber
     {

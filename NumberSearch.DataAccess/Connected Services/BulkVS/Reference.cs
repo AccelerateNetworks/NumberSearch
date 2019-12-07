@@ -7,13 +7,11 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System.Collections.Generic;
-
 namespace BulkVS
 {
     
     
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     [System.ServiceModel.ServiceContractAttribute(Namespace="urn:bulkvs", ConfigurationName="BulkVS.bulkvsPort")]
     public interface bulkvsPort
     {
@@ -92,7 +90,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="queryAccount", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class queryAccountRequest
     {
@@ -115,7 +114,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="queryAccountResponse", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class queryAccountResponse
     {
@@ -134,7 +134,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="cdrSearch", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class cdrSearchRequest
     {
@@ -169,7 +170,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="cdrSearchResponse", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class cdrSearchResponse
     {
@@ -188,7 +190,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="cnamLookup", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class cnamLookupRequest
     {
@@ -215,7 +218,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="cnamLookupResponse", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class cnamLookupResponse
     {
@@ -234,7 +238,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="smsSend", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class smsSendRequest
     {
@@ -269,7 +274,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="smsSendResponse", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class smsSendResponse
     {
@@ -288,7 +294,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DnSearchAreaCode", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class DnSearchAreaCodeRequest
     {
@@ -315,19 +322,68 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DnSearchAreaCodeResponse", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class DnSearchAreaCodeResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="", Order=0)]
-        public DnSearchAreaCodeResponseResult result;
+        public string result;
         
         public DnSearchAreaCodeResponse()
         {
         }
         
-        public DnSearchAreaCodeResponse(DnSearchAreaCodeResponseResult result)
+        public DnSearchAreaCodeResponse(string result)
+        {
+            this.result = result;
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName="DnSearchNpaNxx", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
+    public partial class DnSearchNpaNxxRequest
+    {
+        
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="", Order=0)]
+        public string apikey;
+        
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="", Order=1)]
+        public string apisecret;
+        
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="", Order=2)]
+        public string NpaNxx;
+        
+        public DnSearchNpaNxxRequest()
+        {
+        }
+        
+        public DnSearchNpaNxxRequest(string apikey, string apisecret, string NpaNxx)
+        {
+            this.apikey = apikey;
+            this.apisecret = apisecret;
+            this.NpaNxx = NpaNxx;
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName="DnSearchNpaNxxResponse", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
+    public partial class DnSearchNpaNxxResponse
+    {
+
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace = "", Order = 0)]
+        public DnSearchAreaCodeResponseResult result;
+
+        public DnSearchNpaNxxResponse()
+        {
+        }
+
+        public DnSearchNpaNxxResponse(DnSearchAreaCodeResponseResult result)
         {
             this.result = result;
         }
@@ -355,53 +411,8 @@ namespace BulkVS
     }
 
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="DnSearchNpaNxx", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
-    public partial class DnSearchNpaNxxRequest
-    {
-        
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="", Order=0)]
-        public string apikey;
-        
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="", Order=1)]
-        public string apisecret;
-        
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="", Order=2)]
-        public string NpaNxx;
-        
-        public DnSearchNpaNxxRequest()
-        {
-        }
-        
-        public DnSearchNpaNxxRequest(string apikey, string apisecret, string NpaNxx)
-        {
-            this.apikey = apikey;
-            this.apisecret = apisecret;
-            this.NpaNxx = NpaNxx;
-        }
-    }
-    
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="DnSearchNpaNxxResponse", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
-    public partial class DnSearchNpaNxxResponse
-    {
-        
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="", Order=0)]
-        public DnSearchAreaCodeResponseResult result;
-        
-        public DnSearchNpaNxxResponse()
-        {
-        }
-        
-        public DnSearchNpaNxxResponse(DnSearchAreaCodeResponseResult result)
-        {
-            this.result = result;
-        }
-    }
-    
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DnOrder", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class DnOrderRequest
     {
@@ -448,7 +459,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DnOrderResponse", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class DnOrderResponse
     {
@@ -467,7 +479,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DnUpdate", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class DnUpdateRequest
     {
@@ -518,7 +531,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DnUpdateResponse", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class DnUpdateResponse
     {
@@ -537,7 +551,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DnDelete", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class DnDeleteRequest
     {
@@ -564,7 +579,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DnDeleteResponse", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class DnDeleteResponse
     {
@@ -583,7 +599,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DnQuery", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class DnQueryRequest
     {
@@ -610,7 +627,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DnQueryResponse", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class DnQueryResponse
     {
@@ -629,7 +647,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DnqueryAll", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class DnqueryAllRequest
     {
@@ -652,7 +671,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DnqueryAllResponse", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class DnqueryAllResponse
     {
@@ -671,7 +691,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DnTrunkGroupList", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class DnTrunkGroupListRequest
     {
@@ -694,7 +715,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="DnTrunkGroupListResponse", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class DnTrunkGroupListResponse
     {
@@ -713,7 +735,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="LNPcheck", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class LNPcheckRequest
     {
@@ -740,7 +763,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="LNPcheckResponse", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class LNPcheckResponse
     {
@@ -759,7 +783,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="e911removeRecord", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class e911removeRecordRequest
     {
@@ -786,7 +811,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="e911removeRecordResponse", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class e911removeRecordResponse
     {
@@ -805,7 +831,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="e911queryRecord", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class e911queryRecordRequest
     {
@@ -832,7 +859,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="e911queryRecordResponse", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class e911queryRecordResponse
     {
@@ -851,7 +879,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="e911queryAll", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class e911queryAllRequest
     {
@@ -874,7 +903,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="e911queryAllResponse", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class e911queryAllResponse
     {
@@ -893,7 +923,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="e911validateAddress", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class e911validateAddressRequest
     {
@@ -936,7 +967,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="e911validateAddressResponse", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class e911validateAddressResponse
     {
@@ -955,7 +987,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="e911provisionAddress", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class e911provisionAddressRequest
     {
@@ -990,7 +1023,8 @@ namespace BulkVS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="e911provisionAddressResponse", WrapperNamespace="http://schemas.xmlsoap.org/soap/envelope/", IsWrapped=true)]
     public partial class e911provisionAddressResponse
     {
@@ -1008,13 +1042,13 @@ namespace BulkVS
         }
     }
     
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     public interface bulkvsPortChannel : BulkVS.bulkvsPort, System.ServiceModel.IClientChannel
     {
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
     public partial class bulkvsPortClient : System.ServiceModel.ClientBase<BulkVS.bulkvsPort>, BulkVS.bulkvsPort
     {
         
@@ -1058,94 +1092,291 @@ namespace BulkVS
         {
         }
         
-        public System.Threading.Tasks.Task<BulkVS.queryAccountResponse> queryAccountAsync(BulkVS.queryAccountRequest request)
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<BulkVS.queryAccountResponse> BulkVS.bulkvsPort.queryAccountAsync(BulkVS.queryAccountRequest request)
         {
             return base.Channel.queryAccountAsync(request);
         }
         
-        public System.Threading.Tasks.Task<BulkVS.cdrSearchResponse> cdrSearchAsync(BulkVS.cdrSearchRequest request)
+        public System.Threading.Tasks.Task<BulkVS.queryAccountResponse> queryAccountAsync(string apikey, string apisecret)
+        {
+            BulkVS.queryAccountRequest inValue = new BulkVS.queryAccountRequest();
+            inValue.apikey = apikey;
+            inValue.apisecret = apisecret;
+            return ((BulkVS.bulkvsPort)(this)).queryAccountAsync(inValue);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<BulkVS.cdrSearchResponse> BulkVS.bulkvsPort.cdrSearchAsync(BulkVS.cdrSearchRequest request)
         {
             return base.Channel.cdrSearchAsync(request);
         }
         
-        public System.Threading.Tasks.Task<BulkVS.cnamLookupResponse> cnamLookupAsync(BulkVS.cnamLookupRequest request)
+        public System.Threading.Tasks.Task<BulkVS.cdrSearchResponse> cdrSearchAsync(string apikey, string apisecret, string type, string startDate, string endDate)
+        {
+            BulkVS.cdrSearchRequest inValue = new BulkVS.cdrSearchRequest();
+            inValue.apikey = apikey;
+            inValue.apisecret = apisecret;
+            inValue.type = type;
+            inValue.startDate = startDate;
+            inValue.endDate = endDate;
+            return ((BulkVS.bulkvsPort)(this)).cdrSearchAsync(inValue);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<BulkVS.cnamLookupResponse> BulkVS.bulkvsPort.cnamLookupAsync(BulkVS.cnamLookupRequest request)
         {
             return base.Channel.cnamLookupAsync(request);
         }
         
-        public System.Threading.Tasks.Task<BulkVS.smsSendResponse> smsSendAsync(BulkVS.smsSendRequest request)
+        public System.Threading.Tasks.Task<BulkVS.cnamLookupResponse> cnamLookupAsync(string apikey, string apisecret, string dn)
+        {
+            BulkVS.cnamLookupRequest inValue = new BulkVS.cnamLookupRequest();
+            inValue.apikey = apikey;
+            inValue.apisecret = apisecret;
+            inValue.dn = dn;
+            return ((BulkVS.bulkvsPort)(this)).cnamLookupAsync(inValue);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<BulkVS.smsSendResponse> BulkVS.bulkvsPort.smsSendAsync(BulkVS.smsSendRequest request)
         {
             return base.Channel.smsSendAsync(request);
         }
         
-        public System.Threading.Tasks.Task<BulkVS.DnSearchAreaCodeResponse> DnSearchAreaCodeAsync(BulkVS.DnSearchAreaCodeRequest request)
+        public System.Threading.Tasks.Task<BulkVS.smsSendResponse> smsSendAsync(string apikey, string apisecret, string from, string to, string message)
+        {
+            BulkVS.smsSendRequest inValue = new BulkVS.smsSendRequest();
+            inValue.apikey = apikey;
+            inValue.apisecret = apisecret;
+            inValue.from = from;
+            inValue.to = to;
+            inValue.message = message;
+            return ((BulkVS.bulkvsPort)(this)).smsSendAsync(inValue);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<BulkVS.DnSearchAreaCodeResponse> BulkVS.bulkvsPort.DnSearchAreaCodeAsync(BulkVS.DnSearchAreaCodeRequest request)
         {
             return base.Channel.DnSearchAreaCodeAsync(request);
         }
         
-        public System.Threading.Tasks.Task<BulkVS.DnSearchNpaNxxResponse> DnSearchNpaNxxAsync(BulkVS.DnSearchNpaNxxRequest request)
+        public System.Threading.Tasks.Task<BulkVS.DnSearchAreaCodeResponse> DnSearchAreaCodeAsync(string apikey, string apisecret, string areacode)
+        {
+            BulkVS.DnSearchAreaCodeRequest inValue = new BulkVS.DnSearchAreaCodeRequest();
+            inValue.apikey = apikey;
+            inValue.apisecret = apisecret;
+            inValue.areacode = areacode;
+            return ((BulkVS.bulkvsPort)(this)).DnSearchAreaCodeAsync(inValue);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<BulkVS.DnSearchNpaNxxResponse> BulkVS.bulkvsPort.DnSearchNpaNxxAsync(BulkVS.DnSearchNpaNxxRequest request)
         {
             return base.Channel.DnSearchNpaNxxAsync(request);
         }
         
-        public System.Threading.Tasks.Task<BulkVS.DnOrderResponse> DnOrderAsync(BulkVS.DnOrderRequest request)
+        public System.Threading.Tasks.Task<BulkVS.DnSearchNpaNxxResponse> DnSearchNpaNxxAsync(string apikey, string apisecret, string NpaNxx)
+        {
+            BulkVS.DnSearchNpaNxxRequest inValue = new BulkVS.DnSearchNpaNxxRequest();
+            inValue.apikey = apikey;
+            inValue.apisecret = apisecret;
+            inValue.NpaNxx = NpaNxx;
+            return ((BulkVS.bulkvsPort)(this)).DnSearchNpaNxxAsync(inValue);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<BulkVS.DnOrderResponse> BulkVS.bulkvsPort.DnOrderAsync(BulkVS.DnOrderRequest request)
         {
             return base.Channel.DnOrderAsync(request);
         }
         
-        public System.Threading.Tasks.Task<BulkVS.DnUpdateResponse> DnUpdateAsync(BulkVS.DnUpdateRequest request)
+        public System.Threading.Tasks.Task<BulkVS.DnOrderResponse> DnOrderAsync(string apikey, string apisecret, string dn, string trunkgroup, string cnamlookup, string lidb, string messaging, string portoutpin)
+        {
+            BulkVS.DnOrderRequest inValue = new BulkVS.DnOrderRequest();
+            inValue.apikey = apikey;
+            inValue.apisecret = apisecret;
+            inValue.dn = dn;
+            inValue.trunkgroup = trunkgroup;
+            inValue.cnamlookup = cnamlookup;
+            inValue.lidb = lidb;
+            inValue.messaging = messaging;
+            inValue.portoutpin = portoutpin;
+            return ((BulkVS.bulkvsPort)(this)).DnOrderAsync(inValue);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<BulkVS.DnUpdateResponse> BulkVS.bulkvsPort.DnUpdateAsync(BulkVS.DnUpdateRequest request)
         {
             return base.Channel.DnUpdateAsync(request);
         }
         
-        public System.Threading.Tasks.Task<BulkVS.DnDeleteResponse> DnDeleteAsync(BulkVS.DnDeleteRequest request)
+        public System.Threading.Tasks.Task<BulkVS.DnUpdateResponse> DnUpdateAsync(string apikey, string apisecret, string dn, string trunkgroup, string cnamlookup, string lidb, string messaging, string portoutpin, string callforward)
+        {
+            BulkVS.DnUpdateRequest inValue = new BulkVS.DnUpdateRequest();
+            inValue.apikey = apikey;
+            inValue.apisecret = apisecret;
+            inValue.dn = dn;
+            inValue.trunkgroup = trunkgroup;
+            inValue.cnamlookup = cnamlookup;
+            inValue.lidb = lidb;
+            inValue.messaging = messaging;
+            inValue.portoutpin = portoutpin;
+            inValue.callforward = callforward;
+            return ((BulkVS.bulkvsPort)(this)).DnUpdateAsync(inValue);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<BulkVS.DnDeleteResponse> BulkVS.bulkvsPort.DnDeleteAsync(BulkVS.DnDeleteRequest request)
         {
             return base.Channel.DnDeleteAsync(request);
         }
         
-        public System.Threading.Tasks.Task<BulkVS.DnQueryResponse> DnQueryAsync(BulkVS.DnQueryRequest request)
+        public System.Threading.Tasks.Task<BulkVS.DnDeleteResponse> DnDeleteAsync(string apikey, string apisecret, string dn)
+        {
+            BulkVS.DnDeleteRequest inValue = new BulkVS.DnDeleteRequest();
+            inValue.apikey = apikey;
+            inValue.apisecret = apisecret;
+            inValue.dn = dn;
+            return ((BulkVS.bulkvsPort)(this)).DnDeleteAsync(inValue);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<BulkVS.DnQueryResponse> BulkVS.bulkvsPort.DnQueryAsync(BulkVS.DnQueryRequest request)
         {
             return base.Channel.DnQueryAsync(request);
         }
         
-        public System.Threading.Tasks.Task<BulkVS.DnqueryAllResponse> DnqueryAllAsync(BulkVS.DnqueryAllRequest request)
+        public System.Threading.Tasks.Task<BulkVS.DnQueryResponse> DnQueryAsync(string apikey, string apisecret, string dn)
+        {
+            BulkVS.DnQueryRequest inValue = new BulkVS.DnQueryRequest();
+            inValue.apikey = apikey;
+            inValue.apisecret = apisecret;
+            inValue.dn = dn;
+            return ((BulkVS.bulkvsPort)(this)).DnQueryAsync(inValue);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<BulkVS.DnqueryAllResponse> BulkVS.bulkvsPort.DnqueryAllAsync(BulkVS.DnqueryAllRequest request)
         {
             return base.Channel.DnqueryAllAsync(request);
         }
         
-        public System.Threading.Tasks.Task<BulkVS.DnTrunkGroupListResponse> DnTrunkGroupListAsync(BulkVS.DnTrunkGroupListRequest request)
+        public System.Threading.Tasks.Task<BulkVS.DnqueryAllResponse> DnqueryAllAsync(string apikey, string apisecret)
+        {
+            BulkVS.DnqueryAllRequest inValue = new BulkVS.DnqueryAllRequest();
+            inValue.apikey = apikey;
+            inValue.apisecret = apisecret;
+            return ((BulkVS.bulkvsPort)(this)).DnqueryAllAsync(inValue);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<BulkVS.DnTrunkGroupListResponse> BulkVS.bulkvsPort.DnTrunkGroupListAsync(BulkVS.DnTrunkGroupListRequest request)
         {
             return base.Channel.DnTrunkGroupListAsync(request);
         }
         
-        public System.Threading.Tasks.Task<BulkVS.LNPcheckResponse> LNPcheckAsync(BulkVS.LNPcheckRequest request)
+        public System.Threading.Tasks.Task<BulkVS.DnTrunkGroupListResponse> DnTrunkGroupListAsync(string apikey, string apisecret)
+        {
+            BulkVS.DnTrunkGroupListRequest inValue = new BulkVS.DnTrunkGroupListRequest();
+            inValue.apikey = apikey;
+            inValue.apisecret = apisecret;
+            return ((BulkVS.bulkvsPort)(this)).DnTrunkGroupListAsync(inValue);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<BulkVS.LNPcheckResponse> BulkVS.bulkvsPort.LNPcheckAsync(BulkVS.LNPcheckRequest request)
         {
             return base.Channel.LNPcheckAsync(request);
         }
         
-        public System.Threading.Tasks.Task<BulkVS.e911removeRecordResponse> e911removeRecordAsync(BulkVS.e911removeRecordRequest request)
+        public System.Threading.Tasks.Task<BulkVS.LNPcheckResponse> LNPcheckAsync(string apikey, string apisecret, string tn)
+        {
+            BulkVS.LNPcheckRequest inValue = new BulkVS.LNPcheckRequest();
+            inValue.apikey = apikey;
+            inValue.apisecret = apisecret;
+            inValue.tn = tn;
+            return ((BulkVS.bulkvsPort)(this)).LNPcheckAsync(inValue);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<BulkVS.e911removeRecordResponse> BulkVS.bulkvsPort.e911removeRecordAsync(BulkVS.e911removeRecordRequest request)
         {
             return base.Channel.e911removeRecordAsync(request);
         }
         
-        public System.Threading.Tasks.Task<BulkVS.e911queryRecordResponse> e911queryRecordAsync(BulkVS.e911queryRecordRequest request)
+        public System.Threading.Tasks.Task<BulkVS.e911removeRecordResponse> e911removeRecordAsync(string apikey, string apisecret, string dn)
+        {
+            BulkVS.e911removeRecordRequest inValue = new BulkVS.e911removeRecordRequest();
+            inValue.apikey = apikey;
+            inValue.apisecret = apisecret;
+            inValue.dn = dn;
+            return ((BulkVS.bulkvsPort)(this)).e911removeRecordAsync(inValue);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<BulkVS.e911queryRecordResponse> BulkVS.bulkvsPort.e911queryRecordAsync(BulkVS.e911queryRecordRequest request)
         {
             return base.Channel.e911queryRecordAsync(request);
         }
         
-        public System.Threading.Tasks.Task<BulkVS.e911queryAllResponse> e911queryAllAsync(BulkVS.e911queryAllRequest request)
+        public System.Threading.Tasks.Task<BulkVS.e911queryRecordResponse> e911queryRecordAsync(string apikey, string apisecret, string dn)
+        {
+            BulkVS.e911queryRecordRequest inValue = new BulkVS.e911queryRecordRequest();
+            inValue.apikey = apikey;
+            inValue.apisecret = apisecret;
+            inValue.dn = dn;
+            return ((BulkVS.bulkvsPort)(this)).e911queryRecordAsync(inValue);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<BulkVS.e911queryAllResponse> BulkVS.bulkvsPort.e911queryAllAsync(BulkVS.e911queryAllRequest request)
         {
             return base.Channel.e911queryAllAsync(request);
         }
         
-        public System.Threading.Tasks.Task<BulkVS.e911validateAddressResponse> e911validateAddressAsync(BulkVS.e911validateAddressRequest request)
+        public System.Threading.Tasks.Task<BulkVS.e911queryAllResponse> e911queryAllAsync(string apikey, string apisecret)
+        {
+            BulkVS.e911queryAllRequest inValue = new BulkVS.e911queryAllRequest();
+            inValue.apikey = apikey;
+            inValue.apisecret = apisecret;
+            return ((BulkVS.bulkvsPort)(this)).e911queryAllAsync(inValue);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<BulkVS.e911validateAddressResponse> BulkVS.bulkvsPort.e911validateAddressAsync(BulkVS.e911validateAddressRequest request)
         {
             return base.Channel.e911validateAddressAsync(request);
         }
         
-        public System.Threading.Tasks.Task<BulkVS.e911provisionAddressResponse> e911provisionAddressAsync(BulkVS.e911provisionAddressRequest request)
+        public System.Threading.Tasks.Task<BulkVS.e911validateAddressResponse> e911validateAddressAsync(string apikey, string apisecret, string address1, string address2, string city, string state, string zip)
+        {
+            BulkVS.e911validateAddressRequest inValue = new BulkVS.e911validateAddressRequest();
+            inValue.apikey = apikey;
+            inValue.apisecret = apisecret;
+            inValue.address1 = address1;
+            inValue.address2 = address2;
+            inValue.city = city;
+            inValue.state = state;
+            inValue.zip = zip;
+            return ((BulkVS.bulkvsPort)(this)).e911validateAddressAsync(inValue);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<BulkVS.e911provisionAddressResponse> BulkVS.bulkvsPort.e911provisionAddressAsync(BulkVS.e911provisionAddressRequest request)
         {
             return base.Channel.e911provisionAddressAsync(request);
+        }
+        
+        public System.Threading.Tasks.Task<BulkVS.e911provisionAddressResponse> e911provisionAddressAsync(string apikey, string apisecret, string dn, string callername, string addressid)
+        {
+            BulkVS.e911provisionAddressRequest inValue = new BulkVS.e911provisionAddressRequest();
+            inValue.apikey = apikey;
+            inValue.apisecret = apisecret;
+            inValue.dn = dn;
+            inValue.callername = callername;
+            inValue.addressid = addressid;
+            return ((BulkVS.bulkvsPort)(this)).e911provisionAddressAsync(inValue);
         }
         
         public virtual System.Threading.Tasks.Task OpenAsync()

@@ -1,17 +1,14 @@
-﻿using BulkVS;
-
-using DIDManagement;
-
+﻿using FirstCom;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
+using NumberSearch.DataAccess;
 using NumberSearch.Mvc.Models;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-
-using static BulkVS.DnSearchAreaCodeResponseResult;
 
 namespace NumberSearch.Mvc.Controllers
 {
@@ -19,14 +16,12 @@ namespace NumberSearch.Mvc.Controllers
     {
         private readonly IConfiguration configuration;
         private readonly Guid token;
-        private static readonly DIDManagementSoapClient _PComNetclient = new DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
-        private static readonly bulkvsPortClient _bulkvsPortClient = new bulkvsPortClient(bulkvsPortClient.EndpointConfiguration.bulkvsPort);
 
-        private readonly DIDManagement.Credentials pComNetCredentials;
+        private readonly Credentials pComNetCredentials;
         private static IEnumerable<PhoneNumber> pComNetSearchResults;
         private static IEnumerable<PhoneNumber> teleSearchResults;
         private static IEnumerable<PhoneNumber> bulkVSSearchResults;
-        private static List<PhoneNumber> phoneNumbers;
+        private List<PhoneNumber> phoneNumbers = new List<PhoneNumber>();
         private readonly string bulkVSKey;
         private readonly string bulkVSSecret;
 

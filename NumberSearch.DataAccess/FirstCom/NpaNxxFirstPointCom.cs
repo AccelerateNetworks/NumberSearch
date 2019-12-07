@@ -1,22 +1,20 @@
-﻿using DIDManagement;
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace NumberSearch.Mvc.Models
+namespace NumberSearch.DataAccess
 {
-    public class NpaNxxFirstPointCom
+    public sealed class NpaNxxFirstPointCom
     {
         public static async Task<IEnumerable<PhoneNumber>> GetAsync(string? npa, string? nxx, string? did, string username, string password)
         {
-            var request = new DIDManagement.DIDInventorySearchRequest
+            var request = new FirstCom.DIDInventorySearchRequest
             {
-                Auth = new DIDManagement.Credentials
+                Auth = new FirstCom.Credentials
                 {
                     Username = username,
                     Password = password
                 },
-                DIDSearch = new DIDManagement.DIDOrderQuery
+                DIDSearch = new FirstCom.DIDOrderQuery
                 {
                     DID = did ?? string.Empty,
                     NPA = npa ?? string.Empty,
@@ -26,7 +24,7 @@ namespace NumberSearch.Mvc.Models
                 ReturnAmount = 1000
             };
 
-            var client = new DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
+            using var client = new FirstCom.DIDManagementSoapClient(FirstCom.DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
 
             var result = await client.DIDInventorySearchAsync(request);
 
