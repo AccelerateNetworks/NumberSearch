@@ -32,16 +32,24 @@ namespace NumberSearch.DataAccess
 
             foreach (var item in result.DIDInventorySearchResult.DIDOrder)
             {
-                list.Add(new PhoneNumber
+                bool checkNpa = int.TryParse(item.NPA, out int outNpa);
+                bool checkNxx = int.TryParse(item.NXX, out int outNxx);
+                bool checkXxxx = int.TryParse(item.DID.Substring(7), out int outXxxx);
+
+                if (checkNpa && checkNxx && checkXxxx)
                 {
-                    NPA = item.NPA,
-                    NXX = item.NXX,
-                    XXXX = item.DID.Substring(7),
-                    DialedNumber = item.DID.Substring(1),
-                    City = "Unknown City",
-                    State = "Unknown State",
-                    IngestedFrom = "FirstPointCom"
-                });
+                    list.Add(new PhoneNumber
+                    {
+                        NPA = outNpa,
+                        NXX = outNxx,
+                        XXXX = outXxxx,
+                        DialedNumber = item.DID.Substring(1),
+                        City = "Unknown City",
+                        State = "Unknown State",
+                        IngestedFrom = "FirstPointCom"
+                    });
+                }
+
             }
 
             return list;

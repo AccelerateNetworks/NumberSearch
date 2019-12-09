@@ -60,16 +60,23 @@ namespace NumberSearch.DataAccess
 
             foreach (var item in results.data.dids)
             {
-                list.Add(new PhoneNumber
+                bool checkNpa = int.TryParse(item.npa, out int npa);
+                bool checkNxx = int.TryParse(item.nxx, out int nxx);
+                bool checkXxxx = int.TryParse(item.xxxx, out int xxxx);
+
+                if (checkNpa && checkNxx && checkXxxx)
                 {
-                    NPA = item.npa,
-                    NXX = item.nxx,
-                    XXXX = item.xxxx,
-                    DialedNumber = item.number,
-                    City = item.ratecenter,
-                    State = item.state,
-                    IngestedFrom = "TeleMessage"
-                });
+                    list.Add(new PhoneNumber
+                    {
+                        NPA = npa,
+                        NXX = nxx,
+                        XXXX = xxxx,
+                        DialedNumber = item.number,
+                        City = item.ratecenter,
+                        State = item.state,
+                        IngestedFrom = "TeleMessage"
+                    });
+                }
             }
 
             return list;

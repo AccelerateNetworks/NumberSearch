@@ -1020,16 +1020,23 @@ namespace NumberSearch.DataAccess
 
             foreach (var item in list)
             {
-                output.Add(new PhoneNumber
+                bool checkNpa = int.TryParse(item.dn.Substring(1, 3), out int npa);
+                bool checkNxx = int.TryParse(item.dn.Substring(4, 3), out int nxx);
+                bool checkXxxx = int.TryParse(item.dn.Substring(7), out int xxxx);
+
+                if(checkNpa && checkNxx && checkXxxx)
                 {
-                    NPA = $"{item.dn.Substring(1, 3)}",
-                    NXX = $"{item.dn.Substring(4, 3)}",
-                    XXXX = $"{item.dn.Substring(7)}",
-                    DialedNumber = item.dn.Substring(1),
-                    City = item.city,
-                    State = item.state,
-                    IngestedFrom = "BulkVS"
-                });
+                    output.Add(new PhoneNumber
+                    {
+                        NPA = npa,
+                        NXX = nxx,
+                        XXXX = xxxx,
+                        DialedNumber = item.dn.Substring(1),
+                        City = item.city,
+                        State = item.state,
+                        IngestedFrom = "BulkVS"
+                    });
+                }
             }
             return output.ToArray();
         }

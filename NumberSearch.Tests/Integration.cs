@@ -3,9 +3,9 @@ using FirstCom;
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
-
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Xunit;
@@ -62,6 +62,45 @@ namespace NumberSearch.Tests
             Assert.True(result.code == 200);
             Assert.False(string.IsNullOrWhiteSpace(result.data.lrn));
             output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+        }
+
+        [Fact]
+        public async Task TeleNPAsTest()
+        {
+            // Arrange
+
+            // Act
+            var results = await TeleNPA.GetAsync(token);
+
+            // Assert
+            Assert.NotNull(results);
+            Assert.False(string.IsNullOrWhiteSpace(results.status));
+            Assert.True(results.code == 200);
+            foreach (var result in results.data)
+            {
+                Assert.False(string.IsNullOrWhiteSpace(result));
+            }
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+        }
+
+        [Fact]
+        public async Task TeleNXXsTest()
+        {
+            // Arrange
+            string npa = "206";
+
+            // Act
+            var results = await TeleNXX.GetAsync(npa, token);
+
+            // Assert
+            Assert.NotNull(results);
+            Assert.False(string.IsNullOrWhiteSpace(results.status));
+            Assert.True(results.code == 200);
+            foreach (var result in results.data)
+            {
+                Assert.False(string.IsNullOrWhiteSpace(result));
+            }
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
         }
 
         [Fact]
@@ -1140,11 +1179,11 @@ namespace NumberSearch.Tests
             // Assert
             Assert.NotNull(results);
             int count = 0;
-            foreach(var result in results)
+            foreach (var result in results.Where(x => x.XXXX < 999).ToArray())
             {
-                Assert.False(string.IsNullOrWhiteSpace(result.NPA));
-                Assert.False(string.IsNullOrWhiteSpace(result.NXX));
-                Assert.False(string.IsNullOrWhiteSpace(result.XXXX));
+                Assert.True(result.NPA > 99);
+                Assert.True(result.NXX > 99);
+                Assert.True(result.XXXX > 1);
                 Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
                 Assert.False(string.IsNullOrWhiteSpace(result.City));
                 Assert.False(string.IsNullOrWhiteSpace(result.State));
@@ -1152,6 +1191,74 @@ namespace NumberSearch.Tests
                 count++;
             }
             output.WriteLine($"{count} Results Reviewed");
+        }
+
+        [Fact]
+        public async Task GetPhoneNumbersAsync()
+        {
+            var conn = configuration.GetConnectionString("postgresql");
+            var results = await PhoneNumber.GetAllAsync(conn);
+            Assert.NotNull(results);
+            int count = 0;
+            foreach (var result in results)
+            {
+                Assert.True(result.NPA > 99);
+                Assert.True(result.NXX > 99);
+                Assert.True(result.XXXX > 1);
+                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+                Assert.False(string.IsNullOrWhiteSpace(result.City));
+                Assert.False(string.IsNullOrWhiteSpace(result.State));
+                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+                count++;
+            }
+            output.WriteLine($"{count} Results Reviewed");
+        }
+
+        [Fact]
+        public async Task PostPhoneNumberAsync()
+        {
+            var conn = configuration.GetConnectionString("postgresql");
+            var results = await PhoneNumber.GetAllAsync(conn);
+            var number = results.OrderBy(x => x.DialedNumber).LastOrDefault();
+            number.IngestedFrom = "IntegrationTest";
+            number.XXXX++;
+            number.DialedNumber = $"{number.NPA}{number.NXX}{number.XXXX}";
+            var response = await number.PostAsync(conn);
+            Assert.True(response);
+        }
+
+        [Fact]
+        public async Task PhoneNumberGetSingleTest()
+        {
+            var conn = configuration.GetConnectionString("postgresql");
+            var results = await PhoneNumber.GetAllAsync(conn);
+            var number = results.OrderBy(x => x.DialedNumber).LastOrDefault();
+            var result = await PhoneNumber.GetAsync(number.DialedNumber, conn);
+            Assert.True(number.DialedNumber == result.DialedNumber);
+            Assert.True(result.NPA > 99);
+            Assert.True(result.NXX > 99);
+            Assert.True(result.XXXX > 1);
+            Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+            Assert.False(string.IsNullOrWhiteSpace(result.City));
+            Assert.False(string.IsNullOrWhiteSpace(result.State));
+            Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+        }
+
+        [Fact]
+        public async Task CheckIfNumberExistsTest()
+        {
+            var conn = configuration.GetConnectionString("postgresql");
+            var results = await PhoneNumber.GetAllAsync(conn);
+            foreach (var result in results)
+            {
+                var check = await result.ExistsInDb(conn);
+                Assert.True(check);
+            }
+            var badExample = results.OrderBy(x => x.DialedNumber).LastOrDefault();
+            var newXXXX = badExample.XXXX + 1;
+            badExample.DialedNumber = $"{badExample.NPA}{badExample.NXX}{newXXXX}";
+            var badCheck = await badExample.ExistsInDb(conn);
+            Assert.False(badCheck);
         }
     }
 }

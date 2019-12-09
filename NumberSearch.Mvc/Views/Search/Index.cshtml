@@ -41,7 +41,7 @@
                 foreach (var item in Model?.PhoneNumbers)
                 {
                     var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
-                    var formattedNumber = $"({item.NPA}) {item.NXX} {item.XXXX}";
+                    var formattedNumber = $"({item.NPA}) {item.NXX} {item.XXXX.ToString("0000")}";
                     var number = item.DialedNumber;
                     if (item.DialedNumber.Contains(match))
                     {
