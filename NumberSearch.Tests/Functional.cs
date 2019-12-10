@@ -35,7 +35,7 @@ namespace NumberSearch.Tests
         [Theory]
         [InlineData("/")]
         [InlineData("/Contact")]
-        public async Task GetStaticPages(string url)
+        public async Task GetStaticPagesAsync(string url)
         {
             // Arrange
             var response = await _client.GetAsync(url);

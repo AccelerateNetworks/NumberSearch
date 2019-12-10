@@ -3,6 +3,7 @@
 using Npgsql;
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess
@@ -49,7 +50,7 @@ namespace NumberSearch.DataAccess
 
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"INSERT INTO public.\"PhoneNumbers\"(\"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\") VALUES('{DialedNumber}', {NPA}, {NXX}, {XXXX.ToString("0000")}, '{City}', '{State}', '{IngestedFrom}')";
+            string sql = $"INSERT INTO public.\"PhoneNumbers\"(\"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\") VALUES('{DialedNumber}', {NPA}, {NXX}, {XXXX.ToString("0000", new CultureInfo("en-US"))}, '{City}', '{State}', '{IngestedFrom}')";
 
             var result = await connection.ExecuteAsync(sql);
 

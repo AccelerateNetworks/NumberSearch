@@ -5,15 +5,15 @@ using static BulkVS.DnSearchAreaCodeResponseResult;
 
 namespace NumberSearch.DataAccess
 {
-    public sealed class NpaNxxBulkVS
+    public class NpaBulkVS
     {
-        public static async Task<IEnumerable<PhoneNumber>> GetAsync(string npaNxx, string apiKey, string apiSecret)
+        public static async Task<IEnumerable<PhoneNumber>> GetAsync(string npaIn, string apiKey, string apiSecret)
         {
             using var client = new BulkVS.bulkvsPortClient(BulkVS.bulkvsPortClient.EndpointConfiguration.bulkvsPort);
 
             try
             {
-                var result = await client.DnSearchNpaNxxAsync(apiKey, apiSecret, npaNxx);
+                var result = await client.DnSearchAreaCodeAsync(apiKey, apiSecret, npaIn);
                 var list = new List<resultEntry>();
 
                 #region nonsense
@@ -1027,7 +1027,7 @@ namespace NumberSearch.DataAccess
                     bool checkNxx = int.TryParse(item.dn.Substring(4, 3), out int nxx);
                     bool checkXxxx = int.TryParse(item.dn.Substring(7), out int xxxx);
 
-                    if (checkNpa && checkNxx && checkXxxx)
+                    if (checkNxx && checkXxxx)
                     {
                         output.Add(new PhoneNumber
                         {

@@ -43,7 +43,7 @@ namespace NumberSearch.Mvc.Controllers
         /// </summary>
         /// <param name="query"> A complete or partial phone number. </param>
         /// <returns> A view of nothing, or the result of the query. </returns>
-        public async Task<IActionResult> Index(string query)
+        public async Task<IActionResult> IndexAsync(string query)
         {
             // Fail fast
             if (string.IsNullOrWhiteSpace(query))
