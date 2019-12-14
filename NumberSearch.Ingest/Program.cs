@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
-
+using NumberSearch.DataAccess;
 using System;
 using System.Threading.Tasks;
 
@@ -18,20 +18,56 @@ namespace NumberSearch.Ingest
             var postgresSQL = config.GetConnectionString("Postgresql");
             var bulkVSKey = config.GetConnectionString("BulkVSAPIKEY");
             var bulkVSSecret = config.GetConnectionString("BulkVSAPISecret");
+            var username = config.GetConnectionString("PComNetUsername");
+            var password = config.GetConnectionString("PComNetPassword");
 
             var start = DateTime.Now;
 
             //var teleStats = await TeleMessage.IngestPhoneNumbersAsync(teleToken, postgresSQL);
-            var teleStats = await BulkVS.IngestPhoneNumbersAsync(bulkVSKey, bulkVSSecret, postgresSQL);
+            var teleStats = new IngestStatistics { };
+
+            //if (await teleStats.PostAsync(postgresSQL))
+            //{
+            //    Console.WriteLine("Ingest logged to the database.");
+            //}
+            //else
+            //{
+            //    Console.WriteLine("Failed to log this ingest.");
+            //}
+
+            var BulkVSStats = await BulkVS.IngestPhoneNumbersAsync(bulkVSKey, bulkVSSecret, postgresSQL);
+            //var teleStats = await FirstCom.IngestPhoneNumbersAsync(username, password, postgresSQL);
+
+            if (await BulkVSStats.PostAsync(postgresSQL))
+            {
+                Console.WriteLine("Ingest logged to the database.");
+            }
+            else
+            {
+                Console.WriteLine("Failed to log this ingest.");
+            }
 
             var end = DateTime.Now;
+
+            var combinedStats = new IngestStatistics
+            {
+                NumbersRetrived = teleStats.NumbersRetrived + BulkVSStats.NumbersRetrived,
+                FailedToIngest = teleStats.FailedToIngest + BulkVSStats.FailedToIngest,
+                IngestedNew = teleStats.IngestedNew + BulkVSStats.IngestedNew,
+                UpdatedExisting = teleStats.UpdatedExisting + BulkVSStats.UpdatedExisting,
+                Unchanged = teleStats.Unchanged + BulkVSStats.Unchanged,
+                IngestedFrom = "All",
+                StartDate = start,
+                EndDate = end
+            };
+
             var diff = end - start;
 
-            Console.WriteLine($"Numbers Retrived: {teleStats.NumbersRetrived}");
-            Console.WriteLine($"Numbers Ingested New: {teleStats.IngestedNew}");
-            Console.WriteLine($"Numbers Updated Existing: {teleStats.UpdatedExisting}");
-            Console.WriteLine($"Numbers Unchanged: {teleStats.Unchanged}");
-            Console.WriteLine($"Numbers Failed To Ingest: {teleStats.FailedToIngest}");
+            Console.WriteLine($"Numbers Retrived: {combinedStats.NumbersRetrived}");
+            Console.WriteLine($"Numbers Ingested New: {combinedStats.IngestedNew}");
+            Console.WriteLine($"Numbers Updated Existing: {combinedStats.UpdatedExisting}");
+            Console.WriteLine($"Numbers Unchanged: {combinedStats.Unchanged}");
+            Console.WriteLine($"Numbers Failed To Ingest: {combinedStats.FailedToIngest}");
             Console.WriteLine($"Start: {start.ToLongTimeString()} End: {end.ToLongTimeString()} Elapsed: {diff.TotalMinutes} Minutes");
         }
     }

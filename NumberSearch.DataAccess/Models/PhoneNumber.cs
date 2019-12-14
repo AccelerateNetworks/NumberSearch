@@ -24,7 +24,7 @@ namespace NumberSearch.DataAccess
 
             string sql = "SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\" FROM public.\"PhoneNumbers\"";
 
-            var result = await connection.QueryAsync<PhoneNumber>(sql);
+            var result = await connection.QueryAsync<PhoneNumber>(sql).ConfigureAwait(false);
 
             return result;
         }
@@ -35,7 +35,21 @@ namespace NumberSearch.DataAccess
 
             string sql = $"SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\" FROM public.\"PhoneNumbers\" WHERE \"DialedNumber\" = '{dialedNumber}'";
 
-            var result = await connection.QuerySingleOrDefaultAsync<PhoneNumber>(sql) ?? new PhoneNumber();
+            var result = await connection.QuerySingleOrDefaultAsync<PhoneNumber>(sql).ConfigureAwait(false) ?? new PhoneNumber();
+
+            return result;
+        }
+
+        public static async Task<IEnumerable<PhoneNumber>> SearchAsync(string query, string connectionString)
+        {
+            // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
+            query = query?.Trim()?.Replace('*', '_');
+
+            using var connection = new NpgsqlConnection(connectionString);
+
+            string sql = $"SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\" FROM public.\"PhoneNumbers\" WHERE \"DialedNumber\" LIKE '%{query}%'";
+
+            var result = await connection.QueryAsync<PhoneNumber>(sql).ConfigureAwait(false);
 
             return result;
         }
@@ -52,7 +66,7 @@ namespace NumberSearch.DataAccess
 
             string sql = $"INSERT INTO public.\"PhoneNumbers\"(\"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\") VALUES('{DialedNumber}', {NPA}, {NXX}, {XXXX.ToString("0000", new CultureInfo("en-US"))}, '{City}', '{State}', '{IngestedFrom}')";
 
-            var result = await connection.ExecuteAsync(sql);
+            var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
 
             if (result == 1)
             {
@@ -70,7 +84,7 @@ namespace NumberSearch.DataAccess
 
             string sql = $"UPDATE public.\"PhoneNumbers\" SET \"City\" = '{City}', \"State\" = '{State}', \"IngestedFrom\" = '{IngestedFrom}' WHERE \"DialedNumber\" = '{DialedNumber}'";
 
-            var result = await connection.ExecuteAsync(sql);
+            var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
 
             if (result == 1)
             {
@@ -89,7 +103,7 @@ namespace NumberSearch.DataAccess
         /// <returns> True if it does exist, and False if it doesn't. </returns>
         public async Task<bool> ExistsInDb(string connectionString)
         {
-            var result = await PhoneNumber.GetAsync(DialedNumber, connectionString);
+            var result = await GetAsync(DialedNumber, connectionString).ConfigureAwait(false);
 
             if (string.IsNullOrWhiteSpace(result.DialedNumber))
             {

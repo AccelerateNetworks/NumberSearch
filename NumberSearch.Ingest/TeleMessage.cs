@@ -13,6 +13,8 @@ namespace NumberSearch.Ingest
         {
             var readyToSubmit = new List<PhoneNumber>();
 
+            var start = DateTime.Now;
+
             var npas = await GetValidNPAsAsync(token);
 
             Console.WriteLine($"Found {npas.Length} NPAs");
@@ -30,6 +32,11 @@ namespace NumberSearch.Ingest
             }
 
             var stats = await SubmitPhoneNumbersAsync(readyToSubmit.ToArray(), connectionString);
+
+            var end = DateTime.Now;
+            stats.StartDate = start;
+            stats.EndDate = end;
+            stats.IngestedFrom = "TeleMessage";
 
             return stats;
         }

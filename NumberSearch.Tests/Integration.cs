@@ -1,10 +1,8 @@
+
 using FirstCom;
-
 using Microsoft.Extensions.Configuration;
-
 using NumberSearch.DataAccess;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -124,24 +122,24 @@ namespace NumberSearch.Tests
         [Fact]
         public async Task PComNetDIDInventorySearchAsyncTestAsync()
         {
-            var request = new FirstCom.DIDInventorySearchRequest
+
+            var DIDSearch = new DIDOrderQuery
             {
-                Auth = pComNetCredentials,
-                DIDSearch = new FirstCom.DIDOrderQuery
-                {
-                    DID = string.Empty,
-                    NPA = "206",
-                    NXX = string.Empty,
-                    RateCenter = string.Empty
-                },
-                ReturnAmount = 1000
+                DID = "12062092139",
+                NPA = "206",
+                NXX = "209",
+                RateCenter = "SEATTLE"
             };
+            var ReturnAmount = 100;
 
-            var client = new DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
+            var client = new FirstCom.DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
 
-            var result = await client.DIDInventorySearchAsync(request);
+            var result = await client.DIDInventorySearchAsync(pComNetCredentials, DIDSearch, ReturnAmount);
 
-            foreach (var x in result.DIDInventorySearchResult.DIDOrder)
+            Assert.NotNull(result);
+            Assert.NotEmpty(result.DIDOrder);
+
+            foreach (var x in result.DIDOrder)
             {
                 output.WriteLine(x.DID);
             }
@@ -229,7 +227,7 @@ namespace NumberSearch.Tests
             {
                 Assert.True(result.NPA > 99);
                 Assert.True(result.NXX > 99);
-                Assert.True(result.XXXX > 1);
+                Assert.True(result.XXXX > 0);
                 Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
                 Assert.False(string.IsNullOrWhiteSpace(result.City));
                 Assert.False(string.IsNullOrWhiteSpace(result.State));
@@ -250,7 +248,8 @@ namespace NumberSearch.Tests
             {
                 Assert.True(result.NPA > 99);
                 Assert.True(result.NXX > 99);
-                Assert.True(result.XXXX > 1);
+                // XXXX can be 0001 which as an int is 1.
+                Assert.True(result.XXXX > 0);
                 Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
                 Assert.False(string.IsNullOrWhiteSpace(result.City));
                 Assert.False(string.IsNullOrWhiteSpace(result.State));
@@ -305,6 +304,27 @@ namespace NumberSearch.Tests
             badExample.DialedNumber = $"{badExample.NPA}{badExample.NXX}{newXXXX}";
             var badCheck = await badExample.ExistsInDb(conn);
             Assert.False(badCheck);
+        }
+
+        [Fact]
+        public async Task PostEndOfRunStats()
+        {
+            var conn = configuration.GetConnectionString("postgresql");
+            var stats = new IngestStatistics
+            {
+                NumbersRetrived = 0,
+                FailedToIngest = 0,
+                IngestedNew = 0,
+                Unchanged = 0,
+                UpdatedExisting = 0,
+                IngestedFrom = "Test",
+                StartDate = DateTime.Now.AddDays(-1),
+                EndDate = DateTime.Now
+            };
+
+            var check = await stats.PostAsync(conn);
+
+            Assert.True(check);
         }
     }
 }

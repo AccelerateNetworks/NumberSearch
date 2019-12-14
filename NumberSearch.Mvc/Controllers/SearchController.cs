@@ -1,11 +1,9 @@
-﻿using FirstCom;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
 using NumberSearch.Mvc.Models;
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,27 +13,10 @@ namespace NumberSearch.Mvc.Controllers
     public class SearchController : Controller
     {
         private readonly IConfiguration configuration;
-        private readonly Guid token;
-
-        private readonly Credentials pComNetCredentials;
-        private static IEnumerable<PhoneNumber> pComNetSearchResults;
-        private static IEnumerable<PhoneNumber> teleSearchResults;
-        private static IEnumerable<PhoneNumber> bulkVSSearchResults;
-        private List<PhoneNumber> phoneNumbers = new List<PhoneNumber>();
-        private readonly string bulkVSKey;
-        private readonly string bulkVSSecret;
 
         public SearchController(IConfiguration config)
         {
             configuration = config;
-            token = Guid.Parse(configuration.GetConnectionString("TeleAPI"));
-            pComNetCredentials = new Credentials
-            {
-                Username = config.GetConnectionString("PComNetUsername"),
-                Password = config.GetConnectionString("PComNetPassword")
-            };
-            bulkVSKey = config.GetConnectionString("BulkVSAPIKEY");
-            bulkVSSecret = config.GetConnectionString("BulkVSAPISecret");
         }
 
         /// <summary>
@@ -76,54 +57,16 @@ namespace NumberSearch.Mvc.Controllers
                 // Drop everything else.
             }
 
-            // This service can't handle partial queries or queries containing wildcards.
-            if (!converted.Contains('*'))
-            {
-                switch (converted.Count)
-                {
-                    case 10:
-                        // Supply the whole number if it exists.
-                        pComNetSearchResults = await NpaNxxFirstPointCom
-                            .GetAsync(string.Empty, string.Empty, new string(converted.ToArray()), pComNetCredentials.Username, pComNetCredentials.Password);
-                        break;
-                    case 6:
-                        // Supply the first six of the number if it exists.
-                        pComNetSearchResults = await NpaNxxFirstPointCom
-                            .GetAsync(new string(converted.ToArray()).Substring(0, 3), new string(converted.ToArray()).Substring(4), string.Empty, pComNetCredentials.Username, pComNetCredentials.Password);
-                        break;
-                    case 3:
-                        // Supply the area code if it exists.
-                        pComNetSearchResults = await NpaNxxFirstPointCom
-                            .GetAsync(new string(converted.ToArray()), string.Empty, string.Empty, pComNetCredentials.Username, pComNetCredentials.Password);
-                        bulkVSSearchResults = await NpaNxxBulkVS.GetAsync(new string(converted.ToArray()), bulkVSKey, bulkVSSecret);
-                        break;
-                }
-            }
-
-            // Submit the parsed query to remote API.
-            teleSearchResults = await LocalNumberTeleMessage.GetAsync(query, token);
-
-            foreach (var item in teleSearchResults)
-            {
-                phoneNumbers.Add(item);
-            }
-
-            // If we got results from PCom, add them to our Tele search results.
-            foreach (var item in pComNetSearchResults)
-            {
-                phoneNumbers.Add(item);
-            }
-
-            // If we got results from BulkVS add them to our Tele search results.
-            foreach (var item in bulkVSSearchResults)
-            {
-                phoneNumbers.Add(item);
-            }
+            var results = await PhoneNumber
+                .SearchAsync(
+                new string(converted.ToArray()),
+                configuration.GetConnectionString("Postgresql"))
+                .ConfigureAwait(false);
 
             return View("Index", new SearchResults
             {
                 CleanQuery = new string(converted.ToArray()),
-                PhoneNumbers = phoneNumbers.ToArray(),
+                PhoneNumbers = results.ToArray(),
                 Query = query
             });
         }

@@ -1,37 +1,30 @@
 ﻿using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.Models;
-
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Ingest
 {
-    public class BulkVS
+    public class FirstCom
     {
-        public static async Task<IngestStatistics> IngestPhoneNumbersAsync(string apiKey, string apiSecret, string connectionString)
-        {
-            var start = DateTime.Now;
-
-            var stats = await SubmitPhoneNumbersAsync(await GetValidNumbersByNPAAsync(apiKey, apiSecret), connectionString);
-
-            var end = DateTime.Now;
-            stats.StartDate = start;
-            stats.EndDate = end;
-            stats.IngestedFrom = "BulkVS";
+        public static async Task<IngestStatistics> IngestPhoneNumbersAsync(string username, string password, string connectionString)
+        {     
+            var stats = await SubmitPhoneNumbersAsync(await GetValidNumbersByNPAAsync(username, password), connectionString);
 
             return stats;
         }
 
-        public static async Task<PhoneNumber[]> GetValidNumbersByNPAAsync(string apiKey, string apiSecret)
+        public static async Task<PhoneNumber[]> GetValidNumbersByNPAAsync(string username, string password)
         {
             var areaCodes = AreaCode.AreaCodes;
 
             var numbers = new List<PhoneNumber>();
 
-            foreach(var code in areaCodes)
+            foreach(var code in areaCodes.Where(x => x == 206).ToArray())
             {
-                numbers.AddRange(await NpaBulkVS.GetAsync(code.ToString(), apiKey, apiSecret));
+                numbers.AddRange(await NpaNxxFirstPointCom.GetAsync(code.ToString(), string.Empty, string.Empty, username, password));
                 Console.WriteLine($"Found {numbers.Count} Phone Numbers");
             }
 
