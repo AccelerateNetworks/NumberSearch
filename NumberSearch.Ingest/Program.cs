@@ -36,7 +36,10 @@ namespace NumberSearch.Ingest
             //}
 
             var BulkVSStats = await BulkVS.IngestPhoneNumbersAsync(bulkVSKey, bulkVSSecret, postgresSQL);
+            //var BulkVSStats = new IngestStatistics { };
             //var teleStats = await FirstCom.IngestPhoneNumbersAsync(username, password, postgresSQL);
+
+            // TODO: Remove numbers from the database that weren't reingested.
 
             if (await BulkVSStats.PostAsync(postgresSQL))
             {
@@ -45,6 +48,17 @@ namespace NumberSearch.Ingest
             else
             {
                 Console.WriteLine("Failed to log this ingest.");
+            }
+
+            var cleanUp = await PhoneNumber.DeleteOld(start, postgresSQL);
+
+            if (await cleanUp.PostAsync(postgresSQL))
+            {
+                Console.WriteLine("Old numbers removed from the database.");
+            }
+            else
+            {
+                Console.WriteLine("Failed to remove old numbers from the database.");
             }
 
             var end = DateTime.Now;
@@ -56,10 +70,13 @@ namespace NumberSearch.Ingest
                 IngestedNew = teleStats.IngestedNew + BulkVSStats.IngestedNew,
                 UpdatedExisting = teleStats.UpdatedExisting + BulkVSStats.UpdatedExisting,
                 Unchanged = teleStats.Unchanged + BulkVSStats.Unchanged,
+                Removed = cleanUp.Removed,
                 IngestedFrom = "All",
                 StartDate = start,
                 EndDate = end
             };
+
+            var check = combinedStats.PostAsync(postgresSQL);
 
             var diff = end - start;
 
@@ -67,6 +84,7 @@ namespace NumberSearch.Ingest
             Console.WriteLine($"Numbers Ingested New: {combinedStats.IngestedNew}");
             Console.WriteLine($"Numbers Updated Existing: {combinedStats.UpdatedExisting}");
             Console.WriteLine($"Numbers Unchanged: {combinedStats.Unchanged}");
+            Console.WriteLine($"Numbers Removed: {combinedStats.Removed}");
             Console.WriteLine($"Numbers Failed To Ingest: {combinedStats.FailedToIngest}");
             Console.WriteLine($"Start: {start.ToLongTimeString()} End: {end.ToLongTimeString()} Elapsed: {diff.TotalMinutes} Minutes");
         }

@@ -58,7 +58,7 @@ namespace NumberSearch.DataAccess
 
             var list = new List<PhoneNumber>();
 
-            foreach (var item in results.data.dids)
+            foreach (var item in results?.data?.dids)
             {
                 bool checkNpa = int.TryParse(item.npa, out int npa);
                 bool checkNxx = int.TryParse(item.nxx, out int nxx);

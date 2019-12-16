@@ -14,6 +14,7 @@ namespace NumberSearch.DataAccess
         public int FailedToIngest { get; set; }
         public int UpdatedExisting { get; set; }
         public int Unchanged { get; set; }
+        public int Removed { get; set; }
         public string IngestedFrom { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
@@ -22,7 +23,7 @@ namespace NumberSearch.DataAccess
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"INSERT INTO public.\"Ingests\"( \"NumbersRetrived\", \"IngestedNew\", \"FailedToIngest\", \"UpdatedExisting\", \"Unchanged\", \"IngestedFrom\", \"StartDate\", \"EndDate\") VALUES ({NumbersRetrived}, {IngestedNew}, {FailedToIngest}, {UpdatedExisting}, {Unchanged}, '{IngestedFrom}', '{StartDate}', '{EndDate}')";
+            string sql = $"INSERT INTO public.\"Ingests\"( \"NumbersRetrived\", \"IngestedNew\", \"FailedToIngest\", \"UpdatedExisting\", \"Unchanged\", \"Removed\", \"IngestedFrom\", \"StartDate\", \"EndDate\") VALUES ({NumbersRetrived}, {IngestedNew}, {FailedToIngest}, {UpdatedExisting}, {Unchanged}, {Removed}, '{IngestedFrom}', '{StartDate}', '{EndDate}')";
 
             var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
 

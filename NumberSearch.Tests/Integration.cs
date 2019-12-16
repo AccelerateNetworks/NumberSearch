@@ -312,11 +312,12 @@ namespace NumberSearch.Tests
             var conn = configuration.GetConnectionString("postgresql");
             var stats = new IngestStatistics
             {
-                NumbersRetrived = 0,
-                FailedToIngest = 0,
-                IngestedNew = 0,
-                Unchanged = 0,
-                UpdatedExisting = 0,
+                NumbersRetrived = 1,
+                FailedToIngest = 1,
+                IngestedNew = 1,
+                Unchanged = 1,
+                UpdatedExisting = 1,
+                Removed = 1,
                 IngestedFrom = "Test",
                 StartDate = DateTime.Now.AddDays(-1),
                 EndDate = DateTime.Now
