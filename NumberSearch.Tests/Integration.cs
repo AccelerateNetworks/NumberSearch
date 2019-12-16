@@ -326,5 +326,43 @@ namespace NumberSearch.Tests
 
             Assert.True(check);
         }
+
+        [Fact]
+        public async Task GetOrderAsync()
+        {
+            var conn = configuration.GetConnectionString("postgresql");
+
+            var results = await PhoneNumberOrder.GetAsync("2062344356", conn);
+
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+
+            foreach (var result in results)
+            {
+                Assert.False(string.IsNullOrWhiteSpace(result.Id.ToString()));
+                Assert.False(string.IsNullOrWhiteSpace(result.FirstName));
+                Assert.False(string.IsNullOrWhiteSpace(result.LastName));
+                Assert.False(string.IsNullOrWhiteSpace(result.Address));
+                Assert.False(string.IsNullOrWhiteSpace(result.Country));
+                Assert.False(string.IsNullOrWhiteSpace(result.State));
+                Assert.False(string.IsNullOrWhiteSpace(result.Zip));
+                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+                Assert.False(string.IsNullOrWhiteSpace(result.Email));
+                Assert.True(result.DateSubmitted > new DateTime(2019,1,1));
+            }
+        }
+
+        [Fact]
+        public async Task PostOrderAsync()
+        {
+            var conn = configuration.GetConnectionString("postgresql");
+
+            var results = await PhoneNumberOrder.GetAsync("2062344356", conn);
+
+            var order = results.FirstOrDefault();
+            var response = await order.PostAsync(conn);
+
+            Assert.True(response);
+        }
     }
 }

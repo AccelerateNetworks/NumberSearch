@@ -59,7 +59,7 @@
                                 <h4 class="card-title">@formattedNumber</h4>
                                 <h6 class="card-subtitle">@Html.Raw(number)</h6>
                                 <p class="card-text text-muted">@location</p>
-                                <a href="@mailToLink" target="_top">
+                                <a href="/Order?query=@item.DialedNumber" target="_top">
                                     <input type="button" class="btn btn-outline-primary" value="Buy Now">
                                 </a>
                             </div>
