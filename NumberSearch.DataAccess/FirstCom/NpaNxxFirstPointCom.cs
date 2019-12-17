@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess
@@ -23,7 +24,7 @@ namespace NumberSearch.DataAccess
 
             using var client = new FirstCom.DIDManagementSoapClient(FirstCom.DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
 
-            var result = await client.DIDInventorySearchAsync(Auth,DIDSearch,ReturnAmount);
+            var result = await client.DIDInventorySearchAsync(Auth, DIDSearch, ReturnAmount);
 
             var list = new List<PhoneNumber>();
 
@@ -33,7 +34,7 @@ namespace NumberSearch.DataAccess
                 bool checkNxx = int.TryParse(item.NXX, out int outNxx);
                 bool checkXxxx = int.TryParse(item.DID.Substring(7), out int outXxxx);
 
-                if (checkNpa && checkNxx && checkXxxx)
+                if (checkNpa && outNpa < 1000 && checkNxx && outNxx < 1000 && checkXxxx && outXxxx < 10000 && item.DID.Length == 11)
                 {
                     list.Add(new PhoneNumber
                     {
@@ -45,6 +46,10 @@ namespace NumberSearch.DataAccess
                         State = "Unknown State",
                         IngestedFrom = "FirstPointCom"
                     });
+                }
+                else
+                {
+                    Console.WriteLine($"This failed the 11 char check {item.DID.Length}");
                 }
 
             }

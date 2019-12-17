@@ -23,25 +23,34 @@ namespace NumberSearch.Ingest
 
             var start = DateTime.Now;
 
-            //var teleStats = await TeleMessage.IngestPhoneNumbersAsync(teleToken, postgresSQL);
-            var teleStats = new IngestStatistics { };
+            var teleStats = await TeleMessage.IngestPhoneNumbersAsync(teleToken, postgresSQL);
+            //var teleStats = new IngestStatistics { };
 
-            //if (await teleStats.PostAsync(postgresSQL))
-            //{
-            //    Console.WriteLine("Ingest logged to the database.");
-            //}
-            //else
-            //{
-            //    Console.WriteLine("Failed to log this ingest.");
-            //}
+            if (await teleStats.PostAsync(postgresSQL))
+            {
+                Console.WriteLine("Ingest logged to the database.");
+            }
+            else
+            {
+                Console.WriteLine("Failed to log this ingest.");
+            }
 
             var BulkVSStats = await BulkVS.IngestPhoneNumbersAsync(bulkVSKey, bulkVSSecret, postgresSQL);
             //var BulkVSStats = new IngestStatistics { };
-            //var teleStats = await FirstCom.IngestPhoneNumbersAsync(username, password, postgresSQL);
-
-            // TODO: Remove numbers from the database that weren't reingested.
 
             if (await BulkVSStats.PostAsync(postgresSQL))
+            {
+                Console.WriteLine("Ingest logged to the database.");
+            }
+            else
+            {
+                Console.WriteLine("Failed to log this ingest.");
+            }
+
+            var FirstComStats = await FirstCom.IngestPhoneNumbersAsync(username, password, postgresSQL);
+            //var FirstComStats = new IngestStatistics { };
+
+            if (await FirstComStats.PostAsync(postgresSQL))
             {
                 Console.WriteLine("Ingest logged to the database.");
             }
@@ -65,11 +74,11 @@ namespace NumberSearch.Ingest
 
             var combinedStats = new IngestStatistics
             {
-                NumbersRetrived = teleStats.NumbersRetrived + BulkVSStats.NumbersRetrived,
-                FailedToIngest = teleStats.FailedToIngest + BulkVSStats.FailedToIngest,
-                IngestedNew = teleStats.IngestedNew + BulkVSStats.IngestedNew,
-                UpdatedExisting = teleStats.UpdatedExisting + BulkVSStats.UpdatedExisting,
-                Unchanged = teleStats.Unchanged + BulkVSStats.Unchanged,
+                NumbersRetrived = teleStats.NumbersRetrived + BulkVSStats.NumbersRetrived + FirstComStats.NumbersRetrived,
+                FailedToIngest = teleStats.FailedToIngest + BulkVSStats.FailedToIngest + FirstComStats.FailedToIngest,
+                IngestedNew = teleStats.IngestedNew + BulkVSStats.IngestedNew + FirstComStats.IngestedNew,
+                UpdatedExisting = teleStats.UpdatedExisting + BulkVSStats.UpdatedExisting + FirstComStats.UpdatedExisting,
+                Unchanged = teleStats.Unchanged + BulkVSStats.Unchanged + FirstComStats.Unchanged,
                 Removed = cleanUp.Removed,
                 IngestedFrom = "All",
                 StartDate = start,

@@ -22,7 +22,7 @@ namespace NumberSearch.Ingest
 
             var numbers = new List<PhoneNumber>();
 
-            foreach(var code in areaCodes.Where(x => x == 206).ToArray())
+            foreach(var code in areaCodes)
             {
                 numbers.AddRange(await NpaNxxFirstPointCom.GetAsync(code.ToString(), string.Empty, string.Empty, username, password));
                 Console.WriteLine($"Found {numbers.Count} Phone Numbers");

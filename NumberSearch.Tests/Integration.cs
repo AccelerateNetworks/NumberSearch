@@ -122,7 +122,6 @@ namespace NumberSearch.Tests
         [Fact]
         public async Task PComNetDIDInventorySearchAsyncTestAsync()
         {
-
             var DIDSearch = new DIDOrderQuery
             {
                 DID = "12062092139",
@@ -143,6 +142,30 @@ namespace NumberSearch.Tests
             {
                 output.WriteLine(x.DID);
             }
+        }
+
+        [Fact]
+        public async Task FirstComGetPhoneNumbersTestAsync()
+        {
+            var results = await NpaNxxFirstPointCom.GetAsync("206", string.Empty, string.Empty, pComNetCredentials.Username, pComNetCredentials.Password);
+
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            int count = 0;
+
+            foreach (var result in results.ToArray())
+            {
+                output.WriteLine(result.DialedNumber);
+                Assert.True(result.NPA > 99);
+                Assert.True(result.NXX > 99);
+                Assert.True(result.XXXX > 1);
+                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+                Assert.False(string.IsNullOrWhiteSpace(result.City));
+                Assert.False(string.IsNullOrWhiteSpace(result.State));
+                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+                count++;
+            }
+            output.WriteLine($"{count} Results Reviewed");
         }
 
         [Fact]
@@ -349,7 +372,7 @@ namespace NumberSearch.Tests
                 Assert.False(string.IsNullOrWhiteSpace(result.Zip));
                 Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
                 Assert.False(string.IsNullOrWhiteSpace(result.Email));
-                Assert.True(result.DateSubmitted > new DateTime(2019,1,1));
+                Assert.True(result.DateSubmitted > new DateTime(2019, 1, 1));
             }
         }
 
