@@ -27,8 +27,8 @@ namespace NumberSearch.Ingest
 
             var start = DateTime.Now;
 
-            //var teleStats = await TeleMessage.IngestPhoneNumbersAsync(teleToken, postgresSQL);
-            var teleStats = new IngestStatistics { };
+            var teleStats = await TeleMessage.IngestPhoneNumbersAsync(teleToken, postgresSQL);
+            //var teleStats = new IngestStatistics { };
 
             if (await teleStats.PostAsync(postgresSQL))
             {
@@ -51,8 +51,8 @@ namespace NumberSearch.Ingest
                 Console.WriteLine("Failed to log this ingest.");
             }
 
-            //var FirstComStats = await FirstCom.IngestPhoneNumbersAsync(username, password, postgresSQL);
-            var FirstComStats = new IngestStatistics { };
+            var FirstComStats = await FirstCom.IngestPhoneNumbersAsync(username, password, postgresSQL);
+            //var FirstComStats = new IngestStatistics { };
 
             if (await FirstComStats.PostAsync(postgresSQL))
             {
@@ -114,7 +114,7 @@ namespace NumberSearch.Ingest
         {
             var stats = new IngestStatistics();
 
-            var inserts = new List<PhoneNumber>();
+            var inserts = new Dictionary<string, PhoneNumber>();
 
             if (numbers.Length > 0)
             {
@@ -154,7 +154,7 @@ namespace NumberSearch.Ingest
                     else
                     {
                         // If it doesn't exist then add it.
-                        inserts.Add(number);
+                        inserts.Add(number.DialedNumber, number);
 
                         stats.NumbersRetrived++;
                         stats.IngestedNew++;
@@ -162,7 +162,9 @@ namespace NumberSearch.Ingest
                 }
             }
 
-            var groups = splitList(inserts);
+            var listInserts = inserts.Values.ToList();
+
+            var groups = splitList(listInserts);
 
             foreach (var group in groups?.ToArray())
             {
@@ -170,7 +172,7 @@ namespace NumberSearch.Ingest
 
                 if (check) { stats.IngestedNew += 100; };
 
-                Console.WriteLine($"{stats.IngestedNew} of {numbers.Length} submitted to the database.");
+                Console.WriteLine($"{stats.IngestedNew} of {listInserts.Count} submitted to the database.");
             }
 
             return stats;
