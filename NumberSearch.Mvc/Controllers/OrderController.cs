@@ -32,7 +32,7 @@ namespace NumberSearch.Mvc.Controllers
                     };
                 }
 
-                var result = await PhoneNumber.GetAsync(query, configuration.GetConnectionString("Postgresql")).ConfigureAwait(false);
+                var result = await PhoneNumber.GetAsync(query, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
 
                 // Query the owner of the number to make sure it's still avalible for purchase.
                 switch (result.IngestedFrom)
@@ -68,7 +68,7 @@ namespace NumberSearch.Mvc.Controllers
                 order.DateSubmitted = DateTime.Now;
 
                 // TODO: Save to db.
-                var submittedOrder = await order.PostAsync(configuration.GetConnectionString("Postgresql")).ConfigureAwait(false);
+                var submittedOrder = await order.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
 
                 if (submittedOrder)
                 {

@@ -19,7 +19,7 @@ namespace NumberSearch.Ingest
 
             Console.WriteLine($"Found {npas.Length} NPAs");
 
-            foreach (var npa in npas.ToArray())
+            foreach (var npa in npas)
             {
                 var nxxs = await GetValidNXXsAsync(npa, token);
 
@@ -31,7 +31,7 @@ namespace NumberSearch.Ingest
                 }
             }
 
-            var stats = await SubmitPhoneNumbersAsync(readyToSubmit.ToArray(), connectionString);
+            var stats = await Program.SubmitPhoneNumbersAsync(readyToSubmit.ToArray(), connectionString);
 
             var end = DateTime.Now;
             stats.StartDate = start;
@@ -109,65 +109,6 @@ namespace NumberSearch.Ingest
             }
 
             return vaild.ToArray();
-        }
-
-        public static async Task<IngestStatistics> SubmitPhoneNumbersAsync(PhoneNumber[] numbers, string connnectionString)
-        {
-            var stats = new IngestStatistics();
-
-            if (numbers.Length > 0)
-            {
-                // Submit the batch to the remote database.
-                foreach (var number in numbers)
-                {
-                    // Check if it already exists.
-                    var inDb = await number.ExistsInDb(connnectionString);
-
-                    if (inDb)
-                    {
-                        var existingNumber = await PhoneNumber.GetAsync(number.DialedNumber, connnectionString);
-
-                        if (!(existingNumber.IngestedFrom == number.IngestedFrom))
-                        {
-                            var status = await number.PutAsync(connnectionString);
-
-                            if (status)
-                            {
-                                stats.NumbersRetrived++;
-                                stats.UpdatedExisting++;
-                            }
-                            else
-                            {
-                                stats.NumbersRetrived++;
-                                stats.FailedToIngest++;
-                            }
-                        }
-                        else
-                        {
-                            stats.NumbersRetrived++;
-                            stats.Unchanged++;
-                        }
-                    }
-                    else
-                    {
-                        // If it doesn't exist then add it.
-                        var status = await number.PostAsync(connnectionString);
-
-                        if (status)
-                        {
-                            stats.NumbersRetrived++;
-                            stats.IngestedNew++;
-                        }
-                        else
-                        {
-                            stats.NumbersRetrived++;
-                            stats.FailedToIngest++;
-                        }
-                    }
-                }
-            }
-
-            return stats;
         }
     }
 }

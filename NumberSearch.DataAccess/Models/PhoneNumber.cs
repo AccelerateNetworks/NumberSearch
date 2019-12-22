@@ -4,6 +4,7 @@ using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess
@@ -126,6 +127,49 @@ namespace NumberSearch.DataAccess
             }
         }
 
+        public static async Task<bool> BulkPostAsync(IEnumerable<PhoneNumber> numbers, string connectionString)
+        {
+            // Make sure there are some numbers incoming.
+            if (numbers == null && numbers?.ToArray()?.Length < 0)
+            {
+                return false;
+            }
+
+            var values = new List<string>();
+
+            foreach (var number in numbers?.ToArray())
+            {
+                // If anything is null bail out.
+                if (!(number.NPA < 100 || number.NXX < 100 || number.XXXX < 1 || number.DialedNumber == null || number.City == null || number.State == null || number.IngestedFrom == null))
+                {
+                    values.Add($"('{number.DialedNumber}', {number.NPA}, {number.NXX}, {number.XXXX.ToString("0000", new CultureInfo("en-US"))}, '{number.City}', '{number.State}', '{number.IngestedFrom}', '{DateTime.Now}')");
+                }
+            }
+
+            using var connection = new NpgsqlConnection(connectionString);
+
+            string sql = $"INSERT INTO public.\"PhoneNumbers\"(\"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\") VALUES";
+
+            foreach (var value in values)
+            {
+                sql += $" {value},";
+            }
+
+            // Remove the extra comma.
+            sql = sql.Substring(0, sql.Length - 1);
+
+            var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
+
+            if (result > 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// Update a phone number that already exists in the database.
         /// </summary>
@@ -154,18 +198,11 @@ namespace NumberSearch.DataAccess
         /// </summary>
         /// <param name="postgresSQL"> The db connection string. </param>
         /// <returns> True if it does exist, and False if it doesn't. </returns>
-        public async Task<bool> ExistsInDb(string connectionString)
+        public bool ExistsInDb(Dictionary<string, PhoneNumber> existingNumbers)
         {
-            var result = await GetAsync(DialedNumber, connectionString).ConfigureAwait(false);
+            var check = existingNumbers?.TryGetValue(DialedNumber, out PhoneNumber _) ?? false;
 
-            if (string.IsNullOrWhiteSpace(result.DialedNumber))
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
+            return check;
         }
     }
 }

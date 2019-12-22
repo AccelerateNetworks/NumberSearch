@@ -1,6 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
+
 using NumberSearch.DataAccess;
+
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Ingest
@@ -15,7 +19,7 @@ namespace NumberSearch.Ingest
             .Build();
 
             var teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
-            var postgresSQL = config.GetConnectionString("Postgresql");
+            var postgresSQL = config.GetConnectionString("PostgresqlProd");
             var bulkVSKey = config.GetConnectionString("BulkVSAPIKEY");
             var bulkVSSecret = config.GetConnectionString("BulkVSAPISecret");
             var username = config.GetConnectionString("PComNetUsername");
@@ -23,8 +27,8 @@ namespace NumberSearch.Ingest
 
             var start = DateTime.Now;
 
-            var teleStats = await TeleMessage.IngestPhoneNumbersAsync(teleToken, postgresSQL);
-            //var teleStats = new IngestStatistics { };
+            //var teleStats = await TeleMessage.IngestPhoneNumbersAsync(teleToken, postgresSQL);
+            var teleStats = new IngestStatistics { };
 
             if (await teleStats.PostAsync(postgresSQL))
             {
@@ -47,8 +51,8 @@ namespace NumberSearch.Ingest
                 Console.WriteLine("Failed to log this ingest.");
             }
 
-            var FirstComStats = await FirstCom.IngestPhoneNumbersAsync(username, password, postgresSQL);
-            //var FirstComStats = new IngestStatistics { };
+            //var FirstComStats = await FirstCom.IngestPhoneNumbersAsync(username, password, postgresSQL);
+            var FirstComStats = new IngestStatistics { };
 
             if (await FirstComStats.PostAsync(postgresSQL))
             {
@@ -97,5 +101,80 @@ namespace NumberSearch.Ingest
             Console.WriteLine($"Numbers Failed To Ingest: {combinedStats.FailedToIngest}");
             Console.WriteLine($"Start: {start.ToLongTimeString()} End: {end.ToLongTimeString()} Elapsed: {diff.TotalMinutes} Minutes");
         }
+
+        public static IEnumerable<List<T>> splitList<T>(List<T> locations, int nSize = 100)
+        {
+            for (int i = 0; i < locations.Count; i += nSize)
+            {
+                yield return locations.GetRange(i, Math.Min(nSize, locations.Count - i));
+            }
+        }
+
+        public static async Task<IngestStatistics> SubmitPhoneNumbersAsync(PhoneNumber[] numbers, string connectionString)
+        {
+            var stats = new IngestStatistics();
+
+            var inserts = new List<PhoneNumber>();
+
+            if (numbers.Length > 0)
+            {
+                var existingNumbers = await PhoneNumber.GetAllAsync(connectionString);
+                var dict = existingNumbers.ToDictionary(x => x.DialedNumber, x => x);
+                // Submit the batch to the remote database.
+                foreach (var number in numbers)
+                {
+                    // Check if it already exists.
+                    var inDb = number.ExistsInDb(dict);
+
+                    if (inDb)
+                    {
+                        var existingNumber = await PhoneNumber.GetAsync(number.DialedNumber, connectionString);
+
+                        if (!(existingNumber.IngestedFrom == number.IngestedFrom))
+                        {
+                            var status = await number.PutAsync(connectionString);
+
+                            if (status)
+                            {
+                                stats.NumbersRetrived++;
+                                stats.UpdatedExisting++;
+                            }
+                            else
+                            {
+                                stats.NumbersRetrived++;
+                                stats.FailedToIngest++;
+                            }
+                        }
+                        else
+                        {
+                            stats.NumbersRetrived++;
+                            stats.Unchanged++;
+                        }
+                    }
+                    else
+                    {
+                        // If it doesn't exist then add it.
+                        inserts.Add(number);
+
+                        stats.NumbersRetrived++;
+                        stats.IngestedNew++;
+                    }
+                }
+            }
+
+            var groups = splitList(inserts);
+
+            foreach (var group in groups?.ToArray())
+            {
+                var check = await PhoneNumber.BulkPostAsync(group, connectionString);
+
+                if (check) { stats.IngestedNew += 100; };
+
+                Console.WriteLine($"{stats.IngestedNew} of {numbers.Length} submitted to the database.");
+            }
+
+            return stats;
+        }
+
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Flurl.Http;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess
@@ -49,16 +50,22 @@ namespace NumberSearch.DataAccess
             string tokenParameter = $"?token={token}";
             string searchParameter = $"&search={query}";
             string url = $"{baseUrl}{endpoint}{tokenParameter}{searchParameter}";
-            return await url.GetJsonAsync<LocalNumberTeleMessage>();
+            return await url.GetJsonAsync<LocalNumberTeleMessage>().ConfigureAwait(false);
         }
 
         public static async Task<IEnumerable<PhoneNumber>> GetAsync(string query, Guid token)
         {
-            var results = await GetRawAsync(query, token);
+            var results = await GetRawAsync(query, token).ConfigureAwait(false);
 
             var list = new List<PhoneNumber>();
 
-            foreach (var item in results?.data?.dids)
+            // Bail out early if something is wrong.
+            if(results == null || results?.data == null || results?.data?.count == null || results?.data?.count < 1 || results?.data?.dids == null)
+            {
+                return list;
+            }
+
+            foreach (var item in results?.data?.dids?.ToArray())
             {
                 bool checkNpa = int.TryParse(item.npa, out int npa);
                 bool checkNxx = int.TryParse(item.nxx, out int nxx);

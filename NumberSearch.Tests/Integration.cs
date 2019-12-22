@@ -19,6 +19,7 @@ namespace NumberSearch.Tests
         private readonly Credentials pComNetCredentials;
         private readonly string bulkVSKey;
         private readonly string bulkVSSecret;
+        private readonly string postgresql;
 
         public Integration(ITestOutputHelper output)
         {
@@ -41,6 +42,8 @@ namespace NumberSearch.Tests
             bulkVSSecret = config.GetConnectionString("BulkVSAPISecret");
 
             token = Guid.Parse(config.GetConnectionString("TeleAPI"));
+
+            postgresql = config.GetConnectionString("PostgresqlProd");
         }
 
         [Fact]
@@ -263,7 +266,7 @@ namespace NumberSearch.Tests
         [Fact]
         public async Task GetPhoneNumbersAsync()
         {
-            var conn = configuration.GetConnectionString("postgresql");
+            var conn = postgresql;
             var results = await PhoneNumber.GetAllAsync(conn);
             Assert.NotNull(results);
             int count = 0;
@@ -285,7 +288,7 @@ namespace NumberSearch.Tests
         [Fact]
         public async Task PostPhoneNumberAsync()
         {
-            var conn = configuration.GetConnectionString("postgresql");
+            var conn = postgresql;
             var results = await PhoneNumber.GetAllAsync(conn);
             var number = results.OrderBy(x => x.DialedNumber).LastOrDefault();
             number.IngestedFrom = "IntegrationTest";
@@ -298,7 +301,7 @@ namespace NumberSearch.Tests
         [Fact]
         public async Task PhoneNumberGetSingleTestAsync()
         {
-            var conn = configuration.GetConnectionString("postgresql");
+            var conn = postgresql;
             var results = await PhoneNumber.GetAllAsync(conn);
             var number = results.OrderBy(x => x.DialedNumber).LastOrDefault();
             var result = await PhoneNumber.GetAsync(number.DialedNumber, conn);
@@ -315,24 +318,27 @@ namespace NumberSearch.Tests
         [Fact]
         public async Task CheckIfNumberExistsTestAsync()
         {
-            var conn = configuration.GetConnectionString("postgresql");
+            var conn = postgresql;
             var results = await PhoneNumber.GetAllAsync(conn);
-            foreach (var result in results)
+            var existingNumbers = await PhoneNumber.GetAllAsync(conn);
+            var dict = existingNumbers.ToDictionary(x => x.DialedNumber, x => x);
+
+            foreach (var result in results.ToArray())
             {
-                var check = await result.ExistsInDb(conn);
+                var check = result.ExistsInDb(dict);
                 Assert.True(check);
             }
             var badExample = results.OrderBy(x => x.DialedNumber).LastOrDefault();
             var newXXXX = badExample.XXXX + 1;
             badExample.DialedNumber = $"{badExample.NPA}{badExample.NXX}{newXXXX}";
-            var badCheck = await badExample.ExistsInDb(conn);
+            var badCheck = badExample.ExistsInDb(dict);
             Assert.False(badCheck);
         }
 
         [Fact]
         public async Task PostEndOfRunStats()
         {
-            var conn = configuration.GetConnectionString("postgresql");
+            var conn = postgresql;
             var stats = new IngestStatistics
             {
                 NumbersRetrived = 1,
@@ -354,7 +360,7 @@ namespace NumberSearch.Tests
         [Fact]
         public async Task GetOrderAsync()
         {
-            var conn = configuration.GetConnectionString("postgresql");
+            var conn = postgresql;
 
             var results = await PhoneNumberOrder.GetAsync("2062344356", conn);
 
@@ -379,7 +385,7 @@ namespace NumberSearch.Tests
         [Fact]
         public async Task PostOrderAsync()
         {
-            var conn = configuration.GetConnectionString("postgresql");
+            var conn = postgresql;
 
             var results = await PhoneNumberOrder.GetAsync("2062344356", conn);
 

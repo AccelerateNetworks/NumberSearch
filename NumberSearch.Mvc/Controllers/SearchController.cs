@@ -60,7 +60,7 @@ namespace NumberSearch.Mvc.Controllers
             var results = await PhoneNumber
                 .SearchAsync(
                 new string(converted.ToArray()),
-                configuration.GetConnectionString("Postgresql"))
+                configuration.GetConnectionString("PostgresqlProd"))
                 .ConfigureAwait(false);
 
             return View("Index", new SearchResults
