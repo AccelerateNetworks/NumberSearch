@@ -21,7 +21,7 @@ namespace NumberSearch.DataAccess
             string availableParameter = $"&available=true";
             string npaParameter = $"&npa={npa}";
             string route = $"{baseUrl}{endpoint}{tokenParameter}{availableParameter}{npaParameter}";
-            return await route.GetJsonAsync<TeleNXX>();
+            return await route.GetJsonAsync<TeleNXX>().ConfigureAwait(false);
         }
     }
 }

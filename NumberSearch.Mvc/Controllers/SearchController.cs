@@ -57,6 +57,7 @@ namespace NumberSearch.Mvc.Controllers
                 // Drop everything else.
             }
 
+            // Get a list of similar phone numbers from the database.
             var results = await PhoneNumber
                 .SearchAsync(
                 new string(converted.ToArray()),

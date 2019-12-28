@@ -10,6 +10,13 @@ namespace NumberSearch.Ingest
 {
     public class BulkVS
     {
+        /// <summary>
+        /// Ingest phone numbers from the BulkVS API.
+        /// </summary>
+        /// <param name="apiKey"> The bulkVS API key. </param>
+        /// <param name="apiSecret"> The bulkVS API secret. </param>
+        /// <param name="connectionString"> The connection string for the database. </param>
+        /// <returns></returns>
         public static async Task<IngestStatistics> IngestPhoneNumbersAsync(string apiKey, string apiSecret, string connectionString)
         {
             var start = DateTime.Now;
@@ -24,6 +31,12 @@ namespace NumberSearch.Ingest
             return stats;
         }
 
+        /// <summary>
+        /// Scrape the bulkVS API for all of the valid phones that begin with a specific area code.
+        /// </summary>
+        /// <param name="apiKey"> The bulkVS API key. </param>
+        /// <param name="apiSecret"> The bulkVS secret. </param>
+        /// <returns></returns>
         public static async Task<PhoneNumber[]> GetValidNumbersByNPAAsync(string apiKey, string apiSecret)
         {
             var areaCodes = AreaCode.AreaCodes;

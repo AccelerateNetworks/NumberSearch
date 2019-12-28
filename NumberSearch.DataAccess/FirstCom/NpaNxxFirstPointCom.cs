@@ -24,7 +24,7 @@ namespace NumberSearch.DataAccess
 
             using var client = new FirstCom.DIDManagementSoapClient(FirstCom.DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
 
-            var result = await client.DIDInventorySearchAsync(Auth, DIDSearch, ReturnAmount);
+            var result = await client.DIDInventorySearchAsync(Auth, DIDSearch, ReturnAmount).ConfigureAwait(false);
 
             var list = new List<PhoneNumber>();
 
