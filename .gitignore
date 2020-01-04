@@ -16,3 +16,8 @@
 /NumberSearch.Ingest/obj
 /NumberSearch.Mvc/bin/Debug/netcoreapp3.1
 /NumberSearch.Tests/bin/Debug/netcoreapp3.1
+/NumberSearch.DataAccess/bin/Release/netstandard2.0
+/NumberSearch.Mvc/.config
+/NumberSearch.Mvc/bin/Release/netcoreapp3.1
+/NumberSearch.Mvc/Properties/PublishProfiles
+/NumberSearch.Tests/bin/Release/netcoreapp3.1

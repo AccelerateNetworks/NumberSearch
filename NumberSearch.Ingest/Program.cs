@@ -27,8 +27,8 @@ namespace NumberSearch.Ingest
 
             var start = DateTime.Now;
 
-            var teleStats = await TeleMessage.IngestPhoneNumbersAsync(teleToken, postgresSQL);
-            //var teleStats = new IngestStatistics { };
+            //var teleStats = await TeleMessage.IngestPhoneNumbersAsync(teleToken, postgresSQL);
+            var teleStats = new IngestStatistics { };
 
             if (await teleStats.PostAsync(postgresSQL))
             {
@@ -51,8 +51,8 @@ namespace NumberSearch.Ingest
                 Console.WriteLine("Failed to log this ingest.");
             }
 
-            var FirstComStats = await FirstCom.IngestPhoneNumbersAsync(username, password, postgresSQL);
-            //var FirstComStats = new IngestStatistics { };
+            //var FirstComStats = await FirstCom.IngestPhoneNumbersAsync(username, password, postgresSQL);
+            var FirstComStats = new IngestStatistics { };
 
             if (await FirstComStats.PostAsync(postgresSQL))
             {
@@ -102,7 +102,7 @@ namespace NumberSearch.Ingest
             Console.WriteLine($"Start: {start.ToLongTimeString()} End: {end.ToLongTimeString()} Elapsed: {diff.TotalMinutes} Minutes");
         }
 
-        public static IEnumerable<List<T>> splitList<T>(List<T> locations, int nSize = 100)
+        public static IEnumerable<List<T>> SplitList<T>(List<T> locations, int nSize = 100)
         {
             for (int i = 0; i < locations.Count; i += nSize)
             {
@@ -154,17 +154,25 @@ namespace NumberSearch.Ingest
                     else
                     {
                         // If it doesn't exist then add it.
-                        inserts.Add(number.DialedNumber, number);
+                        var check = inserts.TryAdd(number.DialedNumber, number);
 
-                        stats.NumbersRetrived++;
-                        stats.IngestedNew++;
+                        // When the API returns duplicate numbers.
+                        if (check)
+                        {
+                            stats.NumbersRetrived++;
+                          }
+                        else
+                        {
+                            stats.NumbersRetrived++;
+                            stats.FailedToIngest++;
+                        }
                     }
                 }
             }
 
             var listInserts = inserts.Values.ToList();
 
-            var groups = splitList(listInserts);
+            var groups = SplitList(listInserts);
 
             foreach (var group in groups?.ToArray())
             {
