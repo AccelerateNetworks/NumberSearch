@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using static BulkVS.DnSearchAreaCodeResponseResult;
@@ -13,7 +14,7 @@ namespace NumberSearch.DataAccess
 
             try
             {
-                var result = await client.DnSearchNpaNxxAsync(apiKey, apiSecret, npaNxx);
+                var result = await client.DnSearchNpaNxxAsync(apiKey, apiSecret, npaNxx).ConfigureAwait(false);
                 var list = new List<resultEntry>();
 
                 #region nonsense
@@ -1043,8 +1044,9 @@ namespace NumberSearch.DataAccess
                 }
                 return output.ToArray();
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 return new List<PhoneNumber>();
             }
         }

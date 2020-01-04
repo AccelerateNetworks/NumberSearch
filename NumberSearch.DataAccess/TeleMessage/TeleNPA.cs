@@ -23,7 +23,7 @@ namespace NumberSearch.DataAccess
             string availableParameter = $"&available=true";
             //string typeParameter = $"&type=true";
             string route = $"{baseUrl}{endpoint}{tokenParameter}{availableParameter}";
-            return await route.GetJsonAsync<TeleNPA>();
+            return await route.GetJsonAsync<TeleNPA>().ConfigureAwait(false);
         }
     }
 }

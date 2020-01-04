@@ -9,6 +9,12 @@ namespace NumberSearch.Ingest
 {
     public class TeleMessage
     {
+        /// <summary>
+        /// Ingests phone number from the TeleMessage API.
+        /// </summary>
+        /// <param name="token"> The teleMesssage token. </param>
+        /// <param name="connectionString"> The connection string for the database. </param>
+        /// <returns></returns>
         public static async Task<IngestStatistics> IngestPhoneNumbersAsync(Guid token, string connectionString)
         {
             var readyToSubmit = new List<PhoneNumber>();
@@ -41,6 +47,11 @@ namespace NumberSearch.Ingest
             return stats;
         }
 
+        /// <summary>
+        /// Gets a list of valid area codes.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public static async Task<int[]> GetValidNPAsAsync(Guid token)
         {
             var results = await TeleNPA.GetAsync(token);
@@ -68,12 +79,19 @@ namespace NumberSearch.Ingest
             return valid.ToArray();
         }
 
+        /// <summary>
+        /// gets a list of valid NXX's from a given area code.
+        /// </summary>
+        /// <param name="npa"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public static async Task<int[]> GetValidNXXsAsync(int npa, Guid token)
         {
             var results = await TeleNXX.GetAsync($"{npa}", token);
 
             var vaild = new List<int>();
 
+            // Verify that we got a good response.
             if ((results.status == "success") && (results.code == 200))
             {
                 foreach (var result in results?.data?.ToArray())
@@ -94,6 +112,13 @@ namespace NumberSearch.Ingest
             return vaild.ToArray();
         }
 
+        /// <summary>
+        /// Gets a list of valid XXXX's for a given NXX.
+        /// </summary>
+        /// <param name="npa"> The area code. </param>
+        /// <param name="nxx"> The NXX. </param>
+        /// <param name="token"> The TeleMessage auth token. </param>
+        /// <returns></returns>
         public static async Task<PhoneNumber[]> GetValidXXXXsAsync(int npa, int nxx, Guid token)
         {
             var vaild = new List<PhoneNumber>();

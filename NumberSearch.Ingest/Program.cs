@@ -27,6 +27,7 @@ namespace NumberSearch.Ingest
 
             var start = DateTime.Now;
 
+            // Ingest all avalible numbers from the TeleAPI.
             //var teleStats = await TeleMessage.IngestPhoneNumbersAsync(teleToken, postgresSQL);
             var teleStats = new IngestStatistics { };
 
@@ -39,6 +40,7 @@ namespace NumberSearch.Ingest
                 Console.WriteLine("Failed to log this ingest.");
             }
 
+            // Ingest all avablie phones numbers from the BulkVs API.
             var BulkVSStats = await BulkVS.IngestPhoneNumbersAsync(bulkVSKey, bulkVSSecret, postgresSQL);
             //var BulkVSStats = new IngestStatistics { };
 
@@ -51,6 +53,7 @@ namespace NumberSearch.Ingest
                 Console.WriteLine("Failed to log this ingest.");
             }
 
+            // Ingest all avalible numbers in the FirstCom API.
             //var FirstComStats = await FirstCom.IngestPhoneNumbersAsync(username, password, postgresSQL);
             var FirstComStats = new IngestStatistics { };
 
@@ -63,6 +66,7 @@ namespace NumberSearch.Ingest
                 Console.WriteLine("Failed to log this ingest.");
             }
 
+            // Remove all of the old numbers from the database.
             var cleanUp = await PhoneNumber.DeleteOld(start, postgresSQL);
 
             if (await cleanUp.PostAsync(postgresSQL))
@@ -102,6 +106,13 @@ namespace NumberSearch.Ingest
             Console.WriteLine($"Start: {start.ToLongTimeString()} End: {end.ToLongTimeString()} Elapsed: {diff.TotalMinutes} Minutes");
         }
 
+        /// <summary>
+        /// Split the list of accounts in insert into smaller lists so that they can be submitted in bulk to the database in reasonably sized chunks.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="locations"></param>
+        /// <param name="nSize"> The maximum number of items in the smaller lists. </param>
+        /// <returns></returns>
         public static IEnumerable<List<T>> SplitList<T>(List<T> locations, int nSize = 100)
         {
             for (int i = 0; i < locations.Count; i += nSize)
@@ -110,6 +121,12 @@ namespace NumberSearch.Ingest
             }
         }
 
+        /// <summary>
+        /// Submit the ingested Phone numbers to the database in bulk to minimize the number of commands that have to be sent.
+        /// </summary>
+        /// <param name="numbers"> A list of phone numbers. </param>
+        /// <param name="connectionString"> The connection string for the database. </param>
+        /// <returns></returns>
         public static async Task<IngestStatistics> SubmitPhoneNumbersAsync(PhoneNumber[] numbers, string connectionString)
         {
             var stats = new IngestStatistics();

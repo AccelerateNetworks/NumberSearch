@@ -51,7 +51,7 @@ namespace NumberSearch.DataAccess
             string tokenParameter = $"?token={token}";
             string numberParameter = $"&number={number}";
             string route = $"{baseUrl}{endpoint}{tokenParameter}{numberParameter}";
-            return await route.GetJsonAsync<LRNLookup>();
+            return await route.GetJsonAsync<LRNLookup>().ConfigureAwait(false);
         }
     }
 }
