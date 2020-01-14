@@ -123,14 +123,21 @@ namespace NumberSearch.Ingest
         {
             var vaild = new List<PhoneNumber>();
 
-            var results = await LocalNumberTeleMessage.GetAsync($"{npa}{nxx}****", token);
-
-            foreach (var result in results?.ToArray())
+            try
             {
-                if (result.XXXX > 1)
+                var results = await LocalNumberTeleMessage.GetAsync($"{npa}{nxx}****", token);
+
+                foreach (var result in results?.ToArray())
                 {
-                    vaild.Add(result);
+                    if (result.XXXX > 1)
+                    {
+                        vaild.Add(result);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"NXX code {nxx} failed @ {DateTime.Now}: {ex.Message}");
             }
 
             return vaild.ToArray();

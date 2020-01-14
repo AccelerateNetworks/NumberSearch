@@ -21,3 +21,4 @@
 /NumberSearch.Mvc/bin/Release/netcoreapp3.1
 /NumberSearch.Mvc/Properties/PublishProfiles
 /NumberSearch.Tests/bin/Release/netcoreapp3.1
+/NumberSearch.Ingest/bin/Release/netcoreapp3.1

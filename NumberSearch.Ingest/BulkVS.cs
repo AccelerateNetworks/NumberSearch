@@ -43,10 +43,17 @@ namespace NumberSearch.Ingest
 
             var numbers = new List<PhoneNumber>();
 
-            foreach(var code in areaCodes)
+            foreach (var code in areaCodes)
             {
-                numbers.AddRange(await NpaBulkVS.GetAsync(code.ToString(), apiKey, apiSecret));
-                Console.WriteLine($"Found {numbers.Count} Phone Numbers");
+                try
+                {
+                    numbers.AddRange(await NpaBulkVS.GetAsync(code.ToString(), apiKey, apiSecret));
+                    Console.WriteLine($"Found {numbers.Count} Phone Numbers");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Area code {code} failed @ {DateTime.Now}: {ex.Message}");
+                }
             }
 
             return numbers.ToArray();

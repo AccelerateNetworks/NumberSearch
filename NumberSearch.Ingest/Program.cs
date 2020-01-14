@@ -28,8 +28,9 @@ namespace NumberSearch.Ingest
             var start = DateTime.Now;
 
             // Ingest all avalible numbers from the TeleAPI.
-            //var teleStats = await TeleMessage.IngestPhoneNumbersAsync(teleToken, postgresSQL);
-            var teleStats = new IngestStatistics { };
+            Console.WriteLine("Ingesting data from TeleAPI");
+            var teleStats = await TeleMessage.IngestPhoneNumbersAsync(teleToken, postgresSQL);
+            //var teleStats = new IngestStatistics { };
 
             if (await teleStats.PostAsync(postgresSQL))
             {
@@ -41,6 +42,7 @@ namespace NumberSearch.Ingest
             }
 
             // Ingest all avablie phones numbers from the BulkVs API.
+            Console.WriteLine("Ingesting data from BulkVS");
             var BulkVSStats = await BulkVS.IngestPhoneNumbersAsync(bulkVSKey, bulkVSSecret, postgresSQL);
             //var BulkVSStats = new IngestStatistics { };
 
@@ -54,8 +56,9 @@ namespace NumberSearch.Ingest
             }
 
             // Ingest all avalible numbers in the FirstCom API.
-            //var FirstComStats = await FirstCom.IngestPhoneNumbersAsync(username, password, postgresSQL);
-            var FirstComStats = new IngestStatistics { };
+            Console.WriteLine("Ingesting data from FirstCom");
+            var FirstComStats = await FirstCom.IngestPhoneNumbersAsync(username, password, postgresSQL);
+            //var FirstComStats = new IngestStatistics { };
 
             if (await FirstComStats.PostAsync(postgresSQL))
             {
@@ -67,6 +70,7 @@ namespace NumberSearch.Ingest
             }
 
             // Remove all of the old numbers from the database.
+            Console.WriteLine("Removing old numbers from the database.");
             var cleanUp = await PhoneNumber.DeleteOld(start, postgresSQL);
 
             if (await cleanUp.PostAsync(postgresSQL))
@@ -147,26 +151,19 @@ namespace NumberSearch.Ingest
                     {
                         var existingNumber = await PhoneNumber.GetAsync(number.DialedNumber, connectionString);
 
-                        if (!(existingNumber.IngestedFrom == number.IngestedFrom))
-                        {
-                            var status = await number.PutAsync(connectionString);
+                        var status = await number.PutAsync(connectionString);
 
-                            if (status)
-                            {
-                                stats.NumbersRetrived++;
-                                stats.UpdatedExisting++;
-                            }
-                            else
-                            {
-                                stats.NumbersRetrived++;
-                                stats.FailedToIngest++;
-                            }
+                        if (status)
+                        {
+                            stats.NumbersRetrived++;
+                            stats.UpdatedExisting++;
                         }
                         else
                         {
                             stats.NumbersRetrived++;
-                            stats.Unchanged++;
+                            stats.FailedToIngest++;
                         }
+
                     }
                     else
                     {
@@ -177,7 +174,7 @@ namespace NumberSearch.Ingest
                         if (check)
                         {
                             stats.NumbersRetrived++;
-                          }
+                        }
                         else
                         {
                             stats.NumbersRetrived++;
@@ -193,11 +190,24 @@ namespace NumberSearch.Ingest
 
             foreach (var group in groups?.ToArray())
             {
-                var check = await PhoneNumber.BulkPostAsync(group, connectionString);
+                try
+                {
+                    var check = await PhoneNumber.BulkPostAsync(group, connectionString);
 
-                if (check) { stats.IngestedNew += 100; };
+                    if (check) { stats.IngestedNew += group.Count; };
 
-                Console.WriteLine($"{stats.IngestedNew} of {listInserts.Count} submitted to the database.");
+                    Console.WriteLine($"{stats.IngestedNew} of {listInserts.Count} submitted to the database.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to submit a batch of PhoneNumbers to the database. Exception: {ex.Message}");
+                    int count = 0;
+                    foreach (var number in group)
+                    {
+                        Console.WriteLine($"{count}. {number.DialedNumber}, {number.IngestedFrom}");
+                        count++;
+                    }
+                }
             }
 
             return stats;

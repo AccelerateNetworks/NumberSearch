@@ -120,7 +120,7 @@ namespace NumberSearch.DataAccess
 
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"DELETE FROM public.\"PhoneNumbers\" WHERE \"DateIngested\" < '{ingestStart.AddHours(-6)}'";
+            string sql = $"DELETE FROM public.\"PhoneNumbers\" WHERE \"DateIngested\" < '{ingestStart.AddDays(-1)}'";
 
             var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
 
