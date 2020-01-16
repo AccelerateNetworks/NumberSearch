@@ -1,0 +1,50 @@
+﻿@model NumberSearch.DataAccess.IngestStatistics[]
+
+@{
+    ViewData["Title"] = "Ingests";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="jumbotron">
+    <h1 class="display-4">Ingests</h1>
+</div>
+
+@{
+    if (Model != null && Model?.Length > 0)
+    {
+        var total = $"{Model.Length} ingests have been performed!";
+        <div class="alert alert-success" role="alert">
+            @total
+        </div>
+        var last = $"Last ingest performed at {Model?.FirstOrDefault()?.StartDate}";
+        <div class="alert alert-info" role="alert">
+            @last
+        </div>
+        <div class="row">
+            @{
+                foreach (var ingest in Model)
+                {
+                    var timeElapsed = ingest.StartDate - ingest.EndDate;
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">@ingest?.IngestedFrom</h4>
+                                <p class="card-text"><strong>@ingest.NumbersRetrived</strong> - Numbers Retrived</p>
+                                <p class="card-text"><strong>@ingest.IngestedNew</strong> - New</p>
+                                <p class="card-text"><strong>@ingest.FailedToIngest</strong> - Failed</p>
+                                <p class="card-text"><strong>@ingest.UpdatedExisting</strong> - Updated Existing</p>
+                                <p class="card-text"><strong>@ingest.Unchanged</strong> - Unchanged</p>
+                                <p class="card-text"><strong>@ingest.Removed</strong> - Removed</p>
+                            </div>
+                            <div class="card-footer">
+                                <h5 class="text-muted">@timeElapsed.ToString(@"hh\:mm") Minutes Elapsed</h5>
+                                <h6>@ingest?.StartDate</h6>
+                                <h6>@ingest?.EndDate</h6>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    }
+}

@@ -27,20 +27,6 @@ namespace NumberSearch.Ingest
 
             var start = DateTime.Now;
 
-            // Ingest all avalible numbers from the TeleAPI.
-            Console.WriteLine("Ingesting data from TeleAPI");
-            var teleStats = await TeleMessage.IngestPhoneNumbersAsync(teleToken, postgresSQL);
-            //var teleStats = new IngestStatistics { };
-
-            if (await teleStats.PostAsync(postgresSQL))
-            {
-                Console.WriteLine("Ingest logged to the database.");
-            }
-            else
-            {
-                Console.WriteLine("Failed to log this ingest.");
-            }
-
             // Ingest all avablie phones numbers from the BulkVs API.
             Console.WriteLine("Ingesting data from BulkVS");
             var BulkVSStats = await BulkVS.IngestPhoneNumbersAsync(bulkVSKey, bulkVSSecret, postgresSQL);
@@ -61,6 +47,20 @@ namespace NumberSearch.Ingest
             //var FirstComStats = new IngestStatistics { };
 
             if (await FirstComStats.PostAsync(postgresSQL))
+            {
+                Console.WriteLine("Ingest logged to the database.");
+            }
+            else
+            {
+                Console.WriteLine("Failed to log this ingest.");
+            }
+
+            // Ingest all avalible numbers from the TeleAPI.
+            Console.WriteLine("Ingesting data from TeleAPI");
+            var teleStats = await TeleMessage.IngestPhoneNumbersAsync(teleToken, postgresSQL);
+            //var teleStats = new IngestStatistics { };
+
+            if (await teleStats.PostAsync(postgresSQL))
             {
                 Console.WriteLine("Ingest logged to the database.");
             }
@@ -212,6 +212,5 @@ namespace NumberSearch.Ingest
 
             return stats;
         }
-
     }
 }

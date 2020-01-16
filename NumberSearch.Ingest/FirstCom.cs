@@ -18,7 +18,14 @@ namespace NumberSearch.Ingest
         /// <returns></returns>
         public static async Task<IngestStatistics> IngestPhoneNumbersAsync(string username, string password, string connectionString)
         {
+            var start = DateTime.Now;
+
             var stats = await Program.SubmitPhoneNumbersAsync(await GetValidNumbersByNPAAsync(username, password), connectionString);
+
+            var end = DateTime.Now;
+            stats.StartDate = start;
+            stats.EndDate = end;
+            stats.IngestedFrom = "FirstCom";
 
             return stats;
         }
