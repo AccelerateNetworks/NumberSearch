@@ -196,6 +196,7 @@ namespace NumberSearch.DataAccess
 
             var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
 
+
             if (result > 1)
             {
                 return true;
@@ -215,7 +216,7 @@ namespace NumberSearch.DataAccess
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"UPDATE public.\"PhoneNumbers\" SET \"City\" = '{City}', \"State\" = '{State}', \"IngestedFrom\" = '{IngestedFrom}', \"DateIngested\" = '{DateTime.Now}' WHERE \"DialedNumber\" = '{DialedNumber}'";
+            string sql = $"UPDATE public.\"PhoneNumbers\" SET \"IngestedFrom\" = '{IngestedFrom}', \"DateIngested\" = '{DateTime.Now}' WHERE \"DialedNumber\" = '{DialedNumber}'";
 
             var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
 

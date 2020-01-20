@@ -172,7 +172,7 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
-        public async Task BulkVSNpaNxxGetAsyncTest()
+        public async Task BulkVSNpaNxxGetAsyncTestAsync()
         {
             // Arrange
             var npanxx = "206279";
@@ -198,7 +198,7 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
-        public async Task BulkVSNpaNxxGetAsyncBadInputTest()
+        public async Task BulkVSNpaNxxGetAsyncBadInputTestAsync()
         {
             // Arrange
             var npanxx = "999999";
@@ -212,7 +212,7 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
-        public async Task BulkVSNpaGetAsyncTest()
+        public async Task BulkVSNpaGetAsyncTestAsync()
         {
             // Arrange
             var npa = "206";
@@ -381,7 +381,7 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
-        public async Task PostEndOfRunStats()
+        public async Task PostEndOfRunStatsAsync()
         {
             var conn = postgresql;
             var stats = new IngestStatistics

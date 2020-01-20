@@ -1,5 +1,5 @@
 ﻿using NumberSearch.DataAccess;
-
+using Serilog;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -23,20 +23,41 @@ namespace NumberSearch.Ingest
 
             var start = DateTime.Now;
 
-            var npas = await GetValidNPAsAsync(token);
+            var npas = new int[] { };
 
-            Console.WriteLine($"Found {npas.Length} NPAs");
+            try
+            {
+                npas = await GetValidNPAsAsync(token);
+
+                Log.Information($"Found {npas.Length} NPAs");
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"{ex.Message}");
+                Log.Error($"No NPAs Retrived.");
+            }
 
             foreach (var npa in npas)
             {
-                var nxxs = await GetValidNXXsAsync(npa, token);
+                var nxxs = new int[] { };
 
-                Console.WriteLine($"Found {nxxs.Length} NXXs");
+                try
+                {
+                    nxxs = await GetValidNXXsAsync(npa, token);
+
+                    Log.Information($"Found {nxxs.Length} NXXs");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"{ex.Message}");
+                    Log.Error($"No NXXs Retrived.");
+                }
 
                 if (nxxs.Length > 1)
                 {
                     // Execute these API requests in parallel.
                     var semaphore = new SemaphoreSlim(Environment.ProcessorCount);
+
                     var results = new List<Task<int>>();
 
                     foreach (var nxx in nxxs)
@@ -69,7 +90,7 @@ namespace NumberSearch.Ingest
                     {
                         count += xxxx;
                     }
-                    Console.WriteLine($"Found {count} Phone Numbers");
+                    Log.Information($"Found {count} Phone Numbers");
                 }
             }
 
@@ -180,7 +201,7 @@ namespace NumberSearch.Ingest
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"NXX code {nxx} failed @ {DateTime.Now}: {ex.Message}");
+                Log.Error($"NXX code {nxx} failed @ {DateTime.Now}: {ex.Message}");
             }
 
             return vaild.ToArray();

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Serilog;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -1046,7 +1047,9 @@ namespace NumberSearch.DataAccess
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Log.Error(ex.Message);
+                Log.Error(ex?.InnerException?.Message);
+
                 return new List<PhoneNumber>();
             }
         }

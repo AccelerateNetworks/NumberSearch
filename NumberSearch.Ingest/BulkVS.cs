@@ -1,6 +1,6 @@
 ﻿using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.Models;
-
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +21,9 @@ namespace NumberSearch.Ingest
         {
             var start = DateTime.Now;
 
-            var stats = await Program.SubmitPhoneNumbersAsync(await GetValidNumbersByNPAAsync(apiKey, apiSecret), connectionString);
+            var numbers = await GetValidNumbersByNPAAsync(apiKey, apiSecret);
+
+            var stats = await Program.SubmitPhoneNumbersAsync(numbers, connectionString);
 
             var end = DateTime.Now;
             stats.StartDate = start;
@@ -48,11 +50,11 @@ namespace NumberSearch.Ingest
                 try
                 {
                     numbers.AddRange(await NpaBulkVS.GetAsync(code.ToString(), apiKey, apiSecret));
-                    Console.WriteLine($"Found {numbers.Count} Phone Numbers");
+                    Log.Information($"Found {numbers.Count} Phone Numbers");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Area code {code} failed @ {DateTime.Now}: {ex.Message}");
+                    Log.Error($"Area code {code} failed @ {DateTime.Now}: {ex.Message}");
                 }
             }
 
