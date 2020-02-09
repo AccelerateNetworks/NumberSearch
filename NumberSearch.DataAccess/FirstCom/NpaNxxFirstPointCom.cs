@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Serilog;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -49,9 +50,8 @@ namespace NumberSearch.DataAccess
                 }
                 else
                 {
-                    Console.WriteLine($"This failed the 11 char check {item.DID.Length}");
+                    Log.Error($"This failed the 11 char check {item.DID.Length}");
                 }
-
             }
 
             return list;

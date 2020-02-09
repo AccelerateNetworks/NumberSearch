@@ -2,9 +2,11 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <GenerateProgramFile>false</GenerateProgramFile>
+    <GenerateProgramFile>true</GenerateProgramFile>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <UserSecretsId>328593cf-cbb9-48e9-8938-e38a44c8291d</UserSecretsId>
     <LangVersion>latest</LangVersion>
+    <ApplicationInsightsResourceId>/subscriptions/dbb6aa39-c8f4-49a0-a15e-33ee631d552e/resourcegroups/Default-ApplicationInsights-EastUS/providers/microsoft.insights/components/NumberSearch.Mvc</ApplicationInsightsResourceId>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="1.1.0">
@@ -13,6 +15,7 @@
     </PackageReference>
     <PackageReference Include="Flurl.Http" Version="2.4.2" />
     <PackageReference Include="MailKit" Version="2.4.1" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.8.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Analyzers" Version="2.2.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="2.9.8">
       <PrivateAssets>all</PrivateAssets>
@@ -53,14 +56,17 @@
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
+    <Content Update="wwwroot\accelerate.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="wwwroot\css\site.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\favicon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Connected Services\" />
   </ItemGroup>
 </Project>

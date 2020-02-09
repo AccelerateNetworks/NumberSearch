@@ -74,6 +74,42 @@ namespace NumberSearch.DataAccess
         }
 
         /// <summary>
+        /// Find a phone number based on matching it to a query and returns paginated results.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<PhoneNumber>> PaginatedSearchAsync(string query, int page, string connectionString)
+        {
+            var offset = (page * 100) - 100;
+            var limit = 100;
+            // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
+            query = query?.Trim()?.Replace('*', '_');
+
+            using var connection = new NpgsqlConnection(connectionString);
+
+            string sql = $"SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\" FROM public.\"PhoneNumbers\" WHERE \"DialedNumber\" LIKE '%{query}%' ORDER BY \"DialedNumber\" OFFSET {offset} LIMIT {limit};";
+
+            var result = await connection.QueryAsync<PhoneNumber>(sql).ConfigureAwait(false);
+
+            return result;
+        }
+
+        public static async Task<int> NumberOfResultsInQuery(string query, string connectionString)
+        {
+            // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
+            query = query?.Trim()?.Replace('*', '_');
+
+            using var connection = new NpgsqlConnection(connectionString);
+
+            string sql = $"SELECT COUNT(*) FROM public.\"PhoneNumbers\" WHERE \"DialedNumber\" LIKE '%{query}%';";
+
+            var result = await connection.QueryAsync<int>(sql).ConfigureAwait(false);
+
+            return result.FirstOrDefault();
+        }
+
+        /// <summary>
         /// Delete only numbers that haven't been reingested recently.
         /// </summary>
         /// <param name="connectionString"></param>
@@ -84,7 +120,7 @@ namespace NumberSearch.DataAccess
 
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"DELETE FROM public.\"PhoneNumbers\" WHERE \"DateIngested\" < '{ingestStart.AddHours(-6)}'";
+            string sql = $"DELETE FROM public.\"PhoneNumbers\" WHERE \"DateIngested\" < '{ingestStart.AddDays(-1)}'";
 
             var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
 
@@ -160,6 +196,7 @@ namespace NumberSearch.DataAccess
 
             var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
 
+
             if (result > 1)
             {
                 return true;
@@ -179,7 +216,7 @@ namespace NumberSearch.DataAccess
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"UPDATE public.\"PhoneNumbers\" SET \"City\" = '{City}', \"State\" = '{State}', \"IngestedFrom\" = '{IngestedFrom}', \"DateIngested\" = '{DateTime.Now}' WHERE \"DialedNumber\" = '{DialedNumber}'";
+            string sql = $"UPDATE public.\"PhoneNumbers\" SET \"IngestedFrom\" = '{IngestedFrom}', \"DateIngested\" = '{DateTime.Now}' WHERE \"DialedNumber\" = '{DialedNumber}'";
 
             var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
 

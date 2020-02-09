@@ -24,7 +24,7 @@ namespace NumberSearch.Mvc.Controllers
         /// </summary>
         /// <param name="query"> A complete or partial phone number. </param>
         /// <returns> A view of nothing, or the result of the query. </returns>
-        public async Task<IActionResult> IndexAsync(string query)
+        public async Task<IActionResult> IndexAsync(string query, int page = 1)
         {
             // Fail fast
             if (string.IsNullOrWhiteSpace(query))
@@ -57,16 +57,14 @@ namespace NumberSearch.Mvc.Controllers
                 // Drop everything else.
             }
 
-            // Get a list of similar phone numbers from the database.
-            var results = await PhoneNumber
-                .SearchAsync(
-                new string(converted.ToArray()),
-                configuration.GetConnectionString("PostgresqlProd"))
-                .ConfigureAwait(false);
+            var results = await PhoneNumber.PaginatedSearchAsync(new string(converted.ToArray()), page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            var count = await PhoneNumber.NumberOfResultsInQuery(new string(converted.ToArray()), configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
 
             return View("Index", new SearchResults
             {
                 CleanQuery = new string(converted.ToArray()),
+                NumberOfResults = count,
+                Page = page,
                 PhoneNumbers = results.ToArray(),
                 Query = query
             });

@@ -19,7 +19,7 @@
                 <div class="input-group-prepend">
                     <span class="input-group-text">+1</span>
                 </div>
-                <input type="text" name="query" class="form-control" placeholder="Search your word!" value="@searchText">
+                <input type="text" name="Query" class="form-control" placeholder="Search your word!" value="@searchText">
                 <button type="submit" class="btn btn-success" onclick="displayBusyIndicator()">Search</button>
             </div>
         </div>
@@ -31,7 +31,7 @@
 @{
     if (Model != null && Model?.PhoneNumbers?.Length > 0)
     {
-        var total = $"{Model.PhoneNumbers.Length} available numbers found!";
+        var total = $"{Model.NumberOfResults} available numbers found!";
         <div class="alert alert-success" role="alert">
             @total
         </div>
@@ -69,6 +69,38 @@
             }
 
         </div>
+        <form action="/Search">
+            <div class="btn-group" role="group" aria-label="pagination">
+                @{
+                    var maxPage = Model.NumberOfResults / 100;
+                    if ((Model.NumberOfResults % 100) > 1)
+                    {
+                        maxPage += 1;
+                    }
+                    if (Model.Page > 1)
+                    {
+                        var previousPage = Model.Page - 1;
+                        <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&Page=@previousPage">Previous</a>
+                        <a class="btn btn-outline-dark disabled">Page @Model.Page of @maxPage</a>
+                    }
+                    else
+                    {
+                        <a class="btn btn-outline-secondary disabled">Previous</a>
+                        <a class="btn btn-outline-dark disabled">Page @Model.Page of @maxPage</a>
+                    }
+                    var pageResultsCount = Model.Page * 100;
+                    if (Model.NumberOfResults > pageResultsCount && (Model.NumberOfResults - pageResultsCount) > 100)
+                    {
+                        var nextPage = Model.Page + 1;
+                        <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&Page=@nextPage">Next</a>
+                    }
+                    else
+                    {
+                        <a class="btn btn-outline-secondary disabled">Next</a>
+                    }
+                }
+            </div>
+        </form>
     }
     else if (Model != null && Model?.PhoneNumbers?.Length == 0)
     {

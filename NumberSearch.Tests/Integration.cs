@@ -172,7 +172,7 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
-        public async Task BulkVSNpaNxxGetAsyncTest()
+        public async Task BulkVSNpaNxxGetAsyncTestAsync()
         {
             // Arrange
             var npanxx = "206279";
@@ -198,7 +198,7 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
-        public async Task BulkVSNpaNxxGetAsyncBadInputTest()
+        public async Task BulkVSNpaNxxGetAsyncBadInputTestAsync()
         {
             // Arrange
             var npanxx = "999999";
@@ -212,7 +212,7 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
-        public async Task BulkVSNpaGetAsyncTest()
+        public async Task BulkVSNpaGetAsyncTestAsync()
         {
             // Arrange
             var npa = "206";
@@ -286,6 +286,51 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task GetPhoneNumbersByQueryAsync()
+        {
+            var conn = postgresql;
+            var results = await PhoneNumber.SearchAsync("*", conn);
+            Assert.NotNull(results);
+            int count = 0;
+            foreach (var result in results)
+            {
+                Assert.True(result.NPA > 99);
+                Assert.True(result.NXX > 99);
+                // XXXX can be 0001 which as an int is 1.
+                Assert.True(result.XXXX > 0);
+                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+                Assert.False(string.IsNullOrWhiteSpace(result.City));
+                Assert.False(string.IsNullOrWhiteSpace(result.State));
+                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+                count++;
+            }
+            output.WriteLine($"{count} Results Reviewed");
+        }
+
+        [Fact]
+        public async Task GetPhoneNumbersByQueryPaginatedAsync()
+        {
+            var conn = postgresql;
+            var results = await PhoneNumber.PaginatedSearchAsync("*", 1, conn);
+            Assert.NotNull(results);
+            int count = 0;
+            foreach (var result in results)
+            {
+                Assert.True(result.NPA > 99);
+                Assert.True(result.NXX > 99);
+                // XXXX can be 0001 which as an int is 1.
+                Assert.True(result.XXXX > 0);
+                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+                Assert.False(string.IsNullOrWhiteSpace(result.City));
+                Assert.False(string.IsNullOrWhiteSpace(result.State));
+                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+                count++;
+            }
+            output.WriteLine($"{count} Results Reviewed");
+            Assert.Equal(100, count);
+        }
+
+        [Fact]
         public async Task PostPhoneNumberAsync()
         {
             var conn = postgresql;
@@ -336,7 +381,7 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
-        public async Task PostEndOfRunStats()
+        public async Task PostEndOfRunStatsAsync()
         {
             var conn = postgresql;
             var stats = new IngestStatistics
@@ -362,7 +407,7 @@ namespace NumberSearch.Tests
         {
             var conn = postgresql;
 
-            var results = await PhoneNumberOrder.GetAsync("2062344356", conn);
+            var results = await PhoneNumberOrder.GetAsync("4062262621", conn);
 
             Assert.NotNull(results);
             Assert.NotEmpty(results);
@@ -387,7 +432,7 @@ namespace NumberSearch.Tests
         {
             var conn = postgresql;
 
-            var results = await PhoneNumberOrder.GetAsync("2062344356", conn);
+            var results = await PhoneNumberOrder.GetAsync("4062262621", conn);
 
             var order = results.FirstOrDefault();
             var response = await order.PostAsync(conn);
