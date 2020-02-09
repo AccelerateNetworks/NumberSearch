@@ -1,0 +1,10 @@
+[Unit]
+Description=NumberSearch
+
+[Service]
+Type=simple
+WorkingDirectory=/var/www/numberSearch
+ExecStart=/usr/bin/dotnet /var/www/numberSearch/NumberSearch.Mvc.dll
+
+[Install]
+WantedBy=multi-user.target
