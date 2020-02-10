@@ -89,7 +89,8 @@ namespace NumberSearch.Ingest
                 Log.Fatal("Failed to remove old numbers from the database.");
             }
 
-            var end = DateTime.Now;
+            // Add an extra minute so that the finish time of all stages isn't the same as the finish time of the last stage to run.
+            var end = DateTime.Now.AddMinutes(1);
 
             var combinedStats = new IngestStatistics
             {

@@ -15,7 +15,7 @@
     <p> Use * to pad your search, for example ***word to search for a number containing word, but exclude the area code. Conversely, 206******* will find 206 area code numbers.</p>
     <form class="form-row justify-content-center" action="/Search">
         <div class="form-group">
-            <div class="input-group mx-auto">
+            <div class="input-group mx-auto input-group-lg">
                 <div class="input-group-prepend">
                     <span class="input-group-text">+1</span>
                 </div>
@@ -35,39 +35,72 @@
         <div class="alert alert-success" role="alert">
             @total
         </div>
-        <div class="row">
-            @{
-                var match = Model?.CleanQuery.Replace("*", string.Empty);
-                foreach (var item in Model?.PhoneNumbers)
-                {
-                    var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
-                    var formattedNumber = $"({item.NPA}) {item.NXX} {item.XXXX.ToString("0000")}";
-                    var number = item.DialedNumber;
-                    if (item.DialedNumber.Contains(match))
+        @*<div class="row">
+                @{
+                    var match = Model?.CleanQuery.Replace("*", string.Empty);
+                    foreach (var item in Model?.PhoneNumbers)
                     {
-                        var start = item.DialedNumber.IndexOf(match);
-                        var stop = match.Length;
-                        var beginning = item.DialedNumber.Substring(0, start);
-                        var middle = item.DialedNumber.Substring(start, stop);
-                        var end = item.DialedNumber.Substring(start + stop);
-                        number = $"{beginning}<b class='text-success'>{middle}</b>{end}";
-                    }
-                    var mailToLink = $"mailto:support@acceleratenetworks.com?subject=Purchase%20{item.DialedNumber}&body=I%20want%20to%20purchase%20phone%20number%20{item.DialedNumber}.%20Thanks!";
-                    <div class="col-md-6 mb-3">
-                        <div class="card">
-                            <div class="card-body">
-                                <h4 class="card-title">@formattedNumber</h4>
-                                <h6 class="card-subtitle">@Html.Raw(number)</h6>
-                                <p class="card-text text-muted">@location</p>
-                                <a href="/Order?query=@item.DialedNumber" target="_top">
-                                    <input type="button" class="btn btn-outline-primary" value="Buy Now">
-                                </a>
+                        var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
+                        var formattedNumber = $"({item.NPA}) {item.NXX} {item.XXXX.ToString("0000")}";
+                        var number = item.DialedNumber;
+                        if (item.DialedNumber.Contains(match))
+                        {
+                            var start = item.DialedNumber.IndexOf(match);
+                            var stop = match.Length;
+                            var beginning = item.DialedNumber.Substring(0, start);
+                            var middle = item.DialedNumber.Substring(start, stop);
+                            var end = item.DialedNumber.Substring(start + stop);
+                            number = $"{beginning}<b class='text-success'>{middle}</b>{end}";
+                        }
+                        var mailToLink = $"mailto:support@acceleratenetworks.com?subject=Purchase%20{item.DialedNumber}&body=I%20want%20to%20purchase%20phone%20number%20{item.DialedNumber}.%20Thanks!";
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="card-title">@formattedNumber</h4>
+                                    <h6 class="card-subtitle">@Html.Raw(number)</h6>
+                                    <p class="card-text text-muted">@location</p>
+                                    <a href="/Order?query=@item.DialedNumber" target="_top">
+                                        <input type="button" class="btn btn-outline-primary" value="Buy Now">
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    }
                 }
-            }
-
+            </div>*@
+        <div class="table-responsive">
+            <table class="table table-striped table-borderless table-hover">
+                <tbody>
+                    @{
+                        var match = Model?.CleanQuery.Replace("*", string.Empty);
+                        foreach (var item in Model?.PhoneNumbers)
+                        {
+                            var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
+                            var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
+                            var number = item.DialedNumber;
+                            if (item.DialedNumber.Contains(match))
+                            {
+                                var start = item.DialedNumber.IndexOf(match);
+                                var stop = match.Length;
+                                var beginning = item.DialedNumber.Substring(0, start);
+                                var middle = item.DialedNumber.Substring(start, stop);
+                                var end = item.DialedNumber.Substring(start + stop);
+                                number = $"{beginning}<b class='text-success'>{middle}</b>{end}";
+                            }
+                            <tr>
+                                <td scope="row"><h4>@formattedNumber</h4></td>
+                                <td>@Html.Raw(number)</td>
+                                <td>@location</td>
+                                <td>
+                                    <a href="/Order?query=@item.DialedNumber" target="_top">
+                                        <input type="button" class="btn btn-outline-primary" value="Buy Now">
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
         </div>
         <form action="/Search">
             <div class="btn-group" role="group" aria-label="pagination">

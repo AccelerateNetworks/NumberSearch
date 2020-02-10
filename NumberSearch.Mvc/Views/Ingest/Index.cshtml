@@ -20,31 +20,87 @@
         <div class="alert alert-info" role="alert">
             @last
         </div>
-        <div class="row">
-            @{
-                foreach (var ingest in Model)
-                {
-                    var timeElapsed = ingest.StartDate - ingest.EndDate;
-                    <div class="col-md-6 mb-3">
-                        <div class="card">
-                            <div class="card-body">
-                                <h4 class="card-title">@ingest?.IngestedFrom</h4>
-                                <p class="card-text"><strong>@ingest.NumbersRetrived</strong> - Numbers Retrived</p>
-                                <p class="card-text"><strong>@ingest.IngestedNew</strong> - New</p>
-                                <p class="card-text"><strong>@ingest.FailedToIngest</strong> - Failed</p>
-                                <p class="card-text"><strong>@ingest.UpdatedExisting</strong> - Updated Existing</p>
-                                <p class="card-text"><strong>@ingest.Unchanged</strong> - Unchanged</p>
-                                <p class="card-text"><strong>@ingest.Removed</strong> - Removed</p>
-                            </div>
-                            <div class="card-footer">
-                                <h5 class="text-muted">@timeElapsed.ToString(@"hh\:mm") Minutes Elapsed</h5>
-                                <h6>@ingest?.StartDate</h6>
-                                <h6>@ingest?.EndDate</h6>
+        @*<div class="row">
+                @{
+                    foreach (var ingest in Model)
+                    {
+                        var timeElapsed = ingest.StartDate - ingest.EndDate;
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="card-title">@ingest?.IngestedFrom</h4>
+                                    <p class="card-text"><strong>@ingest.NumbersRetrived</strong> - Numbers Retrived</p>
+                                    <p class="card-text"><strong>@ingest.IngestedNew</strong> - New</p>
+                                    <p class="card-text"><strong>@ingest.FailedToIngest</strong> - Failed</p>
+                                    <p class="card-text"><strong>@ingest.UpdatedExisting</strong> - Updated Existing</p>
+                                    <p class="card-text"><strong>@ingest.Unchanged</strong> - Unchanged</p>
+                                    <p class="card-text"><strong>@ingest.Removed</strong> - Removed</p>
+                                </div>
+                                <div class="card-footer">
+                                    <h5 class="text-muted">@timeElapsed.ToString(@"hh\:mm") Minutes Elapsed</h5>
+                                    <h6>@ingest?.StartDate</h6>
+                                    <h6>@ingest?.EndDate</h6>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    }
                 }
-            }
+            </div>*@
+        <div class="table-responsive table-hover table-striped table-borderless">
+            <table class="table ">
+                <thead>
+                    <tr>
+                        <th scope="col">Ingested From</th>
+                        <th scope="col">Numbers Retrived</th>
+                        <th scope="col">Ingested New</th>
+                        <th scope="col">Failed to Ingest</th>
+                        <th scope="col">Updated Existing</th>
+                        <th scope="col">Unchanged</th>
+                        <th scope="col">Removed</th>
+                        <th scope="col">Minutes Elapsed</th>
+                        <th scope="col">Start Date</th>
+                        <th scope="col">End Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        foreach (var ingest in Model)
+                        {
+                            var timeElapsed = ingest.StartDate - ingest.EndDate;
+                            <tr>
+                                @{
+                                    if (ingest?.IngestedFrom == "All")
+                                    {
+                                        <td class="table-success">@ingest?.IngestedFrom</td>
+                                        <td class="table-success">@ingest.NumbersRetrived</td>
+                                        <td class="table-success">@ingest.IngestedNew</td>
+                                        <td class="table-success">@ingest.FailedToIngest</td>
+                                        <td class="table-success">@ingest.UpdatedExisting</td>
+                                        <td class="table-success">@ingest.Unchanged</td>
+                                        <td class="table-success">@ingest.Removed</td>
+                                        <td class="table-success"><strong>@timeElapsed.ToString(@"hh\:mm")</strong></td>
+                                        <td class="table-success">@ingest?.StartDate</td>
+                                        <td class="table-success">@ingest?.EndDate</td>
+                                    }
+                                    else
+                                    {
+                                        <td>@ingest?.IngestedFrom</td>
+                                        <td>@ingest.NumbersRetrived</td>
+                                        <td>@ingest.IngestedNew</td>
+                                        <td>@ingest.FailedToIngest</td>
+                                        <td>@ingest.UpdatedExisting</td>
+                                        <td>@ingest.Unchanged</td>
+                                        <td>@ingest.Removed</td>
+                                        <td>@timeElapsed.ToString(@"hh\:mm")</td>
+                                        <td>@ingest?.StartDate</td>
+                                        <td>@ingest?.EndDate</td>
+                                    }
+                                }
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
         </div>
     }
 }
