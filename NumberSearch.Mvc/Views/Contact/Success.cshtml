@@ -1,0 +1,17 @@
+﻿@model NumberSearch.DataAccess.ContactForm;
+
+@{
+    ViewData["Title"] = "Order Complete";
+    var orderDate = Model.DateSubmitted.ToShortDateString() + "!";
+}
+
+<div class="alert alert-success" role="alert">
+    Thanks for reaching out on @orderDate
+</div>
+<div class="alert alert-info" role="alert">
+    A confirmation email will be sent to @Model.Email shortly.
+</div>
+<div class="jumbotron">
+    <h1 class="display-4">Need help? Contact us!</h1>
+    <p class="lead">Give us a ring at 206-858-8757 (texting is welcome) or <a href="mailto:support@acceleratenetworks.com?Subject=Help%20me%20with%20?" target="_top">email us</a>.</p>
+</div>

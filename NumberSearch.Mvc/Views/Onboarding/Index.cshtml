@@ -1,0 +1,233 @@
+﻿@model NumberSearch.Mvc.Models.PhoneNumberOrderInfo;
+
+@{
+    ViewData["Title"] = "Onboarding";
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4 shadow-sm">
+            <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: Thumbnail"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"></rect><text x="50%" y="50%" fill="#eceeef" dy=".3em">Thumbnail</text></svg>
+            <div class="card-body">
+                <p class="card-text">$159.99 or $10 per month per device.</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                        <div class="input-group mb-3">
+                            <input type="number" class="form-control" placeholder="" aria-label="Number to order" aria-describedby="basic-addon2" value="0">
+                            <div class="input-group-append">
+                                <span class="input-group-text" id="basic-addon2">Phones</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card mb-4 shadow-sm">
+            <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: Thumbnail"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"></rect><text x="50%" y="50%" fill="#eceeef" dy=".3em">Thumbnail</text></svg>
+            <div class="card-body">
+                <p class="card-text">$65 or $3.95 per month per device.</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                        <div class="input-group mb-3">
+                            <input type="number" class="form-control" placeholder="" aria-label="Number to order" aria-describedby="basic-addon2" value="0">
+                            <div class="input-group-append">
+                                <span class="input-group-text" id="basic-addon2">Phones</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 order-md-1">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">
+                    Concurrent Users
+                </h5>
+                <p class="card-text">$35 per Line or $18.95 per Seat per month.</p>
+                <div class="mb-3 input-group">
+                    <input type="number" class="form-control" id="seats" value="1">
+                </div>
+                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                    <label class="btn btn-secondary active">
+                        <input type="radio" name="line" id="option1" checked> Lines
+                    </label>
+                    <label class="btn btn-secondary">
+                        <input type="radio" name="seat" id="option2"> Seats
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 order-md-1">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">
+                    Extra Phone Numbers
+                </h5>
+                <p class="card-text">$2 per month per extra phone number.</p>
+                <div class="mb-3 input-group">
+                    <input type="number" class="form-control" id="extraNumber" value="0">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 order-md-1">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">
+                    Fax Server
+                </h5>
+                <p class="card-text">$10 per month.</p>
+                <div class="mb-3 input-group">
+                    <input type="number" class="form-control" id="faxServer" value="0">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12 order-md-1">
+        <h4 class="mb-3">Join Our Network</h4>
+        <form asp-action="Onboarding" method="post" class="needs-validation" novalidate="">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="businessName">Business Name</label>
+                    <input asp-for="Order.FirstName" type="text" class="form-control" id="firstName" placeholder="Accelerate Networks LLC" value="" required="">
+                    <div class="invalid-feedback">
+                        Valid business name is required.
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="firstName">First name</label>
+                    <input asp-for="Order.FirstName" type="text" class="form-control" id="firstName" placeholder="Alexander" value="" required="">
+                    <div class="invalid-feedback">
+                        Valid first name is required.
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="lastName">Last name</label>
+                    <input asp-for="Order.LastName" type="text" class="form-control" id="lastName" placeholder="Bell" value="" required="">
+                    <div class="invalid-feedback">
+                        Valid last name is required.
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="email">Email </label>
+                <input asp-for="Order.Email" type="email" class="form-control" id="email" placeholder="you@example.com">
+                <div class="invalid-feedback">
+                    Please enter a valid email address for shipping updates.
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="address">Address</label>
+                <input asp-for="Order.Address" type="text" class="form-control" id="address" placeholder="1234 Main St" required="">
+                <div class="invalid-feedback">
+                    Please enter your shipping address.
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="address2">Address 2 <span class="text-muted">(Optional)</span></label>
+                <input asp-for="Order.Address2" type="text" class="form-control" id="address2" placeholder="Apartment or suite">
+            </div>
+
+            <div class="row">
+                <div class="col-md-5 mb-3">
+                    <label for="country">Country</label>
+                    <select asp-for="Order.Country" class="custom-select d-block w-100" id="country" required="">
+                        <option value="United States">United States</option>
+                    </select>
+                    <div class="invalid-feedback">
+                        Please select a valid country.
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="state">State</label>
+                    <select asp-for="Order.State" class="custom-select d-block w-100" id="state" required="">
+                        <option value="">Choose...</option>
+                        @{
+                            var states = new string[] { "Alabama",
+                                                        "Alaska",
+                                                        "Arizona",
+                                                        "Arkansas",
+                                                        "California",
+                                                        "Colorado",
+                                                        "Connecticut",
+                                                        "Delaware",
+                                                        "Florida",
+                                                        "Georgia",
+                                                        "Hawaii",
+                                                        "Idaho",
+                                                        "Illinois",
+                                                        "Indiana",
+                                                        "Iowa",
+                                                        "Kansas",
+                                                        "Kentucky",
+                                                        "Louisiana",
+                                                        "Maine",
+                                                        "Maryland",
+                                                        "Massachusetts",
+                                                        "Michigan",
+                                                        "Minnesota",
+                                                        "Mississippi",
+                                                        "Missouri",
+                                                        "Montana",
+                                                        "Nebraska",
+                                                        "Nevada",
+                                                        "New Hampshire",
+                                                        "New Jersey",
+                                                        "New Mexico",
+                                                        "New York",
+                                                        "North Carolina",
+                                                        "North Dakota",
+                                                        "Ohio",
+                                                        "Oklahoma",
+                                                        "Oregon",
+                                                        "Pennsylvania",
+                                                        "Rhode Island",
+                                                        "South Carolina",
+                                                        "South Dakota",
+                                                        "Tennessee",
+                                                        "Texas",
+                                                        "Utah",
+                                                        "Vermont",
+                                                        "Virginia",
+                                                        "Washington",
+                                                        "West Virginia",
+                                                        "Wisconsin",
+                                                        "Wyoming"
+                                                        };
+
+                            foreach (var state in states)
+                            {
+                                <option>@state</option>
+                            }
+                        }
+                    </select>
+                    <div class="invalid-feedback">
+                        Please provide a valid state.
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="zip">Zip</label>
+                    <input asp-for="Order.Zip" type="text" class="form-control" id="zip" placeholder="" required="">
+                    <div class="invalid-feedback">
+                        Zip code required.
+                    </div>
+                </div>
+                @*<div hidden>
+                        <input asp-for="Order.DialedNumber" type="text" value="@Model.number.DialedNumber"/>
+                    </div>*@
+            </div>
+            <hr class="mb-4">
+            <button class="btn btn-primary btn-lg btn-block" type="submit" value="Submit">Submit your Order</button>
+        </form>
+    </div>
+</div>

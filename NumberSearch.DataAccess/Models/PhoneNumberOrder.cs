@@ -37,7 +37,7 @@ namespace NumberSearch.DataAccess
 
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"INSERT INTO public.\"Orders\"(\"DialedNumber\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"Country\", \"State\", \"Zip\", \"DateSubmitted\") VALUES('{DialedNumber}', '{FirstName}', '{LastName}', '{Email}', '{Address}', '{Address2}', '{Country}', '{State}', '{Zip}', '{DateSubmitted}'); ";
+            string sql = $"INSERT INTO public.\"Orders\"(\"DialedNumber\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"Country\", \"State\", \"Zip\", \"DateSubmitted\") VALUES('{DialedNumber}', '{FirstName}', '{LastName}', '{Email}', '{Address}', '{Address2}', '{Country}', '{State}', '{Zip}', '{DateSubmitted}')";
 
             var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
 
