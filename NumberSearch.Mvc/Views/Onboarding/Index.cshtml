@@ -1,100 +1,104 @@
-﻿@model NumberSearch.Mvc.Models.PhoneNumberOrderInfo;
-
+﻿@model NumberSearch.Mvc.Models.ClientOnboardingInfo;
 @{
     ViewData["Title"] = "Onboarding";
 }
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card mb-4 shadow-sm">
-            <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: Thumbnail"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"></rect><text x="50%" y="50%" fill="#eceeef" dy=".3em">Thumbnail</text></svg>
-            <div class="card-body">
-                <p class="card-text">$159.99 or $10 per month per device.</p>
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="btn-group">
-                        <div class="input-group mb-3">
-                            <input type="number" class="form-control" placeholder="" aria-label="Number to order" aria-describedby="basic-addon2" value="0">
-                            <div class="input-group-append">
-                                <span class="input-group-text" id="basic-addon2">Phones</span>
+<form asp-action="Onboarding" method="post" class="needs-validation" novalidate="">
+    <h1 class="display-4">Join our Network!</h1>
+    <br />
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm">
+                <img class="card-img-top" src="~/GRP2615-front.png" />
+                <div class="card-body">
+                    <p class="card-text">Supports WiFi, Bluetooth and Power over Ethernet<br />$159.99 or $10 per month per device</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="btn-group">
+                            <div class="input-group mb-3">
+                                <input asp-for="Order.EPCount" type="number" class="form-control" placeholder="" aria-label="Number to order" aria-describedby="basic-addon2" value="0">
+                                <input asp-for="Order.ExpensivePhoneName" value="GRP2615" hidden />
+                                <div class="input-group-append">
+                                    <span class="input-group-text" id="basic-addon2">Phones</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card mb-4 shadow-sm">
-            <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: Thumbnail"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"></rect><text x="50%" y="50%" fill="#eceeef" dy=".3em">Thumbnail</text></svg>
-            <div class="card-body">
-                <p class="card-text">$65 or $3.95 per month per device.</p>
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="btn-group">
-                        <div class="input-group mb-3">
-                            <input type="number" class="form-control" placeholder="" aria-label="Number to order" aria-describedby="basic-addon2" value="0">
-                            <div class="input-group-append">
-                                <span class="input-group-text" id="basic-addon2">Phones</span>
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm">
+                <img class="card-img-top" src="~/GRP2612front.png" />
+                <div class="card-body">
+                    <p class="card-text">$65 or $3.95 per month per device</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="btn-group">
+                            <div class="input-group mb-3">
+                                <input asp-for="Order.CPCount" type="number" class="form-control" placeholder="" aria-label="Number to order" aria-describedby="basic-addon2" value="0">
+                                <input asp-for="Order.CheapPhoneName" value="GRP2612" hidden />
+                                <div class="input-group-append">
+                                    <span class="input-group-text" id="basic-addon2">Phones</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-4 order-md-1">
-        <div class="card mb-4 shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">
-                    Concurrent Users
-                </h5>
-                <p class="card-text">$35 per Line or $18.95 per Seat per month.</p>
-                <div class="mb-3 input-group">
-                    <input type="number" class="form-control" id="seats" value="1">
-                </div>
-                <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                    <label class="btn btn-secondary active">
-                        <input type="radio" name="line" id="option1" checked> Lines
-                    </label>
-                    <label class="btn btn-secondary">
-                        <input type="radio" name="seat" id="option2"> Seats
-                    </label>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4 order-md-1">
-        <div class="card mb-4 shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">
-                    Extra Phone Numbers
-                </h5>
-                <p class="card-text">$2 per month per extra phone number.</p>
-                <div class="mb-3 input-group">
-                    <input type="number" class="form-control" id="extraNumber" value="0">
+        <div class="col-md-4 order-md-1">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        Concurrent Users
+                    </h5>
+                    <p class="card-text">$35 per Line or $18.95 per Seat per month</p>
+                    <div class="mb-3 input-group">
+                        <input asp-for="Order.LinesOrSeatsCount" type="number" class="form-control" id="seats" value="1">
+                    </div>
+                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                        <label class="btn btn-secondary active">
+                            <input asp-for="Order.Lines" type="radio" name="line" id="option1" value="lines" checked> Lines
+                        </label>
+                        <label class="btn btn-secondary">
+                            <input asp-for="Order.Seats" type="radio" name="seat" id="option2" value="seats"> Seats
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-4 order-md-1">
-        <div class="card mb-4 shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">
-                    Fax Server
-                </h5>
-                <p class="card-text">$10 per month.</p>
-                <div class="mb-3 input-group">
-                    <input type="number" class="form-control" id="faxServer" value="0">
+        <div class="col-md-4 order-md-1">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        Extra Phone Numbers
+                    </h5>
+                    <p class="card-text">$2 per month per extra phone number</p>
+                    <div class="mb-3 input-group">
+                        <input asp-for="Order.ExtraPhoneNumbers" type="number" class="form-control" id="extraNumber" value="0">
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-12 order-md-1">
-        <h4 class="mb-3">Join Our Network</h4>
-        <form asp-action="Onboarding" method="post" class="needs-validation" novalidate="">
+        <div class="col-md-4 order-md-1">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        Fax Server
+                    </h5>
+                    <p class="card-text">$10 per month, includes a phone number</p>
+                    <div class="mb-3 input-group">
+                        <input asp-for="Order.FaxServer" type="checkbox" class="form-control" id="faxServer">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 order-md-1">
+            <h4 class="mb-3">Tell Us About Your Business</h4>
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="businessName">Business Name</label>
-                    <input asp-for="Order.FirstName" type="text" class="form-control" id="firstName" placeholder="Accelerate Networks LLC" value="" required="">
+                    <input asp-for="Order.BusinessName
+                           " type="text" class="form-control" id="firstName" placeholder="Accelerate Networks LLC" value="" required>
                     <div class="invalid-feedback">
                         Valid business name is required.
                     </div>
@@ -103,14 +107,14 @@
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="firstName">First name</label>
-                    <input asp-for="Order.FirstName" type="text" class="form-control" id="firstName" placeholder="Alexander" value="" required="">
+                    <input asp-for="Order.FirstName" type="text" class="form-control" id="firstName" placeholder="Alexander" value="" required>
                     <div class="invalid-feedback">
                         Valid first name is required.
                     </div>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label for="lastName">Last name</label>
-                    <input asp-for="Order.LastName" type="text" class="form-control" id="lastName" placeholder="Bell" value="" required="">
+                    <input asp-for="Order.LastName" type="text" class="form-control" id="lastName" placeholder="Bell" value="" required>
                     <div class="invalid-feedback">
                         Valid last name is required.
                     </div>
@@ -127,7 +131,7 @@
 
             <div class="mb-3">
                 <label for="address">Address</label>
-                <input asp-for="Order.Address" type="text" class="form-control" id="address" placeholder="1234 Main St" required="">
+                <input asp-for="Order.Address" type="text" class="form-control" id="address" placeholder="1234 Main St" required>
                 <div class="invalid-feedback">
                     Please enter your shipping address.
                 </div>
@@ -141,7 +145,7 @@
             <div class="row">
                 <div class="col-md-5 mb-3">
                     <label for="country">Country</label>
-                    <select asp-for="Order.Country" class="custom-select d-block w-100" id="country" required="">
+                    <select asp-for="Order.Country" class="custom-select d-block w-100" id="country" required>
                         <option value="United States">United States</option>
                     </select>
                     <div class="invalid-feedback">
@@ -150,7 +154,7 @@
                 </div>
                 <div class="col-md-4 mb-3">
                     <label for="state">State</label>
-                    <select asp-for="Order.State" class="custom-select d-block w-100" id="state" required="">
+                    <select asp-for="Order.State" class="custom-select d-block w-100" id="state" required>
                         <option value="">Choose...</option>
                         @{
                             var states = new string[] { "Alabama",
@@ -217,17 +221,14 @@
                 </div>
                 <div class="col-md-3 mb-3">
                     <label for="zip">Zip</label>
-                    <input asp-for="Order.Zip" type="text" class="form-control" id="zip" placeholder="" required="">
+                    <input asp-for="Order.Zip" type="text" class="form-control" id="zip" placeholder="" required>
                     <div class="invalid-feedback">
                         Zip code required.
                     </div>
                 </div>
-                @*<div hidden>
-                        <input asp-for="Order.DialedNumber" type="text" value="@Model.number.DialedNumber"/>
-                    </div>*@
             </div>
             <hr class="mb-4">
             <button class="btn btn-primary btn-lg btn-block" type="submit" value="Submit">Submit your Order</button>
-        </form>
+        </div>
     </div>
-</div>
+</form>

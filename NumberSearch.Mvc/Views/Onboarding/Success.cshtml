@@ -1,13 +1,12 @@
-﻿@model NumberSearch.DataAccess.PhoneNumberOrder;
+﻿@model NumberSearch.DataAccess.ClientOnboarding;
 
 @{
     ViewData["Title"] = "Order Complete";
     var orderDate = Model.DateSubmitted.ToShortDateString() + "!";
-    var number = Model.DialedNumber;
 }
 
 <div class="alert alert-success" role="alert">
-    Phone number @number has been reserved on @orderDate
+    @Model.BusinessName has been Onboarded to our Network on @orderDate
 </div>
 <div class="alert alert-info" role="alert">
     A confirmation email will be sent to @Model.Email shortly.
