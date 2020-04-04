@@ -1,0 +1,29 @@
+﻿
+@{
+    ViewData["Title"] = "Support";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script>
+    window.erxesSettings = {
+      knowledgeBase: {
+        topic_id: "FCG2jN9HoMCnXLAKx"
+      },
+    };
+
+    (function () {
+      var script = document.createElement('script');
+      script.src = "https://acceleratenetworks.app.erxes.io/widgets/build/knowledgebaseWidget.bundle.js";
+      script.async = true;
+      var entry = document.getElementsByTagName('script')[0];
+      entry.parentNode.insertBefore(script, entry);
+    })();
+</script>
+<div class="container">
+    <br />
+    <div class="pricing-header mx-auto mb-3 text-center">
+        <h1 class="display-4">Support Articles</h1>
+    </div>
+    <br />
+    <div data-erxes-kbase style="height:67vh;" class="col-12"></div>
+</div>

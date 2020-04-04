@@ -5,33 +5,51 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] | Accelerate Networks</title>
+    <link rel="icon" href="~/favicon-194x194.png">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.0/css/bootstrap.min.css" integrity="sha384-SI27wrMjH3ZZ89r4o+fGIJtnzkAnFs3E4qz9DIYioCQ5l9Rd/7UAa8DHcaL8jkWt" crossorigin="anonymous">
     <link rel="stylesheet" href="~/css/site.css" />
     @Html.Raw(JavaScriptSnippet.FullScript)
 </head>
 <body>
-    <div class="container">
-        <div class="navbar static-top header">
-            <a href="https://AccelerateNetworks.com" class="navbar-brand">
-                <img src="~/accelerate.png" width="120" height="40">
-            </a>
-            <nav>
-                <ul class="nav nav-pills float-xs-right">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/onboarding">Onboarding</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/">Number Search</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/contact">Contact</a>
-                    </li>
-                </ul>
-            </nav>
+    <div class="pt-3 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-xl-3 col-md-3">
+                    <a asp-controller="Home" asp-action="Index" class="navbar-brand mx-auto font-weight-normal">
+                        <img src="~/accelerate.png" alt="Accelerate Networks" class="img-fluid" style="width: 10rem;">
+                    </a>
+                </div>
+                <div class="col-xl-9 col-md-9 d-flex flex-wrap justify-content-around align-items-center">
+                    <a class="p-2 text-dark" asp-controller="Home" asp-action="Services">Services</a>
+                    <a class="p-2 text-dark" asp-controller="Home" asp-action="Hardware">Hardware</a>
+                    <a class="p-2 text-dark" asp-controller="Onboarding" asp-action="Index">Order</a>
+                    <a class="p-2 text-dark" asp-controller="Home" asp-action="Support">Support</a>
+                    <a class="p-2 text-dark" asp-controller="Home" asp-action="About">About</a>
+                    <a class="p-2 text-dark" href="https://blog.acceleratenetworks.com/" target="_blank"
+                       rel="noopener noreferrer">Blog</a>
+                    <a class="btn btn-outline-primary btn-lg" asp-controller="Search" asp-action="Index">Number Search</a>
+                </div>
+            </div>
         </div>
         <main role="main">
             @RenderBody()
         </main>
+        <div class="p-3 bg-light">
+            <div class="container">
+                <footer class="pt-4 my-md-5 pt-md-5">
+                    <div class="row">
+                        <div class="col">
+                            <h5>Proudly made in Seattle, WA</h5>
+                            <small class="d-block mb-3 text-muted">© 2020 Accelerate Networks</small>
+                        </div>
+                        <div class="col text-right">
+                            <a href="tel:12068588757">1-(206)-858-8757</a>
+                            <br><a href="mailto:support@acceleratenetworks.com">support@acceleratenetworks.com</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>

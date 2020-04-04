@@ -1,0 +1,81 @@
+﻿
+@{
+    ViewData["Title"] = "Services";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+    <div class="container">
+        <br />
+        <div class="pricing-header mx-auto mb-3 text-center">
+            <h1 class="display-4">Business Tools</h1>
+        </div>
+        <br />
+        <div class="card-deck mb-3 text-center">
+            <div class="card mb-4 box-shadow">
+                <div class="card-header">
+                    <h4 class="my-0 font-weight-normal">Web Texting</h4>
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title pricing-card-title">$10 <small class="text-muted">/ mo</small></h1>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>Text from any browser</li>
+                        <li>SMS and MMS Supported</li>
+                        <li>Never miss a customer</li>
+                        <li>Communicate seamlessly</li>
+                    </ul>
+                    <a class="btn btn-lg btn-block btn-outline-primary" asp-controller="Contact" asp-action="Index">Start texting today</a>
+                </div>
+            </div>
+            <div class="card mb-4 box-shadow">
+                <div class="card-header">
+                    <h4 class="my-0 font-weight-normal">LTE Backup</h4>
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title pricing-card-title">$30 <small class="text-muted">/ mo</small></h1>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>Always stay online!</li>
+                        <li>No Overages</li>
+                        <li>No Worries</li>
+                        <li>Unlimited Bandwidth</li>
+                    </ul>
+                    <a class="btn btn-lg btn-block btn-primary" asp-controller="Contact" asp-action="Index">Protect your business</a>
+                </div>
+            </div>
+        </div>
+        <div class="pricing-header mx-auto mb-3 text-center">
+            <h1 class="display-4">Phone Service</h1>
+        </div>
+        <br />
+        <div class="card-deck mb-3 text-center">
+            <div class="card mb-4 box-shadow">
+                <div class="card-header">
+                    <h4 class="my-0 font-weight-normal">Standard Line</h4>
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title pricing-card-title">$35 <small class="text-muted">/ mo</small></h1>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>Unlimited Calling</li>
+                        <li>HD Voice</li>
+                        <li>Music on Hold</li>
+                        <li>Call Menus and more!</li>
+                    </ul>
+                    <a class="btn btn-lg btn-block btn-outline-primary" asp-controller="Contact" asp-action="Index">Start talking today</a>
+                </div>
+            </div>
+            <div class="card mb-4 box-shadow">
+                <div class="card-header">
+                    <h4 class="my-0 font-weight-normal">Toll Free Number</h4>
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title pricing-card-title">$10 <small class="text-muted">/ mo</small></h1>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>SMS & MMS support</li>
+                        <li>Search Custom Numbers</li>
+                        <li>Not local or regional</li>
+                        <li>Free for clients to call</li>
+                    </ul>
+                    <a class="btn btn-lg btn-block btn-primary" asp-controller="Contact" asp-action="Index">Impress your clients</a>
+                </div>
+            </div>
+        </div>
+    </div>

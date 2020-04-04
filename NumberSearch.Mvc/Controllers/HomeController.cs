@@ -24,6 +24,31 @@ namespace NumberSearch.Mvc.Controllers
             return View();
         }
 
+        public IActionResult Services()
+        {
+            return View();
+        }
+
+        public IActionResult Hardware()
+        {
+            return View();
+        }
+
+        public IActionResult Order()
+        {
+            return View();
+        }
+
+        public IActionResult Support()
+        {
+            return View();
+        }
+
+        public IActionResult About()
+        {
+            return View();
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
