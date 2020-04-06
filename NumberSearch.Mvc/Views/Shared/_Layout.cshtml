@@ -11,7 +11,7 @@
     @Html.Raw(JavaScriptSnippet.FullScript)
 </head>
 <body>
-    <div class="pt-3 bg-light">
+    <div class="pt-3">
         <div class="container">
             <div class="row">
                 <div class="col-xl-3 col-md-3">
@@ -31,24 +31,24 @@
                 </div>
             </div>
         </div>
-        <main role="main">
-            @RenderBody()
-        </main>
-        <div class="p-3 bg-light">
-            <div class="container">
-                <footer class="pt-4 my-md-5 pt-md-5">
-                    <div class="row">
-                        <div class="col">
-                            <h5>Proudly made in Seattle, WA</h5>
-                            <small class="d-block mb-3 text-muted">© 2020 Accelerate Networks</small>
-                        </div>
-                        <div class="col text-right">
-                            <a href="tel:12068588757">1-(206)-858-8757</a>
-                            <br><a href="mailto:support@acceleratenetworks.com">support@acceleratenetworks.com</a>
-                        </div>
+    </div>
+    <main role="main">
+        @RenderBody()
+    </main>
+    <div class="p-3 bg-light">
+        <div class="container">
+            <footer class="footer pt-4 my-md-5 pt-md-5">
+                <div class="row">
+                    <div class="col">
+                        <h5>Proudly made in Seattle, WA</h5>
+                        <small class="d-block mb-3 text-muted">© 2020 Accelerate Networks</small>
                     </div>
-                </footer>
-            </div>
+                    <div class="col text-right">
+                        <a href="tel:12068588757">1-(206)-858-8757</a>
+                        <br><a href="mailto:support@acceleratenetworks.com">support@acceleratenetworks.com</a>
+                    </div>
+                </div>
+            </footer>
         </div>
     </div>
 

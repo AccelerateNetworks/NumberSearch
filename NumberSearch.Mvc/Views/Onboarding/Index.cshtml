@@ -3,7 +3,7 @@
     ViewData["Title"] = "Onboarding";
 }
 <div class="container">
-    <form asp-action="Onboarding" method="post" class="needs-validation" novalidate="">
+    <form asp-controller="Onboarding" asp-action="Onboarding" method="post" class="needs-validation" novalidate="">
         <br />
         <div class="pricing-header mx-auto mb-3 text-center">
             <h1 class="display-4">Join our Network!</h1>
@@ -95,7 +95,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-12 order-md-1">
+            <div class="col-md-12 order-md-1 pb-3">
                 <h4 class="mb-3">Tell Us About Your Business</h4>
                 <div class="row">
                     <div class="col-md-6 mb-3">
