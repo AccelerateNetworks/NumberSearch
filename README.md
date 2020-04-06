@@ -21,7 +21,7 @@
 * Click the green arrow to run the project on localhost.
 
 # Run on a Debian Server
-Install [.Net Core SDK](https://docs.microsoft.com/en-us/dotnet/core/install/sdk), navigate to the project folder and run `dotnet publish` 
+Install [.Net Core SDK](https://docs.microsoft.com/en-us/dotnet/core/install/sdk), navigate to the project folder and run `dotnet publish --configuration Release` 
 ## Number Import
 Create a cronjob using `crontab -e` to run the ingest:
 ```
