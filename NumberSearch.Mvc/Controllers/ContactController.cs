@@ -79,7 +79,7 @@ Accelerate Networks"
                 return View("Success", contact);
             }
 
-            return RedirectToAction("Index", "Search");
+            return RedirectToAction("Index", "Home");
         }
     }
 }
