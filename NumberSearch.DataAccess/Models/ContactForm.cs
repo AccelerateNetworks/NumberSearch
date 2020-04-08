@@ -19,6 +19,12 @@ namespace NumberSearch.DataAccess
         public string PhoneNumber { get; set; }
         public DateTime DateSubmitted { get; set; }
 
+        /// <summary>
+        /// Get contacts by an email address.
+        /// </summary>
+        /// <param name="email"> An email address. </param>
+        /// <param name="connectionString"> The database credentials. </param>
+        /// <returns> One or more contacts. </returns>
         public static async Task<IEnumerable<ContactForm>> GetAsync(string email, string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);
@@ -30,6 +36,12 @@ namespace NumberSearch.DataAccess
             return result;
         }
 
+
+        /// <summary>
+        /// Submit a new contact to the database.
+        /// </summary>
+        /// <param name="connectionString"> The database credentials. </param>
+        /// <returns> A success of failure indicator. </returns>
         public async Task<bool> PostAsync(string connectionString)
         {
             DateSubmitted = DateTime.Now;
