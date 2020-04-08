@@ -32,7 +32,9 @@ namespace NumberSearch.Mvc
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>")]
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews().AddRazorRuntimeCompilation();
+            services.AddControllersWithViews()
+                .AddRazorRuntimeCompilation();
+
             services.AddApplicationInsightsTelemetry();
         }
 
@@ -54,6 +56,7 @@ namespace NumberSearch.Mvc
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseSecurityHeaders();
 
             app.UseRouting();
 
