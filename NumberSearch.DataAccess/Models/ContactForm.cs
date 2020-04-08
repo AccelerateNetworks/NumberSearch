@@ -11,6 +11,8 @@ namespace NumberSearch.DataAccess
     public class ContactForm
     {
         public Guid Id { get; set; }
+        public string BusinessName { get; set; }
+        public string RoleTitle { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
@@ -21,7 +23,7 @@ namespace NumberSearch.DataAccess
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"SELECT \"Id\", \"FirstName\", \"LastName\", \"Email\", \"PhoneNumber\", \"DateSubmitted\" FROM public.\"SalesLeads\" WHERE \"Email\" = '{email}'";
+            string sql = $"SELECT \"Id\",\"BusinessName\", \"RoleTitle\", \"FirstName\", \"LastName\", \"Email\", \"PhoneNumber\", \"DateSubmitted\" FROM public.\"SalesLeads\" WHERE \"Email\" = '{email}'";
 
             var result = await connection.QueryAsync<ContactForm>(sql).ConfigureAwait(false);
 
@@ -34,7 +36,7 @@ namespace NumberSearch.DataAccess
 
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"INSERT INTO public.\"SalesLeads\"(\"FirstName\", \"LastName\", \"Email\", \"PhoneNumber\", \"DateSubmitted\") VALUES('{FirstName}', '{LastName}', '{Email}', '{PhoneNumber}', '{DateSubmitted}')";
+            string sql = $"INSERT INTO public.\"SalesLeads\"(\"BusinessName\", \"RoleTitle\", \"FirstName\", \"LastName\", \"Email\", \"PhoneNumber\", \"DateSubmitted\") VALUES('{BusinessName}', '{RoleTitle}', '{FirstName}', '{LastName}', '{Email}', '{PhoneNumber}', '{DateSubmitted}')";
 
             var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
 

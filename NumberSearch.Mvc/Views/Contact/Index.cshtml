@@ -17,6 +17,22 @@
                 <form asp-action="Contact" method="post" class="needs-validation" novalidate="">
                     <div class="row">
                         <div class="col-md-6 mb-3">
+                            <label for="firstName">Business Name</label>
+                            <input asp-for="BusinessName" type="text" class="form-control" id="businessName" placeholder="Bell Telephone Company" value="" required="">
+                            <div class="invalid-feedback">
+                                Valid business name is required.
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="lastName">Your Role or Title</label>
+                            <input asp-for="RoleTitle" type="text" class="form-control" id="RoleTitle" placeholder="Senior Inventor" value="" required="">
+                            <div class="invalid-feedback">
+                                Valid role or title is required.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
                             <label for="firstName">First name</label>
                             <input asp-for="FirstName" type="text" class="form-control" id="firstName" placeholder="Alexander" value="" required="">
                             <div class="invalid-feedback">
@@ -34,7 +50,7 @@
 
                     <div class="mb-3">
                         <label for="email">Email </label>
-                        <input asp-for="Email" type="email" class="form-control" id="email" placeholder="you@example.com">
+                        <input asp-for="Email" type="email" class="form-control" id="email" placeholder="abell@bell.com">
                         <div class="invalid-feedback">
                             Please enter a valid email address for shipping updates.
                         </div>
@@ -42,7 +58,7 @@
 
                     <div class="mb-3">
                         <label for="address">Phone Number</label>
-                        <input asp-for="PhoneNumber" type="text" class="form-control" id="phoneNumber" placeholder="20161233421" required="">
+                        <input asp-for="PhoneNumber" type="text" class="form-control" id="phoneNumber" placeholder="12161233421" required="">
                         <div class="invalid-feedback">
                             Please enter your phone number.
                         </div>

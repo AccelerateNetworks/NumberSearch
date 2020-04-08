@@ -27,7 +27,7 @@ namespace NumberSearch.Mvc.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5359:Do Not Disable Certificate Validation", Justification = "<Pending>")]
-        public async Task<IActionResult> ContactAsync([Bind("FirstName,LastName,Email,PhoneNumber")] ContactForm contact)
+        public async Task<IActionResult> ContactAsync([Bind("BusinessName,RoleTitle,FirstName,LastName,Email,PhoneNumber")] ContactForm contact)
         {
             if (contact != null && !string.IsNullOrWhiteSpace(contact.Email))
             {
