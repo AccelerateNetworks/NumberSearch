@@ -407,7 +407,7 @@ namespace NumberSearch.Tests
         {
             var conn = postgresql;
 
-            var results = await PhoneNumberOrder.GetAsync("4062262621", conn);
+            var results = await Order.GetAsync("4062262621", conn);
 
             Assert.NotNull(results);
             Assert.NotEmpty(results);
@@ -421,7 +421,6 @@ namespace NumberSearch.Tests
                 Assert.False(string.IsNullOrWhiteSpace(result.Country));
                 Assert.False(string.IsNullOrWhiteSpace(result.State));
                 Assert.False(string.IsNullOrWhiteSpace(result.Zip));
-                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
                 Assert.False(string.IsNullOrWhiteSpace(result.Email));
                 Assert.True(result.DateSubmitted > new DateTime(2019, 1, 1));
             }
@@ -432,12 +431,59 @@ namespace NumberSearch.Tests
         {
             var conn = postgresql;
 
-            var results = await PhoneNumberOrder.GetAsync("4062262621", conn);
+            var results = await Order.GetAsync("4062262621", conn);
 
             var order = results.FirstOrDefault();
             var response = await order.PostAsync(conn);
 
             Assert.True(response);
+        }
+
+        [Fact]
+        public async Task PostProductOrderByProductIdAsync()
+        {
+            var conn = postgresql;
+
+            var itemToOrder = new ProductOrder
+            {
+                OrderId = new Guid("799cc220-5931-46d8-9a21-03ce523e8ec2"),
+                ProductId = new Guid("799cc220-5931-46d8-9a21-03ce523e8ec3"),
+                Quantity = 1
+            };
+
+
+            var result = await itemToOrder.PostAsync(conn);
+
+            Assert.True(result);
+        }
+
+
+        [Fact]
+        public async Task PostProductOrderByDialedNumberAsync()
+        {
+            var conn = postgresql;
+
+            var itemToOrder = new ProductOrder
+            {
+                OrderId = new Guid("799cc220-5931-46d8-9a21-03ce523e8ec2"),
+                DialedNumber = "8605530426",
+                Quantity = 1
+            };
+
+            var result = await itemToOrder.PostAsync(conn);
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task GetProductOrderAsync()
+        {
+            var conn = postgresql;
+
+            var results = await ProductOrder.GetAsync(new Guid("799cc220-5931-46d8-9a21-03ce523e8ec2"), conn);
+
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
         }
     }
 }

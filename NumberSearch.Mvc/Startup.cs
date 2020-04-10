@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 
 namespace NumberSearch.Mvc
 {
@@ -27,13 +28,18 @@ namespace NumberSearch.Mvc
 
         public IConfiguration Configuration { get; }
 
-
         // This method gets called by the runtime. Use this method to add services to the container.
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>")]
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDistributedMemoryCache();
+
+            services.AddSession();
+
             services.AddControllersWithViews()
                 .AddRazorRuntimeCompilation();
+
+            services.AddRazorPages();
 
             services.AddApplicationInsightsTelemetry();
         }
@@ -56,17 +62,20 @@ namespace NumberSearch.Mvc
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+
             app.UseSecurityHeaders();
 
             app.UseRouting();
 
             app.UseAuthorization();
 
+            app.UseSession();
+
+
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Home}/{action=Index}");
+                endpoints.MapDefaultControllerRoute();
+                endpoints.MapRazorPages();
             });
         }
     }

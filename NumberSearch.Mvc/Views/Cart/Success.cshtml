@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Order Complete";
-    var orderDate = Model.DateSubmitted.ToShortDateString() + "!";
+    var orderDate = Model.DateSubmitted.ToLocalTime().ToShortDateString() + "!";
 }
 
 <div class="container">

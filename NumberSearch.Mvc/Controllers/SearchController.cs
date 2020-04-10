@@ -24,6 +24,8 @@ namespace NumberSearch.Mvc.Controllers
         /// </summary>
         /// <param name="query"> A complete or partial phone number. </param>
         /// <returns> A view of nothing, or the result of the query. </returns>
+        [Route("Search/{Query}")]
+        [Route("Search/")]
         public async Task<IActionResult> IndexAsync(string query, int page = 1)
         {
             // Fail fast

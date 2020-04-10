@@ -65,9 +65,9 @@ namespace NumberSearch.Mvc.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5359:Do Not Disable Certificate Validation", Justification = "<Pending>")]
-        public async Task<IActionResult> OrderAsync([Bind("DialedNumber,FirstName,LastName,Email,Address,Address2,Country,State,Zip")] PhoneNumberOrder order)
+        public async Task<IActionResult> OrderAsync([Bind("DialedNumber,FirstName,LastName,Email,Address,Address2,Country,State,Zip")] Order order)
         {
-            if (order != null && order.DialedNumber.Length == 10 && !string.IsNullOrWhiteSpace(order.Email))
+            if (order != null && !string.IsNullOrWhiteSpace(order.Email))
             {
                 order.DateSubmitted = DateTime.Now;
 
@@ -77,20 +77,20 @@ namespace NumberSearch.Mvc.Controllers
                 // Send a confirmation email.
                 if (submittedOrder)
                 {
-                    var orderFromDb = await PhoneNumberOrder.GetAsync(order.DialedNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                    var orderFromDb = await Order.GetAsync(order.Email, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
                     order = orderFromDb.FirstOrDefault();
 
                     var outboundMessage = new MimeKit.MimeMessage
                     {
                         Sender = new MimeKit.MailboxAddress("Number Search", configuration.GetConnectionString("SmtpUsername")),
-                        Subject = $"Order: {order.DialedNumber}"
+                        Subject = $"Order: {order.Id}"
                     };
 
                     outboundMessage.Body = new TextPart(TextFormat.Plain)
                     {
                         Text = $@"Hi {order.FirstName},
                                                                                       
-Thank you for ordering phone number {order.DialedNumber} from Accelerate Networks!
+Thank you for ordering from Accelerate Networks!
 
 Your order Id is: {order.Id}.
                                                                                       

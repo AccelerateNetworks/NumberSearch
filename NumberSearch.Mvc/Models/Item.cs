@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Models
 {
-    public class PhoneNumberOrderInfo
+    public class Item
     {
-        public PhoneNumber number { get; set; }
-        public PhoneNumberDetail detail { get; set; }
-        public Order Order { get; set; }
+        public PhoneNumber Product { get; set; }
+        public int Quantity { get; set; }
     }
 }
