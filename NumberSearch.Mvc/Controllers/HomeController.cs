@@ -1,17 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using NumberSearch.DataAccess;
 using NumberSearch.Mvc.Models;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IConfiguration configuration;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, IConfiguration config)
         {
             _logger = logger;
+            configuration = config;
         }
 
         public IActionResult Index()
@@ -29,9 +34,10 @@ namespace NumberSearch.Mvc.Controllers
             return View();
         }
 
-        public IActionResult Hardware()
+        public async Task<IActionResult> HardwareAsync()
         {
-            return View();
+            var products = await Product.GetAllAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            return View("Hardware", products);
         }
 
         public IActionResult Order()

@@ -1,6 +1,7 @@
 ﻿using Dapper;
 
 using Npgsql;
+using NumberSearch.DataAccess.Models;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess
 {
-    public class PhoneNumber
+    public class PhoneNumber : IProduct
     {
         public string DialedNumber { get; set; }
         public int NPA { get; set; }
@@ -19,6 +20,8 @@ namespace NumberSearch.DataAccess
         public string State { get; set; }
         public string IngestedFrom { get; set; }
         public DateTime DateIngested { get; set; }
+        // This is unused.
+        public Guid ProductId { get; set; }
 
         /// <summary>
         /// Get a list of all phone numbers in the database.

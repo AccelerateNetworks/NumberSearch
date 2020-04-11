@@ -1,4 +1,5 @@
 ﻿using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,8 @@ namespace NumberSearch.Mvc.Models
 {
     public class Cart
     {
-        public IEnumerable<PhoneNumber> Items { get; set; }
+        public IEnumerable<PhoneNumber> PhoneNumbers { get; set; }
+        public IEnumerable<Product> Products { get; set; }
         public Order Order { get; set; }
     }
 }

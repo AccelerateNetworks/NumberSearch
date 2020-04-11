@@ -1,4 +1,4 @@
-﻿
+﻿@model IEnumerable<NumberSearch.DataAccess.Product>
 @{
     ViewData["Title"] = "Hardware";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -11,176 +11,46 @@
     </div>
     <br />
     <div class="row">
-        <div class="col-md-4">
-            <div class="card mb-4 box-shadow">
-                <img class="card-img-top" src="~/images/scaled/GRP2615-front-400.jpg" />
-                <div class="card-body">
-                    <div class="card-title">
-                        <h4 class="display-4">GRP2615</h4>
-                    </div>
-                    <p class="card-text">Bringing Bluetooth 5 & Wireless support to the table, the GRP2615 is a high performing, versatile phone that is at home on any desk! Supports Power over Ethernet.</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="btn-group">
-                            <a type="button" class="btn btn btn-outline-primary" asp-controller="Contact" asp-action="Index">Order Now</a>
+        @{
+            var products = Model.ToArray();
+            foreach (var product in products)
+            {
+                <div class="col-md-4">
+                    <div class="card mb-4 box-shadow">
+                        <img class="card-img-top" src="@product.Image" />
+                        <div class="card-body">
+                            <div class="card-title">
+                                <h4 class="display-4">@product.Name</h4>
+                            </div>
+                            <p class="card-text">@product.Description</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="btn-group">
+                                    <a type="button" class="btn btn btn-outline-primary" asp-controller="Cart" asp-action="BuyProduct" asp-route-id="@product.ProductId" asp-route-Quantity="1">Add To Cart</a>
+                                </div>
+                                <large class="text-success">$@product.Price</large>
+                            </div>
                         </div>
-                        <large class="text-success">$159.99</large>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4 box-shadow">
-                <img class="card-img-top" src="~/images/scaled/GRP2613front-400.jpg">
-                <div class="card-body">
-                    <div class="card-title">
-                        <h4 class="display-4">GRP2613</h4>
-                    </div>
-                    <p class="card-text">The GRP2613 is able to serve diverse needs as business evolves given its 6 programmable keys, Power over Ethernet, headset support and color screen.</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="btn-group">
-                            <a type="button" class="btn btn btn-outline-primary" asp-controller="Contact" asp-action="Index">Order Now</a>
-                        </div>
-                        <large class="text-success">$79.99</large>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4 box-shadow">
-                <img class="card-img-top" src="~/images/scaled/GRP2612front-400.jpg">
-                <div class="card-body">
-                    <div class="card-title">
-                        <h4 class="display-4">GRP2612</h4>
-                    </div>
-                    <p class="card-text">The GRP2612 is a workhorse! Offering a color screen, HD voice and 4 programmable keys, it is a great value. Hardware options include WiFi or Power over Ethernet.</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="btn-group">
-                            <a type="button" class="btn btn btn-outline-primary" asp-controller="Contact" asp-action="Index">Order Now</a>
-                        </div>
-                        <large class="text-success">$64.99</large>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4 box-shadow">
-                <img class="card-img-top" src="~/images/scaled/DP750_720_combination_3-400.png">
-                <div class="card-body">
-                    <div class="card-title">
-                        <h4 class="display-4">DP720</h4>
-                    </div>
-                    <p class="card-text">Need a solution that can serve your workplace without cables or daily charging? DP720 Cordless handsets are easy to use and flexible!</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="btn-group">
-                            <a type="button" class="btn btn btn-outline-primary" asp-controller="Contact" asp-action="Index">Order Now</a>
-                        </div>
-                        <large class="text-success">DP720 - $45, Base - $40</large>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4 box-shadow">
-                <img class="card-img-top" src="~/images/scaled/gxp2160-400.png">
-                <div class="card-body">
-                    <div class="card-title">
-                        <h4 class="display-4">GXP2160</h4>
-                    </div>
-                    <p class="card-text">Need to know the status of your coworkers at a glance? With 24 programmable keys on the GXP2160 monitoring every phone is a breeze!</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="btn-group">
-                            <a type="button" class="btn btn btn-outline-primary" asp-controller="Contact" asp-action="Index">Order Now</a>
-                        </div>
-                        <large class="text-success">$99.99</large>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4 box-shadow">
-                <img class="card-img-top p-3" src="~/images/scaled/gxp2170-400.png">
-                <div class="card-body">
-                    <div class="card-title">
-                        <h4 class="display-4">GXP2170</h4>
-                    </div>
-                    <p class="card-text">Offering 12 programmable keys, Bluetooth, HD Voice, Gigabit and predictive dialing, the GXP2170 is able to bring your business together!</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="btn-group">
-                            <a type="button" class="btn btn btn-outline-primary" asp-controller="Contact" asp-action="Index">Order Now</a>
-                        </div>
-                        <large class="text-success">$89.99</large>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4 box-shadow">
-                <img class="card-img-top" src="~/images/scaled/DP722-400.png">
-                <div class="card-body">
-                    <div class="card-title">
-                        <h4 class="display-4">DP722</h4>
-                    </div>
-                    <p class="card-text">Lighter, thinner and in silver? <br>
-                    What is not to love about the DP722! <br>
-                    The same great cordless phone, but with 20% less weight.</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="btn-group">
-                            <a type="button" class="btn btn btn-outline-primary" asp-controller="Contact" asp-action="Index">Order Now</a>
-                        </div>
-                        <large class="text-success">DP722 - $55, Base - $40</large>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4 box-shadow">
-                <img class="card-img-top" src="~/images/scaled/ht802-400.png">
-                <div class="card-body">
-                    <div class="card-title">
-                        <h4 class="display-4">HT802</h4>
-                    </div>
-                    <p class="card-text">Keep your classic analog devices humming along with the HT802 Analog Adapter. Supports 2 active calls (1 on each port) and HD Voice.</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="btn-group">
-                            <a type="button" class="btn btn btn-outline-primary" asp-controller="Contact" asp-action="Index">Order Now</a>
-                        </div>
-                        <large class="text-success">$39.99</large>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 pb-3">
-            <div class="card mb-4 box-shadow">
-                <img class="card-img-top" src="~/images/scaled/gxp2140-400.png">
-                <div class="card-body">
-                    <div class="card-title">
-                        <h4 class="display-4">GXP2140</h4>
-                    </div>
-                    <p class="card-text">Need a great phone at a reasonable price? The GXP2140 has you covered with Bluetooth, a 4.3" color screen, gigabit & PoE!</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="btn-group">
-                            <a type="button" class="btn btn btn-outline-primary" asp-controller="Contact" asp-action="Index">Order Now</a>
-                        </div>
-                        <large class="text-success"> $69.99</large>
-                    </div>
-                </div>
-            </div>
-        </div>
+
+            }
+        }
+        <br />
     </div>
 </div>
 <script>
     window.erxesSettings = {
         messenger: {
-        brand_id: "MkxXi6",
+            brand_id: "MkxXi6",
         },
     };
 
-    (function() {
-    var script = document.createElement('script');
-    script.src = "https://acceleratenetworks.app.erxes.io/widgets/build/messengerWidget.bundle.js";
-    script.async = true;
-    var entry = document.getElementsByTagName('script')[0];
-    entry.parentNode.insertBefore(script, entry);
+    (function () {
+        var script = document.createElement('script');
+        script.src = "https://acceleratenetworks.app.erxes.io/widgets/build/messengerWidget.bundle.js";
+        script.async = true;
+        var entry = document.getElementsByTagName('script')[0];
+        entry.parentNode.insertBefore(script, entry);
     })();
 
 </script>
