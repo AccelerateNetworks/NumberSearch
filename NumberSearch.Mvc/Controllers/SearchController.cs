@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
-using NumberSearch.Mvc.Models;
 
 using System.Collections.Generic;
 using System.Linq;

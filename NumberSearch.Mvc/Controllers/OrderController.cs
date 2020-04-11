@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using MimeKit;
 using MimeKit.Text;
 using NumberSearch.DataAccess;
-using NumberSearch.Mvc.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;

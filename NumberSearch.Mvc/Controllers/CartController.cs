@@ -9,7 +9,6 @@ using MimeKit.Text;
 using Newtonsoft.Json;
 
 using NumberSearch.DataAccess;
-using NumberSearch.Mvc.Models;
 
 using System;
 using System.Collections.Generic;
@@ -30,238 +29,165 @@ namespace NumberSearch.Mvc.Controllers
 
         public async Task<IActionResult> IndexAsync()
         {
-            var session = HttpContext.Session;
-            if (session.TryGetValue("Cart", out var cookie))
+            var items = Cookie.Get(HttpContext.Session);
+
+            // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
+            // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
+            var phoneNumbers = new List<PhoneNumber>();
+            var products = new List<Product>();
+            foreach (var item in items)
             {
-                var entries = Encoding.ASCII.GetString(cookie);
-
-                // TODO: Replace the use of Newtonsoft.Json here with System.Text.Json for better performance.
-                var items = JsonConvert.DeserializeObject<List<ProductOrder>>(entries);
-
-                // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
-                // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
-                var phoneNumbers = new List<PhoneNumber>();
-                var products = new List<Product>();
-                foreach (var item in items)
+                if (item?.DialedNumber?.Length == 10)
                 {
-                    if (item?.DialedNumber?.Length == 10)
-                    {
-                        var phoneNumber = await PhoneNumber.GetAsync(item.DialedNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-                        phoneNumbers.Add(phoneNumber);
-                    }
-                    else
-                    {
-                        var product = await Product.GetAsync(item.ProductId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-                        products.Add(product);
-                    }
+                    var phoneNumber = await PhoneNumber.GetAsync(item.DialedNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                    phoneNumbers.Add(phoneNumber);
                 }
-
-                var cart = new Cart
+                else
                 {
-                    PhoneNumbers = phoneNumbers,
-                    Products = products
-                };
+                    var product = await Product.GetAsync(item.ProductId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                    products.Add(product);
+                }
+            }
 
-                return View("Index", cart);
-            }
-            else
+            var cart = new Cart
             {
-                return View();
-            }
+                PhoneNumbers = phoneNumbers,
+                Products = products
+            };
+
+            return View("Index", cart);
+
         }
 
         [Route("Cart/BuyPhoneNumber/{dialedPhoneNumber}")]
         public async Task<IActionResult> BuyPhoneNumberAsync(string dialedPhoneNumber, string Query)
         {
-            var session = HttpContext.Session;
-            if (session.TryGetValue("Cart", out var cookie))
+            var items = Cookie.Get(HttpContext.Session).ToList();
+
+            var notInCart = true;
+            foreach (var item in items)
             {
-                var entries = Encoding.ASCII.GetString(cookie);
-                var items = JsonConvert.DeserializeObject<List<ProductOrder>>(entries);
-
-                var notInCart = true;
-                foreach (var item in items)
+                if (item.DialedNumber == dialedPhoneNumber)
                 {
-                    if (item.DialedNumber == dialedPhoneNumber)
-                    {
-                        notInCart = false;
-                    }
+                    notInCart = false;
                 }
-
-                if (notInCart)
-                {
-                    var phoneNumber = await PhoneNumber.GetAsync(dialedPhoneNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-                    items.Add(new ProductOrder { DialedNumber = phoneNumber.DialedNumber, Quantity = 1 });
-                }
-
-                var cart = JsonConvert.SerializeObject(items);
-
-                session.Set("Cart", Encoding.ASCII.GetBytes(cart));
-
-                return RedirectToAction("Index", "Search", new { Query });
             }
-            else
+
+            if (notInCart)
             {
                 var phoneNumber = await PhoneNumber.GetAsync(dialedPhoneNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-
-
-                var cart = JsonConvert.SerializeObject(new List<ProductOrder> { new ProductOrder { DialedNumber = phoneNumber.DialedNumber, Quantity = 1 } });
-
-                session.Set("Cart", Encoding.ASCII.GetBytes(cart));
-
-                return RedirectToAction("Index", "Search", new { Query });
+                items.Add(new ProductOrder { DialedNumber = phoneNumber.DialedNumber, Quantity = 1 });
             }
+
+            var checkCookie = Cookie.Set(HttpContext.Session, items);
+
+            return RedirectToAction("Index", "Search", new { Query });
         }
 
         [Route("Cart/RemovePhoneNumber/{dialedPhoneNumber}")]
         public IActionResult RemovePhoneNumber(string dialedPhoneNumber)
         {
-            var session = HttpContext.Session;
-            if (session.TryGetValue("Cart", out var cookie))
+            var items = Cookie.Get(HttpContext.Session).ToList();
+
+            var itemToRemove = new ProductOrder();
+
+            foreach (var item in items)
             {
-                var entries = Encoding.ASCII.GetString(cookie);
-                var items = JsonConvert.DeserializeObject<List<ProductOrder>>(entries);
-                var itemToRemove = new ProductOrder();
-
-                foreach (var item in items)
+                if (item.DialedNumber == dialedPhoneNumber)
                 {
-                    if (item.DialedNumber == dialedPhoneNumber)
-                    {
-                        itemToRemove = item;
-                    }
+                    itemToRemove = item;
                 }
-
-                items.Remove(itemToRemove);
-
-                var cart = JsonConvert.SerializeObject(items);
-
-                session.Set("Cart", Encoding.ASCII.GetBytes(cart));
             }
+
+            items.Remove(itemToRemove);
+
+            var checkCookie = Cookie.Set(HttpContext.Session, items);
 
             return RedirectToAction("Index");
         }
 
-
         [Route("Cart/BuyProduct/{productId}")]
         public async Task<IActionResult> BuyProductAsync(Guid productId, int quantity)
         {
-            var session = HttpContext.Session;
-            if (session.TryGetValue("Cart", out var cookie))
+            var items = Cookie.Get(HttpContext.Session).ToList();
+
+            var notInCart = true;
+            foreach (var item in items)
             {
-                var entries = Encoding.ASCII.GetString(cookie);
-                var items = JsonConvert.DeserializeObject<List<ProductOrder>>(entries);
-
-                var notInCart = true;
-                foreach (var item in items)
+                if (item.ProductId == productId)
                 {
-                    if (item.ProductId == productId)
-                    {
-                        notInCart = false;
-                    }
+                    notInCart = false;
                 }
-
-                if (notInCart)
-                {
-                    var product = await Product.GetAsync(productId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-                    items.Add(new ProductOrder
-                    {
-                        ProductId = product.ProductId,
-                        Quantity = quantity > 0 ? quantity : 1
-                    });
-                }
-
-                var cart = JsonConvert.SerializeObject(items);
-
-                session.Set("Cart", Encoding.ASCII.GetBytes(cart));
-
-                return RedirectToAction("Hardware", "Home");
             }
-            else
+
+            if (notInCart)
             {
-                var phoneNumber = await Product.GetAsync(productId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-
-                var cart = JsonConvert.SerializeObject(
-                    new List<ProductOrder> {
-                        new ProductOrder {
-                            ProductId = productId,
-                            Quantity = quantity > 0 ? quantity : 1
-                        }
-                    });
-
-                session.Set("Cart", Encoding.ASCII.GetBytes(cart));
-
-                return RedirectToAction("Hardware", "Home");
+                var product = await Product.GetAsync(productId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                items.Add(new ProductOrder
+                {
+                    ProductId = product.ProductId,
+                    Quantity = quantity > 0 ? quantity : 1
+                });
             }
+
+            var checkCookie = Cookie.Set(HttpContext.Session, items);
+
+            return RedirectToAction("Hardware", "Home");
+
         }
 
         [Route("Cart/RemoveProduct/{productId}")]
         public IActionResult RemoveProduct(Guid productId)
         {
-            var session = HttpContext.Session;
-            if (session.TryGetValue("Cart", out var cookie))
+            var items = Cookie.Get(HttpContext.Session).ToList();
+
+            var itemToRemove = new ProductOrder();
+
+            foreach (var item in items)
             {
-                var entries = Encoding.ASCII.GetString(cookie);
-                var items = JsonConvert.DeserializeObject<List<ProductOrder>>(entries);
-                var itemToRemove = new ProductOrder();
-
-                foreach (var item in items)
+                if (item.ProductId == productId)
                 {
-                    if (item.ProductId == productId)
-                    {
-                        itemToRemove = item;
-                    }
+                    itemToRemove = item;
                 }
-
-                items.Remove(itemToRemove);
-
-                var cart = JsonConvert.SerializeObject(items);
-
-                session.Set("Cart", Encoding.ASCII.GetBytes(cart));
             }
 
-            return RedirectToAction("Index");
+            items.Remove(itemToRemove);
+
+            var checkCookie = Cookie.Set(HttpContext.Session, items);
+
+            return RedirectToAction("Hardware", "Home");
         }
 
         [Route("Cart/Checkout")]
         public async Task<IActionResult> CheckoutAsync()
         {
-            var session = HttpContext.Session;
+            var items = Cookie.Get(HttpContext.Session);
 
-            if (session.TryGetValue("Cart", out var cookie))
+            // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
+            // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
+            var phoneNumbers = new List<PhoneNumber>();
+            var products = new List<Product>();
+            foreach (var item in items)
             {
-                var entries = Encoding.ASCII.GetString(cookie);
-                var items = JsonConvert.DeserializeObject<List<ProductOrder>>(entries);
-
-                // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
-                // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
-                var phoneNumbers = new List<PhoneNumber>();
-                var products = new List<Product>();
-                foreach (var item in items)
+                if (item?.DialedNumber?.Length == 10)
                 {
-                    if (item?.DialedNumber?.Length == 10)
-                    {
-                        var phoneNumber = await PhoneNumber.GetAsync(item.DialedNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-                        phoneNumbers.Add(phoneNumber);
-                    }
-                    else
-                    {
-                        var product = await Product.GetAsync(item.ProductId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-                        products.Add(product);
-                    }
+                    var phoneNumber = await PhoneNumber.GetAsync(item.DialedNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                    phoneNumbers.Add(phoneNumber);
                 }
-
-                var cart = new Cart
+                else
                 {
-                    PhoneNumbers = phoneNumbers,
-                    Products = products
-                };
+                    var product = await Product.GetAsync(item.ProductId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                    products.Add(product);
+                }
+            }
 
-                return View("Order", cart);
-            }
-            else
+            var cart = new Cart
             {
-                return RedirectToAction("Cart", "Index");
-            }
+                PhoneNumbers = phoneNumbers,
+                Products = products
+            };
+
+            return View("Order", cart);
         }
 
         // Show orders that have already been submitted.
@@ -317,49 +243,44 @@ namespace NumberSearch.Mvc.Controllers
             {
                 order.DateSubmitted = DateTime.Now;
 
-                var session = HttpContext.Session;
+                var items = Cookie.Get(HttpContext.Session);
 
-                if (session.TryGetValue("Cart", out var cookie))
+                // Save to db.
+                var submittedOrder = await order.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+
+                // Send a confirmation email.
+                if (submittedOrder)
                 {
-                    var entries = Encoding.ASCII.GetString(cookie);
-                    var items = JsonConvert.DeserializeObject<List<ProductOrder>>(entries);
+                    var orderFromDb = await Order.GetAsync(order.Email, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                    order = orderFromDb.FirstOrDefault();
 
-                    // Save to db.
-                    var submittedOrder = await order.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-
-                    // Send a confirmation email.
-                    if (submittedOrder)
+                    foreach (var item in items)
                     {
-                        var orderFromDb = await Order.GetAsync(order.Email, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-                        order = orderFromDb.FirstOrDefault();
-
-                        foreach (var item in items)
+                        var productOrdered = new ProductOrder
                         {
-                            var productOrdered = new ProductOrder
-                            {
-                                OrderId = order.Id,
-                                ProductId = item.ProductId != null ? item.ProductId : Guid.Empty,
-                                DialedNumber = item?.DialedNumber?.Length > 0 ? item?.DialedNumber : string.Empty,
-                                Quantity = item.Quantity > 0 ? item.Quantity : 1
-                            };
-
-                            var checkSubmitted = await productOrdered.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-
-                            if (!checkSubmitted)
-                            {
-                                // TODO: Maybe failout here?
-                            }
-                        }
-
-                        var outboundMessage = new MimeKit.MimeMessage
-                        {
-                            Sender = new MimeKit.MailboxAddress("Number Search", configuration.GetConnectionString("SmtpUsername")),
-                            Subject = $"Order: {order.Id}"
+                            OrderId = order.Id,
+                            ProductId = item.ProductId != null ? item.ProductId : Guid.Empty,
+                            DialedNumber = item?.DialedNumber?.Length > 0 ? item?.DialedNumber : string.Empty,
+                            Quantity = item.Quantity > 0 ? item.Quantity : 1
                         };
 
-                        outboundMessage.Body = new TextPart(TextFormat.Plain)
+                        var checkSubmitted = await productOrdered.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+
+                        if (!checkSubmitted)
                         {
-                            Text = $@"Hi {order.FirstName},
+                            // TODO: Maybe failout here?
+                        }
+                    }
+
+                    var outboundMessage = new MimeKit.MimeMessage
+                    {
+                        Sender = new MimeKit.MailboxAddress("Number Search", configuration.GetConnectionString("SmtpUsername")),
+                        Subject = $"Order: {order.Id}"
+                    };
+
+                    outboundMessage.Body = new TextPart(TextFormat.Plain)
+                    {
+                        Text = $@"Hi {order.FirstName},
                                                                                       
 Thank you for choosing Accelerate Networks!
 
@@ -372,27 +293,25 @@ A delivery specialist will send you a follow up email to walk you through the ne
 Thanks,
 
 Accelerate Networks"
-                        };
+                    };
 
-                        outboundMessage.Cc.Add(new MailboxAddress(configuration.GetConnectionString("SmtpUsername")));
-                        outboundMessage.To.Add(new MailboxAddress($"{order.Email}"));
+                    outboundMessage.Cc.Add(new MailboxAddress(configuration.GetConnectionString("SmtpUsername")));
+                    outboundMessage.To.Add(new MailboxAddress($"{order.Email}"));
 
-                        using var smtp = new MailKit.Net.Smtp.SmtpClient();
-                        smtp.MessageSent += (sender, args) => { };
-                        smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
+                    using var smtp = new MailKit.Net.Smtp.SmtpClient();
+                    smtp.MessageSent += (sender, args) => { };
+                    smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
-                        await smtp.ConnectAsync("mail.seattlemesh.net", 587, SecureSocketOptions.StartTls).ConfigureAwait(false);
-                        await smtp.AuthenticateAsync(configuration.GetConnectionString("SmtpUsername"), configuration.GetConnectionString("SmtpPassword")).ConfigureAwait(false);
-                        await smtp.SendAsync(outboundMessage).ConfigureAwait(false);
-                        await smtp.DisconnectAsync(true).ConfigureAwait(false);
-                    }
-
-                    return View("Success", order);
+                    await smtp.ConnectAsync("mail.seattlemesh.net", 587, SecureSocketOptions.StartTls).ConfigureAwait(false);
+                    await smtp.AuthenticateAsync(configuration.GetConnectionString("SmtpUsername"), configuration.GetConnectionString("SmtpPassword")).ConfigureAwait(false);
+                    await smtp.SendAsync(outboundMessage).ConfigureAwait(false);
+                    await smtp.DisconnectAsync(true).ConfigureAwait(false);
                 }
-                else
-                {
-                    return RedirectToAction("Cart", "Index");
-                }
+
+                // Reset the cookie.
+                var checkCookie = Cookie.Set(HttpContext.Session, new List<ProductOrder>());
+
+                return View("Success", order);
             }
             else
             {

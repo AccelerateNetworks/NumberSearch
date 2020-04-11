@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using NumberSearch.DataAccess;
-using NumberSearch.Mvc.Models;
 using System.Diagnostics;
 using System.Threading.Tasks;
 

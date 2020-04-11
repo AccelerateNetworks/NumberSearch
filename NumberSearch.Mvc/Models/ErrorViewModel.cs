@@ -1,6 +1,6 @@
 using System;
 
-namespace NumberSearch.Mvc.Models
+namespace NumberSearch.Mvc
 {
     public class ErrorViewModel
     {
