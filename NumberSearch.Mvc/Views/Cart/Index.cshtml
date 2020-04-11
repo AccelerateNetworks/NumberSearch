@@ -44,7 +44,7 @@
                                         <td scope="row"><h4>@item.Name</h4></td>
                                         <td></td>
                                         <td></td>
-                                        <td>@item.Price</td>
+                                        <td>$@item.Price</td>
                                         <td>
                                             <a asp-controller="Cart" asp-action="RemoveProduct" asp-route-id="@item.ProductId" target="_top">
                                                 <input type="button" class="btn btn-outline-danger" value="Remove">
@@ -59,7 +59,7 @@
             </div>
             <div class="row">
                 <hr class="mb-4">
-                <a class="btn btn-success btn-lg btn-block" asp-controller="Cart" asp-action="Checkout">Submit your Order</a>
+                <a class="btn btn-success btn-lg btn-block" asp-controller="Cart" asp-action="Checkout">Review your Order</a>
             </div>
             <br />
         }
