@@ -12,6 +12,7 @@ namespace NumberSearch.Ingest
 {
     public class Program
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public static async Task Main(string[] args)
         {
             var config = new ConfigurationBuilder()
@@ -28,7 +29,7 @@ namespace NumberSearch.Ingest
 
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
-                .WriteTo.File($"NumberSearch.Ingest\\{DateTime.Now.ToString("yyyyMMdd")}.txt")
+                .WriteTo.File($"NumberSearch.Ingest\\{DateTime.Now:yyyyMMdd}.txt")
                 .CreateLogger();
 
             var start = DateTime.Now;

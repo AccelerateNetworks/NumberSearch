@@ -19,7 +19,7 @@ namespace NumberSearch.Mvc.Controllers
             configuration = config;
         }
 
-        public async Task<IActionResult> IndexAsync()
+        public IActionResult Index()
         {
             return View();
         }

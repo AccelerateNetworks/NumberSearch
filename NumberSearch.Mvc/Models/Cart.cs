@@ -34,9 +34,9 @@ namespace NumberSearch.Mvc
 
             return new Cart
             {
-                PhoneNumbers = numbers == null ? new List<PhoneNumber>() : numbers,
-                Products = products == null ? new List<Product>() : products,
-                ProductOrders = productOrders == null ? new List<ProductOrder>() : productOrders,
+                PhoneNumbers = numbers ?? new List<PhoneNumber>(),
+                Products = products ?? new List<Product>(),
+                ProductOrders = productOrders ?? new List<ProductOrder>(),
                 Order = new Order()
             };
         }
@@ -48,19 +48,11 @@ namespace NumberSearch.Mvc
         /// <returns></returns>
         public bool SetToSession(ISession session)
         {
-            try
-            {
-                session.Set<List<PhoneNumber>>(CartKey.PhoneNumbers.ToString(), PhoneNumbers?.ToList());
-                session.Set<List<Product>>(CartKey.Products.ToString(), Products?.ToList());
-                session.Set<List<ProductOrder>>(CartKey.ProductOrders.ToString(), ProductOrders?.ToList());
+            session.Set<List<PhoneNumber>>(CartKey.PhoneNumbers.ToString(), PhoneNumbers?.ToList());
+            session.Set<List<Product>>(CartKey.Products.ToString(), Products?.ToList());
+            session.Set<List<ProductOrder>>(CartKey.ProductOrders.ToString(), ProductOrders?.ToList());
 
-                return true;
-            }
-            catch
-            {
-                // We don't expect this to fail.
-                return false;
-            }
+            return true;
         }
 
         /// <summary>

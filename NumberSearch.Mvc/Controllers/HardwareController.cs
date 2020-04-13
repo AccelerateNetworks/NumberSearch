@@ -10,12 +10,10 @@ namespace NumberSearch.Mvc.Controllers
 {
     public class HardwareController : Controller
     {
-        private readonly ILogger<HardwareController> _logger;
         private readonly IConfiguration configuration;
 
-        public HardwareController(ILogger<HardwareController> logger, IConfiguration config)
+        public HardwareController(IConfiguration config)
         {
-            _logger = logger;
             configuration = config;
         }
 

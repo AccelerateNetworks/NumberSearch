@@ -7,8 +7,9 @@ using static BulkVS.DnSearchAreaCodeResponseResult;
 
 namespace NumberSearch.DataAccess
 {
-    public class NpaBulkVS
+    public static class NpaBulkVS
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
         public static async Task<IEnumerable<PhoneNumber>> GetAsync(string npaIn, string apiKey, string apiSecret)
         {
             using var client = new BulkVS.bulkvsPortClient(BulkVS.bulkvsPortClient.EndpointConfiguration.bulkvsPort);

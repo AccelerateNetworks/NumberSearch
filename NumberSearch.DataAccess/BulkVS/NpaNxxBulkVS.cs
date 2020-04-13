@@ -9,6 +9,7 @@ namespace NumberSearch.DataAccess
 {
     public sealed class NpaNxxBulkVS
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
         public static async Task<IEnumerable<PhoneNumber>> GetAsync(string npaNxx, string apiKey, string apiSecret)
         {
             using var client = new BulkVS.bulkvsPortClient(BulkVS.bulkvsPortClient.EndpointConfiguration.bulkvsPort);

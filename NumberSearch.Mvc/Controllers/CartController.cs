@@ -128,7 +128,7 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [Route("Cart/Checkout")]
-        public async Task<IActionResult> CheckoutAsync()
+        public IActionResult Checkout()
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
 
@@ -175,7 +175,7 @@ namespace NumberSearch.Mvc.Controllers
             }
             else
             {
-                return View("Index");
+                return View("Order");
             }
         }
 

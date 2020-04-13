@@ -499,84 +499,84 @@ namespace NumberSearch.Tests
             Assert.NotNull(results);
         }
 
-        [Fact]
-        public async Task ProductMigrationScript()
-        {
-            var conn = postgresql;
+        //[Fact]
+        //public async Task ProductMigrationScriptAsync()
+        //{
+        //    var conn = postgresql;
 
-            var products = new List<Product>
-            {
-                new Product
-                {
-                    Name = "GRP2615",
-                    Description = "Bringing Bluetooth 5 & Wireless support to the table, the GRP2615 is a high performing, versatile phone that is at home on any desk! Supports Power over Ethernet.",
-                    Price = 160,
-                    Image = "/images/scaled/GRP2615-front-400.jpg"
-                },
-                new Product
-                {
-                    Name = "GRP2613",
-                    Description = "The GRP2613 is able to serve diverse needs as business evolves given its 6 programmable keys, Power over Ethernet, headset support and color screen.",
-                    Price = 80,
-                    Image = "/images/scaled/GRP2613front-400.jpg"
-                },
-                new Product
-                {
-                    Name = "GRP2612",
-                    Description = "The GRP2612 is a workhorse! Offering a color screen, HD voice and 4 programmable keys, it is a great value. Hardware options include WiFi or Power over Ethernet.",
-                    Price = 65,
-                    Image = "/images/scaled/GRP2612front-400.jpg"
-                },
-                new Product
-                {
-                    Name = "DP720",
-                    Description = "Need a solution that can serve your workplace without cables or daily charging? DP720 Cordless handsets are easy to use and flexible!",
-                    Price = 85,
-                    Image = "/images/scaled/DP750_720_combination_3-400.png"
-                },
-                new Product
-                {
-                    Name = "GXP2160",
-                    Description = "Need to know the status of your coworkers at a glance? With 24 programmable keys on the GXP2160 monitoring every phone is a breeze!",
-                    Price = 100,
-                    Image = "/images/scaled/gxp2160-400.png"
-                },
-                new Product
-                {
-                    Name = "GXP2170",
-                    Description = "Offering 12 programmable keys, Bluetooth, HD Voice, Gigabit and predictive dialing, the GXP2170 is able to bring your business together!",
-                    Price = 90,
-                    Image = "/images/scaled/gxp2170-400.png"
-                },
-                new Product
-                {
-                    Name = "DP722",
-                    Description = "Lighter, thinner and in silver? What is not to love about the DP722! The same great cordless phone, but with 20% less weight.",
-                    Price = 95,
-                    Image = "/images/scaled/DP722-400.png"
-                },
-                new Product
-                {
-                    Name = "HT802",
-                    Description = "Keep your classic analog devices humming along with the HT802 Analog Adapter. Supports 2 active calls (1 on each port) and HD Voice.",
-                    Price = 40,
-                    Image = "/images/scaled/ht802-400.png"
-                },
-                new Product
-                {
-                    Name = "GXP2140",
-                    Description = "Need a great phone at a reasonable price? The GXP2140 has you covered with Bluetooth, a 4.3\" color screen, gigabit & PoE!",
-                    Price = 70,
-                    Image = "/images/scaled/gxp2140-400.png"
-                }
-            };
+        //    var products = new List<Product>
+        //    {
+        //        new Product
+        //        {
+        //            Name = "GRP2615",
+        //            Description = "Bringing Bluetooth 5 & Wireless support to the table, the GRP2615 is a high performing, versatile phone that is at home on any desk! Supports Power over Ethernet.",
+        //            Price = 160,
+        //            Image = "/images/scaled/GRP2615-front-400.jpg"
+        //        },
+        //        new Product
+        //        {
+        //            Name = "GRP2613",
+        //            Description = "The GRP2613 is able to serve diverse needs as business evolves given its 6 programmable keys, Power over Ethernet, headset support and color screen.",
+        //            Price = 80,
+        //            Image = "/images/scaled/GRP2613front-400.jpg"
+        //        },
+        //        new Product
+        //        {
+        //            Name = "GRP2612",
+        //            Description = "The GRP2612 is a workhorse! Offering a color screen, HD voice and 4 programmable keys, it is a great value. Hardware options include WiFi or Power over Ethernet.",
+        //            Price = 65,
+        //            Image = "/images/scaled/GRP2612front-400.jpg"
+        //        },
+        //        new Product
+        //        {
+        //            Name = "DP720",
+        //            Description = "Need a solution that can serve your workplace without cables or daily charging? DP720 Cordless handsets are easy to use and flexible!",
+        //            Price = 85,
+        //            Image = "/images/scaled/DP750_720_combination_3-400.png"
+        //        },
+        //        new Product
+        //        {
+        //            Name = "GXP2160",
+        //            Description = "Need to know the status of your coworkers at a glance? With 24 programmable keys on the GXP2160 monitoring every phone is a breeze!",
+        //            Price = 100,
+        //            Image = "/images/scaled/gxp2160-400.png"
+        //        },
+        //        new Product
+        //        {
+        //            Name = "GXP2170",
+        //            Description = "Offering 12 programmable keys, Bluetooth, HD Voice, Gigabit and predictive dialing, the GXP2170 is able to bring your business together!",
+        //            Price = 90,
+        //            Image = "/images/scaled/gxp2170-400.png"
+        //        },
+        //        new Product
+        //        {
+        //            Name = "DP722",
+        //            Description = "Lighter, thinner and in silver? What is not to love about the DP722! The same great cordless phone, but with 20% less weight.",
+        //            Price = 95,
+        //            Image = "/images/scaled/DP722-400.png"
+        //        },
+        //        new Product
+        //        {
+        //            Name = "HT802",
+        //            Description = "Keep your classic analog devices humming along with the HT802 Analog Adapter. Supports 2 active calls (1 on each port) and HD Voice.",
+        //            Price = 40,
+        //            Image = "/images/scaled/ht802-400.png"
+        //        },
+        //        new Product
+        //        {
+        //            Name = "GXP2140",
+        //            Description = "Need a great phone at a reasonable price? The GXP2140 has you covered with Bluetooth, a 4.3\" color screen, gigabit & PoE!",
+        //            Price = 70,
+        //            Image = "/images/scaled/gxp2140-400.png"
+        //        }
+        //    };
 
-            foreach (var product in products)
-            {
-                var checkSubmit = await product.PostAsync(conn);
+        //    foreach (var product in products)
+        //    {
+        //        var checkSubmit = await product.PostAsync(conn);
 
-                Assert.True(checkSubmit);
-            }
-        }
+        //        Assert.True(checkSubmit);
+        //    }
+        //}
     }
 }

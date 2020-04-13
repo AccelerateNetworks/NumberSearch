@@ -10,12 +10,10 @@ namespace NumberSearch.Mvc.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly IConfiguration configuration;
 
-        public HomeController(ILogger<HomeController> logger, IConfiguration config)
+        public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
-            configuration = config;
         }
 
         public IActionResult Index()
