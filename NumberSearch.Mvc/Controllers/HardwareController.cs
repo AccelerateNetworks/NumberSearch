@@ -1,16 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+
+using NumberSearch.DataAccess;
+
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 
 namespace NumberSearch.Mvc.Controllers
 {
     public class HardwareController : Controller
     {
-        public IActionResult Index()
+        private readonly ILogger<HardwareController> _logger;
+        private readonly IConfiguration configuration;
+
+        public HardwareController(ILogger<HardwareController> logger, IConfiguration config)
         {
-            return View();
+            _logger = logger;
+            configuration = config;
+        }
+
+        public async Task<IActionResult> IndexAsync()
+        {
+            var products = await Product.GetAllAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            return View("Index", products);
         }
     }
 }

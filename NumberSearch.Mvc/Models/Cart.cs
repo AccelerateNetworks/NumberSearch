@@ -74,8 +74,8 @@ namespace NumberSearch.Mvc
             productOrder ??= new ProductOrder();
 
             // We're using dictionaries here to prevent duplicates.
-            var phoneNumbers = PhoneNumbers.ToDictionary(x => x.DialedNumber, x => x);
-            var productOrders = ProductOrders.ToDictionary(x => !string.IsNullOrEmpty(x.DialedNumber) ? x.DialedNumber : x.ProductId.ToString(), x => x);
+            var phoneNumbers = this.PhoneNumbersToDictionary();
+            var productOrders = this.ProductOrdersToDictionary();
 
             // If it's a valid phone number make sure the keys match.
             if (phoneNumber?.DialedNumber?.Length == 10 && phoneNumber.DialedNumber == productOrder?.DialedNumber)
@@ -102,8 +102,8 @@ namespace NumberSearch.Mvc
         /// <returns></returns>
         public bool AddProduct(Product product, ProductOrder productOrder)
         {
-            var products = Products?.ToDictionary(x => x?.ProductId.ToString(), x => x);
-            var productOrders = ProductOrders?.ToDictionary(x => !string.IsNullOrEmpty(x?.DialedNumber) ? x?.DialedNumber : x?.ProductId.ToString(), x => x);
+            var products = this.ProductsToDictionary();
+            var productOrders = this.ProductOrdersToDictionary();
 
             if (!string.IsNullOrWhiteSpace(product?.Name) && product?.ProductId == productOrder?.ProductId)
             {
@@ -132,8 +132,8 @@ namespace NumberSearch.Mvc
             phoneNumber ??= new PhoneNumber();
             productOrder ??= new ProductOrder();
 
-            var phoneNumbers = PhoneNumbers.ToDictionary(x => x.DialedNumber, x => x);
-            var productOrders = ProductOrders.ToDictionary(x => !string.IsNullOrEmpty(x.DialedNumber) ? x.DialedNumber : x.ProductId.ToString(), x => x);
+            var phoneNumbers = this.PhoneNumbersToDictionary();
+            var productOrders = this.ProductOrdersToDictionary();
 
             if (phoneNumber?.DialedNumber?.Length == 10 && phoneNumber.DialedNumber == productOrder?.DialedNumber)
             {
@@ -169,8 +169,8 @@ namespace NumberSearch.Mvc
             product ??= new Product();
             productOrder ??= new ProductOrder();
 
-            var products = Products.ToDictionary(x => x.ProductId.ToString(), x => x);
-            var productOrders = ProductOrders.ToDictionary(x => !string.IsNullOrEmpty(x.DialedNumber) ? x.DialedNumber : x.ProductId.ToString(), x => x);
+            var products = this.ProductsToDictionary();
+            var productOrders = this.ProductOrdersToDictionary();
 
             if (product.ProductId == productOrder?.ProductId)
             {
@@ -193,6 +193,21 @@ namespace NumberSearch.Mvc
             {
                 return false;
             }
+        }
+
+        public Dictionary<string, ProductOrder> ProductOrdersToDictionary()
+        {
+            return ProductOrders.ToDictionary(x => !string.IsNullOrEmpty(x.DialedNumber) ? x.DialedNumber : x.ProductId.ToString(), x => x);
+        }
+
+        public Dictionary<string, PhoneNumber> PhoneNumbersToDictionary()
+        {
+            return PhoneNumbers.ToDictionary(x => x.DialedNumber, x => x);
+        }
+
+        public Dictionary<string, Product> ProductsToDictionary()
+        {
+            return Products.ToDictionary(x => x.ProductId.ToString(), x => x);
         }
     }
 }

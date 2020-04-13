@@ -33,12 +33,6 @@ namespace NumberSearch.Mvc.Controllers
             return View();
         }
 
-        public async Task<IActionResult> HardwareAsync()
-        {
-            var products = await Product.GetAllAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-            return View("Hardware", products);
-        }
-
         public IActionResult Order()
         {
             return View();

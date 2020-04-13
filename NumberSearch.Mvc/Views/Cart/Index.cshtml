@@ -12,6 +12,7 @@
     </div>
     <br />
     @{
+        var productOrders = Model.ProductOrdersToDictionary();
         if (Model?.PhoneNumbers.Count() > 0 || Model?.Products.Count() > 0)
         {
             <div class="row">
@@ -40,11 +41,22 @@
                             @{
                                 foreach (var item in Model?.Products)
                                 {
+                                    var productOrder = productOrders[item?.ProductId.ToString()];
+                                    var localTotal = productOrder.Quantity * item.Price;
                                     <tr>
                                         <td scope="row"><h4>@item.Name</h4></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td>$@item.Price</td>
+                                        @{
+                                            if (productOrder.Quantity > 1)
+                                            {
+                                                <td>@productOrder.Quantity Units</td>
+                                            }
+                                            else
+                                            {
+                                                <td>@productOrder.Quantity Unit</td>
+                                            }
+                                        }
+                                        <td>at $@item.Price per</td>
+                                        <td>$@localTotal</td>
                                         <td>
                                             <a asp-controller="Cart" asp-action="RemoveProduct" asp-route-id="@item.ProductId" target="_top">
                                                 <input type="button" class="btn btn-outline-danger" value="Remove">

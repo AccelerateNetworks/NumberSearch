@@ -72,12 +72,12 @@ namespace NumberSearch.Mvc.Controllers
             if (checkAdd && checkSet)
             {
                 // TODO: Mark the item as sucessfully added.
-                return RedirectToAction("Hardware", "Home");
+                return RedirectToAction("Index", "Hardware");
             }
             else
             {
                 // TODO: Tell the user about the failure
-                return RedirectToAction("Hardware", "Home");
+                return RedirectToAction("Index", "Hardware");
             }
         }
 
@@ -171,11 +171,11 @@ namespace NumberSearch.Mvc.Controllers
                     Products = products
                 };
 
-                return View("Existing", cart);
+                return View("Order", cart);
             }
             else
             {
-                return View("Existing");
+                return View("Index");
             }
         }
 
