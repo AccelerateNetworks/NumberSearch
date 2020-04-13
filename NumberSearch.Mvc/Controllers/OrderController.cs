@@ -47,13 +47,13 @@ namespace NumberSearch.Mvc.Controllers
                         break;
                 }
 
-                var model = new PhoneNumberOrderInfo
-                {
-                    number = result,
-                    detail = new PhoneNumberDetail { }
-                };
+                //var model = new PhoneNumberOrderInfo
+                //{
+                //    number = result,
+                //    detail = new PhoneNumberDetail { }
+                //};
 
-                return View("Index", model);
+                return View("Index");
             }
             else
             {
