@@ -6,14 +6,11 @@ using Microsoft.Extensions.Configuration;
 using MimeKit;
 using MimeKit.Text;
 
-using Newtonsoft.Json;
-
 using NumberSearch.DataAccess;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
@@ -27,165 +24,113 @@ namespace NumberSearch.Mvc.Controllers
             configuration = config;
         }
 
-        public async Task<IActionResult> IndexAsync()
+        public IActionResult Index()
         {
-            var items = Cookie.Get(HttpContext.Session);
-
-            // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
-            // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
-            var phoneNumbers = new List<PhoneNumber>();
-            var products = new List<Product>();
-            foreach (var item in items)
-            {
-                if (item?.DialedNumber?.Length == 10)
-                {
-                    var phoneNumber = await PhoneNumber.GetAsync(item.DialedNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-                    phoneNumbers.Add(phoneNumber);
-                }
-                else
-                {
-                    var product = await Product.GetAsync(item.ProductId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-                    products.Add(product);
-                }
-            }
-
-            var cart = new Cart
-            {
-                PhoneNumbers = phoneNumbers,
-                Products = products
-            };
+            var cart = Cart.GetFromSession(HttpContext.Session);
 
             return View("Index", cart);
-
         }
 
         [Route("Cart/BuyPhoneNumber/{dialedPhoneNumber}")]
         public async Task<IActionResult> BuyPhoneNumberAsync(string dialedPhoneNumber, string Query)
         {
-            var items = Cookie.Get(HttpContext.Session).ToList();
+            var cart = Cart.GetFromSession(HttpContext.Session);
 
-            var notInCart = true;
-            foreach (var item in items)
+            var phoneNumber = await PhoneNumber.GetAsync(dialedPhoneNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            var productOrder = new ProductOrder { DialedNumber = phoneNumber.DialedNumber, Quantity = 1 };
+
+            var checkAdd = cart.AddPhoneNumber(phoneNumber, productOrder);
+            var checkSet = cart.SetToSession(HttpContext.Session);
+
+            if (checkAdd && checkSet)
             {
-                if (item.DialedNumber == dialedPhoneNumber)
-                {
-                    notInCart = false;
-                }
+                // TODO: Mark the item as sucessfully added.
+                return RedirectToAction("Index", "Search", new { Query });
             }
-
-            if (notInCart)
+            else
             {
-                var phoneNumber = await PhoneNumber.GetAsync(dialedPhoneNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-                items.Add(new ProductOrder { DialedNumber = phoneNumber.DialedNumber, Quantity = 1 });
+                // TODO: Tell the user about the failure
+                return RedirectToAction("Index", "Search", new { Query });
             }
+        }
 
-            var checkCookie = Cookie.Set(HttpContext.Session, items);
+        [Route("Cart/BuyProduct/{productId}")]
+        public async Task<IActionResult> BuyProductAsync(Guid productId, int Quantity)
+        {
+            var cart = Cart.GetFromSession(HttpContext.Session);
 
-            return RedirectToAction("Index", "Search", new { Query });
+            var product = await Product.GetAsync(productId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            var productOrder = new ProductOrder
+            {
+                ProductId = product.ProductId,
+                Quantity = Quantity > 0 ? Quantity : 1
+            };
+
+            var checkAdd = cart.AddProduct(product, productOrder);
+            var checkSet = cart.SetToSession(HttpContext.Session);
+
+            if (checkAdd && checkSet)
+            {
+                // TODO: Mark the item as sucessfully added.
+                return RedirectToAction("Hardware", "Home");
+            }
+            else
+            {
+                // TODO: Tell the user about the failure
+                return RedirectToAction("Hardware", "Home");
+            }
         }
 
         [Route("Cart/RemovePhoneNumber/{dialedPhoneNumber}")]
         public IActionResult RemovePhoneNumber(string dialedPhoneNumber)
         {
-            var items = Cookie.Get(HttpContext.Session).ToList();
+            var cart = Cart.GetFromSession(HttpContext.Session);
 
-            var itemToRemove = new ProductOrder();
+            var phoneNumber = new PhoneNumber { DialedNumber = dialedPhoneNumber };
+            var productOrder = new ProductOrder { DialedNumber = dialedPhoneNumber };
 
-            foreach (var item in items)
+            var checkRemove = cart.RemovePhoneNumber(phoneNumber, productOrder);
+            var checkSet = cart.SetToSession(HttpContext.Session);
+
+            if (checkRemove && checkSet)
             {
-                if (item.DialedNumber == dialedPhoneNumber)
-                {
-                    itemToRemove = item;
-                }
+                // TODO: Mark the item as removed.
+                return RedirectToAction("Index");
             }
-
-            items.Remove(itemToRemove);
-
-            var checkCookie = Cookie.Set(HttpContext.Session, items);
-
-            return RedirectToAction("Index");
-        }
-
-        [Route("Cart/BuyProduct/{productId}")]
-        public async Task<IActionResult> BuyProductAsync(Guid productId, int quantity)
-        {
-            var items = Cookie.Get(HttpContext.Session).ToList();
-
-            var notInCart = true;
-            foreach (var item in items)
+            else
             {
-                if (item.ProductId == productId)
-                {
-                    notInCart = false;
-                }
+                // TODO: Tell the user about the failure.
+                return RedirectToAction("Index");
             }
-
-            if (notInCart)
-            {
-                var product = await Product.GetAsync(productId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-                items.Add(new ProductOrder
-                {
-                    ProductId = product.ProductId,
-                    Quantity = quantity > 0 ? quantity : 1
-                });
-            }
-
-            var checkCookie = Cookie.Set(HttpContext.Session, items);
-
-            return RedirectToAction("Hardware", "Home");
-
         }
 
         [Route("Cart/RemoveProduct/{productId}")]
         public IActionResult RemoveProduct(Guid productId)
         {
-            var items = Cookie.Get(HttpContext.Session).ToList();
+            var cart = Cart.GetFromSession(HttpContext.Session);
 
-            var itemToRemove = new ProductOrder();
+            var product = new Product { ProductId = productId };
+            var productOrder = new ProductOrder { ProductId = productId };
 
-            foreach (var item in items)
+            var checkRemove = cart.RemoveProduct(product, productOrder);
+            var checkSet = cart.SetToSession(HttpContext.Session);
+
+            if (checkRemove && checkSet)
             {
-                if (item.ProductId == productId)
-                {
-                    itemToRemove = item;
-                }
+                // TODO: Mark the item as removed.
+                return RedirectToAction("Index");
             }
-
-            items.Remove(itemToRemove);
-
-            var checkCookie = Cookie.Set(HttpContext.Session, items);
-
-            return RedirectToAction("Hardware", "Home");
+            else
+            {
+                // TODO: Tell the user about the failure.
+                return RedirectToAction("Index");
+            }
         }
 
         [Route("Cart/Checkout")]
         public async Task<IActionResult> CheckoutAsync()
         {
-            var items = Cookie.Get(HttpContext.Session);
-
-            // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
-            // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
-            var phoneNumbers = new List<PhoneNumber>();
-            var products = new List<Product>();
-            foreach (var item in items)
-            {
-                if (item?.DialedNumber?.Length == 10)
-                {
-                    var phoneNumber = await PhoneNumber.GetAsync(item.DialedNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-                    phoneNumbers.Add(phoneNumber);
-                }
-                else
-                {
-                    var product = await Product.GetAsync(item.ProductId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-                    products.Add(product);
-                }
-            }
-
-            var cart = new Cart
-            {
-                PhoneNumbers = phoneNumbers,
-                Products = products
-            };
+            var cart = Cart.GetFromSession(HttpContext.Session);
 
             return View("Order", cart);
         }
@@ -198,13 +143,13 @@ namespace NumberSearch.Mvc.Controllers
             {
                 var orders = await Order.GetAsync(Id, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
                 var order = orders.FirstOrDefault();
-                var items = await ProductOrder.GetAsync(order.Id, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                var productOrders = await ProductOrder.GetAsync(order.OrderId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
 
                 // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
                 // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
                 var phoneNumbers = new List<PhoneNumber>();
                 var products = new List<Product>();
-                foreach (var item in items)
+                foreach (var item in productOrders)
                 {
                     if (item?.DialedNumber?.Length == 10)
                     {
@@ -221,6 +166,7 @@ namespace NumberSearch.Mvc.Controllers
                 var cart = new Cart
                 {
                     Order = order,
+                    ProductOrders = productOrders,
                     PhoneNumbers = phoneNumbers,
                     Products = products
                 };
@@ -243,7 +189,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 order.DateSubmitted = DateTime.Now;
 
-                var items = Cookie.Get(HttpContext.Session);
+                var cart = Cart.GetFromSession(HttpContext.Session);
 
                 // Save to db.
                 var submittedOrder = await order.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
@@ -254,17 +200,10 @@ namespace NumberSearch.Mvc.Controllers
                     var orderFromDb = await Order.GetAsync(order.Email, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
                     order = orderFromDb.FirstOrDefault();
 
-                    foreach (var item in items)
+                    foreach (var productOrder in cart.ProductOrders)
                     {
-                        var productOrdered = new ProductOrder
-                        {
-                            OrderId = order.Id,
-                            ProductId = item.ProductId != null ? item.ProductId : Guid.Empty,
-                            DialedNumber = item?.DialedNumber?.Length > 0 ? item?.DialedNumber : string.Empty,
-                            Quantity = item.Quantity > 0 ? item.Quantity : 1
-                        };
-
-                        var checkSubmitted = await productOrdered.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                        productOrder.OrderId = order.OrderId;
+                        var checkSubmitted = await productOrder.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
 
                         if (!checkSubmitted)
                         {
@@ -275,7 +214,7 @@ namespace NumberSearch.Mvc.Controllers
                     var outboundMessage = new MimeKit.MimeMessage
                     {
                         Sender = new MimeKit.MailboxAddress("Number Search", configuration.GetConnectionString("SmtpUsername")),
-                        Subject = $"Order: {order.Id}"
+                        Subject = $"Order: {order.OrderId}"
                     };
 
                     outboundMessage.Body = new TextPart(TextFormat.Plain)
@@ -284,7 +223,7 @@ namespace NumberSearch.Mvc.Controllers
                                                                                       
 Thank you for choosing Accelerate Networks!
 
-Your order Id is: {order.Id} and it was submitted on {order.DateSubmitted.ToLocalTime().ToShortDateString()} at {order.DateSubmitted.ToLocalTime().ToShortTimeString()}.
+Your order Id is: {order.OrderId} and it was submitted on {order.DateSubmitted.ToLocalTime().ToShortDateString()} at {order.DateSubmitted.ToLocalTime().ToShortTimeString()}.
 
 You can review your order at insertLinkToOrderHere
                                                                                       
@@ -308,8 +247,8 @@ Accelerate Networks"
                     await smtp.DisconnectAsync(true).ConfigureAwait(false);
                 }
 
-                // Reset the cookie.
-                var checkCookie = Cookie.Set(HttpContext.Session, new List<ProductOrder>());
+                // Reset the session and clear the Cart.
+                HttpContext.Session.Clear();
 
                 return View("Success", order);
             }

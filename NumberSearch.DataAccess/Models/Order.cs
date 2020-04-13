@@ -8,7 +8,7 @@ namespace NumberSearch.DataAccess
 {
     public class Order
     {
-        public Guid Id { get; set; }
+        public Guid OrderId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
@@ -19,11 +19,11 @@ namespace NumberSearch.DataAccess
         public string Zip { get; set; }
         public DateTime DateSubmitted { get; set; }
 
-        public static async Task<IEnumerable<Order>> GetAsync(Guid Id, string connectionString)
+        public static async Task<IEnumerable<Order>> GetAsync(Guid orderId, string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"SELECT \"Id\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"Country\", \"State\", \"Zip\", \"DateSubmitted\" FROM public.\"Orders\" WHERE \"Id\" = '{Id}'";
+            string sql = $"SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"Country\", \"State\", \"Zip\", \"DateSubmitted\" FROM public.\"Orders\" WHERE \"OrderId\" = '{orderId}'";
 
             var result = await connection.QueryAsync<Order>(sql).ConfigureAwait(false);
 
@@ -34,7 +34,7 @@ namespace NumberSearch.DataAccess
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"SELECT \"Id\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"Country\", \"State\", \"Zip\", \"DateSubmitted\" FROM public.\"Orders\" WHERE \"Email\" = '{email}' ORDER BY \"DateSubmitted\" DESC";
+            string sql = $"SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"Country\", \"State\", \"Zip\", \"DateSubmitted\" FROM public.\"Orders\" WHERE \"Email\" = '{email}' ORDER BY \"DateSubmitted\" DESC";
 
             var result = await connection.QueryAsync<Order>(sql).ConfigureAwait(false);
 

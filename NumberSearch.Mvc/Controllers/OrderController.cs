@@ -82,7 +82,7 @@ namespace NumberSearch.Mvc.Controllers
                     var outboundMessage = new MimeKit.MimeMessage
                     {
                         Sender = new MimeKit.MailboxAddress("Number Search", configuration.GetConnectionString("SmtpUsername")),
-                        Subject = $"Order: {order.Id}"
+                        Subject = $"Order: {order.OrderId}"
                     };
 
                     outboundMessage.Body = new TextPart(TextFormat.Plain)
@@ -91,7 +91,7 @@ namespace NumberSearch.Mvc.Controllers
                                                                                       
 Thank you for ordering from Accelerate Networks!
 
-Your order Id is: {order.Id}.
+Your order Id is: {order.OrderId}.
                                                                                       
 A delivery specialist will send you a follow up email to walk you through the next steps in the process.
 

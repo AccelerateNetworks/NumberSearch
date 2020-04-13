@@ -61,13 +61,16 @@ namespace NumberSearch.Mvc.Controllers
             var results = await PhoneNumber.PaginatedSearchAsync(new string(converted.ToArray()), page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
             var count = await PhoneNumber.NumberOfResultsInQuery(new string(converted.ToArray()), configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
 
+            var cart = Cart.GetFromSession(HttpContext.Session);
+
             return View("Index", new SearchResults
             {
                 CleanQuery = new string(converted.ToArray()),
                 NumberOfResults = count,
                 Page = page,
                 PhoneNumbers = results.ToArray(),
-                Query = query
+                Query = query,
+                Cart = cart
             });
         }
 

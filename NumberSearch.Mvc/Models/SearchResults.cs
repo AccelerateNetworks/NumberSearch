@@ -13,5 +13,6 @@ namespace NumberSearch.Mvc
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "<Pending>")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "I like arrays")]
         public PhoneNumber[] PhoneNumbers { get; set; }
+        public Cart Cart { get; set; }
     }
 }

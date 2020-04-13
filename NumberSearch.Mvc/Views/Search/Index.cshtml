@@ -8,6 +8,8 @@
     {
         searchText = Model.Query;
     }
+
+    var alreadyInCart = Model?.Cart?.PhoneNumbers.ToDictionary(x => x?.DialedNumber, x => x);
 }
 
 
@@ -69,6 +71,14 @@
                                         <a asp-controller="Cart" asp-action="BuyPhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" target="_top">
                                             <input type="button" class="btn btn-outline-primary" value="Add to Cart">
                                         </a>
+                                        @{
+                                            if (alreadyInCart.TryGetValue(item.DialedNumber, out var _))
+                                            {
+                                                <a asp-controller="Cart" asp-action="RemovePhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" target="_top">
+                                                    <input type="button" class="btn btn-outline-danger" value="Remove">
+                                                </a>
+                                            }
+                                        }
                                     </td>
                                 </tr>
                             }

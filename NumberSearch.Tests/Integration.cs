@@ -1,7 +1,9 @@
-
 using FirstCom;
+
 using Microsoft.Extensions.Configuration;
+
 using NumberSearch.DataAccess;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -415,7 +417,7 @@ namespace NumberSearch.Tests
 
             foreach (var result in results)
             {
-                Assert.False(string.IsNullOrWhiteSpace(result.Id.ToString()));
+                Assert.False(string.IsNullOrWhiteSpace(result.OrderId.ToString()));
                 Assert.False(string.IsNullOrWhiteSpace(result.FirstName));
                 Assert.False(string.IsNullOrWhiteSpace(result.LastName));
                 Assert.False(string.IsNullOrWhiteSpace(result.Address));

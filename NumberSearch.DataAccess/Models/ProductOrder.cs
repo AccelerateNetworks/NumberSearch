@@ -13,6 +13,7 @@ namespace NumberSearch.DataAccess
         public Guid ProductId { get; set; }
         public string DialedNumber { get; set; }
         public int Quantity { get; set; }
+        public DateTime CreateDate { get; set; }
 
         /// <summary>
         /// Get all of the products adn their quantities associated with a specific order.
@@ -24,7 +25,7 @@ namespace NumberSearch.DataAccess
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"SELECT \"OrderId\", \"ProductId\", \"DialedNumber\", \"Quantity\" FROM public.\"ProductOrders\" WHERE \"OrderId\" = '{OrderId}'";
+            string sql = $"SELECT \"OrderId\", \"ProductId\", \"DialedNumber\", \"Quantity\", \"CreateDate\" FROM public.\"ProductOrders\" WHERE \"OrderId\" = '{OrderId}'";
 
             var result = await connection.QueryAsync<ProductOrder>(sql).ConfigureAwait(false);
 
@@ -40,7 +41,10 @@ namespace NumberSearch.DataAccess
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"INSERT INTO public.\"ProductOrders\"(\"OrderId\", \"ProductId\", \"DialedNumber\", \"Quantity\") VALUES('{OrderId}', '{ProductId}', '{DialedNumber}', '{Quantity}')";
+            // Set the creation date to now.
+            CreateDate = DateTime.Now;
+
+            string sql = $"INSERT INTO public.\"ProductOrders\"(\"OrderId\", \"ProductId\", \"DialedNumber\", \"Quantity\", \"CreateDate\" ) VALUES('{OrderId}', '{ProductId}', '{DialedNumber}', '{Quantity}', '{CreateDate}')";
 
             var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
 

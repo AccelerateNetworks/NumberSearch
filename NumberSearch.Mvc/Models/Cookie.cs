@@ -9,14 +9,14 @@ using System.Text;
 
 namespace NumberSearch.Mvc
 {
-    public class Cookie
+    public static class Cookie
     {
         /// <summary>
         /// Gets all of values out of the Session cookie.
         /// </summary>
         /// <param name="session"> The session cookie. </param>
         /// <returns> A list of items that are in the Cart. </returns>
-        public static IEnumerable<ProductOrder> Get(ISession session)
+        public static IEnumerable<ProductOrder> GetCart(ISession session)
         {
             if (session != null && session.TryGetValue("Cart", out var cookie))
             {
@@ -39,7 +39,7 @@ namespace NumberSearch.Mvc
         /// <param name="session"> The session cookie. </param>
         /// <param name="products"> A list of items to put into the cookie. </param>
         /// <returns> Wether or not it was sucessful. </returns>
-        public static bool Set(ISession session, IEnumerable<ProductOrder> products)
+        public static bool SetCart(ISession session, IEnumerable<ProductOrder> products)
         {
             if (session != null)
             {
