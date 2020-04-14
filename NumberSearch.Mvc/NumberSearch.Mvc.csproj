@@ -6,7 +6,7 @@
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <UserSecretsId>328593cf-cbb9-48e9-8938-e38a44c8291d</UserSecretsId>
     <LangVersion>latest</LangVersion>
-    <ApplicationInsightsResourceId>/subscriptions/dbb6aa39-c8f4-49a0-a15e-33ee631d552e/resourcegroups/Default-ApplicationInsights-EastUS/providers/microsoft.insights/components/NumberSearch.Mvc</ApplicationInsightsResourceId>
+    <ApplicationInsightsResourceId>/subscriptions/dd4e7397-befc-4010-84b2-7a6deffd4709/resourcegroups/NumberSearch.Mvc-1/providers/microsoft.insights/components/NumberSearch.Mvc-1</ApplicationInsightsResourceId>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="1.2.1">
