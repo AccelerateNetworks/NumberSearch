@@ -500,6 +500,59 @@ namespace NumberSearch.Tests
         }
 
         //[Fact]
+        //public async Task ServiceMigrationScriptAsync()
+        //{
+        //    var conn = postgresql;
+
+        //    var services = new List<Service>
+        //    {
+        //        new Service
+        //        {
+        //            Name = "Web Texting",
+        //            Description = "Text from any browser.",
+        //            Price = 10
+        //        },
+        //        new Service
+        //        {
+        //            Name = "LTE Backup",
+        //            Description = "Always stay online",
+        //            Price = 30
+        //        },
+        //        new Service
+        //        {
+        //            Name = "Toll Free Number",
+        //            Description = "Free for clients to call",
+        //            Price = 10
+        //        },
+        //        new Service
+        //        {
+        //            Name = "Fax Server",
+        //            Description = "Send and Recieve Faxes",
+        //            Price = 10
+        //        },
+        //        new Service
+        //        {
+        //            Name = "Standard Lines",
+        //            Description = "Supports 1 concurrent call per Line",
+        //            Price = 35
+        //        },
+        //        new Service
+        //        {
+        //            Name = "Concurrent Seats",
+        //            Description = "Supports 1 concurrent call per Seat",
+        //            Price = 20
+        //        }
+        //    };
+
+        //    foreach (var service in services)
+        //    {
+        //        var checkSubmit = await service.PostAsync(conn);
+
+        //        Assert.True(checkSubmit);
+        //    }
+        //}
+
+        //[Fact]
         //public async Task ProductMigrationScriptAsync()
         //{
         //    var conn = postgresql;

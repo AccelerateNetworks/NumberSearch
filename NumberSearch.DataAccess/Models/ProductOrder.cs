@@ -11,6 +11,7 @@ namespace NumberSearch.DataAccess
     {
         public Guid OrderId { get; set; }
         public Guid ProductId { get; set; }
+        public Guid ServiceId { get; set; }
         public string DialedNumber { get; set; }
         public int Quantity { get; set; }
         public DateTime CreateDate { get; set; }
@@ -25,7 +26,7 @@ namespace NumberSearch.DataAccess
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"SELECT \"OrderId\", \"ProductId\", \"DialedNumber\", \"Quantity\", \"CreateDate\" FROM public.\"ProductOrders\" WHERE \"OrderId\" = '{OrderId}'";
+            string sql = $"SELECT \"OrderId\", \"ProductId\", \"ServiceId\", \"DialedNumber\", \"Quantity\", \"CreateDate\" FROM public.\"ProductOrders\" WHERE \"OrderId\" = '{OrderId}'";
 
             var result = await connection.QueryAsync<ProductOrder>(sql).ConfigureAwait(false);
 
@@ -44,7 +45,7 @@ namespace NumberSearch.DataAccess
             // Set the creation date to now.
             CreateDate = DateTime.Now;
 
-            string sql = $"INSERT INTO public.\"ProductOrders\"(\"OrderId\", \"ProductId\", \"DialedNumber\", \"Quantity\", \"CreateDate\" ) VALUES('{OrderId}', '{ProductId}', '{DialedNumber}', '{Quantity}', '{CreateDate}')";
+            string sql = $"INSERT INTO public.\"ProductOrders\"(\"OrderId\", \"ProductId\", \"ServiceId\", \"DialedNumber\", \"Quantity\", \"CreateDate\") VALUES('{OrderId}', '{ProductId}', '{ServiceId}', '{DialedNumber}', '{Quantity}', '{CreateDate}')";
 
             var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
 

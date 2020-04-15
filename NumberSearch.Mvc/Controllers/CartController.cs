@@ -81,6 +81,33 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
+        [Route("Cart/BuyService/{serviceId}")]
+        public async Task<IActionResult> BuyServiceAsync(Guid serviceId, int Quantity)
+        {
+            var cart = Cart.GetFromSession(HttpContext.Session);
+
+            var service = await Service.GetAsync(serviceId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            var productOrder = new ProductOrder
+            {
+                ServiceId = service.ServiceId,
+                Quantity = Quantity > 0 ? Quantity : 1
+            };
+
+            var checkAdd = cart.AddService(service, productOrder);
+            var checkSet = cart.SetToSession(HttpContext.Session);
+
+            if (checkAdd && checkSet)
+            {
+                // TODO: Mark the item as sucessfully added.
+                return RedirectToAction("Index", "Services");
+            }
+            else
+            {
+                // TODO: Tell the user about the failure
+                return RedirectToAction("Index", "Services");
+            }
+        }
+
         [Route("Cart/RemovePhoneNumber/{dialedPhoneNumber}")]
         public IActionResult RemovePhoneNumber(string dialedPhoneNumber)
         {
@@ -127,6 +154,29 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
+        [Route("Cart/RemoveService/{serviceId}")]
+        public IActionResult RemoveService(Guid serviceId)
+        {
+            var cart = Cart.GetFromSession(HttpContext.Session);
+
+            var service = new Service { ServiceId = serviceId };
+            var productOrder = new ProductOrder { ServiceId = serviceId };
+
+            var checkRemove = cart.RemoveService(service, productOrder);
+            var checkSet = cart.SetToSession(HttpContext.Session);
+
+            if (checkRemove && checkSet)
+            {
+                // TODO: Mark the item as removed.
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                // TODO: Tell the user about the failure.
+                return RedirectToAction("Index");
+            }
+        }
+
         [Route("Cart/Checkout")]
         public IActionResult Checkout()
         {
@@ -149,6 +199,7 @@ namespace NumberSearch.Mvc.Controllers
                 // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
                 var phoneNumbers = new List<PhoneNumber>();
                 var products = new List<Product>();
+                var services = new List<Service>();
                 foreach (var item in productOrders)
                 {
                     if (item?.DialedNumber?.Length == 10)
@@ -156,10 +207,15 @@ namespace NumberSearch.Mvc.Controllers
                         var phoneNumber = await PhoneNumber.GetAsync(item.DialedNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
                         phoneNumbers.Add(phoneNumber);
                     }
-                    else
+                    else if (item?.ProductId != Guid.Empty)
                     {
                         var product = await Product.GetAsync(item.ProductId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
                         products.Add(product);
+                    }
+                    else if (item?.ServiceId != Guid.Empty)
+                    {
+                        var service = await Service.GetAsync(item.ServiceId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                        services.Add(service);
                     }
                 }
 
@@ -168,7 +224,8 @@ namespace NumberSearch.Mvc.Controllers
                     Order = order,
                     ProductOrders = productOrders,
                     PhoneNumbers = phoneNumbers,
-                    Products = products
+                    Products = products,
+                    Services = services
                 };
 
                 return View("Order", cart);

@@ -13,59 +13,86 @@
     <br />
     @{
         var productOrders = Model.ProductOrdersToDictionary();
-        if (Model?.PhoneNumbers.Count() > 0 || Model?.Products.Count() > 0)
+        if (Model?.PhoneNumbers.Count() > 0 || Model?.Products.Count() > 0 || Model?.Services.Count() > 0)
         {
             <div class="row">
                 <div class="table-responsive">
                     <table class="table table-striped table-borderless table-hover">
-                        <tbody>
-                            @{
-                                foreach (var item in Model?.PhoneNumbers)
-                                {
-                                    var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
-                                    var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
-                                    var number = item.DialedNumber;
-                                    <tr>
-                                        <td scope="row"><h4>@formattedNumber</h4></td>
-                                        <td>@Html.Raw(number)</td>
-                                        <td>@location</td>
-                                        <td>$20</td>
-                                        <td>
-                                            <a asp-controller="Cart" asp-action="RemovePhoneNumber" asp-route-id="@item.DialedNumber" target="_top">
-                                                <input type="button" class="btn btn-outline-danger" value="Remove">
-                                            </a>
-                                        </td>
-                                    </tr>
+                            <tbody>
+                                @{
+                                    foreach (var item in Model?.PhoneNumbers)
+                                    {
+                                        var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
+                                        var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
+                                        var number = item.DialedNumber;
+                                        <tr>
+                                            <td scope="row"><h4>@formattedNumber</h4></td>
+                                            <td>@Html.Raw(number)</td>
+                                            <td>@location</td>
+                                            <td>$20</td>
+                                            <td>
+                                                <a asp-controller="Cart" asp-action="RemovePhoneNumber" asp-route-id="@item.DialedNumber" target="_top">
+                                                    <input type="button" class="btn btn-outline-danger" value="Remove">
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
                                 }
-                            }
-                            @{
-                                foreach (var item in Model?.Products)
-                                {
-                                    var productOrder = productOrders[item?.ProductId.ToString()];
-                                    var localTotal = productOrder.Quantity * item.Price;
-                                    <tr>
-                                        <td scope="row"><h4>@item.Name</h4></td>
-                                        @{
-                                            if (productOrder.Quantity > 1)
-                                            {
-                                                <td>@productOrder.Quantity Units</td>
+                                @{
+                                    foreach (var item in Model?.Products)
+                                    {
+                                        var productOrder = productOrders[item?.ProductId.ToString()];
+                                        var localTotal = productOrder.Quantity * item.Price;
+                                        <tr>
+                                            <td scope="row"><h4>@item.Name</h4></td>
+                                            @{
+                                                if (productOrder.Quantity > 1)
+                                                {
+                                                    <td>@productOrder.Quantity Units</td>
+                                                }
+                                                else
+                                                {
+                                                    <td>@productOrder.Quantity Unit</td>
+                                                }
                                             }
-                                            else
-                                            {
-                                                <td>@productOrder.Quantity Unit</td>
-                                            }
-                                        }
-                                        <td>at $@item.Price per</td>
-                                        <td>$@localTotal</td>
-                                        <td>
-                                            <a asp-controller="Cart" asp-action="RemoveProduct" asp-route-id="@item.ProductId" target="_top">
-                                                <input type="button" class="btn btn-outline-danger" value="Remove">
-                                            </a>
-                                        </td>
-                                    </tr>
+                                            <td>at $@item.Price per</td>
+                                            <td>$@localTotal</td>
+                                            <td>
+                                                <a asp-controller="Cart" asp-action="RemoveProduct" asp-route-id="@item.ProductId" target="_top">
+                                                    <input type="button" class="btn btn-outline-danger" value="Remove">
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
                                 }
-                            }
-                        </tbody>
+                                @{
+                                    foreach (var item in Model?.Services)
+                                    {
+                                        var productOrder = productOrders[item?.ServiceId.ToString()];
+                                        var localTotal = productOrder.Quantity * item.Price;
+                                        <tr>
+                                            <td scope="row"><h4>@item.Name</h4></td>
+                                            @{
+                                                if (productOrder.Quantity > 1)
+                                                {
+                                                    <td>@productOrder.Quantity Units</td>
+                                                }
+                                                else
+                                                {
+                                                    <td>@productOrder.Quantity Unit</td>
+                                                }
+                                            }
+                                            <td>at $@item.Price per</td>
+                                            <td>$@localTotal</td>
+                                            <td>
+                                                <a asp-controller="Cart" asp-action="RemoveService" asp-route-id="@item.ServiceId" target="_top">
+                                                    <input type="button" class="btn btn-outline-danger" value="Remove">
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
                     </table>
                 </div>
             </div>

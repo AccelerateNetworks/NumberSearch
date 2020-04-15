@@ -11,6 +11,7 @@ namespace NumberSearch.Mvc
     {
         public IEnumerable<PhoneNumber> PhoneNumbers { get; set; }
         public IEnumerable<Product> Products { get; set; }
+        public IEnumerable<Service> Services { get; set; }
         public IEnumerable<ProductOrder> ProductOrders { get; set; }
         public Order Order { get; set; }
 
@@ -18,6 +19,7 @@ namespace NumberSearch.Mvc
         {
             PhoneNumbers,
             Products,
+            Services,
             ProductOrders
         }
 
@@ -30,12 +32,14 @@ namespace NumberSearch.Mvc
         {
             var numbers = session.Get<List<PhoneNumber>>(CartKey.PhoneNumbers.ToString());
             var products = session.Get<List<Product>>(CartKey.Products.ToString());
+            var service = session.Get<List<Service>>(CartKey.Services.ToString());
             var productOrders = session.Get<List<ProductOrder>>(CartKey.ProductOrders.ToString());
 
             return new Cart
             {
                 PhoneNumbers = numbers ?? new List<PhoneNumber>(),
                 Products = products ?? new List<Product>(),
+                Services = service ?? new List<Service>(),
                 ProductOrders = productOrders ?? new List<ProductOrder>(),
                 Order = new Order()
             };
@@ -50,6 +54,7 @@ namespace NumberSearch.Mvc
         {
             session.Set<List<PhoneNumber>>(CartKey.PhoneNumbers.ToString(), PhoneNumbers?.ToList());
             session.Set<List<Product>>(CartKey.Products.ToString(), Products?.ToList());
+            session.Set<List<Service>>(CartKey.Services.ToString(), Services?.ToList());
             session.Set<List<ProductOrder>>(CartKey.ProductOrders.ToString(), ProductOrders?.ToList());
 
             return true;
@@ -87,7 +92,7 @@ namespace NumberSearch.Mvc
         }
 
         /// <summary>
-        /// Adda Product to the Cart.
+        /// Add a Product to the Cart.
         /// </summary>
         /// <param name="product"></param>
         /// <param name="productOrder"></param>
@@ -103,6 +108,33 @@ namespace NumberSearch.Mvc
                 Products = products.Values.ToArray();
 
                 productOrders[productOrder.ProductId.ToString()] = productOrder;
+                ProductOrders = productOrders.Values.ToArray();
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Add a Service to the Cart.
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="productOrder"></param>
+        /// <returns></returns>
+        public bool AddService(Service service, ProductOrder productOrder)
+        {
+            var services = this.ServicesToDictionary();
+            var productOrders = this.ProductOrdersToDictionary();
+
+            if (!string.IsNullOrWhiteSpace(service?.Name) && service?.ServiceId == productOrder?.ServiceId)
+            {
+                services[service.ServiceId.ToString()] = service;
+                Services = services.Values.ToArray();
+
+                productOrders[productOrder.ServiceId.ToString()] = productOrder;
                 ProductOrders = productOrders.Values.ToArray();
 
                 return true;
@@ -187,9 +219,46 @@ namespace NumberSearch.Mvc
             }
         }
 
+        /// <summary>
+        /// Remove a Service from the Cart.
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="productOrder"></param>
+        /// <returns></returns>
+        public bool RemoveService(Service service, ProductOrder productOrder)
+        {
+            service ??= new Service();
+            productOrder ??= new ProductOrder();
+
+            var services = this.ServicesToDictionary();
+            var productOrders = this.ProductOrdersToDictionary();
+
+            if (service.ServiceId == productOrder?.ServiceId)
+            {
+                var checkRemoveService = services.Remove(service.ServiceId.ToString());
+                var checkRemoveProductorder = productOrders.Remove(productOrder.ProductId.ToString());
+
+                if (checkRemoveService && checkRemoveProductorder)
+                {
+                    Services = services.Values.ToArray();
+                    ProductOrders = productOrders.Values.ToArray();
+
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public Dictionary<string, ProductOrder> ProductOrdersToDictionary()
         {
-            return ProductOrders.ToDictionary(x => !string.IsNullOrEmpty(x.DialedNumber) ? x.DialedNumber : x.ProductId.ToString(), x => x);
+            return ProductOrders.ToDictionary(x => !string.IsNullOrEmpty(x.DialedNumber) ? x.DialedNumber : x.ProductId == System.Guid.Empty ? x.ServiceId.ToString() : x.ProductId.ToString(), x => x);
         }
 
         public Dictionary<string, PhoneNumber> PhoneNumbersToDictionary()
@@ -200,6 +269,11 @@ namespace NumberSearch.Mvc
         public Dictionary<string, Product> ProductsToDictionary()
         {
             return Products.ToDictionary(x => x.ProductId.ToString(), x => x);
+        }
+
+        public Dictionary<string, Service> ServicesToDictionary()
+        {
+            return Services.ToDictionary(x => x.ServiceId.ToString(), x => x);
         }
     }
 }
