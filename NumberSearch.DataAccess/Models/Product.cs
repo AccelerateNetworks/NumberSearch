@@ -8,11 +8,9 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess
 {
-    public class Product : IProduct
+    public class Product
     {
         public Guid ProductId { get; set; }
-        // This is not used.
-        public string DialedNumber { get; set; }
         public string Name { get; set; }
         public int Price { get; set; }
         public string Description { get; set; }

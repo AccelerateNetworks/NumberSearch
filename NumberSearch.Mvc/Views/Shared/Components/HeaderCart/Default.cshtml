@@ -1,12 +1,12 @@
 ﻿@model List<NumberSearch.DataAccess.ProductOrder>;
 
 @{
-    if (Model == null)
+    if (Model?.Count < 1)
     {
         <a class="btn btn-outline-dark btn-lg" asp-controller="Cart" asp-action="Index">Cart</a>
     }
     else
     {
-        <a class="btn btn-outline-dark btn-lg" asp-controller="Cart" asp-action="Index">Cart&nbsp;<span class="badge badge-secondary badge-pill">@Model?.Count</span></a>
+        <a class="btn btn-outline-success btn-lg" asp-controller="Cart" asp-action="Index">Cart&nbsp;<span class="badge badge-success badge-pill">@Model?.Count</span></a>
     }
 }
