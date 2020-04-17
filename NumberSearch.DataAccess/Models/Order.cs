@@ -1,5 +1,7 @@
 ﻿using Dapper;
+
 using Npgsql;
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -23,9 +25,11 @@ namespace NumberSearch.DataAccess
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"Country\", \"State\", \"Zip\", \"DateSubmitted\" FROM public.\"Orders\" WHERE \"OrderId\" = '{orderId}'";
-
-            var result = await connection.QueryAsync<Order>(sql).ConfigureAwait(false);
+            var result = await connection
+                .QueryAsync<Order>("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"Country\", \"State\", \"Zip\", \"DateSubmitted\" FROM public.\"Orders\" " +
+                "WHERE \"OrderId\" = @orderId",
+                new { orderId })
+                .ConfigureAwait(false);
 
             return result;
         }
@@ -34,9 +38,11 @@ namespace NumberSearch.DataAccess
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"Country\", \"State\", \"Zip\", \"DateSubmitted\" FROM public.\"Orders\" WHERE \"Email\" = '{email}' ORDER BY \"DateSubmitted\" DESC";
-
-            var result = await connection.QueryAsync<Order>(sql).ConfigureAwait(false);
+            var result = await connection
+                .QueryAsync<Order>("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"Country\", \"State\", \"Zip\", \"DateSubmitted\" FROM public.\"Orders\" " +
+                "WHERE \"Email\" = @email ORDER BY \"DateSubmitted\" DESC",
+                new { email })
+                .ConfigureAwait(false);
 
             return result;
         }
@@ -47,9 +53,11 @@ namespace NumberSearch.DataAccess
 
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"INSERT INTO public.\"Orders\"(\"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"Country\", \"State\", \"Zip\", \"DateSubmitted\") VALUES('{FirstName}', '{LastName}', '{Email}', '{Address}', '{Address2}', '{Country}', '{State}', '{Zip}', '{DateSubmitted}')";
-
-            var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
+            var result = await connection
+                .ExecuteAsync("INSERT INTO public.\"Orders\"(\"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"Country\", \"State\", \"Zip\", \"DateSubmitted\") " +
+                "VALUES(@FirstName, @LastName, @Email, @Address, @Address2, @Country, @State, @Zip, @DateSubmitted)",
+                new { FirstName, LastName, Email, Address, Address2, Country, State, Zip, DateSubmitted })
+                .ConfigureAwait(false);
 
             if (result == 1)
             {

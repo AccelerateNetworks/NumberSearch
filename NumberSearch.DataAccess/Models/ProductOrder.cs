@@ -1,5 +1,7 @@
 ﻿using Dapper;
+
 using Npgsql;
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -26,9 +28,11 @@ namespace NumberSearch.DataAccess
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"SELECT \"OrderId\", \"ProductId\", \"ServiceId\", \"DialedNumber\", \"Quantity\", \"CreateDate\" FROM public.\"ProductOrders\" WHERE \"OrderId\" = '{OrderId}'";
-
-            var result = await connection.QueryAsync<ProductOrder>(sql).ConfigureAwait(false);
+            var result = await connection
+                .QueryAsync<ProductOrder>("SELECT \"OrderId\", \"ProductId\", \"ServiceId\", \"DialedNumber\", \"Quantity\", \"CreateDate\" FROM public.\"ProductOrders\" " +
+                "WHERE \"OrderId\" = @OrderId", 
+                new { OrderId })
+                .ConfigureAwait(false);
 
             return result;
         }
@@ -45,9 +49,11 @@ namespace NumberSearch.DataAccess
             // Set the creation date to now.
             CreateDate = DateTime.Now;
 
-            string sql = $"INSERT INTO public.\"ProductOrders\"(\"OrderId\", \"ProductId\", \"ServiceId\", \"DialedNumber\", \"Quantity\", \"CreateDate\") VALUES('{OrderId}', '{ProductId}', '{ServiceId}', '{DialedNumber}', '{Quantity}', '{CreateDate}')";
-
-            var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
+            var result = await connection
+                .ExecuteAsync("INSERT INTO public.\"ProductOrders\"(\"OrderId\", \"ProductId\", \"ServiceId\", \"DialedNumber\", \"Quantity\", \"CreateDate\") " +
+                "VALUES(@OrderId, @ProductId, @ServiceId, @DialedNumber, @Quantity, @CreateDate)", 
+                new { OrderId, ProductId, ServiceId, DialedNumber, Quantity, CreateDate })
+                .ConfigureAwait(false);
 
             if (result == 1)
             {

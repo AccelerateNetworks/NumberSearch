@@ -29,9 +29,11 @@ namespace NumberSearch.DataAccess
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"SELECT \"Id\",\"BusinessName\", \"RoleTitle\", \"FirstName\", \"LastName\", \"Email\", \"PhoneNumber\", \"DateSubmitted\" FROM public.\"SalesLeads\" WHERE \"Email\" = '{email}'";
-
-            var result = await connection.QueryAsync<ContactForm>(sql).ConfigureAwait(false);
+            var result = await connection
+                .QueryAsync<ContactForm>("SELECT \"Id\",\"BusinessName\", \"RoleTitle\", \"FirstName\", \"LastName\", \"Email\", \"PhoneNumber\", \"DateSubmitted\" FROM public.\"SalesLeads\" " +
+                "WHERE \"Email\" = @email",
+                new { email })
+                .ConfigureAwait(false);
 
             return result;
         }
@@ -48,9 +50,11 @@ namespace NumberSearch.DataAccess
 
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"INSERT INTO public.\"SalesLeads\"(\"BusinessName\", \"RoleTitle\", \"FirstName\", \"LastName\", \"Email\", \"PhoneNumber\", \"DateSubmitted\") VALUES('{BusinessName}', '{RoleTitle}', '{FirstName}', '{LastName}', '{Email}', '{PhoneNumber}', '{DateSubmitted}')";
-
-            var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
+            var result = await connection
+                .ExecuteAsync("INSERT INTO public.\"SalesLeads\"(\"BusinessName\", \"RoleTitle\", \"FirstName\", \"LastName\", \"Email\", \"PhoneNumber\", \"DateSubmitted\") " +
+                "VALUES(@BusinessName, @RoleTitle, @FirstName, @LastName, @Email, @PhoneNumber, @DateSubmitted)",
+                new { BusinessName, RoleTitle, FirstName, LastName, Email, PhoneNumber, DateSubmitted })
+                .ConfigureAwait(false);
 
             if (result == 1)
             {

@@ -1,7 +1,7 @@
 ﻿using Dapper;
 
 using Npgsql;
-using NumberSearch.DataAccess.Models;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -30,9 +30,9 @@ namespace NumberSearch.DataAccess
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = "SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\" FROM public.\"PhoneNumbers\"";
-
-            var result = await connection.QueryAsync<PhoneNumber>(sql).ConfigureAwait(false);
+            var result = await connection
+                .QueryAsync<PhoneNumber>("SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\" FROM public.\"PhoneNumbers\"")
+                .ConfigureAwait(false);
 
             return result;
         }
@@ -47,9 +47,10 @@ namespace NumberSearch.DataAccess
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\" FROM public.\"PhoneNumbers\" WHERE \"DialedNumber\" = '{dialedNumber}'";
-
-            var result = await connection.QuerySingleOrDefaultAsync<PhoneNumber>(sql).ConfigureAwait(false) ?? new PhoneNumber();
+            var result = await connection
+                .QuerySingleOrDefaultAsync<PhoneNumber>("SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\" FROM public.\"PhoneNumbers\" " +
+                "WHERE \"DialedNumber\" = @dialedNumber", new { dialedNumber })
+                .ConfigureAwait(false) ?? new PhoneNumber();
 
             return result;
         }
@@ -67,9 +68,10 @@ namespace NumberSearch.DataAccess
 
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\" FROM public.\"PhoneNumbers\" WHERE \"DialedNumber\" LIKE '%{query}%'";
-
-            var result = await connection.QueryAsync<PhoneNumber>(sql).ConfigureAwait(false);
+            var result = await connection
+                .QueryAsync<PhoneNumber>("SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\" FROM public.\"PhoneNumbers\" " +
+                "WHERE \"DialedNumber\" LIKE @query", new { query = $"%{query}%" })
+                .ConfigureAwait(false);
 
             return result;
         }
@@ -89,9 +91,11 @@ namespace NumberSearch.DataAccess
 
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\" FROM public.\"PhoneNumbers\" WHERE \"DialedNumber\" LIKE '%{query}%' ORDER BY \"DialedNumber\" OFFSET {offset} LIMIT {limit};";
-
-            var result = await connection.QueryAsync<PhoneNumber>(sql).ConfigureAwait(false);
+            var result = await connection
+                .QueryAsync<PhoneNumber>("SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\" FROM public.\"PhoneNumbers\" " +
+                "WHERE \"DialedNumber\" LIKE @query ORDER BY \"DialedNumber\" OFFSET @offset LIMIT @limit",
+                new { query = $"%{query}%", offset, limit })
+                .ConfigureAwait(false);
 
             return result;
         }
@@ -103,11 +107,13 @@ namespace NumberSearch.DataAccess
 
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"SELECT COUNT(*) FROM public.\"PhoneNumbers\" WHERE \"DialedNumber\" LIKE '%{query}%';";
+            var result = await connection
+                .QueryFirstOrDefaultAsync<int>("SELECT COUNT(*) FROM public.\"PhoneNumbers\" " +
+                "WHERE \"DialedNumber\" LIKE @query",
+                new { query = $"%{query}%" })
+                .ConfigureAwait(false);
 
-            var result = await connection.QueryAsync<int>(sql).ConfigureAwait(false);
-
-            return result.FirstOrDefault();
+            return result;
         }
 
         /// <summary>
@@ -121,9 +127,11 @@ namespace NumberSearch.DataAccess
 
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"DELETE FROM public.\"PhoneNumbers\" WHERE \"DateIngested\" < '{ingestStart.AddDays(-1)}'";
-
-            var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
+            var result = await connection
+                .ExecuteAsync("DELETE FROM public.\"PhoneNumbers\" " +
+                "WHERE \"DateIngested\" < @DateIngested",
+                new { DateIngested = ingestStart.AddDays(-1) })
+                .ConfigureAwait(false);
 
             return new IngestStatistics
             {
@@ -150,9 +158,11 @@ namespace NumberSearch.DataAccess
 
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"INSERT INTO public.\"PhoneNumbers\"(\"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\") VALUES('{DialedNumber}', {NPA}, {NXX}, {XXXX.ToString("0000", new CultureInfo("en-US"))}, '{City}', '{State}', '{IngestedFrom}', '{DateTime.Now}')";
-
-            var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
+            var result = await connection
+                .ExecuteAsync("INSERT INTO public.\"PhoneNumbers\"(\"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\") " +
+                "VALUES(@DialedNumber, @NPA, @NXX, @XXXX, @City, @State, @IngestedFrom, @DateIngested)",
+                new { DialedNumber, NPA, NXX, XXXX = $"{XXXX.ToString("0000", new CultureInfo("en - US"))}", City, State, IngestedFrom, DateIngested = DateTime.Now })
+                .ConfigureAwait(false);
 
             if (result == 1)
             {
@@ -217,9 +227,11 @@ namespace NumberSearch.DataAccess
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"UPDATE public.\"PhoneNumbers\" SET \"IngestedFrom\" = '{IngestedFrom}', \"DateIngested\" = '{DateTime.Now}' WHERE \"DialedNumber\" = '{DialedNumber}'";
-
-            var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
+            var result = await connection
+                .ExecuteAsync("UPDATE public.\"PhoneNumbers\" SET \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested " +
+                "WHERE \"DialedNumber\" = @DialedNumber", 
+                new { IngestedFrom, DateIngested = DateTime.Now, DialedNumber })
+                .ConfigureAwait(false);
 
             if (result == 1)
             {

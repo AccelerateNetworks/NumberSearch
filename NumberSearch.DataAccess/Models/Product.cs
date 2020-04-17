@@ -26,9 +26,11 @@ namespace NumberSearch.DataAccess
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\" FROM public.\"Products\" WHERE \"ProductId\" = '{productId}'";
-
-            var result = await connection.QueryFirstOrDefaultAsync<Product>(sql).ConfigureAwait(false);
+            var result = await connection
+                .QueryFirstOrDefaultAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\" FROM public.\"Products\" " +
+                "WHERE \"ProductId\" = @productId",
+                new { productId })
+                .ConfigureAwait(false);
 
             return result;
         }
@@ -43,9 +45,11 @@ namespace NumberSearch.DataAccess
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\" FROM public.\"Products\" WHERE \"Name\" = '{name}'";
-
-            var result = await connection.QueryAsync<Product>(sql).ConfigureAwait(false);
+            var result = await connection
+                .QueryAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\" FROM public.\"Products\" " +
+                "WHERE \"Name\" = @name",
+                new { name })
+                .ConfigureAwait(false);
 
             return result;
         }
@@ -54,9 +58,9 @@ namespace NumberSearch.DataAccess
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\" FROM public.\"Products\"";
-
-            var result = await connection.QueryAsync<Product>(sql).ConfigureAwait(false);
+            var result = await connection
+                .QueryAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\" FROM public.\"Products\"")
+                .ConfigureAwait(false);
 
             return result;
         }
@@ -70,9 +74,11 @@ namespace NumberSearch.DataAccess
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"INSERT INTO public.\"Products\"(\"Name\", \"Price\", \"Description\", \"Image\") VALUES('{Name}', '{Price}', '{Description}', '{Image}')";
-
-            var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
+            var result = await connection
+                .ExecuteAsync("INSERT INTO public.\"Products\"(\"Name\", \"Price\", \"Description\", \"Image\") " +
+                "VALUES(@Name, @Price, @Description, @Image)",
+                new { Name, Price, Description, Image })
+                .ConfigureAwait(false);
 
             if (result == 1)
             {
