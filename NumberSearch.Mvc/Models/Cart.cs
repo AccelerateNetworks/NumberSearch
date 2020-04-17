@@ -236,7 +236,7 @@ namespace NumberSearch.Mvc
             if (service.ServiceId == productOrder?.ServiceId)
             {
                 var checkRemoveService = services.Remove(service.ServiceId.ToString());
-                var checkRemoveProductorder = productOrders.Remove(productOrder.ProductId.ToString());
+                var checkRemoveProductorder = productOrders.Remove(productOrder.ServiceId.ToString());
 
                 if (checkRemoveService && checkRemoveProductorder)
                 {
