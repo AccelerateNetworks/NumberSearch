@@ -43,14 +43,6 @@
     <ProjectReference Include="..\NumberSearch.DataAccess\NumberSearch.DataAccess.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Content Update="Views\Onboarding\Index.cshtml">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="Views\Onboarding\Success.cshtml">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
     <Content Update="wwwroot\accelerate-white.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
