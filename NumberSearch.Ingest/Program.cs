@@ -35,46 +35,84 @@ namespace NumberSearch.Ingest
 
             var start = DateTime.Now;
 
-            // Ingest all avablie phones numbers from the BulkVs API.
-            Log.Information("Ingesting data from BulkVS");
-            var BulkVSStats = await MainBulkVS.IngestPhoneNumbersAsync(bulkVSKey, bulkVSSecret, postgresSQL);
-            //var BulkVSStats = new IngestStatistics { };
+            var tasks = new List<Task<IngestStatistics>>
+            {
+                Task.Run(async () =>
+                {
+                // Ingest all avablie phones numbers from the BulkVs API.
+                Log.Information("Ingesting data from BulkVS");
+                    var BulkVSStats = await MainBulkVS.IngestPhoneNumbersAsync(bulkVSKey, bulkVSSecret, postgresSQL);
+                //var BulkVSStats = new IngestStatistics { };
 
-            if (await BulkVSStats.PostAsync(postgresSQL))
-            {
-                Log.Information("Ingest logged to the database.");
-            }
-            else
-            {
-                Log.Error("Failed to log this ingest.");
-            }
+                if (await BulkVSStats.PostAsync(postgresSQL))
+                    {
+                        Log.Information("Ingest logged to the database.");
+                    }
+                    else
+                    {
+                        Log.Error("Failed to log this ingest.");
+                    }
+                return BulkVSStats;
+                }),
 
-            // Ingest all avalible numbers in the FirstCom API.
-            Log.Information("Ingesting data from FirstCom");
-            var FirstComStats = await FirstCom.IngestPhoneNumbersAsync(username, password, postgresSQL);
-            //var FirstComStats = new IngestStatistics { };
+                Task.Run(async () =>
+                {
+                // Ingest all avalible numbers in the FirstCom API.
+                Log.Information("Ingesting data from FirstCom");
+                    var FirstComStats = await FirstCom.IngestPhoneNumbersAsync(username, password, postgresSQL);
+                //var FirstComStats = new IngestStatistics { };
 
-            if (await FirstComStats.PostAsync(postgresSQL))
-            {
-                Log.Information("Ingest logged to the database.");
-            }
-            else
-            {
-                Log.Error("Failed to log this ingest.");
-            }
+                if (await FirstComStats.PostAsync(postgresSQL))
+                    {
+                        Log.Information("Ingest logged to the database.");
+                    }
+                    else
+                    {
+                        Log.Error("Failed to log this ingest.");
+                    }
+                return FirstComStats;
+                }),
 
-            // Ingest all avalible numbers from the TeleAPI.
-            Log.Information("Ingesting data from TeleAPI");
-            var teleStats = await TeleMessage.IngestPhoneNumbersAsync(teleToken, postgresSQL);
-            //var teleStats = new IngestStatistics { };
+                Task.Run(async () =>
+                {
+                    // Ingest all avalible numbers from the TeleAPI.
+                    Log.Information("Ingesting data from TeleAPI");
+                    var teleStats = await TeleMessage.IngestPhoneNumbersAsync(teleToken, postgresSQL);
+                    //var teleStats = new IngestStatistics { };
 
-            if (await teleStats.PostAsync(postgresSQL))
+                    if (await teleStats.PostAsync(postgresSQL))
+                    {
+                        Log.Information("Ingest logged to the database.");
+                    }
+                    else
+                    {
+                        Log.Error("Failed to log this ingest.");
+                    }
+                    return teleStats;
+                })
+            };
+
+            var teleStats = new IngestStatistics();
+            var BulkVSStats = new IngestStatistics();
+            var FirstComStats = new IngestStatistics();
+
+            await Task.WhenAll(tasks);
+            foreach (var task in tasks)
             {
-                Log.Information("Ingest logged to the database.");
-            }
-            else
-            {
-                Log.Error("Failed to log this ingest.");
+                var result = await task;
+                switch (result.IngestedFrom)
+                {
+                    case "TeleMessage":
+                        teleStats = result;
+                        break;
+                    case "BulkVS":
+                        BulkVSStats = result;
+                        break;
+                    case "FirstCom":
+                        FirstComStats = result;
+                        break;
+                }
+
             }
 
             // Remove all of the old numbers from the database.

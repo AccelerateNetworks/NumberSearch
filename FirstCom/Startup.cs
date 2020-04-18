@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -26,14 +27,21 @@ namespace FirstCom
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseRouting();
-
-            app.UseEndpoints(endpoints =>
+            app.Run(async (context) =>
             {
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("Hello World!");
-                });
+                var config = new ConfigurationBuilder()
+                    .AddJsonFile("appsettings.json")
+                    .AddUserSecrets("40f816f3-0a65-4523-a9be-4bbef0716720")
+                    .Build();
+
+                var username = config.GetConnectionString("PComNetUsername");
+                var password = config.GetConnectionString("PComNetPassword");
+
+                var postgresSQL = config.GetConnectionString("PostgresqlProd");
+
+                var results = await NpaNxxFirstPointCom.GetAsync("206", string.Empty, string.Empty, username, password);
+
+                var x = results.ToArray();
             });
         }
     }
