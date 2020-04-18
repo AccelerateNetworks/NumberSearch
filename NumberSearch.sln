@@ -11,6 +11,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NumberSearch.Ingest", "Numb
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NumberSearch.DataAccess", "NumberSearch.DataAccess\NumberSearch.DataAccess.csproj", "{D648CD01-2A1A-418A-932D-07987557E749}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BulkVS", "BulkVS\BulkVS.csproj", "{1F5295CE-AAAD-409E-8A49-EDCEEBF0C6EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FirstCom", "FirstCom\FirstCom.csproj", "{EA980F61-1F9E-40CA-AAD9-C1D1284D8C96}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{D648CD01-2A1A-418A-932D-07987557E749}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D648CD01-2A1A-418A-932D-07987557E749}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D648CD01-2A1A-418A-932D-07987557E749}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F5295CE-AAAD-409E-8A49-EDCEEBF0C6EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F5295CE-AAAD-409E-8A49-EDCEEBF0C6EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F5295CE-AAAD-409E-8A49-EDCEEBF0C6EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F5295CE-AAAD-409E-8A49-EDCEEBF0C6EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA980F61-1F9E-40CA-AAD9-C1D1284D8C96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA980F61-1F9E-40CA-AAD9-C1D1284D8C96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA980F61-1F9E-40CA-AAD9-C1D1284D8C96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA980F61-1F9E-40CA-AAD9-C1D1284D8C96}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

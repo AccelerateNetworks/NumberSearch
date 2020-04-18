@@ -1,134 +1,67 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using FirstCom;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.Models;
+
 using Serilog;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using BulkVS;
 
 namespace NumberSearch.Ingest
 {
-    public class Program
+    public class FirstCom
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
-        public static async Task Main(string[] args)
+        /// <summary>
+        /// Ingest phone numbers from the FirstCom API.
+        /// </summary>
+        /// <param name="username"> The firstCom username. </param>
+        /// <param name="password"> The firstCom password. </param>
+        /// <param name="connectionString"> the connection string for the database. </param>
+        /// <returns></returns>
+        public static async Task<IngestStatistics> IngestPhoneNumbersAsync(string username, string password, string connectionString)
         {
-            var config = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json")
-            .AddUserSecrets("40f816f3-0a65-4523-a9be-4bbef0716720")
-            .Build();
-
-            var teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
-            var postgresSQL = config.GetConnectionString("PostgresqlProd");
-            var bulkVSKey = config.GetConnectionString("BulkVSAPIKEY");
-            var bulkVSSecret = config.GetConnectionString("BulkVSAPISecret");
-            var username = config.GetConnectionString("PComNetUsername");
-            var password = config.GetConnectionString("PComNetPassword");
-
-            Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console()
-                .WriteTo.File($"NumberSearch.Ingest\\{DateTime.Now:yyyyMMdd}.txt")
-                .CreateLogger();
-
             var start = DateTime.Now;
 
-            // Ingest all avablie phones numbers from the BulkVs API.
-            Log.Information("Ingesting data from BulkVS");
-            var BulkVSStats = await MainBulkVS.IngestPhoneNumbersAsync(bulkVSKey, bulkVSSecret, postgresSQL);
-            //var BulkVSStats = new IngestStatistics { };
+            var stats = await SubmitPhoneNumbersAsync(await GetValidNumbersByNPAAsync(username, password), connectionString);
 
-            if (await BulkVSStats.PostAsync(postgresSQL))
-            {
-                Log.Information("Ingest logged to the database.");
-            }
-            else
-            {
-                Log.Error("Failed to log this ingest.");
-            }
+            var end = DateTime.Now;
+            stats.StartDate = start;
+            stats.EndDate = end;
+            stats.IngestedFrom = "FirstCom";
 
-            // Ingest all avalible numbers in the FirstCom API.
-            Log.Information("Ingesting data from FirstCom");
-            var FirstComStats = await FirstCom.IngestPhoneNumbersAsync(username, password, postgresSQL);
-            //var FirstComStats = new IngestStatistics { };
+            return stats;
+        }
 
-            if (await FirstComStats.PostAsync(postgresSQL))
-            {
-                Log.Information("Ingest logged to the database.");
-            }
-            else
-            {
-                Log.Error("Failed to log this ingest.");
-            }
+        /// <summary>
+        /// Gets a list of valid phone numbers that begin with an area code.
+        /// </summary>
+        /// <param name="username"> The firstcom username. </param>
+        /// <param name="password"> The firstCom password. </param>
+        /// <returns></returns>
+        public static async Task<PhoneNumber[]> GetValidNumbersByNPAAsync(string username, string password)
+        {
+            var areaCodes = AreaCode.AreaCodes;
 
-            // Ingest all avalible numbers from the TeleAPI.
-            Log.Information("Ingesting data from TeleAPI");
-            var teleStats = await TeleMessage.IngestPhoneNumbersAsync(teleToken, postgresSQL);
-            //var teleStats = new IngestStatistics { };
+            var numbers = new List<PhoneNumber>();
 
-            if (await teleStats.PostAsync(postgresSQL))
+            foreach (var code in areaCodes)
             {
-                Log.Information("Ingest logged to the database.");
-            }
-            else
-            {
-                Log.Error("Failed to log this ingest.");
+                try
+                {
+                    numbers.AddRange(await NpaNxxFirstPointCom.GetAsync(code.ToString(), string.Empty, string.Empty, username, password));
+                    Log.Information($"Found {numbers.Count} Phone Numbers");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Area code {code} failed @ {DateTime.Now}: {ex.Message}");
+                }
             }
 
-            // Remove all of the old numbers from the database.
-            Log.Information("Removing old numbers from the database.");
-            var cleanUp = await PhoneNumber.DeleteOld(start, postgresSQL);
-            //var cleanUp = new IngestStatistics { };
-
-            if (await cleanUp.PostAsync(postgresSQL))
-            {
-                Log.Information("Old numbers removed from the database.");
-            }
-            else
-            {
-                Log.Fatal("Failed to remove old numbers from the database.");
-            }
-
-            // Add an extra minute so that the finish time of all stages isn't the same as the finish time of the last stage to run.
-            var end = DateTime.Now.AddMinutes(1);
-
-            var combinedStats = new IngestStatistics
-            {
-                NumbersRetrived = teleStats.NumbersRetrived + BulkVSStats.NumbersRetrived + FirstComStats.NumbersRetrived,
-                FailedToIngest = teleStats.FailedToIngest + BulkVSStats.FailedToIngest + FirstComStats.FailedToIngest,
-                IngestedNew = teleStats.IngestedNew + BulkVSStats.IngestedNew + FirstComStats.IngestedNew,
-                UpdatedExisting = teleStats.UpdatedExisting + BulkVSStats.UpdatedExisting + FirstComStats.UpdatedExisting,
-                Unchanged = teleStats.Unchanged + BulkVSStats.Unchanged + FirstComStats.Unchanged,
-                Removed = cleanUp.Removed,
-                IngestedFrom = "All",
-                StartDate = start,
-                EndDate = end
-            };
-
-            var check = await combinedStats.PostAsync(postgresSQL);
-
-            if (check)
-            {
-                Log.Information("Stats saved to the database.");
-            }
-            else
-            {
-                Log.Error("Failed to save the stats to the database.");
-            }
-
-            var diff = end - start;
-
-            Log.Information($"Numbers Retrived: {combinedStats.NumbersRetrived}");
-            Log.Information($"Numbers Ingested New: {combinedStats.IngestedNew}");
-            Log.Information($"Numbers Updated Existing: {combinedStats.UpdatedExisting}");
-            Log.Information($"Numbers Unchanged: {combinedStats.Unchanged}");
-            Log.Information($"Numbers Removed: {combinedStats.Removed}");
-            Log.Information($"Numbers Failed To Ingest: {combinedStats.FailedToIngest}");
-            Log.Information($"Start: {start.ToLongTimeString()} End: {end.ToLongTimeString()} Elapsed: {diff.TotalMinutes} Minutes");
-
-            Log.CloseAndFlush();
+            return numbers.ToArray();
         }
 
         /// <summary>
