@@ -21,6 +21,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\BulkVS\BulkVS.csproj" />
+    <ProjectReference Include="..\FirstCom\FirstCom.csproj" />
     <ProjectReference Include="..\NumberSearch.DataAccess\NumberSearch.DataAccess.csproj" />
     <ProjectReference Include="..\NumberSearch.Mvc\NumberSearch.Mvc.csproj" />
   </ItemGroup>

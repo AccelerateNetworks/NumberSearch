@@ -1,9 +1,10 @@
+using BulkVS;
 using FirstCom;
 
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
-
+using ServiceReference;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -137,7 +138,7 @@ namespace NumberSearch.Tests
             };
             var ReturnAmount = 100;
 
-            var client = new FirstCom.DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
+            var client = new DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
 
             var result = await client.DIDInventorySearchAsync(pComNetCredentials, DIDSearch, ReturnAmount);
 
