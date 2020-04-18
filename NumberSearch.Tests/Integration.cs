@@ -127,6 +127,47 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task LocalNumberPortabilityRawTestAsync()
+        {
+            // Arrange
+            string query = "1";
+
+            // Act
+            var results = await LocalNumberPortability.GetRawAsync(query, token);
+
+            // Assert
+            Assert.NotNull(results);
+            Assert.False(string.IsNullOrWhiteSpace(results));
+            output.WriteLine(results);
+
+            results = await LocalNumberPortability.GetRawAsync("8662214141", token);
+
+            // Assert
+            Assert.NotNull(results);
+            Assert.False(string.IsNullOrWhiteSpace(results));
+            output.WriteLine(results);
+        }
+
+        [Fact]
+        public async Task LocalNumberPortabilityTestAsync()
+        {
+            // Arrange
+            string query = "1";
+
+            // Act
+            var result = await LocalNumberPortability.IsPortable(query, token);
+
+            // Assert
+            Assert.False(result);
+
+            result = await LocalNumberPortability.IsPortable("8662214141", token);
+
+            // Assert
+            Assert.True(result);
+        }
+
+
+        [Fact]
         public async Task PComNetDIDInventorySearchAsyncTestAsync()
         {
             var DIDSearch = new DIDOrderQuery

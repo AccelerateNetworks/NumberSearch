@@ -31,7 +31,6 @@ C:\Users\thoma\source\repos\uncheckederror\NumberSearch\BulkVS\bin\Debug\netcore
 C:\Users\thoma\source\repos\uncheckederror\NumberSearch\BulkVS\bin\Debug\netcoreapp3.1\appsettings.json
 C:\Users\thoma\source\repos\uncheckederror\NumberSearch\BulkVS\bin\Debug\netcoreapp3.1\Properties\launchSettings.json
 C:\Users\thoma\source\repos\uncheckederror\NumberSearch\BulkVS\bin\Debug\netcoreapp3.1\ServiceReference\dotnet-svcutil.params.json
-C:\Users\thoma\source\repos\uncheckederror\NumberSearch\BulkVS\bin\Debug\netcoreapp3.1\Connected Services\FirstCom\ConnectedService.json
 C:\Users\thoma\source\repos\uncheckederror\NumberSearch\BulkVS\bin\Debug\netcoreapp3.1\BulkVS.exe
 C:\Users\thoma\source\repos\uncheckederror\NumberSearch\BulkVS\bin\Debug\netcoreapp3.1\BulkVS.deps.json
 C:\Users\thoma\source\repos\uncheckederror\NumberSearch\BulkVS\bin\Debug\netcoreapp3.1\BulkVS.runtimeconfig.json
