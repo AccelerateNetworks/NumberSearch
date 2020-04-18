@@ -54,6 +54,68 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
+        [Route("Cart/PortPhoneNumber/{dialedPhoneNumber}")]
+        public async Task<IActionResult> PortPhoneNumberAsync(string dialedPhoneNumber, string Query)
+        {
+            var cart = Cart.GetFromSession(HttpContext.Session);
+
+            var phoneNumber = await PhoneNumber.GetAsync(dialedPhoneNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+
+            if (phoneNumber == null || string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+            {
+
+                bool checkNpa = int.TryParse(dialedPhoneNumber.Substring(0, 3), out int npa);
+                bool checkNxx = int.TryParse(dialedPhoneNumber.Substring(3, 3), out int nxx);
+                bool checkXxxx = int.TryParse(dialedPhoneNumber.Substring(6, 4), out int xxxx);
+
+                if (checkNpa && checkNxx && checkXxxx)
+                {
+                    var port = new PhoneNumber
+                    {
+                        DialedNumber = dialedPhoneNumber,
+                        NPA = npa,
+                        NXX = nxx,
+                        XXXX = xxxx,
+                        City = "Unknown City",
+                        State = "Unknown State",
+                        DateIngested = DateTime.Now,
+                        IngestedFrom = "UserInput"
+                    };
+
+                    var checkSubmission = await port.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+
+                    if (checkSubmission)
+                    {
+                        phoneNumber = await PhoneNumber.GetAsync(port.DialedNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                    }
+                }
+            }
+
+            var productOrder = new ProductOrder { DialedNumber = phoneNumber.DialedNumber, Quantity = 1 };
+
+            var checkAdd = cart.AddPhoneNumber(phoneNumber, productOrder);
+            var checkSet = cart.SetToSession(HttpContext.Session);
+
+            if (checkAdd && checkSet)
+            {
+                // TODO: Mark the item as sucessfully added.
+                return RedirectToAction("Index", "Porting", new PortingResults
+                {
+                    PhoneNumber = phoneNumber,
+                    Cart = cart
+                });
+            }
+            else
+            {
+                // TODO: Tell the user about the failure
+                return RedirectToAction("Index", "Porting", new PortingResults
+                {
+                    PhoneNumber = phoneNumber,
+                    Cart = cart
+                });
+            }
+        }
+
         [Route("Cart/BuyProduct/{productId}")]
         public async Task<IActionResult> BuyProductAsync(Guid productId, int Quantity)
         {

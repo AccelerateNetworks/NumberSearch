@@ -1,0 +1,73 @@
+﻿@model NumberSearch.Mvc.PortingResults;
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var alreadyInCart = Model?.Cart?.PhoneNumbers.ToDictionary(x => x?.DialedNumber, x => x);
+}
+
+<div class="container">
+    <br />
+    <div class="pricing-header mx-auto mb-3 text-center">
+        <h1 class="display-4">Port a Number</h1>
+    </div>
+    <br />
+    <div class="jumbotron mb-3">
+        <h1 class="display-4">Bring your Phone Number with you!</h1>
+        <p>Type your existing phone number in below to add it to your order and bring it with you as you join our Network.</p>
+        <form class="form-row justify-content-center" asp-controller="Porting" asp-action="Portability">
+            <div class="form-group">
+                <div class="input-group mx-auto input-group-lg">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">+1</span>
+                    </div>
+                    <input type="text" name="Query" class="form-control" placeholder="Existing Phone Number">
+                    <button type="submit" class="btn btn-success" onclick="displayBusyIndicator()">Find</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <partial name="_LoadingPartial" />
+
+    @{
+        if (Model != null && !string.IsNullOrWhiteSpace(Model?.PhoneNumber?.DialedNumber))
+        {
+            <div class="table-responsive">
+                <table class="table table-striped table-borderless table-hover">
+                    <tbody>
+                        @{
+                            var location = $"{Model.PhoneNumber?.City ?? "Unknown City"}, {Model.PhoneNumber?.State ?? "Unknown State"}";
+                            var formattedNumber = $"({Model.PhoneNumber.NPA}) {Model.PhoneNumber.NXX}-{Model.PhoneNumber.XXXX.ToString("0000")}";
+                            var number = Model.PhoneNumber.DialedNumber;
+                            <tr>
+                                <td scope="row"><h4>@formattedNumber</h4></td>
+                                <td>@Html.Raw(number)</td>
+                                <td>@location</td>
+                                <td>
+                                    <a asp-controller="Cart" asp-action="PortPhoneNumber" asp-route-id="@Model.PhoneNumber.DialedNumber" asp-route-Query="@Model.PhoneNumber.DialedNumber" target="_top">
+                                        <input type="button" class="btn btn-outline-primary" value="Add to Cart">
+                                    </a>
+                                    @{
+                                        if (alreadyInCart.TryGetValue(Model.PhoneNumber.DialedNumber, out var _))
+                                        {
+                                            <a asp-controller="Cart" asp-action="RemovePhoneNumber" asp-route-id="@Model.PhoneNumber.DialedNumber" asp-route-Query="@Model.PhoneNumber.DialedNumber" target="_top">
+                                                <input type="button" class="btn btn-outline-danger" value="Remove">
+                                            </a>
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else if (Model?.Cart != null && string.IsNullOrWhiteSpace(Model?.PhoneNumber?.DialedNumber))
+        {
+            <div class="alert alert-danger" role="alert">
+                Couldn't find that Phone Number. Please try again.
+            </div>
+        }
+    }
+</div>

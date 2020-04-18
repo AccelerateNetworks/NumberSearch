@@ -161,7 +161,7 @@ namespace NumberSearch.DataAccess
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"PhoneNumbers\"(\"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\") " +
                 "VALUES(@DialedNumber, @NPA, @NXX, @XXXX, @City, @State, @IngestedFrom, @DateIngested)",
-                new { DialedNumber, NPA, NXX, XXXX = $"{XXXX.ToString("0000", new CultureInfo("en - US"))}", City, State, IngestedFrom, DateIngested = DateTime.Now })
+                new { DialedNumber, NPA, NXX, XXXX, City, State, IngestedFrom, DateIngested = DateTime.Now })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -229,7 +229,7 @@ namespace NumberSearch.DataAccess
 
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"PhoneNumbers\" SET \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested " +
-                "WHERE \"DialedNumber\" = @DialedNumber", 
+                "WHERE \"DialedNumber\" = @DialedNumber",
                 new { IngestedFrom, DateIngested = DateTime.Now, DialedNumber })
                 .ConfigureAwait(false);
 
