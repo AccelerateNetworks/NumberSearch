@@ -13,6 +13,7 @@ namespace NumberSearch.Mvc
         public IEnumerable<Product> Products { get; set; }
         public IEnumerable<Service> Services { get; set; }
         public IEnumerable<ProductOrder> ProductOrders { get; set; }
+        public IEnumerable<PortedPhoneNumber> PortedPhoneNumbers { get; set; }
         public Order Order { get; set; }
 
         enum CartKey
@@ -20,7 +21,8 @@ namespace NumberSearch.Mvc
             PhoneNumbers,
             Products,
             Services,
-            ProductOrders
+            ProductOrders,
+            PortedPhoneNumbers
         }
 
         /// <summary>
@@ -34,6 +36,7 @@ namespace NumberSearch.Mvc
             var products = session.Get<List<Product>>(CartKey.Products.ToString());
             var service = session.Get<List<Service>>(CartKey.Services.ToString());
             var productOrders = session.Get<List<ProductOrder>>(CartKey.ProductOrders.ToString());
+            var portedPhoneNumbers = session.Get<List<PortedPhoneNumber>>(CartKey.PortedPhoneNumbers.ToString());
 
             return new Cart
             {
@@ -41,6 +44,7 @@ namespace NumberSearch.Mvc
                 Products = products ?? new List<Product>(),
                 Services = service ?? new List<Service>(),
                 ProductOrders = productOrders ?? new List<ProductOrder>(),
+                PortedPhoneNumbers = portedPhoneNumbers ?? new List<PortedPhoneNumber>(),
                 Order = new Order()
             };
         }
@@ -56,6 +60,7 @@ namespace NumberSearch.Mvc
             session.Set<List<Product>>(CartKey.Products.ToString(), Products?.ToList());
             session.Set<List<Service>>(CartKey.Services.ToString(), Services?.ToList());
             session.Set<List<ProductOrder>>(CartKey.ProductOrders.ToString(), ProductOrders?.ToList());
+            session.Set<List<PortedPhoneNumber>>(CartKey.PortedPhoneNumbers.ToString(), PortedPhoneNumbers?.ToList());
 
             return true;
         }
@@ -81,6 +86,37 @@ namespace NumberSearch.Mvc
                 PhoneNumbers = phoneNumbers.Values.ToArray();
 
                 productOrders[productOrder.DialedNumber] = productOrder;
+                ProductOrders = productOrders.Values.ToArray();
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Add a PhoneNumber to the Cart.
+        /// </summary>
+        /// <param name="newPhoneNumber"></param>
+        /// <returns></returns>
+        public bool AddPortedPhoneNumber(PortedPhoneNumber portedPhoneNumber, ProductOrder productOrder)
+        {
+            portedPhoneNumber ??= new PortedPhoneNumber();
+            productOrder ??= new ProductOrder();
+
+            // We're using dictionaries here to prevent duplicates.
+            var portedPhoneNumbers = this.PortedPhoneNumbersToDictionary();
+            var productOrders = this.ProductOrdersToDictionary();
+
+            // If it's a valid phone number make sure the keys match.
+            if (portedPhoneNumber?.PortedDialedNumber?.Length == 10 && portedPhoneNumber.PortedDialedNumber == productOrder?.PortedDialedNumber)
+            {
+                portedPhoneNumbers[portedPhoneNumber.PortedDialedNumber] = portedPhoneNumber;
+                PortedPhoneNumbers = portedPhoneNumbers.Values.ToArray();
+
+                productOrders[productOrder.PortedDialedNumber] = productOrder;
                 ProductOrders = productOrders.Values.ToArray();
 
                 return true;
@@ -183,6 +219,43 @@ namespace NumberSearch.Mvc
         }
 
         /// <summary>
+        /// Remove a phone number from the Cart.
+        /// </summary>
+        /// <param name="phoneNumber"></param>
+        /// <param name="productOrder"></param>
+        /// <returns></returns>
+        public bool RemovePortedPhoneNumber(PortedPhoneNumber portedPhoneNumber, ProductOrder productOrder)
+        {
+            portedPhoneNumber ??= new PortedPhoneNumber();
+            productOrder ??= new ProductOrder();
+
+            var portedPhoneNumbers = this.PortedPhoneNumbersToDictionary();
+            var productOrders = this.ProductOrdersToDictionary();
+
+            if (portedPhoneNumber?.PortedDialedNumber?.Length == 10 && portedPhoneNumber.PortedDialedNumber == productOrder?.PortedDialedNumber)
+            {
+                var checkRemovePortedPhoneNumber = portedPhoneNumbers.Remove(portedPhoneNumber.PortedDialedNumber);
+                var checkRemoveProductOrder = productOrders.Remove(productOrder.PortedDialedNumber);
+
+                if (checkRemovePortedPhoneNumber && checkRemoveProductOrder)
+                {
+                    PortedPhoneNumbers = portedPhoneNumbers.Values.ToArray();
+                    ProductOrders = productOrders.Values.ToArray();
+
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Remove a product from the Cart.
         /// </summary>
         /// <param name="product"></param>
@@ -258,12 +331,17 @@ namespace NumberSearch.Mvc
 
         public Dictionary<string, ProductOrder> ProductOrdersToDictionary()
         {
-            return ProductOrders.ToDictionary(x => !string.IsNullOrEmpty(x.DialedNumber) ? x.DialedNumber : x.ProductId == System.Guid.Empty ? x.ServiceId.ToString() : x.ProductId.ToString(), x => x);
+            return ProductOrders.ToDictionary(x => !string.IsNullOrEmpty(x.DialedNumber) ? x.DialedNumber : !string.IsNullOrEmpty(x.PortedDialedNumber) ? x.PortedDialedNumber : x.ProductId == System.Guid.Empty ? x.ServiceId.ToString() : x.ProductId.ToString(), x => x);
         }
 
         public Dictionary<string, PhoneNumber> PhoneNumbersToDictionary()
         {
             return PhoneNumbers.ToDictionary(x => x.DialedNumber, x => x);
+        }
+
+        public Dictionary<string, PortedPhoneNumber> PortedPhoneNumbersToDictionary()
+        {
+            return PortedPhoneNumbers.ToDictionary(x => x.PortedDialedNumber, x => x);
         }
 
         public Dictionary<string, Product> ProductsToDictionary()

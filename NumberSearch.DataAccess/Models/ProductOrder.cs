@@ -15,6 +15,7 @@ namespace NumberSearch.DataAccess
         public Guid ProductId { get; set; }
         public Guid ServiceId { get; set; }
         public string DialedNumber { get; set; }
+        public string PortedDialedNumber { get; set; }
         public int Quantity { get; set; }
         public DateTime CreateDate { get; set; }
 
@@ -29,8 +30,8 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<ProductOrder>("SELECT \"OrderId\", \"ProductId\", \"ServiceId\", \"DialedNumber\", \"Quantity\", \"CreateDate\" FROM public.\"ProductOrders\" " +
-                "WHERE \"OrderId\" = @OrderId", 
+                .QueryAsync<ProductOrder>("SELECT \"OrderId\", \"ProductId\", \"ServiceId\", \"DialedNumber\", \"PortedDialedNumber\", \"Quantity\", \"CreateDate\" FROM public.\"ProductOrders\" " +
+                "WHERE \"OrderId\" = @OrderId",
                 new { OrderId })
                 .ConfigureAwait(false);
 
@@ -50,9 +51,9 @@ namespace NumberSearch.DataAccess
             CreateDate = DateTime.Now;
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"ProductOrders\"(\"OrderId\", \"ProductId\", \"ServiceId\", \"DialedNumber\", \"Quantity\", \"CreateDate\") " +
-                "VALUES(@OrderId, @ProductId, @ServiceId, @DialedNumber, @Quantity, @CreateDate)", 
-                new { OrderId, ProductId, ServiceId, DialedNumber, Quantity, CreateDate })
+                .ExecuteAsync("INSERT INTO public.\"ProductOrders\"(\"OrderId\", \"ProductId\", \"ServiceId\", \"DialedNumber\", \"PortedDialedNumber\", \"Quantity\", \"CreateDate\") " +
+                "VALUES(@OrderId, @ProductId, @ServiceId, @DialedNumber, @PortedDialedNumber, @Quantity, @CreateDate)",
+                new { OrderId, ProductId, ServiceId, DialedNumber, PortedDialedNumber, Quantity, CreateDate })
                 .ConfigureAwait(false);
 
             if (result == 1)

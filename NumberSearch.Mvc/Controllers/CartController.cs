@@ -55,13 +55,13 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [Route("Cart/PortPhoneNumber/{dialedPhoneNumber}")]
-        public async Task<IActionResult> PortPhoneNumberAsync(string dialedPhoneNumber, string Query)
+        public async Task<IActionResult> PortPhoneNumberAsync(string dialedPhoneNumber)
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            var phoneNumber = await PhoneNumber.GetAsync(dialedPhoneNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            var portedPhoneNumber = await PortedPhoneNumber.GetAsync(dialedPhoneNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
 
-            if (phoneNumber == null || string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+            if (portedPhoneNumber == null || string.IsNullOrWhiteSpace(portedPhoneNumber.PortedDialedNumber))
             {
 
                 bool checkNpa = int.TryParse(dialedPhoneNumber.Substring(0, 3), out int npa);
@@ -70,9 +70,9 @@ namespace NumberSearch.Mvc.Controllers
 
                 if (checkNpa && checkNxx && checkXxxx)
                 {
-                    var port = new PhoneNumber
+                    var port = new PortedPhoneNumber
                     {
-                        DialedNumber = dialedPhoneNumber,
+                        PortedDialedNumber = dialedPhoneNumber,
                         NPA = npa,
                         NXX = nxx,
                         XXXX = xxxx,
@@ -86,14 +86,14 @@ namespace NumberSearch.Mvc.Controllers
 
                     if (checkSubmission)
                     {
-                        phoneNumber = await PhoneNumber.GetAsync(port.DialedNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                        portedPhoneNumber = await PortedPhoneNumber.GetAsync(port.PortedDialedNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
                     }
                 }
             }
 
-            var productOrder = new ProductOrder { DialedNumber = phoneNumber.DialedNumber, Quantity = 1 };
+            var productOrder = new ProductOrder { PortedDialedNumber = portedPhoneNumber.PortedDialedNumber, Quantity = 1 };
 
-            var checkAdd = cart.AddPhoneNumber(phoneNumber, productOrder);
+            var checkAdd = cart.AddPortedPhoneNumber(portedPhoneNumber, productOrder);
             var checkSet = cart.SetToSession(HttpContext.Session);
 
             if (checkAdd && checkSet)
@@ -101,7 +101,7 @@ namespace NumberSearch.Mvc.Controllers
                 // TODO: Mark the item as sucessfully added.
                 return RedirectToAction("Index", "Porting", new PortingResults
                 {
-                    PhoneNumber = phoneNumber,
+                    PortedPhoneNumber = portedPhoneNumber,
                     Cart = cart
                 });
             }
@@ -110,7 +110,7 @@ namespace NumberSearch.Mvc.Controllers
                 // TODO: Tell the user about the failure
                 return RedirectToAction("Index", "Porting", new PortingResults
                 {
-                    PhoneNumber = phoneNumber,
+                    PortedPhoneNumber = portedPhoneNumber,
                     Cart = cart
                 });
             }
@@ -193,6 +193,29 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
+        [Route("Cart/RemovePortedPhoneNumber/{dialedPhoneNumber}")]
+        public IActionResult RemovePortedPhoneNumber(string dialedPhoneNumber)
+        {
+            var cart = Cart.GetFromSession(HttpContext.Session);
+
+            var portedPhoneNumber = new PortedPhoneNumber { PortedDialedNumber = dialedPhoneNumber };
+            var productOrder = new ProductOrder { PortedDialedNumber = dialedPhoneNumber };
+
+            var checkRemove = cart.RemovePortedPhoneNumber(portedPhoneNumber, productOrder);
+            var checkSet = cart.SetToSession(HttpContext.Session);
+
+            if (checkRemove && checkSet)
+            {
+                // TODO: Mark the item as removed.
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                // TODO: Tell the user about the failure.
+                return RedirectToAction("Index");
+            }
+        }
+
         [Route("Cart/RemoveProduct/{productId}")]
         public IActionResult RemoveProduct(Guid productId)
         {
@@ -260,6 +283,7 @@ namespace NumberSearch.Mvc.Controllers
                 // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
                 // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
                 var phoneNumbers = new List<PhoneNumber>();
+                var portedPhoneNumbers = new List<PortedPhoneNumber>();
                 var products = new List<Product>();
                 var services = new List<Service>();
                 foreach (var item in productOrders)
@@ -268,6 +292,11 @@ namespace NumberSearch.Mvc.Controllers
                     {
                         var phoneNumber = await PhoneNumber.GetAsync(item.DialedNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
                         phoneNumbers.Add(phoneNumber);
+                    }
+                    else if (item?.PortedDialedNumber?.Length == 10)
+                    {
+                        var portedPhoneNumber = await PortedPhoneNumber.GetAsync(item.PortedDialedNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                        portedPhoneNumbers.Add(portedPhoneNumber);
                     }
                     else if (item?.ProductId != Guid.Empty)
                     {
@@ -287,7 +316,8 @@ namespace NumberSearch.Mvc.Controllers
                     ProductOrders = productOrders,
                     PhoneNumbers = phoneNumbers,
                     Products = products,
-                    Services = services
+                    Services = services,
+                    PortedPhoneNumbers = portedPhoneNumbers
                 };
 
                 return View("Order", cart);

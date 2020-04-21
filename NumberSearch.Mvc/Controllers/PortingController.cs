@@ -42,9 +42,9 @@ namespace NumberSearch.Mvc.Controllers
 
                     if (portable)
                     {
-                        var port = new PhoneNumber
+                        var port = new PortedPhoneNumber
                         {
-                            DialedNumber = dialedPhoneNumber,
+                            PortedDialedNumber = dialedPhoneNumber,
                             NPA = npa,
                             NXX = nxx,
                             XXXX = xxxx,
@@ -56,7 +56,7 @@ namespace NumberSearch.Mvc.Controllers
 
                         return View("Index", new PortingResults
                         {
-                            PhoneNumber = port,
+                            PortedPhoneNumber = port,
                             Cart = cart
                         });
                     }
@@ -64,7 +64,7 @@ namespace NumberSearch.Mvc.Controllers
                     {
                         return View("Index", new PortingResults
                         {
-                            PhoneNumber = new PhoneNumber { },
+                            PortedPhoneNumber = new PortedPhoneNumber { },
                             Cart = cart
                         });
                     }
@@ -73,7 +73,7 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     return View("Index", new PortingResults
                     {
-                        PhoneNumber = new PhoneNumber { },
+                        PortedPhoneNumber = new PortedPhoneNumber { },
                         Cart = cart
                     });
                 }
@@ -82,7 +82,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 return View("Index", new PortingResults
                 {
-                    PhoneNumber = new PhoneNumber { },
+                    PortedPhoneNumber = new PortedPhoneNumber { },
                     Cart = cart
                 });
             }
