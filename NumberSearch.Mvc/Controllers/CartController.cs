@@ -366,6 +366,9 @@ namespace NumberSearch.Mvc.Controllers
                         Subject = $"Order: {order.OrderId}"
                     };
 
+                    // This will need to be updated when the baseURL changes.
+                    var linkToOrder = $"https://numbersearch.acceleratenetworks.com/Cart/Order/{order.OrderId}";
+
                     outboundMessage.Body = new TextPart(TextFormat.Plain)
                     {
                         Text = $@"Hi {order.FirstName},
