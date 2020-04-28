@@ -22,7 +22,8 @@ namespace NumberSearch.Mvc
             Products,
             Services,
             ProductOrders,
-            PortedPhoneNumbers
+            PortedPhoneNumbers,
+            Order
         }
 
         /// <summary>
@@ -37,6 +38,7 @@ namespace NumberSearch.Mvc
             var service = session.Get<List<Service>>(CartKey.Services.ToString());
             var productOrders = session.Get<List<ProductOrder>>(CartKey.ProductOrders.ToString());
             var portedPhoneNumbers = session.Get<List<PortedPhoneNumber>>(CartKey.PortedPhoneNumbers.ToString());
+            var order = session.Get<Order>(CartKey.Order.ToString());
 
             return new Cart
             {
@@ -45,7 +47,7 @@ namespace NumberSearch.Mvc
                 Services = service ?? new List<Service>(),
                 ProductOrders = productOrders ?? new List<ProductOrder>(),
                 PortedPhoneNumbers = portedPhoneNumbers ?? new List<PortedPhoneNumber>(),
-                Order = new Order()
+                Order = order ?? new Order()
             };
         }
 
@@ -61,6 +63,7 @@ namespace NumberSearch.Mvc
             session.Set<List<Service>>(CartKey.Services.ToString(), Services?.ToList());
             session.Set<List<ProductOrder>>(CartKey.ProductOrders.ToString(), ProductOrders?.ToList());
             session.Set<List<PortedPhoneNumber>>(CartKey.PortedPhoneNumbers.ToString(), PortedPhoneNumbers?.ToList());
+            session.Set<Order>(CartKey.Order.ToString(), Order);
 
             return true;
         }

@@ -340,38 +340,40 @@ namespace NumberSearch.Mvc.Controllers
 
                 var cart = Cart.GetFromSession(HttpContext.Session);
 
-                // Save to db.
-                var submittedOrder = await order.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-
-                // Send a confirmation email.
-                if (submittedOrder)
+                if (cart.Order.OrderId == Guid.Empty)
                 {
-                    var orderFromDb = await Order.GetAsync(order.Email, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-                    order = orderFromDb.FirstOrDefault();
+                    // Save to db.
+                    var submittedOrder = await order.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
 
-                    foreach (var productOrder in cart.ProductOrders)
+                    // Send a confirmation email.
+                    if (submittedOrder)
                     {
-                        productOrder.OrderId = order.OrderId;
-                        var checkSubmitted = await productOrder.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                        var orderFromDb = await Order.GetAsync(order.Email, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                        order = orderFromDb.FirstOrDefault();
 
-                        if (!checkSubmitted)
+                        foreach (var productOrder in cart.ProductOrders)
                         {
-                            // TODO: Maybe failout here?
+                            productOrder.OrderId = order.OrderId;
+                            var checkSubmitted = await productOrder.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+
+                            if (!checkSubmitted)
+                            {
+                                // TODO: Maybe failout here?
+                            }
                         }
-                    }
 
-                    var outboundMessage = new MimeKit.MimeMessage
-                    {
-                        Sender = new MimeKit.MailboxAddress("Number Search", configuration.GetConnectionString("SmtpUsername")),
-                        Subject = $"Order: {order.OrderId}"
-                    };
+                        var outboundMessage = new MimeKit.MimeMessage
+                        {
+                            Sender = new MimeKit.MailboxAddress("Number Search", configuration.GetConnectionString("SmtpUsername")),
+                            Subject = $"Order: {order.OrderId}"
+                        };
 
-                    // This will need to be updated when the baseURL changes.
-                    var linkToOrder = $"https://numbersearch.acceleratenetworks.com/Cart/Order/{order.OrderId}";
+                        // This will need to be updated when the baseURL changes.
+                        var linkToOrder = $"https://numbersearch.acceleratenetworks.com/Cart/Order/{order.OrderId}";
 
-                    outboundMessage.Body = new TextPart(TextFormat.Plain)
-                    {
-                        Text = $@"Hi {order.FirstName},
+                        outboundMessage.Body = new TextPart(TextFormat.Plain)
+                        {
+                            Text = $@"Hi {order.FirstName},
                                                                                       
 Thank you for choosing Accelerate Networks!
 
@@ -384,25 +386,56 @@ A delivery specialist will send you a follow up email to walk you through the ne
 Thanks,
 
 Accelerate Networks"
-                    };
+                        };
 
-                    outboundMessage.Cc.Add(new MailboxAddress(configuration.GetConnectionString("SmtpUsername")));
-                    outboundMessage.To.Add(new MailboxAddress($"{order.Email}"));
+                        outboundMessage.Cc.Add(new MailboxAddress(configuration.GetConnectionString("SmtpUsername")));
+                        outboundMessage.To.Add(new MailboxAddress($"{order.Email}"));
 
-                    using var smtp = new MailKit.Net.Smtp.SmtpClient();
-                    smtp.MessageSent += (sender, args) => { };
-                    smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
+                        using var smtp = new MailKit.Net.Smtp.SmtpClient();
+                        smtp.MessageSent += (sender, args) => { };
+                        smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
-                    await smtp.ConnectAsync("mail.seattlemesh.net", 587, SecureSocketOptions.StartTls).ConfigureAwait(false);
-                    await smtp.AuthenticateAsync(configuration.GetConnectionString("SmtpUsername"), configuration.GetConnectionString("SmtpPassword")).ConfigureAwait(false);
-                    await smtp.SendAsync(outboundMessage).ConfigureAwait(false);
-                    await smtp.DisconnectAsync(true).ConfigureAwait(false);
+                        await smtp.ConnectAsync("mail.seattlemesh.net", 587, SecureSocketOptions.StartTls).ConfigureAwait(false);
+                        await smtp.AuthenticateAsync(configuration.GetConnectionString("SmtpUsername"), configuration.GetConnectionString("SmtpPassword")).ConfigureAwait(false);
+                        await smtp.SendAsync(outboundMessage).ConfigureAwait(false);
+                        await smtp.DisconnectAsync(true).ConfigureAwait(false);
+
+                        if (cart.PortedPhoneNumbers.Any())
+                        {
+                            cart.Order = order;
+                            var checkSet = cart.SetToSession(HttpContext.Session);
+
+                            return View("Success", new OrderWithPorts
+                            {
+                                Order = order,
+                                PhoneNumbers = cart.PortedPhoneNumbers
+                            });
+                        }
+                        else
+                        {
+                            // Reset the session and clear the Cart.
+                            HttpContext.Session.Clear();
+
+                            return View("Success", new OrderWithPorts
+                            {
+                                Order = order
+                            });
+                        }
+                    }
                 }
 
-                // Reset the session and clear the Cart.
-                HttpContext.Session.Clear();
-
-                return View("Success", order);
+                if (cart.PortedPhoneNumbers.Any())
+                {
+                    return View("Success", new OrderWithPorts
+                    {
+                        Order = cart.Order,
+                        PhoneNumbers = cart.PortedPhoneNumbers
+                    });
+                }
+                else
+                {
+                    return RedirectToAction("Cart", "Checkout");
+                }
             }
             else
             {

@@ -22,7 +22,7 @@ namespace NumberSearch.Mvc.Controllers
             return View();
         }
 
-        public async Task<IActionResult> PortabilityAsync(string Query)
+        public async Task<IActionResult> CheckPortabilityAsync(string Query)
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
 
@@ -87,5 +87,73 @@ namespace NumberSearch.Mvc.Controllers
                 });
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> RequestPortAsync(string Query)
+        {
+            var cart = Cart.GetFromSession(HttpContext.Session);
+
+            if (Query != null && Query?.Length == 10)
+            {
+                var dialedPhoneNumber = Query;
+
+                bool checkNpa = int.TryParse(dialedPhoneNumber.Substring(0, 3), out int npa);
+                bool checkNxx = int.TryParse(dialedPhoneNumber.Substring(3, 3), out int nxx);
+                bool checkXxxx = int.TryParse(dialedPhoneNumber.Substring(6, 4), out int xxxx);
+
+                if (checkNpa && checkNxx && checkXxxx)
+                {
+                    var teleToken = Guid.Parse(configuration.GetConnectionString("TeleAPI"));
+
+                    var portable = await LocalNumberPortability.IsPortable(dialedPhoneNumber, teleToken).ConfigureAwait(false);
+
+                    if (portable)
+                    {
+                        var port = new PortedPhoneNumber
+                        {
+                            PortedDialedNumber = dialedPhoneNumber,
+                            NPA = npa,
+                            NXX = nxx,
+                            XXXX = xxxx,
+                            City = "Unknown City",
+                            State = "Unknown State",
+                            DateIngested = DateTime.Now,
+                            IngestedFrom = "UserInput"
+                        };
+
+                        return View("Index", new PortingResults
+                        {
+                            PortedPhoneNumber = port,
+                            Cart = cart
+                        });
+                    }
+                    else
+                    {
+                        return View("Index", new PortingResults
+                        {
+                            PortedPhoneNumber = new PortedPhoneNumber { },
+                            Cart = cart
+                        });
+                    }
+                }
+                else
+                {
+                    return View("Index", new PortingResults
+                    {
+                        PortedPhoneNumber = new PortedPhoneNumber { },
+                        Cart = cart
+                    });
+                }
+            }
+            else
+            {
+                return View("Index", new PortingResults
+                {
+                    PortedPhoneNumber = new PortedPhoneNumber { },
+                    Cart = cart
+                });
+            }
+        }
+
     }
 }

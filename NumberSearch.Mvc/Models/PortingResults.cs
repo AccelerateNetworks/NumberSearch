@@ -1,4 +1,5 @@
 ﻿using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
