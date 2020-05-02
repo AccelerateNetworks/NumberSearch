@@ -20,6 +20,15 @@ namespace NumberSearch.DataAccess
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
+        public enum IngestSource
+        {
+            DatabaseCleanup,
+            TeleMessage,
+            FirstCom,
+            BulkVS,
+            All
+        }
+
         public static async Task<IEnumerable<IngestStatistics>> GetAllAsync(string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);
