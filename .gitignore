@@ -24,7 +24,9 @@
 /NumberSearch.Ingest/bin/Release/netcoreapp3.1
 /BulkVS/obj/Debug/netcoreapp3.1
 /BulkVS/bin/Debug/netcoreapp3.1
+/BulkVS/bin
 /BulkVS/obj
 /FirstCom/obj/Debug/netcoreapp3.1
 /FirstCom/bin/Debug/netcoreapp3.1
 /FirstCom/obj
+/FirstCom/bin
