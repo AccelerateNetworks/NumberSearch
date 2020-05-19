@@ -61,7 +61,7 @@ namespace NumberSearch.Mvc.Controllers
 
             var portedPhoneNumber = await PortedPhoneNumber.GetAsync(dialedPhoneNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
 
-            if (portedPhoneNumber == null || string.IsNullOrWhiteSpace(portedPhoneNumber.PortedDialedNumber))
+            if (portedPhoneNumber is null || string.IsNullOrWhiteSpace(portedPhoneNumber.PortedDialedNumber))
             {
 
                 bool checkNpa = int.TryParse(dialedPhoneNumber.Substring(0, 3), out int npa);

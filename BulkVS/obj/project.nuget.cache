@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "gAm/bsM7ToS/r6kqa2zehHpwEZj/iLD7XbaEx/tmqOUVfNnV5tKEza1Nh+idslUXEtl+UwwSxnQj0uSRqyo/VA==",
+  "dgSpecHash": "LdoH3BoWpTt1qwv2LWv8r+A95CWIy8PcoG8YDezg3pvm0PH7IRh1NvBaurdcF9elFAqxSnqSkK/LJyBfyHMMiQ==",
   "success": true,
   "projectFilePath": "C:\\Users\\thoma\\Source\\Repos\\uncheckederror\\NumberSearch\\BulkVS\\BulkVS.csproj",
   "expectedPackageFiles": [
@@ -47,7 +47,8 @@
     "C:\\Users\\thoma\\.nuget\\packages\\system.servicemodel.nettcp\\4.7.0\\system.servicemodel.nettcp.4.7.0.nupkg.sha512",
     "C:\\Users\\thoma\\.nuget\\packages\\system.servicemodel.primitives\\4.7.0\\system.servicemodel.primitives.4.7.0.nupkg.sha512",
     "C:\\Users\\thoma\\.nuget\\packages\\system.servicemodel.security\\4.7.0\\system.servicemodel.security.4.7.0.nupkg.sha512",
-    "C:\\Users\\thoma\\.nuget\\packages\\system.text.encoding.codepages\\4.5.1\\system.text.encoding.codepages.4.5.1.nupkg.sha512"
+    "C:\\Users\\thoma\\.nuget\\packages\\system.text.encoding.codepages\\4.5.1\\system.text.encoding.codepages.4.5.1.nupkg.sha512",
+    "C:\\Users\\thoma\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\3.1.2\\microsoft.aspnetcore.app.ref.3.1.2.nupkg.sha512"
   ],
   "logs": []
 }
