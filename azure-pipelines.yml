@@ -11,7 +11,32 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
+  ConnectionStrings:TeleAPI: $(TeleAPI)
+  ConnectionStrings:SmtpUsername: $(SmtpUsername)
+  ConnectionStrings:SmtpPassword: $(SmtpPassword)
+  ConnectionStrings:PostgresqlProd: $(PostgresqlProd)
+  ConnectionStrings:PComNetUsername: $(PComNetUsername)
+  ConnectionStrings:PComNetPassword: $(PComNetPassword)
+  ConnectionStrings:BulkVSAPISecret: $(BulkVSAPISecret)
+  ConnectionStrings:BulkVSAPIKEY: $(BulkVSAPIKEY)
+  ApplicationInsights:InstrumentationKey: $(InstrumentationKey)
 
 steps:
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
+
+- task: FileTransform@2
+  
+  inputs:
+    folderPath: '$(System.DefaultWorkingDirectory)/**/*.zip'
+    jsonTargetFiles: appsettings.json
+    xmlTransformationRules: '' # disabled
+
+- task: VSTest@2
+  inputs:
+    testSelector: 'testAssemblies'
+    testAssemblyVer2: |
+      **\*test*.dll
+      !**\*TestAdapter.dll
+      !**\obj\**
+    searchFolder: '$(System.DefaultWorkingDirectory)'
