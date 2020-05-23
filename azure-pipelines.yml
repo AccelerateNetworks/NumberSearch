@@ -28,7 +28,7 @@ steps:
 
 - task: FileTransform@2
   inputs:
-    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.*/**/**/netcoreapp3.1/'
+    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Tests/bin/Release/netcoreapp3.1/'
     jsonTargetFiles: 'appsettings.json'
 
 - task: DotNetCoreCLI@2
