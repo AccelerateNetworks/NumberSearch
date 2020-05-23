@@ -28,7 +28,7 @@ steps:
 - task: FileTransform@2
   
   inputs:
-    folderPath: '$(System.DefaultWorkingDirectory)' 
+    folderPath: '$(System.DefaultWorkingDirectory)/*' 
     jsonTargetFiles: appsettings.json
     xmlTransformationRules: '' # disabled
 
@@ -40,3 +40,4 @@ steps:
       !**\*TestAdapter.dll
       !**\obj\**
     searchFolder: '$(System.DefaultWorkingDirectory)'
+
