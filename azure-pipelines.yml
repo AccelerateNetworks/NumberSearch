@@ -25,19 +25,19 @@ steps:
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
 
-- task: FileTransform@2
+# - task: FileTransform@2
   
-  inputs:
-    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Mvc/' 
-    jsonTargetFiles: appsettings.json
-    xmlTransformationRules: '' # disabled
+#   inputs:
+#     folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Mvc/' 
+#     jsonTargetFiles: appsettings.json
+#     xmlTransformationRules: '' # disabled
 
-- task: VSTest@2
-  inputs:
-    testSelector: 'testAssemblies'
-    testAssemblyVer2: |
-      **\*test*.dll
-      !**\*TestAdapter.dll
-      !**\obj\**
-    searchFolder: '$(System.DefaultWorkingDirectory)'
+# - task: VSTest@2
+#   inputs:
+#     testSelector: 'testAssemblies'
+#     testAssemblyVer2: |
+#       **\*test*.dll
+#       !**\*TestAdapter.dll
+#       !**\obj\**
+#     searchFolder: '$(System.DefaultWorkingDirectory)'
 
