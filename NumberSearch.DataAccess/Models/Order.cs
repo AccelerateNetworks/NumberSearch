@@ -21,12 +21,12 @@ namespace NumberSearch.DataAccess
         public string Zip { get; set; }
         public DateTime DateSubmitted { get; set; }
 
-        public static async Task<IEnumerable<Order>> GetAsync(Guid orderId, string connectionString)
+        public static async Task<Order> GetByIdAsync(Guid orderId, string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<Order>("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"Country\", \"State\", \"Zip\", \"DateSubmitted\" FROM public.\"Orders\" " +
+                .QueryFirstOrDefaultAsync<Order>("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"Country\", \"State\", \"Zip\", \"DateSubmitted\" FROM public.\"Orders\" " +
                 "WHERE \"OrderId\" = @orderId",
                 new { orderId })
                 .ConfigureAwait(false);
@@ -34,7 +34,7 @@ namespace NumberSearch.DataAccess
             return result;
         }
 
-        public static async Task<IEnumerable<Order>> GetAsync(string email, string connectionString)
+        public static async Task<IEnumerable<Order>> GetByEmailAsync(string email, string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);
 
@@ -42,6 +42,18 @@ namespace NumberSearch.DataAccess
                 .QueryAsync<Order>("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"Country\", \"State\", \"Zip\", \"DateSubmitted\" FROM public.\"Orders\" " +
                 "WHERE \"Email\" = @email ORDER BY \"DateSubmitted\" DESC",
                 new { email })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        public static async Task<IEnumerable<Order>> GetAllAsync(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<Order>
+                ("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"Country\", \"State\", \"Zip\", \"DateSubmitted\" FROM public.\"Orders\" ORDER BY \"DateSubmitted\" DESC")
                 .ConfigureAwait(false);
 
             return result;

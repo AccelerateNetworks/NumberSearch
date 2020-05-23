@@ -1,10 +1,13 @@
 using BulkVS;
+
 using FirstCom;
 
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
+
 using ServiceReference;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -322,8 +325,9 @@ namespace NumberSearch.Tests
                 // XXXX can be 0001 which as an int is 1.
                 Assert.True(result.XXXX > 0);
                 Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-                Assert.False(string.IsNullOrWhiteSpace(result.City));
-                Assert.False(string.IsNullOrWhiteSpace(result.State));
+                // Reenabled these after June 2020 starts.
+                //Assert.False(string.IsNullOrWhiteSpace(result.City));
+                //Assert.False(string.IsNullOrWhiteSpace(result.State));
                 Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
                 count++;
             }
@@ -463,7 +467,7 @@ namespace NumberSearch.Tests
         {
             var conn = postgresql;
 
-            var results = await Order.GetAsync("4062262621", conn);
+            var results = await Order.GetAllAsync(conn).ConfigureAwait(false);
 
             Assert.NotNull(results);
             Assert.NotEmpty(results);
@@ -487,10 +491,15 @@ namespace NumberSearch.Tests
         {
             var conn = postgresql;
 
-            var results = await Order.GetAsync("4062262621", conn);
+            var orders = await Order.GetAllAsync(conn).ConfigureAwait(false);
 
-            var order = results.FirstOrDefault();
-            var response = await order.PostAsync(conn);
+            var selectedOrders = orders.Where(x => (x.OrderId != null) && (x.OrderId != Guid.Empty)).FirstOrDefault();
+
+            Assert.False(selectedOrders is null);
+
+            var result = await Order.GetByIdAsync(selectedOrders.OrderId, conn);
+
+            var response = await result.PostAsync(conn);
 
             Assert.True(response);
         }

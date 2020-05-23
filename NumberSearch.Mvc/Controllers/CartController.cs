@@ -276,8 +276,7 @@ namespace NumberSearch.Mvc.Controllers
         {
             if (Id != null)
             {
-                var orders = await Order.GetAsync(Id, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-                var order = orders.FirstOrDefault();
+                var order = await Order.GetByIdAsync(Id, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
                 var productOrders = await ProductOrder.GetAsync(order.OrderId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
 
                 // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
@@ -348,7 +347,7 @@ namespace NumberSearch.Mvc.Controllers
                     // Send a confirmation email.
                     if (submittedOrder)
                     {
-                        var orderFromDb = await Order.GetAsync(order.Email, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                        var orderFromDb = await Order.GetByEmailAsync(order.Email, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
                         order = orderFromDb.FirstOrDefault();
 
                         foreach (var productOrder in cart.ProductOrders)

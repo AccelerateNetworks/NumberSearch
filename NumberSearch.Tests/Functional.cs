@@ -45,7 +45,7 @@ namespace NumberSearch.Tests
             var stringResponse = await response.Content.ReadAsStringAsync();
 
             // Assert
-            Assert.Contains("Number Search", stringResponse);
+            Assert.Contains("Seattle", stringResponse);
         }
     }
 }

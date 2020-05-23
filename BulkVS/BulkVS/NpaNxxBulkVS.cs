@@ -1038,8 +1038,8 @@ namespace BulkVS
                             NXX = nxx,
                             XXXX = xxxx,
                             DialedNumber = item.dn.Substring(1),
-                            City = item.city,
-                            State = item.state,
+                            City = !string.IsNullOrWhiteSpace(item.city) ? item.city : "Unknown City",
+                            State = !string.IsNullOrWhiteSpace(item.state) ? item.state : "Unknown State",
                             IngestedFrom = "BulkVS"
                         });
                     }

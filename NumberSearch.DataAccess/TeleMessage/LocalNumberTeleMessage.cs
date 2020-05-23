@@ -1,4 +1,5 @@
 ﻿using Flurl.Http;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -60,7 +61,7 @@ namespace NumberSearch.DataAccess
             var list = new List<PhoneNumber>();
 
             // Bail out early if something is wrong.
-            if(results == null || results?.data == null || results?.data?.count == null || results?.data?.count < 1 || results?.data?.dids == null)
+            if (results == null || results?.data == null || results?.data?.count == null || results?.data?.count < 1 || results?.data?.dids == null)
             {
                 return list;
             }
@@ -79,8 +80,8 @@ namespace NumberSearch.DataAccess
                         NXX = nxx,
                         XXXX = xxxx,
                         DialedNumber = item.number,
-                        City = item.ratecenter,
-                        State = item.state,
+                        City = !string.IsNullOrWhiteSpace(item.ratecenter) ? item.ratecenter : "Unknown City",
+                        State = !string.IsNullOrWhiteSpace(item.state) ? item.state : "Unknown State",
                         IngestedFrom = "TeleMessage"
                     });
                 }
