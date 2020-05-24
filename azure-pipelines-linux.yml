@@ -29,7 +29,8 @@ steps:
   inputs:
     folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Tests/bin/Release/netcoreapp3.1/'
     jsonTargetFiles: 'appsettings.json'
-
+    xmlTransformationRules: '' # disabled
+    
 - task: DotNetCoreCLI@2
   inputs:
     command: test
