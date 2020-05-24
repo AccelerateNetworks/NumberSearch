@@ -31,11 +31,12 @@
                 <h1 class="display-4">Porting Information</h1>
             </div>
             <br />
-            <form asp-controller="Porting" asp-action="RequestPort" method="post" enctype="multipart/form-data" class="needs-validation mb-3" novalidate="">
+            <form asp-controller="Porting" asp-action="AddPortingInformation" method="post" enctype="multipart/form-data" class="needs-validation mb-3" novalidate="">
+                <input asp-for="PortRequest.OrderId" type="text" value="@Model?.Order?.OrderId" hidden />
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="billingPhone">Current Billing Phone Number</label>
-                        <input type="text" class="form-control" id="billingPhone" placeholder="2061234567" required=""
+                        <input asp-for="PortRequest.BillingPhone" type="text" class="form-control" id="billingPhone" placeholder="2061234567" required=""
                                title="Also known as the BTN. This is the number that is normally provided on a copy of your bill or statement in the upper right corner or is the first number listed on the bill.">
                         <div class="invalid-feedback">
                             Valid first name is required.
@@ -43,9 +44,9 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="locationType">Location Type</label>
-                        <select class="custom-select" title="Designates if this is a business address or a residential address.">
-                            <option value="1" selected>Business</option>
-                            <option value="2">Residential</option>
+                        <select asp-for="PortRequest.LocationType" class="custom-select" title="Designates if this is a business address or a residential address.">
+                            <option value="Business" selected>Business</option>
+                            <option value="Residential">Residential</option>
                         </select>
                         <div class="invalid-feedback">
                             Valid last name is required.
@@ -56,25 +57,34 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="partialPort">Business Contact</label>
-                        <input type="text" class="form-control" id="partialPort" placeholder="Alexander Graham-Bell" title="This is the name of the owner or contact who will be submitting the port order." required="">
+                        <input asp-for="PortRequest.BusinessContact" type="text" class="form-control" id="businessContact" placeholder="Alexander Graham-Bell" title="This is the name of the owner or contact who will be submitting the port order." required="">
                         <div class="invalid-feedback">
                             Valid business contact name is required.
                         </div>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="partialPortDescription">Business Name</label>
-                        <input type="text" class="form-control" id="partialPortDescription" placeholder="American Telegraf and Telephone Company" title="Name of the business associated with the numbers being ported." required="">
+                        <input asp-for="PortRequest.BusinessName" type="text" class="form-control" id="businessName" placeholder="American Telegraf and Telephone Company" title="Name of the business associated with the numbers being ported." required="">
                         <div class="invalid-feedback">
                             Valid business name is required.
                         </div>
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="accountNumber">Current Account Number</label>
-                    <input type="text" class="form-control" id="accountNumber" placeholder="1234567891011" title="The account number is usually found on the invoice or a copy of a bill from your current provider." required="">
-                    <div class="invalid-feedback">
-                        Please enter your account number.
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="accountNumber">Current Account Number</label>
+                        <input asp-for="PortRequest.ProviderAccountNumber" type="text" class="form-control" id="accountNumber" placeholder="1234567891011" title="The account number is usually found on the invoice or a copy of a bill from your current provider." required="">
+                        <div class="invalid-feedback">
+                            Please enter your account number.
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="pin">Account PIN or Password</label>
+                        <input asp-for="PortRequest.ProviderPIN" type="text" class="form-control" id="pin" placeholder="1234" title="The PIN or password for the existing account." required="">
+                        <div class="invalid-feedback">
+                            Valid PIN is required.
+                        </div>
                     </div>
                 </div>
 
@@ -177,9 +187,9 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="partialPort">Partial Port</label>
-                        <select class="custom-select" title="Designates if this is a business address or a residential address.">
-                            <option value="1" selected>Yes</option>
-                            <option value="2">No</option>
+                        <select asp-for="PortRequest.PartialPort" class="custom-select" title="Designates if this is a business address or a residential address.">
+                            <option value="true" selected>Yes</option>
+                            <option value="false">No</option>
                         </select>
                         <div class="invalid-feedback">
                             Valid first name is required.
@@ -187,7 +197,7 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="partialPortDescription">Partial Port Description</label>
-                        <input type="text" class="form-control" id="partialPortDescription" placeholder="Bell" title="Describe what services the old carrier should leave alone. Contact the old carrier to confirm they will leave these services intact." required="">
+                        <input asp-for="PortRequest.PartialPortDescription" type="text" class="form-control" id="partialPortDescription" placeholder="Bell" title="Describe what services the old carrier should leave alone. Contact the old carrier to confirm they will leave these services intact." required="">
                         <div class="invalid-feedback">
                             Valid last name is required.
                         </div>
@@ -196,9 +206,9 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="wirelessNumber">Wireless Number</label>
-                        <select class="custom-select" id="wirelessNumber" title="Set to 'Yes' if this is a wireless or cellphone number being ported.">
-                            <option value="1" selected>Yes</option>
-                            <option value="2">No</option>
+                        <select asp-for="PortRequest.WirelessNumber" class="custom-select" id="wirelessNumber" title="Set to 'Yes' if this is a wireless or cellphone number being ported.">
+                            <option value="true" selected>Yes</option>
+                            <option value="false">No</option>
                         </select>
                         <div class="invalid-feedback">
                             Valid first name is required.
@@ -206,7 +216,7 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="billingPhone">Caller ID<span class="text-muted"> (15 Character Maximum)</span></label>
-                        <input type="text" class="form-control" id="billingPhone" title="Sets Caller ID (aka CNAM) for all numbers in this port order, 15 character limit." placeholder="Alexander" required="">
+                        <input asp-for="PortRequest.CallerId" type="text" class="form-control" id="billingPhone" title="Sets Caller ID (aka CNAM) for all numbers in this port order, 15 character limit." placeholder="Alexander" required="">
                         <div class="invalid-feedback">
                             Valid first name is required.
                         </div>
@@ -214,18 +224,12 @@
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <label for="signature">Signature</label>
-                        <input type="text" class="form-control" id="signature" placeholder="Bell" title="The signature is needed in order to submit a port order." required="">
-                        <div class="invalid-feedback">
-                            Valid last name is required.
-                        </div>
-                        <div class="input-group mb-3 pt-4">
+                        <label for="inputGroupFile02">An Image of Your Current Bill</label>
+                        <div class="input-group">
                             <div class="custom-file">
-                                <input type="file" class="custom-file-input" id="inputGroupFile02" />
+                                <input asp-for="PortRequest.BillImage" type="file" class="custom-file-input" id="inputGroupFile02" />
+                                <span asp-validation-for="PortRequest.BillImage"></span>
                                 <label class="custom-file-label" for="inputGroupFile02">Choose file</label>
-                            </div>
-                            <div class="input-group-append">
-                                <button class="btn btn-primary">Upload</button>
                             </div>
                         </div>
                     </div>
@@ -238,9 +242,6 @@
                                 <br />
                             }
                         }
-                        <div class="invalid-feedback">
-                            Valid last name is required.
-                        </div>
                     </div>
                 </div>
                 <hr class="mb-4">

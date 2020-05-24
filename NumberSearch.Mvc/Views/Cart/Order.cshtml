@@ -226,6 +226,12 @@
                         <hr class="mb-4">
                         <button class="btn btn-primary btn-lg btn-block" type="submit" value="Submit">Submit your Order</button>
                     }
+                    else if (ported.Any())
+                    {
+                        <hr class="mb-4">
+                        <input type="text" hidden name="AddPortingInfo" value="true" />
+                        <button asp-controller="Cart" asp-action="Order" asp-route-id="@Model?.Order?.OrderId" class="btn btn-primary btn-lg btn-block" type="submit" value="Submit">Add Porting Information</button>
+                    }
                 }
                 <br />
             </form>

@@ -272,7 +272,7 @@ namespace NumberSearch.Mvc.Controllers
 
         // Show orders that have already been submitted.
         [Route("Cart/Order/{Id}")]
-        public async Task<IActionResult> ExistingOrderAsync(Guid Id)
+        public async Task<IActionResult> ExistingOrderAsync(Guid Id, bool? AddPortingInfo)
         {
             if (Id != null)
             {
@@ -319,7 +319,21 @@ namespace NumberSearch.Mvc.Controllers
                     PortedPhoneNumbers = portedPhoneNumbers
                 };
 
-                return View("Order", cart);
+                if (AddPortingInfo != null)
+                {
+                    var checkSet = cart.SetToSession(HttpContext.Session);
+
+                    return View("Success", new OrderWithPorts
+                    {
+                        Order = order,
+                        PhoneNumbers = cart.PortedPhoneNumbers
+                    });
+                }
+                else
+                {
+                    return View("Order", cart);
+
+                }
             }
             else
             {

@@ -135,6 +135,10 @@
               "target": "Package",
               "version": "[2.4.2, )"
             },
+            "Microsoft.AspNetCore.Http.Features": {
+              "target": "Package",
+              "version": "[3.1.4, )"
+            },
             "NETStandard.Library": {
               "suppressParent": "All",
               "target": "Package",

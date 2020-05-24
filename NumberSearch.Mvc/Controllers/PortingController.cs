@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+
 using NumberSearch.DataAccess;
 
 namespace NumberSearch.Mvc.Controllers
@@ -153,6 +155,14 @@ namespace NumberSearch.Mvc.Controllers
                     Cart = cart
                 });
             }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddPortingInformationAsync(PortRequest portRequest)
+        {
+            var cart = Cart.GetFromSession(HttpContext.Session);
+
+            return View("Index");
         }
 
     }
