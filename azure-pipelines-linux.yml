@@ -46,5 +46,5 @@ steps:
 - task: PublishPipelineArtifact@1
   inputs:
     targetPath: '$(Pipeline.Workspace)/NumberSearch.Mvc/bin/Release/netcoreapp3.1/'
-    artifact: '**'
+    artifact: '*'
     publishLocation: 'pipeline'
