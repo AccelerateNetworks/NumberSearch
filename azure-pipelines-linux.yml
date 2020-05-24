@@ -30,9 +30,21 @@ steps:
     folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Tests/bin/Release/netcoreapp3.1/'
     jsonTargetFiles: 'appsettings.json'
     xmlTransformationRules: '' # disabled
-    
+
+- task: FileTransform@2
+  inputs:
+    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Mvc/bin/Release/netcoreapp3.1/'
+    jsonTargetFiles: 'appsettings.json'
+    xmlTransformationRules: '' # disabled
+
 - task: DotNetCoreCLI@2
   inputs:
     command: test
     projects: '**/*Tests/*.csproj'
     arguments: '--configuration $(buildConfiguration)'
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(Pipeline.Workspace)/NumberSearch.Mvc/bin/Release/netcoreapp3.1/'
+    artifact: '**'
+    publishLocation: 'pipeline'
