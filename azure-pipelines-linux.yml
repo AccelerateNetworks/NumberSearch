@@ -45,5 +45,5 @@ steps:
 
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: '$(Pipeline.Workspace)/NumberSearch.Mvc/bin/Release/netcoreapp3.1/'
+    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Mvc/bin/Release/netcoreapp3.1/'
     publishLocation: 'pipeline'
