@@ -137,12 +137,10 @@
 
                 <div class="row">
                     <div class="col-md-5 mb-3">
-                        <label for="country">Country</label>
-                        <select asp-for="Order.Country" class="custom-select d-block w-100" id="country" required="">
-                            <option value="United States">United States</option>
-                        </select>
+                        <label for="country">City</label>
+                        <input asp-for="Order.City" type="text" class="form-control" id="city" placeholder="Seattle">
                         <div class="invalid-feedback">
-                            Please select a valid country.
+                            Please enter your shipping city.
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">

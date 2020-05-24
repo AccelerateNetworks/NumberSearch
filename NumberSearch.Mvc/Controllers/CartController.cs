@@ -345,7 +345,7 @@ namespace NumberSearch.Mvc.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5359:Do Not Disable Certificate Validation", Justification = "<Pending>")]
-        public async Task<IActionResult> SubmitAsync([Bind("FirstName,LastName,Email,Address,Address2,Country,State,Zip")] Order order)
+        public async Task<IActionResult> SubmitAsync(Order order)
         {
             if (order != null && !string.IsNullOrWhiteSpace(order.Email))
             {
@@ -382,7 +382,7 @@ namespace NumberSearch.Mvc.Controllers
                         };
 
                         // This will need to be updated when the baseURL changes.
-                        var linkToOrder = $"https://numbersearch.acceleratenetworks.com/Cart/Order/{order.OrderId}";
+                        var linkToOrder = $"https://acceleratenetworks.com/Cart/Order/{order.OrderId}";
 
                         outboundMessage.Body = new TextPart(TextFormat.Plain)
                         {
@@ -392,7 +392,7 @@ Thank you for choosing Accelerate Networks!
 
 Your order Id is: {order.OrderId} and it was submitted on {order.DateSubmitted.ToLocalTime().ToShortDateString()} at {order.DateSubmitted.ToLocalTime().ToShortTimeString()}.
 
-You can review your order at insertLinkToOrderHere
+You can review your order at {linkToOrder}
                                                                                       
 A delivery specialist will send you a follow up email to walk you through the next steps in the process.
 

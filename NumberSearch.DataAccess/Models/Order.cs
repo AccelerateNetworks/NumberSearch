@@ -16,7 +16,7 @@ namespace NumberSearch.DataAccess
         public string Email { get; set; }
         public string Address { get; set; }
         public string Address2 { get; set; }
-        public string Country { get; set; }
+        public string City { get; set; }
         public string State { get; set; }
         public string Zip { get; set; }
         public DateTime DateSubmitted { get; set; }
@@ -26,7 +26,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryFirstOrDefaultAsync<Order>("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"Country\", \"State\", \"Zip\", \"DateSubmitted\" FROM public.\"Orders\" " +
+                .QueryFirstOrDefaultAsync<Order>("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\" FROM public.\"Orders\" " +
                 "WHERE \"OrderId\" = @orderId",
                 new { orderId })
                 .ConfigureAwait(false);
@@ -39,7 +39,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<Order>("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"Country\", \"State\", \"Zip\", \"DateSubmitted\" FROM public.\"Orders\" " +
+                .QueryAsync<Order>("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\" FROM public.\"Orders\" " +
                 "WHERE \"Email\" = @email ORDER BY \"DateSubmitted\" DESC",
                 new { email })
                 .ConfigureAwait(false);
@@ -53,7 +53,7 @@ namespace NumberSearch.DataAccess
 
             var result = await connection
                 .QueryAsync<Order>
-                ("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"Country\", \"State\", \"Zip\", \"DateSubmitted\" FROM public.\"Orders\" ORDER BY \"DateSubmitted\" DESC")
+                ("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\" FROM public.\"Orders\" ORDER BY \"DateSubmitted\" DESC")
                 .ConfigureAwait(false);
 
             return result;
@@ -66,9 +66,9 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"Orders\"(\"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"Country\", \"State\", \"Zip\", \"DateSubmitted\") " +
-                "VALUES(@FirstName, @LastName, @Email, @Address, @Address2, @Country, @State, @Zip, @DateSubmitted)",
-                new { FirstName, LastName, Email, Address, Address2, Country, State, Zip, DateSubmitted })
+                .ExecuteAsync("INSERT INTO public.\"Orders\"(\"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\") " +
+                "VALUES(@FirstName, @LastName, @Email, @Address, @Address2, @City, @State, @Zip, @DateSubmitted)",
+                new { FirstName, LastName, Email, Address, Address2, City, State, Zip, DateSubmitted })
                 .ConfigureAwait(false);
 
             if (result == 1)

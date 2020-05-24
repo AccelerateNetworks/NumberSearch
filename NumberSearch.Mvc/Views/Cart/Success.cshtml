@@ -24,7 +24,7 @@
         <p class="lead">Give us a ring at 206-858-8757 (texting is welcome) or <a href="mailto:support@acceleratenetworks.com?Subject=Help%20me%20with%20?" target="_top">email us</a>.</p>
     </div>
     @{
-        if (Model != null)
+        if (Model != null && Model?.PhoneNumbers != null && Model.PhoneNumbers.Any())
         {
             <br />
             <div class="pricing-header mx-auto mb-3 text-center">
@@ -236,7 +236,7 @@
                     <div class="col-md-6 mb-3">
                         <label for="locationType">Numbers to Port</label>
                         @{
-                            foreach (var number in Model.PhoneNumbers)
+                            foreach (var number in Model?.PhoneNumbers)
                             {
                                 <input type="text" class="form-control" id="locationType" title="The numbers that will be ported to Accelerate Networks on this port order." value="@number.PortedDialedNumber" required="" readonly>
                                 <br />
