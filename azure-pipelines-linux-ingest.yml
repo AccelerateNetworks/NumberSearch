@@ -1,0 +1,49 @@
+# ASP.NET Core
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  ConnectionStrings.TeleAPI: $(TeleAPI)
+  ConnectionStrings.SmtpUsername: $(SmtpUsername)
+  ConnectionStrings.SmtpPassword: $(SmtpPassword)
+  ConnectionStrings.PostgresqlProd: $(PostgresqlProd)
+  ConnectionStrings.PComNetUsername: $(PComNetUsername)
+  ConnectionStrings.PComNetPassword: $(PComNetPassword)
+  ConnectionStrings.BulkVSAPISecret: $(BulkVSAPISecret)
+  ConnectionStrings.BulkVSAPIKEY: $(BulkVSAPIKEY)
+  ApplicationInsights.InstrumentationKey: $(InstrumentationKey)
+
+steps:
+- script: dotnet build --configuration $(buildConfiguration)
+  displayName: 'dotnet build $(buildConfiguration)'
+
+- task: FileTransform@2
+  inputs:
+    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Tests/bin/Release/netcoreapp3.1/'
+    jsonTargetFiles: 'appsettings.json'
+    xmlTransformationRules: '' # disabled
+
+- task: FileTransform@2
+  inputs:
+    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ingest/bin/Release/netcoreapp3.1/'
+    jsonTargetFiles: 'appsettings.json'
+    xmlTransformationRules: '' # disabled
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: test
+    projects: '**/*Tests/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ingest/bin/Release/netcoreapp3.1/'
+    publishLocation: 'pipeline'
