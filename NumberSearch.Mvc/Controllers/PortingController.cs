@@ -174,8 +174,10 @@ namespace NumberSearch.Mvc.Controllers
             {
                 await portRequest.BillImage.CopyToAsync(stream);
 
+                var fileExtension = portRequest.BillImage.FileName.Split('.').LastOrDefault();
+
                 // Yeet the image into an email attachment.
-                var attachment = new MimePart("image", portRequest.BillImage.ContentType)
+                var attachment = new MimePart("image", fileExtension)
                 {
                     Content = new MimeContent(stream, ContentEncoding.Default),
                     ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
