@@ -166,6 +166,7 @@ namespace NumberSearch.Mvc.Controllers
         [HttpPost]
         public async Task<IActionResult> AddPortingInformationAsync(PortRequest portRequest)
         {
+            // http://www.mimekit.net/docs/html/Creating-Messages.htm
             var multipart = new Multipart("mixed");
             using var stream = new System.IO.MemoryStream();
 
