@@ -166,14 +166,23 @@ namespace NumberSearch.Mvc.Controllers
         [HttpPost]
         public async Task<IActionResult> AddPortingInformationAsync(PortRequest portRequest)
         {
+            var multipart = new Multipart("mixed");
+            using var stream = new System.IO.MemoryStream();
+
             if (portRequest.BillImage != null && portRequest.BillImage.Length > 0)
             {
-                var filePath = Path.GetTempFileName();
-
-                using var stream = System.IO.File.Create(filePath);
                 await portRequest.BillImage.CopyToAsync(stream);
 
-                // Save the image somewhere real now.
+                // Yeet the image into an email attachment.
+                var attachment = new MimePart("image", portRequest.BillImage.ContentType)
+                {
+                    Content = new MimeContent(stream, ContentEncoding.Default),
+                    ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
+                    ContentTransferEncoding = ContentEncoding.Base64,
+                    FileName = Path.GetFileName(portRequest.BillImage.FileName)
+                };
+
+                multipart.Add(attachment);
             }
 
             var order = await Order.GetByIdAsync(portRequest.OrderId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
@@ -192,7 +201,7 @@ namespace NumberSearch.Mvc.Controllers
                 // This will need to be updated when the baseURL changes.
                 var linkToOrder = $"https://acceleratenetworks.com/Cart/Order/{order.OrderId}";
 
-                outboundMessage.Body = new TextPart(TextFormat.Plain)
+                var body = new TextPart(TextFormat.Plain)
                 {
                     Text = $@"Hi {order.FirstName},
                                                                                       
@@ -208,6 +217,17 @@ Thanks,
 
 Accelerate Networks"
                 };
+
+                // If there's an attachment send it, if not just send the body.
+                if (multipart.Count > 0)
+                {
+                    multipart.Add(body);
+                    outboundMessage.Body = multipart;
+                }
+                else
+                {
+                    outboundMessage.Body = body;
+                }
 
                 outboundMessage.Cc.Add(new MailboxAddress(configuration.GetConnectionString("SmtpUsername")));
                 outboundMessage.To.Add(new MailboxAddress($"{order.Email}"));
