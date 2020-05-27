@@ -186,7 +186,7 @@
                     </thead>
                     <tbody>
                         @{
-                            foreach (var ingest in Model)
+                            foreach (var ingest in Model.Take(31))
                             {
                                 var timeElapsed = ingest.StartDate - ingest.EndDate;
                                 <tr>
