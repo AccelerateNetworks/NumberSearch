@@ -89,5 +89,31 @@ namespace NumberSearch.DataAccess
                 return false;
             }
         }
+
+        /// <summary>
+        /// Update a product entry.
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        public async Task<bool> PutAsync(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("UPDATE public.\"Products\" " +
+                "SET \"Name\" = @Name, \"Price\" = @Price, \"Description\" = @Description, \"Image\" = @Image " +
+                "WHERE \"ProductId\" = @productId",
+                new { Name, Price, Description, Image, ProductId })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }

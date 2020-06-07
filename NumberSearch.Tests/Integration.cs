@@ -2,6 +2,7 @@ using BulkVS;
 
 using FirstCom;
 
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
@@ -638,8 +639,15 @@ namespace NumberSearch.Tests
         //        new Product
         //        {
         //            Name = "GRP2612",
-        //            Description = "The GRP2612 is a workhorse! Offering a color screen, HD voice and 4 programmable keys, it is a great value. Hardware options include WiFi or Power over Ethernet.",
+        //            Description = "The GRP2612 is a workhorse! Offering a color screen, HD voice and 4 programmable keys, it is a great value.",
         //            Price = 65,
+        //            Image = "/images/scaled/GRP2612front-400.jpg"
+        //        },
+        //        new Product
+        //        {
+        //            Name = "GRP2612 WiFi",
+        //            Description = "Need a phone where only WiFi exists? The GRP2612W has you covered with powerful WiFi 5 (aka 802.11AC) support built in. Plug into power and dial away!",
+        //            Price = 85,
         //            Image = "/images/scaled/GRP2612front-400.jpg"
         //        },
         //        new Product
@@ -683,14 +691,46 @@ namespace NumberSearch.Tests
         //            Description = "Need a great phone at a reasonable price? The GXP2140 has you covered with Bluetooth, a 4.3\" color screen, gigabit & PoE!",
         //            Price = 70,
         //            Image = "/images/scaled/gxp2140-400.png"
+        //        },
+        //        new Product
+        //        {
+        //            Name = "Polycom Soundstation IP 7000",
+        //            Description = "Light up your conference room with the vibrant sound quality provided by the Polycom Soundstation IP 7000! Supports 3 way calling, HD Voice & Power over Ethernet.",
+        //            Price = 300,
+        //            Image = "/images/scaled/11315553-a8da-4a45-b632-b8ced825957dscaled.jpg"
+        //        },
+        //        new Product
+        //        {
+        //            Name = "Snom PA1",
+        //            Description = "Enable paging over speaker systems with the Snom PA1. The built in amp enables small scale deployments, while the numerous outputs can tie into existing amplifiers.",
+        //            Price = 150,
+        //            Image = "/images/scaled/SNO-PA1image1scaled.jpg"
         //        }
         //    };
 
+        //    // Get existing products from the Db.
+        //    var existing = await Product.GetAllAsync(postgresql);
+
         //    foreach (var product in products)
         //    {
-        //        var checkSubmit = await product.PostAsync(conn);
+        //        var match = existing.Where(x => x.Name == product.Name).FirstOrDefault();
 
-        //        Assert.True(checkSubmit);
+        //        if (match != null && !string.IsNullOrWhiteSpace(match.Name))
+        //        {
+        //            // Update the existing products.
+        //            match.Image = product.Image;
+        //            match.Price = product.Price;
+        //            match.Description = product.Description;
+        //            var checkUpdate = await match.PutAsync(postgresql);
+        //            Assert.True(checkUpdate);
+        //        }
+        //        else
+        //        {
+        //            // Add the new product to the Db.
+        //            var checkSubmit = await product.PostAsync(conn);
+
+        //            Assert.True(checkSubmit);
+        //        }
         //    }
         //}
     }
