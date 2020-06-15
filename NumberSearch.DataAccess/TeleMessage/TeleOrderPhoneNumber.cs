@@ -12,7 +12,7 @@ namespace NumberSearch.DataAccess
     {
         public int code { get; set; }
         public string status { get; set; }
-        public TeleOrderResponse[] data { get; set; }
+        public TeleOrderResponse data { get; set; }
 
         /// <summary>
         /// Submit an order to purchase an available phone number.
@@ -21,14 +21,16 @@ namespace NumberSearch.DataAccess
         /// <param name="callFlow"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public static async Task<TeleOrderPhoneNumber> GetAsync(string dialedNumber, int callFlow, Guid token)
+        public static async Task<TeleOrderPhoneNumber> GetAsync(string dialedNumber, int callFlow, int channelGroup, Guid token)
         {
             string baseUrl = "https://apiv1.teleapi.net/";
             string endpoint = "dids/order";
             string tokenParameter = $"?token={token}";
             string numberParameter = $"&number={dialedNumber}";
             string callFlowParameter = $"&call_flow={callFlow}";
-            string route = $"{baseUrl}{endpoint}{tokenParameter}{numberParameter}{callFlowParameter}";
+            string channelGroupParameter = $"&channel_group={channelGroup}";
+            string cnamParameter = $"&cnam=enabled";
+            string route = $"{baseUrl}{endpoint}{tokenParameter}{numberParameter}{callFlowParameter}{channelGroupParameter}{cnamParameter}";
             return await route.GetJsonAsync<TeleOrderPhoneNumber>().ConfigureAwait(false);
         }
     }

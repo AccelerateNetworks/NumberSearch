@@ -542,6 +542,27 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task PostPurchasedPhoneNumberAsync()
+        {
+            var conn = postgresql;
+
+            var itemToOrder = new PurchasedPhoneNumber
+            {
+                OrderId = new Guid("799cc220-5931-46d8-9a21-03ce523e8ec2"),
+                DialedNumber = "8605530426",
+                DateIngested = DateTime.Now.AddDays(-1),
+                DateOrdered = DateTime.Now,
+                IngestedFrom = "Test",
+                OrderResponse = "\"code\":200,",
+                Completed = true
+            };
+
+            var result = await itemToOrder.PostAsync(conn);
+
+            Assert.True(result);
+        }
+
+        [Fact]
         public async Task GetProductOrderAsync()
         {
             var conn = postgresql;

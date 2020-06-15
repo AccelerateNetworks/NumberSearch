@@ -11,17 +11,27 @@ using NumberSearch.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
 {
     public class CartController : Controller
     {
-        private readonly IConfiguration configuration;
+        private readonly IConfiguration _configuration;
+        private readonly Guid _teleToken;
+        private readonly string _postgresql;
+        private readonly int _CallFlow;
+        private readonly int _ChannelGroup;
+
 
         public CartController(IConfiguration config)
         {
-            configuration = config;
+            _configuration = config;
+            _teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
+            _postgresql = _configuration.GetConnectionString("PostgresqlProd");
+            var checkCallFlow = int.TryParse(_configuration.GetConnectionString("CallFlow"), out _CallFlow);
+            var checkChannelGroup = int.TryParse(_configuration.GetConnectionString("ChannelGroup"), out _ChannelGroup);
         }
 
         public IActionResult Index()
@@ -36,7 +46,7 @@ namespace NumberSearch.Mvc.Controllers
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            var phoneNumber = await PhoneNumber.GetAsync(dialedPhoneNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            var phoneNumber = await PhoneNumber.GetAsync(dialedPhoneNumber, _postgresql).ConfigureAwait(false);
             var productOrder = new ProductOrder { DialedNumber = phoneNumber.DialedNumber, Quantity = 1 };
 
             var checkAdd = cart.AddPhoneNumber(phoneNumber, productOrder);
@@ -59,7 +69,7 @@ namespace NumberSearch.Mvc.Controllers
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            var portedPhoneNumber = await PortedPhoneNumber.GetAsync(dialedPhoneNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            var portedPhoneNumber = await PortedPhoneNumber.GetAsync(dialedPhoneNumber, _postgresql).ConfigureAwait(false);
 
             if (portedPhoneNumber is null || string.IsNullOrWhiteSpace(portedPhoneNumber.PortedDialedNumber))
             {
@@ -82,11 +92,11 @@ namespace NumberSearch.Mvc.Controllers
                         IngestedFrom = "UserInput"
                     };
 
-                    var checkSubmission = await port.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                    var checkSubmission = await port.PostAsync(_postgresql).ConfigureAwait(false);
 
                     if (checkSubmission)
                     {
-                        portedPhoneNumber = await PortedPhoneNumber.GetAsync(port.PortedDialedNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                        portedPhoneNumber = await PortedPhoneNumber.GetAsync(port.PortedDialedNumber, _postgresql).ConfigureAwait(false);
                     }
                 }
             }
@@ -121,7 +131,7 @@ namespace NumberSearch.Mvc.Controllers
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            var product = await Product.GetAsync(productId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            var product = await Product.GetAsync(productId, _postgresql).ConfigureAwait(false);
             var productOrder = new ProductOrder
             {
                 ProductId = product.ProductId,
@@ -148,7 +158,7 @@ namespace NumberSearch.Mvc.Controllers
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            var service = await Service.GetAsync(serviceId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            var service = await Service.GetAsync(serviceId, _postgresql).ConfigureAwait(false);
             var productOrder = new ProductOrder
             {
                 ServiceId = service.ServiceId,
@@ -276,8 +286,8 @@ namespace NumberSearch.Mvc.Controllers
         {
             if (Id != null)
             {
-                var order = await Order.GetByIdAsync(Id, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-                var productOrders = await ProductOrder.GetAsync(order.OrderId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                var order = await Order.GetByIdAsync(Id, _postgresql).ConfigureAwait(false);
+                var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
 
                 // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
                 // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
@@ -289,22 +299,22 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     if (item?.DialedNumber?.Length == 10)
                     {
-                        var phoneNumber = await PhoneNumber.GetAsync(item.DialedNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                        var phoneNumber = await PhoneNumber.GetAsync(item.DialedNumber, _postgresql).ConfigureAwait(false);
                         phoneNumbers.Add(phoneNumber);
                     }
                     else if (item?.PortedDialedNumber?.Length == 10)
                     {
-                        var portedPhoneNumber = await PortedPhoneNumber.GetAsync(item.PortedDialedNumber, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                        var portedPhoneNumber = await PortedPhoneNumber.GetAsync(item.PortedDialedNumber, _postgresql).ConfigureAwait(false);
                         portedPhoneNumbers.Add(portedPhoneNumber);
                     }
                     else if (item?.ProductId != Guid.Empty)
                     {
-                        var product = await Product.GetAsync(item.ProductId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                        var product = await Product.GetAsync(item.ProductId, _postgresql).ConfigureAwait(false);
                         products.Add(product);
                     }
                     else if (item?.ServiceId != Guid.Empty)
                     {
-                        var service = await Service.GetAsync(item.ServiceId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                        var service = await Service.GetAsync(item.ServiceId, _postgresql).ConfigureAwait(false);
                         services.Add(service);
                     }
                 }
@@ -356,18 +366,96 @@ namespace NumberSearch.Mvc.Controllers
                 if (cart.Order.OrderId == Guid.Empty)
                 {
                     // Save to db.
-                    var submittedOrder = await order.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                    var submittedOrder = await order.PostAsync(_postgresql).ConfigureAwait(false);
 
                     // Send a confirmation email.
                     if (submittedOrder)
                     {
-                        var orderFromDb = await Order.GetByEmailAsync(order.Email, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                        var orderFromDb = await Order.GetByEmailAsync(order.Email, _postgresql).ConfigureAwait(false);
                         order = orderFromDb.FirstOrDefault();
+
+
+                        // Submit the number orders.
+                        var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                        var numbersToOrder = new List<string>();
+                        foreach (var po in productOrders)
+                        {
+                            if (po.DialedNumber != null)
+                            {
+                                numbersToOrder.Add(po.DialedNumber);
+                            }
+                        }
+
+                        foreach (var nto in cart.PhoneNumbers)
+                        {
+                            // If it's not a TeleMessage number, bail out early.
+                            if (nto.IngestedFrom != "TeleMessage")
+                            {
+                                var verifyOrder = new PurchasedPhoneNumber
+                                {
+                                    OrderId = order.OrderId,
+                                    DateOrdered = order.DateSubmitted,
+                                    DialedNumber = nto.DialedNumber,
+                                    DateIngested = nto.DateIngested,
+                                    IngestedFrom = nto.IngestedFrom,
+                                    // Keep the raw response as a receipt.
+                                    OrderResponse = "Not a purchasable number.",
+                                    // If the status code of the order comes back as 200 then it was sucessful.
+                                    Completed = false
+                                };
+
+                                var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                            }
+                            else
+                            {
+                                // Verify that tele has the number.
+                                var checkNumber = await LRNLookup.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
+                                if (checkNumber.code == 200)
+                                {
+                                    // Buy it and save the reciept.
+                                    var executeOrder = await TeleOrderPhoneNumber.GetAsync(nto.DialedNumber, _CallFlow, _ChannelGroup, _teleToken).ConfigureAwait(false);
+
+                                    var verifyOrder = new PurchasedPhoneNumber
+                                    {
+                                        OrderId = order.OrderId,
+                                        DateOrdered = order.DateSubmitted,
+                                        DialedNumber = nto.DialedNumber,
+                                        DateIngested = nto.DateIngested,
+                                        IngestedFrom = nto.IngestedFrom,
+                                        // Keep the raw response as a receipt.
+                                        OrderResponse = JsonSerializer.Serialize(executeOrder),
+                                        // If the status code of the order comes back as 200 then it was sucessful.
+                                        Completed = executeOrder.code == 200
+                                    };
+
+                                    var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                }
+                                else
+                                {
+                                    // Sadly its gone.
+                                    var verifyOrder = new PurchasedPhoneNumber
+                                    {
+                                        OrderId = order.OrderId,
+                                        DateOrdered = order.DateSubmitted,
+                                        DialedNumber = nto.DialedNumber,
+                                        DateIngested = nto.DateIngested,
+                                        IngestedFrom = nto.IngestedFrom,
+                                        // Keep the raw response as a receipt.
+                                        OrderResponse = "Couldn't find this number.",
+                                        // If the status code of the order comes back as 200 then it was sucessful.
+                                        Completed = false
+                                    };
+
+                                    var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                }
+                            }
+                        }
 
                         foreach (var productOrder in cart.ProductOrders)
                         {
                             productOrder.OrderId = order.OrderId;
-                            var checkSubmitted = await productOrder.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                            var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
 
                             if (!checkSubmitted)
                             {
@@ -377,7 +465,7 @@ namespace NumberSearch.Mvc.Controllers
 
                         var outboundMessage = new MimeKit.MimeMessage
                         {
-                            Sender = new MimeKit.MailboxAddress("Number Search", configuration.GetConnectionString("SmtpUsername")),
+                            Sender = new MimeKit.MailboxAddress("Number Search", _configuration.GetConnectionString("SmtpUsername")),
                             Subject = $"Order: {order.OrderId}"
                         };
 
@@ -401,7 +489,7 @@ Thanks,
 Accelerate Networks"
                         };
 
-                        outboundMessage.Cc.Add(new MailboxAddress(configuration.GetConnectionString("SmtpUsername")));
+                        outboundMessage.Cc.Add(new MailboxAddress(_configuration.GetConnectionString("SmtpUsername")));
                         outboundMessage.To.Add(new MailboxAddress($"{order.Email}"));
 
                         using var smtp = new MailKit.Net.Smtp.SmtpClient();
@@ -409,7 +497,7 @@ Accelerate Networks"
                         smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
                         await smtp.ConnectAsync("mail.seattlemesh.net", 587, SecureSocketOptions.StartTls).ConfigureAwait(false);
-                        await smtp.AuthenticateAsync(configuration.GetConnectionString("SmtpUsername"), configuration.GetConnectionString("SmtpPassword")).ConfigureAwait(false);
+                        await smtp.AuthenticateAsync(_configuration.GetConnectionString("SmtpUsername"), _configuration.GetConnectionString("SmtpPassword")).ConfigureAwait(false);
                         await smtp.SendAsync(outboundMessage).ConfigureAwait(false);
                         await smtp.DisconnectAsync(true).ConfigureAwait(false);
 
