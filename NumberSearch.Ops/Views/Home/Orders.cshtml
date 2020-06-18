@@ -1,0 +1,65 @@
+﻿@model IEnumerable<NumberSearch.DataAccess.Order>
+@{
+    ViewData["Title"] = "Orders";
+}
+<br />
+<h1 class="display-4">Orders</h1>
+<br />
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>
+                    Date Ordered
+                </th>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Email
+                </th>
+                <th>
+                    Address
+                </th>
+                <th>
+                    Actions
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                foreach (var order in Model)
+                {
+                    <tr>
+                        <td>
+                            @order.DateSubmitted
+                        </td>
+                        <td>
+                            @order.FirstName
+                            @order.LastName
+                        </td>
+                        <td>
+                            @order.Email
+                        </td>
+                        <td>
+                            @order.Address
+
+                            @order.Address2
+
+                            @order.City
+
+                            @order.State
+
+                            @order.Zip
+                        </td>
+                        <td>
+                            <a href="https://acceleratenetworks.com/cart/order/@order.OrderId" class="btn btn-primary">
+                                View
+                            </a>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

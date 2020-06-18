@@ -1,0 +1,104 @@
+﻿@model IEnumerable<NumberSearch.DataAccess.PortRequest>
+@{
+    ViewData["Title"] = "Port Requests";
+}
+<br />
+<h1 class="display-4">Port Requests</h1>
+<br />
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>
+                    Date Ordered
+                </th>
+                <th>
+                    Contact
+                </th>
+                <th>
+                    Business Name
+                </th>
+                <th>
+                    Address
+                </th>
+                <th>
+                    Billing
+                </th>
+                <th>
+                    Caller Id
+                </th>
+                <th>
+                    Location Type
+                </th>
+                <th>
+                    Partial Port
+                </th>
+                <th>
+                    Description
+                </th>
+                <th>
+                    Provider Account Number
+                </th>
+                <th>
+                    PIN
+                </th>
+                <th>
+                    Wireless Number
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                foreach (var port in Model)
+                {
+                    <tr>
+                        <td>
+                            @port.DateSubmitted
+                        </td>
+                        <td>
+                            @port.BusinessContact
+                        </td>
+                        <td>
+                            @port.BusinessName
+                        </td>
+                        <td>
+                            @port.Address
+
+                            @port.Address2
+
+                            @port.City
+
+                            @port.State
+
+                            @port.Zip
+                        </td>
+                        <td>
+                            @port.BillingPhone
+                        </td>
+                        <td>
+                            @port.CallerId
+                        </td>
+                        <td>
+                            @port.LocationType
+                        </td>
+                        <td>
+                            @port.PartialPort
+                        </td>
+                        <td>
+                            @port.PartialPortDescription
+                        </td>
+                        <td>
+                            @port.ProviderAccountNumber
+                        </td>
+                        <td>
+                            @port.ProviderPIN
+                        </td>
+                        <td>
+                            @port.WirelessNumber
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

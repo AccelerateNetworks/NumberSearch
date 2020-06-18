@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NumberSearch.DataAccess", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BulkVS", "BulkVS\BulkVS.csproj", "{1F5295CE-AAAD-409E-8A49-EDCEEBF0C6EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FirstCom", "FirstCom\FirstCom.csproj", "{EA980F61-1F9E-40CA-AAD9-C1D1284D8C96}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FirstCom", "FirstCom\FirstCom.csproj", "{EA980F61-1F9E-40CA-AAD9-C1D1284D8C96}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumberSearch.Ops", "NumberSearch.Ops\NumberSearch.Ops.csproj", "{F6EB457F-7E2A-4476-B9A4-C64B177FD8F2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{EA980F61-1F9E-40CA-AAD9-C1D1284D8C96}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA980F61-1F9E-40CA-AAD9-C1D1284D8C96}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EA980F61-1F9E-40CA-AAD9-C1D1284D8C96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6EB457F-7E2A-4476-B9A4-C64B177FD8F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6EB457F-7E2A-4476-B9A4-C64B177FD8F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6EB457F-7E2A-4476-B9A4-C64B177FD8F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6EB457F-7E2A-4476-B9A4-C64B177FD8F2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
