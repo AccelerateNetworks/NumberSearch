@@ -18,6 +18,8 @@ variables:
   ConnectionStrings.PComNetUsername: $(PComNetUsername)
   ConnectionStrings.PComNetPassword: $(PComNetPassword)
   ConnectionStrings.BulkVSAPISecret: $(BulkVSAPISecret)
+  ConnectionStrings.ChannelGroup: $(ChannelGroup)
+  ConnectionStrings.CallFlow: $(CallFlow)
   ConnectionStrings.BulkVSAPIKEY: $(BulkVSAPIKEY)
   ApplicationInsights.InstrumentationKey: $(InstrumentationKey)
 
