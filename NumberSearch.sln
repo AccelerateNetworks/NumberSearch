@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BulkVS", "BulkVS\BulkVS.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FirstCom", "FirstCom\FirstCom.csproj", "{EA980F61-1F9E-40CA-AAD9-C1D1284D8C96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumberSearch.Ops", "NumberSearch.Ops\NumberSearch.Ops.csproj", "{F6EB457F-7E2A-4476-B9A4-C64B177FD8F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NumberSearch.Ops", "NumberSearch.Ops\NumberSearch.Ops.csproj", "{F6EB457F-7E2A-4476-B9A4-C64B177FD8F2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
