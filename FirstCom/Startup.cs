@@ -42,7 +42,7 @@ namespace FirstCom
                 //var results = await NpaNxxFirstPointCom.GetAsync("206", string.Empty, string.Empty, username, password);
                 //var x = results.ToArray();
 
-                var results = await FirstPointComOrderPhoneNumber.PostAsync("", username, password);
+                var results = await FirstPointComOrderPhoneNumber.PostAsync("", "", username, password);
                 await Task.Delay(1000);
             });
         }

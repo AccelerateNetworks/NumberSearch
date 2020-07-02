@@ -46,7 +46,16 @@ namespace NumberSearch.Ops.Controllers
             // Show all orders
             var orders = await Order.GetAllAsync(_postgresql);
 
-            return View("Orders", orders);
+            return View("Orders", orders.OrderByDescending(x => x.DateSubmitted));
+        }
+
+        [Authorize]
+        public async Task<IActionResult> NumberOrders()
+        {
+            // Show all orders
+            var orders = await PurchasedPhoneNumber.GetAllAsync(_postgresql);
+
+            return View("NumberOrders", orders.OrderByDescending(x => x.DateOrdered));
         }
 
         [Authorize]
@@ -55,7 +64,7 @@ namespace NumberSearch.Ops.Controllers
             // Show all orders
             var portRequests = await PortRequest.GetAllAsync(_postgresql);
 
-            return View("PortRequests", portRequests);
+            return View("PortRequests", portRequests.OrderByDescending(x => x.DateSubmitted));
         }
 
         /// <summary>
@@ -63,6 +72,7 @@ namespace NumberSearch.Ops.Controllers
         /// </summary>
         /// <param name="query"> A complete or partial phone number. </param>
         /// <returns> A view of nothing, or the result of the query. </returns>
+        [Authorize]
         [Route("Numbers/{Query}")]
         [Route("Numbers/")]
         public async Task<IActionResult> Numbers(string query, int page = 1)
