@@ -424,6 +424,7 @@ namespace NumberSearch.Mvc.Controllers
                                 }
                                 else
                                 {
+                                    // Throw some kind of error here to tell the user to pick a different number???
                                     // Sadly its gone.
                                     var verifyOrder = new PurchasedPhoneNumber
                                     {
@@ -484,7 +485,7 @@ namespace NumberSearch.Mvc.Controllers
                                     var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
                                 }
                             }
-                            else if (nto.IngestedFrom == "FirstCom")
+                            else if (nto.IngestedFrom == "FirstPointCom")
                             {
 
                             }

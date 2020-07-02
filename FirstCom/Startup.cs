@@ -1,3 +1,5 @@
+using BulkVS.BulkVS;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -5,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace FirstCom
 {
@@ -36,9 +39,11 @@ namespace FirstCom
 
                 var postgresSQL = config.GetConnectionString("PostgresqlProd");
 
-                var results = await NpaNxxFirstPointCom.GetAsync("206", string.Empty, string.Empty, username, password);
+                //var results = await NpaNxxFirstPointCom.GetAsync("206", string.Empty, string.Empty, username, password);
+                //var x = results.ToArray();
 
-                var x = results.ToArray();
+                var results = await FirstPointComOrderPhoneNumber.PostAsync("", username, password);
+                await Task.Delay(1000);
             });
         }
     }
