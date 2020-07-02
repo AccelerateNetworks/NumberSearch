@@ -98,6 +98,12 @@ namespace NumberSearch.Ops.Controllers
                 // Drop everything else.
             }
 
+            // Drop leading 1's to improve the copy/paste experiance.
+            if (converted[0] == '1')
+            {
+                converted.Remove('1');
+            }
+
             var results = await PhoneNumber.PaginatedSearchAsync(new string(converted.ToArray()), page, _postgresql).ConfigureAwait(false);
             var count = await PhoneNumber.NumberOfResultsInQuery(new string(converted.ToArray()), _postgresql).ConfigureAwait(false);
 
