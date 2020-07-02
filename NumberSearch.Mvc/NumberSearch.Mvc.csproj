@@ -40,6 +40,7 @@
     <PackageReference Include="System.ServiceModel.Security" Version="4.7.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\BulkVS\BulkVS.csproj" />
     <ProjectReference Include="..\NumberSearch.DataAccess\NumberSearch.DataAccess.csproj" />
   </ItemGroup>
   <ItemGroup>

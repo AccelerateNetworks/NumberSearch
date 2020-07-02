@@ -1,4 +1,7 @@
-﻿using MailKit.Security;
+﻿using BulkVS;
+using BulkVS.BulkVS;
+
+using MailKit.Security;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -23,7 +26,8 @@ namespace NumberSearch.Mvc.Controllers
         private readonly string _postgresql;
         private readonly int _CallFlow;
         private readonly int _ChannelGroup;
-
+        private readonly string _apiKey;
+        private readonly string _apiSecret;
 
         public CartController(IConfiguration config)
         {
@@ -32,6 +36,8 @@ namespace NumberSearch.Mvc.Controllers
             _postgresql = _configuration.GetConnectionString("PostgresqlProd");
             var checkCallFlow = int.TryParse(_configuration.GetConnectionString("CallFlow"), out _CallFlow);
             var checkChannelGroup = int.TryParse(_configuration.GetConnectionString("ChannelGroup"), out _ChannelGroup);
+            _apiKey = config.GetConnectionString("BulkVSAPIKEY");
+            _apiSecret = config.GetConnectionString("BulkVSAPISecret");
         }
 
         public IActionResult Index()
@@ -389,25 +395,53 @@ namespace NumberSearch.Mvc.Controllers
 
                         foreach (var nto in cart.PhoneNumbers)
                         {
-                            // If it's not a TeleMessage number, bail out early.
-                            if (nto.IngestedFrom != "TeleMessage")
+                            if (nto.IngestedFrom == "BulkVS")
                             {
-                                var verifyOrder = new PurchasedPhoneNumber
+                                var npanxx = $"{nto.NPA}{nto.NXX}";
+                                var doesItStillExist = await NpaNxxBulkVS.GetAsync(npanxx, _apiKey, _apiSecret).ConfigureAwait(false);
+                                var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
+                                if (checkIfExists.DialedNumber == nto.DialedNumber)
                                 {
-                                    OrderId = order.OrderId,
-                                    DateOrdered = order.DateSubmitted,
-                                    DialedNumber = nto.DialedNumber,
-                                    DateIngested = nto.DateIngested,
-                                    IngestedFrom = nto.IngestedFrom,
-                                    // Keep the raw response as a receipt.
-                                    OrderResponse = "Not a purchasable number.",
-                                    // If the status code of the order comes back as 200 then it was sucessful.
-                                    Completed = false
-                                };
+                                    // Buy it and save the reciept.
+                                    var random = new Random();
+                                    var pin = random.Next(0, 999999);
+                                    var executeOrder = await BulkVSOrderPhoneNumber.GetAsync(nto.DialedNumber, "SFO", "Enabled", string.Empty, "false", pin.ToString(), _apiKey, _apiSecret).ConfigureAwait(false);
 
-                                var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                    var verifyOrder = new PurchasedPhoneNumber
+                                    {
+                                        OrderId = order.OrderId,
+                                        DateOrdered = order.DateSubmitted,
+                                        DialedNumber = nto.DialedNumber,
+                                        DateIngested = nto.DateIngested,
+                                        IngestedFrom = nto.IngestedFrom,
+                                        // Keep the raw response as a receipt.
+                                        OrderResponse = JsonSerializer.Serialize(executeOrder),
+                                        // If the status code of the order comes back as 200 then it was sucessful.
+                                        Completed = executeOrder.result.entry.dn == nto.DialedNumber
+                                    };
+
+                                    var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                }
+                                else
+                                {
+                                    // Sadly its gone.
+                                    var verifyOrder = new PurchasedPhoneNumber
+                                    {
+                                        OrderId = order.OrderId,
+                                        DateOrdered = order.DateSubmitted,
+                                        DialedNumber = nto.DialedNumber,
+                                        DateIngested = nto.DateIngested,
+                                        IngestedFrom = nto.IngestedFrom,
+                                        // Keep the raw response as a receipt.
+                                        OrderResponse = "Couldn't find this number.",
+                                        // If the status code of the order comes back as 200 then it was sucessful.
+                                        Completed = false
+                                    };
+
+                                    var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                }
                             }
-                            else
+                            else if (nto.IngestedFrom == "TeleMessage")
                             {
                                 // Verify that tele has the number.
                                 var checkNumber = await LRNLookup.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
@@ -449,6 +483,27 @@ namespace NumberSearch.Mvc.Controllers
 
                                     var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
                                 }
+                            }
+                            else if (nto.IngestedFrom == "FirstCom")
+                            {
+
+                            }
+                            else
+                            {
+                                var verifyOrder = new PurchasedPhoneNumber
+                                {
+                                    OrderId = order.OrderId,
+                                    DateOrdered = order.DateSubmitted,
+                                    DialedNumber = nto.DialedNumber,
+                                    DateIngested = nto.DateIngested,
+                                    IngestedFrom = nto.IngestedFrom,
+                                    // Keep the raw response as a receipt.
+                                    OrderResponse = "Not a purchasable number.",
+                                    // If the status code of the order comes back as 200 then it was sucessful.
+                                    Completed = false
+                                };
+
+                                var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
                             }
                         }
 

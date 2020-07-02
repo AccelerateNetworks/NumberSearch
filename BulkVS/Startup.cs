@@ -1,9 +1,12 @@
+using BulkVS.BulkVS;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -37,11 +40,15 @@ namespace BulkVS
 
                 var postgresSQL = config.GetConnectionString("PostgresqlProd");
 
-                var x = await NpaBulkVS.GetAsync("206", apikey, apisecret).ConfigureAwait(false);
+                //var x = await NpaBulkVS.GetAsync("206", apikey, apisecret).ConfigureAwait(false);
 
-                var BulkVSStats = await MainBulkVS.IngestPhoneNumbersAsync(apikey, apisecret, postgresSQL);
+                //var BulkVSStats = await MainBulkVS.IngestPhoneNumbersAsync(apikey, apisecret, postgresSQL);
 
-                await BulkVSStats.PostAsync(postgresSQL);
+                //await BulkVSStats.PostAsync(postgresSQL);
+                var random = new Random();
+                var pin = random.Next(0, 999999);
+                var x = await BulkVSOrderPhoneNumber.GetAsync("2065585027", "SFO", "Enabled", string.Empty, "false", pin.ToString(), apikey, apisecret).ConfigureAwait(false);
+                await Task.Delay(1000);
             });
         }
     }

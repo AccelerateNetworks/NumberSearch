@@ -369,6 +369,29 @@ namespace ServiceReference
         }
     }
 
+    /// <summary>
+    /// This is a custom class that is not auto-generated. It's required because the WDSL definition for these endpoints is bad
+    /// </summary>
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace = "")]
+    public partial class DnOrderResponseResult
+    {
+        public string description;
+
+        public resultEntryOrder entry;
+
+
+        [System.Xml.Serialization.XmlTypeAttribute(Namespace = "")]
+        public partial class resultEntryOrder
+        {
+            public string dn { get; set; }
+            public string trunkgroup { get; set; }
+            public string cnamlookup { get; set; }
+            public string lidb { get; set; }
+            public string portoutpin { get; set; }
+            public string orderid { get; set; }
+        }
+    }
+
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
@@ -473,16 +496,17 @@ namespace ServiceReference
     {
 
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace = "", Order = 0)]
-        public string result;
+        public DnOrderResponseResult result;
 
         public DnOrderResponse()
         {
         }
 
-        public DnOrderResponse(string result)
+        public DnOrderResponse(DnOrderResponseResult result)
         {
             this.result = result;
         }
+
     }
 
     [System.Diagnostics.DebuggerStepThroughAttribute()]
