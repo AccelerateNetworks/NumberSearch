@@ -1,6 +1,8 @@
 ﻿using BulkVS;
 using BulkVS.BulkVS;
 
+using FirstCom;
+
 using MailKit.Security;
 
 using Microsoft.AspNetCore.Mvc;
@@ -28,6 +30,8 @@ namespace NumberSearch.Mvc.Controllers
         private readonly int _ChannelGroup;
         private readonly string _apiKey;
         private readonly string _apiSecret;
+        private readonly string _fpcusername;
+        private readonly string _fpcpassword;
 
         public CartController(IConfiguration config)
         {
@@ -38,6 +42,8 @@ namespace NumberSearch.Mvc.Controllers
             var checkChannelGroup = int.TryParse(_configuration.GetConnectionString("ChannelGroup"), out _ChannelGroup);
             _apiKey = config.GetConnectionString("BulkVSAPIKEY");
             _apiSecret = config.GetConnectionString("BulkVSAPISecret");
+            _fpcusername = config.GetConnectionString("PComNetUsername");
+            _fpcpassword = config.GetConnectionString("PComNetPassword");
         }
 
         public IActionResult Index()
@@ -487,7 +493,46 @@ namespace NumberSearch.Mvc.Controllers
                             }
                             else if (nto.IngestedFrom == "FirstPointCom")
                             {
+                                // Verify that tele has the number.
+                                var checkNumber = await NpaNxxFirstPointCom.GetAsync(string.Empty, string.Empty, nto.DialedNumber, _fpcusername, _fpcpassword).ConfigureAwait(false);
+                                if (checkNumber != null && checkNumber.Any() && checkNumber.FirstOrDefault().DialedNumber == nto.DialedNumber)
+                                {
+                                    // Buy it and save the reciept.
+                                    var executeOrder = await FirstPointComOrderPhoneNumber.PostAsync(nto.DialedNumber, _fpcusername, _fpcpassword).ConfigureAwait(false);
 
+                                    var verifyOrder = new PurchasedPhoneNumber
+                                    {
+                                        OrderId = order.OrderId,
+                                        DateOrdered = order.DateSubmitted,
+                                        DialedNumber = nto.DialedNumber,
+                                        DateIngested = nto.DateIngested,
+                                        IngestedFrom = nto.IngestedFrom,
+                                        // Keep the raw response as a receipt.
+                                        OrderResponse = JsonSerializer.Serialize(executeOrder),
+                                        // If the status code of the order comes back as 200 then it was sucessful.
+                                        Completed = executeOrder.code == 200
+                                    };
+
+                                    var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                }
+                                else
+                                {
+                                    // Sadly its gone.
+                                    var verifyOrder = new PurchasedPhoneNumber
+                                    {
+                                        OrderId = order.OrderId,
+                                        DateOrdered = order.DateSubmitted,
+                                        DialedNumber = nto.DialedNumber,
+                                        DateIngested = nto.DateIngested,
+                                        IngestedFrom = nto.IngestedFrom,
+                                        // Keep the raw response as a receipt.
+                                        OrderResponse = "Couldn't find this number.",
+                                        // If the status code of the order comes back as 200 then it was sucessful.
+                                        Completed = false
+                                    };
+
+                                    var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                }
                             }
                             else
                             {

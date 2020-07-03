@@ -36,13 +36,14 @@ namespace FirstCom
 
                 var username = config.GetConnectionString("PComNetUsername");
                 var password = config.GetConnectionString("PComNetPassword");
+                var gatewayIP = config.GetConnectionString("GatewayIP");
 
                 var postgresSQL = config.GetConnectionString("PostgresqlProd");
 
                 //var results = await NpaNxxFirstPointCom.GetAsync("206", string.Empty, string.Empty, username, password);
                 //var x = results.ToArray();
 
-                var results = await FirstPointComOrderPhoneNumber.PostAsync("", "", username, password);
+                var results = await FirstPointComOrderPhoneNumber.PostAsync("2026020612", username, password);
                 await Task.Delay(1000);
             });
         }
