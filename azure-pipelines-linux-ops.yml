@@ -11,7 +11,16 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
+  ConnectionStrings.TeleAPI: $(TeleAPI)
+  ConnectionStrings.SmtpUsername: $(SmtpUsername)
+  ConnectionStrings.SmtpPassword: $(SmtpPassword)
   ConnectionStrings.PostgresqlProd: $(PostgresqlProd)
+  ConnectionStrings.PComNetUsername: $(PComNetUsername)
+  ConnectionStrings.PComNetPassword: $(PComNetPassword)
+  ConnectionStrings.BulkVSAPISecret: $(BulkVSAPISecret)
+  ConnectionStrings.ChannelGroup: $(ChannelGroup)
+  ConnectionStrings.CallFlow: $(CallFlow)
+  ConnectionStrings.BulkVSAPIKEY: $(BulkVSAPIKEY)
   ApplicationInsights.InstrumentationKey: $(InstrumentationKey)
 
 steps:
