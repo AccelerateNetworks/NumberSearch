@@ -10,6 +10,7 @@ using FirstCom;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -25,7 +26,7 @@ namespace NumberSearch.Ops.Controllers
         private readonly string _postgresql;
         private readonly string _username;
         private readonly string _password;
-
+        private readonly Guid _teleToken;
 
         public HomeController(ILogger<HomeController> logger, IConfiguration config)
         {
@@ -34,6 +35,8 @@ namespace NumberSearch.Ops.Controllers
             _postgresql = _configuration.GetConnectionString("PostgresqlProd");
             _username = config.GetConnectionString("PComNetUsername");
             _password = config.GetConnectionString("PComNetPassword");
+            _teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
+
         }
 
         [Authorize]
@@ -104,6 +107,17 @@ namespace NumberSearch.Ops.Controllers
                 {
                     DialedNumber = dialedNumber,
                     PhoneNumberOrder = results
+                });
+            }
+
+            if (testName == "LRNLookup" && (!string.IsNullOrWhiteSpace(dialedNumber)))
+            {
+                var checkNumber = await LRNLookup.GetAsync(dialedNumber, _teleToken).ConfigureAwait(false);
+
+                return View("Tests", new TestResults
+                {
+                    DialedNumber = dialedNumber,
+                    LRNLookup = checkNumber
                 });
             }
 

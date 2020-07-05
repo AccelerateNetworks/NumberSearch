@@ -71,13 +71,13 @@
     }
     <div class="row">
         <div class="col-md-3 mb-3">
-            <input type="text" class="form-control" id="npa" name="npa" placeholder="206" value="@Model?.NPA">
+            <input type="text" class="form-control" id="npa" name="npa" placeholder="206">
         </div>
         <div class="col-md-3 mb-3">
-            <input type="text" class="form-control" id="nxx" name="nxx" placeholder="216" value="@Model?.NXX">
+            <input type="text" class="form-control" id="nxx" name="nxx" placeholder="216">
         </div>
         <div class="col-md-3 mb-3">
-            <input type="text" class="form-control" id="dialedNumber" name="dialedNumber" placeholder="2062163731" value="@Model?.DialedNumber">
+            <input type="text" class="form-control" id="dialedNumber" name="dialedNumber" placeholder="2062163731">
         </div>
         <div class="col-md-3 mb-3">
             <input type="text" id="testName" name="testName" value="DIDInventorySearchAsync" hidden />
@@ -122,10 +122,145 @@
     }
     <div class="row">
         <div class="col-md-3 mb-3">
-            <input type="text" class="form-control" id="dialedNumber" name="dialedNumber" placeholder="2062163731" value="@Model?.DialedNumber">
+            <input type="text" class="form-control" id="dialedNumber" name="dialedNumber" placeholder="2062163731">
         </div>
         <div class="col-md-3 mb-3">
             <input type="text" id="testName" name="testName" value="DIDOrderAsync" hidden />
+            <button class="btn btn-primary btn-block" type="submit">Execute</button>
+        </div>
+    </div>
+</form>
+<form>
+    <div class="row">
+        <div class="col">
+            <label>LRNLookup - TeleMessage</label>
+        </div>
+    </div>
+    @{
+        if (Model != null && Model?.LRNLookup != null)
+        {
+            <div class="table-responsive">
+                <table class="table table-borderless table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>
+                                Code
+                            </th>
+                            <th>
+                                Status
+                            </th>
+                            <th>
+                                CLLI
+                            </th>
+                            <th>
+                                Creation Date
+                            </th>
+                            <th>
+                                Fraud Risk
+                            </th>
+                            <th>
+                                LATA
+                            </th>
+                            <th>
+                                LRN
+                            </th>
+                            <th>
+                                OCN
+                            </th>
+                            <th>
+                                OCN Name
+                            </th>
+                            <th>
+                                OCN Type
+                            </th>
+                            <th>
+                                Port Date
+                            </th>
+                            <th>
+                                Ratecenter
+                            </th>
+                            <th>
+                                SPID
+                            </th>
+                            <th>
+                                SPID Name
+                            </th>
+                            <th>
+                                State
+                            </th>
+                            <th>
+                                Status
+                            </th>
+                            <th>
+                                Total Ported SPID
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                @Model?.LRNLookup?.code
+                            </td>
+                            <td>
+                                @Model?.LRNLookup?.status
+                            </td>
+                            <td>
+                                @Model?.LRNLookup?.data?.clli
+                            </td>
+                            <td>
+                                @Model?.LRNLookup?.data?.creation_date
+                            </td>
+                            <td>
+                                @Model?.LRNLookup?.data?.fraud_risk
+                            </td>
+                            <td>
+                                @Model?.LRNLookup?.data?.lata
+                            </td>
+                            <td>
+                                @Model?.LRNLookup?.data?.lrn
+                            </td>
+                            <td>
+                                @Model?.LRNLookup?.data?.ocn
+                            </td>
+                            <td>
+                                @Model?.LRNLookup?.data?.ocn_name
+                            </td>
+                            <td>
+                                @Model?.LRNLookup?.data?.ocn_type
+                            </td>
+                            <td>
+                                @Model?.LRNLookup?.data?.port_date
+                            </td>
+                            <td>
+                                @Model?.LRNLookup?.data?.ratecenter
+                            </td>
+                            <td>
+                                @Model?.LRNLookup?.data?.spid
+                            </td>
+                            <td>
+                                @Model?.LRNLookup?.data?.spid_name
+                            </td>
+                            <td>
+                                @Model?.LRNLookup?.data?.state
+                            </td>
+                            <td>
+                                @Model?.LRNLookup?.data?.status
+                            </td>
+                            <td>
+                                @Model?.LRNLookup?.data?.total_ported_spid
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+    <div class="row pt-3">
+        <div class="col-md-3 mb-3">
+            <input type="text" class="form-control" id="dialedNumber" name="dialedNumber" placeholder="2062163731">
+        </div>
+        <div class="col-md-3 mb-3">
+            <input type="text" id="testName" name="testName" value="LRNLookup" hidden />
             <button class="btn btn-primary btn-block" type="submit">Execute</button>
         </div>
     </div>

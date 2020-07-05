@@ -13,5 +13,6 @@ namespace NumberSearch.Ops
         public string DialedNumber { get; set; }
         public IEnumerable<PhoneNumber> PhoneNumbers { get; set; }
         public QueryResult PhoneNumberOrder { get; set; }
+        public LRNLookup LRNLookup { get; set; }
     }
 }
