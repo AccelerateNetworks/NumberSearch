@@ -8,7 +8,7 @@ using NumberSearch.DataAccess;
 
 namespace BulkVS
 {
-    public static class NpaBulkVS
+    public class NpaBulkVS
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
         public static async Task<IEnumerable<PhoneNumber>> GetAsync(string npaIn, string apiKey, string apiSecret)

@@ -11,8 +11,12 @@ namespace NumberSearch.Ops
         public string NPA { get; set; }
         public string NXX { get; set; }
         public string DialedNumber { get; set; }
-        public IEnumerable<PhoneNumber> PhoneNumbers { get; set; }
+        public IEnumerable<PhoneNumber> PhoneNumbersFPC { get; set; }
+        public IEnumerable<PhoneNumber> PhoneNumbersTM { get; set; }
+        public IEnumerable<PhoneNumber> PhoneNumbersBVS { get; set; }
+
         public QueryResult PhoneNumberOrder { get; set; }
         public LRNLookup LRNLookup { get; set; }
+        public string PortabilityResponse { get; set; }
     }
 }

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
+using BulkVS;
 using BulkVS.BulkVS;
 
 using FirstCom;
@@ -27,6 +28,8 @@ namespace NumberSearch.Ops.Controllers
         private readonly string _username;
         private readonly string _password;
         private readonly Guid _teleToken;
+        private readonly string _bulkVSAPIKey;
+        private readonly string _bulkVSAPISecret;
 
         public HomeController(ILogger<HomeController> logger, IConfiguration config)
         {
@@ -36,7 +39,8 @@ namespace NumberSearch.Ops.Controllers
             _username = config.GetConnectionString("PComNetUsername");
             _password = config.GetConnectionString("PComNetPassword");
             _teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
-
+            _bulkVSAPIKey = config.GetConnectionString("BulkVSAPIKEY");
+            _bulkVSAPISecret = config.GetConnectionString("BulkVSAPISecret");
         }
 
         [Authorize]
@@ -95,7 +99,7 @@ namespace NumberSearch.Ops.Controllers
                     NPA = npa,
                     NXX = nxx,
                     DialedNumber = dialedNumber,
-                    PhoneNumbers = results
+                    PhoneNumbersTM = results
                 });
             }
 
@@ -121,6 +125,39 @@ namespace NumberSearch.Ops.Controllers
                 });
             }
 
+            if (testName == "didslist" && (!string.IsNullOrWhiteSpace(dialedNumber)))
+            {
+                var checkNumber = await LocalNumberTeleMessage.GetAsync(dialedNumber, _teleToken).ConfigureAwait(false);
+
+                return View("Tests", new TestResults
+                {
+                    DialedNumber = dialedNumber,
+                    PhoneNumbersTM = checkNumber
+                });
+            }
+
+            if (testName == "lnpcheck" && (!string.IsNullOrWhiteSpace(dialedNumber)))
+            {
+                var checkNumber = await LocalNumberPortability.GetRawAsync(dialedNumber, _teleToken).ConfigureAwait(false);
+
+                return View("Tests", new TestResults
+                {
+                    PortabilityResponse = checkNumber
+                });
+            }
+
+            if (testName == "DnSearchNpaNxx" && (!string.IsNullOrWhiteSpace(npa) || !string.IsNullOrWhiteSpace(nxx)))
+            {
+                npa ??= string.Empty;
+                nxx ??= string.Empty;
+
+                var checkNumber = await NpaNxxBulkVS.GetAsync(npa + nxx, _bulkVSAPIKey, _bulkVSAPISecret).ConfigureAwait(false);
+
+                return View("Tests", new TestResults
+                {
+                    PhoneNumbersBVS = checkNumber
+                });
+            }
 
             return View("Tests");
         }
