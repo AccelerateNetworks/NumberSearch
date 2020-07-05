@@ -22,18 +22,5 @@ namespace BulkVS.BulkVS
 
             return await client.DIDOrderAsync(Auth, dialedNumber, false).ConfigureAwait(false);
         }
-
-        public static async Task<QueryResult> SetGateway(string dialedNumber, string gatewayIP, string username, string password)
-        {
-            var Auth = new Credentials
-            {
-                Username = username,
-                Password = password
-            };
-
-            using var client = new DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
-
-            return await client.DIDRouteVoiceToGatewayBasicAsync(Auth, dialedNumber, gatewayIP).ConfigureAwait(false);
-        }
     }
 }

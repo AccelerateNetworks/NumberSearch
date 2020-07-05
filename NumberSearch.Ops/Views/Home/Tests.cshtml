@@ -1,0 +1,133 @@
+﻿@model NumberSearch.Ops.TestResults
+@{
+    ViewData["Title"] = "Tests";
+}
+<br />
+<h1 class="display-4">Tests</h1>
+<br />
+<form>
+    <div class="row">
+        <div class="col">
+            <label>DIDInventorySearchAsync - First Point Communications (Endstream)</label>
+        </div>
+    </div>
+    @{
+        if (Model != null && Model.PhoneNumbers != null && Model.PhoneNumbers.Any())
+        {
+            var total = $"{Model.PhoneNumbers.Count()} available numbers found!";
+            <div class="alert alert-success" role="alert">
+                @total
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped table-borderless table-hover">
+                    <thead>
+                        <tr>
+                            <th>
+                                Number
+                            </th>
+                            <th>
+                                Dialed
+                            </th>
+                            <th>
+                                Location
+                            </th>
+                            <th>
+                                Ingested
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            foreach (var item in Model?.PhoneNumbers)
+                            {
+                                var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
+                                var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
+                                var number = item.DialedNumber;
+                                var ingestedBadge = item.IngestedFrom;
+                                switch (item.IngestedFrom)
+                                {
+                                    case "FirstPointCom":
+                                        ingestedBadge = "<span class='badge badge-info'>FirstPointCom</span>";
+                                        break;
+                                    case "BulkVS":
+                                        ingestedBadge = "<span class='badge badge-primary'>BulkVS</span>";
+                                        break;
+                                    case "TeleMessage":
+                                        ingestedBadge = "<span class='badge badge-warning'>TeleMessage</span>";
+                                        break;
+                                }
+                                var elapsed = DateTime.Now - item.DateIngested;
+                                <tr>
+                                    <td scope="row"><h4>@formattedNumber</h4></td>
+                                    <td>@Html.Raw(number)</td>
+                                    <td>@location</td>
+                                    <td>From @Html.Raw(ingestedBadge) on @item.DateIngested (@elapsed.Hours Hours ago)</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <input type="text" class="form-control" id="npa" name="npa" placeholder="206" value="@Model?.NPA">
+        </div>
+        <div class="col-md-3 mb-3">
+            <input type="text" class="form-control" id="nxx" name="nxx" placeholder="216" value="@Model?.NXX">
+        </div>
+        <div class="col-md-3 mb-3">
+            <input type="text" class="form-control" id="dialedNumber" name="dialedNumber" placeholder="2062163731" value="@Model?.DialedNumber">
+        </div>
+        <div class="col-md-3 mb-3">
+            <input type="text" id="testName" name="testName" value="DIDInventorySearchAsync" hidden />
+            <button class="btn btn-primary btn-block" type="submit">Execute</button>
+        </div>
+    </div>
+</form>
+<form>
+    <div class="row">
+        <div class="col">
+            <label>DIDOrderAsyncs - First Point Communications (Endstream)</label>
+        </div>
+    </div>
+    @{
+        if (Model != null && Model.PhoneNumberOrder != null)
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>
+                                Code
+                            </th>
+                            <th>
+                                Text
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                @Model?.PhoneNumberOrder?.code
+                            </td>
+                            <td>
+                                @Model?.PhoneNumberOrder?.text
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <input type="text" class="form-control" id="dialedNumber" name="dialedNumber" placeholder="2062163731" value="@Model?.DialedNumber">
+        </div>
+        <div class="col-md-3 mb-3">
+            <input type="text" id="testName" name="testName" value="DIDOrderAsync" hidden />
+            <button class="btn btn-primary btn-block" type="submit">Execute</button>
+        </div>
+    </div>
+</form>

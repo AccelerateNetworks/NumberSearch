@@ -4,6 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
+using BulkVS.BulkVS;
+
+using FirstCom;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -19,12 +23,17 @@ namespace NumberSearch.Ops.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly IConfiguration _configuration;
         private readonly string _postgresql;
+        private readonly string _username;
+        private readonly string _password;
+
 
         public HomeController(ILogger<HomeController> logger, IConfiguration config)
         {
             _logger = logger;
             _configuration = config;
             _postgresql = _configuration.GetConnectionString("PostgresqlProd");
+            _username = config.GetConnectionString("PComNetUsername");
+            _password = config.GetConnectionString("PComNetPassword");
         }
 
         [Authorize]
@@ -66,6 +75,42 @@ namespace NumberSearch.Ops.Controllers
 
             return View("PortRequests", portRequests.OrderByDescending(x => x.DateSubmitted));
         }
+
+        [Authorize]
+        public async Task<IActionResult> Tests(string testName, string npa, string nxx, string dialedNumber)
+        {
+            if (testName == "DIDInventorySearchAsync" && (!string.IsNullOrWhiteSpace(npa) || !string.IsNullOrWhiteSpace(nxx) || !string.IsNullOrWhiteSpace(dialedNumber)))
+            {
+                npa ??= string.Empty;
+                nxx ??= string.Empty;
+                dialedNumber ??= string.Empty;
+
+                var results = await NpaNxxFirstPointCom.GetAsync(npa, nxx, dialedNumber, _username, _password).ConfigureAwait(false);
+
+                return View("Tests", new TestResults
+                {
+                    NPA = npa,
+                    NXX = nxx,
+                    DialedNumber = dialedNumber,
+                    PhoneNumbers = results
+                });
+            }
+
+            if (testName == "DIDOrderAsync" && (!string.IsNullOrWhiteSpace(dialedNumber)))
+            {
+                var results = await FirstPointComOrderPhoneNumber.PostAsync(dialedNumber, _username, _password).ConfigureAwait(false);
+
+                return View("Tests", new TestResults
+                {
+                    DialedNumber = dialedNumber,
+                    PhoneNumberOrder = results
+                });
+            }
+
+
+            return View("Tests");
+        }
+
 
         /// <summary>
         /// This is the default route in this app. It's a search page that allows you to query the TeleAPI for phone numbers.

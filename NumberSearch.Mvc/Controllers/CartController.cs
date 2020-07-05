@@ -494,8 +494,9 @@ namespace NumberSearch.Mvc.Controllers
                             else if (nto.IngestedFrom == "FirstPointCom")
                             {
                                 // Verify that tele has the number.
-                                var checkNumber = await NpaNxxFirstPointCom.GetAsync(string.Empty, string.Empty, nto.DialedNumber, _fpcusername, _fpcpassword).ConfigureAwait(false);
-                                if (checkNumber != null && checkNumber.Any() && checkNumber.FirstOrDefault().DialedNumber == nto.DialedNumber)
+                                var results = await NpaNxxFirstPointCom.GetAsync(nto.NPA.ToString(), nto.NXX.ToString(), string.Empty, _fpcusername, _fpcpassword).ConfigureAwait(false);
+                                var matchingNumber = results.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
+                                if (matchingNumber != null && matchingNumber?.DialedNumber == nto.DialedNumber)
                                 {
                                     // Buy it and save the reciept.
                                     var executeOrder = await FirstPointComOrderPhoneNumber.PostAsync(nto.DialedNumber, _fpcusername, _fpcpassword).ConfigureAwait(false);
