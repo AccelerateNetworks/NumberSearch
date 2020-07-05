@@ -56,12 +56,11 @@
                                         ingestedBadge = "<span class='badge badge-warning'>TeleMessage</span>";
                                         break;
                                 }
-                                var elapsed = DateTime.Now - item.DateIngested;
                                 <tr>
                                     <td scope="row"><h4>@formattedNumber</h4></td>
                                     <td>@Html.Raw(number)</td>
                                     <td>@location</td>
-                                    <td>From @Html.Raw(ingestedBadge) on @item.DateIngested (@elapsed.Hours Hours ago)</td>
+                                    <td>From @Html.Raw(ingestedBadge) Now</td>
                                 </tr>
                             }
                         }
