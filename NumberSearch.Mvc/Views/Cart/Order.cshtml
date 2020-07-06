@@ -96,18 +96,18 @@
         </div>
         <div class="col-md-8 order-md-1 pb-5">
             <h4 class="mb-3">Billing Information</h4>
-            <form asp-controller="Cart" asp-action="Submit" method="post" class="needs-validation" novalidate="">
+            <form asp-controller="Cart" asp-action="Submit" method="post" class="needs-validation">
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="firstName">First name</label>
-                        <input asp-for="Order.FirstName" type="text" class="form-control" id="firstName" placeholder="Alexander" required="">
+                        <input asp-for="Order.FirstName" type="text" class="form-control" id="firstName" placeholder="Alexander" required>
                         <div class="invalid-feedback">
                             Valid first name is required.
                         </div>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="lastName">Last name</label>
-                        <input asp-for="Order.LastName" type="text" class="form-control" id="lastName" placeholder="Bell" required="">
+                        <input asp-for="Order.LastName" type="text" class="form-control" id="lastName" placeholder="Bell" required>
                         <div class="invalid-feedback">
                             Valid last name is required.
                         </div>
@@ -116,7 +116,7 @@
 
                 <div class="mb-3">
                     <label for="email">Email </label>
-                    <input asp-for="Order.Email" type="email" class="form-control" id="email" placeholder="you@example.com">
+                    <input asp-for="Order.Email" type="email" class="form-control" id="email" placeholder="you@example.com" required>
                     <div class="invalid-feedback">
                         Please enter a valid email address for shipping updates.
                     </div>
@@ -124,7 +124,7 @@
 
                 <div class="mb-3">
                     <label for="address">Address</label>
-                    <input asp-for="Order.Address" type="text" class="form-control" id="address" placeholder="1234 Main St" required="">
+                    <input asp-for="Order.Address" type="text" class="form-control" id="address" placeholder="1234 Main St" required>
                     <div class="invalid-feedback">
                         Please enter your shipping address.
                     </div>
@@ -138,14 +138,14 @@
                 <div class="row">
                     <div class="col-md-5 mb-3">
                         <label for="country">City</label>
-                        <input asp-for="Order.City" type="text" class="form-control" id="city" placeholder="Seattle">
+                        <input asp-for="Order.City" type="text" class="form-control" id="city" placeholder="Seattle" required>
                         <div class="invalid-feedback">
                             Please enter your shipping city.
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label for="state">State</label>
-                        <select asp-for="Order.State" class="custom-select d-block w-100" id="state" required="">
+                        <select asp-for="Order.State" class="custom-select d-block w-100" id="state" required>
                             <option value="">Choose...</option>
                             @{
                                 var states = new string[] { "Alabama",
@@ -212,7 +212,7 @@
                     </div>
                     <div class="col-md-3 mb-3">
                         <label for="zip">Zip</label>
-                        <input asp-for="Order.Zip" type="text" class="form-control" id="zip" placeholder="" required="">
+                        <input asp-for="Order.Zip" type="text" class="form-control" id="zip" placeholder="" required>
                         <div class="invalid-feedback">
                             Zip code required.
                         </div>
