@@ -376,9 +376,8 @@ namespace ServiceReference
     public partial class DnOrderResponseResult
     {
         public string description;
-
         public resultEntryOrder entry;
-
+        public string faultstring;
 
         [System.Xml.Serialization.XmlTypeAttribute(Namespace = "")]
         public partial class resultEntryOrder
@@ -388,7 +387,7 @@ namespace ServiceReference
             public string cnamlookup { get; set; }
             public string lidb { get; set; }
             public string portoutpin { get; set; }
-            public string orderid { get; set; }
+            //public string orderid { get; set; }
         }
     }
 
@@ -497,14 +496,17 @@ namespace ServiceReference
 
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace = "", Order = 0)]
         public DnOrderResponseResult result;
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace = "", Order = 1)]
+        public DnOrderResponseResult fault;
 
         public DnOrderResponse()
         {
         }
 
-        public DnOrderResponse(DnOrderResponseResult result)
+        public DnOrderResponse(DnOrderResponseResult result, DnOrderResponseResult fault)
         {
             this.result = result;
+            this.fault = fault;
         }
 
     }

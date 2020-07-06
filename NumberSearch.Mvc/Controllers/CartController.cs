@@ -413,7 +413,7 @@ namespace NumberSearch.Mvc.Controllers
                                 {
                                     // Buy it and save the reciept.
                                     var random = new Random();
-                                    var pin = random.Next(0, 999999);
+                                    var pin = random.Next(100000, 99999999);
                                     var executeOrder = await BulkVSOrderPhoneNumber.GetAsync(nto.DialedNumber, "SFO", "Enabled", string.Empty, "false", pin.ToString(), _apiKey, _apiSecret).ConfigureAwait(false);
 
                                     var verifyOrder = new PurchasedPhoneNumber
@@ -424,9 +424,9 @@ namespace NumberSearch.Mvc.Controllers
                                         DateIngested = nto.DateIngested,
                                         IngestedFrom = nto.IngestedFrom,
                                         // Keep the raw response as a receipt.
-                                        OrderResponse = JsonSerializer.Serialize(executeOrder),
+                                        OrderResponse = string.IsNullOrWhiteSpace(executeOrder?.result?.description) ? $"faultstring: {executeOrder?.fault?.faultstring}" : $"description: {executeOrder?.result?.description}, cnamlookup: {executeOrder?.result?.entry?.cnamlookup}, dn: {executeOrder?.result?.entry?.dn}, lidb: {executeOrder?.result?.entry?.lidb}, portoutpin: {executeOrder?.result?.entry?.portoutpin}, trunkgroup: {executeOrder?.result?.entry?.trunkgroup}",
                                         // If the status code of the order comes back as 200 then it was sucessful.
-                                        Completed = executeOrder.result.entry.dn == nto.DialedNumber
+                                        Completed = executeOrder.result.entry.dn.Contains(nto.DialedNumber)
                                     };
 
                                     var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);

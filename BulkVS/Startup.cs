@@ -47,7 +47,7 @@ namespace BulkVS
                 //await BulkVSStats.PostAsync(postgresSQL);
                 var random = new Random();
                 var pin = random.Next(0, 999999);
-                var x = await BulkVSOrderPhoneNumber.GetAsync("2065585027", "SFO", "Enabled", string.Empty, "false", pin.ToString(), apikey, apisecret).ConfigureAwait(false);
+                var x = await BulkVSOrderPhoneNumber.GetAsync("2054980976", "SFO", "Enabled", string.Empty, "false", pin.ToString(), apikey, apisecret).ConfigureAwait(false);
                 await Task.Delay(1000);
             });
         }
