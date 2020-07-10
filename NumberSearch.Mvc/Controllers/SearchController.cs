@@ -64,8 +64,13 @@ namespace NumberSearch.Mvc.Controllers
                 converted.Remove('1');
             }
 
-            var results = await PhoneNumber.PaginatedSearchAsync(new string(converted.ToArray()), page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
             var count = await PhoneNumber.NumberOfResultsInQuery(new string(converted.ToArray()), configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+
+            // Handle out of range page values.
+            page = page < 1 ? 1 : page;
+            page = page * 100 > count ? (count / 100) + 1 : page;
+
+            var results = await PhoneNumber.PaginatedSearchAsync(new string(converted.ToArray()), page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
 
             var cart = Cart.GetFromSession(HttpContext.Session);
 
