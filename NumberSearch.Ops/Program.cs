@@ -21,6 +21,7 @@ namespace NumberSearch.Ops
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    webBuilder.UseUrls("https://*:5003", "http://*:5002");
                     webBuilder.UseStartup<Startup>();
                 });
     }
