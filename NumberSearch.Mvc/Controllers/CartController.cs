@@ -445,7 +445,7 @@ namespace NumberSearch.Mvc.Controllers
                             {
                                 // Verify that tele has the number.
                                 var checkNumber = await LRNLookup.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
-                                if (checkNumber?.code == 200)
+                                if (checkNumber != null && checkNumber?.code == 200 && checkNumber.data != null && checkNumber.data.lrn.Contains(nto.DialedNumber.ToString()))
                                 {
                                     // Buy it and save the reciept.
                                     var executeOrder = await TeleOrderPhoneNumber.GetAsync(nto.DialedNumber, _CallFlow, _ChannelGroup, _teleToken).ConfigureAwait(false);
