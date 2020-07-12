@@ -64,6 +64,53 @@ namespace NumberSearch.Mvc.Controllers
             var phoneNumber = await PhoneNumber.GetAsync(dialedPhoneNumber, _postgresql).ConfigureAwait(false);
             var productOrder = new ProductOrder { DialedNumber = phoneNumber.DialedNumber, Quantity = 1 };
 
+            var purchasable = false;
+
+            // Check that the number is still avalible from the provider.
+            if (phoneNumber.IngestedFrom == "BulkVS")
+            {
+                var npanxx = $"{phoneNumber.NPA}{phoneNumber.NXX}";
+                var doesItStillExist = await NpaNxxBulkVS.GetAsync(npanxx, _apiKey, _apiSecret).ConfigureAwait(false);
+                var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
+                if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
+                {
+                    purchasable = true;
+                }
+
+            }
+            else if (phoneNumber.IngestedFrom == "TeleMessage")
+            {
+                // Verify that tele has the number.
+                var doesItStillExist = await LocalNumberTeleMessage.GetAsync(phoneNumber.DialedNumber, _teleToken).ConfigureAwait(false);
+                var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
+                if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
+                {
+                    purchasable = true;
+                }
+
+            }
+            else if (phoneNumber.IngestedFrom == "FirstPointCom")
+            {
+                // Verify that tele has the number.
+                var results = await NpaNxxFirstPointCom.GetAsync(phoneNumber.NPA.ToString(), phoneNumber.NXX.ToString(), string.Empty, _fpcusername, _fpcpassword).ConfigureAwait(false);
+                var matchingNumber = results.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
+                if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
+                {
+                    purchasable = true;
+                }
+            }
+            else
+            {
+                // Sadly its gone. And the user needs to pick a different number.
+                return RedirectToAction("Index", "Search", new { Query, Failed = phoneNumber.DialedNumber });
+            }
+
+            if (!purchasable)
+            {
+                // Sadly its gone. And the user needs to pick a different number.
+                return RedirectToAction("Index", "Search", new { Query, Failed = phoneNumber.DialedNumber });
+            }
+
             var checkAdd = cart.AddPhoneNumber(phoneNumber, productOrder);
             var checkSet = cart.SetToSession(HttpContext.Session);
 
@@ -75,7 +122,7 @@ namespace NumberSearch.Mvc.Controllers
             else
             {
                 // TODO: Tell the user about the failure
-                return RedirectToAction("Index", "Search", new { Query });
+                return RedirectToAction("Index", "Search", new { Query, Failed = phoneNumber.DialedNumber });
             }
         }
 
@@ -444,8 +491,9 @@ namespace NumberSearch.Mvc.Controllers
                             else if (nto.IngestedFrom == "TeleMessage")
                             {
                                 // Verify that tele has the number.
-                                var checkNumber = await LRNLookup.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
-                                if (checkNumber != null && checkNumber?.code == 200 && checkNumber.data != null && checkNumber.data.lrn.Contains(nto.DialedNumber.ToString()))
+                                var doesItStillExist = await LocalNumberTeleMessage.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
+                                var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
+                                if (checkIfExists != null && checkIfExists?.DialedNumber == nto.DialedNumber)
                                 {
                                     // Buy it and save the reciept.
                                     var executeOrder = await TeleOrderPhoneNumber.GetAsync(nto.DialedNumber, _CallFlow, _ChannelGroup, _teleToken).ConfigureAwait(false);

@@ -25,7 +25,7 @@ namespace NumberSearch.Mvc.Controllers
         /// <returns> A view of nothing, or the result of the query. </returns>
         [Route("Search/{Query}")]
         [Route("Search/")]
-        public async Task<IActionResult> IndexAsync(string query, int page = 1)
+        public async Task<IActionResult> IndexAsync(string query, string failed, int page = 1)
         {
             // Fail fast
             if (string.IsNullOrWhiteSpace(query))
@@ -79,6 +79,7 @@ namespace NumberSearch.Mvc.Controllers
                 CleanQuery = new string(converted.ToArray()),
                 NumberOfResults = count,
                 Page = page,
+                Message = !string.IsNullOrWhiteSpace(failed) ? $"{failed} is not purchasable at this time." : string.Empty,
                 PhoneNumbers = results.ToArray(),
                 Query = query,
                 Cart = cart

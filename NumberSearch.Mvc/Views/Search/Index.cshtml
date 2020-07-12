@@ -39,6 +39,12 @@
     <partial name="_LoadingPartial" />
 
     @{
+        if (!string.IsNullOrWhiteSpace(Model?.Message))
+        {
+            <div class="alert alert-danger" role="alert">
+                @Model?.Message
+            </div>
+        }
         if (Model != null && Model?.PhoneNumbers?.Length > 0)
         {
             var total = $"{Model.NumberOfResults} available numbers found!";
