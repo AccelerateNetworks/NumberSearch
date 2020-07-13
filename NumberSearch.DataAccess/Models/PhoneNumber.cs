@@ -130,7 +130,7 @@ namespace NumberSearch.DataAccess
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"PhoneNumbers\" " +
                 "WHERE \"DateIngested\" < @DateIngested",
-                new { DateIngested = ingestStart.AddDays(-1) })
+                new { DateIngested = ingestStart.AddHours(-12) })
                 .ConfigureAwait(false);
 
             return new IngestStatistics

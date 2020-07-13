@@ -35,62 +35,87 @@ namespace NumberSearch.Ingest
 
             var start = DateTime.Now;
 
-            var tasks = new List<Task<IngestStatistics>>
+            var bulkVSCycle = DateTime.Now.AddHours(1) - DateTime.Now;
+            var firstComCycle = DateTime.Now.AddHours(12) - DateTime.Now;
+            var teleMessageCycle = DateTime.Now.AddHours(12) - DateTime.Now;
+
+            var tasks = new List<Task<IngestStatistics>>();
+
+            var lastRun = await IngestStatistics.GetLastIngestAsync("BulkVS", postgresSQL).ConfigureAwait(false);
+
+            // If the last ingest was run to recently do nothing.
+            if (lastRun.StartDate < (DateTime.Now - bulkVSCycle))
             {
-                Task.Run(async () =>
-                {
-                // Ingest all avablie phones numbers from the BulkVs API.
-                Log.Information("Ingesting data from BulkVS");
-                    var BulkVSStats = await MainBulkVS.IngestPhoneNumbersAsync(bulkVSKey, bulkVSSecret, postgresSQL);
-                //var BulkVSStats = new IngestStatistics { };
+                tasks.Add(
+                        Task.Run(async () =>
+                        {
+                            // Ingest all avablie phones numbers from the BulkVs API.
+                            Log.Information("Ingesting data from BulkVS");
+                            var BulkVSStats = await MainBulkVS.IngestPhoneNumbersAsync(bulkVSKey, bulkVSSecret, postgresSQL).ConfigureAwait(false);
+                            //var BulkVSStats = new IngestStatistics { };
 
-                if (await BulkVSStats.PostAsync(postgresSQL))
-                    {
-                        Log.Information("Ingest logged to the database.");
-                    }
-                    else
-                    {
-                        Log.Error("Failed to log this ingest.");
-                    }
-                return BulkVSStats;
-                }),
+                            if (await BulkVSStats.PostAsync(postgresSQL))
+                            {
+                                Log.Information("Ingest logged to the database.");
+                            }
+                            else
+                            {
+                                Log.Error("Failed to log this ingest.");
+                            }
+                            return BulkVSStats;
+                        })
+                    );
+            }
 
-                Task.Run(async () =>
-                {
-                // Ingest all avalible numbers in the FirstCom API.
-                Log.Information("Ingesting data from FirstCom");
-                    var FirstComStats = await FirstCom.IngestPhoneNumbersAsync(username, password, postgresSQL);
-                //var FirstComStats = new IngestStatistics { };
+            lastRun = await IngestStatistics.GetLastIngestAsync("FirstCom", postgresSQL).ConfigureAwait(false);
 
-                if (await FirstComStats.PostAsync(postgresSQL))
-                    {
-                        Log.Information("Ingest logged to the database.");
-                    }
-                    else
-                    {
-                        Log.Error("Failed to log this ingest.");
-                    }
-                return FirstComStats;
-                }),
+            if (lastRun.StartDate < (DateTime.Now - firstComCycle))
+            {
+                tasks.Add(
+                        Task.Run(async () =>
+                        {
+                            // Ingest all avalible numbers in the FirstCom API.
+                            Log.Information("Ingesting data from FirstCom");
+                            var FirstComStats = await FirstCom.IngestPhoneNumbersAsync(username, password, postgresSQL);
+                            //var FirstComStats = new IngestStatistics { };
 
-                Task.Run(async () =>
-                {
-                    // Ingest all avalible numbers from the TeleAPI.
-                    Log.Information("Ingesting data from TeleAPI");
-                    var teleStats = await TeleMessage.IngestPhoneNumbersAsync(teleToken, postgresSQL);
-                    //var teleStats = new IngestStatistics { };
+                            if (await FirstComStats.PostAsync(postgresSQL))
+                            {
+                                Log.Information("Ingest logged to the database.");
+                            }
+                            else
+                            {
+                                Log.Error("Failed to log this ingest.");
+                            }
+                            return FirstComStats;
+                        })
+                    );
+            }
 
-                    if (await teleStats.PostAsync(postgresSQL))
-                    {
-                        Log.Information("Ingest logged to the database.");
-                    }
-                    else
-                    {
-                        Log.Error("Failed to log this ingest.");
-                    }
-                    return teleStats;
-                })
-            };
+            lastRun = await IngestStatistics.GetLastIngestAsync("TeleMessage", postgresSQL).ConfigureAwait(false);
+
+            if (lastRun.StartDate < (DateTime.Now - teleMessageCycle))
+            {
+                tasks.Add(
+                        Task.Run(async () =>
+                        {
+                            // Ingest all avalible numbers from the TeleAPI.
+                            Log.Information("Ingesting data from TeleAPI");
+                            var teleStats = await TeleMessage.IngestPhoneNumbersAsync(teleToken, postgresSQL);
+                            //var teleStats = new IngestStatistics { };
+
+                            if (await teleStats.PostAsync(postgresSQL))
+                            {
+                                Log.Information("Ingest logged to the database.");
+                            }
+                            else
+                            {
+                                Log.Error("Failed to log this ingest.");
+                            }
+                            return teleStats;
+                        })
+                    );
+            }
 
             var teleStats = new IngestStatistics();
             var BulkVSStats = new IngestStatistics();
@@ -117,7 +142,7 @@ namespace NumberSearch.Ingest
 
             // Remove all of the old numbers from the database.
             Log.Information("Removing old numbers from the database.");
-            var cleanUp = await PhoneNumber.DeleteOld(start, postgresSQL);
+            var cleanUp = await PhoneNumber.DeleteOld(start, postgresSQL).ConfigureAwait(false);
             //var cleanUp = new IngestStatistics { };
 
             if (await cleanUp.PostAsync(postgresSQL))
@@ -199,7 +224,7 @@ namespace NumberSearch.Ingest
 
             if (numbers.Length > 0)
             {
-                var existingNumbers = await PhoneNumber.GetAllAsync(connectionString);
+                var existingNumbers = await PhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
                 var dict = existingNumbers.ToDictionary(x => x.DialedNumber, x => x);
                 // Submit the batch to the remote database.
                 foreach (var number in numbers)
@@ -253,7 +278,7 @@ namespace NumberSearch.Ingest
             foreach (var update in updates.Values.ToArray())
             {
                 // Wait for an open slot in the semaphore before grabbing another thread from the threadpool.
-                await semaphore.WaitAsync();
+                await semaphore.WaitAsync().ConfigureAwait(false);
                 if (count % 100 == 0)
                 {
                     Log.Information($"Updated {count} of {updates.Count} Phone Numbers.");
@@ -262,7 +287,7 @@ namespace NumberSearch.Ingest
                 {
                     try
                     {
-                        var result = await update.PutAsync(connectionString);
+                        var result = await update.PutAsync(connectionString).ConfigureAwait(false);
                     }
                     finally
                     {
@@ -284,7 +309,7 @@ namespace NumberSearch.Ingest
             {
                 try
                 {
-                    var check = await PhoneNumber.BulkPostAsync(group, connectionString);
+                    var check = await PhoneNumber.BulkPostAsync(group, connectionString).ConfigureAwait(false);
 
                     if (check) { stats.IngestedNew += group.Count; };
 

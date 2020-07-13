@@ -40,6 +40,18 @@ namespace NumberSearch.DataAccess
             return result;
         }
 
+        public static async Task<IngestStatistics> GetLastIngestAsync(string ingestedFrom, string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryFirstOrDefaultAsync<IngestStatistics>("SELECT \"Id\", \"NumbersRetrived\", \"IngestedNew\", \"FailedToIngest\", \"UpdatedExisting\", \"Unchanged\", \"Removed\", \"IngestedFrom\", \"StartDate\", \"EndDate\" FROM public.\"Ingests\" WHERE \"IngestedFrom\" = @ingestedFrom ORDER BY \"StartDate\" DESC LIMIT 1",
+                new { ingestedFrom })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
         public async Task<bool> PostAsync(string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);

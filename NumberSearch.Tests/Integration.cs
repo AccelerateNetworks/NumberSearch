@@ -583,6 +583,27 @@ namespace NumberSearch.Tests
             Assert.NotNull(results);
         }
 
+        [Fact]
+        public async Task GetAllIngestsAsync()
+        {
+            var conn = postgresql;
+
+            var results = await IngestStatistics.GetAllAsync(conn);
+
+            Assert.NotNull(results);
+        }
+
+        [Fact]
+        public async Task GetLastIngestAsync()
+        {
+            var conn = postgresql;
+
+            var results = await IngestStatistics.GetLastIngestAsync("TeleMessage", conn);
+
+            Assert.NotNull(results);
+        }
+
+
         //[Fact]
         //public async Task ServiceMigrationScriptAsync()
         //{
