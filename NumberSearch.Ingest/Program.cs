@@ -46,6 +46,22 @@ namespace NumberSearch.Ingest
             // If the last ingest was run to recently do nothing.
             if (lastRun.StartDate < (DateTime.Now - bulkVSCycle))
             {
+                // Prevent another run from starting while this is still going.
+                var lockingStats = new IngestStatistics
+                {
+                    IngestedFrom = "BulkVS",
+                    StartDate = DateTime.Now,
+                    EndDate = DateTime.Now,
+                    IngestedNew = 0,
+                    FailedToIngest = 0,
+                    NumbersRetrived = 0,
+                    Removed = 0,
+                    Unchanged = 0,
+                    UpdatedExisting = 0
+                };
+
+                var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
+
                 tasks.Add(
                         Task.Run(async () =>
                         {
@@ -66,11 +82,31 @@ namespace NumberSearch.Ingest
                         })
                     );
             }
+            else
+            {
+                Log.Information("Ingesting BulkVS skipped.");
+            }
 
             lastRun = await IngestStatistics.GetLastIngestAsync("FirstCom", postgresSQL).ConfigureAwait(false);
 
             if (lastRun.StartDate < (DateTime.Now - firstComCycle))
             {
+                // Prevent another run from starting while this is still going.
+                var lockingStats = new IngestStatistics
+                {
+                    IngestedFrom = "FirstCom",
+                    StartDate = DateTime.Now,
+                    EndDate = DateTime.Now,
+                    IngestedNew = 0,
+                    FailedToIngest = 0,
+                    NumbersRetrived = 0,
+                    Removed = 0,
+                    Unchanged = 0,
+                    UpdatedExisting = 0
+                };
+
+                var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
+
                 tasks.Add(
                         Task.Run(async () =>
                         {
@@ -91,11 +127,31 @@ namespace NumberSearch.Ingest
                         })
                     );
             }
+            else
+            {
+                Log.Information("Ingesting FirstCom skipped.");
+            }
 
             lastRun = await IngestStatistics.GetLastIngestAsync("TeleMessage", postgresSQL).ConfigureAwait(false);
 
             if (lastRun.StartDate < (DateTime.Now - teleMessageCycle))
             {
+                // Prevent another run from starting while this is still going.
+                var lockingStats = new IngestStatistics
+                {
+                    IngestedFrom = "TeleMessage",
+                    StartDate = DateTime.Now,
+                    EndDate = DateTime.Now,
+                    IngestedNew = 0,
+                    FailedToIngest = 0,
+                    NumbersRetrived = 0,
+                    Removed = 0,
+                    Unchanged = 0,
+                    UpdatedExisting = 0
+                };
+
+                var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
+
                 tasks.Add(
                         Task.Run(async () =>
                         {
@@ -115,6 +171,10 @@ namespace NumberSearch.Ingest
                             return teleStats;
                         })
                     );
+            }
+            else
+            {
+                Log.Information("Ingesting TeleMessage skipped.");
             }
 
             var teleStats = new IngestStatistics();
