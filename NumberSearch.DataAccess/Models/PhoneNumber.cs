@@ -162,7 +162,7 @@ namespace NumberSearch.DataAccess
             return new IngestStatistics
             {
                 Removed = result,
-                IngestedFrom = "DatabaseCleanup",
+                IngestedFrom = ingestedFrom,
                 StartDate = start,
                 EndDate = DateTime.Now
             };
