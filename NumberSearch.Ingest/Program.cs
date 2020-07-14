@@ -68,7 +68,6 @@ namespace NumberSearch.Ingest
                             // Ingest all avablie phones numbers from the BulkVs API.
                             Log.Information("Ingesting data from BulkVS");
                             var BulkVSStats = await MainBulkVS.IngestPhoneNumbersAsync(bulkVSKey, bulkVSSecret, postgresSQL).ConfigureAwait(false);
-                            //var BulkVSStats = new IngestStatistics { };
 
                             if (await BulkVSStats.PostAsync(postgresSQL))
                             {
@@ -81,6 +80,22 @@ namespace NumberSearch.Ingest
                             return BulkVSStats;
                         })
                     );
+
+                // Remove the lock from the database to prevent it from getting cluttered with blank entries.
+                var lockEntry = await IngestStatistics.GetLastIngestAsync("BulkVS", postgresSQL).ConfigureAwait(false);
+                var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
+
+                // Remove all of the old numbers from the database.
+                Log.Information("Removing old BulkVS numbers from the database.");
+                var bulkVSCleanUp = await PhoneNumber.DeleteOldByProvider(start, bulkVSCycle, "BulkVS", postgresSQL).ConfigureAwait(false);
+                if (await bulkVSCleanUp.PostAsync(postgresSQL))
+                {
+                    Log.Information("Old BulkVS numbers removed from the database.");
+                }
+                else
+                {
+                    Log.Fatal("Failed to remove old BulkVS numbers from the database.");
+                }
             }
             else
             {
@@ -126,6 +141,22 @@ namespace NumberSearch.Ingest
                             return FirstComStats;
                         })
                     );
+
+                // Remove the lock from the database to prevent it from getting cluttered with blank entries.
+                var lockEntry = await IngestStatistics.GetLastIngestAsync("FirstCom", postgresSQL).ConfigureAwait(false);
+                var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
+
+                // Remove all of the old numbers from the database.
+                Log.Information("Removing old FirstCom numbers from the database.");
+                var firstComCleanUp = await PhoneNumber.DeleteOldByProvider(start, firstComCycle, "FirstCom", postgresSQL).ConfigureAwait(false);
+                if (await firstComCleanUp.PostAsync(postgresSQL))
+                {
+                    Log.Information("Old FirstCom numbers removed from the database.");
+                }
+                else
+                {
+                    Log.Fatal("Failed to remove old FirstCom numbers from the database.");
+                }
             }
             else
             {
@@ -155,22 +186,38 @@ namespace NumberSearch.Ingest
                 tasks.Add(
                         Task.Run(async () =>
                         {
-                            // Ingest all avalible numbers from the TeleAPI.
-                            Log.Information("Ingesting data from TeleAPI");
+                            // Ingest all avalible numbers from the TeleMessage.
+                            Log.Information("Ingesting data from TeleMessage");
                             var teleStats = await TeleMessage.IngestPhoneNumbersAsync(teleToken, postgresSQL);
                             //var teleStats = new IngestStatistics { };
 
                             if (await teleStats.PostAsync(postgresSQL))
                             {
-                                Log.Information("Ingest logged to the database.");
+                                Log.Information("TeleMessage Ingest logged to the database.");
                             }
                             else
                             {
-                                Log.Error("Failed to log this ingest.");
+                                Log.Error("Failed to log this TeleMessage ingest.");
                             }
                             return teleStats;
                         })
                     );
+
+                // Remove the lock from the database to prevent it from getting cluttered with blank entries.
+                var lockEntry = await IngestStatistics.GetLastIngestAsync("TeleMessage", postgresSQL).ConfigureAwait(false);
+                var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
+
+                // Remove all of the old numbers from the database.
+                Log.Information("Removing old TeleMessage numbers from the database.");
+                var teleMessageCleanUp = await PhoneNumber.DeleteOldByProvider(start, teleMessageCycle, "TeleMessage", postgresSQL).ConfigureAwait(false);
+                if (await teleMessageCleanUp.PostAsync(postgresSQL))
+                {
+                    Log.Information("Old TeleMessage numbers removed from the database.");
+                }
+                else
+                {
+                    Log.Fatal("Failed to remove old TeleMessage numbers from the database.");
+                }
             }
             else
             {
@@ -200,19 +247,20 @@ namespace NumberSearch.Ingest
 
             }
 
-            // Remove all of the old numbers from the database.
-            Log.Information("Removing old numbers from the database.");
-            var cleanUp = await PhoneNumber.DeleteOld(start, postgresSQL).ConfigureAwait(false);
-            //var cleanUp = new IngestStatistics { };
+            // This is no longer required now that each ingest deletes the number relevant to its specific provider.
+            //// Remove all of the old numbers from the database.
+            //Log.Information("Removing old numbers from the database.");
+            //var cleanUp = await PhoneNumber.DeleteOld(start, postgresSQL).ConfigureAwait(false);
+            ////var cleanUp = new IngestStatistics { };
 
-            if (await cleanUp.PostAsync(postgresSQL))
-            {
-                Log.Information("Old numbers removed from the database.");
-            }
-            else
-            {
-                Log.Fatal("Failed to remove old numbers from the database.");
-            }
+            //if (await cleanUp.PostAsync(postgresSQL))
+            //{
+            //    Log.Information("Old numbers removed from the database.");
+            //}
+            //else
+            //{
+            //    Log.Fatal("Failed to remove old numbers from the database.");
+            //}
 
             // Add an extra minute so that the finish time of all stages isn't the same as the finish time of the last stage to run.
             var end = DateTime.Now.AddMinutes(1);
@@ -224,7 +272,7 @@ namespace NumberSearch.Ingest
                 IngestedNew = teleStats.IngestedNew + BulkVSStats.IngestedNew + FirstComStats.IngestedNew,
                 UpdatedExisting = teleStats.UpdatedExisting + BulkVSStats.UpdatedExisting + FirstComStats.UpdatedExisting,
                 Unchanged = teleStats.Unchanged + BulkVSStats.Unchanged + FirstComStats.Unchanged,
-                Removed = cleanUp.Removed,
+                Removed = teleStats.Removed + BulkVSStats.Removed + FirstComStats.Removed,
                 IngestedFrom = "All",
                 StartDate = start,
                 EndDate = end

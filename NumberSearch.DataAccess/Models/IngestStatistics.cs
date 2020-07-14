@@ -10,6 +10,7 @@ namespace NumberSearch.DataAccess
 {
     public class IngestStatistics
     {
+        public Guid? Id { get; set; }
         public int NumbersRetrived { get; set; }
         public int IngestedNew { get; set; }
         public int FailedToIngest { get; set; }
@@ -59,6 +60,29 @@ namespace NumberSearch.DataAccess
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"Ingests\"( \"NumbersRetrived\", \"IngestedNew\", \"FailedToIngest\", \"UpdatedExisting\", \"Unchanged\", \"Removed\", \"IngestedFrom\", \"StartDate\", \"EndDate\") " +
                 "VALUES (@NumbersRetrived, @IngestedNew, @FailedToIngest, @UpdatedExisting, @Unchanged, @Removed, @IngestedFrom, @StartDate, @EndDate)", new { NumbersRetrived, IngestedNew, FailedToIngest, UpdatedExisting, Unchanged, Removed, IngestedFrom, StartDate, EndDate })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteAsync(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            if (!Id.HasValue)
+            {
+                return false;
+            }
+
+            var result = await connection
+                .ExecuteAsync("DELETE FROM public.\"Ingests\" WHERE \"Id\" = @Id", new { Id })
                 .ConfigureAwait(false);
 
             if (result == 1)

@@ -381,6 +381,26 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task DeleteOldPhoneNumberAsync()
+        {
+            var conn = postgresql;
+            var results = await PhoneNumber.DeleteOld(DateTime.Now, conn).ConfigureAwait(false);
+            Assert.NotNull(results);
+            output.WriteLine($"{results.Removed} Numbers Removed.");
+        }
+
+        [Fact]
+        public async Task DeleteOldPhoneNumbersByProviderAsync()
+        {
+            var conn = postgresql;
+            var cycle = DateTime.Now.AddHours(1) - DateTime.Now;
+            var provider = "Test";
+            var results = await PhoneNumber.DeleteOldByProvider(DateTime.Now, cycle, provider, conn).ConfigureAwait(false);
+            Assert.NotNull(results);
+            output.WriteLine($"{results.Removed} Numbers Removed.");
+        }
+
+        [Fact]
         public async Task PostPhoneNumberAsync()
         {
             var conn = postgresql;
