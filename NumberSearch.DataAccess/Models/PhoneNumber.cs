@@ -156,7 +156,7 @@ namespace NumberSearch.DataAccess
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"PhoneNumbers\" " +
                 "WHERE \"DateIngested\" < @DateIngested AND \"IngestedFrom\" = @IngestedFrom",
-                new { DateIngested = ingestStart + cycleTime, IngestedFrom = ingestedFrom })
+                new { DateIngested = ingestStart - cycleTime, IngestedFrom = ingestedFrom })
                 .ConfigureAwait(false);
 
             return new IngestStatistics
