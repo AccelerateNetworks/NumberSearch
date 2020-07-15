@@ -15,16 +15,14 @@
         if (!string.IsNullOrWhiteSpace(Model?.Message))
         {
             <div class="row">
-                <div class="col">
-                    <div class="alert alert-danger" role="alert">
-                        @Model?.Message
-                    </div>
+                <div class="alert alert-danger col" role="alert">
+                    @Model?.Message
                 </div>
             </div>
         }
     }
     @{
-        var productOrders = Model.Cart.ProductOrdersToDictionary();
+        var productOrders = Model?.Cart?.ProductOrdersToDictionary();
         if (Model?.Cart?.PhoneNumbers.Count() > 0 || Model?.Cart?.Products.Count() > 0 || Model?.Cart?.Services.Count() > 0 || Model?.Cart?.PortedPhoneNumbers.Count() > 0)
         {
             <div class="row">

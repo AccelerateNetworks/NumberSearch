@@ -349,6 +349,15 @@ namespace NumberSearch.Mvc.Controllers
             if (Id != null)
             {
                 var order = await Order.GetByIdAsync(Id, _postgresql).ConfigureAwait(false);
+                if (order == null || order.OrderId == null || string.IsNullOrWhiteSpace(order.Email))
+                {
+                    return View("Index", new CartResult
+                    {
+                        Cart = null,
+                        Message = $"Couldn't find this order in our system."
+                    });
+                }
+
                 var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
 
                 // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
@@ -453,110 +462,110 @@ namespace NumberSearch.Mvc.Controllers
                         {
                             if (nto.IngestedFrom == "BulkVS")
                             {
-                                var npanxx = $"{nto.NPA}{nto.NXX}";
-                                var doesItStillExist = await NpaNxxBulkVS.GetAsync(npanxx, _apiKey, _apiSecret).ConfigureAwait(false);
-                                var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
-                                if (checkIfExists != null && checkIfExists?.DialedNumber == nto.DialedNumber)
-                                {
-                                    // Buy it and save the reciept.
-                                    var random = new Random();
-                                    var pin = random.Next(100000, 99999999);
-                                    var executeOrder = await BulkVSOrderPhoneNumber.GetAsync(nto.DialedNumber, "SFO", "Enabled", string.Empty, "false", pin.ToString(), _apiKey, _apiSecret).ConfigureAwait(false);
+                                //var npanxx = $"{nto.NPA}{nto.NXX}";
+                                //var doesItStillExist = await NpaNxxBulkVS.GetAsync(npanxx, _apiKey, _apiSecret).ConfigureAwait(false);
+                                //var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
+                                //if (checkIfExists != null && checkIfExists?.DialedNumber == nto.DialedNumber)
+                                //{
+                                // Buy it and save the reciept.
+                                var random = new Random();
+                                var pin = random.Next(100000, 99999999);
+                                var executeOrder = await BulkVSOrderPhoneNumber.GetAsync(nto.DialedNumber, "SFO", "Enabled", string.Empty, "false", pin.ToString(), _apiKey, _apiSecret).ConfigureAwait(false);
 
-                                    var verifyOrder = new PurchasedPhoneNumber
-                                    {
-                                        OrderId = order.OrderId,
-                                        DateOrdered = order.DateSubmitted,
-                                        DialedNumber = nto.DialedNumber,
-                                        DateIngested = nto.DateIngested,
-                                        IngestedFrom = nto.IngestedFrom,
-                                        // Keep the raw response as a receipt.
-                                        OrderResponse = string.IsNullOrWhiteSpace(executeOrder?.result?.description) ? $"faultstring: {executeOrder?.fault?.faultstring}" : $"description: {executeOrder?.result?.description}, cnamlookup: {executeOrder?.result?.entry?.cnamlookup}, dn: {executeOrder?.result?.entry?.dn}, lidb: {executeOrder?.result?.entry?.lidb}, portoutpin: {executeOrder?.result?.entry?.portoutpin}, trunkgroup: {executeOrder?.result?.entry?.trunkgroup}",
-                                        // If the status code of the order comes back as 200 then it was sucessful.
-                                        Completed = executeOrder.result.entry.dn.Contains(nto.DialedNumber)
-                                    };
-
-                                    var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
-                                }
-                                else
+                                var verifyOrder = new PurchasedPhoneNumber
                                 {
-                                    // Sadly its gone. And the user needs to pick a different number.
-                                    return View("Index", new CartResult
-                                    {
-                                        Cart = cart,
-                                        Message = $"Please remove {nto.DialedNumber} from your cart and try again. This number is not purchasable at this time."
-                                    });
-                                }
+                                    OrderId = order.OrderId,
+                                    DateOrdered = order.DateSubmitted,
+                                    DialedNumber = nto.DialedNumber,
+                                    DateIngested = nto.DateIngested,
+                                    IngestedFrom = nto.IngestedFrom,
+                                    // Keep the raw response as a receipt.
+                                    OrderResponse = string.IsNullOrWhiteSpace(executeOrder?.result?.description) ? $"faultstring: {executeOrder?.fault?.faultstring}" : $"description: {executeOrder?.result?.description}, cnamlookup: {executeOrder?.result?.entry?.cnamlookup}, dn: {executeOrder?.result?.entry?.dn}, lidb: {executeOrder?.result?.entry?.lidb}, portoutpin: {executeOrder?.result?.entry?.portoutpin}, trunkgroup: {executeOrder?.result?.entry?.trunkgroup}",
+                                    // If the status code of the order comes back as 200 then it was sucessful.
+                                    Completed = executeOrder.result.entry.dn.Contains(nto.DialedNumber)
+                                };
+
+                                var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                //}
+                                //else
+                                //{
+                                //    // Sadly its gone. And the user needs to pick a different number.
+                                //    return View("Index", new CartResult
+                                //    {
+                                //        Cart = cart,
+                                //        Message = $"Please remove {nto.DialedNumber} from your cart and try again. This number is not purchasable at this time."
+                                //    });
+                                //}
                             }
                             else if (nto.IngestedFrom == "TeleMessage")
                             {
                                 // Verify that tele has the number.
-                                var doesItStillExist = await LocalNumberTeleMessage.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
-                                var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
-                                if (checkIfExists != null && checkIfExists?.DialedNumber == nto.DialedNumber)
-                                {
-                                    // Buy it and save the reciept.
-                                    var executeOrder = await TeleOrderPhoneNumber.GetAsync(nto.DialedNumber, _CallFlow, _ChannelGroup, _teleToken).ConfigureAwait(false);
+                                //var doesItStillExist = await LocalNumberTeleMessage.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
+                                //var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
+                                //if (checkIfExists != null && checkIfExists?.DialedNumber == nto.DialedNumber)
+                                //{
+                                // Buy it and save the reciept.
+                                var executeOrder = await TeleOrderPhoneNumber.GetAsync(nto.DialedNumber, _CallFlow, _ChannelGroup, _teleToken).ConfigureAwait(false);
 
-                                    var verifyOrder = new PurchasedPhoneNumber
-                                    {
-                                        OrderId = order.OrderId,
-                                        DateOrdered = order.DateSubmitted,
-                                        DialedNumber = nto.DialedNumber,
-                                        DateIngested = nto.DateIngested,
-                                        IngestedFrom = nto.IngestedFrom,
-                                        // Keep the raw response as a receipt.
-                                        OrderResponse = JsonSerializer.Serialize(executeOrder),
-                                        // If the status code of the order comes back as 200 then it was sucessful.
-                                        Completed = executeOrder.code == 200
-                                    };
-
-                                    var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
-                                }
-                                else
+                                var verifyOrder = new PurchasedPhoneNumber
                                 {
-                                    // Sadly its gone. And the user needs to pick a different number.
-                                    return View("Index", new CartResult
-                                    {
-                                        Cart = cart,
-                                        Message = $"Please remove {nto.DialedNumber} from your cart and try again. This number is not purchasable at this time."
-                                    });
-                                }
+                                    OrderId = order.OrderId,
+                                    DateOrdered = order.DateSubmitted,
+                                    DialedNumber = nto.DialedNumber,
+                                    DateIngested = nto.DateIngested,
+                                    IngestedFrom = nto.IngestedFrom,
+                                    // Keep the raw response as a receipt.
+                                    OrderResponse = JsonSerializer.Serialize(executeOrder),
+                                    // If the status code of the order comes back as 200 then it was sucessful.
+                                    Completed = executeOrder.code == 200
+                                };
+
+                                var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                //}
+                                //else
+                                //{
+                                //    // Sadly its gone. And the user needs to pick a different number.
+                                //    return View("Index", new CartResult
+                                //    {
+                                //        Cart = cart,
+                                //        Message = $"Please remove {nto.DialedNumber} from your cart and try again. This number is not purchasable at this time."
+                                //    });
+                                //}
                             }
                             else if (nto.IngestedFrom == "FirstPointCom")
                             {
                                 // Verify that tele has the number.
-                                var results = await NpaNxxFirstPointCom.GetAsync(nto.NPA.ToString(), nto.NXX.ToString(), string.Empty, _fpcusername, _fpcpassword).ConfigureAwait(false);
-                                var matchingNumber = results.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
-                                if (matchingNumber != null && matchingNumber?.DialedNumber == nto.DialedNumber)
-                                {
-                                    // Buy it and save the reciept.
-                                    var executeOrder = await FirstPointComOrderPhoneNumber.PostAsync(nto.DialedNumber, _fpcusername, _fpcpassword).ConfigureAwait(false);
+                                //var results = await NpaNxxFirstPointCom.GetAsync(nto.NPA.ToString(), nto.NXX.ToString(), string.Empty, _fpcusername, _fpcpassword).ConfigureAwait(false);
+                                //var matchingNumber = results.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
+                                //if (matchingNumber != null && matchingNumber?.DialedNumber == nto.DialedNumber)
+                                //{
+                                // Buy it and save the reciept.
+                                var executeOrder = await FirstPointComOrderPhoneNumber.PostAsync(nto.DialedNumber, _fpcusername, _fpcpassword).ConfigureAwait(false);
 
-                                    var verifyOrder = new PurchasedPhoneNumber
-                                    {
-                                        OrderId = order.OrderId,
-                                        DateOrdered = order.DateSubmitted,
-                                        DialedNumber = nto.DialedNumber,
-                                        DateIngested = nto.DateIngested,
-                                        IngestedFrom = nto.IngestedFrom,
-                                        // Keep the raw response as a receipt.
-                                        OrderResponse = JsonSerializer.Serialize(executeOrder),
-                                        // If the status code of the order comes back as 200 then it was sucessful.
-                                        Completed = executeOrder.code == 0
-                                    };
-
-                                    var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
-                                }
-                                else
+                                var verifyOrder = new PurchasedPhoneNumber
                                 {
-                                    // Sadly its gone. And the user needs to pick a different number.
-                                    return View("Index", new CartResult
-                                    {
-                                        Cart = cart,
-                                        Message = $"Please remove {nto.DialedNumber} from your cart and try again. This number is not purchasable at this time."
-                                    });
-                                }
+                                    OrderId = order.OrderId,
+                                    DateOrdered = order.DateSubmitted,
+                                    DialedNumber = nto.DialedNumber,
+                                    DateIngested = nto.DateIngested,
+                                    IngestedFrom = nto.IngestedFrom,
+                                    // Keep the raw response as a receipt.
+                                    OrderResponse = JsonSerializer.Serialize(executeOrder),
+                                    // If the status code of the order comes back as 200 then it was sucessful.
+                                    Completed = executeOrder.code == 0
+                                };
+
+                                var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                //}
+                                //else
+                                //{
+                                //    // Sadly its gone. And the user needs to pick a different number.
+                                //    return View("Index", new CartResult
+                                //    {
+                                //        Cart = cart,
+                                //        Message = $"Please remove {nto.DialedNumber} from your cart and try again. This number is not purchasable at this time."
+                                //    });
+                                //}
                             }
                             else
                             {

@@ -47,7 +47,7 @@
         </thead>
         <tbody>
             @{
-                foreach (var order in Model)
+                foreach (var order in Model.Where(x => x.IngestedFrom != "Test"))
                 {
                     var ingestedBadge = order.IngestedFrom;
                     switch (order.IngestedFrom)
