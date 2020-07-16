@@ -370,8 +370,23 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     if (item?.DialedNumber?.Length == 10)
                     {
-                        var phoneNumber = await PhoneNumber.GetAsync(item.DialedNumber, _postgresql).ConfigureAwait(false);
-                        phoneNumbers.Add(phoneNumber);
+                        var phoneNumber = await PurchasedPhoneNumber.GetByDialedNumberAsync(item.DialedNumber, order.OrderId, _postgresql).ConfigureAwait(false);
+
+                        bool checkNpa = int.TryParse(phoneNumber.DialedNumber.Substring(0, 3), out int npa);
+                        bool checkNxx = int.TryParse(phoneNumber.DialedNumber.Substring(3, 3), out int nxx);
+                        bool checkXxxx = int.TryParse(phoneNumber.DialedNumber.Substring(6), out int xxxx);
+
+                        if (checkNxx && checkXxxx)
+                        {
+                            phoneNumbers.Add(new PhoneNumber
+                            {
+                                NPA = npa,
+                                NXX = nxx,
+                                XXXX = xxxx,
+                                DialedNumber = phoneNumber.DialedNumber,
+                                IngestedFrom = phoneNumber.IngestedFrom
+                            });
+                        }
                     }
                     else if (item?.PortedDialedNumber?.Length == 10)
                     {

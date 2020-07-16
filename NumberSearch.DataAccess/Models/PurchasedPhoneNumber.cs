@@ -36,6 +36,27 @@ namespace NumberSearch.DataAccess
             return result;
         }
 
+        /// <summary>
+        /// Get every purchased phone number.
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        public static async Task<PurchasedPhoneNumber> GetByDialedNumberAsync(string dialedNumber, Guid orderId, string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryFirstOrDefaultAsync<PurchasedPhoneNumber>("SELECT \"PurchasedPhoneNumberId\", \"OrderId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"DateOrdered\", \"OrderResponse\", \"Completed\" FROM public.\"PurchasedPhoneNumbers\" WHERE \"DialedNumber\" = @dialedNumber AND \"OrderId\" = @orderId ", new { dialedNumber, orderId })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Add a purchase record to the database for a phone number.
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
         public async Task<bool> PostAsync(string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);
