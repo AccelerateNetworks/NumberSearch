@@ -623,6 +623,39 @@ namespace NumberSearch.Tests
             Assert.NotNull(results);
         }
 
+        [Fact]
+        public async Task GetLockAsync()
+        {
+            var conn = postgresql;
+
+            // Prevent another run from starting while this is still going.
+            var lockingStats = new IngestStatistics
+            {
+                IngestedFrom = "Test",
+                StartDate = DateTime.Now,
+                EndDate = DateTime.Now,
+                IngestedNew = 0,
+                FailedToIngest = 0,
+                NumbersRetrived = 0,
+                Removed = 0,
+                Unchanged = 0,
+                UpdatedExisting = 0,
+                Lock = true
+            };
+
+            var checkLock = await lockingStats.PostAsync(conn).ConfigureAwait(false);
+
+            Assert.True(checkLock);
+
+            var results = await IngestStatistics.GetLockAsync("Test", conn).ConfigureAwait(false);
+
+            Assert.NotNull(results);
+
+            var checkRemoveLock = await results.DeleteAsync(conn).ConfigureAwait(false);
+
+            Assert.True(checkRemoveLock);
+        }
+
 
         //[Fact]
         //public async Task ServiceMigrationScriptAsync()

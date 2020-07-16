@@ -44,7 +44,7 @@ namespace NumberSearch.Ingest
             var lastRun = await IngestStatistics.GetLastIngestAsync("BulkVS", postgresSQL).ConfigureAwait(false);
 
             // If the last ingest was run to recently do nothing.
-            if (lastRun.StartDate < (DateTime.Now - bulkVSCycle))
+            if (lastRun.StartDate < (DateTime.Now - bulkVSCycle) && lastRun.Lock == false)
             {
                 // Prevent another run from starting while this is still going.
                 var lockingStats = new IngestStatistics
@@ -57,7 +57,8 @@ namespace NumberSearch.Ingest
                     NumbersRetrived = 0,
                     Removed = 0,
                     Unchanged = 0,
-                    UpdatedExisting = 0
+                    UpdatedExisting = 0,
+                    Lock = true
                 };
 
                 var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
@@ -79,7 +80,7 @@ namespace NumberSearch.Ingest
                             }
 
                             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
-                            var lockEntry = await IngestStatistics.GetLastIngestAsync("BulkVS", postgresSQL).ConfigureAwait(false);
+                            var lockEntry = await IngestStatistics.GetLockAsync("BulkVS", postgresSQL).ConfigureAwait(false);
                             var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
 
                             // Remove all of the old numbers from the database.
@@ -106,7 +107,7 @@ namespace NumberSearch.Ingest
 
             lastRun = await IngestStatistics.GetLastIngestAsync("FirstCom", postgresSQL).ConfigureAwait(false);
 
-            if (lastRun.StartDate < (DateTime.Now - firstComCycle))
+            if (lastRun.StartDate < (DateTime.Now - firstComCycle) && lastRun.Lock == false)
             {
                 // Prevent another run from starting while this is still going.
                 var lockingStats = new IngestStatistics
@@ -119,7 +120,8 @@ namespace NumberSearch.Ingest
                     NumbersRetrived = 0,
                     Removed = 0,
                     Unchanged = 0,
-                    UpdatedExisting = 0
+                    UpdatedExisting = 0,
+                    Lock = true
                 };
 
                 var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
@@ -142,7 +144,7 @@ namespace NumberSearch.Ingest
                             }
 
                             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
-                            var lockEntry = await IngestStatistics.GetLastIngestAsync("FirstCom", postgresSQL).ConfigureAwait(false);
+                            var lockEntry = await IngestStatistics.GetLockAsync("FirstCom", postgresSQL).ConfigureAwait(false);
                             var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
 
                             // Remove all of the old numbers from the database.
@@ -168,7 +170,7 @@ namespace NumberSearch.Ingest
 
             lastRun = await IngestStatistics.GetLastIngestAsync("TeleMessage", postgresSQL).ConfigureAwait(false);
 
-            if (lastRun.StartDate < (DateTime.Now - teleMessageCycle))
+            if (lastRun.StartDate < (DateTime.Now - teleMessageCycle) && lastRun.Lock == false)
             {
                 // Prevent another run from starting while this is still going.
                 var lockingStats = new IngestStatistics
@@ -181,7 +183,8 @@ namespace NumberSearch.Ingest
                     NumbersRetrived = 0,
                     Removed = 0,
                     Unchanged = 0,
-                    UpdatedExisting = 0
+                    UpdatedExisting = 0,
+                    Lock = true
                 };
 
                 var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
@@ -204,7 +207,7 @@ namespace NumberSearch.Ingest
                             }
 
                             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
-                            var lockEntry = await IngestStatistics.GetLastIngestAsync("TeleMessage", postgresSQL).ConfigureAwait(false);
+                            var lockEntry = await IngestStatistics.GetLockAsync("TeleMessage", postgresSQL).ConfigureAwait(false);
                             var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
 
                             // Remove all of the old numbers from the database.
