@@ -136,7 +136,7 @@ namespace NumberSearch.DataAccess
             return new IngestStatistics
             {
                 Removed = result,
-                IngestedFrom = "DatabaseCleanup",
+                IngestedFrom = "Cleanup",
                 StartDate = start,
                 EndDate = DateTime.Now
             };
@@ -162,7 +162,7 @@ namespace NumberSearch.DataAccess
             return new IngestStatistics
             {
                 Removed = result,
-                IngestedFrom = ingestedFrom,
+                IngestedFrom = $"{ingestedFrom} Cleanup",
                 StartDate = start,
                 EndDate = DateTime.Now
             };

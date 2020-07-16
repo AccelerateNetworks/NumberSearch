@@ -273,38 +273,38 @@ namespace NumberSearch.Ingest
             // Add an extra minute so that the finish time of all stages isn't the same as the finish time of the last stage to run.
             var end = DateTime.Now.AddMinutes(1);
 
-            var combinedStats = new IngestStatistics
-            {
-                NumbersRetrived = teleStats.NumbersRetrived + BulkVSStats.NumbersRetrived + FirstComStats.NumbersRetrived,
-                FailedToIngest = teleStats.FailedToIngest + BulkVSStats.FailedToIngest + FirstComStats.FailedToIngest,
-                IngestedNew = teleStats.IngestedNew + BulkVSStats.IngestedNew + FirstComStats.IngestedNew,
-                UpdatedExisting = teleStats.UpdatedExisting + BulkVSStats.UpdatedExisting + FirstComStats.UpdatedExisting,
-                Unchanged = teleStats.Unchanged + BulkVSStats.Unchanged + FirstComStats.Unchanged,
-                Removed = teleStats.Removed + BulkVSStats.Removed + FirstComStats.Removed,
-                IngestedFrom = "All",
-                StartDate = start,
-                EndDate = end
-            };
+            //var combinedStats = new IngestStatistics
+            //{
+            //    NumbersRetrived = teleStats.NumbersRetrived + BulkVSStats.NumbersRetrived + FirstComStats.NumbersRetrived,
+            //    FailedToIngest = teleStats.FailedToIngest + BulkVSStats.FailedToIngest + FirstComStats.FailedToIngest,
+            //    IngestedNew = teleStats.IngestedNew + BulkVSStats.IngestedNew + FirstComStats.IngestedNew,
+            //    UpdatedExisting = teleStats.UpdatedExisting + BulkVSStats.UpdatedExisting + FirstComStats.UpdatedExisting,
+            //    Unchanged = teleStats.Unchanged + BulkVSStats.Unchanged + FirstComStats.Unchanged,
+            //    Removed = teleStats.Removed + BulkVSStats.Removed + FirstComStats.Removed,
+            //    IngestedFrom = "All",
+            //    StartDate = start,
+            //    EndDate = end
+            //};
 
-            var check = await combinedStats.PostAsync(postgresSQL);
+            //var check = await combinedStats.PostAsync(postgresSQL);
 
-            if (check)
-            {
-                Log.Information("Stats saved to the database.");
-            }
-            else
-            {
-                Log.Error("Failed to save the stats to the database.");
-            }
+            //if (check)
+            //{
+            //    Log.Information("Stats saved to the database.");
+            //}
+            //else
+            //{
+            //    Log.Error("Failed to save the stats to the database.");
+            //}
 
             var diff = end - start;
 
-            Log.Information($"Numbers Retrived: {combinedStats.NumbersRetrived}");
-            Log.Information($"Numbers Ingested New: {combinedStats.IngestedNew}");
-            Log.Information($"Numbers Updated Existing: {combinedStats.UpdatedExisting}");
-            Log.Information($"Numbers Unchanged: {combinedStats.Unchanged}");
-            Log.Information($"Numbers Removed: {combinedStats.Removed}");
-            Log.Information($"Numbers Failed To Ingest: {combinedStats.FailedToIngest}");
+            //Log.Information($"Numbers Retrived: {combinedStats.NumbersRetrived}");
+            //Log.Information($"Numbers Ingested New: {combinedStats.IngestedNew}");
+            //Log.Information($"Numbers Updated Existing: {combinedStats.UpdatedExisting}");
+            //Log.Information($"Numbers Unchanged: {combinedStats.Unchanged}");
+            //Log.Information($"Numbers Removed: {combinedStats.Removed}");
+            //Log.Information($"Numbers Failed To Ingest: {combinedStats.FailedToIngest}");
             Log.Information($"Start: {start.ToLongTimeString()} End: {end.ToLongTimeString()} Elapsed: {diff.TotalMinutes} Minutes");
 
             Log.CloseAndFlush();
