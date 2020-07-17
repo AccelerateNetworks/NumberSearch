@@ -12,7 +12,7 @@
 
 
     @{
-        var graphData = Model?.Where(x => x.IngestedFrom == "All").Take(31).ToArray();
+        var graphData = Model?.Take(31).ToArray();
         var commaString = string.Empty;
         foreach (var ingest in graphData)
         {
