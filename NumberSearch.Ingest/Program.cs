@@ -44,7 +44,7 @@ namespace NumberSearch.Ingest
             var lastRun = await IngestStatistics.GetLastIngestAsync("BulkVS", postgresSQL).ConfigureAwait(false);
 
             // If the last ingest was run to recently do nothing.
-            if (lastRun.StartDate < (DateTime.Now - bulkVSCycle) && lastRun.Lock == false)
+            if (lastRun.StartDate < (DateTime.Now - bulkVSCycle))
             {
                 // Prevent another run from starting while this is still going.
                 var lockingStats = new IngestStatistics
@@ -113,7 +113,7 @@ namespace NumberSearch.Ingest
 
             lastRun = await IngestStatistics.GetLastIngestAsync("FirstCom", postgresSQL).ConfigureAwait(false);
 
-            if (lastRun.StartDate < (DateTime.Now - firstComCycle) && lastRun.Lock == false)
+            if (lastRun.StartDate < (DateTime.Now - firstComCycle))
             {
                 // Prevent another run from starting while this is still going.
                 var lockingStats = new IngestStatistics
@@ -181,7 +181,7 @@ namespace NumberSearch.Ingest
 
             lastRun = await IngestStatistics.GetLastIngestAsync("TeleMessage", postgresSQL).ConfigureAwait(false);
 
-            if (lastRun.StartDate < (DateTime.Now - teleMessageCycle) && lastRun.Lock == false)
+            if (lastRun.StartDate < (DateTime.Now - teleMessageCycle))
             {
                 // Prevent another run from starting while this is still going.
                 var lockingStats = new IngestStatistics
@@ -252,7 +252,7 @@ namespace NumberSearch.Ingest
             //var BulkVSStats = new IngestStatistics();
             //var FirstComStats = new IngestStatistics();
 
-            //await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks);
             //foreach (var task in tasks)
             //{
             //    var result = await task;
