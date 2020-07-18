@@ -167,8 +167,102 @@
             <div class="alert alert-info" role="alert">
                 @last
             </div>
-            <div class="table-responsive table-hover table-striped table-borderless">
-                <table class="table ">
+            <h1 class="display-4">
+                Provider Health
+            </h1>
+            <div class="table-responsive">
+                <table class="table table-hover table-striped table-borderless">
+                    <thead>
+                        <tr>
+                            <th>
+                                Provider
+                            </th>
+                            <th>
+                                Ingest rate
+                            </th>
+                            <th>
+                                Run Time (1 Day Average)
+                            </th>
+                            <th>
+                                Longest Run (Last 7 Days)
+                            </th>
+                            <th>
+                                Churn (1 Day Average)
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            var oneDayAgo = DateTime.Now.AddDays(-1);
+                            var providers = Model?.Select(x => x.IngestedFrom).Distinct();
+
+                            foreach (var provider in providers)
+                            {
+                                var ingests = Model?.Where(x => x.IngestedFrom == provider && x.EndDate >= oneDayAgo);
+                                var ingestsSeven = Model?.Where(x => x.IngestedFrom == provider && x.EndDate >= DateTime.Now.AddDays(-7));
+                                <tr>
+                                    <td>
+                                        @provider
+                                    </td>
+                                    <td>
+                                        @{
+                                            var output = $"{ingests.Count()} per day";
+                                        }
+                                        @output
+                                    </td>
+                                    <td>
+                                        @{
+                                            var runTimes = new List<TimeSpan>();
+                                            foreach (var ingest in ingests)
+                                            {
+                                                runTimes.Add(ingest.EndDate - ingest.StartDate);
+                                            }
+                                            var formattedRunTime = string.Empty;
+                                            // https://stackoverflow.com/questions/8847679/find-average-of-collection-of-timespans
+                                            if (runTimes.Count > 0)
+                                            {
+                                                var doubleTicks = runTimes?.Average(x => x.Ticks);
+                                                var longTicks = Convert.ToInt64(doubleTicks);
+                                                var averageRunTime = new TimeSpan(longTicks);
+                                                formattedRunTime = $"{averageRunTime.Hours} Hours and {averageRunTime.Minutes} Minutes";
+                                            }
+                                        }
+                                        @formattedRunTime
+                                    </td>
+                                    <td>
+                                        @{
+                                            var runTimesSeven = new List<TimeSpan>();
+                                            foreach (var ingest in ingestsSeven)
+                                            {
+                                                runTimesSeven.Add(ingest.EndDate - ingest.StartDate);
+                                            }
+                                            var formattedLongest = string.Empty;
+                                            if (runTimesSeven.Count() > 0)
+                                            {
+                                                var longest = runTimesSeven.Max();
+                                                formattedLongest = $"{longest.Hours} Hours and {longest.Minutes} Minutes";
+                                            }
+                                        }
+                                        @formattedLongest
+                                    </td>
+                                    <td>
+                                        @{
+                                            var churn = ingests.Count() > 0 ? ingests?.Average(x => x.Removed) : 0;
+                                            var formattedChurn = $"{churn} Numbers Removed";
+                                        }
+                                        @formattedChurn
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <h1 class="display-4">
+                Logged Ingests
+            </h1>
+            <div class="table-responsive">
+                <table class="table table-hover table-striped table-borderless">
                     <thead>
                         <tr>
                             <th scope="col">Ingested From</th>
