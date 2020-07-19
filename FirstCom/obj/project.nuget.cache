@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "R3N06RQPGerAogCWrmVVu6bTkmD0FVLgQypFfpyTM8AAaCCpKRGQUUzW8hEXJXSTG3xVxanPz5at7yIMZdkvPg==",
+  "dgSpecHash": "xkhNWU1XKCzd2vWL8yD+bjkeIw68eh3V8BZjYBmXLIJ1Ik1bIsXM7QiB/qgiv/jB6A4E4aIy6ewFzKdvCD8GSQ==",
   "success": true,
   "projectFilePath": "C:\\Users\\thoma\\Source\\Repos\\uncheckederror\\NumberSearch\\FirstCom\\FirstCom.csproj",
   "expectedPackageFiles": [
@@ -27,7 +27,7 @@
     "C:\\Users\\thoma\\.nuget\\packages\\microsoft.extensions.primitives\\3.1.6\\microsoft.extensions.primitives.3.1.6.nupkg.sha512",
     "C:\\Users\\thoma\\.nuget\\packages\\microsoft.netcore.platforms\\2.1.2\\microsoft.netcore.platforms.2.1.2.nupkg.sha512",
     "C:\\Users\\thoma\\.nuget\\packages\\newtonsoft.json\\12.0.2\\newtonsoft.json.12.0.2.nupkg.sha512",
-    "C:\\Users\\thoma\\.nuget\\packages\\npgsql\\4.1.3.1\\npgsql.4.1.3.1.nupkg.sha512",
+    "C:\\Users\\thoma\\.nuget\\packages\\npgsql\\4.1.4\\npgsql.4.1.4.nupkg.sha512",
     "C:\\Users\\thoma\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql\\3.1.4\\npgsql.entityframeworkcore.postgresql.3.1.4.nupkg.sha512",
     "C:\\Users\\thoma\\.nuget\\packages\\serilog\\2.9.0\\serilog.2.9.0.nupkg.sha512",
     "C:\\Users\\thoma\\.nuget\\packages\\system.collections.immutable\\1.7.1\\system.collections.immutable.1.7.1.nupkg.sha512",

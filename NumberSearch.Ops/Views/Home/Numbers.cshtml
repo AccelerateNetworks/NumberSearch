@@ -132,7 +132,7 @@
                         <a class="btn btn-outline-dark disabled">Page @Model.Page of @maxPage</a>
                     }
                     var pageResultsCount = Model.Page * 100;
-                    if (Model.NumberOfResults > pageResultsCount && (Model.NumberOfResults - pageResultsCount) > 100)
+                    if (Model.NumberOfResults > pageResultsCount)
                     {
                         var nextPage = Model.Page + 1;
                         <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Numbers?Query=@Model.Query&Page=@nextPage">Next</a>
