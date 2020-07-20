@@ -21,6 +21,8 @@ variables:
   ConnectionStrings.ChannelGroup: $(ChannelGroup)
   ConnectionStrings.CallFlow: $(CallFlow)
   ConnectionStrings.BulkVSAPIKEY: $(BulkVSAPIKEY)
+  ConnectionStrings.MicrosoftClientSecret: $(MicrosoftClientSecret)
+  ConnectionStrings.MicrosoftClientId: $(MicrosoftClientId)
   ApplicationInsights.InstrumentationKey: $(InstrumentationKey)
 
 steps:
