@@ -59,7 +59,7 @@ namespace NumberSearch.Mvc.Controllers
             }
 
             // Drop leading 1's to improve the copy/paste experiance.
-            if (converted[0] == '1')
+            if (converted[0] == '1' && converted.Count >= 10)
             {
                 converted.Remove('1');
             }
