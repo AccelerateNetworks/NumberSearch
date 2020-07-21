@@ -83,7 +83,7 @@ namespace NumberSearch.Ops.Controllers
         {
             var orders = await PurchasedPhoneNumber.GetAllAsync(_postgresql);
 
-            var filePath = Path.GetFullPath("./wwwroot/csv/");
+            var filePath = Path.GetFullPath(Path.Combine("wwwroot", "csv"));
             var fileName = $"PurchasedNumbers{DateTime.Now.ToString("yyyyMMdd")}.csv";
             var completePath = Path.Combine(filePath, fileName);
 
