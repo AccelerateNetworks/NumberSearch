@@ -3,8 +3,8 @@ Description=NumberSearch
 
 [Service]
 Type=simple
-WorkingDirectory=/var/www/numberSearch/NumberSearch.Mvc
-ExecStart=/usr/bin/dotnet /var/www/numberSearch/NumberSearch.Mvc/bin/Release/netcoreapp3.1/NumberSearch.Mvc.dll
+WorkingDirectory=/var/www/NumberSearch.Mvc
+ExecStart=/usr/bin/dotnet /var/www/NumberSearch.Mvc/NumberSearch.Mvc.dll
 
 [Install]
 WantedBy=multi-user.target

@@ -1,0 +1,11 @@
+
+[Unit]
+Description=NumberSearchOps
+
+[Service]
+Type=simple
+WorkingDirectory=/var/www/NumberSearch.Ops
+ExecStart=/usr/bin/dotnet /var/www/NumberSearch.Ops/NumberSearch.Ops.dll
+
+[Install]
+WantedBy=multi-user.target
