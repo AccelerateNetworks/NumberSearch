@@ -1,0 +1,25 @@
+﻿@model string
+@{
+    ViewData["Title"] = "Purchased Numbers";
+}
+<br />
+<h1 class="display-4">Purchased Numbers</h1>
+<br />
+<div class="pb-3">
+    <ul class="nav nav-pills nav-fill nav-justified">
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Home" asp-action="Numbers">Numbers</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" asp-controller="Home" asp-action="NumberOrders">Number Orders</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Home" asp-action="PortRequests">Port Requests</a>
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col">
+        <a href="./csv/@Model" target="_blank" class="btn btn-primary">Export</a>
+    </div>
+</div>

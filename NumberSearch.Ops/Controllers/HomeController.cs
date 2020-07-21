@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
 using BulkVS;
 using BulkVS.BulkVS;
+
+using CsvHelper;
 
 using FirstCom;
 
@@ -72,6 +76,30 @@ namespace NumberSearch.Ops.Controllers
             var orders = await PurchasedPhoneNumber.GetAllAsync(_postgresql);
 
             return View("NumberOrders", orders.OrderByDescending(x => x.DateOrdered));
+        }
+
+        [Authorize]
+        public async Task<IActionResult> ExportNumberOrders()
+        {
+            var orders = await PurchasedPhoneNumber.GetAllAsync(_postgresql);
+
+            var filePath = Path.GetFullPath("./wwwroot/csv/");
+            var fileName = $"PurchasedNumbers{DateTime.Now.ToString("yyyyMMdd")}.csv";
+            var completePath = Path.Combine(filePath, fileName);
+
+            using var writer = new StreamWriter(completePath);
+            using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+            await csv.WriteRecordsAsync(orders);
+            var file = new FileInfo(completePath);
+
+            if (file.Exists)
+            {
+                return Redirect($"../csv/{file.Name}");
+            }
+            else
+            {
+                return View("NumberOrders", orders.OrderByDescending(x => x.DateOrdered));
+            }
         }
 
         [Authorize]
@@ -205,7 +233,7 @@ namespace NumberSearch.Ops.Controllers
             }
 
             // Drop leading 1's to improve the copy/paste experiance.
-            if (converted[0] == '1')
+            if (converted[0] == '1' && converted.Count >= 10)
             {
                 converted.Remove('1');
             }
