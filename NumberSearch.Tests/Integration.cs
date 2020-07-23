@@ -313,6 +313,42 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task TeleNumberDetailsTestAsync()
+        {
+            // Arrange
+            var number = "2068588757";
+
+            // Act
+            var results = await TeleNumberDetails.GetAsync(number, token);
+
+            Assert.NotNull(results);
+            Assert.True(results.code == 200);
+            output.WriteLine(results.code.ToString());
+        }
+
+        [Fact]
+        public async Task TeleNoteTestAsync()
+        {
+            // Arrange
+            var number = "2068588757";
+
+            // Act
+            var results = await TeleNumberDetails.GetAsync(number, token).ConfigureAwait(false);
+
+            Assert.NotNull(results);
+            output.WriteLine(results.data.id);
+
+            var note = $"This is a test note.";
+
+            var setNote = await TeleNote.SetNote(note, results.data.id, token).ConfigureAwait(false);
+
+            Assert.NotNull(setNote);
+            Assert.True(setNote.code == 200);
+            output.WriteLine(setNote.data);
+        }
+
+
+        [Fact]
         public async Task GetPhoneNumbersAsync()
         {
             var conn = postgresql;

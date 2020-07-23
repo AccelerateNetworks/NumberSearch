@@ -546,6 +546,10 @@ namespace NumberSearch.Mvc.Controllers
                                 //        Message = $"Please remove {nto.DialedNumber} from your cart and try again. This number is not purchasable at this time."
                                 //    });
                                 //}
+
+                                // Set a note for these number purchases inside of Tele's system.
+                                var getTeleId = await TeleNumberDetails.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
+                                var setTeleLabel = await TeleNote.SetNote($"{order?.BusinessName} {order?.FirstName} {order?.LastName}", getTeleId.data.id, _teleToken).ConfigureAwait(false);
                             }
                             else if (nto.IngestedFrom == "FirstPointCom")
                             {

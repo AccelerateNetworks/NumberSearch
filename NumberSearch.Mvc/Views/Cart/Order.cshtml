@@ -116,6 +116,14 @@
                 </div>
 
                 <div class="mb-3">
+                    <label for="email">Business Name (Optional)</label>
+                    <input asp-for="Order.BusinessName" type="text" class="form-control" id="businessName" placeholder="American Telegraph and Telephone Company">
+                    <div class="invalid-feedback">
+                        Please enter a valid business name.
+                    </div>
+                </div>
+
+                <div class="mb-3">
                     <label for="email">Email </label>
                     <input asp-for="Order.Email" type="email" class="form-control" id="email" placeholder="you@example.com" required>
                     <div class="invalid-feedback">
