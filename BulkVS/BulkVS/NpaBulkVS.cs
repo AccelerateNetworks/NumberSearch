@@ -18,6 +18,12 @@ namespace BulkVS
             try
             {
                 var result = await client.DnSearchAreaCodeAsync(apiKey, apiSecret, npaIn).ConfigureAwait(false);
+
+                if (result?.fault != null && !string.IsNullOrWhiteSpace(result?.fault?.faultstring))
+                {
+                    throw new Exception($"NPA: {npaIn} Faultstring: {result?.fault?.faultstring} Description: {result?.fault?.description} Code: {result?.fault?.entries}");
+                }
+
                 var list = new List<DnSearchAreaCodeResponseResult.resultEntry>();
 
                 #region nonsense
