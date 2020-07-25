@@ -5,6 +5,7 @@ using FirstCom;
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.Peerless;
 using NumberSearch.DataAccess.TeleMesssage;
 
 using ServiceReference;
@@ -96,7 +97,7 @@ namespace NumberSearch.Tests
             string npa = "206";
 
             // Act
-            var results = await PeerlessFind.GetRawAsync(npa, peerlessAPIKey).ConfigureAwait(false);
+            var results = await DidFind.GetRawAsync(npa, true, peerlessAPIKey).ConfigureAwait(false);
 
             // Assert
             Assert.NotNull(results);
@@ -115,7 +116,7 @@ namespace NumberSearch.Tests
             string npa = "206";
 
             // Act
-            var results = await PeerlessFind.GetAsync(npa, peerlessAPIKey).ConfigureAwait(false);
+            var results = await DidFind.GetAsync(npa, peerlessAPIKey).ConfigureAwait(false);
 
             // Assert
             Assert.NotNull(results);
