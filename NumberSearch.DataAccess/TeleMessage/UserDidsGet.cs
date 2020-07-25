@@ -1,13 +1,12 @@
 ﻿using Flurl.Http;
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace NumberSearch.DataAccess
+namespace NumberSearch.DataAccess.TeleMesssage
 {
 
-    public class TeleNumberDetails
+    public class UserDidsGet
     {
         public int code { get; set; }
         public string status { get; set; }
@@ -40,14 +39,14 @@ namespace NumberSearch.DataAccess
             public string call_post_url { get; set; }
         }
 
-        public static async Task<TeleNumberDetails> GetAsync(string number, Guid token)
+        public static async Task<UserDidsGet> GetAsync(string number, Guid token)
         {
             string baseUrl = "https://apiv1.teleapi.net/";
             string endpoint = "user/dids/get";
             string tokenParameter = $"?token={token}";
             string numberParameter = $"&number={number}";
             string route = $"{baseUrl}{endpoint}{tokenParameter}{numberParameter}";
-            return await route.GetJsonAsync<TeleNumberDetails>().ConfigureAwait(false);
+            return await route.GetJsonAsync<UserDidsGet>().ConfigureAwait(false);
         }
     }
 }

@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.TeleMesssage;
 
 using ServiceReference;
 
@@ -61,7 +62,7 @@ namespace NumberSearch.Tests
             string phoneNumber = "2065579450";
 
             // Act
-            var result = await LRNLookup.GetAsync(phoneNumber, token);
+            var result = await LrnLookup.GetAsync(phoneNumber, token);
 
             // Assert        
             Assert.NotNull(result);
@@ -77,7 +78,7 @@ namespace NumberSearch.Tests
             // Arrange
 
             // Act
-            var results = await TeleNPA.GetAsync(token);
+            var results = await PeerlessFind.GetAsync(token);
 
             // Assert
             Assert.NotNull(results);
@@ -97,7 +98,7 @@ namespace NumberSearch.Tests
             string npa = "206";
 
             // Act
-            var results = await TeleNXX.GetAsync(npa, token);
+            var results = await DidsNxxs.GetAsync(npa, token);
 
             // Assert
             Assert.NotNull(results);
@@ -117,7 +118,7 @@ namespace NumberSearch.Tests
             string query = "20645";
 
             // Act
-            var results = await LocalNumberTeleMessage.GetRawAsync(query, token);
+            var results = await DidsList.GetRawAsync(query, token);
 
             // Assert
             Assert.NotNull(results);
@@ -137,14 +138,14 @@ namespace NumberSearch.Tests
             string query = "1";
 
             // Act
-            var results = await LocalNumberPortability.GetRawAsync(query, token);
+            var results = await LnpCheck.GetRawAsync(query, token);
 
             // Assert
             Assert.NotNull(results);
             Assert.False(string.IsNullOrWhiteSpace(results));
             output.WriteLine(results);
 
-            results = await LocalNumberPortability.GetRawAsync("8662214141", token);
+            results = await LnpCheck.GetRawAsync("8662214141", token);
 
             // Assert
             Assert.NotNull(results);
@@ -159,12 +160,12 @@ namespace NumberSearch.Tests
             string query = "1";
 
             // Act
-            var result = await LocalNumberPortability.IsPortable(query, token);
+            var result = await LnpCheck.IsPortable(query, token);
 
             // Assert
             Assert.False(result);
 
-            result = await LocalNumberPortability.IsPortable("8662214141", token);
+            result = await LnpCheck.IsPortable("8662214141", token);
 
             // Assert
             Assert.True(result);
@@ -293,7 +294,7 @@ namespace NumberSearch.Tests
             var query = "206";
 
             // Act
-            var results = await LocalNumberTeleMessage.GetAsync(query, token);
+            var results = await DidsList.GetAsync(query, token);
 
             // Assert
             Assert.NotNull(results);
@@ -319,7 +320,7 @@ namespace NumberSearch.Tests
             var number = "2068588757";
 
             // Act
-            var results = await TeleNumberDetails.GetAsync(number, token);
+            var results = await UserDidsGet.GetAsync(number, token);
 
             Assert.NotNull(results);
             Assert.True(results.code == 200);
@@ -333,14 +334,14 @@ namespace NumberSearch.Tests
             var number = "2068588757";
 
             // Act
-            var results = await TeleNumberDetails.GetAsync(number, token).ConfigureAwait(false);
+            var results = await UserDidsGet.GetAsync(number, token).ConfigureAwait(false);
 
             Assert.NotNull(results);
             output.WriteLine(results.data.id);
 
             var note = $"This is a test note.";
 
-            var setNote = await TeleNote.SetNote(note, results.data.id, token).ConfigureAwait(false);
+            var setNote = await UserDidsNote.SetNote(note, results.data.id, token).ConfigureAwait(false);
 
             Assert.NotNull(setNote);
             Assert.True(setNote.code == 200);

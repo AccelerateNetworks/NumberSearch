@@ -13,6 +13,7 @@ using MimeKit;
 using MimeKit.Text;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.TeleMesssage;
 
 namespace NumberSearch.Mvc.Controllers
 {
@@ -46,7 +47,7 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     var teleToken = Guid.Parse(configuration.GetConnectionString("TeleAPI"));
 
-                    var portable = await LocalNumberPortability.IsPortable(dialedPhoneNumber, teleToken).ConfigureAwait(false);
+                    var portable = await LnpCheck.IsPortable(dialedPhoneNumber, teleToken).ConfigureAwait(false);
 
                     if (portable)
                     {
@@ -113,7 +114,7 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     var teleToken = Guid.Parse(configuration.GetConnectionString("TeleAPI"));
 
-                    var portable = await LocalNumberPortability.IsPortable(dialedPhoneNumber, teleToken).ConfigureAwait(false);
+                    var portable = await LnpCheck.IsPortable(dialedPhoneNumber, teleToken).ConfigureAwait(false);
 
                     if (portable)
                     {
@@ -232,8 +233,10 @@ Accelerate Networks"
                     outboundMessage.Body = body;
                 }
 
-                outboundMessage.Cc.Add(new MailboxAddress(configuration.GetConnectionString("SmtpUsername")));
-                outboundMessage.To.Add(new MailboxAddress($"{order.Email}"));
+                var ordersInbox = MailboxAddress.Parse(configuration.GetConnectionString("SmtpUsername"));
+                var recipient = MailboxAddress.Parse(order.Email);
+                outboundMessage.Cc.Add(ordersInbox);
+                outboundMessage.To.Add(recipient);
 
                 using var smtp = new MailKit.Net.Smtp.SmtpClient();
                 smtp.MessageSent += (sender, args) => { };

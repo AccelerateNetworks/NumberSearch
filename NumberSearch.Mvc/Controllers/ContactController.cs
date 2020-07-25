@@ -1,9 +1,13 @@
 ﻿using MailKit.Security;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+
 using MimeKit;
 using MimeKit.Text;
+
 using NumberSearch.DataAccess;
+
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -63,8 +67,10 @@ Thanks,
 Accelerate Networks"
                     };
 
-                    outboundMessage.Cc.Add(new MailboxAddress(configuration.GetConnectionString("SmtpUsername")));
-                    outboundMessage.To.Add(new MailboxAddress($"{contact.Email}"));
+                    var ordersInbox = MailboxAddress.Parse(configuration.GetConnectionString("SmtpUsername"));
+                    var recipient = MailboxAddress.Parse(contact.Email);
+                    outboundMessage.Cc.Add(ordersInbox);
+                    outboundMessage.To.Add(recipient);
 
                     using var smtp = new MailKit.Net.Smtp.SmtpClient();
                     smtp.MessageSent += (sender, args) => { };

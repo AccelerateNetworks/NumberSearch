@@ -12,9 +12,11 @@ using MimeKit;
 using MimeKit.Text;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.TeleMesssage;
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -81,7 +83,7 @@ namespace NumberSearch.Mvc.Controllers
             else if (phoneNumber.IngestedFrom == "TeleMessage")
             {
                 // Verify that tele has the number.
-                var doesItStillExist = await LocalNumberTeleMessage.GetAsync(phoneNumber.DialedNumber, _teleToken).ConfigureAwait(false);
+                var doesItStillExist = await DidsList.GetAsync(phoneNumber.DialedNumber, _teleToken).ConfigureAwait(false);
                 var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
                 if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
                 {
@@ -92,7 +94,7 @@ namespace NumberSearch.Mvc.Controllers
             else if (phoneNumber.IngestedFrom == "FirstPointCom")
             {
                 // Verify that tele has the number.
-                var results = await NpaNxxFirstPointCom.GetAsync(phoneNumber.NPA.ToString(), phoneNumber.NXX.ToString(), string.Empty, _fpcusername, _fpcpassword).ConfigureAwait(false);
+                var results = await NpaNxxFirstPointCom.GetAsync(phoneNumber.NPA.ToString(new CultureInfo("en-US")), phoneNumber.NXX.ToString(new CultureInfo("en-US")), string.Empty, _fpcusername, _fpcpassword).ConfigureAwait(false);
                 var matchingNumber = results.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
                 if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
                 {
@@ -344,6 +346,7 @@ namespace NumberSearch.Mvc.Controllers
 
         // Show orders that have already been submitted.
         [Route("Cart/Order/{Id}")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
         public async Task<IActionResult> ExistingOrderAsync(Guid Id, bool? AddPortingInfo)
         {
             if (Id != null)
@@ -354,7 +357,7 @@ namespace NumberSearch.Mvc.Controllers
                     return View("Index", new CartResult
                     {
                         Cart = null,
-                        Message = $"Couldn't find this order in our system."
+                        Message = "Couldn't find this order in our system."
                     });
                 }
 
@@ -477,15 +480,10 @@ namespace NumberSearch.Mvc.Controllers
                         {
                             if (nto.IngestedFrom == "BulkVS")
                             {
-                                //var npanxx = $"{nto.NPA}{nto.NXX}";
-                                //var doesItStillExist = await NpaNxxBulkVS.GetAsync(npanxx, _apiKey, _apiSecret).ConfigureAwait(false);
-                                //var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
-                                //if (checkIfExists != null && checkIfExists?.DialedNumber == nto.DialedNumber)
-                                //{
                                 // Buy it and save the reciept.
                                 var random = new Random();
                                 var pin = random.Next(100000, 99999999);
-                                var executeOrder = await BulkVSOrderPhoneNumber.GetAsync(nto.DialedNumber, "SFO", "Enabled", string.Empty, "false", pin.ToString(), _apiKey, _apiSecret).ConfigureAwait(false);
+                                var executeOrder = await BulkVSOrderPhoneNumber.GetAsync(nto.DialedNumber, "SFO", "Enabled", string.Empty, "false", pin.ToString(new CultureInfo("en-US")), _apiKey, _apiSecret).ConfigureAwait(false);
 
                                 var verifyOrder = new PurchasedPhoneNumber
                                 {
@@ -497,30 +495,15 @@ namespace NumberSearch.Mvc.Controllers
                                     // Keep the raw response as a receipt.
                                     OrderResponse = string.IsNullOrWhiteSpace(executeOrder?.result?.description) ? $"faultstring: {executeOrder?.fault?.faultstring}" : $"description: {executeOrder?.result?.description}, cnamlookup: {executeOrder?.result?.entry?.cnamlookup}, dn: {executeOrder?.result?.entry?.dn}, lidb: {executeOrder?.result?.entry?.lidb}, portoutpin: {executeOrder?.result?.entry?.portoutpin}, trunkgroup: {executeOrder?.result?.entry?.trunkgroup}",
                                     // If the status code of the order comes back as 200 then it was sucessful.
-                                    Completed = executeOrder.result.entry.dn.Contains(nto.DialedNumber)
+                                    Completed = executeOrder.result.entry.dn.Contains(nto.DialedNumber, StringComparison.InvariantCultureIgnoreCase)
                                 };
 
                                 var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
-                                //}
-                                //else
-                                //{
-                                //    // Sadly its gone. And the user needs to pick a different number.
-                                //    return View("Index", new CartResult
-                                //    {
-                                //        Cart = cart,
-                                //        Message = $"Please remove {nto.DialedNumber} from your cart and try again. This number is not purchasable at this time."
-                                //    });
-                                //}
                             }
                             else if (nto.IngestedFrom == "TeleMessage")
                             {
-                                // Verify that tele has the number.
-                                //var doesItStillExist = await LocalNumberTeleMessage.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
-                                //var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
-                                //if (checkIfExists != null && checkIfExists?.DialedNumber == nto.DialedNumber)
-                                //{
                                 // Buy it and save the reciept.
-                                var executeOrder = await TeleOrderPhoneNumber.GetAsync(nto.DialedNumber, _CallFlow, _ChannelGroup, _teleToken).ConfigureAwait(false);
+                                var executeOrder = await DidsOrder.GetAsync(nto.DialedNumber, _CallFlow, _ChannelGroup, _teleToken).ConfigureAwait(false);
 
                                 var verifyOrder = new PurchasedPhoneNumber
                                 {
@@ -536,28 +519,13 @@ namespace NumberSearch.Mvc.Controllers
                                 };
 
                                 var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
-                                //}
-                                //else
-                                //{
-                                //    // Sadly its gone. And the user needs to pick a different number.
-                                //    return View("Index", new CartResult
-                                //    {
-                                //        Cart = cart,
-                                //        Message = $"Please remove {nto.DialedNumber} from your cart and try again. This number is not purchasable at this time."
-                                //    });
-                                //}
 
                                 // Set a note for these number purchases inside of Tele's system.
-                                var getTeleId = await TeleNumberDetails.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
-                                var setTeleLabel = await TeleNote.SetNote($"{order?.BusinessName} {order?.FirstName} {order?.LastName}", getTeleId.data.id, _teleToken).ConfigureAwait(false);
+                                var getTeleId = await UserDidsGet.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
+                                var setTeleLabel = await UserDidsNote.SetNote($"{order?.BusinessName} {order?.FirstName} {order?.LastName}", getTeleId.data.id, _teleToken).ConfigureAwait(false);
                             }
                             else if (nto.IngestedFrom == "FirstPointCom")
                             {
-                                // Verify that tele has the number.
-                                //var results = await NpaNxxFirstPointCom.GetAsync(nto.NPA.ToString(), nto.NXX.ToString(), string.Empty, _fpcusername, _fpcpassword).ConfigureAwait(false);
-                                //var matchingNumber = results.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
-                                //if (matchingNumber != null && matchingNumber?.DialedNumber == nto.DialedNumber)
-                                //{
                                 // Buy it and save the reciept.
                                 var executeOrder = await FirstPointComOrderPhoneNumber.PostAsync(nto.DialedNumber, _fpcusername, _fpcpassword).ConfigureAwait(false);
 
@@ -575,16 +543,6 @@ namespace NumberSearch.Mvc.Controllers
                                 };
 
                                 var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
-                                //}
-                                //else
-                                //{
-                                //    // Sadly its gone. And the user needs to pick a different number.
-                                //    return View("Index", new CartResult
-                                //    {
-                                //        Cart = cart,
-                                //        Message = $"Please remove {nto.DialedNumber} from your cart and try again. This number is not purchasable at this time."
-                                //    });
-                                //}
                             }
                             else
                             {
@@ -634,8 +592,12 @@ Thanks,
 Accelerate Networks"
                         };
 
-                        outboundMessage.Cc.Add(new MailboxAddress(_configuration.GetConnectionString("SmtpUsername")));
-                        outboundMessage.To.Add(new MailboxAddress($"{order.Email}"));
+
+
+                        var ordersInbox = MailboxAddress.Parse(_configuration.GetConnectionString("SmtpUsername"));
+                        var recipient = MailboxAddress.Parse(order.Email);
+                        outboundMessage.Cc.Add(ordersInbox);
+                        outboundMessage.To.Add(recipient);
 
                         using var smtp = new MailKit.Net.Smtp.SmtpClient();
                         smtp.MessageSent += (sender, args) => { };

@@ -3,12 +3,12 @@
 using System;
 using System.Threading.Tasks;
 
-namespace NumberSearch.DataAccess
+namespace NumberSearch.DataAccess.TeleMesssage
 {
     /// <summary>
     /// Models https://apidocs.teleapi.net/api/order-phone-numbers/order-single-number
     /// </summary>
-    public class TeleOrderPhoneNumber
+    public class DidsOrder
     {
         public int code { get; set; }
         public string status { get; set; }
@@ -21,7 +21,7 @@ namespace NumberSearch.DataAccess
         /// <param name="callFlow"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public static async Task<TeleOrderPhoneNumber> GetAsync(string dialedNumber, int callFlow, int channelGroup, Guid token)
+        public static async Task<DidsOrder> GetAsync(string dialedNumber, int callFlow, int channelGroup, Guid token)
         {
             string baseUrl = "https://apiv1.teleapi.net/";
             string endpoint = "dids/order";
@@ -31,7 +31,7 @@ namespace NumberSearch.DataAccess
             string channelGroupParameter = $"&channel_group={channelGroup}";
             string cnamParameter = $"&cnam=enabled";
             string route = $"{baseUrl}{endpoint}{tokenParameter}{numberParameter}{callFlowParameter}{channelGroupParameter}{cnamParameter}";
-            return await route.GetJsonAsync<TeleOrderPhoneNumber>().ConfigureAwait(false);
+            return await route.GetJsonAsync<DidsOrder>().ConfigureAwait(false);
         }
     }
 

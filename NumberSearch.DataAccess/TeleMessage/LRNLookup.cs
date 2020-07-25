@@ -1,10 +1,11 @@
 ﻿using Flurl.Http;
+
 using System;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess
 {
-    public class LRNLookup
+    public class LrnLookup
     {
         public int code { get; set; }
         public string status { get; set; }
@@ -44,14 +45,14 @@ namespace NumberSearch.DataAccess
             public string ocn_type { get; set; }
         }
 
-        public static async Task<LRNLookup> GetAsync(string number, Guid token)
+        public static async Task<LrnLookup> GetAsync(string number, Guid token)
         {
             string baseUrl = "https://lrn.teleapi.net/";
             string endpoint = "lookup";
             string tokenParameter = $"?token={token}";
             string numberParameter = $"&number={number}";
             string route = $"{baseUrl}{endpoint}{tokenParameter}{numberParameter}";
-            return await route.GetJsonAsync<LRNLookup>().ConfigureAwait(false);
+            return await route.GetJsonAsync<LrnLookup>().ConfigureAwait(false);
         }
     }
 }

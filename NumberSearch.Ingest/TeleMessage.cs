@@ -1,5 +1,8 @@
 ﻿using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.TeleMesssage;
+
 using Serilog;
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -118,7 +121,7 @@ namespace NumberSearch.Ingest
         /// <returns></returns>
         public static async Task<int[]> GetValidNPAsAsync(Guid token)
         {
-            var results = await TeleNPA.GetAsync(token);
+            var results = await DidsNpas.GetAsync(token);
 
             if (!(results.status == "Success") && !(results.code == 200))
             {
@@ -151,7 +154,7 @@ namespace NumberSearch.Ingest
         /// <returns></returns>
         public static async Task<int[]> GetValidNXXsAsync(int npa, Guid token)
         {
-            var results = await TeleNXX.GetAsync($"{npa}", token);
+            var results = await DidsNxxs.GetAsync($"{npa}", token);
 
             var vaild = new List<int>();
 
@@ -189,7 +192,7 @@ namespace NumberSearch.Ingest
 
             try
             {
-                var results = await LocalNumberTeleMessage.GetAsync($"{npa}{nxx}****", token);
+                var results = await DidsList.GetAsync($"{npa}{nxx}****", token);
 
                 foreach (var result in results?.ToArray())
                 {

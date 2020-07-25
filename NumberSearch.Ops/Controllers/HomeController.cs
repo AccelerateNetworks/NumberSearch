@@ -20,6 +20,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.TeleMesssage;
 using NumberSearch.Ops.Models;
 
 namespace NumberSearch.Ops.Controllers
@@ -144,7 +145,7 @@ namespace NumberSearch.Ops.Controllers
 
             if (testName == "LRNLookup" && (!string.IsNullOrWhiteSpace(dialedNumber)))
             {
-                var checkNumber = await LRNLookup.GetAsync(dialedNumber, _teleToken).ConfigureAwait(false);
+                var checkNumber = await LrnLookup.GetAsync(dialedNumber, _teleToken).ConfigureAwait(false);
 
                 return View("Tests", new TestResults
                 {
@@ -155,7 +156,7 @@ namespace NumberSearch.Ops.Controllers
 
             if (testName == "didslist" && (!string.IsNullOrWhiteSpace(dialedNumber)))
             {
-                var checkNumber = await LocalNumberTeleMessage.GetAsync(dialedNumber, _teleToken).ConfigureAwait(false);
+                var checkNumber = await DidsList.GetAsync(dialedNumber, _teleToken).ConfigureAwait(false);
 
                 return View("Tests", new TestResults
                 {
@@ -166,7 +167,7 @@ namespace NumberSearch.Ops.Controllers
 
             if (testName == "lnpcheck" && (!string.IsNullOrWhiteSpace(dialedNumber)))
             {
-                var checkNumber = await LocalNumberPortability.GetRawAsync(dialedNumber, _teleToken).ConfigureAwait(false);
+                var checkNumber = await LnpCheck.GetRawAsync(dialedNumber, _teleToken).ConfigureAwait(false);
 
                 return View("Tests", new TestResults
                 {

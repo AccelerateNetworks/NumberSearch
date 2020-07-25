@@ -1,13 +1,12 @@
 ﻿using Flurl.Http;
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace NumberSearch.DataAccess
+namespace NumberSearch.DataAccess.TeleMesssage
 {
-    public class LocalNumberPortability
+    // TODO: This is a mess. We need to clean this up and correctly model the API interface.
+    public class LnpCheck
     {
         public int code { get; set; }
         public string status { get; set; }

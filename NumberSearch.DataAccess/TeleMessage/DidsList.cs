@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace NumberSearch.DataAccess
+namespace NumberSearch.DataAccess.TeleMesssage
 {
-    public class LocalNumberTeleMessage
+    public class DidsList
     {
         public int code { get; set; }
         public string status { get; set; }
@@ -44,14 +44,14 @@ namespace NumberSearch.DataAccess
             public string per_minute_rate { get; set; }
         }
 
-        public static async Task<LocalNumberTeleMessage> GetRawAsync(string query, Guid token)
+        public static async Task<DidsList> GetRawAsync(string query, Guid token)
         {
             string baseUrl = "https://apiv1.teleapi.net/";
             string endpoint = "dids/list";
             string tokenParameter = $"?token={token}";
             string searchParameter = $"&search={query}";
             string url = $"{baseUrl}{endpoint}{tokenParameter}{searchParameter}";
-            return await url.GetJsonAsync<LocalNumberTeleMessage>().ConfigureAwait(false);
+            return await url.GetJsonAsync<DidsList>().ConfigureAwait(false);
         }
 
         public static async Task<IEnumerable<PhoneNumber>> GetAsync(string query, Guid token)

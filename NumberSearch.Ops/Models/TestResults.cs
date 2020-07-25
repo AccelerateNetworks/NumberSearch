@@ -16,7 +16,7 @@ namespace NumberSearch.Ops
         public IEnumerable<PhoneNumber> PhoneNumbersBVS { get; set; }
 
         public QueryResult PhoneNumberOrder { get; set; }
-        public LRNLookup LRNLookup { get; set; }
+        public LrnLookup LRNLookup { get; set; }
         public string PortabilityResponse { get; set; }
     }
 }
