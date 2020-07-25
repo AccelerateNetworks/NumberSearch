@@ -2,7 +2,6 @@ using BulkVS;
 
 using FirstCom;
 
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
@@ -11,7 +10,6 @@ using NumberSearch.DataAccess.TeleMesssage;
 using ServiceReference;
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -29,6 +27,7 @@ namespace NumberSearch.Tests
         private readonly string bulkVSKey;
         private readonly string bulkVSSecret;
         private readonly string postgresql;
+        private readonly string peerlessAPIKey;
 
         public Integration(ITestOutputHelper output)
         {
@@ -49,10 +48,9 @@ namespace NumberSearch.Tests
 
             bulkVSKey = config.GetConnectionString("BulkVSAPIKEY");
             bulkVSSecret = config.GetConnectionString("BulkVSAPISecret");
-
             token = Guid.Parse(config.GetConnectionString("TeleAPI"));
-
             postgresql = config.GetConnectionString("PostgresqlProd");
+            peerlessAPIKey = config.GetConnectionString("PeerlessAPIKey");
         }
 
         [Fact]
@@ -78,7 +76,7 @@ namespace NumberSearch.Tests
             // Arrange
 
             // Act
-            var results = await PeerlessFind.GetAsync(token);
+            var results = await DidsNpas.GetAsync(token);
 
             // Assert
             Assert.NotNull(results);
@@ -89,6 +87,54 @@ namespace NumberSearch.Tests
                 Assert.False(string.IsNullOrWhiteSpace(result));
             }
             output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+        }
+
+        [Fact]
+        public async Task PeerlessNPATestAsync()
+        {
+            // Arrange
+            string npa = "206";
+
+            // Act
+            var results = await PeerlessFind.GetRawAsync(npa, peerlessAPIKey).ConfigureAwait(false);
+
+            // Assert
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            foreach (var result in results)
+            {
+                Assert.False(string.IsNullOrWhiteSpace(result.did));
+                Assert.False(string.IsNullOrWhiteSpace(result.category));
+            }
+        }
+
+        [Fact]
+        public async Task PeerlessGetPhoneNumbersTestAsync()
+        {
+            // Arrange
+            string npa = "206";
+
+            // Act
+            var results = await PeerlessFind.GetAsync(npa, peerlessAPIKey).ConfigureAwait(false);
+
+            // Assert
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            int count = 0;
+
+            foreach (var result in results.ToArray())
+            {
+                output.WriteLine(result.DialedNumber);
+                Assert.True(result.NPA > 99);
+                Assert.True(result.NXX > 99);
+                Assert.True(result.XXXX > 1);
+                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+                Assert.False(string.IsNullOrWhiteSpace(result.City));
+                Assert.False(string.IsNullOrWhiteSpace(result.State));
+                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+                count++;
+            }
+            output.WriteLine($"{count} Results Reviewed");
         }
 
         [Fact]

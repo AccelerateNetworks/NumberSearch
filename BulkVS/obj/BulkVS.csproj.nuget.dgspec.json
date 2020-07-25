@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\thoma\\source\\repos\\uncheckederror\\NumberSearch\\BulkVS\\BulkVS.csproj": {}
+    "C:\\Users\\thoma\\Source\\Repos\\uncheckederror\\NumberSearch\\BulkVS\\BulkVS.csproj": {}
   },
   "projects": {
-    "C:\\Users\\thoma\\source\\repos\\uncheckederror\\NumberSearch\\BulkVS\\BulkVS.csproj": {
+    "C:\\Users\\thoma\\Source\\Repos\\uncheckederror\\NumberSearch\\BulkVS\\BulkVS.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\thoma\\source\\repos\\uncheckederror\\NumberSearch\\BulkVS\\BulkVS.csproj",
+        "projectUniqueName": "C:\\Users\\thoma\\Source\\Repos\\uncheckederror\\NumberSearch\\BulkVS\\BulkVS.csproj",
         "projectName": "BulkVS",
-        "projectPath": "C:\\Users\\thoma\\source\\repos\\uncheckederror\\NumberSearch\\BulkVS\\BulkVS.csproj",
+        "projectPath": "C:\\Users\\thoma\\Source\\Repos\\uncheckederror\\NumberSearch\\BulkVS\\BulkVS.csproj",
         "packagesPath": "C:\\Users\\thoma\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\thoma\\source\\repos\\uncheckederror\\NumberSearch\\BulkVS\\obj\\",
+        "outputPath": "C:\\Users\\thoma\\Source\\Repos\\uncheckederror\\NumberSearch\\BulkVS\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
@@ -30,8 +30,8 @@
         "frameworks": {
           "netcoreapp3.1": {
             "projectReferences": {
-              "C:\\Users\\thoma\\source\\repos\\uncheckederror\\NumberSearch\\NumberSearch.DataAccess\\NumberSearch.DataAccess.csproj": {
-                "projectPath": "C:\\Users\\thoma\\source\\repos\\uncheckederror\\NumberSearch\\NumberSearch.DataAccess\\NumberSearch.DataAccess.csproj"
+              "C:\\Users\\thoma\\Source\\Repos\\uncheckederror\\NumberSearch\\NumberSearch.DataAccess\\NumberSearch.DataAccess.csproj": {
+                "projectPath": "C:\\Users\\thoma\\Source\\Repos\\uncheckederror\\NumberSearch\\NumberSearch.DataAccess\\NumberSearch.DataAccess.csproj"
               }
             }
           }
@@ -84,14 +84,14 @@
         }
       }
     },
-    "C:\\Users\\thoma\\source\\repos\\uncheckederror\\NumberSearch\\NumberSearch.DataAccess\\NumberSearch.DataAccess.csproj": {
+    "C:\\Users\\thoma\\Source\\Repos\\uncheckederror\\NumberSearch\\NumberSearch.DataAccess\\NumberSearch.DataAccess.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\thoma\\source\\repos\\uncheckederror\\NumberSearch\\NumberSearch.DataAccess\\NumberSearch.DataAccess.csproj",
+        "projectUniqueName": "C:\\Users\\thoma\\Source\\Repos\\uncheckederror\\NumberSearch\\NumberSearch.DataAccess\\NumberSearch.DataAccess.csproj",
         "projectName": "NumberSearch.DataAccess",
-        "projectPath": "C:\\Users\\thoma\\source\\repos\\uncheckederror\\NumberSearch\\NumberSearch.DataAccess\\NumberSearch.DataAccess.csproj",
+        "projectPath": "C:\\Users\\thoma\\Source\\Repos\\uncheckederror\\NumberSearch\\NumberSearch.DataAccess\\NumberSearch.DataAccess.csproj",
         "packagesPath": "C:\\Users\\thoma\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\thoma\\source\\repos\\uncheckederror\\NumberSearch\\NumberSearch.DataAccess\\obj\\",
+        "outputPath": "C:\\Users\\thoma\\Source\\Repos\\uncheckederror\\NumberSearch\\NumberSearch.DataAccess\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
