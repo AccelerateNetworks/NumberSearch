@@ -32,12 +32,12 @@ namespace NumberSearch.Ingest
             {
                 npas = await GetValidNPAsAsync(token);
 
-                Log.Information($"Found {npas.Length} NPAs");
+                Log.Information($"[TeleMessage] Found {npas.Length} NPAs");
             }
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}");
-                Log.Error($"No NPAs Retrived.");
+                Log.Error($"[TeleMessage] No NPAs Retrived.");
             }
 
             foreach (var npa in npas)
@@ -48,12 +48,12 @@ namespace NumberSearch.Ingest
                 {
                     nxxs = await GetValidNXXsAsync(npa, token);
 
-                    Log.Information($"Found {nxxs.Length} NXXs");
+                    Log.Information($"[TeleMessage] Found {nxxs.Length} NXXs");
                 }
                 catch (Exception ex)
                 {
                     Log.Error($"{ex.Message}");
-                    Log.Error($"No NXXs Retrived.");
+                    Log.Error($"[TeleMessage] No NXXs Retrived.");
                 }
 
                 if (nxxs.Length > 1)
@@ -93,7 +93,7 @@ namespace NumberSearch.Ingest
                     {
                         count += xxxx;
                     }
-                    Log.Information($"Found {count} Phone Numbers");
+                    Log.Information($"[TeleMessage] Found {count} Phone Numbers");
                 }
             }
 

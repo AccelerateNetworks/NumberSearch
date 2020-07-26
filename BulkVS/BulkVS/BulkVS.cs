@@ -53,11 +53,11 @@ namespace BulkVS
                 try
                 {
                     numbers.AddRange(await NpaBulkVS.GetAsync(code.ToString(), apiKey, apiSecret).ConfigureAwait(false));
-                    Log.Information($"Found {numbers.Count} Phone Numbers");
+                    Log.Information($"[BulkVS] Found {numbers.Count} Phone Numbers");
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"Area code {code} failed @ {DateTime.Now}: {ex.Message}");
+                    Log.Error($"[BulkVS] Area code {code} failed @ {DateTime.Now}: {ex.Message}");
                 }
             }
 

@@ -53,7 +53,7 @@ namespace NumberSearch.Ingest
                 try
                 {
                     numbers.AddRange(await NpaNxxFirstPointCom.GetAsync(code.ToString(), string.Empty, string.Empty, username, password));
-                    Log.Information($"Found {numbers.Count} Phone Numbers");
+                    Log.Information($"[FirstCom] Found {numbers.Count} Phone Numbers");
                 }
                 catch (Exception ex)
                 {
