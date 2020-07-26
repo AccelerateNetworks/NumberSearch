@@ -39,7 +39,7 @@ namespace NumberSearch.Ingest
             var bulkVSCycle = DateTime.Now.AddHours(1) - DateTime.Now;
             var firstComCycle = DateTime.Now.AddHours(12) - DateTime.Now;
             var teleMessageCycle = DateTime.Now.AddHours(12) - DateTime.Now;
-            var peerlessCycle = DateTime.Now.AddHours(3) - DateTime.Now;
+            var peerlessCycle = DateTime.Now.AddHours(12) - DateTime.Now;
 
             var tasks = new List<Task<IngestStatistics>>();
 
@@ -250,74 +250,74 @@ namespace NumberSearch.Ingest
                 Log.Information("Ingesting TeleMessage skipped.");
             }
 
-            //lastRun = await IngestStatistics.GetLastIngestAsync("Peerless", postgresSQL).ConfigureAwait(false);
+            lastRun = await IngestStatistics.GetLastIngestAsync("Peerless", postgresSQL).ConfigureAwait(false);
 
-            //if (lastRun.StartDate < (DateTime.Now - peerlessCycle))
-            //{
-            //    // Prevent another run from starting while this is still going.
-            //    var lockingStats = new IngestStatistics
-            //    {
-            //        IngestedFrom = "Peerless",
-            //        StartDate = DateTime.Now,
-            //        EndDate = DateTime.Now,
-            //        IngestedNew = 0,
-            //        FailedToIngest = 0,
-            //        NumbersRetrived = 0,
-            //        Removed = 0,
-            //        Unchanged = 0,
-            //        UpdatedExisting = 0,
-            //        Lock = true
-            //    };
+            if (lastRun.StartDate < (DateTime.Now - peerlessCycle))
+            {
+                // Prevent another run from starting while this is still going.
+                var lockingStats = new IngestStatistics
+                {
+                    IngestedFrom = "Peerless",
+                    StartDate = DateTime.Now,
+                    EndDate = DateTime.Now,
+                    IngestedNew = 0,
+                    FailedToIngest = 0,
+                    NumbersRetrived = 0,
+                    Removed = 0,
+                    Unchanged = 0,
+                    UpdatedExisting = 0,
+                    Lock = true
+                };
 
-            //    var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
+                var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
 
-            //    tasks.Add(
-            //            Task.Run(async () =>
-            //            {
-            //                // Ingest all avalible numbers from the TeleMessage.
-            //                Log.Information("Ingesting data from Peerless");
-            //                var peerlessStats = await Peerless.IngestPhoneNumbersAsync(peerlessApiKey, postgresSQL);
+                tasks.Add(
+                        Task.Run(async () =>
+                        {
+                            // Ingest all avalible numbers from the TeleMessage.
+                            Log.Information("Ingesting data from Peerless");
+                            var peerlessStats = await Peerless.IngestPhoneNumbersAsync(peerlessApiKey, postgresSQL);
 
-            //                // Remove the lock from the database to prevent it from getting cluttered with blank entries.
-            //                var lockEntry = await IngestStatistics.GetLockAsync("Peerless", postgresSQL).ConfigureAwait(false);
-            //                var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
+                            // Remove the lock from the database to prevent it from getting cluttered with blank entries.
+                            var lockEntry = await IngestStatistics.GetLockAsync("Peerless", postgresSQL).ConfigureAwait(false);
+                            var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
 
-            //                // Remove all of the old numbers from the database.
-            //                Log.Information("Removing old Peerless numbers from the database.");
-            //                var peerlessCleanUp = await PhoneNumber.DeleteOldByProvider(start, peerlessCycle, "Peerless", postgresSQL).ConfigureAwait(false);
+                            // Remove all of the old numbers from the database.
+                            Log.Information("Removing old Peerless numbers from the database.");
+                            var peerlessCleanUp = await PhoneNumber.DeleteOldByProvider(start, peerlessCycle, "Peerless", postgresSQL).ConfigureAwait(false);
 
-            //                var combined = new IngestStatistics
-            //                {
-            //                    StartDate = peerlessStats.StartDate,
-            //                    EndDate = peerlessCleanUp.EndDate,
-            //                    FailedToIngest = peerlessStats.FailedToIngest,
-            //                    IngestedFrom = peerlessStats.IngestedFrom,
-            //                    IngestedNew = peerlessStats.IngestedNew,
-            //                    Lock = false,
-            //                    NumbersRetrived = peerlessStats.NumbersRetrived,
-            //                    Removed = peerlessCleanUp.Removed,
-            //                    Unchanged = peerlessStats.Unchanged,
-            //                    UpdatedExisting = peerlessStats.UpdatedExisting
-            //                };
+                            var combined = new IngestStatistics
+                            {
+                                StartDate = peerlessStats.StartDate,
+                                EndDate = peerlessCleanUp.EndDate,
+                                FailedToIngest = peerlessStats.FailedToIngest,
+                                IngestedFrom = peerlessStats.IngestedFrom,
+                                IngestedNew = peerlessStats.IngestedNew,
+                                Lock = false,
+                                NumbersRetrived = peerlessStats.NumbersRetrived,
+                                Removed = peerlessCleanUp.Removed,
+                                Unchanged = peerlessStats.Unchanged,
+                                UpdatedExisting = peerlessStats.UpdatedExisting
+                            };
 
-            //                if (await combined.PostAsync(postgresSQL))
-            //                {
-            //                    Log.Information("Completed the Peerless ingest process.");
-            //                }
-            //                else
-            //                {
-            //                    Log.Fatal("Failed to completed the Peerless ingest process.");
-            //                }
+                            if (await combined.PostAsync(postgresSQL))
+                            {
+                                Log.Information("Completed the Peerless ingest process.");
+                            }
+                            else
+                            {
+                                Log.Fatal("Failed to completed the Peerless ingest process.");
+                            }
 
-            //                return combined;
-            //            })
-            //        );
+                            return combined;
+                        })
+                    );
 
-            //}
-            //else
-            //{
-            //    Log.Information("Ingesting Peerless skipped.");
-            //}
+            }
+            else
+            {
+                Log.Information("Ingesting Peerless skipped.");
+            }
 
             //var teleStats = new IngestStatistics();
             //var BulkVSStats = new IngestStatistics();
