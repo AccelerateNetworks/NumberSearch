@@ -39,7 +39,7 @@ namespace NumberSearch.Ingest
             var bulkVSCycle = DateTime.Now.AddHours(1) - DateTime.Now;
             var firstComCycle = DateTime.Now.AddHours(12) - DateTime.Now;
             var teleMessageCycle = DateTime.Now.AddHours(12) - DateTime.Now;
-            var peerlessCycle = DateTime.Now.AddHours(1) - DateTime.Now;
+            var peerlessCycle = DateTime.Now.AddHours(3) - DateTime.Now;
 
             var tasks = new List<Task<IngestStatistics>>();
 
