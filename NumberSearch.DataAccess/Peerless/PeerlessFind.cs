@@ -12,23 +12,21 @@ namespace NumberSearch.DataAccess.Peerless
         public string did { get; set; }
         public string category { get; set; }
 
-        public static async Task<IEnumerable<DidFind>> GetRawAsync(string npa, bool vanity, string apiKey)
+        public static async Task<IEnumerable<DidFind>> GetRawAsync(string npa, string apiKey)
         {
             string baseUrl = "https://api.peerlessnetwork.io/mag/v1/";
             string endpoint = "did/find";
             string npaParameter = $"?npa={npa}";
             string limitParameter = $"&limit=100";
-            string categoryParameter = $"&category=";
-            categoryParameter += vanity ? "Vanity" : "Standard";
             string consecutiveParameter = $"&consecutive=10";
             string apiKeyParameter = $"&api_key={apiKey}";
-            string route = $"{baseUrl}{endpoint}{npaParameter}{limitParameter}{categoryParameter}{consecutiveParameter}{apiKeyParameter}";
+            string route = $"{baseUrl}{endpoint}{npaParameter}{limitParameter}{consecutiveParameter}{apiKeyParameter}";
             return await route.GetJsonAsync<IEnumerable<DidFind>>().ConfigureAwait(false);
         }
 
         public static async Task<IEnumerable<PhoneNumber>> GetAsync(string query, string apiKey)
         {
-            var results = await GetRawAsync(query, true, apiKey).ConfigureAwait(false);
+            var results = await GetRawAsync(query, apiKey).ConfigureAwait(false);
 
             var list = new List<PhoneNumber>();
 

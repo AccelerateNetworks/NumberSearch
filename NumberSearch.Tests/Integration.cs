@@ -97,7 +97,7 @@ namespace NumberSearch.Tests
             string npa = "206";
 
             // Act
-            var results = await DidFind.GetRawAsync(npa, true, peerlessAPIKey).ConfigureAwait(false);
+            var results = await DidFind.GetRawAsync(npa, peerlessAPIKey).ConfigureAwait(false);
 
             // Assert
             Assert.NotNull(results);
