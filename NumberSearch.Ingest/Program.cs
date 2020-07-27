@@ -13,8 +13,7 @@ namespace NumberSearch.Ingest
 {
     public class Program
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
-        public static async Task Main(string[] args)
+        public static async Task Main()
         {
             var config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
@@ -36,10 +35,10 @@ namespace NumberSearch.Ingest
 
             var start = DateTime.Now;
 
-            var bulkVSCycle = DateTime.Now.AddHours(1) - DateTime.Now;
-            var firstComCycle = DateTime.Now.AddHours(12) - DateTime.Now;
-            var teleMessageCycle = DateTime.Now.AddHours(12) - DateTime.Now;
-            var peerlessCycle = DateTime.Now.AddHours(1) - DateTime.Now;
+            var bulkVSCycle = DateTime.Now.AddHours(config.GetValue<int>("IngestProviders:BulkVS")) - DateTime.Now;
+            var firstComCycle = DateTime.Now.AddHours(config.GetValue<int>("IngestProviders:FirstCom")) - DateTime.Now;
+            var teleMessageCycle = DateTime.Now.AddHours(config.GetValue<int>("IngestProviders:TeleMessage")) - DateTime.Now;
+            var peerlessCycle = DateTime.Now.AddHours(config.GetValue<int>("IngestProviders:Peerless")) - DateTime.Now;
 
             var tasks = new List<Task<IngestStatistics>>();
 
