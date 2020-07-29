@@ -35,3 +35,7 @@ chmod 644 /etc/systemd/system/numbersearch.service
 systemctl daemon-reload
 systemctl enable numbersearch.service
 systemctl start numbersearch.service
+```
+
+## Continuous Integration and Deployment
+[Check out our Azure DevOps pipelines.](https://dev.azure.com/thomasaryan/NumberSearch/)
