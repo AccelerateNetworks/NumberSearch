@@ -29,8 +29,9 @@ namespace NumberSearch.Ingest
             var peerlessApiKey = config.GetConnectionString("PeerlessAPIKey");
 
             Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console()
-                .WriteTo.File($"NumberSearch.Ingest_{DateTime.Now:yyyyMMdd}.txt")
+                .WriteTo.Async(a => a.Console())
+                .WriteTo.Async(a => a.Debug())
+                .WriteTo.Async(a => a.File($"NumberSearch.Ingest_{DateTime.Now:yyyyMMdd}.txt"))
                 .CreateLogger();
 
             var start = DateTime.Now;
