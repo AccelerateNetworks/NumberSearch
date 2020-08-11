@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using Serilog;
+
 namespace NumberSearch.Mvc
 {
     public class Startup
@@ -58,6 +60,8 @@ namespace NumberSearch.Mvc
                 app.UseHsts();
             }
 
+            app.UseSerilogRequestLogging();
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
@@ -68,7 +72,6 @@ namespace NumberSearch.Mvc
             app.UseAuthorization();
 
             app.UseSession();
-
 
             app.UseEndpoints(endpoints =>
             {

@@ -30,7 +30,7 @@ namespace NumberSearch.Ingest
 
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
-                .WriteTo.File($"NumberSearch.Ingest\\{DateTime.Now:yyyyMMdd}.txt")
+                .WriteTo.File($"NumberSearch.Ingest_{DateTime.Now:yyyyMMdd}.txt")
                 .CreateLogger();
 
             var start = DateTime.Now;
