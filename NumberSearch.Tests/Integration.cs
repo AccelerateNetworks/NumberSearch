@@ -604,6 +604,9 @@ namespace NumberSearch.Tests
 
             var result = await Order.GetByIdAsync(selectedOrders.OrderId, conn);
 
+            result.FirstName = "Integration";
+            result.LastName = "Test";
+
             var response = await result.PostAsync(conn);
 
             Assert.True(response);
@@ -656,7 +659,7 @@ namespace NumberSearch.Tests
                 DialedNumber = "8605530426",
                 DateIngested = DateTime.Now.AddDays(-1),
                 DateOrdered = DateTime.Now,
-                IngestedFrom = "Test",
+                IngestedFrom = "IntegrationTest",
                 OrderResponse = "\"code\":200,",
                 Completed = true
             };
