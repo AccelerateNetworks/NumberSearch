@@ -65,5 +65,34 @@ namespace NumberSearch.DataAccess
                 return false;
             }
         }
+
+        /// <summary>
+        /// Delete all of the product orders related to a specific order from the database.
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        public async Task<bool> DeleteByOrderAsync(string connectionString)
+        {
+            if (OrderId == Guid.Empty)
+            {
+                return false;
+            }
+
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("DELETE FROM public.\"ProductOrders\" WHERE \"OrderId\" = @OrderId",
+                new { OrderId })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }

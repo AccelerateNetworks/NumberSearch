@@ -495,6 +495,13 @@ namespace NumberSearch.Tests
             number.DialedNumber = $"{number.NPA}{number.NXX}{number.XXXX}";
             var response = await number.PostAsync(conn);
             Assert.True(response);
+
+            // Clean up.
+            // We need the Guid so we have to get a copy of the new record from the DB before we can delete it.
+            var fromDb = await PhoneNumber.GetAsync(number.DialedNumber, conn).ConfigureAwait(false);
+
+            var checkDelete = await fromDb.DeleteAsync(conn);
+            Assert.True(checkDelete);
         }
 
         [Fact]
@@ -554,6 +561,12 @@ namespace NumberSearch.Tests
             var check = await stats.PostAsync(conn);
 
             Assert.True(check);
+
+            // Clean up.
+            var fromDb = await IngestStatistics.GetLastIngestAsync(stats.IngestedFrom, conn).ConfigureAwait(false);
+
+            var checkDelete = await fromDb.DeleteAsync(conn).ConfigureAwait(false);
+            Assert.True(checkDelete);
         }
 
         [Fact]
@@ -599,7 +612,6 @@ namespace NumberSearch.Tests
             var orders = await Order.GetAllAsync(conn).ConfigureAwait(false);
 
             var selectedOrders = orders.Where(x => (x.OrderId != null) && (x.OrderId != Guid.Empty)).FirstOrDefault();
-
             Assert.False(selectedOrders is null);
 
             var result = await Order.GetByIdAsync(selectedOrders.OrderId, conn);
@@ -608,8 +620,16 @@ namespace NumberSearch.Tests
             result.LastName = "Test";
 
             var response = await result.PostAsync(conn);
-
             Assert.True(response);
+
+            // Clean up.
+            var fromDb = await Order.GetByEmailAsync(result.Email, conn).ConfigureAwait(false);
+
+            var newOrderFromDb = fromDb.Where(x => x.FirstName == result.FirstName && x.LastName == result.LastName).FirstOrDefault();
+            Assert.False(newOrderFromDb is null);
+
+            var checkDelete = await newOrderFromDb.DeleteAsync(conn).ConfigureAwait(false);
+            Assert.True(checkDelete);
         }
 
         [Fact]
@@ -624,10 +644,16 @@ namespace NumberSearch.Tests
                 Quantity = 1
             };
 
-
             var result = await itemToOrder.PostAsync(conn);
-
             Assert.True(result);
+
+            // Clean up.
+            var fromDb = await ProductOrder.GetAsync(itemToOrder.OrderId, conn).ConfigureAwait(false);
+            Assert.NotNull(fromDb);
+            Assert.NotEmpty(fromDb);
+
+            var checkDelete = await fromDb.FirstOrDefault().DeleteByOrderAsync(conn).ConfigureAwait(false);
+            Assert.True(checkDelete);
         }
 
 
@@ -644,8 +670,15 @@ namespace NumberSearch.Tests
             };
 
             var result = await itemToOrder.PostAsync(conn);
-
             Assert.True(result);
+
+            // Clean up.
+            var fromDb = await ProductOrder.GetAsync(itemToOrder.OrderId, conn).ConfigureAwait(false);
+            Assert.NotNull(fromDb);
+            Assert.NotEmpty(fromDb);
+
+            var checkDelete = await fromDb.FirstOrDefault().DeleteByOrderAsync(conn).ConfigureAwait(false);
+            Assert.True(checkDelete);
         }
 
         [Fact]
@@ -665,19 +698,48 @@ namespace NumberSearch.Tests
             };
 
             var result = await itemToOrder.PostAsync(conn);
-
             Assert.True(result);
+
+            // Clean up.
+            var fromDb = await PurchasedPhoneNumber.GetByDialedNumberAsync(itemToOrder.DialedNumber, itemToOrder.OrderId, conn).ConfigureAwait(false);
+            Assert.NotNull(fromDb);
+
+            var checkDelete = await fromDb.DeleteAsync(conn).ConfigureAwait(false);
+            Assert.True(checkDelete);
         }
 
         [Fact]
         public async Task GetProductOrderAsync()
         {
+            // Arrange
             var conn = postgresql;
 
-            var results = await ProductOrder.GetAsync(new Guid("799cc220-5931-46d8-9a21-03ce523e8ec2"), conn);
+            // Create the order.
+            var itemToOrder = new ProductOrder
+            {
+                OrderId = new Guid("799cc220-5931-46d8-9a21-03ce523e8ec2"),
+                ProductId = new Guid("799cc220-5931-46d8-9a21-03ce523e8ec3"),
+                Quantity = 1
+            };
 
+
+            var result = await itemToOrder.PostAsync(conn).ConfigureAwait(false);
+            Assert.True(result);
+
+            // Act
+            var results = await ProductOrder.GetAsync(itemToOrder.OrderId, conn).ConfigureAwait(false);
+
+            // Assert
             Assert.NotNull(results);
             Assert.NotEmpty(results);
+            foreach (var order in results)
+            {
+                Assert.Equal(order.OrderId, itemToOrder.OrderId);
+            }
+
+            // Clean up.
+            var checkDelete = await results.FirstOrDefault().DeleteByOrderAsync(conn).ConfigureAwait(false);
+            Assert.True(checkDelete);
         }
 
         [Fact]

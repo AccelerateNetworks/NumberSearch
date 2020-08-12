@@ -81,5 +81,30 @@ namespace NumberSearch.DataAccess
                 return false;
             }
         }
+
+        public async Task<bool> DeleteAsync(string connectionString)
+        {
+            // Fail fast if we don have the primary key.
+            if (OrderId == Guid.Empty)
+            {
+                return false;
+            }
+
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("DELETE FROM public.\"Orders\" WHERE \"OrderId\" = @OrderId",
+                new { OrderId })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }

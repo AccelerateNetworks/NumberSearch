@@ -4,7 +4,6 @@ using Npgsql;
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess
@@ -67,6 +66,35 @@ namespace NumberSearch.DataAccess
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"PurchasedPhoneNumbers\"(\"OrderId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"DateOrdered\", \"OrderResponse\", \"Completed\") VALUES(@OrderId, @DialedNumber, @IngestedFrom, @DateIngested, @DateOrdered, @OrderResponse, @Completed)",
                 new { OrderId, DialedNumber, IngestedFrom, DateIngested, DateOrdered, OrderResponse, Completed })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Delete a purchased phone number from the database.
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        public async Task<bool> DeleteAsync(string connectionString)
+        {
+            if (PurchasedPhoneNumberId == Guid.Empty)
+            {
+                return false;
+            }
+
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("DELETE FROM public.\"PurchasedPhoneNumbers\" WHERE \"PurchasedPhoneNumberId\" = @PurchasedPhoneNumberId",
+                new { PurchasedPhoneNumberId })
                 .ConfigureAwait(false);
 
             if (result == 1)

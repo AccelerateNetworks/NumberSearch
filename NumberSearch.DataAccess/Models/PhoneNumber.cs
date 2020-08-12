@@ -143,6 +143,32 @@ namespace NumberSearch.DataAccess
         }
 
         /// <summary>
+        /// Delete a specific phone number by its dialed number.
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        public async Task<bool> DeleteAsync(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("DELETE FROM public.\"PhoneNumbers\" " +
+                "WHERE \"DialedNumber\" = @DialedNumber",
+                new { DialedNumber })
+                .ConfigureAwait(false);
+
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Delete only numbers that haven't been reingested recently that were ingested from a specific provider.
         /// </summary>
         /// <param name="connectionString"></param>
@@ -200,6 +226,12 @@ namespace NumberSearch.DataAccess
             }
         }
 
+        /// <summary>
+        /// Submit ingested phone numbers to the database in bulk.
+        /// </summary>
+        /// <param name="numbers"></param>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
         public static async Task<bool> BulkPostAsync(IEnumerable<PhoneNumber> numbers, string connectionString)
         {
             // Make sure there are some numbers incoming.
