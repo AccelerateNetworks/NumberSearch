@@ -5,11 +5,7 @@ using FirstCom;
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
-using NumberSearch.DataAccess.Peerless;
 using NumberSearch.DataAccess.TeleMesssage;
-using NumberSearch.Mvc.Models;
-
-using Org.BouncyCastle.Asn1.IsisMtt.X509;
 
 using ServiceReference;
 

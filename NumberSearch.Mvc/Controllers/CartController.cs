@@ -3,17 +3,11 @@ using BulkVS.BulkVS;
 
 using FirstCom;
 
-using MailKit.Security;
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
-using MimeKit;
-using MimeKit.Text;
-
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.TeleMesssage;
-using NumberSearch.Mvc.Models;
 
 using Serilog;
 

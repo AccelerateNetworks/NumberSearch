@@ -11,7 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace NumberSearch.Mvc.Models
+namespace NumberSearch.DataAccess
 {
     public class Email
     {
@@ -35,7 +35,7 @@ namespace NumberSearch.Mvc.Models
 
             var result = await connection
                 .QueryAsync<Email>("SELECT \"EmailId\", \"OrderId\", \"PrimaryEmailAddress\", \"CarbonCopy\", \"Subject\", \"MessageBody\", \"DateSent\", \"Completed\" " +
-                "FROM public.\"SentEmails\"")
+                "FROM public.\"SentEmails\" ORDER BY \"DateSent\" DESC")
                 .ConfigureAwait(false);
 
             return result;

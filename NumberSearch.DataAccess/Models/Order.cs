@@ -28,7 +28,7 @@ namespace NumberSearch.DataAccess
 
             var result = await connection
                 .QueryFirstOrDefaultAsync<Order>("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\", \"BusinessName\" FROM public.\"Orders\" " +
-                "WHERE \"OrderId\" = @orderId",
+                "WHERE \"OrderId\" = @orderId ORDER BY \"DateSubmitted\" DESC",
                 new { orderId })
                 .ConfigureAwait(false);
 

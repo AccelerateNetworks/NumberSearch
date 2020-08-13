@@ -14,6 +14,9 @@
             <a class="nav-link active" asp-controller="Home" asp-action="NumberOrders">Number Orders</a>
         </li>
         <li class="nav-item">
+            <a class="nav-link" asp-controller="Home" asp-action="Emails">Sent Emails</a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link" asp-controller="Home" asp-action="PortRequests">Port Requests</a>
         </li>
     </ul>
@@ -30,16 +33,16 @@
         <thead>
             <tr>
                 <th>
-                    Dialed Number
-                </th>
-                <th>
-                    Completed
+
                 </th>
                 <th>
                     Date Ordered
                 </th>
                 <th>
-
+                    Dialed Number
+                </th>
+                <th>
+                    Completed
                 </th>
                 <th>
                     Ingested From
@@ -71,18 +74,18 @@
                     }
                     <tr>
                         <td>
-                            @order.DialedNumber
-                        </td>
-                        <td>
-                            @order.Completed
+                            <a href="https://acceleratenetworks.com/cart/order/@order.OrderId" class="btn btn-primary">
+                                View Order
+                            </a>
                         </td>
                         <td>
                             @order.DateOrdered
                         </td>
                         <td>
-                            <a href="https://acceleratenetworks.com/cart/order/@order.OrderId" class="btn btn-primary">
-                                View Order
-                            </a>
+                            @order.DialedNumber
+                        </td>
+                        <td>
+                            @order.Completed
                         </td>
                         <td>
                             @Html.Raw(ingestedBadge)

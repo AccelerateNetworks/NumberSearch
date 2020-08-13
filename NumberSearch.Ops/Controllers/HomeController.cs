@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-
-using BulkVS;
+﻿using BulkVS;
 using BulkVS.BulkVS;
 
 using CsvHelper;
@@ -15,13 +7,20 @@ using FirstCom;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.TeleMesssage;
 using NumberSearch.Ops.Models;
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace NumberSearch.Ops.Controllers
 {
@@ -189,6 +188,14 @@ namespace NumberSearch.Ops.Controllers
             }
 
             return View("Tests");
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Emails()
+        {
+            var emails = await Email.GetAllAsync(_postgresql).ConfigureAwait(false);
+
+            return View("Emails", emails);
         }
 
 

@@ -1,0 +1,84 @@
+﻿@model IEnumerable<NumberSearch.DataAccess.Email>
+@{
+    ViewData["Title"] = "Sent Emails";
+}
+<br />
+<h1 class="display-4">Sent Emails</h1>
+<br />
+<div class="pb-3">
+    <ul class="nav nav-pills nav-fill nav-justified">
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Home" asp-action="Numbers">Numbers</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Home" asp-action="NumberOrders">Number Orders</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" asp-controller="Home" asp-action="Emails">Sent Emails</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Home" asp-action="PortRequests">Port Requests</a>
+        </li>
+    </ul>
+</div>
+<div class="table-responsive">
+    <table class="table table-striped table-borderless table-hover">
+        <thead>
+            <tr>
+                <th>
+
+                </th>
+                <th>
+                    Date Sent
+                </th>
+                <th>
+                    Completed
+                </th>
+                <th>
+                    Email
+                </th>
+                <th>
+                    CC
+                </th>
+                <th>
+                    Subject
+                </th>
+                <th>
+                    Body
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                foreach (var email in Model)
+                {
+                    <tr>
+                        <td>
+                            <a href="https://acceleratenetworks.com/cart/order/@email.OrderId" class="btn btn-primary">
+                                View Order
+                            </a>
+                        </td>
+                        <td>
+                            @email.DateSent
+                        </td>
+                        <td>
+                            @email.Completed
+                        </td>
+                        <td>
+                            @email.PrimaryEmailAddress
+                        </td>
+                        <td>
+                            @email.CarbonCopy
+                        </td>
+                        <td>
+                            @email.Subject
+                        </td>
+                        <td>
+                            @email.MessageBody
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
