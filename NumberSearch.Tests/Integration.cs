@@ -609,7 +609,7 @@ namespace NumberSearch.Tests
                 CarbonCopy = "Test",
                 Completed = true,
                 MessageBody = "This is an integration test.",
-                OrderId = new Guid("799cc220-5931-46d8-9a21-03ce523e8ec2")
+                OrderId = Guid.NewGuid()
             };
 
             var checkSubmit = await email.PostAsync(postgresql).ConfigureAwait(false);
@@ -690,8 +690,8 @@ namespace NumberSearch.Tests
 
             var itemToOrder = new ProductOrder
             {
-                OrderId = new Guid("799cc220-5931-46d8-9a21-03ce523e8ec2"),
-                ProductId = new Guid("799cc220-5931-46d8-9a21-03ce523e8ec3"),
+                OrderId = Guid.NewGuid(),
+                ProductId = Guid.NewGuid(),
                 Quantity = 1
             };
 
@@ -715,7 +715,7 @@ namespace NumberSearch.Tests
 
             var itemToOrder = new ProductOrder
             {
-                OrderId = new Guid("799cc220-5931-46d8-9a21-03ce523e8ec2"),
+                OrderId = Guid.NewGuid(),
                 DialedNumber = "8605530426",
                 Quantity = 1
             };
@@ -739,7 +739,7 @@ namespace NumberSearch.Tests
 
             var itemToOrder = new PurchasedPhoneNumber
             {
-                OrderId = new Guid("799cc220-5931-46d8-9a21-03ce523e8ec2"),
+                OrderId = Guid.NewGuid(),
                 DialedNumber = "8605530426",
                 DateIngested = DateTime.Now.AddDays(-1),
                 DateOrdered = DateTime.Now,
@@ -768,8 +768,8 @@ namespace NumberSearch.Tests
             // Create the order.
             var itemToOrder = new ProductOrder
             {
-                OrderId = new Guid("799cc220-5931-46d8-9a21-03ce523e8ec2"),
-                ProductId = new Guid("799cc220-5931-46d8-9a21-03ce523e8ec3"),
+                OrderId = Guid.NewGuid(),
+                ProductId = Guid.NewGuid(),
                 Quantity = 1
             };
 
