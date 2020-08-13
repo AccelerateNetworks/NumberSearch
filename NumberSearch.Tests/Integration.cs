@@ -7,6 +7,9 @@ using Microsoft.Extensions.Configuration;
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.Peerless;
 using NumberSearch.DataAccess.TeleMesssage;
+using NumberSearch.Mvc.Models;
+
+using Org.BouncyCastle.Asn1.IsisMtt.X509;
 
 using ServiceReference;
 
@@ -23,7 +26,6 @@ namespace NumberSearch.Tests
     {
         private readonly Guid token;
         private readonly ITestOutputHelper output;
-        private readonly IConfiguration configuration;
         private readonly Credentials pComNetCredentials;
         private readonly string bulkVSKey;
         private readonly string bulkVSSecret;
@@ -38,8 +40,6 @@ namespace NumberSearch.Tests
                 .AddJsonFile("appsettings.json")
                 .AddUserSecrets("40f816f3-0a65-4523-a9be-4bbef0716720")
                 .Build();
-
-            configuration = config;
 
             pComNetCredentials = new Credentials
             {
@@ -578,6 +578,61 @@ namespace NumberSearch.Tests
             var result = await PhoneNumber.NumberOfResultsInQuery(query, conn);
 
             Assert.True(result > 0);
+        }
+
+        [Fact]
+        public async Task GetAllSentEmailsAsync()
+        {
+            var results = await Email.GetAllAsync(postgresql).ConfigureAwait(false);
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+        }
+
+        [Fact]
+        public async Task GetSentEmailByIdAsync()
+        {
+            var results = await Email.GetAllAsync(postgresql).ConfigureAwait(false);
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+
+            var email = results.FirstOrDefault();
+
+            var result = await Email.GetAsync(email.EmailId, postgresql).ConfigureAwait(false);
+            Assert.NotNull(result);
+            Assert.Equal(email.EmailId, result.EmailId);
+        }
+
+        [Fact]
+        public async Task PostSentEmailAsync()
+        {
+            var email = new Email
+            {
+                PrimaryEmailAddress = "test@test.com",
+                Subject = "Test",
+                DateSent = DateTime.Now,
+                CarbonCopy = "Test",
+                Completed = true,
+                MessageBody = "This is an integration test.",
+                OrderId = new Guid("799cc220-5931-46d8-9a21-03ce523e8ec2")
+            };
+
+            var checkSubmit = await email.PostAsync(postgresql).ConfigureAwait(false);
+            Assert.True(checkSubmit);
+
+            // Clean up
+            var fromDb = await Email.GetByOrderAsync(email.OrderId, postgresql).ConfigureAwait(false);
+            Assert.NotNull(fromDb);
+            Assert.NotEmpty(fromDb);
+            foreach (var item in fromDb)
+            {
+                Assert.Equal(email.PrimaryEmailAddress, item.PrimaryEmailAddress);
+                Assert.Equal(email.Subject, item.Subject);
+                Assert.Equal(email.CarbonCopy, item.CarbonCopy);
+                Assert.Equal(email.MessageBody, item.MessageBody);
+
+                var checkDelete = await item.DeleteAsync(postgresql).ConfigureAwait(false);
+                Assert.True(checkDelete);
+            }
         }
 
         [Fact]

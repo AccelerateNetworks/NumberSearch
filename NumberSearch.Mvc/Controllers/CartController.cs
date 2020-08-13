@@ -13,6 +13,9 @@ using MimeKit.Text;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.TeleMesssage;
+using NumberSearch.Mvc.Models;
+
+using Serilog;
 
 using System;
 using System.Collections.Generic;
@@ -379,7 +382,7 @@ namespace NumberSearch.Mvc.Controllers
                         bool checkNxx = int.TryParse(phoneNumber.DialedNumber.Substring(3, 3), out int nxx);
                         bool checkXxxx = int.TryParse(phoneNumber.DialedNumber.Substring(6), out int xxxx);
 
-                        if (checkNxx && checkXxxx)
+                        if (checkNpa && checkNxx && checkXxxx)
                         {
                             phoneNumbers.Add(new PhoneNumber
                             {
@@ -520,9 +523,28 @@ namespace NumberSearch.Mvc.Controllers
 
                                 var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
 
+                                if (checkVerifyOrder)
+                                {
+                                    Log.Information($"Saved the TeleMessage order for {nto.DialedNumber} to the database.");
+                                }
+                                else
+                                {
+                                    Log.Information($"Failed to save the TeleMessage order for {nto.DialedNumber} to the database.");
+
+                                }
+
                                 // Set a note for these number purchases inside of Tele's system.
                                 var getTeleId = await UserDidsGet.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
                                 var setTeleLabel = await UserDidsNote.SetNote($"{order?.BusinessName} {order?.FirstName} {order?.LastName}", getTeleId.data.id, _teleToken).ConfigureAwait(false);
+
+                                if (setTeleLabel.code == 200)
+                                {
+                                    Log.Information($"Sucessfully set TeleMessage label for {nto.DialedNumber} to {order?.BusinessName} {order?.FirstName} {order?.LastName}.");
+                                }
+                                else
+                                {
+                                    Log.Fatal($"Failed to set TeleMessage label for {nto.DialedNumber} to {order?.BusinessName} {order?.FirstName} {order?.LastName}.");
+                                }
                             }
                             else if (nto.IngestedFrom == "FirstPointCom")
                             {
@@ -566,47 +588,39 @@ namespace NumberSearch.Mvc.Controllers
                             }
                         }
 
-                        var outboundMessage = new MimeKit.MimeMessage
+                        // Send out the confirmation email.
+                        var confirmationEmail = new Email
                         {
-                            Sender = new MimeKit.MailboxAddress("Number Search", _configuration.GetConnectionString("SmtpUsername")),
-                            Subject = $"Order: {order.OrderId}"
-                        };
-
-                        // This will need to be updated when the baseURL changes.
-                        var linkToOrder = $"https://acceleratenetworks.com/Cart/Order/{order.OrderId}";
-
-                        outboundMessage.Body = new TextPart(TextFormat.Plain)
-                        {
-                            Text = $@"Hi {order.FirstName},
+                            PrimaryEmailAddress = order.Email,
+                            CarbonCopy = _configuration.GetConnectionString("SmtpUsername"),
+                            MessageBody = $@"Hi {order.FirstName},
                                                                                       
 Thank you for choosing Accelerate Networks!
 
 Your order Id is: {order.OrderId} and it was submitted on {order.DateSubmitted.ToLocalTime().ToShortDateString()} at {order.DateSubmitted.ToLocalTime().ToShortTimeString()}.
 
-You can review your order at {linkToOrder}
+You can review your order at https://acceleratenetworks.com/Cart/Order/{order.OrderId}
                                                                                       
 A delivery specialist will send you a follow up email to walk you through the next steps in the process.
 
 Thanks,
 
-Accelerate Networks"
+Accelerate Networks",
+                            OrderId = order.OrderId,
+                            Subject = $"Order: {order.OrderId}"
                         };
 
+                        var checkSend = await confirmationEmail.SendEmailAsync(_configuration.GetConnectionString("SmtpUsername"), _configuration.GetConnectionString("SmtpPassword")).ConfigureAwait(false);
+                        var checkSave = await confirmationEmail.PostAsync(_postgresql).ConfigureAwait(false);
 
-
-                        var ordersInbox = MailboxAddress.Parse(_configuration.GetConnectionString("SmtpUsername"));
-                        var recipient = MailboxAddress.Parse(order.Email);
-                        outboundMessage.Cc.Add(ordersInbox);
-                        outboundMessage.To.Add(recipient);
-
-                        using var smtp = new MailKit.Net.Smtp.SmtpClient();
-                        smtp.MessageSent += (sender, args) => { };
-                        smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
-
-                        await smtp.ConnectAsync("mail.seattlemesh.net", 587, SecureSocketOptions.StartTls).ConfigureAwait(false);
-                        await smtp.AuthenticateAsync(_configuration.GetConnectionString("SmtpUsername"), _configuration.GetConnectionString("SmtpPassword")).ConfigureAwait(false);
-                        await smtp.SendAsync(outboundMessage).ConfigureAwait(false);
-                        await smtp.DisconnectAsync(true).ConfigureAwait(false);
+                        if (checkSend && checkSave)
+                        {
+                            Log.Information($"Sucessfully sent out the confirmation emails for {order.OrderId}.");
+                        }
+                        else
+                        {
+                            Log.Fatal($"Failed to sent out the confirmation emails for {order.OrderId}.");
+                        }
 
                         if (cart.PortedPhoneNumbers.Any())
                         {
