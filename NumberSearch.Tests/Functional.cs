@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
+
 using NumberSearch.Mvc;
+
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+
 using Xunit;
 using Xunit.Abstractions;
 
@@ -36,6 +39,26 @@ namespace NumberSearch.Tests
         [InlineData("/")]
         [InlineData("/Contact")]
         public async Task GetStaticPagesAsync(string url)
+        {
+            // Arrange
+            var response = await _client.GetAsync(url);
+
+            // Act
+            response.EnsureSuccessStatusCode();
+            var stringResponse = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Contains("Seattle", stringResponse);
+        }
+
+        [Theory]
+        [InlineData("/Services")]
+        [InlineData("/Hardware")]
+        [InlineData("/Search")]
+        [InlineData("/Home/Support")]
+        [InlineData("/Home/About")]
+        [InlineData("/Cart")]
+        public async Task GetDynamicPagesAsync(string url)
         {
             // Arrange
             var response = await _client.GetAsync(url);
