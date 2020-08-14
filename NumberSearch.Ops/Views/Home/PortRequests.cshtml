@@ -28,39 +28,8 @@
                 <th>
                     Date Ordered
                 </th>
-                <th>
-                    Contact
-                </th>
-                <th>
-                    Business Name
-                </th>
-                <th>
-                    Address
-                </th>
-                <th>
-                    Billing
-                </th>
-                <th>
-                    Caller Id
-                </th>
-                <th>
-                    Location Type
-                </th>
-                <th>
-                    Partial Port
-                </th>
-                <th>
-                    Description
-                </th>
-                <th>
-                    Provider Account Number
-                </th>
-                <th>
-                    PIN
-                </th>
-                <th>
-                    Wireless Number
-                </th>
+                <th>Customer Information</th>
+                <th>Carrier Information</th>
             </tr>
         </thead>
         <tbody>
@@ -68,49 +37,53 @@
                 foreach (var port in Model)
                 {
                     <tr>
-                        <td>
-                            @port.DateSubmitted
+                        <td scope="row">
+                            <a href="https://acceleratenetworks.com/cart/order/@port.OrderId" class="btn btn-primary">
+                                View Order
+                            </a>
+                            <h4 class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="badge badge-info badge-pill">
+                                    @port.DateSubmitted
+                                </span>
+                            </h4>
                         </td>
-                        <td>
-                            @port.BusinessContact
-                        </td>
-                        <td>
-                            @port.BusinessName
-                        </td>
-                        <td>
-                            @port.Address
+                        <td scope="col">
+                            <strong>Business Contact</strong>
+                            <p>@port.BusinessContact</p>
+                            <strong>Business Name</strong>
+                            <p>@port.BusinessName</p>
+                            <strong>Address</strong>
+                            <p>
+                                @port.Address
 
-                            @port.Address2
+                                @port.Address2
 
-                            @port.City
+                                @port.City
 
-                            @port.State
+                                @port.State
 
-                            @port.Zip
+                                @port.Zip
+                            </p>
                         </td>
-                        <td>
-                            @port.BillingPhone
-                        </td>
-                        <td>
-                            @port.CallerId
-                        </td>
-                        <td>
-                            @port.LocationType
-                        </td>
-                        <td>
-                            @port.PartialPort
-                        </td>
-                        <td>
-                            @port.PartialPortDescription
-                        </td>
-                        <td>
-                            @port.ProviderAccountNumber
-                        </td>
-                        <td>
-                            @port.ProviderPIN
-                        </td>
-                        <td>
-                            @port.WirelessNumber
+                        <td scope="col">
+                            <strong>Billing Phone Number</strong>
+                            <p>@port.BillingPhone</p>
+                            <strong>Caller Id</strong>
+                            <p>@port.CallerId</p>
+                            <strong>Location Type</strong>
+                            <p>@port.LocationType</p>
+                            <strong>Partial Port</strong>
+                            <p>@port.PartialPort</p>
+                            <strong>Partial Port Description</strong>
+                            <p>@port.PartialPortDescription</p>
+                            <strong>Provider Account Number</strong>
+                            <p>@port.ProviderAccountNumber</p>
+                            <strong>Provider PIN</strong>
+                            <p>@port.ProviderPIN</p>
+                            <strong>
+                                Wireless Number
+                            </strong>
+                            <p>@port.WirelessNumber</p>
                         </td>
                     </tr>
                 }

@@ -32,25 +32,13 @@
     <table class="table table-striped table-borderless table-hover">
         <thead>
             <tr>
-                <th>
-
-                </th>
-                <th>
+                <th scope="col">
                     Date Ordered
                 </th>
-                <th>
-                    Dialed Number
+                <th scope="col">
+                    Order Information
                 </th>
-                <th>
-                    Completed
-                </th>
-                <th>
-                    Ingested From
-                </th>
-                <th>
-                    Date Ingested
-                </th>
-                <th>
+                <th scope="col">
                     Raw Response
                 </th>
             </tr>
@@ -63,35 +51,41 @@
                     switch (order.IngestedFrom)
                     {
                         case "FirstPointCom":
-                            ingestedBadge = "<span class='badge badge-info'>FirstPointCom</span>";
+                            ingestedBadge = "<h4><span class='badge badge-info'>FirstPointCom</span></h4>";
                             break;
                         case "BulkVS":
-                            ingestedBadge = "<span class='badge badge-primary'>BulkVS</span>";
+                            ingestedBadge = "<h4><span class='badge badge-primary'>BulkVS</span></h4>";
                             break;
                         case "TeleMessage":
-                            ingestedBadge = "<span class='badge badge-warning'>TeleMessage</span>";
+                            ingestedBadge = "<h4><span class='badge badge-warning'>TeleMessage</span></h4>";
                             break;
                     }
                     <tr>
-                        <td>
+                        <td scope="row">
                             <a href="https://acceleratenetworks.com/cart/order/@order.OrderId" class="btn btn-primary">
                                 View Order
                             </a>
+                            <h4 class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="badge badge-info badge-pill">
+                                    @order.DateOrdered
+                                </span>
+                            </h4>
+                            @{
+                                if (order.Completed)
+                                {
+                                    <h4><span class="badge badge-success">Completed</span></h4>
+                                }
+                                else
+                                {
+                                    <h4><span class="badge badge-danger">Failed</span></h4>
+                                }
+                            }
                         </td>
                         <td>
-                            @order.DateOrdered
-                        </td>
-                        <td>
-                            @order.DialedNumber
-                        </td>
-                        <td>
-                            @order.Completed
-                        </td>
-                        <td>
+                            <p>@order.DialedNumber</p>
                             @Html.Raw(ingestedBadge)
-                        </td>
-                        <td>
-                            @order.DateIngested
+                            <strong>Date Ingested</strong>
+                            <p>@order.DateIngested</p>
                         </td>
                         <td class="text-break">
                             @order.OrderResponse

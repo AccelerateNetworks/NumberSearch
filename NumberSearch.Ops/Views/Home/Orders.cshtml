@@ -9,20 +9,14 @@
     <table class="table table-striped table-borderless table-hover">
         <thead>
             <tr>
-                <th>
+                <th scope="col">
                     Date Ordered
                 </th>
-                <th>
-                    Name
+                <th scope="col">
+                    Customer Information
                 </th>
-                <th>
-                    Email
-                </th>
-                <th>
-                    Address
-                </th>
-                <th>
-                    Actions
+                <th scope="col">
+                    Products Ordered
                 </th>
             </tr>
         </thead>
@@ -30,32 +24,42 @@
             @{
                 foreach (var order in Model)
                 {
+                    var businessName = string.IsNullOrWhiteSpace(order.BusinessName) ? "Consumer" : order.BusinessName;
                     <tr>
-                        <td>
-                            @order.DateSubmitted
-                        </td>
-                        <td>
-                            @order.FirstName
-                            @order.LastName
-                        </td>
-                        <td>
-                            @order.Email
-                        </td>
-                        <td>
-                            @order.Address
-
-                            @order.Address2
-
-                            @order.City
-
-                            @order.State
-
-                            @order.Zip
-                        </td>
-                        <td>
+                        <th scope="row">
                             <a href="https://acceleratenetworks.com/cart/order/@order.OrderId" class="btn btn-primary">
-                                View
+                                View Order
                             </a>
+                            <h4 class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="badge badge-info badge-pill">
+                                    @order.DateSubmitted
+                                </span>
+                            </h4>
+                        </th>
+                        <td>
+                            <strong>Business Name</strong>
+                            <p>@businessName</p>
+                            <strong>Customer Name</strong>
+                            <p>
+                                @order.FirstName
+                                @order.LastName
+                            </p>
+                            <strong>Email</strong>
+                            <p>@order.Email</p>
+                            <strong>Address</strong>
+                            <p>
+                                @order.Address
+
+                                @order.Address2
+
+                                @order.City
+
+                                @order.State
+
+                                @order.Zip
+                            </p>
+                        </td>
+                        <td>
                         </td>
                     </tr>
                 }

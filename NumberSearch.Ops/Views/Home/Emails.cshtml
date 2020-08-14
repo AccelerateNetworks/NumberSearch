@@ -26,25 +26,13 @@
         <thead>
             <tr>
                 <th>
-
-                </th>
-                <th>
                     Date Sent
                 </th>
                 <th>
-                    Completed
+                    Routing
                 </th>
                 <th>
-                    Email
-                </th>
-                <th>
-                    CC
-                </th>
-                <th>
-                    Subject
-                </th>
-                <th>
-                    Body
+                    Message
                 </th>
             </tr>
         </thead>
@@ -53,28 +41,37 @@
                 foreach (var email in Model)
                 {
                     <tr>
-                        <td>
+                        <td scope="row">
                             <a href="https://acceleratenetworks.com/cart/order/@email.OrderId" class="btn btn-primary">
                                 View Order
                             </a>
+                            <h4 class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="badge badge-info badge-pill">
+                                    @email.DateSent
+                                </span>
+                            </h4>
+                            @{
+                                if (email.Completed)
+                                {
+                                    <h4><span class="badge badge-success">Completed</span></h4>
+                                }
+                                else
+                                {
+                                    <h4><span class="badge badge-danger">Failed</span></h4>
+                                }
+                            }
                         </td>
                         <td>
-                            @email.DateSent
+                            <strong>Email</strong>
+                            <p>@email.PrimaryEmailAddress</p>
+                            <strong>CC</strong>
+                            <p>@email.CarbonCopy</p>
                         </td>
                         <td>
-                            @email.Completed
-                        </td>
-                        <td>
-                            @email.PrimaryEmailAddress
-                        </td>
-                        <td>
-                            @email.CarbonCopy
-                        </td>
-                        <td>
-                            @email.Subject
-                        </td>
-                        <td>
-                            @email.MessageBody
+                            <strong>Subject</strong>
+                            <p>@email.Subject</p>
+                            <strong>Body</strong>
+                            <p>@email.MessageBody</p>
                         </td>
                     </tr>
                 }
