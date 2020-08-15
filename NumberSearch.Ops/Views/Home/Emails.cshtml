@@ -22,7 +22,7 @@
     </ul>
 </div>
 <div class="table-responsive">
-    <table class="table table-striped table-borderless table-hover">
+    <table class="table table-striped table-borderless table-hover" id="table">
         <thead>
             <tr>
                 <th>
@@ -41,7 +41,7 @@
                 foreach (var email in Model)
                 {
                     <tr>
-                        <td scope="row">
+                        <td scope="row" data-order="@email.DateSent.Ticks">
                             <a href="https://acceleratenetworks.com/cart/order/@email.OrderId" class="btn btn-primary">
                                 View Order
                             </a>
