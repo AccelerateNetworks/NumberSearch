@@ -117,7 +117,7 @@ namespace NumberSearch.DataAccess
                 var ordersInbox = MailboxAddress.Parse(username);
                 var recipient = MailboxAddress.Parse(PrimaryEmailAddress);
 
-                outboundMessage.Cc.Add(ordersInbox);
+                outboundMessage.From.Add(ordersInbox);
                 outboundMessage.To.Add(recipient);
 
                 using var smtp = new MailKit.Net.Smtp.SmtpClient();
