@@ -35,15 +35,25 @@ namespace NumberSearch.Ingest
                 .CreateLogger();
 
             var start = DateTime.Now;
+            Log.Information($"Ingest started at {start}");
+
+            //var cycles = await IngestCycle.GetAllAsync();
 
             var bulkVSCycle = DateTime.Now.AddHours(config.GetValue<int>("IngestProviders:BulkVS")) - DateTime.Now;
             var firstComCycle = DateTime.Now.AddHours(config.GetValue<int>("IngestProviders:FirstCom")) - DateTime.Now;
             var teleMessageCycle = DateTime.Now.AddHours(config.GetValue<int>("IngestProviders:TeleMessage")) - DateTime.Now;
             var peerlessCycle = DateTime.Now.AddHours(config.GetValue<int>("IngestProviders:Peerless")) - DateTime.Now;
 
+            Log.Debug($"bulkVSCycle: {bulkVSCycle}");
+            Log.Debug($"firstComCycle: {firstComCycle}");
+            Log.Debug($"teleMessageCycle: {teleMessageCycle}");
+            Log.Debug($"peerlessCycle: {peerlessCycle}");
+
             var tasks = new List<Task<IngestStatistics>>();
 
             var lastRun = await IngestStatistics.GetLastIngestAsync("BulkVS", postgresSQL).ConfigureAwait(false);
+
+            Log.Debug($"Last Run of {lastRun.IngestedFrom} started at {lastRun.StartDate} and ended at {lastRun.EndDate}");
 
             // If the last ingest was run to recently do nothing.
             if (lastRun.StartDate < (DateTime.Now - bulkVSCycle))
@@ -115,6 +125,8 @@ namespace NumberSearch.Ingest
 
             lastRun = await IngestStatistics.GetLastIngestAsync("FirstCom", postgresSQL).ConfigureAwait(false);
 
+            Log.Debug($"Last Run of {lastRun.IngestedFrom} started at {lastRun.StartDate} and ended at {lastRun.EndDate}");
+
             if (lastRun.StartDate < (DateTime.Now - firstComCycle))
             {
                 // Prevent another run from starting while this is still going.
@@ -183,6 +195,8 @@ namespace NumberSearch.Ingest
 
             lastRun = await IngestStatistics.GetLastIngestAsync("TeleMessage", postgresSQL).ConfigureAwait(false);
 
+            Log.Debug($"Last Run of {lastRun.IngestedFrom} started at {lastRun.StartDate} and ended at {lastRun.EndDate}");
+
             if (lastRun.StartDate < (DateTime.Now - teleMessageCycle))
             {
                 // Prevent another run from starting while this is still going.
@@ -214,8 +228,9 @@ namespace NumberSearch.Ingest
                             var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
 
                             // Remove all of the old numbers from the database.
+                            // Remove Telemessage records at half the rate that we ingest them by doubling the delete cycle.
                             Log.Information("Removing old TeleMessage numbers from the database.");
-                            var teleMessageCleanUp = await PhoneNumber.DeleteOldByProvider(start, teleMessageCycle, "TeleMessage", postgresSQL).ConfigureAwait(false);
+                            var teleMessageCleanUp = await PhoneNumber.DeleteOldByProvider(start, teleMessageCycle.Multiply(2.0), "TeleMessage", postgresSQL).ConfigureAwait(false);
 
                             var combined = new IngestStatistics
                             {
@@ -251,6 +266,7 @@ namespace NumberSearch.Ingest
             }
 
             //lastRun = await IngestStatistics.GetLastIngestAsync("Peerless", postgresSQL).ConfigureAwait(false);
+            //Log.Debug($"Last Run of {lastRun.IngestedFrom} started at {lastRun.StartDate} and ended at {lastRun.EndDate}");
 
             //if (lastRun.StartDate < (DateTime.Now - peerlessCycle))
             //{
