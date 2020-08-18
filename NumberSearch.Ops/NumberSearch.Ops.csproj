@@ -69,6 +69,9 @@
     <Content Update="wwwroot\lib\DataTables\DataTables-1.10.21\css\dataTables.bootstrap4.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Update="wwwroot\lib\DataTables\DataTables-1.10.21\css\dataTables.bootstrap4.min.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="wwwroot\lib\DataTables\DataTables-1.10.21\css\jquery.dataTables.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -90,7 +93,13 @@
     <Content Update="wwwroot\lib\DataTables\DataTables-1.10.21\js\dataTables.bootstrap4.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Update="wwwroot\lib\DataTables\DataTables-1.10.21\js\dataTables.bootstrap4.min.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="wwwroot\lib\DataTables\DataTables-1.10.21\js\jquery.dataTables.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\lib\DataTables\DataTables-1.10.21\js\jquery.dataTables.min.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Update="wwwroot\lib\DataTables\datatables.css">
