@@ -26,7 +26,7 @@ namespace NumberSearch.DataAccess
         {
             DatabaseCleanup,
             TeleMessage,
-            FirstCom,
+            FirstPointCom,
             BulkVS,
             All
         }

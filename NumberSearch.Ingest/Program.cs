@@ -40,12 +40,12 @@ namespace NumberSearch.Ingest
             //var cycles = await IngestCycle.GetAllAsync();
 
             var bulkVSCycle = DateTime.Now.AddHours(config.GetValue<int>("IngestProviders:BulkVS")) - DateTime.Now;
-            var firstComCycle = DateTime.Now.AddHours(config.GetValue<int>("IngestProviders:FirstCom")) - DateTime.Now;
+            var firstPointComCycle = DateTime.Now.AddHours(config.GetValue<int>("IngestProviders:FirstPointCom")) - DateTime.Now;
             var teleMessageCycle = DateTime.Now.AddHours(config.GetValue<int>("IngestProviders:TeleMessage")) - DateTime.Now;
             var peerlessCycle = DateTime.Now.AddHours(config.GetValue<int>("IngestProviders:Peerless")) - DateTime.Now;
 
             Log.Debug($"bulkVSCycle: {bulkVSCycle}");
-            Log.Debug($"firstComCycle: {firstComCycle}");
+            Log.Debug($"firstPointComCycle: {firstPointComCycle}");
             Log.Debug($"teleMessageCycle: {teleMessageCycle}");
             Log.Debug($"peerlessCycle: {peerlessCycle}");
 
@@ -123,16 +123,16 @@ namespace NumberSearch.Ingest
                 Log.Information("Ingesting BulkVS skipped.");
             }
 
-            lastRun = await IngestStatistics.GetLastIngestAsync("FirstCom", postgresSQL).ConfigureAwait(false);
+            lastRun = await IngestStatistics.GetLastIngestAsync("FirstPointCom", postgresSQL).ConfigureAwait(false);
 
             Log.Debug($"Last Run of {lastRun.IngestedFrom} started at {lastRun.StartDate} and ended at {lastRun.EndDate}");
 
-            if (lastRun.StartDate < (DateTime.Now - firstComCycle))
+            if (lastRun.StartDate < (DateTime.Now - firstPointComCycle))
             {
                 // Prevent another run from starting while this is still going.
                 var lockingStats = new IngestStatistics
                 {
-                    IngestedFrom = "FirstCom",
+                    IngestedFrom = "FirstPointCom",
                     StartDate = DateTime.Now,
                     EndDate = DateTime.Now,
                     IngestedNew = 0,
@@ -149,39 +149,39 @@ namespace NumberSearch.Ingest
                 tasks.Add(
                         Task.Run(async () =>
                         {
-                            // Ingest all avalible numbers in the FirstCom API.
-                            Log.Information("Ingesting data from FirstCom");
-                            var FirstComStats = await FirstCom.IngestPhoneNumbersAsync(username, password, postgresSQL);
+                            // Ingest all avalible numbers in the FirsPointtCom API.
+                            Log.Information("Ingesting data from FirstPointCom");
+                            var FirstPointComStats = await FirstPointCom.IngestPhoneNumbersAsync(username, password, postgresSQL);
 
                             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
-                            var lockEntry = await IngestStatistics.GetLockAsync("FirstCom", postgresSQL).ConfigureAwait(false);
+                            var lockEntry = await IngestStatistics.GetLockAsync("FirstPointCom", postgresSQL).ConfigureAwait(false);
                             var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
 
                             // Remove all of the old numbers from the database.
-                            Log.Information("Removing old FirstCom numbers from the database.");
-                            var firstComCleanUp = await PhoneNumber.DeleteOldByProvider(start, firstComCycle, "FirstCom", postgresSQL).ConfigureAwait(false);
+                            Log.Information("Removing old FirstPointCom numbers from the database.");
+                            var firstPointComCleanUp = await PhoneNumber.DeleteOldByProvider(start, firstPointComCycle, "FirstPointCom", postgresSQL).ConfigureAwait(false);
 
                             var combined = new IngestStatistics
                             {
-                                StartDate = FirstComStats.StartDate,
-                                EndDate = firstComCleanUp.EndDate,
-                                FailedToIngest = FirstComStats.FailedToIngest,
-                                IngestedFrom = FirstComStats.IngestedFrom,
-                                IngestedNew = FirstComStats.IngestedNew,
+                                StartDate = FirstPointComStats.StartDate,
+                                EndDate = firstPointComCleanUp.EndDate,
+                                FailedToIngest = FirstPointComStats.FailedToIngest,
+                                IngestedFrom = FirstPointComStats.IngestedFrom,
+                                IngestedNew = FirstPointComStats.IngestedNew,
                                 Lock = false,
-                                NumbersRetrived = FirstComStats.NumbersRetrived,
-                                Removed = firstComCleanUp.Removed,
-                                Unchanged = FirstComStats.Unchanged,
-                                UpdatedExisting = FirstComStats.UpdatedExisting
+                                NumbersRetrived = FirstPointComStats.NumbersRetrived,
+                                Removed = firstPointComCleanUp.Removed,
+                                Unchanged = FirstPointComStats.Unchanged,
+                                UpdatedExisting = FirstPointComStats.UpdatedExisting
                             };
 
                             if (await combined.PostAsync(postgresSQL))
                             {
-                                Log.Information("Completed the FirstCom ingest process.");
+                                Log.Information("Completed the FirstPointCom ingest process.");
                             }
                             else
                             {
-                                Log.Fatal("Failed to completed the FirstCom ingest process.");
+                                Log.Fatal("Failed to completed the FirstPointCom ingest process.");
                             }
 
                             return combined;
@@ -190,7 +190,7 @@ namespace NumberSearch.Ingest
             }
             else
             {
-                Log.Information("Ingesting FirstCom skipped.");
+                Log.Information("Ingesting FirstPointCom skipped.");
             }
 
             lastRun = await IngestStatistics.GetLastIngestAsync("TeleMessage", postgresSQL).ConfigureAwait(false);

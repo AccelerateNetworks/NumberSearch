@@ -13,13 +13,13 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Ingest
 {
-    public class FirstCom
+    public class FirstPointCom
     {
         /// <summary>
-        /// Ingest phone numbers from the FirstCom API.
+        /// Ingest phone numbers from the FirstPointCom API.
         /// </summary>
-        /// <param name="username"> The firstCom username. </param>
-        /// <param name="password"> The firstCom password. </param>
+        /// <param name="username"> The FirstPointCom username. </param>
+        /// <param name="password"> The FirstPointCom password. </param>
         /// <param name="connectionString"> the connection string for the database. </param>
         /// <returns></returns>
         public static async Task<IngestStatistics> IngestPhoneNumbersAsync(string username, string password, string connectionString)
@@ -31,7 +31,7 @@ namespace NumberSearch.Ingest
             var end = DateTime.Now;
             stats.StartDate = start;
             stats.EndDate = end;
-            stats.IngestedFrom = "FirstCom";
+            stats.IngestedFrom = "FirstPointCom";
 
             return stats;
         }
@@ -39,8 +39,8 @@ namespace NumberSearch.Ingest
         /// <summary>
         /// Gets a list of valid phone numbers that begin with an area code.
         /// </summary>
-        /// <param name="username"> The firstcom username. </param>
-        /// <param name="password"> The firstCom password. </param>
+        /// <param name="username"> The FirstPointCom username. </param>
+        /// <param name="password"> The FirstPointCom password. </param>
         /// <returns></returns>
         public static async Task<PhoneNumber[]> GetValidNumbersByNPAAsync(string username, string password)
         {
@@ -53,7 +53,7 @@ namespace NumberSearch.Ingest
                 try
                 {
                     numbers.AddRange(await NpaNxxFirstPointCom.GetAsync(code.ToString(), string.Empty, string.Empty, username, password));
-                    Log.Information($"[FirstCom] Found {numbers.Count} Phone Numbers");
+                    Log.Information($"[FirstPointCom] Found {numbers.Count} Phone Numbers");
                 }
                 catch (Exception ex)
                 {

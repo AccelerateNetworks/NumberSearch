@@ -1,6 +1,6 @@
 ﻿@using System.Text.Json;
 @using System.Text.Json.Serialization;
-@model NumberSearch.DataAccess.IngestStatistics[]
+@model NumberSearch.Mvc.IngestResults;
 
 @{
     ViewData["Title"] = "Ingests";
@@ -12,7 +12,7 @@
 
 
     @{
-        var graphData = Model?.Take(31).ToArray();
+        var graphData = Model?.Ingests.Take(31).ToArray();
         var commaString = string.Empty;
         foreach (var ingest in graphData)
         {
@@ -157,25 +157,29 @@
     <canvas id="myChart" width="400" height="200" class="pb-5"></canvas>
 
     @{
-        if (Model != null && Model?.Length > 0)
+        if (Model != null && Model?.Ingests.Count() > 0)
         {
-            var total = $"{Model.Length} ingests have been performed!";
+            var total = $"{Model.Ingests.Count()} ingests have been performed!";
             <div class="alert alert-success" role="alert">
                 @total
             </div>
-            var last = $"Last ingest performed at {Model?.FirstOrDefault()?.StartDate}";
+            var last = $"Last ingest performed at {Model?.Ingests.FirstOrDefault()?.StartDate}";
             <div class="alert alert-info" role="alert">
                 @last
             </div>
             <h1 class="display-4">
                 Provider Health
             </h1>
+            <h4>@Model?.TotalPhoneNumbers Phone Numbers Total</h4>
             <div class="table-responsive">
                 <table class="table table-hover table-striped table-borderless">
                     <thead>
                         <tr>
                             <th>
                                 Provider
+                            </th>
+                            <th>
+                                Current Count
                             </th>
                             <th>
                                 Ingest rate
@@ -194,15 +198,23 @@
                     <tbody>
                         @{
                             var oneDayAgo = DateTime.Now.AddDays(-1);
-                            var providers = Model?.Select(x => x.IngestedFrom).Distinct();
+                            var providers = Model?.Ingests.Select(x => x.IngestedFrom).Distinct();
 
                             foreach (var provider in providers)
                             {
-                                var ingests = Model?.Where(x => x.IngestedFrom == provider && x.EndDate >= oneDayAgo);
-                                var ingestsSeven = Model?.Where(x => x.IngestedFrom == provider && x.EndDate >= DateTime.Now.AddDays(-7));
+                                var ingests = Model?.Ingests.Where(x => x.IngestedFrom == provider && x.EndDate >= oneDayAgo);
+                                var ingestsSeven = Model?.Ingests.Where(x => x.IngestedFrom == provider && x.EndDate >= DateTime.Now.AddDays(-7));
+                                var currentCount = Model?.CurrentState.Where(x => x.Item1 == provider);
                                 <tr>
                                     <td>
                                         @provider
+                                    </td>
+                                    <td>
+                                        @{
+                                            var portion = currentCount.FirstOrDefault().Item2 * 100 / Model?.TotalPhoneNumbers;
+                                        }
+                                        @currentCount.FirstOrDefault().Item2
+                                        (@portion %)
                                     </td>
                                     <td>
                                         @{
@@ -279,7 +291,7 @@
                     </thead>
                     <tbody>
                         @{
-                            foreach (var ingest in Model.Take(31))
+                            foreach (var ingest in Model.Ingests.Take(31))
                             {
                                 var timeElapsed = ingest.StartDate - ingest.EndDate;
                                 <tr>

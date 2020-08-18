@@ -10,6 +10,15 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess
 {
+    public enum IngestProvider
+    {
+        BulkVS,
+        TeleMessage,
+        FirstPointCom,
+        Peerless,
+        IntegrationTest
+    }
+
     public class PhoneNumber
     {
         public string DialedNumber { get; set; }
@@ -111,6 +120,29 @@ namespace NumberSearch.DataAccess
                 .QueryFirstOrDefaultAsync<int>("SELECT COUNT(*) FROM public.\"PhoneNumbers\" " +
                 "WHERE \"DialedNumber\" LIKE @query",
                 new { query = $"%{query}%" })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        public static async Task<int> GetCountByProvider(string ingestedFrom, string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryFirstOrDefaultAsync<int>("SELECT COUNT(*) AS Count FROM public.\"PhoneNumbers\" WHERE \"IngestedFrom\" = @ingestedFrom",
+                new { ingestedFrom })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        public static async Task<int> GetTotal(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryFirstOrDefaultAsync<int>("SELECT COUNT(*) AS Count FROM public.\"PhoneNumbers\"")
                 .ConfigureAwait(false);
 
             return result;

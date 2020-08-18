@@ -538,6 +538,43 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task PostIngestCycles()
+        {
+            var cycle = new IngestCycle
+            {
+                CycleTime = DateTime.Now.AddHours(12) - DateTime.Now,
+                IngestedFrom = "IntegrationTest",
+                LastUpdate = DateTime.Now,
+                Enabled = true
+            };
+
+            var result = await cycle.PostAsync(postgresql).ConfigureAwait(false);
+            Assert.True(result);
+
+            var results = await IngestCycle.GetAllAsync(postgresql).ConfigureAwait(false);
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+
+            var test = results.Where(x => x.IngestedFrom == cycle.IngestedFrom).FirstOrDefault();
+            Assert.NotNull(test);
+
+            test.CycleTime = DateTime.Now.AddHours(1) - DateTime.Now;
+            var checkUpdate = await test.PutAsync(postgresql).ConfigureAwait(false);
+            Assert.True(checkUpdate);
+
+            results = await IngestCycle.GetAllAsync(postgresql).ConfigureAwait(false);
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+
+            var update = results.Where(x => x.IngestedFrom == cycle.IngestedFrom).FirstOrDefault();
+            Assert.NotNull(update);
+            //Assert.Equal(test.CycleTime, update.CycleTime);
+
+            var checkDelete = await update.DeleteAsync(postgresql).ConfigureAwait(false);
+            Assert.True(checkDelete);
+        }
+
+        [Fact]
         public async Task PostEndOfRunStatsAsync()
         {
             var conn = postgresql;
@@ -574,6 +611,17 @@ namespace NumberSearch.Tests
             var result = await PhoneNumber.NumberOfResultsInQuery(query, conn);
 
             Assert.True(result > 0);
+        }
+
+        [Fact]
+        public async Task GetCountPhoneNumbers()
+        {
+            var conn = postgresql;
+
+            var result = await PhoneNumber.GetCountByProvider("BulkVS", conn);
+
+            Assert.True(result > 0);
+            output.WriteLine(result.ToString());
         }
 
         [Fact]
