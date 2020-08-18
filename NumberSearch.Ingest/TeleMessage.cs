@@ -4,10 +4,8 @@ using NumberSearch.DataAccess.TeleMesssage;
 using Serilog;
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Ingest
@@ -22,7 +20,7 @@ namespace NumberSearch.Ingest
         /// <returns></returns>
         public static async Task<IngestStatistics> IngestPhoneNumbersAsync(Guid token, string connectionString)
         {
-            var readyToSubmit = new ConcurrentDictionary<string, PhoneNumber>();
+            var numbersReady = new List<PhoneNumber>();
 
             var start = DateTime.Now;
 
@@ -40,7 +38,7 @@ namespace NumberSearch.Ingest
                 Log.Error($"[TeleMessage] No NPAs Retrived.");
             }
 
-            foreach (var npa in npas)
+            foreach (var npa in npas.Where(x => x == 206))
             {
                 var nxxs = new int[] { };
 
@@ -48,60 +46,26 @@ namespace NumberSearch.Ingest
                 {
                     nxxs = await GetValidNXXsAsync(npa, token);
 
-                    Log.Information($"[TeleMessage] Found {nxxs.Length} NXXs");
+                    Log.Information($"[TeleMessage] Found {nxxs.Length} NXXs for NPA {npa}");
                 }
                 catch (Exception ex)
                 {
                     Log.Error($"{ex.Message}");
-                    Log.Error($"[TeleMessage] No NXXs Retrived.");
+                    Log.Error($"[TeleMessage] No NXXs Retrived for NPA {npa}.");
                 }
 
                 if (nxxs.Length > 1)
                 {
-                    // Execute these API requests in parallel.
-                    var semaphore = new SemaphoreSlim(Environment.ProcessorCount);
-
-                    var results = new List<Task<int>>();
-
                     foreach (var nxx in nxxs)
                     {
-                        // Wait for an open slot in the semaphore before grabbing another thread from the threadpool.
-                        await semaphore.WaitAsync();
-                        results.Add(Task.Run(async () =>
+                        var localNumbers = await GetValidXXXXsAsync(npa, nxx, token);
+                        foreach (var number in localNumbers)
                         {
-                            try
-                            {
-                                var localNumbers = await GetValidXXXXsAsync(npa, nxx, token);
-                                foreach (var num in localNumbers)
-                                {
-                                    // TODO: Maybe do something with this check varible?
-                                    var check = readyToSubmit.TryAdd(num.DialedNumber, num);
-                                }
-                                return localNumbers.Length;
-                            }
-                            finally
-                            {
-                                semaphore.Release();
-                            }
-                        }));
+                            numbersReady.Add(number);
+                        }
+                        Log.Information($"[TeleMessage] Found {localNumbers.Length} Phone Numbers for {npa}-{nxx}-xxxx");
                     }
-                    var complete = await Task.WhenAll(results);
-
-                    // Total the numbers retrived.
-                    int count = 0;
-                    foreach (var xxxx in complete)
-                    {
-                        count += xxxx;
-                    }
-                    Log.Information($"[TeleMessage] Found {count} Phone Numbers");
                 }
-            }
-
-            // Pull just the objects out of the concurrent data structure.
-            var numbersReady = new List<PhoneNumber>();
-            foreach (var number in readyToSubmit)
-            {
-                numbersReady.Add(number.Value);
             }
 
             var stats = await Program.SubmitPhoneNumbersAsync(numbersReady.ToArray(), connectionString);

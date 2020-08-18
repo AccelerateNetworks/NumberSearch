@@ -37,26 +37,20 @@ namespace NumberSearch.Ingest
             var start = DateTime.Now;
             Log.Information($"Ingest started at {start}");
 
-            //var cycles = await IngestCycle.GetAllAsync();
-
-            var bulkVSCycle = DateTime.Now.AddHours(config.GetValue<int>("IngestProviders:BulkVS")) - DateTime.Now;
-            var firstPointComCycle = DateTime.Now.AddHours(config.GetValue<int>("IngestProviders:FirstPointCom")) - DateTime.Now;
-            var teleMessageCycle = DateTime.Now.AddHours(config.GetValue<int>("IngestProviders:TeleMessage")) - DateTime.Now;
-            var peerlessCycle = DateTime.Now.AddHours(config.GetValue<int>("IngestProviders:Peerless")) - DateTime.Now;
-
-            Log.Debug($"bulkVSCycle: {bulkVSCycle}");
-            Log.Debug($"firstPointComCycle: {firstPointComCycle}");
-            Log.Debug($"teleMessageCycle: {teleMessageCycle}");
-            Log.Debug($"peerlessCycle: {peerlessCycle}");
+            var cycles = await IngestCycle.GetAllAsync(postgresSQL).ConfigureAwait(false);
 
             var tasks = new List<Task<IngestStatistics>>();
 
             var lastRun = await IngestStatistics.GetLastIngestAsync("BulkVS", postgresSQL).ConfigureAwait(false);
 
-            Log.Debug($"Last Run of {lastRun.IngestedFrom} started at {lastRun.StartDate} and ended at {lastRun.EndDate}");
+            Log.Debug($"Last Run of {lastRun?.IngestedFrom} started at {lastRun?.StartDate} and ended at {lastRun?.EndDate}");
 
+            var bulkVSCycle = cycles.Where(x => x.IngestedFrom == "BulkVS").FirstOrDefault();
+
+            Log.Information($"[BulkVS] Cycle time is {bulkVSCycle?.CycleTime}");
+            Log.Information($"[BulkVS] Enabled is {bulkVSCycle?.Enabled}");
             // If the last ingest was run to recently do nothing.
-            if (lastRun.StartDate < (DateTime.Now - bulkVSCycle))
+            if (lastRun.StartDate < (DateTime.Now - bulkVSCycle.CycleTime) && bulkVSCycle.Enabled)
             {
                 // Prevent another run from starting while this is still going.
                 var lockingStats = new IngestStatistics
@@ -88,7 +82,7 @@ namespace NumberSearch.Ingest
 
                             // Remove all of the old numbers from the database.
                             Log.Information("Removing old BulkVS numbers from the database.");
-                            var bulkVSCleanUp = await PhoneNumber.DeleteOldByProvider(start, bulkVSCycle, "BulkVS", postgresSQL).ConfigureAwait(false);
+                            var bulkVSCleanUp = await PhoneNumber.DeleteOldByProvider(start, bulkVSCycle.CycleTime, "BulkVS", postgresSQL).ConfigureAwait(false);
 
                             var combined = new IngestStatistics
                             {
@@ -125,9 +119,14 @@ namespace NumberSearch.Ingest
 
             lastRun = await IngestStatistics.GetLastIngestAsync("FirstPointCom", postgresSQL).ConfigureAwait(false);
 
-            Log.Debug($"Last Run of {lastRun.IngestedFrom} started at {lastRun.StartDate} and ended at {lastRun.EndDate}");
+            Log.Debug($"Last Run of {lastRun?.IngestedFrom} started at {lastRun?.StartDate} and ended at {lastRun?.EndDate}");
 
-            if (lastRun.StartDate < (DateTime.Now - firstPointComCycle))
+            var firstPointComCycle = cycles.Where(x => x.IngestedFrom == "FirstPointCom").FirstOrDefault();
+
+            Log.Information($"[FirstPointCom] Cycle time is {firstPointComCycle?.CycleTime}");
+            Log.Information($"[FirstPointCom] Enabled is {firstPointComCycle?.Enabled}");
+
+            if (lastRun.StartDate < (DateTime.Now - firstPointComCycle.CycleTime) && firstPointComCycle.Enabled)
             {
                 // Prevent another run from starting while this is still going.
                 var lockingStats = new IngestStatistics
@@ -159,7 +158,7 @@ namespace NumberSearch.Ingest
 
                             // Remove all of the old numbers from the database.
                             Log.Information("Removing old FirstPointCom numbers from the database.");
-                            var firstPointComCleanUp = await PhoneNumber.DeleteOldByProvider(start, firstPointComCycle, "FirstPointCom", postgresSQL).ConfigureAwait(false);
+                            var firstPointComCleanUp = await PhoneNumber.DeleteOldByProvider(start, firstPointComCycle.CycleTime, "FirstPointCom", postgresSQL).ConfigureAwait(false);
 
                             var combined = new IngestStatistics
                             {
@@ -195,9 +194,14 @@ namespace NumberSearch.Ingest
 
             lastRun = await IngestStatistics.GetLastIngestAsync("TeleMessage", postgresSQL).ConfigureAwait(false);
 
-            Log.Debug($"Last Run of {lastRun.IngestedFrom} started at {lastRun.StartDate} and ended at {lastRun.EndDate}");
+            Log.Debug($"Last Run of {lastRun?.IngestedFrom} started at {lastRun?.StartDate} and ended at {lastRun?.EndDate}");
 
-            if (lastRun.StartDate < (DateTime.Now - teleMessageCycle))
+            var teleMessageCycle = cycles.Where(x => x.IngestedFrom == "TeleMessage").FirstOrDefault();
+
+            Log.Information($"[TeleMessage] Cycle time is {teleMessageCycle?.CycleTime}");
+            Log.Information($"[TeleMessage] Enabled is {teleMessageCycle?.Enabled}");
+
+            if (lastRun.StartDate < (DateTime.Now - teleMessageCycle.CycleTime) && teleMessageCycle.Enabled)
             {
                 // Prevent another run from starting while this is still going.
                 var lockingStats = new IngestStatistics
@@ -230,7 +234,7 @@ namespace NumberSearch.Ingest
                             // Remove all of the old numbers from the database.
                             // Remove Telemessage records at half the rate that we ingest them by doubling the delete cycle.
                             Log.Information("Removing old TeleMessage numbers from the database.");
-                            var teleMessageCleanUp = await PhoneNumber.DeleteOldByProvider(start, teleMessageCycle.Multiply(2.0), "TeleMessage", postgresSQL).ConfigureAwait(false);
+                            var teleMessageCleanUp = await PhoneNumber.DeleteOldByProvider(start, teleMessageCycle.CycleTime, "TeleMessage", postgresSQL).ConfigureAwait(false);
 
                             var combined = new IngestStatistics
                             {
@@ -484,8 +488,8 @@ namespace NumberSearch.Ingest
                         }
                     }
                 }
-                Log.Information($"Found {inserts.Count} new Phone Numbers to Insert.");
-                Log.Information($"Found {updates.Count} existing Phone Numbers to Update.");
+                Log.Information($"Found {inserts?.Count} new Phone Numbers to Insert.");
+                Log.Information($"Found {updates?.Count} existing Phone Numbers to Update.");
             }
 
             // Execute these API requests in parallel.
@@ -500,7 +504,7 @@ namespace NumberSearch.Ingest
                 await semaphore.WaitAsync().ConfigureAwait(false);
                 if (count % 100 == 0)
                 {
-                    Log.Information($"Updated {count} of {updates.Count} Phone Numbers.");
+                    Log.Information($"Updated {count} of {updates?.Count} Phone Numbers.");
                 }
                 results.Add(Task.Run(async () =>
                 {
@@ -518,7 +522,7 @@ namespace NumberSearch.Ingest
 
             await Task.WhenAll(results).ConfigureAwait(false);
 
-            Log.Information($"Updated {updates.Count} Phone Numbers");
+            Log.Information($"Updated {updates?.Count} Phone Numbers");
 
             var listInserts = inserts.Values.ToList();
 
@@ -532,15 +536,15 @@ namespace NumberSearch.Ingest
 
                     if (check) { stats.IngestedNew += group.Count; };
 
-                    Log.Information($"{stats.IngestedNew} of {listInserts.Count} submitted to the database.");
+                    Log.Information($"{stats?.IngestedNew} of {listInserts?.Count} submitted to the database.");
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"Failed to submit a batch of PhoneNumbers to the database. Exception: {ex.Message}");
+                    Log.Error($"Failed to submit a batch of PhoneNumbers to the database. Exception: {ex?.Message}");
                     count = 0;
                     foreach (var number in group)
                     {
-                        Log.Error($"{count}. {number.DialedNumber}, {number.IngestedFrom}");
+                        Log.Error($"{count}. {number?.DialedNumber}, {number?.IngestedFrom}");
                         count++;
                     }
                 }
