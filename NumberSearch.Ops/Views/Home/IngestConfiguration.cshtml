@@ -1,0 +1,90 @@
+﻿@model IEnumerable<NumberSearch.DataAccess.IngestCycle>
+@{
+    ViewData["Title"] = "Ingest Configuration";
+}
+<br />
+<h1 class="display-4">Ingest Configuration</h1>
+<br />
+<form method="post">
+    <div class="table-responsive">
+        <table class="table table-striped table-borderless table-hover">
+            <thead>
+                <tr>
+                    <th>
+                        Ingested From
+                    </th>
+                    <th>
+                        Cycle Time
+                    </th>
+                    <th>
+                        Last Updated
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    foreach (var cycle in Model)
+                    {
+                        var ingestedBadge = cycle.IngestedFrom;
+                        switch (cycle.IngestedFrom)
+                        {
+                            case "FirstPointCom":
+                                ingestedBadge = "<h4><span class='badge badge-info'>FirstPointCom</span></h4>";
+                                break;
+                            case "BulkVS":
+                                ingestedBadge = "<h4><span class='badge badge-primary'>BulkVS</span></h4>";
+                                break;
+                            case "TeleMessage":
+                                ingestedBadge = "<h4><span class='badge badge-warning'>TeleMessage</span></h4>";
+                                break;
+                        }
+                        <tr>
+                            <td>
+                                @Html.Raw(ingestedBadge)
+                                @{
+                                    if (cycle.Enabled)
+                                    {
+                                        <h4><span class="badge badge-success">Enabled</span></h4>
+                                    }
+                                    else
+                                    {
+                                        <h4><span class="badge badge-danger">Disabled</span></h4>
+                                    }
+                                }
+                            </td>
+                            <td>
+                                @cycle.CycleTime
+                            </td>
+                            <td>
+                                @cycle.LastUpdate
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <label for="validationTooltip02">Hours per Cycle</label>
+            <input type="number" class="form-control" id="cycle" name="cycle">
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="validationTooltip02">Ingest Provider's Name</label>
+            <input type="text" class="form-control" id="ingestedFrom" name="ingestedFrom" placeholder="TeleMessage">
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="validationTooltip02">Ingest State</label>
+            <select class="form-control" id="Enabled" name="enabled">
+                <option selected>Enabled</option>
+                <option>Disabled</option>
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <button class="btn btn-primary btn-block" type="submit">Update</button>
+        </div>
+    </div>
+</form>

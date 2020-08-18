@@ -198,6 +198,43 @@ namespace NumberSearch.Ops.Controllers
             return View("Emails", emails);
         }
 
+        [Authorize]
+        public async Task<IActionResult> Ingests(int cycle, string ingestedFrom, string enabled)
+        {
+            var ingests = await IngestCycle.GetAllAsync(_postgresql).ConfigureAwait(false);
+
+            if (cycle > 0 && cycle < 24 && !string.IsNullOrWhiteSpace(ingestedFrom) && (enabled == "Enabled" || enabled == "Disabled"))
+            {
+                var update = ingests.Where(x => x.IngestedFrom == ingestedFrom).FirstOrDefault();
+
+                if (update != null)
+                {
+                    update.CycleTime = DateTime.Now.AddHours(cycle) - DateTime.Now;
+                    update.Enabled = enabled == "Enabled";
+                    update.LastUpdate = DateTime.Now;
+
+                    var checkUpdate = await update.PutAsync(_postgresql).ConfigureAwait(false);
+
+                    ingests = await IngestCycle.GetAllAsync(_postgresql).ConfigureAwait(false);
+                }
+                else
+                {
+                    update = new IngestCycle
+                    {
+                        CycleTime = DateTime.Now.AddHours(cycle) - DateTime.Now,
+                        IngestedFrom = ingestedFrom,
+                        Enabled = enabled == "Enabled",
+                        LastUpdate = DateTime.Now
+                    };
+
+                    var checkCreate = await update.PostAsync(_postgresql).ConfigureAwait(false);
+
+                    ingests = await IngestCycle.GetAllAsync(_postgresql).ConfigureAwait(false);
+                }
+            }
+
+            return View("IngestConfiguration", ingests);
+        }
 
         /// <summary>
         /// This is the default route in this app. It's a search page that allows you to query the TeleAPI for phone numbers.
