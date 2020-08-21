@@ -1,12 +1,10 @@
-﻿using MailKit.Security;
-
+﻿
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
-using MimeKit;
-using MimeKit.Text;
-
 using NumberSearch.DataAccess;
+
+using Serilog;
 
 using System;
 using System.Linq;
@@ -46,40 +44,35 @@ namespace NumberSearch.Mvc.Controllers
                     var orderFromDb = await ContactForm.GetAsync(contact.Email, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
                     contact = orderFromDb.FirstOrDefault();
 
-                    var outboundMessage = new MimeKit.MimeMessage
+                    // Send out the confirmation email.
+                    var confirmationEmail = new Email
                     {
-                        Sender = new MimeKit.MailboxAddress("Number Search", configuration.GetConnectionString("SmtpUsername")),
-                        Subject = $"Thank you for Contacting Accelerate Networks"
-                    };
-
-                    outboundMessage.Body = new TextPart(TextFormat.Plain)
-                    {
-                        Text = $@"Hi {contact.FirstName},
+                        PrimaryEmailAddress = contact.Email,
+                        CarbonCopy = configuration.GetConnectionString("SmtpUsername"),
+                        MessageBody = $@"Hi {contact.FirstName},
                                                                                       
 Thank you for contacting Accelerate Networks!
-
-Your contact Id is: {contact.Id}.
                                                                                       
-A technical specialist will send you a follow up email to walk you through the next steps in the process.
+A technical specialist will reach out to chat.
 
 Thanks,
 
-Accelerate Networks"
+Accelerate Networks",
+                        OrderId = contact.Id,
+                        Subject = $"Thank you for Contacting Accelerate Networks"
                     };
 
-                    var ordersInbox = MailboxAddress.Parse(configuration.GetConnectionString("SmtpUsername"));
-                    var recipient = MailboxAddress.Parse(contact.Email);
-                    outboundMessage.Cc.Add(ordersInbox);
-                    outboundMessage.To.Add(recipient);
+                    var checkSend = await confirmationEmail.SendEmailAsync(configuration.GetConnectionString("SmtpUsername"), configuration.GetConnectionString("SmtpPassword")).ConfigureAwait(false);
+                    var checkSave = await confirmationEmail.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
 
-                    using var smtp = new MailKit.Net.Smtp.SmtpClient();
-                    smtp.MessageSent += (sender, args) => { };
-                    smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
-
-                    await smtp.ConnectAsync("mail.seattlemesh.net", 587, SecureSocketOptions.StartTls).ConfigureAwait(false);
-                    await smtp.AuthenticateAsync(configuration.GetConnectionString("SmtpUsername"), configuration.GetConnectionString("SmtpPassword")).ConfigureAwait(false);
-                    await smtp.SendAsync(outboundMessage).ConfigureAwait(false);
-                    await smtp.DisconnectAsync(true).ConfigureAwait(false);
+                    if (checkSend && checkSave)
+                    {
+                        Log.Information($"Sucessfully sent out the confirmation emails for {contact.Id}.");
+                    }
+                    else
+                    {
+                        Log.Fatal($"Failed to sent out the confirmation emails for {contact.Id}.");
+                    }
                 }
 
                 return View("Success", contact);

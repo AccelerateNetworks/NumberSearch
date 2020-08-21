@@ -82,7 +82,28 @@
                                     number = $"{beginning}<b class='text-success'>{middle}</b>{end}";
                                 }
 
+                                // https://stackoverflow.com/questions/39472429/count-all-character-occurrences-in-a-string-c-sharp
+                                var counts = item.DialedNumber.GroupBy(c => c).Select(c => new { Char = c.Key, Count = c.Count() });
+
+                                var count = 0;
+                                foreach (var c in counts)
+                                {
+                                    count = c.Count > count ? c.Count : count;
+                                }
+
                                 <tr>
+                                    <td>
+                                        @{
+                                            if (count >= 3 && count < 5)
+                                            {
+                                                <h4><span class="badge badge-primary">Premium</span></h4>
+                                            }
+                                            else if (count >= 5)
+                                            {
+                                                <h4><span class="badge badge-success">Executive</span></h4>
+                                            }
+                                        }
+                                    </td>
                                     <td scope="row"><h4>@formattedNumber</h4></td>
                                     <td>@Html.Raw(number)</td>
                                     <td>@location</td>
