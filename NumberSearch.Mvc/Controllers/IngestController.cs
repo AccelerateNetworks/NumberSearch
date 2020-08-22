@@ -1,41 +1,49 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
+
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
 {
     public class IngestController : Controller
     {
-        private readonly IConfiguration configuration;
+        private readonly IConfiguration _configuration;
+        private readonly string _postgresql;
 
         public IngestController(IConfiguration config)
         {
-            configuration = config;
+            _configuration = config;
+            _postgresql = _configuration.GetConnectionString("PostgresqlProd");
         }
 
         public async Task<IActionResult> IndexAsync()
         {
-            var ingests = await IngestStatistics.GetAllAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            var ingests = await IngestStatistics.GetAllAsync(_postgresql).ConfigureAwait(false);
             var currentState = new List<(string, int)>();
             foreach (var provider in ingests.Select(x => x.IngestedFrom).Distinct())
             {
-                var count = await PhoneNumber.GetCountByProvider(provider, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                var count = await PhoneNumber.GetCountByProvider(provider, _postgresql).ConfigureAwait(false);
                 currentState.Add((provider, count));
             }
 
-            var total = await PhoneNumber.GetTotal(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            var executive = await PhoneNumber.GetCountByNumberType("Executive", _postgresql).ConfigureAwait(false);
+            var premium = await PhoneNumber.GetCountByNumberType("Premium", _postgresql).ConfigureAwait(false);
+            var standard = await PhoneNumber.GetCountByNumberType("Standard", _postgresql).ConfigureAwait(false);
+
+            var total = await PhoneNumber.GetTotal(_postgresql).ConfigureAwait(false);
 
             return View("Index", new IngestResults
             {
                 Ingests = ingests,
                 CurrentState = currentState,
-                TotalPhoneNumbers = total
+                TotalPhoneNumbers = total,
+                TotalExecutiveNumbers = executive,
+                TotalPremiumNumbers = premium,
+                TotalStandardNumbers = standard
             });
         }
     }

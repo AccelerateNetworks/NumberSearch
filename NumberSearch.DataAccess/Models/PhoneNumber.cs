@@ -138,6 +138,18 @@ namespace NumberSearch.DataAccess
             return result;
         }
 
+        public static async Task<int> GetCountByNumberType(string numberType, string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryFirstOrDefaultAsync<int>("SELECT COUNT(*) AS Count FROM public.\"PhoneNumbers\" WHERE \"NumberType\" = @numberType",
+                new { numberType })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
         public static async Task<int> GetTotal(string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);

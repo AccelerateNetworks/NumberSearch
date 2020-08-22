@@ -176,6 +176,78 @@
                     <thead>
                         <tr>
                             <th>
+                                Number Type
+                            </th>
+                            <th>
+                                Count
+                            </th>
+                            <th>
+                                % of Total
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                All Numbers
+                            </td>
+                            <td>
+                                @Model?.TotalPhoneNumbers
+                            </td>
+                            <td>
+                                100.00 %
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Executive
+                            </td>
+                            <td>
+                                @Model?.TotalExecutiveNumbers
+                            </td>
+                            <td>
+                                @{
+                                    var executivePortion = Model?.TotalExecutiveNumbers * 100M / Model?.TotalPhoneNumbers;
+                                }
+                                @executivePortion.Value.ToString("F") %
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Premium
+                            </td>
+                            <td>
+                                @Model?.TotalPremiumNumbers
+                            </td>
+                            <td>
+                                @{
+                                    var premiumPortion = Model?.TotalPremiumNumbers * 100M / Model?.TotalPhoneNumbers;
+                                }
+                                @premiumPortion.Value.ToString("F") %
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Standard
+                            </td>
+                            <td>
+                                @Model?.TotalStandardNumbers
+                            </td>
+                            <td>
+                                @{
+                                    var standardPortion = Model?.TotalStandardNumbers * 100M / Model?.TotalPhoneNumbers;
+                                }
+                                @standardPortion.Value.ToString("F") %
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-striped table-borderless">
+                    <thead>
+                        <tr>
+                            <th>
                                 Provider
                             </th>
                             <th>
@@ -211,10 +283,10 @@
                                     </td>
                                     <td>
                                         @{
-                                            var portion = currentCount.FirstOrDefault().Item2 * 100 / Model?.TotalPhoneNumbers;
+                                            var portion = currentCount.FirstOrDefault().Item2 * 100M / Model?.TotalPhoneNumbers;
                                         }
                                         @currentCount.FirstOrDefault().Item2
-                                        (@portion %)
+                                        (@portion.Value.ToString("F") %)
                                     </td>
                                     <td>
                                         @{
@@ -260,7 +332,7 @@
                                     <td>
                                         @{
                                             var churn = ingests.Count() > 0 ? ingests?.Average(x => x.Removed) : 0;
-                                            var formattedChurn = $"{churn} Numbers Removed";
+                                            var formattedChurn = $"{churn.Value.ToString("F")} Numbers Removed";
                                         }
                                         @formattedChurn
                                     </td>

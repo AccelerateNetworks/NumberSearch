@@ -10,5 +10,8 @@ namespace NumberSearch.Mvc
         public IEnumerable<(string, int)> CurrentState { get; set; }
 
         public int TotalPhoneNumbers { get; set; }
+        public int TotalExecutiveNumbers { get; set; }
+        public int TotalPremiumNumbers { get; set; }
+        public int TotalStandardNumbers { get; set; }
     }
 }
