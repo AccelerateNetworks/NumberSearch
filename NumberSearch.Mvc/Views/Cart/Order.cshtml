@@ -39,6 +39,7 @@
                 @{
                     var productsTotal = 0;
                     var servicesTotal = 0;
+                    var numbersTotal = 0;
                     foreach (var number in numbers)
                     {
                         <li class="list-group-item d-flex justify-content-between lh-condensed">
@@ -46,7 +47,23 @@
                                 <h6 class="my-0">Phone Number</h6>
                                 <small class="text-muted">(@number.NPA) @number.NXX @number.XXXX</small>
                             </div>
-                            <span class="text-muted">$20</span>
+                            @{
+                                if (number.NumberType == "Executive")
+                                {
+                                    numbersTotal += 200;
+                                    <span class="text-muted">$200</span>
+                                }
+                                else if (number.NumberType == "Premium")
+                                {
+                                    numbersTotal += 40;
+                                    <span class="text-muted">$40</span>
+                                }
+                                else
+                                {
+                                    numbersTotal += 20;
+                                    <span class="text-muted">$20</span>
+                                }
+                            }
                         </li>
                     }
                     foreach (var number in ported)
@@ -89,7 +106,7 @@
                 <li class="list-group-item d-flex justify-content-between">
                     <span>Total (USD)</span>
                     @{
-                        var total = (numbers.Length * 20) + (ported.Length * 20) + productsTotal + servicesTotal;
+                        var total = numbersTotal + (ported.Length * 20) + productsTotal + servicesTotal;
                         <strong>$@total</strong>
                     }
                 </li>

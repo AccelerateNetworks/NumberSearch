@@ -65,7 +65,7 @@
                                 match = Model.CleanQuery;
                             }
 
-                            foreach (var item in Model?.PhoneNumbers)
+                            foreach (var item in Model?.PhoneNumbers.OrderBy(x => x.NumberType))
                             {
                                 var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
                                 var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";

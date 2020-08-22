@@ -39,7 +39,20 @@
                                         <td scope="row"><h4>@formattedNumber</h4></td>
                                         <td>@Html.Raw(number)</td>
                                         <td>@location</td>
-                                        <td>$20</td>
+                                        @{
+                                            if (item.NumberType == "Executive")
+                                            {
+                                                <td>$200</td>
+                                            }
+                                            else if (item.NumberType == "Premium")
+                                            {
+                                                <td>$40</td>
+                                            }
+                                            else
+                                            {
+                                                <td>$20</td>
+                                            }
+                                        }
                                         <td>
                                             <a asp-controller="Cart" asp-action="RemovePhoneNumber" asp-route-id="@item.DialedNumber" target="_top">
                                                 <input type="button" class="btn btn-outline-danger" value="Remove">
