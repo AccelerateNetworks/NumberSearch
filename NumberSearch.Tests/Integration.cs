@@ -538,7 +538,7 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
-        public async Task PostIngestCycles()
+        public async Task PostIngestCyclesAsync()
         {
             var cycle = new IngestCycle
             {
@@ -614,7 +614,7 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
-        public async Task GetCountPhoneNumbers()
+        public async Task GetCountPhoneNumbersAsync()
         {
             var conn = postgresql;
 

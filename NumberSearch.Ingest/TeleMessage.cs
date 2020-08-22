@@ -68,7 +68,9 @@ namespace NumberSearch.Ingest
                 }
             }
 
-            var stats = await Program.SubmitPhoneNumbersAsync(numbersReady.ToArray(), connectionString);
+            var typedNumbers = Program.AssignNumberTypes(numbersReady).ToArray();
+
+            var stats = await Program.SubmitPhoneNumbersAsync(typedNumbers, connectionString);
 
             var end = DateTime.Now;
             stats.StartDate = start;

@@ -26,7 +26,11 @@ namespace NumberSearch.Ingest
         {
             var start = DateTime.Now;
 
-            var stats = await SubmitPhoneNumbersAsync(await GetValidNumbersByNPAAsync(username, password), connectionString);
+            var numbers = await GetValidNumbersByNPAAsync(username, password);
+
+            var typedNumbers = AssignNumberTypes(numbers).ToArray();
+
+            var stats = await SubmitPhoneNumbersAsync(typedNumbers, connectionString);
 
             var end = DateTime.Now;
             stats.StartDate = start;
@@ -62,6 +66,79 @@ namespace NumberSearch.Ingest
             }
 
             return numbers.ToArray();
+        }
+
+        /// <summary>
+        /// Assign a NumberType to a number based on the number of repeating digits in the number.
+        /// </summary>
+        /// <param name="numbers"></param>
+        /// <returns></returns>
+        public static IEnumerable<PhoneNumber> AssignNumberTypes(IEnumerable<PhoneNumber> numbers)
+        {
+            // NumberTypes
+            var Executive = "Executive";
+            var Premium = "Premium";
+            var Standard = "Standard";
+
+            // Assign a Type based on number of repeating digits.
+            foreach (var number in numbers)
+            {
+                // https://stackoverflow.com/questions/39472429/count-all-character-occurrences-in-a-string-c-sharp
+                var counts = number.DialedNumber.GroupBy(c => c).Select(c => new { Char = c.Key, Count = c.Count() });
+
+                var count = 0;
+                foreach (var c in counts)
+                {
+                    count = c.Count > count ? c.Count : count;
+                }
+
+                if (count == 1)
+                {
+                    number.NumberType = Standard;
+                }
+
+                if (count == 2)
+                {
+                    number.NumberType = Standard;
+                }
+
+                if (count == 3)
+                {
+                    number.NumberType = Premium;
+                }
+
+                if (count == 4)
+                {
+                    number.NumberType = Premium;
+                }
+
+                if (count == 5)
+                {
+                    number.NumberType = Executive;
+                }
+
+                if (count == 6)
+                {
+                    number.NumberType = Executive;
+                }
+
+                if (count == 7)
+                {
+                    number.NumberType = Executive;
+                }
+
+                if (count == 8)
+                {
+                    number.NumberType = Executive;
+                }
+
+                if (count == 9)
+                {
+                    number.NumberType = Executive;
+                }
+            }
+
+            return numbers;
         }
 
         /// <summary>
