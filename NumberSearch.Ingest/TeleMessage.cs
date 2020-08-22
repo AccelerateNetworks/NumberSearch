@@ -38,7 +38,7 @@ namespace NumberSearch.Ingest
                 Log.Error($"[TeleMessage] No NPAs Retrived.");
             }
 
-            foreach (var npa in npas.Where(x => x == 206))
+            foreach (var npa in npas)
             {
                 var nxxs = new int[] { };
 
