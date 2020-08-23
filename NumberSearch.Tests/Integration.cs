@@ -441,7 +441,7 @@ namespace NumberSearch.Tests
         public async Task GetPhoneNumbersByQueryPaginatedAsync()
         {
             var conn = postgresql;
-            var results = await PhoneNumber.PaginatedSearchAsync("*", 1, conn);
+            var results = await PhoneNumber.SequentialPaginatedSearchAsync("*", 1, conn);
             Assert.NotNull(results);
             int count = 0;
             foreach (var result in results)

@@ -283,7 +283,7 @@ namespace NumberSearch.Ops.Controllers
                 converted.Remove('1');
             }
 
-            var results = await PhoneNumber.PaginatedSearchAsync(new string(converted.ToArray()), page, _postgresql).ConfigureAwait(false);
+            var results = await PhoneNumber.SequentialPaginatedSearchAsync(new string(converted.ToArray()), page, _postgresql).ConfigureAwait(false);
             var count = await PhoneNumber.NumberOfResultsInQuery(new string(converted.ToArray()), _postgresql).ConfigureAwait(false);
 
             return View("Numbers", new SearchResults
