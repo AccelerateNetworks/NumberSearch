@@ -4,8 +4,10 @@ using NumberSearch.DataAccess.TeleMesssage;
 using Serilog;
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Ingest
@@ -20,7 +22,7 @@ namespace NumberSearch.Ingest
         /// <returns></returns>
         public static async Task<IngestStatistics> IngestPhoneNumbersAsync(Guid token, string connectionString)
         {
-            var numbersReady = new List<PhoneNumber>();
+            var readyToSubmit = new ConcurrentDictionary<string, PhoneNumber>();
 
             var start = DateTime.Now;
 
@@ -56,16 +58,53 @@ namespace NumberSearch.Ingest
 
                 if (nxxs.Length > 1)
                 {
+                    // Execute these API requests in parallel.
+                    var semaphore = new SemaphoreSlim(Environment.ProcessorCount);
+
+                    var results = new List<Task<int>>();
+
                     foreach (var nxx in nxxs)
                     {
-                        var localNumbers = await GetValidXXXXsAsync(npa, nxx, token);
-                        foreach (var number in localNumbers)
+                        // Wait for an open slot in the semaphore before grabbing another thread from the threadpool.
+                        await semaphore.WaitAsync();
+                        results.Add(Task.Run(async () =>
                         {
-                            numbersReady.Add(number);
-                        }
-                        Log.Information($"[TeleMessage] Found {localNumbers.Length} Phone Numbers for {npa}-{nxx}-xxxx");
+                            try
+                            {
+                                var localNumbers = await GetValidXXXXsAsync(npa, nxx, token);
+                                foreach (var num in localNumbers)
+                                {
+                                    // TODO: Maybe do something with this check varible?
+                                    var check = readyToSubmit.TryAdd(num.DialedNumber, num);
+                                }
+
+                                Log.Information($"[TeleMessage] Found {localNumbers.Length} Phone Numbers for {npa}-{nxx}-xxxx");
+
+                                return localNumbers.Length;
+                            }
+                            finally
+                            {
+                                semaphore.Release();
+                            }
+                        }));
                     }
+                    var complete = await Task.WhenAll(results);
+
+                    // Total the numbers retrived.
+                    int count = 0;
+                    foreach (var xxxx in complete)
+                    {
+                        count += xxxx;
+                    }
+                    Log.Information($"[TeleMessage] Found {count} Phone Numbers");
                 }
+            }
+
+            // Pull just the objects out of the concurrent data structure.
+            var numbersReady = new List<PhoneNumber>();
+            foreach (var number in readyToSubmit)
+            {
+                numbersReady.Add(number.Value);
             }
 
             var typedNumbers = Program.AssignNumberTypes(numbersReady).ToArray();

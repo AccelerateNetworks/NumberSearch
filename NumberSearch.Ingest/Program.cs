@@ -201,7 +201,7 @@ namespace NumberSearch.Ingest
             Log.Information($"[TeleMessage] Cycle time is {teleMessageCycle?.CycleTime}");
             Log.Information($"[TeleMessage] Enabled is {teleMessageCycle?.Enabled}");
 
-            if (lastRun.StartDate < (DateTime.Now - teleMessageCycle.CycleTime) && teleMessageCycle.Enabled)
+            if (lastRun.StartDate < (DateTime.Now) && teleMessageCycle.Enabled)
             {
                 // Prevent another run from starting while this is still going.
                 var lockingStats = new IngestStatistics
@@ -424,6 +424,7 @@ namespace NumberSearch.Ingest
         /// <returns></returns>
         public static IEnumerable<PhoneNumber> AssignNumberTypes(IEnumerable<PhoneNumber> numbers)
         {
+            Log.Information($"Assigning Number Types for {numbers.Count()} from {numbers.FirstOrDefault().IngestedFrom}.");
             // NumberTypes
             var Executive = "Executive";
             var Premium = "Premium";
@@ -453,7 +454,7 @@ namespace NumberSearch.Ingest
 
                 if (count == 3)
                 {
-                    number.NumberType = Premium;
+                    number.NumberType = Standard;
                 }
 
                 if (count == 4)
@@ -486,6 +487,8 @@ namespace NumberSearch.Ingest
                     number.NumberType = Executive;
                 }
             }
+
+            Log.Information($"Number Types have been assigned to {numbers.Count()} from {numbers.FirstOrDefault().IngestedFrom}.");
 
             return numbers;
         }
