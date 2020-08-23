@@ -201,7 +201,7 @@ namespace NumberSearch.Ingest
             Log.Information($"[TeleMessage] Cycle time is {teleMessageCycle?.CycleTime}");
             Log.Information($"[TeleMessage] Enabled is {teleMessageCycle?.Enabled}");
 
-            if (lastRun.StartDate < (DateTime.Now) && teleMessageCycle.Enabled)
+            if (lastRun.StartDate < (DateTime.Now - teleMessageCycle.CycleTime) && teleMessageCycle.Enabled)
             {
                 // Prevent another run from starting while this is still going.
                 var lockingStats = new IngestStatistics
