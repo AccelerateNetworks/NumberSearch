@@ -87,12 +87,12 @@ namespace NumberSearch.DataAccess
         }
 
         /// <summary>
-        /// Find a phone number based on matching it to a query and returns paginated results.
+        /// Find a phone number based on matching it to a query and returns paginated results with a prioritized list of numbers.
         /// </summary>
         /// <param name="query"></param>
         /// <param name="connectionString"></param>
         /// <returns></returns>
-        public static async Task<IEnumerable<PhoneNumber>> PaginatedSearchAsync(string query, int page, string connectionString)
+        public static async Task<IEnumerable<PhoneNumber>> RecommendedPaginatedSearchAsync(string query, int page, string connectionString)
         {
             var offset = (page * 100) - 100;
             var limit = 100;
@@ -104,6 +104,30 @@ namespace NumberSearch.DataAccess
             var result = await connection
                 .QueryAsync<PhoneNumber>("SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\" FROM public.\"PhoneNumbers\" " +
                 "WHERE \"DialedNumber\" LIKE @query ORDER BY \"NumberType\" OFFSET @offset LIMIT @limit",
+                new { query = $"%{query}%", offset, limit })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Find a phone number based on matching it to a query and returns paginated results with a sequential list of numbers.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<PhoneNumber>> SequentialPaginatedSearchAsync(string query, int page, string connectionString)
+        {
+            var offset = (page * 100) - 100;
+            var limit = 100;
+            // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
+            query = query?.Trim()?.Replace('*', '_');
+
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<PhoneNumber>("SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\" FROM public.\"PhoneNumbers\" " +
+                "WHERE \"DialedNumber\" LIKE @query ORDER BY \"DialedNumber\" OFFSET @offset LIMIT @limit",
                 new { query = $"%{query}%", offset, limit })
                 .ConfigureAwait(false);
 

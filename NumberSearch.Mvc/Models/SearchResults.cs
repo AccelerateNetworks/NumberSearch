@@ -9,6 +9,7 @@ namespace NumberSearch.Mvc
         public string Query { get; set; }
         public string CleanQuery { get; set; }
         public int NumberOfResults { get; set; }
+        public string View { get; set; }
         public int Page { get; set; }
         public string Message { get; set; }
 

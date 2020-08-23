@@ -25,7 +25,7 @@ namespace NumberSearch.Mvc.Controllers
         /// <returns> A view of nothing, or the result of the query. </returns>
         [Route("Search/{Query}")]
         [Route("Search/")]
-        public async Task<IActionResult> IndexAsync(string query, string failed, int page = 1)
+        public async Task<IActionResult> IndexAsync(string query, string failed, string view, int page = 1)
         {
             // Fail fast
             if (string.IsNullOrWhiteSpace(query))
@@ -70,7 +70,21 @@ namespace NumberSearch.Mvc.Controllers
             page = page < 1 ? 1 : page;
             page = page * 100 > count ? (count / 100) + 1 : page;
 
-            var results = await PhoneNumber.PaginatedSearchAsync(new string(converted.ToArray()), page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            IEnumerable<PhoneNumber> results;
+
+            // Select a view for the data.
+            if (!string.IsNullOrWhiteSpace(view) && view == "Recommended")
+            {
+                results = await PhoneNumber.RecommendedPaginatedSearchAsync(new string(converted.ToArray()), page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            }
+            else if (!string.IsNullOrWhiteSpace(view) && view == "Sequential")
+            {
+                results = await PhoneNumber.SequentialPaginatedSearchAsync(new string(converted.ToArray()), page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            }
+            else
+            {
+                results = await PhoneNumber.RecommendedPaginatedSearchAsync(new string(converted.ToArray()), page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            }
 
             var cart = Cart.GetFromSession(HttpContext.Session);
 
@@ -79,6 +93,7 @@ namespace NumberSearch.Mvc.Controllers
                 CleanQuery = new string(converted.ToArray()),
                 NumberOfResults = count,
                 Page = page,
+                View = !string.IsNullOrWhiteSpace(view) ? view : "Recommended",
                 Message = !string.IsNullOrWhiteSpace(failed) ? $"{failed} is not purchasable at this time." : string.Empty,
                 PhoneNumbers = results.ToArray(),
                 Query = query,

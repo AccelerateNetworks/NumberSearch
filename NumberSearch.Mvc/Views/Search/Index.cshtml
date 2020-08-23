@@ -47,10 +47,58 @@
         }
         if (Model != null && Model?.PhoneNumbers?.Length > 0)
         {
+            var maxPage = Model.NumberOfResults / 100;
+            var pageResultsCount = Model.Page * 100;
+
             var total = $"{Model.NumberOfResults} available numbers found!";
             <div class="alert alert-success" role="alert">
                 @total
             </div>
+            <form action="/Search" class="pb-3">
+                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                    @{
+                        if (Model?.View == "Sequential")
+                        {
+                            <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Recommended&Page=@Model.Page">Recommended</a>
+                            <a class="btn btn-outline-secondary active" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Sequential&Page=@Model.Page">Sequential</a>
+                        }
+                        else
+                        {
+                            <a class="btn btn-outline-secondary active" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Recommended&Page=@Model.Page">Recommended</a>
+                            <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Sequential&Page=@Model.Page">Sequential</a>
+                        }
+                    }
+                </div>
+                <div class="btn-group float-right" role="group" aria-label="pagination">
+                    @{
+                        if ((Model.NumberOfResults % 100) > 1)
+                        {
+                            maxPage += 1;
+                        }
+                        if (Model.Page > 1)
+                        {
+                            var previousPage = Model.Page - 1;
+                            <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=@Model.View&Page=@previousPage">Previous</a>
+                            <a class="btn btn-outline-dark disabled">Page @Model.Page of @maxPage</a>
+                        }
+                        else
+                        {
+                            <a class="btn btn-outline-secondary disabled">Previous</a>
+                            <a class="btn btn-outline-dark disabled">Page @Model.Page of @maxPage</a>
+                        }
+                        if (Model.NumberOfResults > pageResultsCount)
+                        {
+                            var nextPage = Model.Page + 1;
+                            <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=@Model.View&Page=@nextPage">Next</a>
+                        }
+                        else
+                        {
+                            <a class="btn btn-outline-secondary disabled">Next</a>
+                        }
+                    }
+                </div>
+            </form>
+
             <div class="table-responsive">
                 <table class="table table-striped table-borderless table-hover">
                     <tbody>
@@ -120,39 +168,34 @@
                         }
                     </tbody>
                 </table>
+                <form action="/Search">
+                    <div class="btn-group float-right pb-3" role="group" aria-label="pagination">
+                        @{
+                            if (Model.Page > 1)
+                            {
+                                var previousPage = Model.Page - 1;
+                                <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=@Model.View&Page=@previousPage">Previous</a>
+                                <a class="btn btn-outline-dark disabled">Page @Model.Page of @maxPage</a>
+                            }
+                            else
+                            {
+                                <a class="btn btn-outline-secondary disabled">Previous</a>
+                                <a class="btn btn-outline-dark disabled">Page @Model.Page of @maxPage</a>
+                            }
+                            if (Model.NumberOfResults > pageResultsCount)
+                            {
+                                var nextPage = Model.Page + 1;
+                                <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=@Model.View&Page=@nextPage">Next</a>
+                            }
+                            else
+                            {
+                                <a class="btn btn-outline-secondary disabled">Next</a>
+                            }
+                        }
+                    </div>
+                </form>
             </div>
-            <form action="/Search">
-                <div class="btn-group" role="group" aria-label="pagination">
-                    @{
-                        var maxPage = Model.NumberOfResults / 100;
-                        if ((Model.NumberOfResults % 100) > 1)
-                        {
-                            maxPage += 1;
-                        }
-                        if (Model.Page > 1)
-                        {
-                            var previousPage = Model.Page - 1;
-                            <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&Page=@previousPage">Previous</a>
-                            <a class="btn btn-outline-dark disabled">Page @Model.Page of @maxPage</a>
-                        }
-                        else
-                        {
-                            <a class="btn btn-outline-secondary disabled">Previous</a>
-                            <a class="btn btn-outline-dark disabled">Page @Model.Page of @maxPage</a>
-                        }
-                        var pageResultsCount = Model.Page * 100;
-                        if (Model.NumberOfResults > pageResultsCount)
-                        {
-                            var nextPage = Model.Page + 1;
-                            <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&Page=@nextPage">Next</a>
-                        }
-                        else
-                        {
-                            <a class="btn btn-outline-secondary disabled">Next</a>
-                        }
-                    }
-                </div>
-            </form>
+
         }
         else if (Model != null && Model?.PhoneNumbers?.Length == 0)
         {
