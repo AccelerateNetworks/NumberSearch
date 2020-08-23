@@ -74,6 +74,11 @@ namespace NumberSearch.Mvc.Controllers
                 if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
                 {
                     purchasable = true;
+                    Log.Information($"[BulkVS] Found {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {npanxx}.");
+                }
+                else
+                {
+                    Log.Warning($"[BulkVS] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {npanxx}.");
                 }
 
             }
@@ -85,6 +90,11 @@ namespace NumberSearch.Mvc.Controllers
                 if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
                 {
                     purchasable = true;
+                    Log.Information($"[TeleMessage] Found {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {phoneNumber.DialedNumber}.");
+                }
+                else
+                {
+                    Log.Warning($"[TeleMessage] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {phoneNumber.DialedNumber}.");
                 }
 
             }
@@ -96,6 +106,11 @@ namespace NumberSearch.Mvc.Controllers
                 if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
                 {
                     purchasable = true;
+                    Log.Information($"[FirstPointCom] Found {phoneNumber.DialedNumber} in {results.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
+                }
+                else
+                {
+                    Log.Warning($"[FirstPointCom] Failed to find {phoneNumber.DialedNumber} in {results.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
                 }
             }
             else
