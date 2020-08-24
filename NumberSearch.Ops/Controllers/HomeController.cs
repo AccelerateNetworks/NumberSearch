@@ -1,5 +1,4 @@
 ﻿using BulkVS;
-using BulkVS.BulkVS;
 
 using CsvHelper;
 

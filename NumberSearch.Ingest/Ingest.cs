@@ -1,7 +1,4 @@
-﻿using FirstCom;
-
-using NumberSearch.DataAccess;
-using NumberSearch.DataAccess.Models;
+﻿using NumberSearch.DataAccess;
 
 using Serilog;
 
@@ -13,61 +10,8 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Ingest
 {
-    public class FirstPointCom
+    public class Ingest
     {
-        /// <summary>
-        /// Ingest phone numbers from the FirstPointCom API.
-        /// </summary>
-        /// <param name="username"> The FirstPointCom username. </param>
-        /// <param name="password"> The FirstPointCom password. </param>
-        /// <param name="connectionString"> the connection string for the database. </param>
-        /// <returns></returns>
-        public static async Task<IngestStatistics> IngestPhoneNumbersAsync(string username, string password, string connectionString)
-        {
-            var start = DateTime.Now;
-
-            var numbers = await GetValidNumbersByNPAAsync(username, password);
-
-            var typedNumbers = AssignNumberTypes(numbers).ToArray();
-
-            var stats = await SubmitPhoneNumbersAsync(typedNumbers, connectionString);
-
-            var end = DateTime.Now;
-            stats.StartDate = start;
-            stats.EndDate = end;
-            stats.IngestedFrom = "FirstPointCom";
-
-            return stats;
-        }
-
-        /// <summary>
-        /// Gets a list of valid phone numbers that begin with an area code.
-        /// </summary>
-        /// <param name="username"> The FirstPointCom username. </param>
-        /// <param name="password"> The FirstPointCom password. </param>
-        /// <returns></returns>
-        public static async Task<PhoneNumber[]> GetValidNumbersByNPAAsync(string username, string password)
-        {
-            var areaCodes = AreaCode.AreaCodes;
-
-            var numbers = new List<PhoneNumber>();
-
-            foreach (var code in areaCodes)
-            {
-                try
-                {
-                    numbers.AddRange(await NpaNxxFirstPointCom.GetAsync(code.ToString(), string.Empty, string.Empty, username, password));
-                    Log.Information($"[FirstPointCom] Found {numbers.Count} Phone Numbers");
-                }
-                catch (Exception ex)
-                {
-                    Log.Error($"Area code {code} failed @ {DateTime.Now}: {ex.Message}");
-                }
-            }
-
-            return numbers.ToArray();
-        }
-
         /// <summary>
         /// Assign a NumberType to a number based on the number of repeating digits in the number.
         /// </summary>
@@ -75,6 +19,7 @@ namespace NumberSearch.Ingest
         /// <returns></returns>
         public static IEnumerable<PhoneNumber> AssignNumberTypes(IEnumerable<PhoneNumber> numbers)
         {
+            Log.Information($"Assigning Number Types for {numbers.Count()} from {numbers.FirstOrDefault().IngestedFrom}.");
             // NumberTypes
             var Executive = "Executive";
             var Premium = "Premium";
@@ -104,7 +49,7 @@ namespace NumberSearch.Ingest
 
                 if (count == 3)
                 {
-                    number.NumberType = Premium;
+                    number.NumberType = Standard;
                 }
 
                 if (count == 4)
@@ -137,6 +82,8 @@ namespace NumberSearch.Ingest
                     number.NumberType = Executive;
                 }
             }
+
+            Log.Information($"Number Types have been assigned to {numbers.Count()} from {numbers.FirstOrDefault().IngestedFrom}.");
 
             return numbers;
         }
@@ -171,7 +118,7 @@ namespace NumberSearch.Ingest
 
             if (numbers.Length > 0)
             {
-                var existingNumbers = await PhoneNumber.GetAllAsync(connectionString);
+                var existingNumbers = await PhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
                 var dict = existingNumbers.ToDictionary(x => x.DialedNumber, x => x);
                 // Submit the batch to the remote database.
                 foreach (var number in numbers)
@@ -212,8 +159,8 @@ namespace NumberSearch.Ingest
                         }
                     }
                 }
-                Log.Information($"Found {inserts.Count} new Phone Numbers to Insert.");
-                Log.Information($"Found {updates.Count} existing Phone Numbers to Update.");
+                Log.Information($"Found {inserts?.Count} new Phone Numbers to Insert.");
+                Log.Information($"Found {updates?.Count} existing Phone Numbers to Update.");
             }
 
             // Execute these API requests in parallel.
@@ -225,16 +172,16 @@ namespace NumberSearch.Ingest
             foreach (var update in updates.Values.ToArray())
             {
                 // Wait for an open slot in the semaphore before grabbing another thread from the threadpool.
-                await semaphore.WaitAsync();
+                await semaphore.WaitAsync().ConfigureAwait(false);
                 if (count % 100 == 0)
                 {
-                    Log.Information($"Updated {count} of {updates.Count} Phone Numbers.");
+                    Log.Information($"Updated {count} of {updates?.Count} Phone Numbers.");
                 }
                 results.Add(Task.Run(async () =>
                 {
                     try
                     {
-                        var result = await update.PutAsync(connectionString);
+                        var result = await update.PutAsync(connectionString).ConfigureAwait(false);
                     }
                     finally
                     {
@@ -246,7 +193,7 @@ namespace NumberSearch.Ingest
 
             await Task.WhenAll(results).ConfigureAwait(false);
 
-            Log.Information($"Updated {updates.Count} Phone Numbers");
+            Log.Information($"Updated {updates?.Count} Phone Numbers");
 
             var listInserts = inserts.Values.ToList();
 
@@ -256,19 +203,19 @@ namespace NumberSearch.Ingest
             {
                 try
                 {
-                    var check = await PhoneNumber.BulkPostAsync(group, connectionString);
+                    var check = await PhoneNumber.BulkPostAsync(group, connectionString).ConfigureAwait(false);
 
                     if (check) { stats.IngestedNew += group.Count; };
 
-                    Log.Information($"{stats.IngestedNew} of {listInserts.Count} submitted to the database.");
+                    Log.Information($"{stats?.IngestedNew} of {listInserts?.Count} submitted to the database.");
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"Failed to submit a batch of PhoneNumbers to the database. Exception: {ex.Message}");
+                    Log.Error($"Failed to submit a batch of PhoneNumbers to the database. Exception: {ex?.Message}");
                     count = 0;
                     foreach (var number in group)
                     {
-                        Log.Error($"{count}. {number.DialedNumber}, {number.IngestedFrom}");
+                        Log.Error($"{count}. {number?.DialedNumber}, {number?.IngestedFrom}");
                         count++;
                     }
                 }
