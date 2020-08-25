@@ -51,6 +51,12 @@
                                         <h4><span class="badge badge-danger">Disabled</span></h4>
                                     }
                                 }
+                                @{
+                                    if (cycle.RunNow)
+                                    {
+                                        <h4><span class="badge badge-warning">Run Now</span></h4>
+                                    }
+                                }
                             </td>
                             <td>
                                 @cycle.CycleTime
@@ -80,6 +86,10 @@
                 <option selected>Enabled</option>
                 <option>Disabled</option>
             </select>
+        </div>
+        <div class="custom-control custom-checkbox col-md-3 mb-3">
+            <input type="checkbox" class="custom-control-input" id="customCheck1" name="runNow" value="true">
+            <label class="custom-control-label" for="customCheck1">Run Now</label>
         </div>
     </div>
     <div class="row">

@@ -15,6 +15,7 @@ namespace NumberSearch.DataAccess
         public TimeSpan CycleTime { get; set; }
         public DateTime LastUpdate { get; set; }
         public bool Enabled { get; set; }
+        public bool RunNow { get; set; }
 
 
         public static async Task<IEnumerable<IngestCycle>> GetAllAsync(string connectionString)
@@ -22,7 +23,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<IngestCycle>("SELECT \"IngestCycleId\", \"IngestedFrom\", \"CycleTime\", \"LastUpdate\", \"Enabled\" FROM public.\"IngestCycles\"")
+                .QueryAsync<IngestCycle>("SELECT \"IngestCycleId\", \"IngestedFrom\", \"CycleTime\", \"LastUpdate\", \"Enabled\", \"RunNow\" FROM public.\"IngestCycles\"")
                 .ConfigureAwait(false);
 
             return result;
@@ -33,8 +34,8 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"IngestCycles\" (\"IngestedFrom\", \"CycleTime\", \"LastUpdate\", \"Enabled\") VALUES( @IngestedFrom, @CycleTime, @LastUpdate, @Enabled)",
-                new { IngestedFrom, CycleTime, LastUpdate, Enabled })
+                .ExecuteAsync("INSERT INTO public.\"IngestCycles\" (\"IngestedFrom\", \"CycleTime\", \"LastUpdate\", \"Enabled\", \"RunNow\") VALUES( @IngestedFrom, @CycleTime, @LastUpdate, @Enabled, @RunNow)",
+                new { IngestedFrom, CycleTime, LastUpdate, Enabled, RunNow })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -57,8 +58,8 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("UPDATE public.\"IngestCycles\" SET \"IngestedFrom\" = @IngestedFrom, \"CycleTime\" = @CycleTime, \"LastUpdate\" = @LastUpdate, \"Enabled\" = @Enabled WHERE \"IngestCycleId\" = @IngestCycleId",
-                new { IngestedFrom, CycleTime, LastUpdate, Enabled, IngestCycleId })
+                .ExecuteAsync("UPDATE public.\"IngestCycles\" SET \"IngestedFrom\" = @IngestedFrom, \"CycleTime\" = @CycleTime, \"LastUpdate\" = @LastUpdate, \"Enabled\" = @Enabled, \"RunNow\" = @RunNow WHERE \"IngestCycleId\" = @IngestCycleId",
+                new { IngestedFrom, CycleTime, LastUpdate, Enabled, RunNow, IngestCycleId })
                 .ConfigureAwait(false);
 
             if (result == 1)

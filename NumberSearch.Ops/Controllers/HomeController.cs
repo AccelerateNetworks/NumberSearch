@@ -198,11 +198,11 @@ namespace NumberSearch.Ops.Controllers
         }
 
         [Authorize]
-        public async Task<IActionResult> Ingests(int cycle, string ingestedFrom, string enabled)
+        public async Task<IActionResult> Ingests(int cycle, string ingestedFrom, string enabled, string runNow)
         {
             var ingests = await IngestCycle.GetAllAsync(_postgresql).ConfigureAwait(false);
 
-            if (cycle > 0 && cycle < 24 && !string.IsNullOrWhiteSpace(ingestedFrom) && (enabled == "Enabled" || enabled == "Disabled"))
+            if (cycle > 0 && cycle < 24 && !string.IsNullOrWhiteSpace(ingestedFrom) && (enabled == "Enabled" || enabled == "Disabled") && (runNow == "true" || runNow == "false"))
             {
                 var update = ingests.Where(x => x.IngestedFrom == ingestedFrom).FirstOrDefault();
 
@@ -210,6 +210,7 @@ namespace NumberSearch.Ops.Controllers
                 {
                     update.CycleTime = DateTime.Now.AddHours(cycle) - DateTime.Now;
                     update.Enabled = enabled == "Enabled";
+                    update.RunNow = runNow == "true";
                     update.LastUpdate = DateTime.Now;
 
                     var checkUpdate = await update.PutAsync(_postgresql).ConfigureAwait(false);
@@ -223,6 +224,7 @@ namespace NumberSearch.Ops.Controllers
                         CycleTime = DateTime.Now.AddHours(cycle) - DateTime.Now,
                         IngestedFrom = ingestedFrom,
                         Enabled = enabled == "Enabled",
+                        RunNow = runNow == "true",
                         LastUpdate = DateTime.Now
                     };
 

@@ -545,7 +545,8 @@ namespace NumberSearch.Tests
                 CycleTime = DateTime.Now.AddHours(12) - DateTime.Now,
                 IngestedFrom = "IntegrationTest",
                 LastUpdate = DateTime.Now,
-                Enabled = true
+                Enabled = true,
+                RunNow = true
             };
 
             var result = await cycle.PostAsync(postgresql).ConfigureAwait(false);
