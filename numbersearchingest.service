@@ -1,0 +1,11 @@
+[Unit]
+Description=NumberSearchIngest
+
+[Service]
+Type=simple
+WorkingDirectory=/var/www/NumberSearch.Ingest
+ExecStart=/usr/bin/dotnet /var/www/NumberSearch.Ingest/NumberSearch.Ingest.dll
+
+[Install]
+WantedBy=multi-user.target
+
