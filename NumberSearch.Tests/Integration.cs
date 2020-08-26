@@ -220,9 +220,9 @@ namespace NumberSearch.Tests
         {
             var DIDSearch = new DIDOrderQuery
             {
-                DID = "12062092139",
+                DID = "12062670472",
                 NPA = "206",
-                NXX = "209",
+                NXX = "267",
                 RateCenter = "SEATTLE"
             };
             var ReturnAmount = 100;
