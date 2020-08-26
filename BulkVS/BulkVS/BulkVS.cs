@@ -17,10 +17,8 @@ namespace BulkVS
         /// <param name="apiKey"> The bulkVS API key. </param>
         /// <param name="apiSecret"> The bulkVS secret. </param>
         /// <returns></returns>
-        public static async Task<PhoneNumber[]> GetValidNumbersByNPAAsync(string apiKey, string apiSecret)
+        public static async Task<PhoneNumber[]> GetValidNumbersByNPAAsync(string apiKey, string apiSecret, int[] areaCodes)
         {
-            var areaCodes = AreaCode.AreaCodes;
-
             var numbers = new List<PhoneNumber>();
 
             foreach (var code in areaCodes)

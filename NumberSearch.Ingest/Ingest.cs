@@ -19,7 +19,6 @@ namespace NumberSearch.Ingest
         /// <returns></returns>
         public static IEnumerable<PhoneNumber> AssignNumberTypes(IEnumerable<PhoneNumber> numbers)
         {
-            Log.Information($"Assigning Number Types for {numbers.Count()} from {numbers.FirstOrDefault().IngestedFrom}.");
             // NumberTypes
             var Executive = "Executive";
             var Premium = "Premium";
@@ -82,8 +81,6 @@ namespace NumberSearch.Ingest
                     number.NumberType = Executive;
                 }
             }
-
-            Log.Information($"Number Types have been assigned to {numbers.Count()} from {numbers.FirstOrDefault().IngestedFrom}.");
 
             return numbers;
         }

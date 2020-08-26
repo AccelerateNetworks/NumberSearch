@@ -18,10 +18,8 @@ namespace FirstCom
         /// <param name="username"> The FirstPointCom username. </param>
         /// <param name="password"> The FirstPointCom password. </param>
         /// <returns></returns>
-        public static async Task<PhoneNumber[]> GetValidNumbersByNPAAsync(string username, string password)
+        public static async Task<PhoneNumber[]> GetValidNumbersByNPAAsync(string username, string password, int[] areaCodes)
         {
-            var areaCodes = AreaCode.AreaCodes;
-
             var numbers = new List<PhoneNumber>();
 
             foreach (var code in areaCodes)

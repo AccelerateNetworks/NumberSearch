@@ -20,7 +20,7 @@ namespace NumberSearch.Ingest
         /// <param name="apiKey"> A key for the peerless API. </param>
         /// <param name="connectionString"> A connection string for the database. </param>
         /// <returns></returns>
-        public static async Task<IngestStatistics> IngestPhoneNumbersAsync(string apiKey, string connectionString)
+        public static async Task<IngestStatistics> IngestPhoneNumbersAsync(string apiKey, int[] areaCodes, string connectionString)
         {
             var readyToSubmit = new ConcurrentDictionary<string, PhoneNumber>();
 
@@ -75,7 +75,7 @@ namespace NumberSearch.Ingest
             //    numbersReady.Add(number.Value);
             //}
 
-            var numbersReady = await GetValidNumbersByNPAAsync(apiKey).ConfigureAwait(false);
+            var numbersReady = await GetValidNumbersByNPAAsync(apiKey, areaCodes).ConfigureAwait(false);
 
             var stats = await Ingest.SubmitPhoneNumbersAsync(numbersReady.ToArray(), connectionString);
 
@@ -93,10 +93,8 @@ namespace NumberSearch.Ingest
         /// <param name="username"> The firstcom username. </param>
         /// <param name="password"> The firstCom password. </param>
         /// <returns></returns>
-        public static async Task<PhoneNumber[]> GetValidNumbersByNPAAsync(string apiKey)
+        public static async Task<PhoneNumber[]> GetValidNumbersByNPAAsync(string apiKey, int[] areaCodes)
         {
-            var areaCodes = AreaCode.AreaCodes;
-
             var numbers = new List<PhoneNumber>();
 
             foreach (var code in areaCodes)

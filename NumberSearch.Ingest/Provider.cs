@@ -24,11 +24,11 @@ namespace NumberSearch.Ingest
         /// <param name="password"> The FirstPointCom password. </param>
         /// <param name="connectionString"> the connection string for the database. </param>
         /// <returns></returns>
-        public static async Task<IngestStatistics> FirstPointComAsync(string username, string password, string connectionString)
+        public static async Task<IngestStatistics> FirstPointComAsync(string username, string password, int[] areaCodes, string connectionString)
         {
             var start = DateTime.Now;
 
-            var numbers = await FirstPointCom.GetValidNumbersByNPAAsync(username, password);
+            var numbers = await FirstPointCom.GetValidNumbersByNPAAsync(username, password, areaCodes);
 
             var typedNumbers = Ingest.AssignNumberTypes(numbers).ToArray();
 
@@ -49,11 +49,11 @@ namespace NumberSearch.Ingest
         /// <param name="apiSecret"> The bulkVS API secret. </param>
         /// <param name="connectionString"> The connection string for the database. </param>
         /// <returns></returns>
-        public static async Task<IngestStatistics> BulkVSAsync(string apiKey, string apiSecret, string connectionString)
+        public static async Task<IngestStatistics> BulkVSAsync(string apiKey, string apiSecret, int[] areaCodes, string connectionString)
         {
             var start = DateTime.Now;
 
-            var numbers = await MainBulkVS.GetValidNumbersByNPAAsync(apiKey, apiSecret);
+            var numbers = await MainBulkVS.GetValidNumbersByNPAAsync(apiKey, apiSecret, areaCodes);
 
             var typedNumbers = Ingest.AssignNumberTypes(numbers).ToArray();
 
@@ -73,19 +73,27 @@ namespace NumberSearch.Ingest
         /// <param name="token"> The teleMesssage token. </param>
         /// <param name="connectionString"> The connection string for the database. </param>
         /// <returns></returns>
-        public static async Task<IngestStatistics> TeleMessageAsync(Guid token, string connectionString)
+        public static async Task<IngestStatistics> TeleMessageAsync(Guid token, int[] areaCodes, string connectionString)
         {
             var readyToSubmit = new ConcurrentDictionary<string, PhoneNumber>();
 
             var start = DateTime.Now;
 
-            var npas = new int[] { };
+            // Pass this provider a blank array if you want it to figure out what NPAs are available. 
+            var npas = areaCodes.Length > 0 ? areaCodes : new int[] { };
 
             try
             {
-                npas = await TeleMessage.GetValidNPAsAsync(token);
+                if (npas.Length > 0)
+                {
+                    Log.Information($"[TeleMessage] Found {npas.Length} NPAs");
+                }
+                else
+                {
+                    npas = await TeleMessage.GetValidNPAsAsync(token);
 
-                Log.Information($"[TeleMessage] Found {npas.Length} NPAs");
+                    Log.Information($"[TeleMessage] Found {npas.Length} NPAs");
+                }
             }
             catch (Exception ex)
             {
