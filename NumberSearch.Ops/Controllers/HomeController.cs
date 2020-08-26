@@ -202,7 +202,7 @@ namespace NumberSearch.Ops.Controllers
         {
             var ingests = await IngestCycle.GetAllAsync(_postgresql).ConfigureAwait(false);
 
-            if (cycle > 0 && cycle < 24 && !string.IsNullOrWhiteSpace(ingestedFrom) && (enabled == "Enabled" || enabled == "Disabled") && (runNow == "true" || runNow == "false"))
+            if (cycle > 0 && cycle < 24 && !string.IsNullOrWhiteSpace(ingestedFrom) && (enabled == "Enabled" || enabled == "Disabled"))
             {
                 var update = ingests.Where(x => x.IngestedFrom == ingestedFrom).FirstOrDefault();
 
