@@ -29,7 +29,8 @@
                     <div class="input-group-prepend">
                         <span class="input-group-text">+1</span>
                     </div>
-                    <input type="text" name="dialedNumber" class="form-control" placeholder="Enter a Phone Number" value="@Model?.DialedNumber">
+                    <textarea class="form-control" aria-label="With textarea" type="text" name="dialedNumber" placeholder="Enter Phone Numbers" value="@Model?.DialedNumber"></textarea>
+                    @*<input type="text" name="dialedNumber" class="form-control" placeholder="Enter a Phone Number" value="@Model?.DialedNumber">*@
                     <button type="submit" class="btn btn-success pr-4 pl-4" onclick="displayBusyIndicator()">Investigate</button>
                     @*<button class="btn btn-info pr-3 pl-3" onclick="displayBusyIndicator()" asp-controller="Porting" asp-action="CheckPortability">Port</button>*@
                 </div>

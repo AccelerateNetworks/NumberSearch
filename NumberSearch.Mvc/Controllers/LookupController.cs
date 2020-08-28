@@ -6,6 +6,7 @@ using NumberSearch.Mvc.Models;
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
@@ -27,7 +28,7 @@ namespace NumberSearch.Mvc.Controllers
         {
             if (!string.IsNullOrWhiteSpace(dialedNumber))
             {
-                var numberCanidates = dialedNumber.Trim().Split(" ");
+                var numberCanidates = dialedNumber.Trim().Replace(") ", "", StringComparison.CurrentCultureIgnoreCase).Replace("\r\n", " ", StringComparison.CurrentCultureIgnoreCase).Split(" ");
 
                 var parsedNumbers = new List<string>();
 
