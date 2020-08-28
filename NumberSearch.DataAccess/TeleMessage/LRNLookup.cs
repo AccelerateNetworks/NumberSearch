@@ -14,6 +14,7 @@ namespace NumberSearch.DataAccess
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Mirrors the external API")]
         public class TeleLRNResult
         {
+            public string DialedNumber { get; set; }
             public string status { get; set; }
             public string spid { get; set; }
 

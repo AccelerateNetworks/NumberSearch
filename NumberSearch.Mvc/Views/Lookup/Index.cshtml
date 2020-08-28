@@ -1,0 +1,100 @@
+﻿@model NumberSearch.Mvc.Models.LookupResults;
+
+@{
+    ViewData["Title"] = "Lookup";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <br />
+    @*<div class="pricing-header mx-auto mb-3 text-center">
+            <h1 class="display-4">Lookups</h1>
+        </div>*@
+    <br />
+    <div class="jumbotron mb-3">
+        <h1 class="display-4">Lookup a Phone Number</h1>
+        <p> Enter a phone number and we'll hunt down any information we can find on it.</p>
+        <form class="form-row justify-content-center">
+            <!--<div class="row">
+                <div class="col-md-3 mb-3">
+                    <input type="text" class="form-control" id="dialedNumber" name="dialedNumber" placeholder="2068588757" required>
+                </div>
+                <div class="col-md-3 mb-3">-->
+            @*<input type="text" id="testName" name="testName" value="LRNLookup" hidden />*@
+            <!--<button class="btn btn-primary btn-block" type="submit">Investigate</button>
+                </div>
+            </div>-->
+            <div class="form-group">
+                <div class="input-group mx-auto input-group-lg">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">+1</span>
+                    </div>
+                    <input type="text" name="dialedNumber" class="form-control" placeholder="Enter a Phone Number" value="@Model?.DialedNumber">
+                    <button type="submit" class="btn btn-success pr-4 pl-4" onclick="displayBusyIndicator()">Investigate</button>
+                    @*<button class="btn btn-info pr-3 pl-3" onclick="displayBusyIndicator()" asp-controller="Porting" asp-action="CheckPortability">Port</button>*@
+                </div>
+            </div>
+        </form>
+    </div>
+    <br />
+    <partial name="_LoadingPartial" />
+
+    @{
+        if (Model != null && Model?.Lookups != null)
+        {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-borderless">
+                    <thead>
+                        <tr>
+                            <th>
+                                Phone Number
+                            </th>
+                            <th>
+                                Last Port Date
+                            </th>
+                            <th>
+                                Creation Date
+                            </th>
+                            <th>
+                                LRN
+                            </th>
+                            <th>
+                                SPID Name
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            foreach (var number in Model.Lookups)
+                            {
+                                <tr>
+                                    <td>
+                                        @number.data?.DialedNumber
+                                    </td>
+                                    <td>
+                                        @number.data?.port_date
+                                    </td>
+                                    <td>
+                                        @number.data?.creation_date
+                                    </td>
+                                    <td>
+                                        @number.data?.lrn
+                                    </td>
+                                    <td>
+                                        <p>
+                                            @number.data?.spid
+                                        </p>
+                                        <p>
+                                            @number.data?.spid_name
+
+                                        </p>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+</div>
