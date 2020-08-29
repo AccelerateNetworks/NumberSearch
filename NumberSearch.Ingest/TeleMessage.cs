@@ -107,5 +107,36 @@ namespace NumberSearch.Ingest
 
             return vaild.ToArray();
         }
+
+        /// <summary>
+        /// Gets a list of valid XXXX's for a given NPA.
+        /// </summary>
+        /// <param name="npa"> The area code. </param>
+        /// <param name="nxx"> The NXX. </param>
+        /// <param name="token"> The TeleMessage auth token. </param>
+        /// <returns></returns>
+        public static async Task<PhoneNumber[]> GetXXXXsByNPAAsync(int npa, Guid token)
+        {
+            var vaild = new List<PhoneNumber>();
+
+            try
+            {
+                var results = await DidsList.GetAsync($"{npa}*******", token);
+
+                foreach (var result in results?.ToArray())
+                {
+                    if (result.XXXX > 1)
+                    {
+                        vaild.Add(result);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"NPA code {npa} failed @ {DateTime.Now}: {ex.Message}");
+            }
+
+            return vaild.ToArray();
+        }
     }
 }

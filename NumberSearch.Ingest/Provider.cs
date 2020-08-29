@@ -68,12 +68,68 @@ namespace NumberSearch.Ingest
         }
 
         /// <summary>
-        /// Ingests phone number from the TeleMessage API.
+        /// Ingests phone numbers from the TeleMessage API.
         /// </summary>
         /// <param name="token"> The teleMesssage token. </param>
         /// <param name="connectionString"> The connection string for the database. </param>
         /// <returns></returns>
         public static async Task<IngestStatistics> TeleMessageAsync(Guid token, int[] areaCodes, string connectionString)
+        {
+            var readyToSubmit = new List<PhoneNumber>();
+
+            var start = DateTime.Now;
+
+            // Pass this provider a blank array if you want it to figure out what NPAs are available. 
+            var npas = areaCodes.Length > 0 ? areaCodes : new int[] { };
+
+            try
+            {
+                if (npas.Length > 0)
+                {
+                    Log.Information($"[TeleMessage] Found {npas.Length} NPAs");
+                }
+                else
+                {
+                    npas = await TeleMessage.GetValidNPAsAsync(token);
+
+                    Log.Information($"[TeleMessage] Found {npas.Length} NPAs");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"{ex.Message}");
+                Log.Error($"[TeleMessage] No NPAs Retrived.");
+            }
+
+            foreach (var npa in npas)
+            {
+                var localNumbers = await TeleMessage.GetXXXXsByNPAAsync(npa, token);
+                readyToSubmit.AddRange(localNumbers);
+
+                Log.Information($"[TeleMessage] Found {localNumbers.Length} Phone Numbers for the {npa} Area Code.");
+            }
+
+            Log.Information($"[TeleMessage] Found {readyToSubmit.Count} Phone Numbers");
+
+            var typedNumbers = Ingest.AssignNumberTypes(readyToSubmit).ToArray();
+
+            var stats = await Ingest.SubmitPhoneNumbersAsync(typedNumbers, connectionString);
+
+            var end = DateTime.Now;
+            stats.StartDate = start;
+            stats.EndDate = end;
+            stats.IngestedFrom = "TeleMessage";
+
+            return stats;
+        }
+
+        /// <summary>
+        /// Ingests phone numbers from the TeleMessage API using a multithreaded method.
+        /// </summary>
+        /// <param name="token"> The teleMesssage token. </param>
+        /// <param name="connectionString"> The connection string for the database. </param>
+        /// <returns></returns>
+        public static async Task<IngestStatistics> TeleMessageConcurrentAsync(Guid token, int[] areaCodes, string connectionString)
         {
             var readyToSubmit = new ConcurrentDictionary<string, PhoneNumber>();
 

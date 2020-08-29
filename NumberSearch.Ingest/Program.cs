@@ -33,7 +33,11 @@ namespace NumberSearch.Ingest
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Async(a => a.Console())
                 .WriteTo.Async(a => a.Debug())
-                .WriteTo.Async(a => a.File($"NumberSearch.Ingest_{DateTime.Now:yyyyMMdd}.txt"))
+                .WriteTo.Async(a => a.File(
+                    $"{DateTime.Now:yyyyMMdd}_NumberSearch.Ingest.txt",
+                    rollingInterval: RollingInterval.Day,
+                    rollOnFileSizeLimit: true)
+                )
                 .CreateLogger();
 
             Log.Information($"[Heartbeat] Ingest scheduling loop is starting. {Environment.ProcessorCount} threads detected.");
