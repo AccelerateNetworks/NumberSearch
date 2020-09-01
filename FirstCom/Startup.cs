@@ -51,13 +51,7 @@ namespace FirstCom
                 var numbers = new List<DIDOrderInfo>();
 
 
-                var results = await FirstPointComListOwnedPhoneNumber.GetAllAsync(string.Empty, username, password).ConfigureAwait(false);
-
-                foreach (var npa in AreaCode.All)
-                {
-                    var result = await FirstPointComListOwnedPhoneNumber.GetAllAsync(npa.ToString(), username, password).ConfigureAwait(false);
-                    numbers.AddRange(result?.DIDOrder);
-                }
+                var results = await FirstPointComOwnedPhoneNumber.GetAllAsync(string.Empty, username, password).ConfigureAwait(false);
 
                 await Task.Delay(1000);
             });

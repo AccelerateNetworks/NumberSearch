@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace FirstCom
 {
-    public class FirstPointComListOwnedPhoneNumber
+    public class FirstPointComOwnedPhoneNumber
     {
         public static async Task<DIDOrderInfoArray> GetAllAsync(string npa, string username, string password)
         {
