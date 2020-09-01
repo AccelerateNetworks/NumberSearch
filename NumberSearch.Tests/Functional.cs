@@ -25,7 +25,7 @@ namespace NumberSearch.Tests
 
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
-                .AddUserSecrets("40f816f3-0a65-4523-a9be-4bbef0716720")
+                .AddUserSecrets("328593cf-cbb9-48e9-8938-e38a44c8291d")
                 .Build();
 
             configuration = config;

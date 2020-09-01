@@ -5,6 +5,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using NumberSearch.DataAccess.Models;
+
+using ServiceReference;
+
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace FirstCom
@@ -41,7 +46,19 @@ namespace FirstCom
                 //var results = await NpaNxxFirstPointCom.GetAsync("206", string.Empty, string.Empty, username, password);
                 //var x = results.ToArray();
 
-                var results = await FirstPointComOrderPhoneNumber.PostAsync("2026020612", username, password);
+                //var results = await FirstPointComOrderPhoneNumber.PostAsync("2026020612", username, password);
+
+                var numbers = new List<DIDOrderInfo>();
+
+
+                var results = await FirstPointComListOwnedPhoneNumber.GetAllAsync(string.Empty, username, password).ConfigureAwait(false);
+
+                foreach (var npa in AreaCode.All)
+                {
+                    var result = await FirstPointComListOwnedPhoneNumber.GetAllAsync(npa.ToString(), username, password).ConfigureAwait(false);
+                    numbers.AddRange(result?.DIDOrder);
+                }
+
                 await Task.Delay(1000);
             });
         }
