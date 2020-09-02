@@ -121,7 +121,7 @@ namespace NumberSearch.Ingest
 
             try
             {
-                var results = await DidsList.GetAsync($"{npa}*******", token);
+                var results = await DidsList.GetAsync(npa, token);
 
                 foreach (var result in results?.ToArray())
                 {

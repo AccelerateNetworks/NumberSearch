@@ -140,7 +140,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public string custom_value2 { get; set; }
         public int invoice_number_counter { get; set; }
         public int quote_number_counter { get; set; }
-        public int task_rate { get; set; }
+        public decimal task_rate { get; set; }
         public string shipping_address1 { get; set; }
         public string shipping_address2 { get; set; }
         public string shipping_city { get; set; }

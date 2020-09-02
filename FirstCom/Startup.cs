@@ -5,8 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-using NumberSearch.DataAccess.Models;
-
 using ServiceReference;
 
 using System.Collections.Generic;

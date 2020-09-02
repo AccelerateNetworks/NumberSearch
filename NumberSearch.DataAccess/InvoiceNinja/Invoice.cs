@@ -9,7 +9,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
     public class Invoice
     {
         public InvoiceDatum[] data { get; set; }
-        public InvoiceMeta meta { get; set; }
+        //public InvoiceMeta meta { get; set; }
 
         public static async Task<Invoice> GetAllAsync(string token)
         {

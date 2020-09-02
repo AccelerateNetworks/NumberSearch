@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.TeleMesssage;
 
 using Serilog;
@@ -30,18 +31,20 @@ namespace NumberSearch.Mvc.Controllers
         private readonly string _apiSecret;
         private readonly string _fpcusername;
         private readonly string _fpcpassword;
+        private readonly string _invoiceNinjaToken;
 
         public CartController(IConfiguration config)
         {
             _configuration = config;
             _teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
             _postgresql = _configuration.GetConnectionString("PostgresqlProd");
-            var checkCallFlow = int.TryParse(_configuration.GetConnectionString("CallFlow"), out _CallFlow);
-            var checkChannelGroup = int.TryParse(_configuration.GetConnectionString("ChannelGroup"), out _ChannelGroup);
+            _ = int.TryParse(_configuration.GetConnectionString("CallFlow"), out _CallFlow);
+            _ = int.TryParse(_configuration.GetConnectionString("ChannelGroup"), out _ChannelGroup);
             _apiKey = config.GetConnectionString("BulkVSAPIKEY");
             _apiSecret = config.GetConnectionString("BulkVSAPISecret");
             _fpcusername = config.GetConnectionString("PComNetUsername");
             _fpcpassword = config.GetConnectionString("PComNetPassword");
+            _invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
         }
 
         public IActionResult Index()
@@ -476,19 +479,13 @@ namespace NumberSearch.Mvc.Controllers
 
 
                         // Submit the number orders.
+                        var itemsToInvoice = new List<Invoice_Items>();
                         var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
-
-                        var numbersToOrder = new List<string>();
-                        foreach (var po in productOrders)
-                        {
-                            if (po.DialedNumber != null)
-                            {
-                                numbersToOrder.Add(po.DialedNumber);
-                            }
-                        }
 
                         foreach (var nto in cart.PhoneNumbers)
                         {
+                            var cost = nto.NumberType == "Executive" ? 200 : nto.NumberType == "Premium" ? 40 : nto.NumberType == "Standard" ? 20 : 20;
+
                             if (nto.IngestedFrom == "BulkVS")
                             {
                                 // Buy it and save the reciept.
@@ -510,6 +507,14 @@ namespace NumberSearch.Mvc.Controllers
                                 };
 
                                 var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
+
+                                itemsToInvoice.Add(new Invoice_Items
+                                {
+                                    product_key = nto.DialedNumber,
+                                    notes = $"{nto.NumberType} Phone Number",
+                                    cost = cost,
+                                    qty = 1
+                                });
                             }
                             else if (nto.IngestedFrom == "TeleMessage")
                             {
@@ -553,6 +558,14 @@ namespace NumberSearch.Mvc.Controllers
                                 {
                                     Log.Fatal($"Failed to set TeleMessage label for {nto.DialedNumber} to {order?.BusinessName} {order?.FirstName} {order?.LastName}.");
                                 }
+
+                                itemsToInvoice.Add(new Invoice_Items
+                                {
+                                    product_key = nto.DialedNumber,
+                                    notes = $"{nto.NumberType} Phone Number",
+                                    cost = cost,
+                                    qty = 1
+                                });
                             }
                             else if (nto.IngestedFrom == "FirstPointCom")
                             {
@@ -573,6 +586,14 @@ namespace NumberSearch.Mvc.Controllers
                                 };
 
                                 var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
+
+                                itemsToInvoice.Add(new Invoice_Items
+                                {
+                                    product_key = nto.DialedNumber,
+                                    notes = $"{nto.NumberType} Phone Number",
+                                    cost = cost,
+                                    qty = 1
+                                });
                             }
                             else
                             {
@@ -589,6 +610,54 @@ namespace NumberSearch.Mvc.Controllers
                         {
                             productOrder.OrderId = order.OrderId;
                             var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+
+                            if (!string.IsNullOrWhiteSpace(productOrder.PortedDialedNumber))
+                            {
+                                var ported = cart.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == productOrder.PortedDialedNumber).FirstOrDefault();
+
+                                if (ported != null)
+                                {
+                                    itemsToInvoice.Add(new Invoice_Items
+                                    {
+                                        product_key = productOrder.PortedDialedNumber,
+                                        notes = $"Phone Number to Port to our Network",
+                                        cost = 20,
+                                        qty = 1
+                                    });
+                                }
+                            }
+
+                            if (productOrder.ProductId != Guid.Empty)
+                            {
+                                var product = cart.Products.Where(x => x.ProductId == productOrder.ProductId).FirstOrDefault();
+
+                                if (product != null)
+                                {
+                                    itemsToInvoice.Add(new Invoice_Items
+                                    {
+                                        product_key = product.Name,
+                                        notes = $"{product.Name} {product.Description}",
+                                        cost = product.Price,
+                                        qty = productOrder.Quantity
+                                    });
+                                }
+                            }
+
+                            if (productOrder.ServiceId != Guid.Empty)
+                            {
+                                var service = cart.Services.Where(x => x.ServiceId == productOrder.ServiceId).FirstOrDefault();
+
+                                if (service != null)
+                                {
+                                    itemsToInvoice.Add(new Invoice_Items
+                                    {
+                                        product_key = service.Name,
+                                        notes = $"{service.Name} {service.Description}",
+                                        cost = service.Price,
+                                        qty = productOrder.Quantity
+                                    });
+                                }
+                            }
 
                             if (!checkSubmitted)
                             {
@@ -628,6 +697,48 @@ Accelerate Networks",
                         else
                         {
                             Log.Fatal($"Failed to sent out the confirmation emails for {order.OrderId}.");
+                        }
+
+                        // Create a billing client and send out an invoice.
+                        var billingClients = await Client.GetByEmailAsync(order.Email, _invoiceNinjaToken).ConfigureAwait(false);
+                        var billingClient = billingClients.data.FirstOrDefault();
+                        if (billingClient is null)
+                        {
+                            // Create a new client in the billing system.
+                            var newBillingClient = new ClientDatum
+                            {
+                                name = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName,
+                                contacts = new ClientContact[] {
+                                        new ClientContact {
+                                            email = order.Email,
+                                            first_name = order.FirstName,
+                                            last_name = order.LastName
+                                        }
+                                    }
+                            };
+
+                            billingClient = await newBillingClient.PostAsync(_invoiceNinjaToken);
+                        }
+
+                        // Create an invoice for this order and submit it to the billing system.
+                        var testCreate = new InvoiceDatum
+                        {
+                            id = billingClient.id,
+                            invoice_items = itemsToInvoice.ToArray()
+                        };
+
+                        var createNewInvoice = await testCreate.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+
+                        // Ask the billing system to send out an email.
+                        var checkInvoiceSend = await createNewInvoice.SendInvoiceAsync(_invoiceNinjaToken).ConfigureAwait(false);
+
+                        if (checkInvoiceSend)
+                        {
+                            Log.Information($"Sucessfully sent out the invoice emails for {order.OrderId}.");
+                        }
+                        else
+                        {
+                            Log.Fatal($"Failed to sent out the invoice emails for {order.OrderId}.");
                         }
 
                         if (cart.PortedPhoneNumbers.Any())

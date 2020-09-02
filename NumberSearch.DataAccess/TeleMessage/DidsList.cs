@@ -54,6 +54,53 @@ namespace NumberSearch.DataAccess.TeleMesssage
             return await url.GetJsonAsync<DidsList>().ConfigureAwait(false);
         }
 
+        public static async Task<DidsList> GetRawAsync(int npa, Guid token)
+        {
+            string baseUrl = "https://apiv1.teleapi.net/";
+            string endpoint = "dids/list";
+            string tokenParameter = $"?token={token}";
+            string npaParameter = $"&npa={npa}";
+            string url = $"{baseUrl}{endpoint}{tokenParameter}{npaParameter}";
+            return await url.GetJsonAsync<DidsList>().ConfigureAwait(false);
+        }
+
+        public static async Task<IEnumerable<PhoneNumber>> GetAsync(int inNpa, Guid token)
+        {
+            var results = await GetRawAsync(inNpa, token).ConfigureAwait(false);
+
+            var list = new List<PhoneNumber>();
+
+            // Bail out early if something is wrong.
+            if (results == null || results?.data == null || results?.data?.count == null || results?.data?.count < 1 || results?.data?.dids == null)
+            {
+                return list;
+            }
+
+            foreach (var item in results?.data?.dids?.ToArray())
+            {
+                bool checkNpa = int.TryParse(item.npa, out int npa);
+                bool checkNxx = int.TryParse(item.nxx, out int nxx);
+                bool checkXxxx = int.TryParse(item.xxxx, out int xxxx);
+
+                if (checkNpa && checkNxx && checkXxxx)
+                {
+                    list.Add(new PhoneNumber
+                    {
+                        NPA = npa,
+                        NXX = nxx,
+                        XXXX = xxxx,
+                        DialedNumber = item.number,
+                        City = !string.IsNullOrWhiteSpace(item.ratecenter) ? item.ratecenter : "Unknown City",
+                        State = !string.IsNullOrWhiteSpace(item.state) ? item.state : "Unknown State",
+                        IngestedFrom = "TeleMessage"
+                    });
+                }
+            }
+
+            return list;
+        }
+
+
         public static async Task<IEnumerable<PhoneNumber>> GetAsync(string query, Guid token)
         {
             var results = await GetRawAsync(query, token).ConfigureAwait(false);
