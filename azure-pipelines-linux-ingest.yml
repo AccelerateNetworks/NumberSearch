@@ -20,6 +20,7 @@ variables:
   ConnectionStrings.PeerlessAPIKey: $(PeerlessAPIKey)
   ConnectionStrings.BulkVSAPISecret: $(BulkVSAPISecret)
   ConnectionStrings.BulkVSAPIKEY: $(BulkVSAPIKEY)
+  ConnectionStrings.InvoiceNinjaToken: $(InvoiceNinjaToken)
   ApplicationInsights.InstrumentationKey: $(InstrumentationKey)
 
 steps:

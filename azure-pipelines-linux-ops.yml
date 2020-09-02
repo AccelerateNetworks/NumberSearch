@@ -24,6 +24,7 @@ variables:
   ConnectionStrings.BulkVSAPIKEY: $(BulkVSAPIKEY)
   ConnectionStrings.MicrosoftClientSecret: $(MicrosoftClientSecret)
   ConnectionStrings.MicrosoftClientId: $(MicrosoftClientId)
+  ConnectionStrings.InvoiceNinjaToken: $(InvoiceNinjaToken)
   ApplicationInsights.InstrumentationKey: $(InstrumentationKey)
 
 steps:
