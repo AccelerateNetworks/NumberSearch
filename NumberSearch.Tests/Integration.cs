@@ -102,45 +102,45 @@ namespace NumberSearch.Tests
             output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
         }
 
-        [Fact]
-        public async Task CreateAndSendAnInvoiceAsync()
-        {
-            // Act
-            var clients = await Client.GetByEmailAsync("thomas.ryan@outlook.com", invoiceNinjaToken);
-            var client = clients.data.FirstOrDefault();
+        //[Fact]
+        //public async Task CreateAndSendAnInvoiceAsync()
+        //{
+        //    // Act
+        //    var clients = await Client.GetByEmailAsync("thomas.ryan@outlook.com", invoiceNinjaToken);
+        //    var client = clients.data.FirstOrDefault();
 
-            // Assert        
-            Assert.NotNull(client);
-            Assert.NotEmpty(clients.data);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(client));
+        //    // Assert        
+        //    Assert.NotNull(client);
+        //    Assert.NotEmpty(clients.data);
+        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(client));
 
-            var testInvoice = new Invoice_Items[] {
-                new Invoice_Items {
-                    product_key = "IntegrationTest",
-                    notes = "IntegrationTest",
-                    cost = 10,
-                    qty = 1
-                }
-            };
+        //    var testInvoice = new Invoice_Items[] {
+        //        new Invoice_Items {
+        //            product_key = "IntegrationTest",
+        //            notes = "IntegrationTest",
+        //            cost = 10,
+        //            qty = 1
+        //        }
+        //    };
 
-            var testCreate = new InvoiceDatum
-            {
-                id = client.id,
-                invoice_items = testInvoice
-            };
+        //    var testCreate = new InvoiceDatum
+        //    {
+        //        id = client.id,
+        //        invoice_items = testInvoice
+        //    };
 
-            // Act
-            var result = await testCreate.PostAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    // Act
+        //    var result = await testCreate.PostAsync(invoiceNinjaToken).ConfigureAwait(false);
 
-            // Assert        
-            Assert.NotNull(result);
-            Assert.Equal(result.invoice_items.FirstOrDefault().notes, testCreate.invoice_items.FirstOrDefault().notes);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+        //    // Assert        
+        //    Assert.NotNull(result);
+        //    Assert.Equal(result.invoice_items.FirstOrDefault().notes, testCreate.invoice_items.FirstOrDefault().notes);
+        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
 
-            var checkSend = await result.SendInvoiceAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    var checkSend = await result.SendInvoiceAsync(invoiceNinjaToken).ConfigureAwait(false);
 
-            Assert.True(checkSend);
-        }
+        //    Assert.True(checkSend);
+        //}
 
         [Fact]
         public async Task GetBillingClientByIdAsync()
@@ -354,45 +354,45 @@ namespace NumberSearch.Tests
         //    output.WriteLine($"{count} Results Reviewed");
         //}
 
-        [Fact]
-        public async Task TeleNXXsTestAsync()
-        {
-            // Arrange
-            string npa = "206";
+        //[Fact]
+        //public async Task TeleNXXsTestAsync()
+        //{
+        //    // Arrange
+        //    string npa = "206";
 
-            // Act
-            var results = await DidsNxxs.GetAsync(npa, token);
+        //    // Act
+        //    var results = await DidsNxxs.GetAsync(npa, token);
 
-            // Assert
-            Assert.NotNull(results);
-            Assert.False(string.IsNullOrWhiteSpace(results.status));
-            Assert.True(results.code == 200);
-            foreach (var result in results.data)
-            {
-                Assert.False(string.IsNullOrWhiteSpace(result));
-            }
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
-        }
+        //    // Assert
+        //    Assert.NotNull(results);
+        //    Assert.False(string.IsNullOrWhiteSpace(results.status));
+        //    Assert.True(results.code == 200);
+        //    foreach (var result in results.data)
+        //    {
+        //        Assert.False(string.IsNullOrWhiteSpace(result));
+        //    }
+        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+        //}
 
-        [Fact]
-        public async Task LocalNumberTestAsync()
-        {
-            // Arrange
-            string query = "20645";
+        //[Fact]
+        //public async Task LocalNumberTestAsync()
+        //{
+        //    // Arrange
+        //    string query = "20645";
 
-            // Act
-            var results = await DidsList.GetRawAsync(query, token);
+        //    // Act
+        //    var results = await DidsList.GetRawAsync(query, token);
 
-            // Assert
-            Assert.NotNull(results);
-            Assert.False(string.IsNullOrWhiteSpace(results.status));
-            Assert.True(results.code == 200);
-            foreach (var result in results.data.dids)
-            {
-                Assert.False(string.IsNullOrWhiteSpace(result.number));
-            }
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
-        }
+        //    // Assert
+        //    Assert.NotNull(results);
+        //    Assert.False(string.IsNullOrWhiteSpace(results.status));
+        //    Assert.True(results.code == 200);
+        //    foreach (var result in results.data.dids)
+        //    {
+        //        Assert.False(string.IsNullOrWhiteSpace(result.number));
+        //    }
+        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+        //}
 
         [Fact]
         public async Task LocalNumberPortabilityRawTestAsync()
@@ -416,23 +416,23 @@ namespace NumberSearch.Tests
             output.WriteLine(results);
         }
 
-        [Fact]
-        public async Task LocalNumberPortabilityTestAsync()
-        {
-            // Arrange
-            string query = "1";
+        //[Fact]
+        //public async Task LocalNumberPortabilityTestAsync()
+        //{
+        //    // Arrange
+        //    string query = "1";
 
-            // Act
-            var result = await LnpCheck.IsPortable(query, token);
+        //    // Act
+        //    var result = await LnpCheck.IsPortable(query, token);
 
-            // Assert
-            Assert.False(result);
+        //    // Assert
+        //    Assert.False(result);
 
-            result = await LnpCheck.IsPortable("8662214141", token);
+        //    result = await LnpCheck.IsPortable("8662214141", token);
 
-            // Assert
-            Assert.True(result);
-        }
+        //    // Assert
+        //    Assert.True(result);
+        //}
 
 
         [Fact]
@@ -550,31 +550,31 @@ namespace NumberSearch.Tests
             output.WriteLine($"{count} Results Reviewed");
         }
 
-        [Fact]
-        public async Task TelePhoneNumbersTestAsync()
-        {
-            // Arrange
-            var query = "206";
+        //[Fact]
+        //public async Task TelePhoneNumbersTestAsync()
+        //{
+        //    // Arrange
+        //    var query = "206";
 
-            // Act
-            var results = await DidsList.GetAsync(query, token);
+        //    // Act
+        //    var results = await DidsList.GetAsync(query, token);
 
-            // Assert
-            Assert.NotNull(results);
-            int count = 0;
-            foreach (var result in results.ToArray())
-            {
-                Assert.True(result.NPA > 99);
-                Assert.True(result.NXX > 99);
-                Assert.True(result.XXXX > 0);
-                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-                Assert.False(string.IsNullOrWhiteSpace(result.City));
-                Assert.False(string.IsNullOrWhiteSpace(result.State));
-                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
-                count++;
-            }
-            output.WriteLine($"{count} Results Reviewed");
-        }
+        //    // Assert
+        //    Assert.NotNull(results);
+        //    int count = 0;
+        //    foreach (var result in results.ToArray())
+        //    {
+        //        Assert.True(result.NPA > 99);
+        //        Assert.True(result.NXX > 99);
+        //        Assert.True(result.XXXX > 0);
+        //        Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+        //        Assert.False(string.IsNullOrWhiteSpace(result.City));
+        //        Assert.False(string.IsNullOrWhiteSpace(result.State));
+        //        Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+        //        count++;
+        //    }
+        //    output.WriteLine($"{count} Results Reviewed");
+        //}
 
         [Fact]
         public async Task TeleNumberDetailsTestAsync()
@@ -590,26 +590,26 @@ namespace NumberSearch.Tests
             output.WriteLine(results.code.ToString());
         }
 
-        [Fact]
-        public async Task TeleNoteTestAsync()
-        {
-            // Arrange
-            var number = "2068588757";
+        //[Fact]
+        //public async Task TeleNoteTestAsync()
+        //{
+        //    // Arrange
+        //    var number = "2068588757";
 
-            // Act
-            var results = await UserDidsGet.GetAsync(number, token).ConfigureAwait(false);
+        //    // Act
+        //    var results = await UserDidsGet.GetAsync(number, token).ConfigureAwait(false);
 
-            Assert.NotNull(results);
-            output.WriteLine(results.data.id);
+        //    Assert.NotNull(results);
+        //    output.WriteLine(results.data.id);
 
-            var note = $"This is a test note.";
+        //    var note = $"This is a test note.";
 
-            var setNote = await UserDidsNote.SetNote(note, results.data.id, token).ConfigureAwait(false);
+        //    var setNote = await UserDidsNote.SetNote(note, results.data.id, token).ConfigureAwait(false);
 
-            Assert.NotNull(setNote);
-            Assert.True(setNote.code == 200);
-            output.WriteLine(setNote.data);
-        }
+        //    Assert.NotNull(setNote);
+        //    Assert.True(setNote.code == 200);
+        //    output.WriteLine(setNote.data);
+        //}
 
 
         [Fact]
