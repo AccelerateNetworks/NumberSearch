@@ -35,7 +35,10 @@
         if (Model != null && !string.IsNullOrWhiteSpace(Model?.PortedPhoneNumber?.PortedDialedNumber))
         {
             <div class="alert alert-success" role="alert">
-                This phone number can be ported to our network!
+                @{
+                    var message = Model?.Message ?? "This phone number can be ported to our network!";
+                }
+                @message
             </div>
             <div class="table-responsive">
                 <table class="table table-striped table-borderless table-hover">

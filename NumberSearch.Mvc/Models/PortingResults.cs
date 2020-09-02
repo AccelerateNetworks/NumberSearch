@@ -1,9 +1,4 @@
 ﻿using NumberSearch.DataAccess;
-using NumberSearch.DataAccess.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc
 {
@@ -11,5 +6,6 @@ namespace NumberSearch.Mvc
     {
         public PortedPhoneNumber PortedPhoneNumber { get; set; }
         public Cart Cart { get; set; }
+        public string Message { get; set; }
     }
 }

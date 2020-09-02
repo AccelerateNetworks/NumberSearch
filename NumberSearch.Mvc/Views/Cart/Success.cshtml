@@ -8,21 +8,6 @@
 @*https://stackoverflow.com/questions/48613992/bootstrap-4-file-input-doesnt-show-the-file-name*@
 
 <div class="container">
-    <br />
-    <div class="pricing-header mx-auto pb-3 text-center">
-        <h1 class="display-4">Success</h1>
-    </div>
-    <br />
-    <div class="alert alert-success" role="alert">
-        Order Id @Model.Order.OrderId has been submitted on @orderDate
-    </div>
-    <div class="alert alert-info" role="alert">
-        A confirmation email will be sent to @Model.Order.Email shortly.
-    </div>
-    <div class="jumbotron">
-        <h1 class="display-4">Need help? Contact us!</h1>
-        <p class="lead">Give us a ring at 206-858-8757 (texting is welcome) or <a href="mailto:support@acceleratenetworks.com?Subject=Help%20me%20with%20?" target="_top">email us</a>.</p>
-    </div>
     @{
         if (Model != null && Model?.PhoneNumbers != null && Model.PhoneNumbers.Any())
         {
@@ -248,6 +233,24 @@
                 <button class="btn btn-primary btn-lg btn-block" type="submit" value="Submit">Request A Port</button>
                 <br />
             </form>
+        }
+        else
+        {
+            <br />
+            <div class="pricing-header mx-auto pb-3 text-center">
+                <h1 class="display-4">Success</h1>
+            </div>
+            <br />
+            <div class="alert alert-success" role="alert">
+                Order Id @Model.Order.OrderId has been submitted on @orderDate
+            </div>
+            <div class="alert alert-info" role="alert">
+                A confirmation email will be sent to @Model.Order.Email shortly.
+            </div>
+            <div class="jumbotron">
+                <h1 class="display-4">Need help? Contact us!</h1>
+                <p class="lead">Give us a ring at 206-858-8757 (texting is welcome) or <a href="mailto:support@acceleratenetworks.com?Subject=Help%20me%20with%20?" target="_top">email us</a>.</p>
+            </div>
         }
     }
 </div>

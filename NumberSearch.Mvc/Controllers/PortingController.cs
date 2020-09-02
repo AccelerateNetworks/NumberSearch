@@ -1,19 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-
-using MailKit.Security;
-
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
 using MimeKit;
-using MimeKit.Text;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.TeleMesssage;
+
+using Serilog;
+
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
 {
@@ -47,10 +45,61 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     var teleToken = Guid.Parse(configuration.GetConnectionString("TeleAPI"));
 
-                    var portable = await LnpCheck.IsPortable(dialedPhoneNumber, teleToken).ConfigureAwait(false);
-
-                    if (portable)
+                    try
                     {
+                        var portable = await LnpCheck.IsPortable(dialedPhoneNumber, teleToken).ConfigureAwait(false);
+
+                        if (portable)
+                        {
+                            Log.Information($"[Portability] {dialedPhoneNumber} is Portable.");
+
+                            var port = new PortedPhoneNumber
+                            {
+                                PortedDialedNumber = dialedPhoneNumber,
+                                NPA = npa,
+                                NXX = nxx,
+                                XXXX = xxxx,
+                                City = "Unknown City",
+                                State = "Unknown State",
+                                DateIngested = DateTime.Now,
+                                IngestedFrom = "UserInput"
+                            };
+
+                            return View("Index", new PortingResults
+                            {
+                                PortedPhoneNumber = port,
+                                Cart = cart,
+                                Message = "This phone number can be ported to our network!"
+                            });
+                        }
+                        else
+                        {
+                            Log.Information($"[Portability] {dialedPhoneNumber} is not Portable.");
+
+                            var port = new PortedPhoneNumber
+                            {
+                                PortedDialedNumber = dialedPhoneNumber,
+                                NPA = npa,
+                                NXX = nxx,
+                                XXXX = xxxx,
+                                City = "Unknown City",
+                                State = "Unknown State",
+                                DateIngested = DateTime.Now,
+                                IngestedFrom = "UserInput"
+                            };
+
+                            return View("Index", new PortingResults
+                            {
+                                PortedPhoneNumber = port,
+                                Cart = cart,
+                                Message = "This phone number can likely be ported to our network!"
+                            });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Fatal($"[Portability] {ex.Message}");
+
                         var port = new PortedPhoneNumber
                         {
                             PortedDialedNumber = dialedPhoneNumber,
@@ -66,15 +115,8 @@ namespace NumberSearch.Mvc.Controllers
                         return View("Index", new PortingResults
                         {
                             PortedPhoneNumber = port,
-                            Cart = cart
-                        });
-                    }
-                    else
-                    {
-                        return View("Index", new PortingResults
-                        {
-                            PortedPhoneNumber = new PortedPhoneNumber { },
-                            Cart = cart
+                            Cart = cart,
+                            Message = "This phone number can likely be ported to our network!"
                         });
                     }
                 }
@@ -196,56 +238,40 @@ namespace NumberSearch.Mvc.Controllers
 
             if (checkPortRequest)
             {
-                var outboundMessage = new MimeKit.MimeMessage
+                // Send out the confirmation email.
+                var confirmationEmail = new Email
                 {
-                    Sender = new MimeKit.MailboxAddress("Number Search", configuration.GetConnectionString("SmtpUsername")),
-                    Subject = $"Order: {order.OrderId} Added Porting Information"
-                };
-
-                // This will need to be updated when the baseURL changes.
-                var linkToOrder = $"https://acceleratenetworks.com/Cart/Order/{order.OrderId}";
-
-                var body = new TextPart(TextFormat.Plain)
-                {
-                    Text = $@"Hi {order.FirstName},
+                    PrimaryEmailAddress = order.Email,
+                    CarbonCopy = configuration.GetConnectionString("SmtpUsername"),
+                    MessageBody = $@"Hi {order.FirstName},
                                                                                       
 Thank you for choosing Accelerate Networks!
 
 Your order Id is: {order.OrderId} and you have successfully added additional Porting information to accelerate the process.
 
-You can review your order at {linkToOrder}
+You can review your order at https://acceleratenetworks.com/Cart/Order/{order.OrderId}
                                                                                       
 A delivery specialist will send you a follow up email to walk you through the next steps in the process.
 
 Thanks,
 
-Accelerate Networks"
+Accelerate Networks",
+                    OrderId = order.OrderId,
+                    Subject = $"Order: {order.OrderId} Added Porting Information",
+                    Multipart = multipart
                 };
 
-                // If there's an attachment send it, if not just send the body.
-                if (multipart.Count > 0)
+                var checkSend = await confirmationEmail.SendEmailAsync(configuration.GetConnectionString("SmtpUsername"), configuration.GetConnectionString("SmtpPassword")).ConfigureAwait(false);
+                var checkSave = await confirmationEmail.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+
+                if (checkSend && checkSave)
                 {
-                    multipart.Add(body);
-                    outboundMessage.Body = multipart;
+                    Log.Information($"Sucessfully sent out the confirmation emails for {order.OrderId}.");
                 }
                 else
                 {
-                    outboundMessage.Body = body;
+                    Log.Fatal($"Failed to sent out the confirmation emails for {order.OrderId}.");
                 }
-
-                var ordersInbox = MailboxAddress.Parse(configuration.GetConnectionString("SmtpUsername"));
-                var recipient = MailboxAddress.Parse(order.Email);
-                outboundMessage.Cc.Add(ordersInbox);
-                outboundMessage.To.Add(recipient);
-
-                using var smtp = new MailKit.Net.Smtp.SmtpClient();
-                smtp.MessageSent += (sender, args) => { };
-                smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
-
-                await smtp.ConnectAsync("mail.seattlemesh.net", 587, SecureSocketOptions.StartTls).ConfigureAwait(false);
-                await smtp.AuthenticateAsync(configuration.GetConnectionString("SmtpUsername"), configuration.GetConnectionString("SmtpPassword")).ConfigureAwait(false);
-                await smtp.SendAsync(outboundMessage).ConfigureAwait(false);
-                await smtp.DisconnectAsync(true).ConfigureAwait(false);
 
                 // Reset the session and clear the Cart.
                 HttpContext.Session.Clear();
@@ -261,6 +287,5 @@ Accelerate Networks"
                 return RedirectToAction("Cart", "Order", portRequest.OrderId);
             }
         }
-
     }
 }

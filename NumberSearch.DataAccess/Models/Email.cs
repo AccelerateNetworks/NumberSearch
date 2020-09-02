@@ -23,6 +23,7 @@ namespace NumberSearch.DataAccess
         public string MessageBody { get; set; }
         public DateTime DateSent { get; set; }
         public bool Completed { get; set; }
+        public Multipart Multipart { get; set; }
 
         /// <summary>
         /// Get all emails.
@@ -109,7 +110,7 @@ namespace NumberSearch.DataAccess
                     Subject = Subject
                 };
 
-                outboundMessage.Body = new TextPart(TextFormat.Plain)
+                var bodyText = new TextPart(TextFormat.Plain)
                 {
                     Text = MessageBody
                 };
@@ -118,7 +119,19 @@ namespace NumberSearch.DataAccess
                 var recipient = MailboxAddress.Parse(PrimaryEmailAddress);
 
                 outboundMessage.From.Add(ordersInbox);
+                outboundMessage.Cc.Add(ordersInbox);
                 outboundMessage.To.Add(recipient);
+
+                // If there's an attachment send it, if not just send the body.
+                if (Multipart != null && Multipart.Count > 0)
+                {
+                    Multipart.Add(bodyText);
+                    outboundMessage.Body = Multipart;
+                }
+                else
+                {
+                    outboundMessage.Body = bodyText;
+                }
 
                 using var smtp = new MailKit.Net.Smtp.SmtpClient();
                 smtp.MessageSent += (sender, args) => { };
