@@ -23,6 +23,7 @@ variables:
   ConnectionStrings.CallFlow: $(CallFlow)
   ConnectionStrings.BulkVSAPISecret: $(BulkVSAPISecret)
   ConnectionStrings.BulkVSAPIKEY: $(BulkVSAPIKEY)
+  ConnectionStrings.InvoiceNinjaToken: $(InvoiceNinjaToken)
   ApplicationInsights.InstrumentationKey: $(InstrumentationKey)
 
 steps:
