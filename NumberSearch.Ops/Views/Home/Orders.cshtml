@@ -58,6 +58,13 @@
 
                                 @order.Zip
                             </p>
+                            @{
+                                if (!string.IsNullOrWhiteSpace(order.CustomerNotes))
+                                {
+                                    <strong>Customer Notes</strong>
+                                    <p>@order.CustomerNotes</p>
+                                }
+                            }
                         </td>
                         <td>
                         </td>

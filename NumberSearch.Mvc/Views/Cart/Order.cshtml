@@ -254,6 +254,10 @@
                             Zip code required.
                         </div>
                     </div>
+                    <div class="col-md-12 mb-3">
+                        <label for="zip" class="text-muted">Notes</label>
+                        <input asp-for="Order.CustomerNotes" type="text" class="form-control" id="customernotes" placeholder="Add important information for our staff">
+                    </div>
                 </div>
                 @{
                     if (Model?.Order?.OrderId == Guid.Empty)

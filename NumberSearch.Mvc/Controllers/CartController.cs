@@ -729,16 +729,23 @@ Accelerate Networks",
 
                         var createNewInvoice = await testCreate.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
 
-                        // Ask the billing system to send out an email.
-                        var checkInvoiceSend = await createNewInvoice.SendInvoiceAsync(_invoiceNinjaToken).ConfigureAwait(false);
-
-                        if (checkInvoiceSend)
+                        if (string.IsNullOrWhiteSpace(order.CustomerNotes))
                         {
-                            Log.Information($"Sucessfully sent out the invoice emails for {order.OrderId}.");
+                            // Ask the billing system to send out an email.
+                            var checkInvoiceSend = await createNewInvoice.SendInvoiceAsync(_invoiceNinjaToken).ConfigureAwait(false);
+
+                            if (checkInvoiceSend)
+                            {
+                                Log.Information($"Sucessfully sent out the invoice emails for {order.OrderId}.");
+                            }
+                            else
+                            {
+                                Log.Fatal($"Failed to sent out the invoice emails for {order.OrderId}.");
+                            }
                         }
                         else
                         {
-                            Log.Fatal($"Failed to sent out the invoice emails for {order.OrderId}.");
+                            Log.Information($"Skipped sending out the invoice emails for {order.OrderId} because the customer entered notes on the order.");
                         }
 
                         if (cart.PortedPhoneNumbers.Any())
