@@ -729,6 +729,11 @@ Accelerate Networks",
 
                         var createNewInvoice = await testCreate.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
 
+                        // Update the order with the billing system's client and invoice Id's.
+                        order.BillingClientId = createNewInvoice.client_id.ToString(CultureInfo.CurrentCulture);
+                        order.BillingInvoiceId = createNewInvoice.id.ToString(CultureInfo.CurrentCulture);
+                        var checkUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
+
                         if (string.IsNullOrWhiteSpace(order.CustomerNotes))
                         {
                             // Ask the billing system to send out an email.

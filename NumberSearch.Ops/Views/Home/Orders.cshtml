@@ -27,7 +27,7 @@
                     var businessName = string.IsNullOrWhiteSpace(order.BusinessName) ? "Consumer" : order.BusinessName;
                     <tr>
                         <th scope="row" data-order="@order.DateSubmitted.Ticks">
-                            <a href="https://acceleratenetworks.com/cart/order/@order.OrderId" class="btn btn-primary">
+                            <a href="https://acceleratenetworks.com/cart/order/@order.OrderId" class="btn btn-primary" target="_blank" rel="noopener">
                                 View Order
                             </a>
                             <h4 class="d-flex justify-content-between align-items-center mt-3">
@@ -35,6 +35,22 @@
                                     @order.DateSubmitted
                                 </span>
                             </h4>
+                            @{
+                                if (!string.IsNullOrWhiteSpace(order.BillingClientId))
+                                {
+                                    <a href="https://billing.acceleratenetworks.com/clients/@order?.BillingClientId/edit" class="btn btn-secondary" target="_blank" rel="noopener">
+                                        View Client
+                                    </a>
+                                }
+                            }
+                            @{
+                                if (!string.IsNullOrWhiteSpace(order.BillingInvoiceId))
+                                {
+                                    <a href="https://billing.acceleratenetworks.com/invoices/@order?.BillingInvoiceId/edit" class="btn btn-info" target="_blank" rel="noopener">
+                                        View Invoice
+                                    </a>
+                                }
+                            }
                         </th>
                         <td>
                             <strong>Business Name</strong>
