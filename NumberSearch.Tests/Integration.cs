@@ -959,6 +959,24 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task GetSaleTaxForOrderAsync()
+        {
+            var conn = postgresql;
+
+            var results = await Order.GetAllAsync(conn).ConfigureAwait(false);
+
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+
+            var order = results.FirstOrDefault();
+
+            var taxrate = await SalesTax.GetAsync(order.Address, order.City, order.Zip).ConfigureAwait(false);
+
+            Assert.True(taxrate > 0.0M);
+            output.WriteLine($"Taxrate: {taxrate}");
+        }
+
+        [Fact]
         public async Task PostOrderAsync()
         {
             var conn = postgresql;
