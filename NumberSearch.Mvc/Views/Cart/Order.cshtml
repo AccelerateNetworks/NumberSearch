@@ -40,6 +40,7 @@
                     var productsTotal = 0;
                     var servicesTotal = 0;
                     var numbersTotal = 0;
+                    var portedTotal = 0;
                     foreach (var number in numbers)
                     {
                         <li class="list-group-item d-flex justify-content-between lh-condensed">
@@ -66,14 +67,31 @@
                             }
                         </li>
                     }
+
+                    var freePortedNumbers = Model?.Services.Count();
                     foreach (var number in ported)
                     {
+                        // Discount one ported number for each service they purchase.
+                        var calculatedCost = 20;
+
+                        if (freePortedNumbers > 0)
+                        {
+                            freePortedNumbers--;
+                            calculatedCost = 0;
+                        }
+                        // If they use up all of their free ports, then charge $2 a line.
+                        else if (freePortedNumbers == 0 && (Model?.Services.Any() ?? false))
+                        {
+                            calculatedCost = 2;
+                        }
+
+                        portedTotal += calculatedCost;
                         <li class="list-group-item d-flex justify-content-between lh-condensed">
                             <div>
                                 <h6 class="my-0">Porting Phone Number</h6>
                                 <small class="text-muted">(@number.NPA) @number.NXX @number.XXXX</small>
                             </div>
-                            <span class="text-muted">$20</span>
+                            <span class="text-muted">$@calculatedCost</span>
                         </li>
                     }
                     foreach (var product in products)
@@ -106,7 +124,7 @@
                 <li class="list-group-item d-flex justify-content-between">
                     <span>Total (USD)</span>
                     @{
-                        var total = numbersTotal + (ported.Length * 20) + productsTotal + servicesTotal;
+                        var total = numbersTotal + portedTotal + productsTotal + servicesTotal;
                         <strong>$@total</strong>
                     }
                 </li>

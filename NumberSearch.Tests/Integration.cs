@@ -176,15 +176,37 @@ namespace NumberSearch.Tests
             Assert.Equal(testCreate.name, result.name);
             Assert.Equal(testCreate.contacts.FirstOrDefault().email, result.contacts.FirstOrDefault().email);
             output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+
+            var checkDelete = await result.DeleteAsync(invoiceNinjaToken).ConfigureAwait(false);
+
+            Assert.NotNull(checkDelete);
+            Assert.True(checkDelete.is_deleted);
         }
 
         [Fact]
         public async Task CreateUpdateAndDeleteBillingInvoiceByClientByIdAsync()
         {
-            // Arrange
-            var allClients = await Client.GetByEmailAsync("integrationTest@example.com", invoiceNinjaToken).ConfigureAwait(false);
 
-            var testClient = allClients.data.FirstOrDefault();
+            // Arrange
+            var testCreateClient = new ClientDatum
+            {
+                name = "IntegrationTest",
+                contacts = new ClientContact[] {
+                    new ClientContact {
+                        email = "integrationTest@example.com"
+                    }
+                }
+            };
+
+            // Act
+            var testClient = await testCreateClient.PostAsync(invoiceNinjaToken);
+
+            // Assert        
+            Assert.NotNull(testClient);
+            Assert.Equal(testCreateClient.name, testClient.name);
+            Assert.Equal(testCreateClient.contacts.FirstOrDefault().email, testClient.contacts.FirstOrDefault().email);
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(testClient));
+
 
             var testInvoice = new Invoice_Items[] {
                 new Invoice_Items {
@@ -222,6 +244,11 @@ namespace NumberSearch.Tests
 
             Assert.NotNull(deleteTest);
             Assert.True(deleteTest.is_deleted);
+
+            var checkDelete = await testClient.DeleteAsync(invoiceNinjaToken).ConfigureAwait(false);
+
+            Assert.NotNull(checkDelete);
+            Assert.True(checkDelete.is_deleted);
         }
 
         [Fact]
@@ -256,6 +283,11 @@ namespace NumberSearch.Tests
             Assert.Equal(updateResult.id, result.id);
             Assert.Equal(updateResult.contacts.FirstOrDefault().email, result.contacts.FirstOrDefault().email);
             output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+
+            var checkDelete = await updateResult.DeleteAsync(invoiceNinjaToken).ConfigureAwait(false);
+
+            Assert.NotNull(checkDelete);
+            Assert.True(checkDelete.is_deleted);
         }
 
         [Fact]

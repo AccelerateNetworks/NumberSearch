@@ -606,6 +606,9 @@ namespace NumberSearch.Mvc.Controllers
                             }
                         }
 
+                        // Track the number of free ports this order qualifies for.
+                        var freePortedNumbers = cart.Services.Count();
+
                         foreach (var productOrder in cart.ProductOrders)
                         {
                             productOrder.OrderId = order.OrderId;
@@ -615,13 +618,27 @@ namespace NumberSearch.Mvc.Controllers
                             {
                                 var ported = cart.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == productOrder.PortedDialedNumber).FirstOrDefault();
 
+                                // Discount one ported number for each service they purchase.
+                                var calculatedCost = 20;
+
+                                if (freePortedNumbers > 0)
+                                {
+                                    freePortedNumbers--;
+                                    calculatedCost = 0;
+                                }
+                                // If they use up all of their free ports, then charge $2 a line.
+                                else if (freePortedNumbers == 0 && cart.Services.Any())
+                                {
+                                    calculatedCost = 2;
+                                }
+
                                 if (ported != null)
                                 {
                                     itemsToInvoice.Add(new Invoice_Items
                                     {
                                         product_key = productOrder.PortedDialedNumber,
                                         notes = $"Phone Number to Port to our Network",
-                                        cost = 20,
+                                        cost = calculatedCost,
                                         qty = 1
                                     });
                                 }

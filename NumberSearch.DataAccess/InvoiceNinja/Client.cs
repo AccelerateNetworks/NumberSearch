@@ -193,6 +193,27 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             // Unwrap the data we want from the single-field parent object.
             return result.data;
         }
+
+        public async Task<ClientDatum> DeleteAsync(string token)
+        {
+            string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
+            string endpoint = "clients";
+            string tokenHeader = "X-Ninja-Token";
+            string contentHeader = "Content-Type";
+            string contentHeaderValue = "application/json";
+            string clientIdParameter = $"/{id}";
+            string url = $"{baseUrl}{endpoint}{clientIdParameter}";
+
+            var result = await url
+                .WithHeader(tokenHeader, token)
+                .WithHeader(contentHeader, contentHeaderValue)
+                .DeleteAsync()
+                .ReceiveJson<ClientSingle>()
+                .ConfigureAwait(false);
+
+            // Unwrap the data we want from the single-field parent object.
+            return result.data;
+        }
     }
 
     public class ClientContact
