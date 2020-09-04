@@ -713,10 +713,12 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        // This was deleting the database everytime it ran.
+        // Now it only delete stale numbers that haven't been updated in the last 3 days.
         public async Task DeleteOldPhoneNumberAsync()
         {
             var conn = postgresql;
-            var results = await PhoneNumber.DeleteOld(DateTime.Now, conn).ConfigureAwait(false);
+            var results = await PhoneNumber.DeleteOld(DateTime.Now.AddDays(-3), conn).ConfigureAwait(false);
             Assert.NotNull(results);
             output.WriteLine($"{results.Removed} Numbers Removed.");
         }
