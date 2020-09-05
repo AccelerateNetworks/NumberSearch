@@ -24,6 +24,7 @@ namespace NumberSearch.DataAccess
         public string CustomerNotes { get; set; }
         public string BillingClientId { get; set; }
         public string BillingInvoiceId { get; set; }
+        public decimal SalesTax { get; set; }
 
         public static async Task<Order> GetByIdAsync(Guid orderId, string connectionString)
         {

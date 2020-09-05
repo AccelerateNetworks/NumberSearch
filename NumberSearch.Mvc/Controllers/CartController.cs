@@ -478,9 +478,10 @@ namespace NumberSearch.Mvc.Controllers
                         order = orderFromDb.FirstOrDefault();
 
 
-                        // Submit the number orders.
+                        // Submit the number orders and track the total cost.
                         var itemsToInvoice = new List<Invoice_Items>();
                         var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                        var totalCost = 0;
 
                         foreach (var nto in cart.PhoneNumbers)
                         {
@@ -508,6 +509,7 @@ namespace NumberSearch.Mvc.Controllers
 
                                 var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
 
+                                totalCost += cost;
                                 itemsToInvoice.Add(new Invoice_Items
                                 {
                                     product_key = nto.DialedNumber,
@@ -559,6 +561,7 @@ namespace NumberSearch.Mvc.Controllers
                                     Log.Fatal($"Failed to set TeleMessage label for {nto.DialedNumber} to {order?.BusinessName} {order?.FirstName} {order?.LastName}.");
                                 }
 
+                                totalCost += cost;
                                 itemsToInvoice.Add(new Invoice_Items
                                 {
                                     product_key = nto.DialedNumber,
@@ -587,6 +590,7 @@ namespace NumberSearch.Mvc.Controllers
 
                                 var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
 
+                                totalCost += cost;
                                 itemsToInvoice.Add(new Invoice_Items
                                 {
                                     product_key = nto.DialedNumber,
@@ -634,6 +638,7 @@ namespace NumberSearch.Mvc.Controllers
 
                                 if (ported != null)
                                 {
+                                    totalCost += calculatedCost;
                                     itemsToInvoice.Add(new Invoice_Items
                                     {
                                         product_key = productOrder.PortedDialedNumber,
@@ -650,6 +655,7 @@ namespace NumberSearch.Mvc.Controllers
 
                                 if (product != null)
                                 {
+                                    totalCost += product.Price;
                                     itemsToInvoice.Add(new Invoice_Items
                                     {
                                         product_key = product.Name,
@@ -666,6 +672,7 @@ namespace NumberSearch.Mvc.Controllers
 
                                 if (service != null)
                                 {
+                                    totalCost += service.Price;
                                     itemsToInvoice.Add(new Invoice_Items
                                     {
                                         product_key = service.Name,
@@ -675,12 +682,20 @@ namespace NumberSearch.Mvc.Controllers
                                     });
                                 }
                             }
-
-                            if (!checkSubmitted)
-                            {
-                                // TODO: Maybe failout here?
-                            }
                         }
+
+                        // Handle the tax information
+                        var taxrate = await SalesTax.GetAsync(order.Address, order.City, order.Zip).ConfigureAwait(false);
+
+                        itemsToInvoice.Add(new Invoice_Items
+                        {
+                            product_key = "Tax",
+                            notes = $"Local and State Sales Tax @ {taxrate}",
+                            cost = totalCost * taxrate,
+                            qty = 1
+                        });
+
+                        Log.Information($"[Checkout] {totalCost * taxrate} in tax @ {taxrate}.");
 
                         // Send out the confirmation email.
                         var confirmationEmail = new Email

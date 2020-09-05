@@ -18,7 +18,7 @@ namespace NumberSearch.DataAccess
 
             var result = await url.GetStringAsync().ConfigureAwait(false);
 
-            var rateKey = "rate=\"";
+            var rateKey = " rate=\"";
             var rateValueStart = result.IndexOf(rateKey);
             var rateValueLength = 4;
             var unparsedRate = result.Substring(rateKey.Length + rateValueStart, rateValueLength);
