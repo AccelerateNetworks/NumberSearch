@@ -970,10 +970,24 @@ namespace NumberSearch.Tests
 
             var order = results.FirstOrDefault();
 
-            var taxrate = await SalesTax.GetAsync(order.Address, order.City, order.Zip).ConfigureAwait(false);
+            var taxrate = await SalesTax.GetTaxRateAsync(order.Address, order.City, order.Zip).ConfigureAwait(false);
 
             Assert.True(taxrate > 0.0M);
             output.WriteLine($"Taxrate: {taxrate}");
+        }
+
+        [Fact]
+        public async Task GetRawSaleTaxInfoAsync()
+        {
+            string address = "LINDERSON WAY SW";
+            string city = string.Empty;
+            string zip = "98501";
+
+            var result = await SalesTax.GetAsync(address, city, zip).ConfigureAwait(false);
+
+            Assert.NotNull(result);
+            Assert.True(result.rate1 > 0.0M);
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
         }
 
         [Fact]

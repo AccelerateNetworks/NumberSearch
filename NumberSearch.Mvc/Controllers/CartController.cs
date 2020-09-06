@@ -685,7 +685,7 @@ namespace NumberSearch.Mvc.Controllers
                         }
 
                         // Handle the tax information
-                        var taxrate = await SalesTax.GetAsync(order.Address, order.City, order.Zip).ConfigureAwait(false);
+                        var taxrate = await SalesTax.GetTaxRateAsync(order.Address, order.City, order.Zip).ConfigureAwait(false);
 
                         itemsToInvoice.Add(new Invoice_Items
                         {
