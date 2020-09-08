@@ -1129,6 +1129,52 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task OwnedPhoneNumberCRUDAsync()
+        {
+            // Arrange
+            var conn = postgresql;
+            var ownedPhoneNumber = new OwnedPhoneNumber
+            {
+                DialedNumber = "8605530426",
+                Active = true,
+                BillingClientId = "1",
+                DateIngested = DateTime.Now,
+                IngestedFrom = "IntegrationTest",
+                OwnedBy = "IntegrationTest",
+                Notes = string.Empty
+            };
+
+            // Act
+            var checkCreate = await ownedPhoneNumber.PostAsync(postgresql).ConfigureAwait(false);
+
+            Assert.True(checkCreate);
+
+            var results = await OwnedPhoneNumber.GetAllAsync(postgresql).ConfigureAwait(false);
+            var fromDb = results.Where(x => x.IngestedFrom == ownedPhoneNumber.IngestedFrom).FirstOrDefault();
+
+            Assert.NotNull(fromDb);
+            fromDb.Notes = "IntegrationTest";
+
+            var checkUpdate = await fromDb.PutAsync(postgresql).ConfigureAwait(false);
+
+            Assert.True(checkUpdate);
+
+            results = await OwnedPhoneNumber.GetAllAsync(postgresql).ConfigureAwait(false);
+            var fromDbAgain = results.Where(x => x.IngestedFrom == ownedPhoneNumber.IngestedFrom).FirstOrDefault();
+
+            // Assert
+            Assert.NotNull(fromDb);
+            Assert.Equal(fromDb.IngestedFrom, fromDbAgain.IngestedFrom);
+            Assert.Equal(fromDb.Notes, fromDbAgain.Notes);
+            Assert.Equal(fromDb.OwnedPhoneNumberId, fromDbAgain.OwnedPhoneNumberId);
+
+            // Clean up
+            var checkDelete = await fromDbAgain.DeleteAsync(postgresql).ConfigureAwait(false);
+
+            Assert.True(checkDelete);
+        }
+
+        [Fact]
         public async Task GetProductAsync()
         {
             var conn = postgresql;
