@@ -91,6 +91,37 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task GetBillingTaxRatesAsync()
+        {
+            // Act
+            var result = await TaxRate.GetAllAsync(invoiceNinjaToken).ConfigureAwait(false);
+
+            // Assert        
+            Assert.NotNull(result);
+            Assert.NotEmpty(result.data);
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+        }
+
+        // There no way to clean up these new entries after we create them, so we don't want to do it all the time.
+        //[Fact]
+        //public async Task CreateBillingTaxRateAsync()
+        //{
+        //    // Arrange
+        //    var taxRate = new TaxRateDatum
+        //    {
+        //        name = "IntegrationTest",
+        //        rate = 10.1M
+        //    };
+
+        //    // Act
+        //    var result = await taxRate.PostAsync(invoiceNinjaToken).ConfigureAwait(false);
+
+        //    // Assert        
+        //    Assert.NotNull(result);
+        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+        //}
+
+        [Fact]
         public async Task GetAllBillingClientsByEmailAsync()
         {
             // Act

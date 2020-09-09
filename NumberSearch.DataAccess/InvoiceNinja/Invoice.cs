@@ -95,7 +95,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public string last_sent_date { get; set; }
         public int recurring_invoice_id { get; set; }
         public string tax_name1 { get; set; }
-        public float tax_rate1 { get; set; }
+        public decimal tax_rate1 { get; set; }
         public string tax_name2 { get; set; }
         public int tax_rate2 { get; set; }
         public bool is_amount_discount { get; set; }
@@ -131,7 +131,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             var result = await url
                 .WithHeader(tokenHeader, token)
                 .WithHeader(contentHeader, contentHeaderValue)
-                .PostJsonAsync(new { client_id = id, invoice_items })
+                .PostJsonAsync(new { client_id = id, tax_name1, tax_rate1, invoice_items })
                 .ReceiveJson<InvoiceSingle>()
                 .ConfigureAwait(false);
 

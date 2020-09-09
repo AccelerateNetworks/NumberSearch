@@ -2,6 +2,8 @@
 
 using FirstCom;
 
+using Flurl.Util;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
@@ -684,18 +686,26 @@ namespace NumberSearch.Mvc.Controllers
                             }
                         }
 
-                        // Handle the tax information
-                        var taxrate = await SalesTax.GetTaxRateAsync(order.Address, order.City, order.Zip).ConfigureAwait(false);
+                        // Handle the tax information for the invoice.
+                        var specificTaxRate = await SalesTax.GetAsync(order.Address, order.City, order.Zip).ConfigureAwait(false);
+                        var rateName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(specificTaxRate.rate.name.ToLowerInvariant());
+                        var taxRateName = $"{rateName}, WA - {specificTaxRate.loccode}";
+                        var taxRateValue = specificTaxRate.rate1 * 100M;
 
-                        itemsToInvoice.Add(new Invoice_Items
+                        var existingTaxRates = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                        var billingTaxRate = existingTaxRates.data.Where(x => x.name == taxRateName).FirstOrDefault();
+                        if (billingTaxRate is null)
                         {
-                            product_key = "Tax",
-                            notes = $"Local and State Sales Tax @ {taxrate}",
-                            cost = totalCost * taxrate,
-                            qty = 1
-                        });
+                            billingTaxRate = new TaxRateDatum
+                            {
+                                name = taxRateName,
+                                rate = taxRateValue
+                            };
 
-                        Log.Information($"[Checkout] {totalCost * taxrate} in tax @ {taxrate}.");
+                            var checkCreate = await billingTaxRate.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                        }
+
+                        Log.Information($"[Checkout] {billingTaxRate.name} @ {billingTaxRate.rate}.");
 
                         // Send out the confirmation email.
                         var confirmationEmail = new Email
@@ -756,7 +766,9 @@ Accelerate Networks",
                         var testCreate = new InvoiceDatum
                         {
                             id = billingClient.id,
-                            invoice_items = itemsToInvoice.ToArray()
+                            invoice_items = itemsToInvoice.ToArray(),
+                            tax_name1 = billingTaxRate.name,
+                            tax_rate1 = billingTaxRate.rate
                         };
 
                         var createNewInvoice = await testCreate.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
