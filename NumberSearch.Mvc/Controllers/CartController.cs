@@ -686,8 +686,54 @@ namespace NumberSearch.Mvc.Controllers
                             }
                         }
 
-                        // Handle the tax information for the invoice.
-                        var specificTaxRate = await SalesTax.GetAsync(order.Address, order.City, order.Zip).ConfigureAwait(false);
+                        // Handle the tax information for the invoice and fall back to simplier queries if we get failures.
+                        SalesTax specificTaxRate = null;
+                        try
+                        {
+                            specificTaxRate = await SalesTax.GetAsync(order.Address, order.City, order.Zip).ConfigureAwait(false);
+                        }
+                        catch
+                        {
+                            Log.Fatal($"[Checkout] Failed to get the Sale Tax rate for {order.Address}, {order.City}, {order.Zip}.");
+                        }
+
+                        if (specificTaxRate is null)
+                        {
+                            try
+                            {
+                                specificTaxRate = await SalesTax.GetAsync(string.Empty, order.City, order.Zip).ConfigureAwait(false);
+                            }
+                            catch
+                            {
+                                Log.Fatal($"[Checkout] Failed to get the Sale Tax rate for {order.City}, {order.Zip}.");
+                            }
+                        }
+
+                        if (specificTaxRate is null)
+                        {
+                            try
+                            {
+                                specificTaxRate = await SalesTax.GetAsync(string.Empty, string.Empty, order.Zip).ConfigureAwait(false);
+                            }
+                            catch
+                            {
+                                Log.Fatal($"[Checkout] Failed to get the Sale Tax rate for {order.Zip}.");
+                            }
+                        }
+
+                        if (specificTaxRate is null)
+                        {
+                            specificTaxRate = new SalesTax()
+                            {
+                                rate1 = 0.0M,
+                                rate = new SalesTax.TaxRate
+                                {
+                                    name = "NotFound"
+                                },
+                                loccode = 0000
+                            };
+                        }
+
                         var rateName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(specificTaxRate.rate.name.ToLowerInvariant());
                         var taxRateName = $"{rateName}, WA - {specificTaxRate.loccode}";
                         var taxRateValue = specificTaxRate.rate1 * 100M;
