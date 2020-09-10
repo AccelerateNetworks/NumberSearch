@@ -49,7 +49,7 @@ namespace FirstCom
                 var numbers = new List<DIDOrderInfo>();
 
 
-                var results = await FirstPointComOwnedPhoneNumber.GetAllAsync(string.Empty, username, password).ConfigureAwait(false);
+                var results = await FirstPointComOwnedPhoneNumber.GetAsync("206", username, password).ConfigureAwait(false);
 
                 await Task.Delay(1000);
             });

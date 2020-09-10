@@ -369,6 +369,25 @@ namespace NumberSearch.Tests
             output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
         }
 
+        [Fact]
+        public async Task TeleGetAllOwnedNumbersAsync()
+        {
+            // Arrange
+
+            // Act
+            var results = await UserDidsList.GetAllAsync(token).ConfigureAwait(false);
+
+            // Assert
+            Assert.NotNull(results);
+            Assert.False(string.IsNullOrWhiteSpace(results.status));
+            Assert.True(results.code == 200);
+            foreach (var result in results.data)
+            {
+                Assert.False(string.IsNullOrWhiteSpace(result.number));
+            }
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+        }
+
         //[Fact]
         //public async Task PeerlessNPATestAsync()
         //{

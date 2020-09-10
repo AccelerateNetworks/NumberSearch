@@ -1,6 +1,8 @@
 ﻿using FirstCom;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.Models;
+using NumberSearch.DataAccess.TeleMesssage;
 
 using Serilog;
 
@@ -15,41 +17,76 @@ namespace NumberSearch.Ingest
 {
     public class Owned
     {
-        public static async Task<IEnumerable<PhoneNumber>> FirstPointComAsync(string username, string password, string connectionString)
+        public static async Task<IEnumerable<OwnedPhoneNumber>> FirstPointComAsync(string username, string password)
         {
-            var results = await FirstPointComOwnedPhoneNumber.GetAllAsync(string.Empty, username, password).ConfigureAwait(false);
+            var numbers = new List<OwnedPhoneNumber>();
 
-            var numbers = new List<PhoneNumber>();
+            var areaCodes = AreaCode.All;
 
-            foreach (var item in results.DIDOrder)
+            foreach (var npa in areaCodes)
             {
-                bool checkNpa = int.TryParse(item.NPA, out int outNpa);
-                bool checkNxx = int.TryParse(item.NXX, out int outNxx);
-                bool checkXxxx = int.TryParse(item.DID.Substring(7), out int outXxxx);
+                var results = await FirstPointComOwnedPhoneNumber.GetAsync(npa.ToString(), username, password).ConfigureAwait(false);
 
-                if (checkNpa && outNpa < 1000 && checkNxx && outNxx < 1000 && checkXxxx && outXxxx < 10000 && item.DID.Length == 11)
+                foreach (var item in results.DIDOrder)
                 {
-                    numbers.Add(new PhoneNumber
+                    bool checkNpa = int.TryParse(item.NPA, out int outNpa);
+                    bool checkNxx = int.TryParse(item.NXX, out int outNxx);
+                    bool checkXxxx = int.TryParse(item.DID.Substring(7), out int outXxxx);
+
+                    if (checkNpa && outNpa < 1000 && checkNxx && outNxx < 1000 && checkXxxx && outXxxx < 10000 && item.DID.Length == 11)
                     {
-                        NPA = outNpa,
-                        NXX = outNxx,
-                        XXXX = outXxxx,
-                        DialedNumber = item.DID.Substring(1),
-                        City = "Unknown City",
-                        State = "Unknown State",
-                        IngestedFrom = "FirstPointCom"
-                    });
-                }
-                else
-                {
-                    Log.Error($"This failed the 11 char check {item.DID.Length}");
+                        numbers.Add(new OwnedPhoneNumber
+                        {
+
+                            DialedNumber = item.DID.Substring(1),
+                            IngestedFrom = "FirstPointCom",
+                            Active = true,
+                            DateIngested = DateTime.Now
+                        });
+                    }
+                    else
+                    {
+                        Log.Error($"This failed the 11 char check {item.DID.Length}");
+                    }
                 }
             }
+
+            Log.Information($"[OwnedNumbers] [FirstPointCom] Ingested {numbers.Count} owned numbers.");
 
             return numbers.ToArray();
         }
 
-        public static async Task<IngestStatistics> SubmitOwnedNumbersAsync(IEnumerable<PhoneNumber> numbers, string connectionString)
+        public static async Task<IEnumerable<OwnedPhoneNumber>> TeleMessageAsync(Guid token)
+        {
+            var results = await UserDidsList.GetAllAsync(token).ConfigureAwait(false);
+
+            var list = new List<OwnedPhoneNumber>();
+
+            foreach (var item in results?.data)
+            {
+                bool checkNpa = int.TryParse(item.npa, out int npa);
+                bool checkNxx = int.TryParse(item.nxx, out int nxx);
+                bool checkXxxx = int.TryParse(item.xxxx, out int xxxx);
+
+                if (checkNpa && checkNxx && checkXxxx)
+                {
+                    list.Add(new OwnedPhoneNumber
+                    {
+                        DialedNumber = item.number,
+                        IngestedFrom = "TeleMessage",
+                        Active = true,
+                        DateIngested = DateTime.Now,
+                        Notes = item.note
+                    });
+                }
+            }
+
+            Log.Information($"[OwnedNumbers] [TeleMessage] Ingested {list.Count} owned numbers.");
+
+            return list;
+        }
+
+        public static async Task<IngestStatistics> SubmitOwnedNumbersAsync(IEnumerable<OwnedPhoneNumber> numbers, string connectionString)
         {
             var start = DateTime.Now;
             var ingestedNew = 0;
@@ -64,32 +101,16 @@ namespace NumberSearch.Ingest
 
                 if (number is null)
                 {
-                    number = new OwnedPhoneNumber
-                    {
-                        DialedNumber = item.DialedNumber,
-                        Active = true,
-                        DateIngested = DateTime.Now,
-                        IngestedFrom = "FirstPointCom",
-                        Notes = string.Empty,
-                        OwnedBy = string.Empty,
-                        BillingClientId = string.Empty
-                    };
-                }
-                else
-                {
-                    number.Active = true;
-                    number.DateIngested = DateTime.Now;
-                    number.IngestedFrom = "FirstPointCom";
-                }
-
-                if (number.OwnedPhoneNumberId == Guid.Empty)
-                {
-                    var checkCreate = number.PostAsync(connectionString).ConfigureAwait(false);
+                    var checkCreate = await item.PostAsync(connectionString).ConfigureAwait(false);
                     ingestedNew++;
                 }
                 else
                 {
-                    var checkCreate = number.PutAsync(connectionString).ConfigureAwait(false);
+                    number.DateIngested = item.DateIngested;
+                    number.IngestedFrom = item.IngestedFrom;
+                    number.Notes = string.IsNullOrWhiteSpace(number.Notes) ? item.Notes : number.Notes;
+
+                    var checkCreate = await number.PutAsync(connectionString).ConfigureAwait(false);
                     updatedExisting++;
                 }
             }
@@ -100,7 +121,7 @@ namespace NumberSearch.Ingest
             {
                 StartDate = start,
                 EndDate = end,
-                IngestedFrom = "FirstPointCom",
+                IngestedFrom = "OwnedNumbers",
                 NumbersRetrived = numbers.Count(),
                 Priority = false,
                 Lock = false,
@@ -110,6 +131,9 @@ namespace NumberSearch.Ingest
                 Unchanged = 0,
                 FailedToIngest = 0
             };
+
+            Log.Information($"[OwnedNumbers] Updated {updatedExisting} owned numbers.");
+            Log.Information($"[OwnedNumbers] Added {ingestedNew} new owned numbers.");
 
             return stats;
         }
@@ -141,16 +165,20 @@ namespace NumberSearch.Ingest
                         OldSPID = number.SPID,
                         DialedNumber = number.DialedNumber
                     });
+
+                    // Update the SPID to the current value.
+                    number.SPID = result.data.spid;
+                    var checkUpdate = await number.PutAsync(connectionString).ConfigureAwait(false);
                 }
             }
+
+            Log.Information($"[OwnedNumbers] Found {serviceProviderChanged.Count} numbers whose Service Provider has changed since the last ingest.");
 
             return serviceProviderChanged;
         }
 
         public static async Task<bool> SendPortingNotificationEmailAsync(IEnumerable<ServiceProviderChanged> changes, string smtpUsername, string smtpPassword, string connectionString)
         {
-            string changedAsJson = string.Empty;
-
             var options = new JsonSerializerOptions
             {
                 WriteIndented = true
@@ -167,7 +195,7 @@ namespace NumberSearch.Ingest
             {
                 PrimaryEmailAddress = "orders@acceleratenetworks.com",
                 DateSent = DateTime.Now,
-                Subject = $"[Ingest] {changes.Count()} phone numbers changed Service Providers",
+                Subject = $"[Ingest] {changes.Count()} phone numbers changed Service Providers.",
                 MessageBody = output.ToString()
             };
 

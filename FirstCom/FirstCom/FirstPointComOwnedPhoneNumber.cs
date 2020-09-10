@@ -6,7 +6,7 @@ namespace FirstCom
 {
     public class FirstPointComOwnedPhoneNumber
     {
-        public static async Task<DIDOrderInfoArray> GetAllAsync(string npa, string username, string password)
+        public static async Task<DIDOrderInfoArray> GetAsync(string npa, string username, string password)
         {
             var Auth = new Credentials
             {

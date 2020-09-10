@@ -1,9 +1,9 @@
-﻿@model IEnumerable<NumberSearch.DataAccess.PurchasedPhoneNumber>
+﻿@model IEnumerable<NumberSearch.DataAccess.OwnedPhoneNumber>
 @{
-    ViewData["Title"] = "Purchased Numbers";
+    ViewData["Title"] = "Owned Phone Numbers";
 }
 <br />
-<h1 class="display-4">Purchased Numbers</h1>
+<h1 class="display-4">Owned Phone Numbers</h1>
 <br />
 <div class="pb-3">
     <ul class="nav nav-pills nav-fill nav-justified">
@@ -11,7 +11,10 @@
             <a class="nav-link" asp-controller="Home" asp-action="Numbers">Numbers</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link active" asp-controller="Home" asp-action="NumberOrders">Number Orders</a>
+            <a class="nav-link" asp-controller="Home" asp-action="NumberOrders">Number Orders</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" asp-controller="Home" asp-action="OwnedNumbers">Owned Numbers</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" asp-controller="Home" asp-action="Emails">Sent Emails</a>
@@ -26,22 +29,22 @@
         <thead>
             <tr>
                 <th scope="col">
-                    Date Ordered
+                    Ownership Status
                 </th>
                 <th scope="col">
-                    Order Information
+                    Number Information
                 </th>
                 <th scope="col">
-                    Raw Response
+                    Service Provider
                 </th>
             </tr>
         </thead>
         <tbody>
             @{
-                foreach (var order in Model.Where(x => x.IngestedFrom != "Test"))
+                foreach (var number in Model.Where(x => x.IngestedFrom != "Test"))
                 {
-                    var ingestedBadge = order.IngestedFrom;
-                    switch (order.IngestedFrom)
+                    var ingestedBadge = number.IngestedFrom;
+                    switch (number.IngestedFrom)
                     {
                         case "FirstPointCom":
                             ingestedBadge = "<h4><span class='badge badge-info'>FirstPointCom</span></h4>";
@@ -54,45 +57,40 @@
                             break;
                     }
                     <tr>
-                        <td scope="row" data-order="@order.DateOrdered.Ticks">
-                            <a href="https://acceleratenetworks.com/cart/order/@order.OrderId" class="btn btn-primary">
-                                View Order
-                            </a>
-                            <h4 class="d-flex justify-content-between align-items-center mt-3">
+                        <td scope="row">
+                            @*<a href="https://acceleratenetworks.com/cart/order/@order.OrderId" class="btn btn-primary">
+                                    View Order
+                                </a>*@
+                            @*<h4 class="d-flex justify-content-between align-items-center mt-3">
                                 <span class="badge badge-info badge-pill">
-                                    @order.DateOrdered
+                                    @number.DateIngested
                                 </span>
-                            </h4>
+                            </h4>*@
                             @{
-                                if (order.Completed)
+                                if (number.Active)
                                 {
-                                    <h4><span class="badge badge-success">Completed</span></h4>
+                                    <h4><span class="badge badge-success">Active</span></h4>
                                 }
                                 else
                                 {
-                                    <h4><span class="badge badge-danger">Failed</span></h4>
+                                    <h4><span class="badge badge-danger">Inactive</span></h4>
                                 }
                             }
                         </td>
                         <td>
-                            <p>@order.DialedNumber</p>
+                            <p>@number.DialedNumber</p>
                             @Html.Raw(ingestedBadge)
                             <strong>Date Ingested</strong>
-                            <p>@order.DateIngested</p>
+                            <p>@number.DateIngested</p>
                         </td>
                         <td class="text-break">
-                            @order.OrderResponse
+                            <p>@number.SPID</p>
+                            <strong>Notes</strong>
+                            <p>@number.Notes</p>
                         </td>
                     </tr>
                 }
             }
         </tbody>
     </table>
-</div>
-<div class="row">
-    <div class="col">
-        <a>
-            <a asp-controller="Home" asp-action="ExportNumberOrders" target="_blank" class="btn btn-primary">Export as CSV</a>
-        </a>
-    </div>
 </div>

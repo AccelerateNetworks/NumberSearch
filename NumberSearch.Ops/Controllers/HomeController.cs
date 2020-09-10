@@ -78,6 +78,15 @@ namespace NumberSearch.Ops.Controllers
         }
 
         [Authorize]
+        public async Task<IActionResult> OwnedNumbers()
+        {
+            // Show all orders
+            var orders = await OwnedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
+
+            return View("OwnedNumbers", orders.OrderByDescending(x => x.DialedNumber));
+        }
+
+        [Authorize]
         public async Task<IActionResult> ExportNumberOrders()
         {
             var orders = await PurchasedPhoneNumber.GetAllAsync(_postgresql);
