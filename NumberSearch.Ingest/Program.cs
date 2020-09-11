@@ -624,7 +624,7 @@ namespace NumberSearch.Ingest
                                     Log.Information("[OwnedNumbers] Ingesting data from OwnedNumbers.");
                                     var firstComNumbers = await Owned.FirstPointComAsync(username, password).ConfigureAwait(false);
                                     var teleMessageNumbers = await Owned.TeleMessageAsync(teleToken).ConfigureAwait(false);
-                                    var bulkVSNumbers = await BulkVS.BulkVSOwnedPhoneNumbers.GetAllAsync(bulkVSKey, bulkVSKey).ConfigureAwait(false);
+                                    var bulkVSNumbers = await BulkVS.BulkVSOwnedPhoneNumbers.GetAllAsync(bulkVSKey, bulkVSSecret).ConfigureAwait(false);
                                     var allNumbers = new List<OwnedPhoneNumber>();
 
                                     if (firstComNumbers != null)
