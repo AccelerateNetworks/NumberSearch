@@ -624,6 +624,7 @@ namespace NumberSearch.Ingest
                                     Log.Information("[OwnedNumbers] Ingesting data from OwnedNumbers.");
                                     var firstComNumbers = await Owned.FirstPointComAsync(username, password).ConfigureAwait(false);
                                     var teleMessageNumbers = await Owned.TeleMessageAsync(teleToken).ConfigureAwait(false);
+                                    var bulkVSNumbers = await BulkVS.BulkVSOwnedPhoneNumbers.GetAllAsync(bulkVSKey, bulkVSKey).ConfigureAwait(false);
                                     var allNumbers = new List<OwnedPhoneNumber>();
 
                                     if (firstComNumbers != null)
@@ -634,6 +635,11 @@ namespace NumberSearch.Ingest
                                     if (teleMessageNumbers != null)
                                     {
                                         allNumbers.AddRange(teleMessageNumbers);
+                                    };
+
+                                    if (bulkVSNumbers != null)
+                                    {
+                                        allNumbers.AddRange(bulkVSNumbers);
                                     };
 
                                     Log.Information($"[OwnedNumbers] Submitting {allNumbers.Count} numbers to the database.");
