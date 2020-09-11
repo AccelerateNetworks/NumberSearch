@@ -1137,7 +1137,7 @@ namespace NumberSearch.Tests
             Assert.True(result);
 
             // Clean up.
-            var fromDb = await PurchasedPhoneNumber.GetByDialedNumberAsync(itemToOrder.DialedNumber, itemToOrder.OrderId, conn).ConfigureAwait(false);
+            var fromDb = await PurchasedPhoneNumber.GetByDialedNumberAndOrderIdAsync(itemToOrder.DialedNumber, itemToOrder.OrderId, conn).ConfigureAwait(false);
             Assert.NotNull(fromDb);
 
             var checkDelete = await fromDb.DeleteAsync(conn).ConfigureAwait(false);

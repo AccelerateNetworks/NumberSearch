@@ -123,6 +123,15 @@ namespace NumberSearch.Mvc.Controllers
                 return RedirectToAction("Index", "Search", new { Query, Failed = phoneNumber.DialedNumber });
             }
 
+            // Check if this number has already been purchased.
+            var phoneNumberOrder = await PurchasedPhoneNumber.GetByDialedNumberAsync(phoneNumber.DialedNumber, _postgresql).ConfigureAwait(false);
+
+            // Prevent a duplicate order.
+            if(phoneNumberOrder != null)
+            {
+                purchasable = false;
+            }
+
             if (!purchasable)
             {
                 // Sadly its gone. And the user needs to pick a different number.
@@ -389,7 +398,7 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     if (item?.DialedNumber?.Length == 10)
                     {
-                        var phoneNumber = await PurchasedPhoneNumber.GetByDialedNumberAsync(item.DialedNumber, order.OrderId, _postgresql).ConfigureAwait(false);
+                        var phoneNumber = await PurchasedPhoneNumber.GetByDialedNumberAndOrderIdAsync(item.DialedNumber, order.OrderId, _postgresql).ConfigureAwait(false);
 
                         bool checkNpa = int.TryParse(phoneNumber.DialedNumber.Substring(0, 3), out int npa);
                         bool checkNxx = int.TryParse(phoneNumber.DialedNumber.Substring(3, 3), out int nxx);
