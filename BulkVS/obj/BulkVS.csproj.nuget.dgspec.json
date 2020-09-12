@@ -45,6 +45,10 @@
       "frameworks": {
         "netcoreapp3.1": {
           "dependencies": {
+            "Microsoft.CSharp": {
+              "target": "Package",
+              "version": "[4.7.0, )"
+            },
             "System.ServiceModel.Duplex": {
               "target": "Package",
               "version": "[4.7.0, )"
@@ -131,15 +135,19 @@
             },
             "MailKit": {
               "target": "Package",
-              "version": "[2.8.0, )"
+              "version": "[2.9.0, )"
             },
             "Microsoft.AspNetCore.Http.Features": {
               "target": "Package",
-              "version": "[3.1.7, )"
+              "version": "[3.1.8, )"
+            },
+            "Microsoft.CSharp": {
+              "target": "Package",
+              "version": "[4.7.0, )"
             },
             "MimeKit": {
               "target": "Package",
-              "version": "[2.9.1, )"
+              "version": "[2.9.2, )"
             },
             "NETStandard.Library": {
               "suppressParent": "All",
@@ -157,7 +165,7 @@
             },
             "Serilog": {
               "target": "Package",
-              "version": "[2.9.0, )"
+              "version": "[2.10.0, )"
             },
             "System.ServiceModel.Duplex": {
               "target": "Package",
