@@ -173,7 +173,7 @@ namespace NumberSearch.Ingest
 
                     // Update the SPID to the current value.
                     number.SPID = result.data.spid;
-                    number.SPIDName = result.data.spid;
+                    number.SPIDName = result.data.spid_name;
                     var checkUpdate = await number.PutAsync(connectionString).ConfigureAwait(false);
                 }
 

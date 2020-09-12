@@ -113,6 +113,7 @@ namespace NumberSearch.Ops.Controllers
                 order.BillingClientId = number.BillingClientId;
                 order.Active = number.Active;
                 order.SPID = order.SPID;
+                order.SPIDName = order.SPIDName;
 
                 var checkUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
