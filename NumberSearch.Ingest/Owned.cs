@@ -143,6 +143,8 @@ namespace NumberSearch.Ingest
             public string DialedNumber { get; set; }
             public string OldSPID { get; set; }
             public string CurrentSPID { get; set; }
+            public string OldSPIDName { get; set; }
+            public string CurrentSPIDName { get; set; }
         }
 
         public static async Task<IEnumerable<ServiceProviderChanged>> VerifyServiceProvidersAsync(Guid teleToken, string connectionString)
@@ -155,21 +157,27 @@ namespace NumberSearch.Ingest
             {
                 var result = await LrnLookup.GetAsync(number.DialedNumber, teleToken).ConfigureAwait(false);
 
-                var checkChanged = result.data.spid != number.SPID;
+                var checkSPID = result.data.spid != number.SPID;
+                var checkSPIDName = result.data.spid_name != number.SPIDName;
 
-                if (checkChanged)
+                if (checkSPID || checkSPIDName)
                 {
                     serviceProviderChanged.Add(new ServiceProviderChanged
                     {
                         CurrentSPID = result.data.spid,
                         OldSPID = number.SPID,
+                        CurrentSPIDName = result.data.spid_name,
+                        OldSPIDName = number.SPIDName,
                         DialedNumber = number.DialedNumber
                     });
 
                     // Update the SPID to the current value.
                     number.SPID = result.data.spid;
+                    number.SPIDName = result.data.spid;
                     var checkUpdate = await number.PutAsync(connectionString).ConfigureAwait(false);
                 }
+
+                Log.Information($"[OwnedNumbers] Found {result.data.spid_name}, {result.data.spid} for {number.DialedNumber}.");
             }
 
             Log.Information($"[OwnedNumbers] Found {serviceProviderChanged.Count} numbers whose Service Provider has changed since the last ingest.");

@@ -29,14 +29,19 @@
         <thead>
             <tr>
                 <th scope="col">
-                    Ownership Status
+                    Number
                 </th>
+                <th>Status</th>
                 <th scope="col">
                     Number Information
                 </th>
                 <th scope="col">
                     Service Provider
                 </th>
+                <th>
+                    Notes
+                </th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -62,10 +67,13 @@
                                     View Order
                                 </a>*@
                             @*<h4 class="d-flex justify-content-between align-items-center mt-3">
-                                <span class="badge badge-info badge-pill">
-                                    @number.DateIngested
-                                </span>
-                            </h4>*@
+                                    <span class="badge badge-info badge-pill">
+                                        @number.DateIngested
+                                    </span>
+                                </h4>*@
+                            <p>@number.DialedNumber</p>
+                        </td>
+                        <td>
                             @{
                                 if (number.Active)
                                 {
@@ -78,15 +86,16 @@
                             }
                         </td>
                         <td>
-                            <p>@number.DialedNumber</p>
                             @Html.Raw(ingestedBadge)
-                            <strong>Date Ingested</strong>
-                            <p>@number.DateIngested</p>
                         </td>
                         <td class="text-break">
                             <p>@number.SPID</p>
-                            <strong>Notes</strong>
+                        </td>
+                        <td>
                             <p>@number.Notes</p>
+                        </td>
+                        <td>
+                            <a class="btn btn-danger text-light" href="/Home/OwnedNumbers/@number.DialedNumber">Edit</a>
                         </td>
                     </tr>
                 }

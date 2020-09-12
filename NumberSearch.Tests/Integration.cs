@@ -1204,7 +1204,9 @@ namespace NumberSearch.Tests
                 DateIngested = DateTime.Now,
                 IngestedFrom = "IntegrationTest",
                 OwnedBy = "IntegrationTest",
-                Notes = string.Empty
+                Notes = "CoolNote",
+                SPID = "0000",
+                SPIDName = "IntegrationTest"
             };
 
             // Act

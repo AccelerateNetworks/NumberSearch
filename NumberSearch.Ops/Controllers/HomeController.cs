@@ -78,12 +78,47 @@ namespace NumberSearch.Ops.Controllers
         }
 
         [Authorize]
-        public async Task<IActionResult> OwnedNumbers()
+        [Route("/Home/OwnedNumbers")]
+        [Route("/Home/OwnedNumbers/{dialedNumber}")]
+        public async Task<IActionResult> OwnedNumbers(string dialedNumber)
         {
-            // Show all orders
-            var orders = await OwnedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(dialedNumber))
+            {
+                // Show all orders
+                var orders = await OwnedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
+                return View("OwnedNumbers", orders.OrderByDescending(x => x.DialedNumber));
+            }
+            else
+            {
+                var order = await OwnedPhoneNumber.GetByDialedNumberAsync(dialedNumber, _postgresql).ConfigureAwait(false);
+                return View("OwnedNumberEdit", order);
+            }
+        }
 
-            return View("OwnedNumbers", orders.OrderByDescending(x => x.DialedNumber));
+        [Authorize]
+        [Route("/Home/OwnedNumbers/{dialedNumber}")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OwnedNumberUpdate(OwnedPhoneNumber number)
+        {
+            if (number is null)
+            {
+                return Redirect("/Home/OwnedNumbers");
+            }
+            else
+            {
+                var order = await OwnedPhoneNumber.GetByDialedNumberAsync(number.DialedNumber, _postgresql).ConfigureAwait(false);
+                order.Notes = number.Notes;
+                order.OwnedBy = number.OwnedBy;
+                order.BillingClientId = number.BillingClientId;
+                order.Active = number.Active;
+                order.SPID = order.SPID;
+
+                var checkUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
+
+                order = await OwnedPhoneNumber.GetByDialedNumberAsync(number.DialedNumber, _postgresql).ConfigureAwait(false);
+                return View("OwnedNumberEdit", order);
+            }
         }
 
         [Authorize]
