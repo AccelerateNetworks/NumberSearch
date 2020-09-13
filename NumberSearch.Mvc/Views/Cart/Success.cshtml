@@ -21,7 +21,7 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="billingPhone">Current Billing Phone Number</label>
-                        <input asp-for="PortRequest.BillingPhone" type="text" class="form-control" id="billingPhone" placeholder="2061234567" required=""
+                        <input asp-for="PortRequest.BillingPhone" type="text" class="form-control" id="billingPhone" placeholder="2061234567" required
                                title="Also known as the BTN. This is the number that is normally provided on a copy of your bill or statement in the upper right corner or is the first number listed on the bill.">
                         <div class="invalid-feedback">
                             Valid first name is required.
@@ -29,7 +29,7 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="locationType">Location Type</label>
-                        <select asp-for="PortRequest.LocationType" class="custom-select" title="Designates if this is a business address or a residential address.">
+                        <select asp-for="PortRequest.LocationType" class="custom-select" title="Designates if this is a business address or a residential address." required>
                             <option value="Business" selected>Business</option>
                             <option value="Residential">Residential</option>
                         </select>
@@ -42,14 +42,17 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="partialPort">Business Contact</label>
-                        <input asp-for="PortRequest.BusinessContact" type="text" class="form-control" id="businessContact" placeholder="Alexander Graham-Bell" title="This is the name of the owner or contact who will be submitting the port order." required="">
+                        @{
+                            var contactName = $"{Model?.Order?.FirstName} {Model?.Order?.LastName}";
+                        }
+                        <input asp-for="PortRequest.BusinessContact" type="text" value="@contactName" class="form-control" id="businessContact" placeholder="Alexander Graham-Bell" title="This is the name of the owner or contact who will be submitting the port order." required>
                         <div class="invalid-feedback">
                             Valid business contact name is required.
                         </div>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="partialPortDescription">Business Name</label>
-                        <input asp-for="PortRequest.BusinessName" type="text" class="form-control" id="businessName" placeholder="American Telegraf and Telephone Company" title="Name of the business associated with the numbers being ported." required="">
+                        <input asp-for="PortRequest.BusinessName" type="text" value="@Model?.Order?.BusinessName" class="form-control" id="businessName" placeholder="American Telegraf and Telephone Company" title="Name of the business associated with the numbers being ported." required>
                         <div class="invalid-feedback">
                             Valid business name is required.
                         </div>
@@ -59,14 +62,14 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="accountNumber">Current Account Number</label>
-                        <input asp-for="PortRequest.ProviderAccountNumber" type="text" class="form-control" id="accountNumber" placeholder="1234567891011" title="The account number is usually found on the invoice or a copy of a bill from your current provider." required="">
+                        <input asp-for="PortRequest.ProviderAccountNumber" type="text" class="form-control" id="accountNumber" placeholder="1234567891011" title="The account number is usually found on the invoice or a copy of a bill from your current provider." required>
                         <div class="invalid-feedback">
                             Please enter your account number.
                         </div>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="pin">Account PIN or Password</label>
-                        <input asp-for="PortRequest.ProviderPIN" type="text" class="form-control" id="pin" placeholder="1234" title="The PIN or password for the existing account." required="">
+                        <input asp-for="PortRequest.ProviderPIN" type="text" class="form-control" id="pin" placeholder="1234" title="The PIN or password for the existing account." required>
                         <div class="invalid-feedback">
                             Valid PIN is required.
                         </div>
@@ -75,7 +78,7 @@
 
                 <div class="mb-3">
                     <label for="address">Service Address</label>
-                    <input asp-for="PortRequest.Address" type="text" class="form-control" id="address" placeholder="1234 Main St" title="The physical address of where these phone numbers are being used. This information is also on file with your current provider." required="">
+                    <input asp-for="PortRequest.Address" type="text" value="@Model?.Order?.Address" class="form-control" id="address" placeholder="1234 Main St" title="The physical address of where these phone numbers are being used. This information is also on file with your current provider." required>
                     <div class="invalid-feedback">
                         Please enter your shipping address.
                     </div>
@@ -83,20 +86,20 @@
 
                 <div class="mb-3">
                     <label for="address2">Service Address 2 <span class="text-muted">(Optional)</span></label>
-                    <input asp-for="PortRequest.Address2" type="text" class="form-control" id="address2" title="The city of the service address listed above." placeholder="Apartment or suite">
+                    <input asp-for="PortRequest.Address2" type="text" value="@Model?.Order?.Address2" class="form-control" id="address2" title="The city of the service address listed above." placeholder="Apartment or suite">
                 </div>
 
                 <div class="row">
                     <div class="col-md-5 mb-3">
                         <label for="address">Service City</label>
-                        <input asp-for="PortRequest.City" type="text" class="form-control" id="city" placeholder="Seattle" title="The physical address of where these phone numbers are being used. This information is also on file with your current provider." required="">
+                        <input asp-for="PortRequest.City" type="text" value="@Model?.Order?.City" class="form-control" id="city" placeholder="Seattle" title="The physical address of where these phone numbers are being used. This information is also on file with your current provider." required>
                         <div class="invalid-feedback">
                             Please enter a valid city.
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label for="state">Service State</label>
-                        <select asp-for="PortRequest.State" class="custom-select d-block w-100" id="state" title="The state of the service address listed above." required="">
+                        <select asp-for="PortRequest.State" class="custom-select d-block w-100" id="state" title="The state of the service address listed above." required>
                             <option value="">Choose...</option>
                             @{
                                 var states = new string[] { "Alabama",
@@ -153,7 +156,14 @@
 
                                 foreach (var state in states)
                                 {
-                                    <option>@state</option>
+                                    if (Model?.Order?.State == state)
+                                    {
+                                        <option selected>@state</option>
+                                    }
+                                    else
+                                    {
+                                        <option>@state</option>
+                                    }
                                 }
                             }
                         </select>
@@ -163,7 +173,7 @@
                     </div>
                     <div class="col-md-3 mb-3">
                         <label for="zip">Service Zip</label>
-                        <input asp-for="PortRequest.Zip" type="text" class="form-control" id="zip" placeholder="98199" title="The five digit ZIP code of the service address listed above." required="">
+                        <input asp-for="PortRequest.Zip" type="text" value="@Model?.Order?.Zip" class="form-control" id="zip" placeholder="98199" title="The five digit ZIP code of the service address listed above." required>
                         <div class="invalid-feedback">
                             Zip code required.
                         </div>
@@ -172,7 +182,7 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="partialPort">Partial Port</label>
-                        <select asp-for="PortRequest.PartialPort" class="custom-select" title="Designates if this is a business address or a residential address.">
+                        <select asp-for="PortRequest.PartialPort" class="custom-select" title="Designates if this is a business address or a residential address." required>
                             <option value="true" selected>Yes</option>
                             <option value="false">No</option>
                         </select>
@@ -182,32 +192,23 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="partialPortDescription">Partial Port Description</label>
-                        <input asp-for="PortRequest.PartialPortDescription" type="text" class="form-control" id="partialPortDescription" placeholder="Bell" title="Describe what services the old carrier should leave alone. Contact the old carrier to confirm they will leave these services intact." required="">
+                        <input asp-for="PortRequest.PartialPortDescription" type="text" class="form-control" id="partialPortDescription" placeholder="Bell" title="Describe what services the old carrier should leave alone. Contact the old carrier to confirm they will leave these services intact.">
                         <div class="invalid-feedback">
                             Valid last name is required.
                         </div>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="wirelessNumber">Wireless Number</label>
-                        <select asp-for="PortRequest.WirelessNumber" class="custom-select" id="wirelessNumber" title="Set to 'Yes' if this is a wireless or cellphone number being ported.">
-                            <option value="true" selected>Yes</option>
-                            <option value="false">No</option>
-                        </select>
-                        <div class="invalid-feedback">
-                            Valid first name is required.
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="billingPhone">Caller ID<span class="text-muted"> (15 Character Maximum)</span></label>
-                        <input asp-for="PortRequest.CallerId" type="text" class="form-control" id="billingPhone" title="Sets Caller ID (aka CNAM) for all numbers in this port order, 15 character limit." placeholder="Alexander" required="">
-                        <div class="invalid-feedback">
-                            Valid first name is required.
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
+                    @*<div class="col-md-6 mb-3">
+                            <label for="wirelessNumber">Wireless Number</label>
+                            <select asp-for="PortRequest.WirelessNumber" class="custom-select" id="wirelessNumber" title="Set to 'Yes' if this is a wireless or cellphone number being ported.">
+                                <option value="true" selected>Yes</option>
+                                <option value="false">No</option>
+                            </select>
+                            <div class="invalid-feedback">
+                                Valid first name is required.
+                            </div>
+                        </div>*@
                     <div class="col-md-6">
                         <label for="inputGroupFile02">An Image of Your Current Bill</label>
                         <div class="input-group">
@@ -218,6 +219,15 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="billingPhone">Caller ID<span class="text-muted"> (15 Character Maximum)</span></label>
+                        <input asp-for="PortRequest.CallerId" type="text" class="form-control" id="billingPhone" title="Sets Caller ID (aka CNAM) for all numbers in this port order, 15 character limit." placeholder="Alexander" required>
+                        <div class="invalid-feedback">
+                            Valid first name is required.
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="locationType">Numbers to Port</label>
                         @{
