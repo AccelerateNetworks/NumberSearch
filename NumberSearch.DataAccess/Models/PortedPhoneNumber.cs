@@ -18,6 +18,8 @@ namespace NumberSearch.DataAccess
         public string State { get; set; }
         public string IngestedFrom { get; set; }
         public DateTime DateIngested { get; set; }
+        public Guid? PortRequestId { get; set; }
+        public Guid? OrderId { get; set; }
 
         /// <summary>
         /// Get a list of all phone numbers in the database.
@@ -29,7 +31,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\" FROM public.\"PortedPhoneNumbers\"")
+                .QueryAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\" FROM public.\"PortedPhoneNumbers\"")
                 .ConfigureAwait(false);
 
             return result;
@@ -41,16 +43,71 @@ namespace NumberSearch.DataAccess
         /// <param name="dialedNumber"></param>
         /// <param name="connectionString"></param>
         /// <returns></returns>
-        public static async Task<PortedPhoneNumber> GetAsync(string dialedNumber, string connectionString)
+        public static async Task<IEnumerable<PortedPhoneNumber>> GetByOrderIdAsync(Guid orderId, string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QuerySingleOrDefaultAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\" FROM public.\"PortedPhoneNumbers\" " +
-                "WHERE \"PortedDialedNumber\" = @dialedNumber", new { dialedNumber })
-                .ConfigureAwait(false) ?? new PortedPhoneNumber();
+                .QueryAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\" FROM public.\"PortedPhoneNumbers\" " +
+                "WHERE \"OrderId\" = @orderId", new { orderId })
+                .ConfigureAwait(false);
 
             return result;
+        }
+
+        /// <summary>
+        /// Find a single phone number based on the complete number.
+        /// </summary>
+        /// <param name="dialedNumber"></param>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<PortedPhoneNumber>> GetByPortRequestIdAsync(Guid portRequestId, string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\" FROM public.\"PortedPhoneNumbers\" " +
+                "WHERE \"PortRequestId\" = @portRequestId", new { portRequestId })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Find a single phone number based on the complete number.
+        /// </summary>
+        /// <param name="dialedNumber"></param>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        public static async Task<PortedPhoneNumber> GetByDialedNumberAsync(string dialedNumber, string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryFirstOrDefaultAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\" FROM public.\"PortedPhoneNumbers\" " +
+                "WHERE \"PortedDialedNumber\" = @dialedNumber", new { dialedNumber })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        public async Task<bool> PutAsync(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("UPDATE public.\"PortedPhoneNumbers\" SET \"City\" = @City, \"State\" = @State, \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"PortRequestId\" = @PortRequestId, \"OrderId\" = @OrderId WHERE \"PortedDialedNumber\" = @PortedDialedNumber",
+                new { City, State, IngestedFrom, DateIngested = DateTime.Now, PortRequestId, OrderId, PortedDialedNumber })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -69,9 +126,9 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"PortedPhoneNumbers\"(\"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\") " +
-                "VALUES(@PortedDialedNumber, @NPA, @NXX, @XXXX, @City, @State, @IngestedFrom, @DateIngested)",
-                new { PortedDialedNumber, NPA, NXX, XXXX, City, State, IngestedFrom, DateIngested = DateTime.Now })
+                .ExecuteAsync("INSERT INTO public.\"PortedPhoneNumbers\"(\"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\") " +
+                "VALUES(@PortedDialedNumber, @NPA, @NXX, @XXXX, @City, @State, @IngestedFrom, @DateIngested, @PortRequestId, @OrderId)",
+                new { PortedDialedNumber, NPA, NXX, XXXX, City, State, IngestedFrom, DateIngested = DateTime.Now, PortRequestId, OrderId })
                 .ConfigureAwait(false);
 
             if (result == 1)

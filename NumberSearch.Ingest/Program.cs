@@ -128,7 +128,7 @@ namespace NumberSearch.Ingest
                                         Priority = false
                                     };
 
-                                    if (await combined.PostAsync(postgresSQL))
+                                    if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
                                     {
                                         Log.Information("[BulkVS] Completed the ingest process.");
                                     }
@@ -184,7 +184,7 @@ namespace NumberSearch.Ingest
                                         Priority = true
                                     };
 
-                                    if (await combined.PostAsync(postgresSQL))
+                                    if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
                                     {
                                         Log.Information("[BulkVS] Completed the priority ingest process.");
                                     }
@@ -234,7 +234,7 @@ namespace NumberSearch.Ingest
                                 {
                                     // Ingest all avalible numbers in the FirsPointtCom API.
                                     Log.Information("Ingesting data from FirstPointCom");
-                                    var FirstPointComStats = await Provider.FirstPointComAsync(username, password, AreaCode.All, postgresSQL);
+                                    var FirstPointComStats = await Provider.FirstPointComAsync(username, password, AreaCode.All, postgresSQL).ConfigureAwait(false);
 
                                     // Remove the lock from the database to prevent it from getting cluttered with blank entries.
                                     var lockEntry = await IngestStatistics.GetLockAsync("FirstPointCom", postgresSQL).ConfigureAwait(false);
@@ -259,7 +259,7 @@ namespace NumberSearch.Ingest
                                         Priority = false
                                     };
 
-                                    if (await combined.PostAsync(postgresSQL))
+                                    if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
                                     {
                                         Log.Information("Completed the FirstPointCom ingest process.");
                                     }
@@ -297,7 +297,7 @@ namespace NumberSearch.Ingest
                                 {
                                     // Ingest priority numbers in the FirsPointCom API.
                                     Log.Information("[FirstPointCom] Ingesting priority data from FirstPointCom");
-                                    var FirstPointComStats = await Provider.FirstPointComAsync(username, password, AreaCode.Priority, postgresSQL);
+                                    var FirstPointComStats = await Provider.FirstPointComAsync(username, password, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
 
                                     var combined = new IngestStatistics
                                     {
@@ -314,7 +314,7 @@ namespace NumberSearch.Ingest
                                         Priority = true
                                     };
 
-                                    if (await combined.PostAsync(postgresSQL))
+                                    if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
                                     {
                                         Log.Information("[FirstPointCom] Completed the priority ingest process.");
                                     }
@@ -363,7 +363,7 @@ namespace NumberSearch.Ingest
                                 {
                                     // Ingest all avalible numbers from the TeleMessage.
                                     Log.Information("Ingesting data from TeleMessage");
-                                    var teleStats = await Provider.TeleMessageAsync(teleToken, new int[] { }, postgresSQL);
+                                    var teleStats = await Provider.TeleMessageAsync(teleToken, new int[] { }, postgresSQL).ConfigureAwait(false);
 
                                     // Remove the lock from the database to prevent it from getting cluttered with blank entries.
                                     var lockEntry = await IngestStatistics.GetLockAsync("TeleMessage", postgresSQL).ConfigureAwait(false);
@@ -389,7 +389,7 @@ namespace NumberSearch.Ingest
                                         Priority = false
                                     };
 
-                                    if (await combined.PostAsync(postgresSQL))
+                                    if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
                                     {
                                         Log.Information("Completed the TeleMessage ingest process.");
                                     }
@@ -427,7 +427,7 @@ namespace NumberSearch.Ingest
                                 {
                                     // Ingest all avalible numbers from the TeleMessage.
                                     Log.Information("[TeleMessage] Ingesting priority data from TeleMessage");
-                                    var teleStats = await Provider.TeleMessageAsync(teleToken, AreaCode.Priority, postgresSQL);
+                                    var teleStats = await Provider.TeleMessageAsync(teleToken, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
 
                                     var combined = new IngestStatistics
                                     {
@@ -444,7 +444,7 @@ namespace NumberSearch.Ingest
                                         Priority = true
                                     };
 
-                                    if (await combined.PostAsync(postgresSQL))
+                                    if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
                                     {
                                         Log.Information("[TeleMessage] Completed the priority ingest process.");
                                     }
@@ -493,7 +493,7 @@ namespace NumberSearch.Ingest
                                 {
                                     // Ingest all avalible numbers from the TeleMessage.
                                     Log.Information("Ingesting data from Peerless");
-                                    var peerlessStats = await Peerless.IngestPhoneNumbersAsync(peerlessApiKey, AreaCode.All, postgresSQL);
+                                    var peerlessStats = await Peerless.IngestPhoneNumbersAsync(peerlessApiKey, AreaCode.All, postgresSQL).ConfigureAwait(false);
 
                                     // Remove the lock from the database to prevent it from getting cluttered with blank entries.
                                     var lockEntry = await IngestStatistics.GetLockAsync("Peerless", postgresSQL).ConfigureAwait(false);
@@ -518,7 +518,7 @@ namespace NumberSearch.Ingest
                                         Priority = false
                                     };
 
-                                    if (await combined.PostAsync(postgresSQL))
+                                    if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
                                     {
                                         Log.Information("Completed the Peerless ingest process.");
                                     }
@@ -556,7 +556,7 @@ namespace NumberSearch.Ingest
                                 {
                                     // Ingest priority numbers from the TeleMessage.
                                     Log.Information("[Peerless] Ingesting priority data from Peerless");
-                                    var peerlessStats = await Peerless.IngestPhoneNumbersAsync(peerlessApiKey, AreaCode.Priority, postgresSQL);
+                                    var peerlessStats = await Peerless.IngestPhoneNumbersAsync(peerlessApiKey, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
 
                                     var combined = new IngestStatistics
                                     {
@@ -573,7 +573,7 @@ namespace NumberSearch.Ingest
                                         Priority = true
                                     };
 
-                                    if (await combined.PostAsync(postgresSQL))
+                                    if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
                                     {
                                         Log.Information("[Peerless] Completed the priority ingest process.");
                                     }
@@ -679,7 +679,7 @@ namespace NumberSearch.Ingest
                                         Priority = false
                                     };
 
-                                    if (await combined.PostAsync(postgresSQL))
+                                    if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
                                     {
                                         Log.Information("[OwnedNumbers] Completed the ingest process.");
                                     }
@@ -703,7 +703,7 @@ namespace NumberSearch.Ingest
                 Log.Information("[Heartbeat] Cycle complete.");
 
                 // Limit this to 1 request every 10 seconds to the database.
-                await Task.Delay(10000);
+                await Task.Delay(10000).ConfigureAwait(false);
             }
         }
     }

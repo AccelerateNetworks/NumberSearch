@@ -127,7 +127,7 @@ namespace NumberSearch.Mvc.Controllers
             var phoneNumberOrder = await PurchasedPhoneNumber.GetByDialedNumberAsync(phoneNumber.DialedNumber, _postgresql).ConfigureAwait(false);
 
             // Prevent a duplicate order.
-            if(phoneNumberOrder != null)
+            if (phoneNumberOrder != null)
             {
                 purchasable = false;
             }
@@ -158,7 +158,7 @@ namespace NumberSearch.Mvc.Controllers
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            var portedPhoneNumber = await PortedPhoneNumber.GetAsync(dialedPhoneNumber, _postgresql).ConfigureAwait(false);
+            var portedPhoneNumber = await PortedPhoneNumber.GetByDialedNumberAsync(dialedPhoneNumber, _postgresql).ConfigureAwait(false);
 
             if (portedPhoneNumber is null || string.IsNullOrWhiteSpace(portedPhoneNumber.PortedDialedNumber))
             {
@@ -185,7 +185,7 @@ namespace NumberSearch.Mvc.Controllers
 
                     if (checkSubmission)
                     {
-                        portedPhoneNumber = await PortedPhoneNumber.GetAsync(port.PortedDialedNumber, _postgresql).ConfigureAwait(false);
+                        portedPhoneNumber = await PortedPhoneNumber.GetByDialedNumberAsync(port.PortedDialedNumber, _postgresql).ConfigureAwait(false);
                     }
                 }
             }
@@ -418,7 +418,7 @@ namespace NumberSearch.Mvc.Controllers
                     }
                     else if (item?.PortedDialedNumber?.Length == 10)
                     {
-                        var portedPhoneNumber = await PortedPhoneNumber.GetAsync(item.PortedDialedNumber, _postgresql).ConfigureAwait(false);
+                        var portedPhoneNumber = await PortedPhoneNumber.GetByDialedNumberAsync(item.PortedDialedNumber, _postgresql).ConfigureAwait(false);
                         portedPhoneNumbers.Add(portedPhoneNumber);
                     }
                     else if (item?.ProductId != Guid.Empty)
@@ -696,6 +696,21 @@ namespace NumberSearch.Mvc.Controllers
                             }
                         }
 
+                        // Associate the ported numbers with this order.
+                        foreach (var portedNumber in cart.PortedPhoneNumbers)
+                        {
+                            var fromDb = await PortedPhoneNumber.GetByDialedNumberAsync(portedNumber.PortedDialedNumber, _postgresql).ConfigureAwait(false);
+
+                            if (fromDb != null && fromDb?.PortedDialedNumber == portedNumber.PortedDialedNumber)
+                            {
+                                fromDb.OrderId = order.OrderId;
+
+                                var checkPortUpdate = await fromDb.PutAsync(_postgresql).ConfigureAwait(false);
+
+                                Log.Information($"[Checkout] Set the OrderId for port request number {portedNumber.PortedDialedNumber}.");
+                            }
+                        }
+
                         // Handle the tax information for the invoice and fall back to simplier queries if we get failures.
                         SalesTax specificTaxRate = null;
                         try
@@ -815,7 +830,7 @@ Accelerate Networks",
                                     }
                             };
 
-                            billingClient = await newBillingClient.PostAsync(_invoiceNinjaToken);
+                            billingClient = await newBillingClient.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                         }
 
                         // Create an invoice for this order and submit it to the billing system.

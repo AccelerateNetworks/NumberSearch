@@ -18,10 +18,12 @@ namespace NumberSearch.Mvc.Controllers
     public class PortingController : Controller
     {
         private readonly IConfiguration configuration;
+        private readonly string _postgresql;
 
         public PortingController(IConfiguration config)
         {
             configuration = config;
+            _postgresql = configuration.GetConnectionString("PostgresqlProd");
         }
 
         public IActionResult Index()
@@ -215,7 +217,7 @@ namespace NumberSearch.Mvc.Controllers
 
             if (portRequest.BillImage != null && portRequest.BillImage.Length > 0)
             {
-                await portRequest.BillImage.CopyToAsync(stream);
+                await portRequest.BillImage.CopyToAsync(stream).ConfigureAwait(false);
 
                 var fileExtension = portRequest.BillImage.FileName.Split('.').LastOrDefault();
 
@@ -231,13 +233,24 @@ namespace NumberSearch.Mvc.Controllers
                 multipart.Add(attachment);
             }
 
-            var order = await Order.GetByIdAsync(portRequest.OrderId, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            var order = await Order.GetByIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
 
             // Save the rest of the data to the DB.
-            var checkPortRequest = await portRequest.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            var checkPortRequest = await portRequest.PostAsync(_postgresql).ConfigureAwait(false);
 
             if (checkPortRequest)
             {
+                // Associate the ported numbers with their porting information.
+                portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                foreach (var number in portedNumbers)
+                {
+                    number.PortRequestId = portRequest.PortRequestId;
+                    var checkPortUpdate = await number.PutAsync(_postgresql).ConfigureAwait(false);
+                }
+
                 // Send out the confirmation email.
                 var confirmationEmail = new Email
                 {

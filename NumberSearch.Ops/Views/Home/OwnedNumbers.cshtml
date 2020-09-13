@@ -68,7 +68,7 @@
                                         @number.DateIngested
                                     </span>
                                 </h4>*@
-                            <p>@number.DialedNumber</p>
+                            <h4>@number.DialedNumber</h4>
                         </td>
                         <td>
                             @{
@@ -90,6 +90,14 @@
                         </td>
                         <td>
                             <a class="btn btn-danger text-light" href="/Home/OwnedNumbers/@number.DialedNumber">Edit</a>
+                            @{
+                                if (!string.IsNullOrWhiteSpace(number.BillingClientId))
+                                {
+                                    <a href="https://billing.acceleratenetworks.com/clients/@number?.BillingClientId/edit" class="btn btn-secondary" target="_blank" rel="noopener">
+                                        Client
+                                    </a>
+                                }
+                            }
                         </td>
                     </tr>
                 }

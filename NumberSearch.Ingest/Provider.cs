@@ -28,11 +28,11 @@ namespace NumberSearch.Ingest
         {
             var start = DateTime.Now;
 
-            var numbers = await FirstPointCom.GetValidNumbersByNPAAsync(username, password, areaCodes);
+            var numbers = await FirstPointCom.GetValidNumbersByNPAAsync(username, password, areaCodes).ConfigureAwait(false);
 
             var typedNumbers = Ingest.AssignNumberTypes(numbers).ToArray();
 
-            var stats = await Ingest.SubmitPhoneNumbersAsync(typedNumbers, connectionString);
+            var stats = await Ingest.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
 
             var end = DateTime.Now;
             stats.StartDate = start;
@@ -53,11 +53,11 @@ namespace NumberSearch.Ingest
         {
             var start = DateTime.Now;
 
-            var numbers = await MainBulkVS.GetValidNumbersByNPAAsync(apiKey, apiSecret, areaCodes);
+            var numbers = await MainBulkVS.GetValidNumbersByNPAAsync(apiKey, apiSecret, areaCodes).ConfigureAwait(false);
 
             var typedNumbers = Ingest.AssignNumberTypes(numbers).ToArray();
 
-            var stats = await Ingest.SubmitPhoneNumbersAsync(typedNumbers, connectionString);
+            var stats = await Ingest.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
 
             var end = DateTime.Now;
             stats.StartDate = start;
@@ -90,7 +90,7 @@ namespace NumberSearch.Ingest
                 }
                 else
                 {
-                    npas = await TeleMessage.GetValidNPAsAsync(token);
+                    npas = await TeleMessage.GetValidNPAsAsync(token).ConfigureAwait(false);
 
                     Log.Information($"[TeleMessage] Found {npas.Length} NPAs");
                 }
@@ -103,7 +103,7 @@ namespace NumberSearch.Ingest
 
             foreach (var npa in npas)
             {
-                var localNumbers = await TeleMessage.GetXXXXsByNPAAsync(npa, token);
+                var localNumbers = await TeleMessage.GetXXXXsByNPAAsync(npa, token).ConfigureAwait(false);
                 readyToSubmit.AddRange(localNumbers);
 
                 Log.Information($"[TeleMessage] Found {localNumbers.Length} Phone Numbers for the {npa} Area Code.");
@@ -113,7 +113,7 @@ namespace NumberSearch.Ingest
 
             var typedNumbers = Ingest.AssignNumberTypes(readyToSubmit).ToArray();
 
-            var stats = await Ingest.SubmitPhoneNumbersAsync(typedNumbers, connectionString);
+            var stats = await Ingest.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
 
             var end = DateTime.Now;
             stats.StartDate = start;
@@ -146,7 +146,7 @@ namespace NumberSearch.Ingest
                 }
                 else
                 {
-                    npas = await TeleMessage.GetValidNPAsAsync(token);
+                    npas = await TeleMessage.GetValidNPAsAsync(token).ConfigureAwait(false);
 
                     Log.Information($"[TeleMessage] Found {npas.Length} NPAs");
                 }
@@ -163,7 +163,7 @@ namespace NumberSearch.Ingest
 
                 try
                 {
-                    nxxs = await TeleMessage.GetValidNXXsAsync(npa, token);
+                    nxxs = await TeleMessage.GetValidNXXsAsync(npa, token).ConfigureAwait(false);
 
                     Log.Information($"[TeleMessage] Found {nxxs.Length} NXXs for NPA {npa}");
                 }
@@ -183,12 +183,12 @@ namespace NumberSearch.Ingest
                     foreach (var nxx in nxxs)
                     {
                         // Wait for an open slot in the semaphore before grabbing another thread from the threadpool.
-                        await semaphore.WaitAsync();
+                        await semaphore.WaitAsync().ConfigureAwait(false);
                         results.Add(Task.Run(async () =>
                         {
                             try
                             {
-                                var localNumbers = await TeleMessage.GetValidXXXXsAsync(npa, nxx, token);
+                                var localNumbers = await TeleMessage.GetValidXXXXsAsync(npa, nxx, token).ConfigureAwait(false);
                                 foreach (var num in localNumbers)
                                 {
                                     // TODO: Maybe do something with this check varible?
@@ -205,7 +205,7 @@ namespace NumberSearch.Ingest
                             }
                         }));
                     }
-                    var complete = await Task.WhenAll(results);
+                    var complete = await Task.WhenAll(results).ConfigureAwait(false);
 
                     // Total the numbers retrived.
                     int count = 0;
@@ -226,7 +226,7 @@ namespace NumberSearch.Ingest
 
             var typedNumbers = Ingest.AssignNumberTypes(numbersReady).ToArray();
 
-            var stats = await Ingest.SubmitPhoneNumbersAsync(typedNumbers, connectionString);
+            var stats = await Ingest.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
 
             var end = DateTime.Now;
             stats.StartDate = start;

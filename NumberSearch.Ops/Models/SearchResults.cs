@@ -1,7 +1,5 @@
 ﻿using NumberSearch.DataAccess;
 
-using System.Collections.Generic;
-
 namespace NumberSearch.Ops
 {
     public class SearchResults

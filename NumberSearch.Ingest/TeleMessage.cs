@@ -19,7 +19,7 @@ namespace NumberSearch.Ingest
         /// <returns></returns>
         public static async Task<int[]> GetValidNPAsAsync(Guid token)
         {
-            var results = await DidsNpas.GetAsync(token);
+            var results = await DidsNpas.GetAsync(token).ConfigureAwait(false);
 
             if (!(results.status == "Success") && !(results.code == 200))
             {
@@ -52,7 +52,7 @@ namespace NumberSearch.Ingest
         /// <returns></returns>
         public static async Task<int[]> GetValidNXXsAsync(int npa, Guid token)
         {
-            var results = await DidsNxxs.GetAsync($"{npa}", token);
+            var results = await DidsNxxs.GetAsync($"{npa}", token).ConfigureAwait(false);
 
             var vaild = new List<int>();
 
@@ -90,7 +90,7 @@ namespace NumberSearch.Ingest
 
             try
             {
-                var results = await DidsList.GetAsync($"{npa}{nxx}****", token);
+                var results = await DidsList.GetAsync($"{npa}{nxx}****", token).ConfigureAwait(false);
 
                 foreach (var result in results?.ToArray())
                 {
@@ -121,7 +121,7 @@ namespace NumberSearch.Ingest
 
             try
             {
-                var results = await DidsList.GetAsync(npa, token);
+                var results = await DidsList.GetAsync(npa, token).ConfigureAwait(false);
 
                 foreach (var result in results?.ToArray())
                 {

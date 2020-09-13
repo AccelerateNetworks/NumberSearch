@@ -63,7 +63,7 @@ namespace NumberSearch.Ops.Controllers
         public async Task<IActionResult> Orders()
         {
             // Show all orders
-            var orders = await Order.GetAllAsync(_postgresql);
+            var orders = await Order.GetAllAsync(_postgresql).ConfigureAwait(false);
 
             return View("Orders", orders.OrderByDescending(x => x.DateSubmitted));
         }
@@ -72,7 +72,7 @@ namespace NumberSearch.Ops.Controllers
         public async Task<IActionResult> NumberOrders()
         {
             // Show all orders
-            var orders = await PurchasedPhoneNumber.GetAllAsync(_postgresql);
+            var orders = await PurchasedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
 
             return View("NumberOrders", orders.OrderByDescending(x => x.DateOrdered));
         }
@@ -125,7 +125,7 @@ namespace NumberSearch.Ops.Controllers
         [Authorize]
         public async Task<IActionResult> ExportNumberOrders()
         {
-            var orders = await PurchasedPhoneNumber.GetAllAsync(_postgresql);
+            var orders = await PurchasedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
 
             var filePath = Path.GetFullPath(Path.Combine("wwwroot", "csv"));
             var fileName = $"PurchasedNumbers{DateTime.Now.ToString("yyyyMMdd")}.csv";
@@ -133,7 +133,7 @@ namespace NumberSearch.Ops.Controllers
 
             using var writer = new StreamWriter(completePath);
             using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-            await csv.WriteRecordsAsync(orders);
+            await csv.WriteRecordsAsync(orders).ConfigureAwait(false);
             var file = new FileInfo(completePath);
 
             if (file.Exists)
@@ -147,12 +147,59 @@ namespace NumberSearch.Ops.Controllers
         }
 
         [Authorize]
-        public async Task<IActionResult> PortRequests()
+        [Route("/Home/PortRequests")]
+        [Route("/Home/PortRequests/{orderId}")]
+        public async Task<IActionResult> PortRequests(Guid? orderId)
         {
-            // Show all orders
-            var portRequests = await PortRequest.GetAllAsync(_postgresql);
+            if (orderId != null && orderId.HasValue)
+            {
+                var portRequest = await PortRequest.GetByOrderIdAsync(orderId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                var numbers = await PortedPhoneNumber.GetByOrderIdAsync(orderId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
 
-            return View("PortRequests", portRequests.OrderByDescending(x => x.DateSubmitted));
+                return View("PortRequestEdit", new PortRequestResult
+                {
+                    Request = portRequest,
+                    Numbers = numbers
+                });
+            }
+            else
+            {
+                // Show all orders
+                var portRequests = await PortRequest.GetAllAsync(_postgresql).ConfigureAwait(false);
+
+                return View("PortRequests", portRequests.OrderByDescending(x => x.DateSubmitted));
+            }
+        }
+
+        [Authorize]
+        [Route("/Home/PortRequests/{orderId}")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PortRequestUpdate(PortRequestResult result)
+        {
+            var portRequest = result?.Request ?? null;
+
+            if (portRequest is null)
+            {
+                return Redirect("/Home/PortRequests");
+            }
+            else
+            {
+                var fromDb = await PortRequest.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
+
+                portRequest.PortRequestId = fromDb.PortRequestId;
+
+                var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
+
+                portRequest = await PortRequest.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
+                var numbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
+
+                return View("PortRequestEdit", new PortRequestResult
+                {
+                    Request = portRequest,
+                    Numbers = numbers
+                });
+            }
         }
 
         [Authorize]

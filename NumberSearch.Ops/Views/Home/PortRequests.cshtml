@@ -33,6 +33,7 @@
                 </th>
                 <th>Customer Information</th>
                 <th>Carrier Information</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -42,7 +43,7 @@
                     <tr>
                         <td scope="row" data-order="@port.DateSubmitted.Ticks">
                             <a href="https://acceleratenetworks.com/cart/order/@port.OrderId" class="btn btn-primary">
-                                View Order
+                                Order
                             </a>
                             <h4 class="d-flex justify-content-between align-items-center mt-3">
                                 <span class="badge badge-info badge-pill">
@@ -87,6 +88,9 @@
                                 Wireless Number
                             </strong>
                             <p>@port.WirelessNumber</p>
+                        </td>
+                        <td>
+                            <a class="btn btn-danger text-light" href="/Home/PortRequests/@port.OrderId">Edit</a>
                         </td>
                     </tr>
                 }

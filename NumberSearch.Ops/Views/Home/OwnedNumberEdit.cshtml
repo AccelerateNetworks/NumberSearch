@@ -6,23 +6,7 @@
 <h1 class="display-4">Owned Phone Number</h1>
 <br />
 <div class="pb-3">
-    <ul class="nav nav-pills nav-fill nav-justified">
-        <li class="nav-item">
-            <a class="nav-link" asp-controller="Home" asp-action="Numbers">Numbers</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" asp-controller="Home" asp-action="NumberOrders">Number Orders</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link active" asp-controller="Home" asp-action="OwnedNumbers">Owned Numbers</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" asp-controller="Home" asp-action="Emails">Sent Emails</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" asp-controller="Home" asp-action="PortRequests">Port Requests</a>
-        </li>
-    </ul>
+<a class="btn btn-primary" href="/Home/OwnedNumbers">Return to List</a>
 </div>
 <form href="Home/OwnedNumbers/@Model.DialedNumber" method="post" class="needs-validation">
     <div class="row">
