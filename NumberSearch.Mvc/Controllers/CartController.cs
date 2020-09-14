@@ -167,6 +167,34 @@ namespace NumberSearch.Mvc.Controllers
                 bool checkNxx = int.TryParse(dialedPhoneNumber.Substring(3, 3), out int nxx);
                 bool checkXxxx = int.TryParse(dialedPhoneNumber.Substring(6, 4), out int xxxx);
 
+                // Determine if the number is a wireless number.
+                var lrnLookup = await LrnLookup.GetAsync(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
+
+                bool wireless = false;
+
+                switch (lrnLookup.data.ocn_type)
+                {
+                    case "wireless":
+                        wireless = true;
+                        break;
+                    case "PCS":
+                        wireless = true;
+                        break;
+                    case "P RESELLER":
+                        wireless = true;
+                        break;
+                    case "Wireless":
+                        wireless = true;
+                        break;
+                    case "W RESELLER":
+                        wireless = true;
+                        break;
+                    default:
+                        break;
+                }
+
+                Log.Information($"[AddToCart] {dialedPhoneNumber} has an OCN Type of {lrnLookup.data.ocn_type}.");
+
                 if (checkNpa && checkNxx && checkXxxx)
                 {
                     var port = new PortedPhoneNumber
@@ -178,7 +206,8 @@ namespace NumberSearch.Mvc.Controllers
                         City = "Unknown City",
                         State = "Unknown State",
                         DateIngested = DateTime.Now,
-                        IngestedFrom = "UserInput"
+                        IngestedFrom = "UserInput",
+                        Wireless = wireless
                     };
 
                     var checkSubmission = await port.PostAsync(_postgresql).ConfigureAwait(false);
@@ -190,6 +219,37 @@ namespace NumberSearch.Mvc.Controllers
                 }
             }
 
+            // Prevent the user from adding ported numbers that are both wireless and not wireless to the same order.
+            if (cart.PortedPhoneNumbers.Any())
+            {
+                var wirelessCount = cart.PortedPhoneNumbers.Count(x => x.Wireless == true);
+                var nonWirelessCount = cart.PortedPhoneNumbers.Count(x => x.Wireless == false);
+
+                if (wirelessCount > 0 && !portedPhoneNumber.Wireless)
+                {
+                    // Tell the user about the failure
+                    return View("../Porting/Index", new PortingResults
+                    {
+                        PortedPhoneNumber = portedPhoneNumber,
+                        Cart = cart,
+                        Message = "This phone number cannot be added to an order that already has wireless numbers in it. Please create a separate order for non-wireless numbers.",
+                        AlertType = "alert-danger"
+                    });
+                }
+
+                if (nonWirelessCount > 0 && portedPhoneNumber.Wireless)
+                {
+                    // Tell the user about the failure
+                    return View("../Porting/Index", new PortingResults
+                    {
+                        PortedPhoneNumber = portedPhoneNumber,
+                        Cart = cart,
+                        Message = "This wireless phone number cannot be added to an order that already has non-wireless numbers in it. Please create a separate order for wireless numbers.",
+                        AlertType = "alert-danger"
+                    });
+                }
+            }
+
             var productOrder = new ProductOrder { PortedDialedNumber = portedPhoneNumber.PortedDialedNumber, Quantity = 1 };
 
             var checkAdd = cart.AddPortedPhoneNumber(portedPhoneNumber, productOrder);
@@ -198,19 +258,23 @@ namespace NumberSearch.Mvc.Controllers
             if (checkAdd && checkSet)
             {
                 // TODO: Mark the item as sucessfully added.
-                return RedirectToAction("Index", "Porting", new PortingResults
+                return View("../Porting/Index", new PortingResults
                 {
                     PortedPhoneNumber = portedPhoneNumber,
-                    Cart = cart
+                    Cart = cart,
+                    Message = portedPhoneNumber.Wireless ? $"Sucessfully added wireless phone number {portedPhoneNumber.PortedDialedNumber} to your cart!" : $"Sucessfully added {dialedPhoneNumber} to your cart!",
+                    AlertType = "alert-success"
                 });
             }
             else
             {
                 // TODO: Tell the user about the failure
-                return RedirectToAction("Index", "Porting", new PortingResults
+                return View("../Porting/Index", new PortingResults
                 {
                     PortedPhoneNumber = portedPhoneNumber,
-                    Cart = cart
+                    Cart = cart,
+                    Message = $"Failed to add {dialedPhoneNumber} to your cart.",
+                    AlertType = "alert-danger"
                 });
             }
         }

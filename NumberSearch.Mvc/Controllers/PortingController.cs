@@ -9,6 +9,7 @@ using NumberSearch.DataAccess.TeleMesssage;
 using Serilog;
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -38,6 +39,39 @@ namespace NumberSearch.Mvc.Controllers
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
 
+            // Clean up the query.
+            Query = Query?.Trim();
+
+            // Parse the query.
+            var converted = new List<char>();
+            foreach (var letter in Query)
+            {
+                // Allow digits.
+                if (char.IsDigit(letter))
+                {
+                    converted.Add(letter);
+                }
+                // Allow stars.
+                else if (letter == '*')
+                {
+                    converted.Add(letter);
+                }
+                // Convert letters to digits.
+                else if (char.IsLetter(letter))
+                {
+                    converted.Add(SearchController.LetterToKeypadDigit(letter));
+                }
+                // Drop everything else.
+            }
+
+            // Drop leading 1's to improve the copy/paste experiance.
+            if (converted[0] == '1' && converted.Count >= 10)
+            {
+                converted.Remove('1');
+            }
+
+            Query = new string(converted.ToArray());
+
             if (Query != null && Query?.Length == 10)
             {
                 var dialedPhoneNumber = Query;
@@ -52,6 +86,32 @@ namespace NumberSearch.Mvc.Controllers
                     {
                         var portable = await LnpCheck.IsPortable(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
 
+                        // Determine if the number is a wireless number.
+                        var lrnLookup = await LrnLookup.GetAsync(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
+
+                        bool wireless = false;
+
+                        switch (lrnLookup.data.ocn_type)
+                        {
+                            case "wireless":
+                                wireless = true;
+                                break;
+                            case "PCS":
+                                wireless = true;
+                                break;
+                            case "P RESELLER":
+                                wireless = true;
+                                break;
+                            case "Wireless":
+                                wireless = true;
+                                break;
+                            case "W RESELLER":
+                                wireless = true;
+                                break;
+                            default:
+                                break;
+                        }
+
                         if (portable)
                         {
                             Log.Information($"[Portability] {dialedPhoneNumber} is Portable.");
@@ -65,14 +125,15 @@ namespace NumberSearch.Mvc.Controllers
                                 City = "Unknown City",
                                 State = "Unknown State",
                                 DateIngested = DateTime.Now,
-                                IngestedFrom = "UserInput"
+                                IngestedFrom = "UserInput",
+                                Wireless = wireless
                             };
 
                             return View("Index", new PortingResults
                             {
                                 PortedPhoneNumber = port,
                                 Cart = cart,
-                                Message = "This phone number can be ported to our network!"
+                                Message = wireless ? "This wireless phone number can be ported to our network!" : "This phone number can be ported to our network!"
                             });
                         }
                         else
@@ -88,14 +149,15 @@ namespace NumberSearch.Mvc.Controllers
                                 City = "Unknown City",
                                 State = "Unknown State",
                                 DateIngested = DateTime.Now,
-                                IngestedFrom = "UserInput"
+                                IngestedFrom = "UserInput",
+                                Wireless = wireless
                             };
 
                             return View("Index", new PortingResults
                             {
                                 PortedPhoneNumber = port,
                                 Cart = cart,
-                                Message = "This phone number can likely be ported to our network!"
+                                Message = wireless ? "This wireless phone number can likely be ported to our network!" : "This phone number can likely be ported to our network!"
                             });
                         }
                     }
@@ -245,6 +307,9 @@ namespace NumberSearch.Mvc.Controllers
 
                 switch (lrnLookup.data.ocn_type)
                 {
+                    case "wireless":
+                        wireless++;
+                        break;
                     case "PCS":
                         wireless++;
                         break;
