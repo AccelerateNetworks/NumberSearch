@@ -19,11 +19,14 @@ namespace NumberSearch.Mvc.Controllers
     {
         private readonly IConfiguration configuration;
         private readonly string _postgresql;
+        private readonly Guid _teleToken;
 
         public PortingController(IConfiguration config)
         {
             configuration = config;
             _postgresql = configuration.GetConnectionString("PostgresqlProd");
+            _teleToken = Guid.Parse(configuration.GetConnectionString("TeleAPI"));
+
         }
 
         public IActionResult Index()
@@ -45,11 +48,9 @@ namespace NumberSearch.Mvc.Controllers
 
                 if (checkNpa && checkNxx && checkXxxx)
                 {
-                    var teleToken = Guid.Parse(configuration.GetConnectionString("TeleAPI"));
-
                     try
                     {
-                        var portable = await LnpCheck.IsPortable(dialedPhoneNumber, teleToken).ConfigureAwait(false);
+                        var portable = await LnpCheck.IsPortable(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
 
                         if (portable)
                         {
@@ -156,9 +157,7 @@ namespace NumberSearch.Mvc.Controllers
 
                 if (checkNpa && checkNxx && checkXxxx)
                 {
-                    var teleToken = Guid.Parse(configuration.GetConnectionString("TeleAPI"));
-
-                    var portable = await LnpCheck.IsPortable(dialedPhoneNumber, teleToken).ConfigureAwait(false);
+                    var portable = await LnpCheck.IsPortable(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
 
                     if (portable)
                     {
@@ -235,6 +234,44 @@ namespace NumberSearch.Mvc.Controllers
 
             var order = await Order.GetByIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
 
+            var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
+
+            var wireless = 0;
+
+            // Determine if its a wireless number.
+            foreach (var number in portedNumbers)
+            {
+                var lrnLookup = await LrnLookup.GetAsync(number.PortedDialedNumber, _teleToken).ConfigureAwait(false);
+
+                switch (lrnLookup.data.ocn_type)
+                {
+                    case "PCS":
+                        wireless++;
+                        break;
+                    case "P RESELLER":
+                        wireless++;
+                        break;
+                    case "Wireless":
+                        wireless++;
+                        break;
+                    case "W RESELLER":
+                        wireless++;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            // TODO: Figure out how to handle senarios where not all of the numbers are wireless in the order.
+            if (wireless == portedNumbers.Count())
+            {
+                portRequest.WirelessNumber = true;
+            }
+            else
+            {
+                portRequest.WirelessNumber = false;
+            }
+
             // Save the rest of the data to the DB.
             var checkPortRequest = await portRequest.PostAsync(_postgresql).ConfigureAwait(false);
 
@@ -242,8 +279,6 @@ namespace NumberSearch.Mvc.Controllers
             {
                 // Associate the ported numbers with their porting information.
                 portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
-
-                var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
 
                 foreach (var number in portedNumbers)
                 {
