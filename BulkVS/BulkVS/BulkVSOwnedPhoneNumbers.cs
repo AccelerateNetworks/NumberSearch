@@ -1,6 +1,9 @@
 ﻿using NumberSearch.DataAccess;
+
 using Serilog;
+
 using ServiceReference;
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

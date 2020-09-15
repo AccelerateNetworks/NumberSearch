@@ -593,6 +593,21 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task BulkVSLrnLookupAsync()
+        {
+            // Arrange
+            var number = "2068588757";
+
+            // Act
+            var result = await LrnBulkCnam.GetAsync(number, bulkVSKey).ConfigureAwait(false);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(!string.IsNullOrWhiteSpace(result.spid));
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+        }
+
+        [Fact]
         public async Task BulkVSNpaNxxGetAsyncBadInputTestAsync()
         {
             // Arrange

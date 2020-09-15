@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BulkVS;
+
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
@@ -16,12 +18,15 @@ namespace NumberSearch.Mvc.Controllers
         private readonly IConfiguration _configuration;
         private readonly Guid _teleToken;
         private readonly string _postgresql;
+        private readonly string _bulkVSKey;
 
         public LookupController(IConfiguration config)
         {
             _configuration = config;
             _teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
             _postgresql = _configuration.GetConnectionString("PostgresqlProd");
+            _bulkVSKey = config.GetConnectionString("BulkVSAPIKEY");
+
         }
 
         public async Task<IActionResult> IndexAsync(string dialedNumber)
@@ -64,6 +69,15 @@ namespace NumberSearch.Mvc.Controllers
                 foreach (var number in parsedNumbers)
                 {
                     var checkNumber = await LrnLookup.GetAsync(number, _teleToken).ConfigureAwait(false);
+                    if (string.IsNullOrWhiteSpace(checkNumber.data.lrn))
+                    {
+                        var bulkResult = await LrnBulkCnam.GetAsync(number, _bulkVSKey).ConfigureAwait(false);
+
+                        checkNumber.data.spid = bulkResult.spid;
+                        checkNumber.data.spid_name = bulkResult.lec;
+                        checkNumber.data.port_date = bulkResult.lrn;
+                    }
+
                     checkNumber.data.DialedNumber = number;
                     results.Add(checkNumber);
                 }

@@ -648,7 +648,7 @@ namespace NumberSearch.Ingest
 
                                     // Look for LRN changes.
                                     Log.Information("[OwnedNumbers] Looking for LRN changes on owned numbers.");
-                                    var changedNumbers = await Owned.VerifyServiceProvidersAsync(teleToken, postgresSQL).ConfigureAwait(false);
+                                    var changedNumbers = await Owned.VerifyServiceProvidersAsync(teleToken, bulkVSKey, postgresSQL).ConfigureAwait(false);
 
                                     if (changedNumbers != null && changedNumbers.Any())
                                     {

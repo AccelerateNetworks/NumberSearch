@@ -1,4 +1,6 @@
-﻿using FirstCom;
+﻿using BulkVS;
+
+using FirstCom;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.Models;
@@ -147,7 +149,7 @@ namespace NumberSearch.Ingest
             public string CurrentSPIDName { get; set; }
         }
 
-        public static async Task<IEnumerable<ServiceProviderChanged>> VerifyServiceProvidersAsync(Guid teleToken, string connectionString)
+        public static async Task<IEnumerable<ServiceProviderChanged>> VerifyServiceProvidersAsync(Guid teleToken, string bulkApiKey, string connectionString)
         {
             var owned = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
 
@@ -157,27 +159,40 @@ namespace NumberSearch.Ingest
             {
                 var result = await LrnLookup.GetAsync(number.DialedNumber, teleToken).ConfigureAwait(false);
 
-                var checkSPID = result.data.spid != number.SPID;
-                var checkSPIDName = result.data.spid_name != number.SPIDName;
+                var provider = "TeleMessage";
+                var newSpid = result.data.spid;
+                var newSpidName = result.data.spid_name;
+
+                if (string.IsNullOrWhiteSpace(newSpid) || string.IsNullOrWhiteSpace(newSpidName))
+                {
+                    var bulkResult = await LrnBulkCnam.GetAsync(number.DialedNumber, bulkApiKey).ConfigureAwait(false);
+
+                    provider = "BulkVS";
+                    newSpid = bulkResult?.spid ?? string.Empty;
+                    newSpidName = bulkResult?.lec ?? string.Empty;
+                }
+
+                var checkSPID = newSpid != number.SPID;
+                var checkSPIDName = newSpidName != number.SPIDName;
 
                 if (checkSPID || checkSPIDName)
                 {
                     serviceProviderChanged.Add(new ServiceProviderChanged
                     {
-                        CurrentSPID = result.data.spid,
+                        CurrentSPID = newSpid,
                         OldSPID = number.SPID,
-                        CurrentSPIDName = result.data.spid_name,
+                        CurrentSPIDName = newSpidName,
                         OldSPIDName = number.SPIDName,
                         DialedNumber = number.DialedNumber
                     });
 
                     // Update the SPID to the current value.
-                    number.SPID = result.data.spid;
-                    number.SPIDName = result.data.spid_name;
+                    number.SPID = newSpid;
+                    number.SPIDName = newSpidName;
                     var checkUpdate = await number.PutAsync(connectionString).ConfigureAwait(false);
                 }
 
-                Log.Information($"[OwnedNumbers] Found {result.data.spid_name}, {result.data.spid} for {number.DialedNumber}.");
+                Log.Information($"[OwnedNumbers] Found {newSpidName}, {newSpid} for {number.DialedNumber} from [{provider}].");
             }
 
             Log.Information($"[OwnedNumbers] Found {serviceProviderChanged.Count} numbers whose Service Provider has changed since the last ingest.");
