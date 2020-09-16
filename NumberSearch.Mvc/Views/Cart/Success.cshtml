@@ -15,11 +15,19 @@
         locationType();
         partial();
 
-        $("#location").change(function () {
+        $("#ltoption1").change(function () {
             locationType();
         });
 
-        $("#partialPort").change(function () {
+        $("#ltoption2").change(function () {
+            locationType();
+        });
+
+        $("#ppoption1").change(function () {
+            partial();
+        });
+
+        $("#ppoption2").change(function () {
             partial();
         });
 
@@ -28,21 +36,21 @@
         });
 
         function locationType() {
-            var selectedLocation = $("#location").val();
+            var selectedLocation = $('input[name="PortRequest.LocationType"]:checked').val();
 
             if (selectedLocation == "Business") {
-                $("#business").show();
-                $("#residential").hide();
+                $(".business").show();
+                $(".residential").hide();
             }
 
             if (selectedLocation == "Residential") {
-                $("#business").hide();
-                $("#residential").show();
+                $(".business").hide();
+                $(".residential").show();
             }
         }
 
         function partial() {
-            var selectedLocation = $("#partialPort").val();
+            var selectedLocation = $('input[name="PortRequest.PartialPort"]:checked').val();
 
             if (selectedLocation == "true") {
                 $("#partialDescripton").show();
@@ -68,65 +76,91 @@
             <form asp-controller="Porting" asp-action="AddPortingInformation" method="post" enctype="multipart/form-data" class="needs-validation mb-3">
                 <input asp-for="PortRequest.OrderId" type="text" value="@Model?.Order?.OrderId" hidden />
                 <div class="row">
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label for="billingPhone">Current Billing Phone Number</label>
-                        <input asp-for="PortRequest.BillingPhone" type="text" class="form-control" id="billingPhone" placeholder="2061234567" required
+                        <input asp-for="PortRequest.BillingPhone" type="text" value="@Model?.PortRequest?.BillingPhone" class="form-control" id="billingPhone" placeholder="2061234567" required
                                title="Also known as the BTN. This is the number that is normally provided on a copy of your bill or statement in the upper right corner or is the first number listed on the bill.">
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="locationType">Location Type</label>
-                        <select asp-for="PortRequest.LocationType" class="custom-select" title="Designates if this is a business address or a residential address." id="location" required>
-                            <option value="Business" selected>Business</option>
-                            <option value="Residential">Residential</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="row" id="business">
-                    <div class="col-md-6 mb-3">
-                        <label for="partialPort">Business Contact</label>
-                        @{
-                            var contactName = $"{Model?.Order?.FirstName} {Model?.Order?.LastName}";
-                        }
-                        <input asp-for="PortRequest.BusinessContact" type="text" value="@contactName" class="form-control" id="businessContact" placeholder="Alexander Graham-Bell" title="This is the name of the owner or contact who will be submitting the port order.">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="partialPortDescription">Business Name</label>
-                        <input asp-for="PortRequest.BusinessName" type="text" value="@Model?.Order?.BusinessName" class="form-control" id="businessName" placeholder="American Telegraf and Telephone Company" title="Name of the business associated with the numbers being ported.">
-                    </div>
-                </div>
-
-                <div class="row" id="residential">
-                    <div class="col-md-6 mb-3">
-                        <label for="partialPort">First Name</label>
-                        <input asp-for="PortRequest.ResidentialFirstName" type="text" value="@Model?.Order?.FirstName" class="form-control" id="residentalFirstName" placeholder="Alexander" title="The first name of the person currently being billed for this phone number.">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="partialPortDescription">Last Name</label>
-                        <input asp-for="PortRequest.ResidentialLastName" type="text" value="@Model?.Order?.LastName" class="form-control" id="residentalLastName" placeholder="Graham-Bell" title="The last name of the person currently being billed for this phone number.">
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label for="accountNumber">Current Account Number</label>
-                        <input asp-for="PortRequest.ProviderAccountNumber" type="text" class="form-control" id="accountNumber" placeholder="1234567891011" title="The account number is usually found on the invoice or a copy of a bill from your current provider." required>
+                        <input asp-for="PortRequest.ProviderAccountNumber" type="text" value="@Model?.PortRequest?.ProviderAccountNumber" class="form-control" id="accountNumber" placeholder="1234567891011" title="The account number is usually found on the invoice or a copy of a bill from your current provider." required>
                         <div class="invalid-feedback">
                             Please enter your account number.
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label for="pin">Account PIN or Password</label>
-                        <input asp-for="PortRequest.ProviderPIN" type="text" class="form-control" id="pin" placeholder="1234" title="The PIN or password for the existing account." required>
+                        <input asp-for="PortRequest.ProviderPIN" type="text" value="@Model?.PortRequest?.ProviderPIN" class="form-control" id="pin" placeholder="1234" title="The PIN or password for the existing account." required>
                         <div class="invalid-feedback">
                             Valid PIN is required.
                         </div>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="locationType">Location Type</label>
+                        <div class="form-group">
+                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                @{
+                                    if (Model?.PortRequest?.LocationType == "Residential")
+                                    {
+                                        <label class="btn btn-secondary">
+                                            <input asp-for="PortRequest.LocationType" type="radio" id="ltoption1" value="Business"> Business
+                                        </label>
+                                        <label class="btn btn-secondary active">
+                                            <input asp-for="PortRequest.LocationType" type="radio" id="ltoption2" value="Residential" checked> Residential
+                                        </label>
+                                    }
+                                    else
+                                    {
+                                        <label class="btn btn-secondary active">
+                                            <input asp-for="PortRequest.LocationType" type="radio" id="ltoption1" value="Business" checked> Business
+                                        </label>
+                                        <label class="btn btn-secondary">
+                                            <input asp-for="PortRequest.LocationType" type="radio" id="ltoption2" value="Residential"> Residential
+                                        </label>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3 business">
+                        <label for="partialPort">Business Contact</label>
+                        @{
+                            var contactName = string.IsNullOrWhiteSpace(Model?.PortRequest?.BusinessContact) ? $"{Model?.Order?.FirstName} {Model?.Order?.LastName}" : Model?.PortRequest?.BusinessContact;
+                        }
+                        <input asp-for="PortRequest.BusinessContact" type="text" value="@contactName" class="form-control" id="businessContact" placeholder="Alexander Graham-Bell" title="This is the name of the owner or contact who will be submitting the port order.">
+                    </div>
+                    <div class="col-md-4 mb-3 business">
+                        <label for="partialPortDescription">Business Name</label>
+                        @{
+                            var businessName = string.IsNullOrWhiteSpace(Model?.PortRequest?.BusinessName) ? Model?.Order?.BusinessName : Model?.PortRequest?.BusinessName;
+                        }
+                        <input asp-for="PortRequest.BusinessName" type="text" value="@businessName" class="form-control" id="businessName" placeholder="American Telegraf and Telephone Company" title="Name of the business associated with the numbers being ported.">
+                    </div>
+
+                    <div class="col-md-4 mb-3 residential">
+                        <label for="partialPort">First Name</label>
+                        @{
+                            var firstName = string.IsNullOrWhiteSpace(Model?.PortRequest?.ResidentialFirstName) ? Model?.Order?.FirstName : Model?.PortRequest?.ResidentialFirstName;
+                        }
+                        <input asp-for="PortRequest.ResidentialFirstName" type="text" value="@firstName" class="form-control" id="residentalFirstName" placeholder="Alexander" title="The first name of the person currently being billed for this phone number.">
+                    </div>
+                    <div class="col-md-4 mb-3 residential">
+                        <label for="partialPortDescription">Last Name</label>
+                        @{
+                            var lastName = string.IsNullOrWhiteSpace(Model?.PortRequest?.ResidentialLastName) ? Model?.Order?.LastName : Model?.PortRequest?.ResidentialLastName;
+                        }
+                        <input asp-for="PortRequest.ResidentialLastName" type="text" value="@lastName" class="form-control" id="residentalLastName" placeholder="Graham-Bell" title="The last name of the person currently being billed for this phone number.">
+                    </div>
+                </div>
 
                 <div class="mb-3">
                     <label for="address">Service Address</label>
-                    <input asp-for="PortRequest.Address" type="text" value="@Model?.Order?.Address" class="form-control" id="address" placeholder="1234 Main St" title="The physical address of where these phone numbers are being used. This information is also on file with your current provider." required>
+                    @{
+                        var address = string.IsNullOrWhiteSpace(Model?.PortRequest?.Address) ? Model?.Order?.Address : Model?.PortRequest?.Address;
+                    }
+                    <input asp-for="PortRequest.Address" type="text" value="@address" class="form-control" id="address" placeholder="1234 Main St" title="The physical address of where these phone numbers are being used. This information is also on file with your current provider." required>
                     <div class="invalid-feedback">
                         Please enter your shipping address.
                     </div>
@@ -134,13 +168,19 @@
 
                 <div class="mb-3">
                     <label for="address2">Service Address 2 <span class="text-muted">(Optional)</span></label>
-                    <input asp-for="PortRequest.Address2" type="text" value="@Model?.Order?.Address2" class="form-control" id="address2" title="The city of the service address listed above." placeholder="Apartment or suite">
+                    @{
+                        var address2 = string.IsNullOrWhiteSpace(Model?.PortRequest?.Address2) ? Model?.Order?.Address2 : Model?.PortRequest?.Address2;
+                    }
+                    <input asp-for="PortRequest.Address2" type="text" value="@address2" class="form-control" id="address2" title="The city of the service address listed above." placeholder="Apartment or suite">
                 </div>
 
                 <div class="row">
                     <div class="col-md-5 mb-3">
                         <label for="address">Service City</label>
-                        <input asp-for="PortRequest.City" type="text" value="@Model?.Order?.City" class="form-control" id="city" placeholder="Seattle" title="The physical address of where these phone numbers are being used. This information is also on file with your current provider." required>
+                        @{
+                            var city = string.IsNullOrWhiteSpace(Model?.PortRequest?.City) ? Model?.Order?.City : Model?.PortRequest?.City;
+                        }
+                        <input asp-for="PortRequest.City" type="text" value="@city" class="form-control" id="city" placeholder="Seattle" title="The physical address of where these phone numbers are being used. This information is also on file with your current provider." required>
                         <div class="invalid-feedback">
                             Please enter a valid city.
                         </div>
@@ -202,9 +242,11 @@
                                                         "Wyoming"
                                                         };
 
+                                var currentState = string.IsNullOrWhiteSpace(Model?.PortRequest?.State) ? Model?.Order?.State : Model?.PortRequest?.State;
+
                                 foreach (var state in states)
                                 {
-                                    if (Model?.Order?.State == state)
+                                    if (currentState == state)
                                     {
                                         <option selected>@state</option>
                                     }
@@ -215,29 +257,13 @@
                                 }
                             }
                         </select>
-                        <div class="invalid-feedback">
-                            Please provide a valid state.
-                        </div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <label for="zip">Service Zip</label>
-                        <input asp-for="PortRequest.Zip" type="text" value="@Model?.Order?.Zip" class="form-control" id="zip" placeholder="98199" title="The five digit ZIP code of the service address listed above." required>
-                        <div class="invalid-feedback">
-                            Zip code required.
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="partialPort">Partial Port</label>
-                        <select asp-for="PortRequest.PartialPort" class="custom-select" id="partialPort" title="Designates if this is a business address or a residential address." required>
-                            <option value="true">Yes</option>
-                            <option value="false" selected>No</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3" id="partialDescripton">
-                        <label for="partialPortDescription">Partial Port Description</label>
-                        <input asp-for="PortRequest.PartialPortDescription" type="text" class="form-control" id="partialPortDescription" title="Describe what services the old carrier should leave alone. Contact the old carrier to confirm they will leave these services intact.">
+                        @{
+                            var zip = string.IsNullOrWhiteSpace(Model?.PortRequest?.Zip) ? Model?.Order?.Zip : Model?.PortRequest?.Zip;
+                        }
+                        <input asp-for="PortRequest.Zip" type="text" value="@zip" class="form-control" id="zip" placeholder="98199" title="The five digit ZIP code of the service address listed above." required>
                     </div>
                 </div>
                 <div class="row">
@@ -252,6 +278,11 @@
                             </div>
                         </div>*@
                     <div class="col-md-6">
+                        <label for="billingPhone">Caller ID <span class="text-muted">(15 Characters Maximum)</span></label>
+                        <input asp-for="PortRequest.CallerId" type="text" value="@Model?.PortRequest?.CallerId" class="form-control" id="billingPhone" title="Sets Caller ID (aka CNAM) for all numbers in this port order, 15 character limit. Only letters, numbers, and spaces are allowed." placeholder="Alexander" maxlength="15" pattern="[a-zA-Z0-9\s]+" required>
+                        <label><strong id="charCount"></strong></label>
+                    </div>
+                    <div class="col-md-6">
                         <label for="inputGroupFile02">An Image of Your Current Bill</label>
                         <div class="input-group">
                             <div class="custom-file">
@@ -261,10 +292,43 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="billingPhone">Caller ID <span class="text-muted">(15 Characters Maximum)</span></label>
-                        <input asp-for="PortRequest.CallerId" type="text" class="form-control" id="billingPhone" title="Sets Caller ID (aka CNAM) for all numbers in this port order, 15 character limit. Only letters, numbers, and spaces are allowed." placeholder="Alexander" maxlength="15" pattern="[a-zA-Z0-9\s]+" required>
-                        <label><strong id="charCount"></strong></label>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-2 mb-3">
+                        <label for="partialPort">Partial Port</label>
+                        @*<select asp-for="PortRequest.PartialPort" class="custom-select" id="partialPort" title="Designates if this is a business address or a residential address." required>
+                                <option value="true">Yes</option>
+                                <option value="false" selected>No</option>
+                            </select>*@
+                        <div class="form-group">
+                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                @{
+                                    if (Model?.PortRequest?.PartialPort ?? false)
+                                    {
+                                        <label class="btn btn-secondary">
+                                            <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption1" value="true" checked> Yes
+                                        </label>
+                                        <label class="btn btn-secondary">
+                                            <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption2" value="false"> No
+                                        </label>
+                                    }
+                                    else
+                                    {
+                                        <label class="btn btn-secondary">
+                                            <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption1" value="true"> Yes
+                                        </label>
+                                        <label class="btn btn-secondary">
+                                            <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption2" value="false" checked> No
+                                        </label>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-10 mb-3" id="partialDescripton">
+                        <label for="partialPortDescription">Partial Port Description</label>
+                        <input asp-for="PortRequest.PartialPortDescription" type="text" value="@Model?.PortRequest?.PartialPortDescription"class="form-control" id="partialPortDescription" title="Describe what services the old carrier should leave alone. Contact the old carrier to confirm they will leave these services intact.">
                     </div>
                 </div>
                 <div class="row">

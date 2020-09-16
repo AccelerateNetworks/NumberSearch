@@ -509,11 +509,14 @@ namespace NumberSearch.Mvc.Controllers
 
                 if (AddPortingInfo != null)
                 {
+                    var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
                     var checkSet = cart.SetToSession(HttpContext.Session);
 
                     return View("Success", new OrderWithPorts
                     {
                         Order = order,
+                        PortRequest = portRequest,
                         PhoneNumbers = cart.PortedPhoneNumbers
                     });
                 }
