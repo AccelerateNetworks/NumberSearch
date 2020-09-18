@@ -337,8 +337,7 @@
                         @{
                             foreach (var number in Model?.PhoneNumbers)
                             {
-                                <input type="text" class="form-control" id="locationType" title="The numbers that will be ported to Accelerate Networks on this port order." value="@number.PortedDialedNumber" readonly>
-                                <br />
+                                <h4>@number.PortedDialedNumber</h4>
                             }
                         }
                     </div>

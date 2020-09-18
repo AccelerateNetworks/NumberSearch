@@ -153,13 +153,15 @@ namespace NumberSearch.Ops.Controllers
         {
             if (orderId != null && orderId.HasValue)
             {
-                var portRequest = await PortRequest.GetByOrderIdAsync(orderId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
-                var numbers = await PortedPhoneNumber.GetByOrderIdAsync(orderId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                var order = await Order.GetByIdAsync(orderId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                var numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
 
                 return View("PortRequestEdit", new PortRequestResult
                 {
-                    Request = portRequest,
-                    Numbers = numbers
+                    Order = order,
+                    PortRequest = portRequest,
+                    PhoneNumbers = numbers
                 });
             }
             else
@@ -177,7 +179,7 @@ namespace NumberSearch.Ops.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PortRequestUpdate(PortRequestResult result)
         {
-            var portRequest = result?.Request ?? null;
+            var portRequest = result?.PortRequest ?? null;
 
             if (portRequest is null)
             {
@@ -185,6 +187,7 @@ namespace NumberSearch.Ops.Controllers
             }
             else
             {
+                var order = await Order.GetByIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
                 var fromDb = await PortRequest.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
 
                 portRequest.PortRequestId = fromDb.PortRequestId;
@@ -196,8 +199,9 @@ namespace NumberSearch.Ops.Controllers
 
                 return View("PortRequestEdit", new PortRequestResult
                 {
-                    Request = portRequest,
-                    Numbers = numbers
+                    Order = order,
+                    PortRequest = portRequest,
+                    PhoneNumbers = numbers
                 });
             }
         }
