@@ -152,47 +152,59 @@ namespace NumberSearch.Ingest
         public static async Task<IEnumerable<ServiceProviderChanged>> VerifyServiceProvidersAsync(Guid teleToken, string bulkApiKey, string connectionString)
         {
             var owned = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
+            var tollFree = AreaCode.TollFree;
 
             var serviceProviderChanged = new List<ServiceProviderChanged>();
 
             foreach (var number in owned)
             {
-                var result = await LrnLookup.GetAsync(number.DialedNumber, teleToken).ConfigureAwait(false);
+                var npa = number.DialedNumber.Substring(0, 3);
+                var isTollFree = tollFree.Where(x => x.ToString() == npa).Any();
 
-                var provider = "TeleMessage";
-                var newSpid = result.data.spid;
-                var newSpidName = result.data.spid_name;
-
-                if (string.IsNullOrWhiteSpace(newSpid) || string.IsNullOrWhiteSpace(newSpidName))
+                if (isTollFree)
                 {
-                    var bulkResult = await LrnBulkCnam.GetAsync(number.DialedNumber, bulkApiKey).ConfigureAwait(false);
-
-                    provider = "BulkVS";
-                    newSpid = bulkResult?.spid ?? string.Empty;
-                    newSpidName = bulkResult?.lec ?? string.Empty;
+                    // Skip the LRNlookup if the current number is TollFree.
+                    Log.Information($"[OwnedNumbers] Skipping Toll Free number {number.DialedNumber}.");
                 }
-
-                var checkSPID = newSpid != number.SPID;
-                var checkSPIDName = newSpidName != number.SPIDName;
-
-                if (checkSPID || checkSPIDName)
+                else
                 {
-                    serviceProviderChanged.Add(new ServiceProviderChanged
+                    var result = await LrnLookup.GetAsync(number.DialedNumber, teleToken).ConfigureAwait(false);
+
+                    var provider = "TeleMessage";
+                    var newSpid = result.data.spid;
+                    var newSpidName = result.data.spid_name;
+
+                    if (string.IsNullOrWhiteSpace(newSpid) || string.IsNullOrWhiteSpace(newSpidName))
                     {
-                        CurrentSPID = newSpid,
-                        OldSPID = number.SPID,
-                        CurrentSPIDName = newSpidName,
-                        OldSPIDName = number.SPIDName,
-                        DialedNumber = number.DialedNumber
-                    });
+                        var bulkResult = await LrnBulkCnam.GetAsync(number.DialedNumber, bulkApiKey).ConfigureAwait(false);
 
-                    // Update the SPID to the current value.
-                    number.SPID = newSpid;
-                    number.SPIDName = newSpidName;
-                    var checkUpdate = await number.PutAsync(connectionString).ConfigureAwait(false);
+                        provider = "BulkVS";
+                        newSpid = bulkResult?.spid ?? string.Empty;
+                        newSpidName = bulkResult?.lec ?? string.Empty;
+                    }
+
+                    var checkSPID = newSpid != number.SPID;
+                    var checkSPIDName = newSpidName != number.SPIDName;
+
+                    if (checkSPID || checkSPIDName)
+                    {
+                        serviceProviderChanged.Add(new ServiceProviderChanged
+                        {
+                            CurrentSPID = newSpid,
+                            OldSPID = number.SPID,
+                            CurrentSPIDName = newSpidName,
+                            OldSPIDName = number.SPIDName,
+                            DialedNumber = number.DialedNumber
+                        });
+
+                        // Update the SPID to the current value.
+                        number.SPID = newSpid;
+                        number.SPIDName = newSpidName;
+                        var checkUpdate = await number.PutAsync(connectionString).ConfigureAwait(false);
+                    }
+
+                    Log.Information($"[OwnedNumbers] Found {newSpidName}, {newSpid} for {number.DialedNumber} from [{provider}].");
                 }
-
-                Log.Information($"[OwnedNumbers] Found {newSpidName}, {newSpid} for {number.DialedNumber} from [{provider}].");
             }
 
             Log.Information($"[OwnedNumbers] Found {serviceProviderChanged.Count} numbers whose Service Provider has changed since the last ingest.");
