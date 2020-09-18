@@ -101,7 +101,13 @@
                         productsTotal += localTotal;
                         <li class="list-group-item d-flex justify-content-between lh-condensed">
                             <div>
-                                <h6 class="my-0">@product.Name</h6>
+                                <h6 class="my-0">
+                                    @product.Name
+                                    @if (productOrder.Quantity > 1)
+                                    {
+                                        <small>x @productOrder.Quantity</small>
+                                    }
+                                </h6>
                                 <small class="text-muted">@product.Description</small>
                             </div>
                             <span class="text-muted">$@localTotal</span>
@@ -114,7 +120,13 @@
                         servicesTotal += localTotal;
                         <li class="list-group-item d-flex justify-content-between lh-condensed">
                             <div>
-                                <h6 class="my-0">@service.Name</h6>
+                                <h6 class="my-0">
+                                    @service.Name
+                                    @if (productOrder.Quantity > 1)
+                                    {
+                                        <small>x @productOrder.Quantity</small>
+                                    }
+                                </h6>
                                 <small class="text-muted">@service.Description</small>
                             </div>
                             <span class="text-muted">$@localTotal</span>
