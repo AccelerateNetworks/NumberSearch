@@ -62,6 +62,10 @@
         }
     });
 
+    $(function () {
+        $('[data-toggle="popover"]').popover()
+    })
+
 </script>
 
 <div class="container">
@@ -296,11 +300,9 @@
 
                 <div class="row">
                     <div class="col-md-2 mb-3">
-                        <label for="partialPort">Partial Port</label>
-                        @*<select asp-for="PortRequest.PartialPort" class="custom-select" id="partialPort" title="Designates if this is a business address or a residential address." required>
-                                <option value="true">Yes</option>
-                                <option value="false" selected>No</option>
-                            </select>*@
+                        <label for="partialPort">
+                            Partial Port <span data-container="body" data-toggle="popover" data-placement="top" data-content="Do you want to retain any services with your old carrier?">ℹ️</span>
+                        </label>
                         <div class="form-group">
                             <div class="btn-group btn-group-toggle" data-toggle="buttons">
                                 @{
@@ -328,7 +330,7 @@
                     </div>
                     <div class="col-md-10 mb-3" id="partialDescripton">
                         <label for="partialPortDescription">Partial Port Description</label>
-                        <input asp-for="PortRequest.PartialPortDescription" type="text" value="@Model?.PortRequest?.PartialPortDescription"class="form-control" id="partialPortDescription" title="Describe what services the old carrier should leave alone. Contact the old carrier to confirm they will leave these services intact.">
+                        <input asp-for="PortRequest.PartialPortDescription" type="text" value="@Model?.PortRequest?.PartialPortDescription" class="form-control" id="partialPortDescription" title="Describe what services the old carrier should leave alone. Contact the old carrier to confirm they will leave these services intact.">
                     </div>
                 </div>
                 <div class="row">
