@@ -185,141 +185,142 @@ namespace NumberSearch.Tests
             output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
         }
 
-        [Fact]
-        public async Task CreateBillingClientByIdAsync()
-        {
-            // Arrange
-            var testCreate = new ClientDatum
-            {
-                name = "IntegrationTest",
-                contacts = new ClientContact[] {
-                    new ClientContact {
-                        email = "integrationTest@example.com"
-                    }
-                }
-            };
+        // Diabled to prevent the deployment pipeline from churning the billing system on every commit.
+        //[Fact]
+        //public async Task CreateBillingClientByIdAsync()
+        //{
+        //    // Arrange
+        //    var testCreate = new ClientDatum
+        //    {
+        //        name = "IntegrationTest",
+        //        contacts = new ClientContact[] {
+        //            new ClientContact {
+        //                email = "integrationTest@example.com"
+        //            }
+        //        }
+        //    };
 
-            // Act
-            var result = await testCreate.PostAsync(invoiceNinjaToken);
+        //    // Act
+        //    var result = await testCreate.PostAsync(invoiceNinjaToken);
 
-            // Assert        
-            Assert.NotNull(result);
-            Assert.Equal(testCreate.name, result.name);
-            Assert.Equal(testCreate.contacts.FirstOrDefault().email, result.contacts.FirstOrDefault().email);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+        //    // Assert        
+        //    Assert.NotNull(result);
+        //    Assert.Equal(testCreate.name, result.name);
+        //    Assert.Equal(testCreate.contacts.FirstOrDefault().email, result.contacts.FirstOrDefault().email);
+        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
 
-            var checkDelete = await result.DeleteAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    var checkDelete = await result.DeleteAsync(invoiceNinjaToken).ConfigureAwait(false);
 
-            Assert.NotNull(checkDelete);
-            Assert.True(checkDelete.is_deleted);
-        }
+        //    Assert.NotNull(checkDelete);
+        //    Assert.True(checkDelete.is_deleted);
+        //}
 
-        [Fact]
-        public async Task CreateUpdateAndDeleteBillingInvoiceByClientByIdAsync()
-        {
+        //[Fact]
+        //public async Task CreateUpdateAndDeleteBillingInvoiceByClientByIdAsync()
+        //{
 
-            // Arrange
-            var testCreateClient = new ClientDatum
-            {
-                name = "IntegrationTest",
-                contacts = new ClientContact[] {
-                    new ClientContact {
-                        email = "integrationTest@example.com"
-                    }
-                }
-            };
+        //    // Arrange
+        //    var testCreateClient = new ClientDatum
+        //    {
+        //        name = "IntegrationTest",
+        //        contacts = new ClientContact[] {
+        //            new ClientContact {
+        //                email = "integrationTest@example.com"
+        //            }
+        //        }
+        //    };
 
-            // Act
-            var testClient = await testCreateClient.PostAsync(invoiceNinjaToken);
+        //    // Act
+        //    var testClient = await testCreateClient.PostAsync(invoiceNinjaToken);
 
-            // Assert        
-            Assert.NotNull(testClient);
-            Assert.Equal(testCreateClient.name, testClient.name);
-            Assert.Equal(testCreateClient.contacts.FirstOrDefault().email, testClient.contacts.FirstOrDefault().email);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(testClient));
+        //    // Assert        
+        //    Assert.NotNull(testClient);
+        //    Assert.Equal(testCreateClient.name, testClient.name);
+        //    Assert.Equal(testCreateClient.contacts.FirstOrDefault().email, testClient.contacts.FirstOrDefault().email);
+        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(testClient));
 
 
-            var testInvoice = new Invoice_Items[] {
-                new Invoice_Items {
-                    product_key = "IntegrationTest",
-                    notes = "IntegrationTest",
-                    cost = 10,
-                    qty = 1
-                }
-            };
+        //    var testInvoice = new Invoice_Items[] {
+        //        new Invoice_Items {
+        //            product_key = "IntegrationTest",
+        //            notes = "IntegrationTest",
+        //            cost = 10,
+        //            qty = 1
+        //        }
+        //    };
 
-            var testCreate = new InvoiceDatum
-            {
-                id = testClient.id,
-                invoice_items = testInvoice
-            };
+        //    var testCreate = new InvoiceDatum
+        //    {
+        //        id = testClient.id,
+        //        invoice_items = testInvoice
+        //    };
 
-            // Act
-            var result = await testCreate.PostAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    // Act
+        //    var result = await testCreate.PostAsync(invoiceNinjaToken).ConfigureAwait(false);
 
-            // Assert        
-            Assert.NotNull(result);
-            Assert.Equal(result.invoice_items.FirstOrDefault().notes, testCreate.invoice_items.FirstOrDefault().notes);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+        //    // Assert        
+        //    Assert.NotNull(result);
+        //    Assert.Equal(result.invoice_items.FirstOrDefault().notes, testCreate.invoice_items.FirstOrDefault().notes);
+        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
 
-            result.invoice_items.FirstOrDefault().notes = "Updated";
+        //    result.invoice_items.FirstOrDefault().notes = "Updated";
 
-            var updateTest = await result.PutAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    var updateTest = await result.PutAsync(invoiceNinjaToken).ConfigureAwait(false);
 
-            // Assert        
-            Assert.NotNull(updateTest);
-            Assert.Equal(result.invoice_items.FirstOrDefault().notes, updateTest.invoice_items.FirstOrDefault().notes);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(updateTest));
+        //    // Assert        
+        //    Assert.NotNull(updateTest);
+        //    Assert.Equal(result.invoice_items.FirstOrDefault().notes, updateTest.invoice_items.FirstOrDefault().notes);
+        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(updateTest));
 
-            var deleteTest = await updateTest.DeleteAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    var deleteTest = await updateTest.DeleteAsync(invoiceNinjaToken).ConfigureAwait(false);
 
-            Assert.NotNull(deleteTest);
-            Assert.True(deleteTest.is_deleted);
+        //    Assert.NotNull(deleteTest);
+        //    Assert.True(deleteTest.is_deleted);
 
-            var checkDelete = await testClient.DeleteAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    var checkDelete = await testClient.DeleteAsync(invoiceNinjaToken).ConfigureAwait(false);
 
-            Assert.NotNull(checkDelete);
-            Assert.True(checkDelete.is_deleted);
-        }
+        //    Assert.NotNull(checkDelete);
+        //    Assert.True(checkDelete.is_deleted);
+        //}
 
-        [Fact]
-        public async Task CreateAndUpdateBillingClientByIdAsync()
-        {
-            // Arrange
-            var testCreate = new ClientDatum
-            {
-                name = "IntegrationTest",
-                contacts = new ClientContact[] {
-                    new ClientContact {
-                        email = "integrationTest@example.com"
-                    }
-                }
-            };
+        //[Fact]
+        //public async Task CreateAndUpdateBillingClientByIdAsync()
+        //{
+        //    // Arrange
+        //    var testCreate = new ClientDatum
+        //    {
+        //        name = "IntegrationTest",
+        //        contacts = new ClientContact[] {
+        //            new ClientContact {
+        //                email = "integrationTest@example.com"
+        //            }
+        //        }
+        //    };
 
-            // Act
-            var result = await testCreate.PostAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    // Act
+        //    var result = await testCreate.PostAsync(invoiceNinjaToken).ConfigureAwait(false);
 
-            // Assert        
-            Assert.NotNull(result);
-            Assert.Equal(testCreate.name, result.name);
-            Assert.Equal(testCreate.contacts.FirstOrDefault().email, result.contacts.FirstOrDefault().email);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+        //    // Assert        
+        //    Assert.NotNull(result);
+        //    Assert.Equal(testCreate.name, result.name);
+        //    Assert.Equal(testCreate.contacts.FirstOrDefault().email, result.contacts.FirstOrDefault().email);
+        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
 
-            result.contacts.FirstOrDefault().first_name = "IntegrationTest";
+        //    result.contacts.FirstOrDefault().first_name = "IntegrationTest";
 
-            var updateResult = await result.PutAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    var updateResult = await result.PutAsync(invoiceNinjaToken).ConfigureAwait(false);
 
-            Assert.NotNull(result);
-            Assert.Equal(updateResult.name, result.name);
-            Assert.Equal(updateResult.id, result.id);
-            Assert.Equal(updateResult.contacts.FirstOrDefault().email, result.contacts.FirstOrDefault().email);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+        //    Assert.NotNull(result);
+        //    Assert.Equal(updateResult.name, result.name);
+        //    Assert.Equal(updateResult.id, result.id);
+        //    Assert.Equal(updateResult.contacts.FirstOrDefault().email, result.contacts.FirstOrDefault().email);
+        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
 
-            var checkDelete = await updateResult.DeleteAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    var checkDelete = await updateResult.DeleteAsync(invoiceNinjaToken).ConfigureAwait(false);
 
-            Assert.NotNull(checkDelete);
-            Assert.True(checkDelete.is_deleted);
-        }
+        //    Assert.NotNull(checkDelete);
+        //    Assert.True(checkDelete.is_deleted);
+        //}
 
         [Fact]
         public async Task GetBillingClientByClientIdAsync()
