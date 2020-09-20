@@ -270,6 +270,7 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddPortingInformationAsync(PortRequest portRequest)
         {
             // http://www.mimekit.net/docs/html/Creating-Messages.htm

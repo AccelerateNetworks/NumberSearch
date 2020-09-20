@@ -535,7 +535,6 @@ namespace NumberSearch.Mvc.Controllers
         [Route("Cart/Submit")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5359:Do Not Disable Certificate Validation", Justification = "<Pending>")]
         public async Task<IActionResult> SubmitAsync(Order order)
         {
             if (order != null && !string.IsNullOrWhiteSpace(order.Email))

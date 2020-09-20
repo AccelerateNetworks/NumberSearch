@@ -159,6 +159,7 @@
         <div class="col-md-8 order-md-1 pb-5">
             <h4 class="mb-3">Billing Information</h4>
             <form asp-controller="Cart" asp-action="Submit" method="post" class="needs-validation">
+                @Html.AntiForgeryToken()
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="firstName">First name</label>
