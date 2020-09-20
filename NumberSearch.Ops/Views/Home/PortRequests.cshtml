@@ -42,7 +42,7 @@
                 {
                     <tr>
                         <td scope="row" data-order="@port.DateSubmitted.Ticks">
-                            <a href="https://acceleratenetworks.com/cart/order/@port.OrderId" class="btn btn-primary">
+                            <a href="https://acceleratenetworks.com/cart/order/@port.OrderId" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
                                 Order
                             </a>
                             <h4 class="d-flex justify-content-between align-items-center mt-3">
@@ -53,7 +53,7 @@
                             @{
                                 if (!string.IsNullOrWhiteSpace(port?.TeliId))
                                 {
-                                    <a href="https://control.teli.net/lnp/view" class="btn btn-info">
+                                    <a href="https://control.teli.net/lnp/view" target="_blank" rel="noopener noreferrer" class="btn btn-info">
                                         Teli Port Request @port?.TeliId
                                     </a>
                                 }
