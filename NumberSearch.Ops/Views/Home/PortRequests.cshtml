@@ -50,6 +50,14 @@
                                     @port.DateSubmitted
                                 </span>
                             </h4>
+                            @{
+                                if (!string.IsNullOrWhiteSpace(port?.TeliId))
+                                {
+                                    <a href="https://control.teli.net/lnp/view" class="btn btn-info">
+                                        Teli Port Request @port?.TeliId
+                                    </a>
+                                }
+                            }
                         </td>
                         <td scope="col">
                             <strong>Business Contact</strong>

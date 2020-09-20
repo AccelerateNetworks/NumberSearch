@@ -6,13 +6,24 @@
 <h1 class="display-4">Port Request</h1>
 <br />
 <div class="pb-3">
-    <a class="btn btn-primary" href="/Home/PortRequests">Return to List</a>
-    <a href="https://acceleratenetworks.com/cart/order/@Model.PortRequest.OrderId" class="btn btn-outline-primary">
+    <a class="btn btn-outline-primary" href="/Home/PortRequests">Return to List</a>
+    <a href="https://acceleratenetworks.com/cart/order/@Model.PortRequest.OrderId" class="btn btn-primary">
         Order
     </a>
+    <a href="https://control.teli.net/lnp/view" class="btn btn-info">
+        Teli Port Request @Model?.PortRequest?.TeliId
+    </a>
 </div>
-<form href="Home/OwnedNumbers/@Model.PortRequest.OrderId" method="post" class="needs-validation mb-3">
+<form action="/Home/PortRequests/@Model.PortRequest.OrderId" method="post" class="needs-validation mb-3">
+    @Html.AntiForgeryToken()
     <input asp-for="PortRequest.OrderId" type="text" value="@Model?.Order?.OrderId" hidden />
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label for="teliId">Teli Port Request Id</label>
+            <input asp-for="PortRequest.TeliId" type="text" value="@Model?.PortRequest?.TeliId" class="form-control" id="teliId" placeholder="4963"
+                   title="The Id for this Port Request in Teli's system.">
+        </div>
+    </div>
     <div class="row">
         <div class="col-md-4 mb-3">
             <label for="billingPhone">Current Billing Phone Number</label>
@@ -281,7 +292,21 @@
         </div>
     </div>
     <hr class="mb-4">
-    <button type="submit" class="btn btn-danger">Update</button>
+    <button type="submit" class="btn btn-warning text-light">Update</button>
     <br />
+</form>
+<form action="/Home/PortRequestsTeli/@Model.PortRequest.OrderId" method="post">
+    @Html.AntiForgeryToken()
+    <input name="OrderId" value="@Model.Order.OrderId" hidden />
+    @{
+        if (string.IsNullOrWhiteSpace(Model?.PortRequest?.TeliId))
+        {
+            <button type="submit" class="btn btn-danger">Submit</button>
+        }
+        else
+        {
+            <button type="submit" class="btn btn-danger" disabled>Submit</button>
+        }
+    }
 </form>
 <br />

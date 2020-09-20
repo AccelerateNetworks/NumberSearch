@@ -6,9 +6,10 @@
 <h1 class="display-4">Owned Phone Number</h1>
 <br />
 <div class="pb-3">
-<a class="btn btn-primary" href="/Home/OwnedNumbers">Return to List</a>
+    <a class="btn btn-primary" href="/Home/OwnedNumbers">Return to List</a>
 </div>
-<form href="Home/OwnedNumbers/@Model.DialedNumber" method="post" class="needs-validation">
+<form action="/Home/OwnedNumbers/@Model.DialedNumber" method="post" class="needs-validation">
+    @Html.AntiForgeryToken()
     <div class="row">
         <div class="col-md-6 mb-3">
             <label for="firstName">Dialed Number</label>

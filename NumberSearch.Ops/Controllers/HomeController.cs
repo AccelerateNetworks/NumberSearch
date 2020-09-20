@@ -13,6 +13,8 @@ using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.TeleMesssage;
 using NumberSearch.Ops.Models;
 
+using Serilog;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -196,6 +198,42 @@ namespace NumberSearch.Ops.Controllers
 
                 portRequest = await PortRequest.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
                 var numbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
+
+                return View("PortRequestEdit", new PortRequestResult
+                {
+                    Order = order,
+                    PortRequest = portRequest,
+                    PhoneNumbers = numbers
+                });
+            }
+        }
+
+        [Authorize]
+        [Route("/Home/PortRequestsTeli/{orderId}")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PortRequestSendToTeli(string OrderId)
+        {
+            if (string.IsNullOrWhiteSpace(OrderId))
+            {
+                return Redirect("/Home/PortRequests");
+            }
+            else
+            {
+                var order = await Order.GetByIdAsync(Guid.Parse(OrderId), _postgresql).ConfigureAwait(false);
+                var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                var numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                try
+                {
+                    var teliResponse = await LnpCreate.GetAsync(portRequest, numbers, _teleToken).ConfigureAwait(false);
+                    portRequest.TeliId = teliResponse.data.id;
+                    var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
+                }
+                catch
+                {
+                    Log.Fatal($"[PortRequest] Failed to submit port request to Teli.");
+                }
 
                 return View("PortRequestEdit", new PortRequestResult
                 {
