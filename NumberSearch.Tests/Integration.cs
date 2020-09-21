@@ -1257,7 +1257,8 @@ namespace NumberSearch.Tests
                 OwnedBy = "IntegrationTest",
                 Notes = "CoolNote",
                 SPID = "0000",
-                SPIDName = "IntegrationTest"
+                SPIDName = "IntegrationTest",
+                LIDBCNAM = "Test Test"
             };
 
             // Act

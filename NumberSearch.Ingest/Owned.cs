@@ -81,13 +81,25 @@ namespace NumberSearch.Ingest
                         Notes = item.note
                     };
 
-                    list.Add(number);
-
                     if (number.IngestedFrom == "TeleMessage")
                     {
                         // Enabled CNAM on Teli numbers every time they are ingested.
-                        var checkCnam = await EnableCNAM(number, token).ConfigureAwait(false);
+                        try
+                        {
+                            var cnamEnable = await UserDidsCnamEnable.GetAsync(number.DialedNumber, token).ConfigureAwait(false);
+                            var result = await UserDidsGet.GetAsync(number.DialedNumber, token).ConfigureAwait(false);
+                            var lidb = await UserDidsLibdGet.GetAsync(result?.data?.id, token).ConfigureAwait(false);
+                            number.LIDBCNAM = lidb?.data ?? string.Empty;
+                            Log.Information($"[OwnedNumber] [TeleMessage] LIDB CNAM {lidb?.data} for {number.DialedNumber} or did_id {result?.data?.id} is enabled? {cnamEnable.CnamEnabled()}.");
+                        }
+                        catch
+                        {
+                            Log.Fatal($"[OwnedNumber] [TeleMessage] Failed to enable CNAM for {number.DialedNumber}.");
+                        }
                     }
+
+                    list.Add(number);
+
                 }
             }
 
@@ -243,25 +255,6 @@ namespace NumberSearch.Ingest
             };
 
             return await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);
-        }
-
-        public static async Task<bool> EnableCNAM(OwnedPhoneNumber number, Guid token)
-        {
-            try
-            {
-                var result = await UserDidsCnamEnable.GetAsync(number.DialedNumber, token).ConfigureAwait(false);
-                if (result.CnamEnabled())
-                {
-                    Log.Information($"[EnableCNAM] Enabled for {number.DialedNumber}.");
-                    return true;
-                }
-            }
-            catch
-            {
-                Log.Fatal($"[EnableCNAM] Failed to enable for {number.DialedNumber}.");
-            }
-
-            return false;
         }
     }
 }

@@ -20,7 +20,7 @@ namespace NumberSearch.DataAccess
         public string Notes { get; set; }
         public string SPID { get; set; }
         public string SPIDName { get; set; }
-
+        public string LIDBCNAM { get; set; }
 
         /// <summary>
         /// Get every owned phone number.
@@ -32,7 +32,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<OwnedPhoneNumber>("SELECT \"OwnedPhoneNumberId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"Active\", \"BillingClientId\", \"OwnedBy\", \"Notes\", \"SPID\", \"SPIDName\" FROM public.\"OwnedPhoneNumbers\"")
+                .QueryAsync<OwnedPhoneNumber>("SELECT \"OwnedPhoneNumberId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"Active\", \"BillingClientId\", \"OwnedBy\", \"Notes\", \"SPID\", \"SPIDName\", \"LIDBCNAM\" FROM public.\"OwnedPhoneNumbers\"")
                 .ConfigureAwait(false);
 
             return result;
@@ -48,7 +48,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryFirstOrDefaultAsync<OwnedPhoneNumber>("SELECT \"OwnedPhoneNumberId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"Active\", \"BillingClientId\", \"OwnedBy\", \"Notes\", \"SPID\", \"SPIDName\" FROM public.\"OwnedPhoneNumbers\" WHERE \"DialedNumber\" = @dialedNumber", new { dialedNumber })
+                .QueryFirstOrDefaultAsync<OwnedPhoneNumber>("SELECT \"OwnedPhoneNumberId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"Active\", \"BillingClientId\", \"OwnedBy\", \"Notes\", \"SPID\", \"SPIDName\", \"LIDBCNAM\" FROM public.\"OwnedPhoneNumbers\" WHERE \"DialedNumber\" = @dialedNumber", new { dialedNumber })
                 .ConfigureAwait(false);
 
             return result;
@@ -67,8 +67,8 @@ namespace NumberSearch.DataAccess
             DateIngested = DateTime.Now;
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"OwnedPhoneNumbers\" (\"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"Active\", \"BillingClientId\", \"OwnedBy\", \"Notes\", \"SPID\", \"SPIDName\") VALUES (@DialedNumber, @IngestedFrom, @DateIngested, @Active, @BillingClientId, @OwnedBy, @Notes, @SPID, @SPIDName)",
-                new { DialedNumber, IngestedFrom, DateIngested, Active, BillingClientId, OwnedBy, Notes, SPID, SPIDName })
+                .ExecuteAsync("INSERT INTO public.\"OwnedPhoneNumbers\" (\"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"Active\", \"BillingClientId\", \"OwnedBy\", \"Notes\", \"SPID\", \"SPIDName\", \"LIDBCNAM\") VALUES (@DialedNumber, @IngestedFrom, @DateIngested, @Active, @BillingClientId, @OwnedBy, @Notes, @SPID, @SPIDName, @LIDBCNAM)",
+                new { DialedNumber, IngestedFrom, DateIngested, Active, BillingClientId, OwnedBy, Notes, SPID, SPIDName, LIDBCNAM })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -94,8 +94,8 @@ namespace NumberSearch.DataAccess
             DateIngested = DateTime.Now;
 
             var result = await connection
-                .ExecuteAsync("UPDATE public.\"OwnedPhoneNumbers\" SET \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"Active\" = @Active, \"BillingClientId\" = @BillingClientId, \"OwnedBy\" = @OwnedBy, \"Notes\" = @Notes, \"SPID\" = @SPID, \"SPIDName\" = @SPIDName WHERE \"OwnedPhoneNumberId\" = @OwnedPhoneNumberId",
-                new { IngestedFrom, DateIngested, Active, BillingClientId, OwnedBy, Notes, SPID, SPIDName, OwnedPhoneNumberId })
+                .ExecuteAsync("UPDATE public.\"OwnedPhoneNumbers\" SET \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"Active\" = @Active, \"BillingClientId\" = @BillingClientId, \"OwnedBy\" = @OwnedBy, \"Notes\" = @Notes, \"SPID\" = @SPID, \"SPIDName\" = @SPIDName, \"LIDBCNAM\" = @LIDBCNAM WHERE \"OwnedPhoneNumberId\" = @OwnedPhoneNumberId",
+                new { IngestedFrom, DateIngested, Active, BillingClientId, OwnedBy, Notes, SPID, SPIDName, LIDBCNAM, OwnedPhoneNumberId })
                 .ConfigureAwait(false);
 
             if (result == 1)
