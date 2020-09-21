@@ -72,14 +72,22 @@ namespace NumberSearch.Ingest
 
                 if (checkNpa && checkNxx && checkXxxx)
                 {
-                    list.Add(new OwnedPhoneNumber
+                    var number = new OwnedPhoneNumber
                     {
                         DialedNumber = item.number,
                         IngestedFrom = "TeleMessage",
                         Active = true,
                         DateIngested = DateTime.Now,
                         Notes = item.note
-                    });
+                    };
+
+                    list.Add(number);
+
+                    if (number.IngestedFrom == "TeleMessage")
+                    {
+                        // Enabled CNAM on Teli numbers every time they are ingested.
+                        var checkCnam = await EnableCNAM(number, token).ConfigureAwait(false);
+                    }
                 }
             }
 
@@ -235,6 +243,25 @@ namespace NumberSearch.Ingest
             };
 
             return await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);
+        }
+
+        public static async Task<bool> EnableCNAM(OwnedPhoneNumber number, Guid token)
+        {
+            try
+            {
+                var result = await UserDidsCnamEnable.GetAsync(number.DialedNumber, token).ConfigureAwait(false);
+                if (result.CnamEnabled())
+                {
+                    Log.Information($"[EnableCNAM] Enabled for {number.DialedNumber}.");
+                    return true;
+                }
+            }
+            catch
+            {
+                Log.Fatal($"[EnableCNAM] Failed to enable for {number.DialedNumber}.");
+            }
+
+            return false;
         }
     }
 }

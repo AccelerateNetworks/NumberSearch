@@ -389,6 +389,22 @@ namespace NumberSearch.Tests
             output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
         }
 
+        [Fact]
+        public async Task TeliEnableCNAMAsync()
+        {
+            // Arrange
+
+            // Act
+            var results = await UserDidsCnamEnable.GetAsync("9292233014", token);
+
+            // Assert
+            Assert.NotNull(results);
+            Assert.False(string.IsNullOrWhiteSpace(results.status));
+            Assert.True(results.code == 200);
+            Assert.True(results.CnamEnabled());
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+        }
+
         // Teli doesn't have a way to delete these so only want to test it when required.
         //[Fact]
         //public async Task TeliPortRequestAsync()
