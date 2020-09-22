@@ -94,8 +94,8 @@
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="pin">Account PIN or Password</label>
-                        <input asp-for="PortRequest.ProviderPIN" type="text" value="@Model?.PortRequest?.ProviderPIN" class="form-control" id="pin" placeholder="1234" title="The PIN or password for the existing account." required>
+                        <label for="pin">Account PIN or Password <span class="text-muted">(Optional)</span></label>
+                        <input asp-for="PortRequest.ProviderPIN" type="text" value="@Model?.PortRequest?.ProviderPIN" class="form-control" id="pin" placeholder="1234" title="The PIN or password for the existing account.">
                         <div class="invalid-feedback">
                             Valid PIN is required.
                         </div>
