@@ -63,5 +63,18 @@ steps:
 
 - task: PublishPipelineArtifact@1
   inputs:
+    artifactName: 'Mvc'
     targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Mvc/bin/Release/netcoreapp3.1/'
+    publishLocation: 'pipeline'
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    artifactName: 'Ingest'
+    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ingest/bin/Release/netcoreapp3.1/'
+    publishLocation: 'pipeline'
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    artifactName: 'Ops'
+    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ops/bin/Release/netcoreapp3.1/'
     publishLocation: 'pipeline'
