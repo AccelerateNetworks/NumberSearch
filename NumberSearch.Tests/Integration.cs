@@ -27,6 +27,8 @@ namespace NumberSearch.Tests
         private readonly Credentials pComNetCredentials;
         private readonly string bulkVSKey;
         private readonly string bulkVSSecret;
+        private readonly string bulkVSUsername;
+        private readonly string bulkVSPassword;
         private readonly string postgresql;
         private readonly string peerlessAPIKey;
         private readonly string invoiceNinjaToken;
@@ -48,6 +50,8 @@ namespace NumberSearch.Tests
 
             bulkVSKey = config.GetConnectionString("BulkVSAPIKEY");
             bulkVSSecret = config.GetConnectionString("BulkVSAPISecret");
+            bulkVSUsername = config.GetConnectionString("BulkVSUsername");
+            bulkVSPassword = config.GetConnectionString("BulkVSPassword");
             token = Guid.Parse(config.GetConnectionString("TeleAPI"));
             postgresql = config.GetConnectionString("PostgresqlProd");
             peerlessAPIKey = config.GetConnectionString("PeerlessAPIKey");
@@ -623,6 +627,26 @@ namespace NumberSearch.Tests
                 Assert.False(string.IsNullOrWhiteSpace(result.City));
                 Assert.False(string.IsNullOrWhiteSpace(result.State));
                 Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+                count++;
+            }
+            output.WriteLine($"{count} Results Reviewed");
+        }
+
+        [Fact]
+        public async Task BulkVSRESTNpaNxxGetAsyncTestAsync()
+        {
+            // Arrange
+            var npa = 206;
+
+            // Act
+            var results = await DataAccess.BulkVS.OrderTn.GetAsync(npa, bulkVSUsername, bulkVSPassword);
+
+            // Assert
+            Assert.NotNull(results);
+            int count = 0;
+            foreach (var result in results.ToArray())
+            {
+                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
                 count++;
             }
             output.WriteLine($"{count} Results Reviewed");
