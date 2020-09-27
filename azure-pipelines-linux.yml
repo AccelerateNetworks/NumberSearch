@@ -22,6 +22,8 @@ variables:
   ConnectionStrings.ChannelGroup: $(ChannelGroup)
   ConnectionStrings.CallFlow: $(CallFlow)
   ConnectionStrings.BulkVSAPIKEY: $(BulkVSAPIKEY)
+  ConnectionStrings.BulkVSUsername: $(BulkVSUsername)
+  ConnectionStrings.BulkVSPassword: $(BulkVSPassword)
   ConnectionStrings.InvoiceNinjaToken: $(InvoiceNinjaToken)
   ApplicationInsights.InstrumentationKey: $(InstrumentationKey)
 
@@ -38,6 +40,18 @@ steps:
 - task: FileTransform@2
   inputs:
     folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Mvc/bin/Release/netcoreapp3.1/'
+    jsonTargetFiles: 'appsettings.json'
+    xmlTransformationRules: '' # disabled
+
+- task: FileTransform@2
+  inputs:
+    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ingest/bin/Release/netcoreapp3.1/'
+    jsonTargetFiles: 'appsettings.json'
+    xmlTransformationRules: '' # disabled
+
+- task: FileTransform@2
+  inputs:
+    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ops/bin/Release/netcoreapp3.1/'
     jsonTargetFiles: 'appsettings.json'
     xmlTransformationRules: '' # disabled
 
