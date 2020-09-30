@@ -1,0 +1,48 @@
+﻿@model NumberSearch.DataAccess.InvoiceNinja.TaxRate
+@{
+    ViewData["Title"] = "Tax Rates";
+}
+<br />
+<h1 class="display-4">Tax Rates</h1>
+<br />
+<div class="table-responsive">
+    <table class="table table-striped table-borderless table-hover" id="table">
+        <thead>
+            <tr>
+                <th scope="col">
+                    Invoice Ninja Id
+                </th>
+                <th scope="col">
+                    Name
+                </th>
+                <th scope="col">
+                    Rate
+                </th>
+                <th scope="col">
+                    Last Updated
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                foreach (var rate in Model.data)
+                {
+                    <tr>
+                        <td>
+                            @rate.id
+                        </td>
+                        <td>
+                            @rate.name
+                        </td>
+                        <td>
+                            @rate.rate
+                        </td>
+                        <td data-order="@rate.updated_at">
+                            @rate.updated_at
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

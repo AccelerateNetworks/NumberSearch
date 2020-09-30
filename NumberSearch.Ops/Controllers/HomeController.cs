@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.TeleMesssage;
 using NumberSearch.Ops.Models;
 
@@ -35,6 +36,7 @@ namespace NumberSearch.Ops.Controllers
         private readonly Guid _teleToken;
         private readonly string _bulkVSAPIKey;
         private readonly string _bulkVSAPISecret;
+        private readonly string _invoiceNinjaToken;
 
         public HomeController(ILogger<HomeController> logger, IConfiguration config)
         {
@@ -46,6 +48,7 @@ namespace NumberSearch.Ops.Controllers
             _teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
             _bulkVSAPIKey = config.GetConnectionString("BulkVSAPIKEY");
             _bulkVSAPISecret = config.GetConnectionString("BulkVSAPISecret");
+            _invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
         }
 
         [Authorize]
@@ -172,6 +175,29 @@ namespace NumberSearch.Ops.Controllers
                 var portRequests = await PortRequest.GetAllAsync(_postgresql).ConfigureAwait(false);
 
                 return View("PortRequests", portRequests.OrderByDescending(x => x.DateSubmitted));
+            }
+        }
+
+        [Authorize]
+        [Route("/Home/TaxRates")]
+        [Route("/Home/TaxRates/{taxRateId}")]
+        public async Task<IActionResult> TaxRates(int? taxRateId)
+        {
+            if (taxRateId != null && taxRateId > 0)
+            {
+                var result = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
+
+                return View("TaxRates", new TaxRate
+                {
+                    data = result.data.Where(x => x.id == taxRateId).ToArray()
+                });
+            }
+            else
+            {
+                // Show all orders
+                var result = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
+
+                return View("TaxRates", result);
             }
         }
 
