@@ -179,6 +179,7 @@ namespace NumberSearch.Ops.Controllers
         }
 
         [Authorize]
+        [HttpGet]
         [Route("/Home/TaxRates")]
         [Route("/Home/TaxRates/{taxRateId}")]
         public async Task<IActionResult> TaxRates(int? taxRateId)
