@@ -2,8 +2,6 @@
 
 using FirstCom;
 
-using Flurl.Util;
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 

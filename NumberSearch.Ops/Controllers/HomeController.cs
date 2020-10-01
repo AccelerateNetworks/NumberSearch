@@ -187,9 +187,12 @@ namespace NumberSearch.Ops.Controllers
             {
                 var result = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
 
-                return View("TaxRates", new TaxRate
+                return View("TaxRates", new TaxRateResult
                 {
-                    data = result.data.Where(x => x.id == taxRateId).ToArray()
+                    Rates = new TaxRate
+                    {
+                        data = result.data.Where(x => x.id == taxRateId).ToArray()
+                    }
                 });
             }
             else
@@ -197,61 +200,88 @@ namespace NumberSearch.Ops.Controllers
                 // Show all orders
                 var result = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
 
-                return View("TaxRates", result);
+                return View("TaxRates", new TaxRateResult
+                {
+                    Rates = result
+                }
+                );
             }
         }
 
-        //[Authorize]
-        //[Route("/Home/TaxRates/{taxRateId}")]
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> TaxRatesUpdate(int? taxRateId)
-        //{
-        //    if (taxRateId is null)
-        //    {
-        //        return Redirect("/Home/TaxRates");
-        //    }
-        //    else
-        //    {
-        //        var result = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
-        //        TaxRate = 
+        [Authorize]
+        [Route("/Home/TaxRates")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> TaxRatesCreate(TaxRateResult location)
+        {
+            if (location is null || string.IsNullOrWhiteSpace(location.Zip))
+            {
+                return Redirect("/Home/TaxRates");
+            }
+            else
+            {
+                try
+                {
+                    var specificTaxRate = await SalesTax.GetAsync(location.Address, location.City, location.Zip).ConfigureAwait(false);
 
-        //        if (specificTaxRate is null)
-        //        {
-        //            specificTaxRate = new SalesTax()
-        //            {
-        //                rate1 = 0.0M,
-        //                rate = new SalesTax.TaxRate
-        //                {
-        //                    name = "NotFound"
-        //                },
-        //                loccode = 0000
-        //            };
-        //        }
+                    var rateName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(specificTaxRate.rate.name.ToLowerInvariant());
+                    var taxRateName = $"{rateName}, WA - {specificTaxRate.loccode}";
+                    var taxRateValue = specificTaxRate.rate1 * 100M;
 
-        //        var rateName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(specificTaxRate.rate.name.ToLowerInvariant());
-        //        var taxRateName = $"{rateName}, WA - {specificTaxRate.loccode}";
-        //        var taxRateValue = specificTaxRate.rate1 * 100M;
+                    var existingTaxRates = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                    var billingTaxRate = existingTaxRates.data.Where(x => x.name == taxRateName).FirstOrDefault();
+                    if (billingTaxRate is null)
+                    {
+                        billingTaxRate = new TaxRateDatum
+                        {
+                            name = taxRateName,
+                            rate = taxRateValue
+                        };
 
-        //        var existingTaxRates = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
-        //        var billingTaxRate = existingTaxRates.data.Where(x => x.name == taxRateName).FirstOrDefault();
-        //        if (billingTaxRate is null)
-        //        {
-        //            billingTaxRate = new TaxRateDatum
-        //            {
-        //                name = taxRateName,
-        //                rate = taxRateValue
-        //            };
+                        var checkCreate = await billingTaxRate.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
 
-        //            var checkCreate = await billingTaxRate.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-        //        }
+                        var result = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
 
-        //        return View("TaxRates", new TaxRate
-        //        {
-        //            data = result.data.Where(x => x.id == taxRateId).ToArray()
-        //        });
-        //    }
-        //}
+                        return View("TaxRates", new TaxRateResult
+                        {
+                            Address = location.Address ?? string.Empty,
+                            City = location.City ?? string.Empty,
+                            Zip = location.Zip ?? string.Empty,
+                            Rates = result,
+                            Message = $"{taxRateName} has been created."
+                        });
+                    }
+                    else
+                    {
+                        var unchanged = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
+
+                        return View("TaxRates", new TaxRateResult
+                        {
+                            Address = location.Address ?? string.Empty,
+                            City = location.City ?? string.Empty,
+                            Zip = location.Zip ?? string.Empty,
+                            Rates = unchanged,
+                            Message = $"{taxRateName} already exists."
+                        });
+                    }
+                }
+                catch
+                {
+                    Log.Fatal($"[Checkout] Failed to get the Sale Tax rate for {location.Address}, {location.City}, {location.Zip}.");
+
+                    var result = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
+
+                    return View("TaxRates", new TaxRateResult
+                    {
+                        Address = location.Address ?? string.Empty,
+                        City = location.City ?? string.Empty,
+                        Zip = location.Zip ?? string.Empty,
+                        Rates = result,
+                        Message = $"Failed to create a Tax Rate for {location.Address}, {location.City}, {location.Zip}."
+                    });
+                }
+            }
+        }
 
         [Authorize]
         [Route("/Home/PortRequests/{orderId}")]
