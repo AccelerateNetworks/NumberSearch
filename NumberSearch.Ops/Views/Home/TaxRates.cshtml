@@ -5,6 +5,16 @@
 <br />
 <h1 class="display-4">Tax Rates</h1>
 <br />
+<div class="pb-3">
+    <ul class="nav nav-pills nav-fill nav-justified">
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Home" asp-action="Orders">Orders</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" asp-controller="Home" asp-action="TaxRates">Tax Rates</a>
+        </li>
+    </ul>
+</div>
 <div class="table-responsive">
     <table class="table table-striped table-borderless table-hover" id="table">
         <thead>
@@ -45,4 +55,31 @@
             }
         </tbody>
     </table>
+</div>
+<br />
+<h1 class="display-4">Tax Rate by Address</h1>
+<br />
+<div class="mb-3">
+    <label for="address">Address <span class="text-muted">(Optional)</span></label>
+    <input type="text" class="form-control" id="address" placeholder="1234 Main St">
+    <div class="invalid-feedback">
+        Please enter your shipping address.
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-5 mb-3">
+        <label for="country">City <span class="text-muted">(Optional)</span></label>
+        <input type="text" class="form-control" id="city" placeholder="Seattle">
+        <div class="invalid-feedback">
+            Please enter your shipping city.
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <label for="zip">Zip</label>
+        <input type="text" class="form-control" id="zip" placeholder="98199" required>
+        <div class="invalid-feedback">
+            Zip code required.
+        </div>
+    </div>
 </div>

@@ -201,6 +201,58 @@ namespace NumberSearch.Ops.Controllers
             }
         }
 
+        //[Authorize]
+        //[Route("/Home/TaxRates/{taxRateId}")]
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> TaxRatesUpdate(int? taxRateId)
+        //{
+        //    if (taxRateId is null)
+        //    {
+        //        return Redirect("/Home/TaxRates");
+        //    }
+        //    else
+        //    {
+        //        var result = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
+        //        TaxRate = 
+
+        //        if (specificTaxRate is null)
+        //        {
+        //            specificTaxRate = new SalesTax()
+        //            {
+        //                rate1 = 0.0M,
+        //                rate = new SalesTax.TaxRate
+        //                {
+        //                    name = "NotFound"
+        //                },
+        //                loccode = 0000
+        //            };
+        //        }
+
+        //        var rateName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(specificTaxRate.rate.name.ToLowerInvariant());
+        //        var taxRateName = $"{rateName}, WA - {specificTaxRate.loccode}";
+        //        var taxRateValue = specificTaxRate.rate1 * 100M;
+
+        //        var existingTaxRates = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
+        //        var billingTaxRate = existingTaxRates.data.Where(x => x.name == taxRateName).FirstOrDefault();
+        //        if (billingTaxRate is null)
+        //        {
+        //            billingTaxRate = new TaxRateDatum
+        //            {
+        //                name = taxRateName,
+        //                rate = taxRateValue
+        //            };
+
+        //            var checkCreate = await billingTaxRate.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+        //        }
+
+        //        return View("TaxRates", new TaxRate
+        //        {
+        //            data = result.data.Where(x => x.id == taxRateId).ToArray()
+        //        });
+        //    }
+        //}
+
         [Authorize]
         [Route("/Home/PortRequests/{orderId}")]
         [HttpPost]
