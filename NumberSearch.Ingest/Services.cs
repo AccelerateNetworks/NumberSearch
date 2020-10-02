@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Ingest
 {
-    public class Ingest
+    public class Services
     {
         /// <summary>
         /// Assign a NumberType to a number based on the number of repeating digits in the number.
@@ -23,6 +23,9 @@ namespace NumberSearch.Ingest
             var Executive = "Executive";
             var Premium = "Premium";
             var Standard = "Standard";
+
+            // Bail early if there's no data.
+            if (numbers is null || !numbers.Any()) { return numbers; }
 
             // Assign a Type based on number of repeating digits.
             foreach (var number in numbers)
@@ -77,6 +80,11 @@ namespace NumberSearch.Ingest
                 }
 
                 if (count == 9)
+                {
+                    number.NumberType = Executive;
+                }
+
+                if (count == 10)
                 {
                     number.NumberType = Executive;
                 }

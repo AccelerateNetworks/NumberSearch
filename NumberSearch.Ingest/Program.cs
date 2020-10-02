@@ -589,116 +589,116 @@ namespace NumberSearch.Ingest
                 }
 
                 // Ingest all the phone numbers we own.
-                if (ownedNumbersCycle != null && (ownedNumbersCycle.Enabled || ownedNumbersCycle.RunNow))
-                {
-                    var lastRun = await IngestStatistics.GetLastIngestAsync("OwnedNumbers", postgresSQL).ConfigureAwait(false);
+                //if (ownedNumbersCycle != null && (ownedNumbersCycle.Enabled || ownedNumbersCycle.RunNow))
+                //{
+                //    var lastRun = await IngestStatistics.GetLastIngestAsync("OwnedNumbers", postgresSQL).ConfigureAwait(false);
 
-                    if (lastRun != null && (lastRun.StartDate < (start - ownedNumbersCycle.CycleTime) || ownedNumbersCycle.RunNow))
-                    {
-                        Log.Debug($"Last Run of {lastRun.IngestedFrom} started at {lastRun.StartDate} and ended at {lastRun.EndDate}");
+                //    if (lastRun != null && (lastRun.StartDate < (start - ownedNumbersCycle.CycleTime) || ownedNumbersCycle.RunNow))
+                //    {
+                //        Log.Debug($"Last Run of {lastRun.IngestedFrom} started at {lastRun.StartDate} and ended at {lastRun.EndDate}");
 
-                        Log.Information($"[OwnedNumbers] Cycle time is {ownedNumbersCycle?.CycleTime}");
-                        Log.Information($"[OwnedNumbers] Enabled is {ownedNumbersCycle?.Enabled}");
+                //        Log.Information($"[OwnedNumbers] Cycle time is {ownedNumbersCycle?.CycleTime}");
+                //        Log.Information($"[OwnedNumbers] Enabled is {ownedNumbersCycle?.Enabled}");
 
-                        // Prevent another run from starting while this is still going.
-                        var lockingStats = new IngestStatistics
-                        {
-                            IngestedFrom = "OwnedNumbers",
-                            StartDate = DateTime.Now,
-                            EndDate = DateTime.Now,
-                            IngestedNew = 0,
-                            FailedToIngest = 0,
-                            NumbersRetrived = 0,
-                            Removed = 0,
-                            Unchanged = 0,
-                            UpdatedExisting = 0,
-                            Lock = true
-                        };
+                //        // Prevent another run from starting while this is still going.
+                //        var lockingStats = new IngestStatistics
+                //        {
+                //            IngestedFrom = "OwnedNumbers",
+                //            StartDate = DateTime.Now,
+                //            EndDate = DateTime.Now,
+                //            IngestedNew = 0,
+                //            FailedToIngest = 0,
+                //            NumbersRetrived = 0,
+                //            Removed = 0,
+                //            Unchanged = 0,
+                //            UpdatedExisting = 0,
+                //            Lock = true
+                //        };
 
-                        var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
+                //        var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
 
-                        tasks.Add(
-                                Task.Run(async () =>
-                                {
-                                    // Ingest all owned numbers from the providers.
-                                    Log.Information("[OwnedNumbers] Ingesting data from OwnedNumbers.");
-                                    var firstComNumbers = await Owned.FirstPointComAsync(username, password).ConfigureAwait(false);
-                                    var teleMessageNumbers = await Owned.TeleMessageAsync(teleToken).ConfigureAwait(false);
-                                    var bulkVSNumbers = await BulkVS.BulkVSOwnedPhoneNumbers.GetAllAsync(bulkVSKey, bulkVSSecret).ConfigureAwait(false);
-                                    var allNumbers = new List<OwnedPhoneNumber>();
+                //        tasks.Add(
+                //                Task.Run(async () =>
+                //                {
+                //                    // Ingest all owned numbers from the providers.
+                //                    Log.Information("[OwnedNumbers] Ingesting data from OwnedNumbers.");
+                //                    var firstComNumbers = await Owned.FirstPointComAsync(username, password).ConfigureAwait(false);
+                //                    var teleMessageNumbers = await Owned.TeleMessageAsync(teleToken).ConfigureAwait(false);
+                //                    var bulkVSNumbers = await BulkVS.BulkVSOwnedPhoneNumbers.GetAllAsync(bulkVSKey, bulkVSSecret).ConfigureAwait(false);
+                //                    var allNumbers = new List<OwnedPhoneNumber>();
 
-                                    if (firstComNumbers != null)
-                                    {
-                                        allNumbers.AddRange(firstComNumbers);
-                                    };
+                //                    if (firstComNumbers != null)
+                //                    {
+                //                        allNumbers.AddRange(firstComNumbers);
+                //                    };
 
-                                    if (teleMessageNumbers != null)
-                                    {
-                                        allNumbers.AddRange(teleMessageNumbers);
-                                    };
+                //                    if (teleMessageNumbers != null)
+                //                    {
+                //                        allNumbers.AddRange(teleMessageNumbers);
+                //                    };
 
-                                    if (bulkVSNumbers != null)
-                                    {
-                                        allNumbers.AddRange(bulkVSNumbers);
-                                    };
+                //                    if (bulkVSNumbers != null)
+                //                    {
+                //                        allNumbers.AddRange(bulkVSNumbers);
+                //                    };
 
-                                    Log.Information($"[OwnedNumbers] Submitting {allNumbers.Count} numbers to the database.");
+                //                    Log.Information($"[OwnedNumbers] Submitting {allNumbers.Count} numbers to the database.");
 
-                                    var ownedNumberStats = await Owned.SubmitOwnedNumbersAsync(allNumbers, postgresSQL).ConfigureAwait(false);
+                //                    var ownedNumberStats = await Owned.SubmitOwnedNumbersAsync(allNumbers, postgresSQL).ConfigureAwait(false);
 
-                                    // Look for LRN changes.
-                                    Log.Information("[OwnedNumbers] Looking for LRN changes on owned numbers.");
-                                    var changedNumbers = await Owned.VerifyServiceProvidersAsync(teleToken, bulkVSKey, postgresSQL).ConfigureAwait(false);
+                //                    // Look for LRN changes.
+                //                    Log.Information("[OwnedNumbers] Looking for LRN changes on owned numbers.");
+                //                    var changedNumbers = await Owned.VerifyServiceProvidersAsync(teleToken, bulkVSKey, postgresSQL).ConfigureAwait(false);
 
-                                    if (changedNumbers != null && changedNumbers.Any())
-                                    {
-                                        Log.Information($"[OwnedNumbers] Emailing out a notification that {changedNumbers.Count()} numbers LRN updates.");
-                                        var checkSend = await Owned.SendPortingNotificationEmailAsync(changedNumbers, smtpUsername, smtpPassword, postgresSQL).ConfigureAwait(false);
-                                    }
+                //                    if (changedNumbers != null && changedNumbers.Any())
+                //                    {
+                //                        Log.Information($"[OwnedNumbers] Emailing out a notification that {changedNumbers.Count()} numbers LRN updates.");
+                //                        var checkSend = await Owned.SendPortingNotificationEmailAsync(changedNumbers, smtpUsername, smtpPassword, postgresSQL).ConfigureAwait(false);
+                //                    }
 
-                                    // Remove the lock from the database to prevent it from getting cluttered with blank entries.
-                                    var lockEntry = await IngestStatistics.GetLockAsync("OwnedNumbers", postgresSQL).ConfigureAwait(false);
-                                    var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
+                //                    // Remove the lock from the database to prevent it from getting cluttered with blank entries.
+                //                    var lockEntry = await IngestStatistics.GetLockAsync("OwnedNumbers", postgresSQL).ConfigureAwait(false);
+                //                    var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
 
-                                    // Remove all of the old numbers from the database.
-                                    Log.Information("[OwnedNumbers] Marking numbers that failed to reingest as inactive in the database.");
-                                    // TODO: Mark old owned numbers as in active.
+                //                    // Remove all of the old numbers from the database.
+                //                    Log.Information("[OwnedNumbers] Marking numbers that failed to reingest as inactive in the database.");
+                //                    // TODO: Mark old owned numbers as in active.
 
-                                    var combined = new IngestStatistics
-                                    {
-                                        StartDate = ownedNumberStats.StartDate,
-                                        EndDate = DateTime.Now,
-                                        FailedToIngest = ownedNumberStats.FailedToIngest,
-                                        IngestedFrom = ownedNumberStats.IngestedFrom,
-                                        IngestedNew = ownedNumberStats.IngestedNew,
-                                        Lock = false,
-                                        NumbersRetrived = ownedNumberStats.NumbersRetrived,
-                                        Removed = 0,
-                                        Unchanged = ownedNumberStats.Unchanged,
-                                        UpdatedExisting = ownedNumberStats.UpdatedExisting,
-                                        Priority = false
-                                    };
+                //                    var combined = new IngestStatistics
+                //                    {
+                //                        StartDate = ownedNumberStats.StartDate,
+                //                        EndDate = DateTime.Now,
+                //                        FailedToIngest = ownedNumberStats.FailedToIngest,
+                //                        IngestedFrom = ownedNumberStats.IngestedFrom,
+                //                        IngestedNew = ownedNumberStats.IngestedNew,
+                //                        Lock = false,
+                //                        NumbersRetrived = ownedNumberStats.NumbersRetrived,
+                //                        Removed = 0,
+                //                        Unchanged = ownedNumberStats.Unchanged,
+                //                        UpdatedExisting = ownedNumberStats.UpdatedExisting,
+                //                        Priority = false
+                //                    };
 
-                                    if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
-                                    {
-                                        Log.Information("[OwnedNumbers] Completed the ingest process.");
-                                    }
-                                    else
-                                    {
-                                        Log.Fatal("[OwnedNumbers] Failed to completed the ingest process.");
-                                    }
+                //                    if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
+                //                    {
+                //                        Log.Information("[OwnedNumbers] Completed the ingest process.");
+                //                    }
+                //                    else
+                //                    {
+                //                        Log.Fatal("[OwnedNumbers] Failed to completed the ingest process.");
+                //                    }
 
-                                    return combined;
-                                })
-                            );
+                //                    return combined;
+                //                })
+                //            );
 
-                        if (ownedNumbersCycle.RunNow)
-                        {
-                            ownedNumbersCycle.RunNow = false;
-                            var checkRunNow = ownedNumbersCycle.PutAsync(postgresSQL).ConfigureAwait(false);
-                        }
-                    }
-                }
+                //        if (ownedNumbersCycle.RunNow)
+                //        {
+                //            ownedNumbersCycle.RunNow = false;
+                //            var checkRunNow = ownedNumbersCycle.PutAsync(postgresSQL).ConfigureAwait(false);
+                //        }
+                //    }
+                //}
 
                 Log.Information("[Heartbeat] Cycle complete.");
 

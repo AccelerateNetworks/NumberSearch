@@ -30,9 +30,9 @@ namespace NumberSearch.Ingest
 
             var numbers = await FirstPointCom.GetValidNumbersByNPAAsync(username, password, areaCodes).ConfigureAwait(false);
 
-            var typedNumbers = Ingest.AssignNumberTypes(numbers).ToArray();
+            var typedNumbers = Services.AssignNumberTypes(numbers).ToArray();
 
-            var stats = await Ingest.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
+            var stats = await Services.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
 
             var end = DateTime.Now;
             stats.StartDate = start;
@@ -55,9 +55,9 @@ namespace NumberSearch.Ingest
 
             var numbers = await MainBulkVS.GetValidNumbersByNPAAsync(apiKey, apiSecret, areaCodes).ConfigureAwait(false);
 
-            var typedNumbers = Ingest.AssignNumberTypes(numbers).ToArray();
+            var typedNumbers = Services.AssignNumberTypes(numbers).ToArray();
 
-            var stats = await Ingest.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
+            var stats = await Services.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
 
             var end = DateTime.Now;
             stats.StartDate = start;
@@ -111,9 +111,9 @@ namespace NumberSearch.Ingest
 
             Log.Information($"[TeleMessage] Found {readyToSubmit.Count} Phone Numbers");
 
-            var typedNumbers = Ingest.AssignNumberTypes(readyToSubmit).ToArray();
+            var typedNumbers = Services.AssignNumberTypes(readyToSubmit).ToArray();
 
-            var stats = await Ingest.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
+            var stats = await Services.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
 
             var end = DateTime.Now;
             stats.StartDate = start;
@@ -224,9 +224,9 @@ namespace NumberSearch.Ingest
                 numbersReady.Add(number.Value);
             }
 
-            var typedNumbers = Ingest.AssignNumberTypes(numbersReady).ToArray();
+            var typedNumbers = Services.AssignNumberTypes(numbersReady).ToArray();
 
-            var stats = await Ingest.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
+            var stats = await Services.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
 
             var end = DateTime.Now;
             stats.StartDate = start;

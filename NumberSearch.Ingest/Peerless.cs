@@ -77,7 +77,7 @@ namespace NumberSearch.Ingest
 
             var numbersReady = await GetValidNumbersByNPAAsync(apiKey, areaCodes).ConfigureAwait(false);
 
-            var stats = await Ingest.SubmitPhoneNumbersAsync(numbersReady.ToArray(), connectionString).ConfigureAwait(false);
+            var stats = await Services.SubmitPhoneNumbersAsync(numbersReady.ToArray(), connectionString).ConfigureAwait(false);
 
             var end = DateTime.Now;
             stats.StartDate = start;
