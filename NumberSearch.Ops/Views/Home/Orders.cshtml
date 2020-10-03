@@ -1,4 +1,4 @@
-﻿@model IEnumerable<NumberSearch.DataAccess.Order>
+﻿@model NumberSearch.Ops.OrderResult
 @{
     ViewData["Title"] = "Orders";
 }
@@ -32,31 +32,31 @@
         </thead>
         <tbody>
             @{
-                foreach (var order in Model)
+                foreach (var order in Model.Orders)
                 {
-                    var businessName = string.IsNullOrWhiteSpace(order.BusinessName) ? "Consumer" : order.BusinessName;
+                    var businessName = string.IsNullOrWhiteSpace(order.Order.BusinessName) ? "Consumer" : order.Order.BusinessName;
                     <tr>
-                        <th scope="row" data-order="@order.DateSubmitted.Ticks">
-                            <a href="https://acceleratenetworks.com/cart/order/@order.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                        <th scope="row" data-order="@order.Order.DateSubmitted.Ticks">
+                            <a href="https://acceleratenetworks.com/cart/order/@order.Order.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
                                 Order
                             </a>
                             <h4 class="d-flex justify-content-between align-items-center mt-3">
                                 <span class="badge badge-info badge-pill">
-                                    @order.DateSubmitted
+                                    @order.Order.DateSubmitted
                                 </span>
                             </h4>
                             @{
-                                if (!string.IsNullOrWhiteSpace(order.BillingClientId))
+                                if (!string.IsNullOrWhiteSpace(order.Order.BillingClientId))
                                 {
-                                    <a href="https://billing.acceleratenetworks.com/clients/@order?.BillingClientId/edit" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+                                    <a href="https://billing.acceleratenetworks.com/clients/@order?.Order?.BillingClientId/edit" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
                                         Client
                                     </a>
                                 }
                             }
                             @{
-                                if (!string.IsNullOrWhiteSpace(order.BillingInvoiceId))
+                                if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceId))
                                 {
-                                    <a href="https://billing.acceleratenetworks.com/invoices/@order?.BillingInvoiceId/edit" class="btn btn-info" target="_blank" rel="noopener noreferrer">
+                                    <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-info" target="_blank" rel="noopener noreferrer">
                                         Invoice
                                     </a>
                                 }
@@ -67,32 +67,61 @@
                             <p>@businessName</p>
                             <strong>Customer Name</strong>
                             <p>
-                                @order.FirstName
-                                @order.LastName
+                                @order.Order.FirstName
+                                @order.Order.LastName
                             </p>
                             <strong>Email</strong>
-                            <p>@order.Email</p>
+                            <p>@order.Order.Email</p>
                             <strong>Address</strong>
                             <p>
-                                @order.Address
+                                @order.Order.Address
 
-                                @order.Address2
+                                @order.Order.Address2
 
-                                @order.City
+                                @order.Order.City
 
-                                @order.State
+                                @order.Order.State
 
-                                @order.Zip
+                                @order.Order.Zip
                             </p>
                             @{
-                                if (!string.IsNullOrWhiteSpace(order.CustomerNotes))
+                                if (!string.IsNullOrWhiteSpace(order.Order.CustomerNotes))
                                 {
                                     <strong>Customer Notes</strong>
-                                    <p>@order.CustomerNotes</p>
+                                    <p>@order.Order.CustomerNotes</p>
                                 }
                             }
                         </td>
                         <td>
+                            @{
+                                foreach (var product in order.ProductOrders)
+                                {
+                                    <p>
+                                        @{
+                                            if (!string.IsNullOrWhiteSpace(product.DialedNumber))
+                                            {
+                                                var dialedOutput = $"Purchased {product.DialedNumber}";
+                                                @dialedOutput
+                                            }
+                                            else if (!string.IsNullOrWhiteSpace(product.PortedDialedNumber))
+                                            {
+                                                var portedOutput = $"Ported {product.PortedDialedNumber}";
+                                                @portedOutput
+                                            }
+                                            else if (!(product.ServiceId == Guid.Empty))
+                                            {
+                                                var serviceOutput = $"{product.Quantity} x {Model.Services.Where(x => x.ServiceId == product.ServiceId).FirstOrDefault().Name}";
+                                                @serviceOutput
+                                            }
+                                            else if (!(product.ProductId == Guid.Empty))
+                                            {
+                                                var productOutput = $"{product.Quantity} x {Model.Products.Where(x => x.ProductId == product.ProductId).FirstOrDefault().Name}";
+                                                @productOutput
+                                            }
+                                        }
+                                    </p>
+                                }
+                            }
                         </td>
                     </tr>
                 }
