@@ -50,6 +50,13 @@
             var maxPage = Model.NumberOfResults / 100;
             var pageResultsCount = Model.Page * 100;
 
+            if (Model.CleanQuery.Length == 10 && Model.Query.Length == 3)
+            {
+                <div class="alert alert-info" role="alert">
+                    Area code @Model.CleanQuery.Substring(0, 3) detected.
+                </div>
+            }
+
             var total = $"{Model.NumberOfResults} available numbers found!";
             <div class="alert alert-success" role="alert">
                 @total
@@ -124,8 +131,7 @@
                                     var start = item.DialedNumber.IndexOf(match);
                                     var stop = Model.CleanQuery.Length;
                                     var beginning = item.DialedNumber.Substring(0, start);
-                                    //var middle = item.DialedNumber.Substring(start, stop);
-                                    var middle = Model.Query;
+                                    var middle = (start == 0) && (stop == 10) ? Model.CleanQuery : Model.Query;
                                     var end = item.DialedNumber.Substring(start + stop);
                                     number = $"{beginning}<b class='text-success'>{middle}</b>{end}";
                                 }

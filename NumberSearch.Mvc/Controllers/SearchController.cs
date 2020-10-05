@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.Models;
 
 using System.Collections.Generic;
 using System.Linq;
@@ -64,7 +65,20 @@ namespace NumberSearch.Mvc.Controllers
                 converted.Remove('1');
             }
 
-            var count = await PhoneNumber.NumberOfResultsInQuery(new string(converted.ToArray()), configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            var cleanedQuery = new string(converted.ToArray());
+
+            // Short curcit area code searches.
+            if (cleanedQuery.Length == 3 && cleanedQuery.Equals(query, System.StringComparison.InvariantCultureIgnoreCase))
+            {
+                var checkConvert = int.TryParse(cleanedQuery, out var code);
+
+                if(checkConvert && AreaCode.All.Contains(code))
+                {
+                    cleanedQuery += "*******";
+                }
+            }
+
+            var count = await PhoneNumber.NumberOfResultsInQuery(cleanedQuery, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
 
             // Handle out of range page values.
             page = page < 1 ? 1 : page;
@@ -75,22 +89,22 @@ namespace NumberSearch.Mvc.Controllers
             // Select a view for the data.
             if (!string.IsNullOrWhiteSpace(view) && view == "Recommended")
             {
-                results = await PhoneNumber.RecommendedPaginatedSearchAsync(new string(converted.ToArray()), page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                results = await PhoneNumber.RecommendedPaginatedSearchAsync(cleanedQuery, page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
             }
             else if (!string.IsNullOrWhiteSpace(view) && view == "Sequential")
             {
-                results = await PhoneNumber.SequentialPaginatedSearchAsync(new string(converted.ToArray()), page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                results = await PhoneNumber.SequentialPaginatedSearchAsync(cleanedQuery, page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
             }
             else
             {
-                results = await PhoneNumber.RecommendedPaginatedSearchAsync(new string(converted.ToArray()), page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                results = await PhoneNumber.RecommendedPaginatedSearchAsync(cleanedQuery, page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
             }
 
             var cart = Cart.GetFromSession(HttpContext.Session);
 
             return View("Index", new SearchResults
             {
-                CleanQuery = new string(converted.ToArray()),
+                CleanQuery = cleanedQuery,
                 NumberOfResults = count,
                 Page = page,
                 View = !string.IsNullOrWhiteSpace(view) ? view : "Recommended",

@@ -42,6 +42,15 @@ namespace NumberSearch.Mvc.Controllers
             // Clean up the query.
             Query = Query?.Trim();
 
+            if (Query is null || Query.Length == 0)
+            {
+                return View("Index", new PortingResults
+                {
+                    PortedPhoneNumber = new PortedPhoneNumber { },
+                    Cart = cart
+                });
+            }
+
             // Parse the query.
             var converted = new List<char>();
             foreach (var letter in Query)
