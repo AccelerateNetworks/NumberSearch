@@ -53,19 +53,19 @@
                     @{
                         if (Model?.PortRequest?.LocationType == "Residential")
                         {
-                            <label class="btn btn-secondary">
+                            <label class="btn btn-outline-secondary">
                                 <input asp-for="PortRequest.LocationType" type="radio" id="ltoption1" value="Business"> Business
                             </label>
-                            <label class="btn btn-secondary active">
+                            <label class="btn btn-outline-secondary active">
                                 <input asp-for="PortRequest.LocationType" type="radio" id="ltoption2" value="Residential" checked> Residential
                             </label>
                         }
                         else
                         {
-                            <label class="btn btn-secondary active">
+                            <label class="btn btn-outline-secondary active">
                                 <input asp-for="PortRequest.LocationType" type="radio" id="ltoption1" value="Business" checked> Business
                             </label>
-                            <label class="btn btn-secondary">
+                            <label class="btn btn-outline-secondary">
                                 <input asp-for="PortRequest.LocationType" type="radio" id="ltoption2" value="Residential"> Residential
                             </label>
                         }
@@ -255,19 +255,19 @@
                     @{
                         if (Model?.PortRequest?.PartialPort ?? false)
                         {
-                            <label class="btn btn-secondary">
+                            <label class="btn btn-outline-secondary">
                                 <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption1" value="true" checked> Yes
                             </label>
-                            <label class="btn btn-secondary">
+                            <label class="btn btn-outline-secondary">
                                 <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption2" value="false"> No
                             </label>
                         }
                         else
                         {
-                            <label class="btn btn-secondary">
+                            <label class="btn btn-outline-secondary">
                                 <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption1" value="true"> Yes
                             </label>
-                            <label class="btn btn-secondary">
+                            <label class="btn btn-outline-secondary">
                                 <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption2" value="false" checked> No
                             </label>
                         }

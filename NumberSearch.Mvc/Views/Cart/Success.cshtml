@@ -82,9 +82,24 @@
                 <input asp-for="PortRequest.OrderId" type="text" value="@Model?.Order?.OrderId" hidden />
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label for="billingPhone">Current Billing Phone Number</label>
-                        <input asp-for="PortRequest.BillingPhone" type="text" value="@Model?.PortRequest?.BillingPhone" class="form-control" id="billingPhone" placeholder="2061234567" required
-                               title="Also known as the BTN. This is the number that is normally provided on a copy of your bill or statement in the upper right corner or is the first number listed on the bill.">
+                        <label for="billingPhone">Current Billing Phone Number <span data-container="body" data-toggle="popover" data-placement="top" data-content="The primary phone number on the account often acting as the account number, shown in the upper right corner of the Centurylink, Frontier & Ziply Fiber bills.">ℹ️</span></label>
+                        @*<input asp-for="PortRequest.BillingPhone" type="text" value="@Model?.PortRequest?.BillingPhone" class="form-control" id="billingPhone" placeholder="2061234567" required
+                            title="Also known as the BTN. This is the number that is normally provided on a copy of your bill or statement in the upper right corner or is the first number listed on the bill.">*@
+                        <select asp-for="PortRequest.BillingPhone" class="custom-select d-block w-100" id="billingPhone" title="Also known as the BTN. This is the number that is normally provided on a copy of your bill or statement in the upper right corner or is the first number listed on the bill." required>
+                            @{
+                                foreach (var number in Model?.PhoneNumbers)
+                                {
+                                    if (Model?.PortRequest?.BillingPhone == number.PortedDialedNumber)
+                                    {
+                                        <option value="@number.PortedDialedNumber" selected>@number.PortedDialedNumber</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@number.PortedDialedNumber">@number.PortedDialedNumber</option>
+                                    }
+                                }
+                            }
+                        </select>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label for="accountNumber">Current Account Number</label>
