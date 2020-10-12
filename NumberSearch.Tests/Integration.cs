@@ -409,6 +409,25 @@ namespace NumberSearch.Tests
             output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
         }
 
+        [Fact]
+        public async Task TeliLookupEmergencyInfoAsync()
+        {
+            // Arrange
+
+            // Act
+            var results = await EmergencyInfo.GetAsync("2062011205", token);
+
+            // Assert
+            Assert.NotNull(results);
+            Assert.False(string.IsNullOrWhiteSpace(results.status));
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+
+            results = await EmergencyInfo.GetAsync("9365820436", token);
+            Assert.NotNull(results);
+            Assert.False(string.IsNullOrWhiteSpace(results.status));
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+        }
+
         // Teli doesn't have a way to delete these so only want to test it when required.
         //[Fact]
         //public async Task TeliPortRequestAsync()
@@ -632,25 +651,25 @@ namespace NumberSearch.Tests
             output.WriteLine($"{count} Results Reviewed");
         }
 
-        [Fact]
-        public async Task BulkVSRESTNpaNxxGetAsyncTestAsync()
-        {
-            // Arrange
-            var npa = 206;
+        //[Fact]
+        //public async Task BulkVSRESTNpaNxxGetAsyncTestAsync()
+        //{
+        //    // Arrange
+        //    var npa = 206;
 
-            // Act
-            var results = await DataAccess.BulkVS.OrderTn.GetAsync(npa, bulkVSUsername, bulkVSPassword);
+        //    // Act
+        //    var results = await DataAccess.BulkVS.OrderTn.GetAsync(npa, bulkVSUsername, bulkVSPassword);
 
-            // Assert
-            Assert.NotNull(results);
-            int count = 0;
-            foreach (var result in results.ToArray())
-            {
-                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-                count++;
-            }
-            output.WriteLine($"{count} Results Reviewed");
-        }
+        //    // Assert
+        //    Assert.NotNull(results);
+        //    int count = 0;
+        //    foreach (var result in results.ToArray())
+        //    {
+        //        Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+        //        count++;
+        //    }
+        //    output.WriteLine($"{count} Results Reviewed");
+        //}
 
         [Fact]
         public async Task BulkVSLrnLookupAsync()
@@ -1227,6 +1246,43 @@ namespace NumberSearch.Tests
             // Clean up.
             var fromDb = await PurchasedPhoneNumber.GetByDialedNumberAndOrderIdAsync(itemToOrder.DialedNumber, itemToOrder.OrderId, conn).ConfigureAwait(false);
             Assert.NotNull(fromDb);
+
+            var checkDelete = await fromDb.DeleteAsync(conn).ConfigureAwait(false);
+            Assert.True(checkDelete);
+        }
+
+        [Fact]
+        public async Task PostEmergencyInfoAsync()
+        {
+            var conn = postgresql;
+
+            var info = new EmergencyInformation
+            {
+                Address = "123 Sesemy Street",
+                AlertGroup = "123",
+                City = "Seattle",
+                CreatedDate = DateTime.Now,
+                DateIngested = DateTime.Now,
+                DialedNumber = "1231231234",
+                FullName = "Big Bird",
+                IngestedFrom = "IntegrationTest",
+                ModifyDate = DateTime.Now,
+                Note = "This is an integration test.",
+                State = "WA",
+                TeliId = "1231231",
+                UnitNumber = "123",
+                UnitType = "Condo",
+                Zip = "99999"
+            };
+
+            var result = await info.PostAsync(conn);
+            Assert.True(result);
+
+            // Clean up.
+            var fromDbResults = await EmergencyInformation.GetAllAsync(conn).ConfigureAwait(false);
+            Assert.NotNull(fromDbResults);
+            Assert.NotEmpty(fromDbResults);
+            var fromDb = fromDbResults.Where(x => x.TeliId == info.TeliId).FirstOrDefault();
 
             var checkDelete = await fromDb.DeleteAsync(conn).ConfigureAwait(false);
             Assert.True(checkDelete);

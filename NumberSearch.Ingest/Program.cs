@@ -652,6 +652,10 @@ namespace NumberSearch.Ingest
                                         Log.Fatal(ex.Message);
                                     }
 
+                                    // Update emergency info
+                                    var emergency = await Owned.VerifyEmergencyInformationAsync(allNumbers, teleToken, postgresSQL).ConfigureAwait(false);
+                                    allNumbers = emergency.ToList();
+
                                     // If we ingested any owned numbers update the database.
                                     var ownedNumberStats = new IngestStatistics();
                                     if (allNumbers.Count > 0)

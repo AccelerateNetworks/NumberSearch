@@ -130,6 +130,7 @@ namespace NumberSearch.Ingest
                 {
                     number.DateIngested = item.DateIngested;
                     number.IngestedFrom = item.IngestedFrom;
+                    number.EmergencyInformationId = item.EmergencyInformationId;
                     number.Notes = string.IsNullOrWhiteSpace(number.Notes) ? item.Notes : number.Notes;
 
                     var checkCreate = await number.PutAsync(connectionString).ConfigureAwait(false);
@@ -230,6 +231,72 @@ namespace NumberSearch.Ingest
             Log.Information($"[OwnedNumbers] Found {serviceProviderChanged.Count} numbers whose Service Provider has changed since the last ingest.");
 
             return serviceProviderChanged;
+        }
+
+        public static async Task<IEnumerable<OwnedPhoneNumber>> VerifyEmergencyInformationAsync(IEnumerable<OwnedPhoneNumber> owned, Guid teleToken, string connectionString)
+        {
+            Log.Information($"[OwnedNumbers] Verifying Emergency Information for {owned?.Count()} Owned Phone numbers.");
+
+            var emergencyInformation = await EmergencyInformation.GetAllAsync(connectionString).ConfigureAwait(false);
+
+            foreach (var number in owned)
+            {
+                var info = await EmergencyInfo.GetAsync(number.DialedNumber, teleToken).ConfigureAwait(false);
+
+                if (info?.code == 200)
+                {
+                    var checkCreate = DateTime.TryParse(info?.data?.create_dt, out var createdDate);
+                    var checkMod = DateTime.TryParse(info?.data?.modify_dt, out var modDate);
+
+                    var toDb = new EmergencyInformation
+                    {
+                        Address = info?.data?.address,
+                        AlertGroup = info?.data?.alert_group,
+                        City = info?.data?.city,
+                        CreatedDate = checkCreate ? createdDate : DateTime.Now,
+                        DateIngested = DateTime.Now,
+                        DialedNumber = number.DialedNumber,
+                        FullName = info?.data?.full_name,
+                        IngestedFrom = "TeleMessage",
+                        ModifyDate = checkMod ? modDate : DateTime.Now,
+                        Note = info?.data?.did_note.Trim(),
+                        State = info?.data?.state,
+                        TeliId = info?.data?.did_id,
+                        UnitNumber = info?.data?.unit_number,
+                        UnitType = info?.data?.unit_type,
+                        Zip = info?.data?.zip
+                    };
+
+                    var existing = emergencyInformation.Where(x => x.DialedNumber == toDb.DialedNumber).FirstOrDefault();
+
+                    if (existing is null)
+                    {
+                        var checkSubmit = await toDb.PostAsync(connectionString).ConfigureAwait(false);
+
+                        Log.Information($"[OwnedNumbers] Added Emergency Information for {number.DialedNumber}.");
+                    }
+                    else
+                    {
+                        var checkSubmit = await toDb.PutAsync(connectionString).ConfigureAwait(false);
+
+                        Log.Information($"[OwnedNumbers] Updated Emergency Information for {number.DialedNumber}.");
+                    }
+                }
+            }
+
+            var fromDb = await EmergencyInformation.GetAllAsync(connectionString).ConfigureAwait(false);
+
+            foreach (var item in owned)
+            {
+                var emergencyInfo = fromDb.Where(x => x.DialedNumber == item.DialedNumber).FirstOrDefault();
+
+                if (!(emergencyInfo is null))
+                {
+                    item.EmergencyInformationId = emergencyInfo?.EmergencyInformationId;
+                }
+            }
+
+            return owned;
         }
 
         public static async Task<bool> SendPortingNotificationEmailAsync(IEnumerable<ServiceProviderChanged> changes, string smtpUsername, string smtpPassword, string connectionString)
