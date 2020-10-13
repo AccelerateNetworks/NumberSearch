@@ -19,6 +19,18 @@ namespace NumberSearch.DataAccess
         public int Quantity { get; set; }
         public DateTime CreateDate { get; set; }
 
+        public static async Task<IEnumerable<ProductOrder>> GetAllAsync(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<ProductOrder>
+                ("SELECT \"OrderId\", \"ProductId\", \"ServiceId\", \"DialedNumber\", \"PortedDialedNumber\", \"Quantity\", \"CreateDate\" FROM public.\"ProductOrders\"")
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
         /// <summary>
         /// Get all of the products adn their quantities associated with a specific order.
         /// </summary>

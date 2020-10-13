@@ -8,17 +8,49 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+using Serilog;
+using Serilog.Events;
+
 namespace NumberSearch.Ops
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            Log.Logger = new LoggerConfiguration()
+                            .MinimumLevel.Debug()
+                            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                            .Enrich.FromLogContext()
+                            .WriteTo.Async(a => a.Console())
+                            .CreateLogger();
+
+            try
+            {
+                Log.Information("Starting web host");
+                CreateHostBuilder(args).Build().Run();
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Host terminated unexpectedly");
+                return 1;
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .UseSerilog((hostingContext, services, loggerConfiguration) => loggerConfiguration
+                    .ReadFrom.Configuration(hostingContext.Configuration)
+                    .Enrich.FromLogContext()
+                    .WriteTo.Async(a => a.Console())
+                    .WriteTo.Async(a => a.File($"NumberSearch.Ops_{DateTime.Now:yyyyMMdd}.txt",
+                        rollingInterval: RollingInterval.Day,
+                        rollOnFileSizeLimit: true))
+                    .WriteTo.Async(a => a.Debug()))
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseUrls("https://*:5003", "http://*:5002");

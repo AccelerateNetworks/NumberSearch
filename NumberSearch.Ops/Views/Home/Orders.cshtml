@@ -36,38 +36,38 @@
                 {
                     var businessName = string.IsNullOrWhiteSpace(order.Order.BusinessName) ? "Consumer" : order.Order.BusinessName;
                     <tr>
-                                    <th scope="row" data-order="@order.Order.DateSubmitted.Ticks">
-                                        <a href="https://acceleratenetworks.com/cart/order/@order.Order.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                                            Order
-                                        </a>
-                                        <a href="/Home/Emails/@order?.Order?.OrderId" class="btn btn-outline-secondary" target="_blank" rel="noopener noreferrer">
-                                            Emails
-                                        </a>
-                                        <a href="https://www.google.com/maps/place/@order?.Order?.Address,+@order?.Order?.City,+@order?.Order?.State+@order?.Order?.Zip/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
-                                            Map
-                                        </a>
-                                        <h4 class="d-flex justify-content-between align-items-center mt-3">
-                                            <span class="badge badge-info badge-pill">
-                                                @order.Order.DateSubmitted
-                                            </span>
-                                        </h4>
-                                        @{
-                                            if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceId))
-                                            {
-                                                <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-info" target="_blank" rel="noopener noreferrer">
-                                                    Invoice
-                                                </a>
-                                            }
-                                        }
-                                        @{
-                                            if (!string.IsNullOrWhiteSpace(order.Order.BillingClientId))
-                                            {
-                                                <a href="https://billing.acceleratenetworks.com/clients/@order?.Order?.BillingClientId/edit" class="btn btn-outline-info" target="_blank" rel="noopener noreferrer">
-                                                    Client
-                                                </a>
-                                            }
-                                        }
-                                    </th>
+                        <th scope="row" data-order="@order.Order.DateSubmitted.Ticks">
+                            <a href="https://acceleratenetworks.com/cart/order/@order.Order.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                                Order
+                            </a>
+                            <a href="/Home/Emails/@order?.Order?.OrderId" class="btn btn-outline-secondary" target="_blank" rel="noopener noreferrer">
+                                Emails
+                            </a>
+                            <a href="https://www.google.com/maps/place/@order?.Order?.Address,+@order?.Order?.City,+@order?.Order?.State+@order?.Order?.Zip/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+                                Map
+                            </a>
+                            <h4 class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="badge badge-info badge-pill">
+                                    @order.Order.DateSubmitted
+                                </span>
+                            </h4>
+                            @{
+                                if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceId))
+                                {
+                                    <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-info" target="_blank" rel="noopener noreferrer">
+                                        Invoice
+                                    </a>
+                                }
+                            }
+                            @{
+                                if (!string.IsNullOrWhiteSpace(order.Order.BillingClientId))
+                                {
+                                    <a href="https://billing.acceleratenetworks.com/clients/@order?.Order?.BillingClientId/edit" class="btn btn-outline-info" target="_blank" rel="noopener noreferrer">
+                                        Client
+                                    </a>
+                                }
+                            }
+                        </th>
                         <td>
                             <strong>Business Name</strong>
                             <p>@businessName</p>
@@ -100,26 +100,72 @@
                         </td>
                         <td>
                             @{
+                                var purchased = new List<NumberSearch.DataAccess.ProductOrder>();
+                                var ported = new List<NumberSearch.DataAccess.ProductOrder>();
+                                var services = new List<NumberSearch.DataAccess.ProductOrder>();
+                                var products = new List<NumberSearch.DataAccess.ProductOrder>();
                                 foreach (var product in order.ProductOrders)
                                 {
+                                    if (!string.IsNullOrWhiteSpace(product.DialedNumber))
+                                    {
+                                        purchased.Add(product);
+                                    }
+                                    else if (!string.IsNullOrWhiteSpace(product.PortedDialedNumber))
+                                    {
+                                        ported.Add(product);
+                                    }
+                                    else if (!(product.ServiceId == Guid.Empty))
+                                    {
+                                        services.Add(product);
+                                    }
+                                    else if (!(product.ProductId == Guid.Empty))
+                                    {
+                                        products.Add(product);
+                                    }
+                                }
+                                if (purchased.Any())
+                                {
+                                    <strong>Purchased</strong>
                                     <p>
                                         @{
-                                            if (!string.IsNullOrWhiteSpace(product.DialedNumber))
+                                            foreach (var product in purchased)
                                             {
-                                                <strong>Purchased</strong>
-                                                <a class="btn btn-primary text-light" href="/Home/NumberOrders/@product.DialedNumber">@product.DialedNumber</a>
+                                                <a class="btn btn-outline-primary mt-1" href="/Home/NumberOrders/@product.DialedNumber">@product.DialedNumber</a>
                                             }
-                                            else if (!string.IsNullOrWhiteSpace(product.PortedDialedNumber))
+                                        }
+                                    </p>
+                                }
+                                if (ported.Any())
+                                {
+                                    <strong>Ported</strong>
+                                    <p>
+                                        @{
+                                            foreach (var product in ported)
                                             {
-                                                <strong>Ported</strong>
-                                                <a class="btn btn-primary text-light" href="/Home/PortRequests/@product.OrderId">@product.PortedDialedNumber</a>
+                                                <a class="btn btn-outline-primary mt-1" href="/Home/PortRequests/@product.OrderId">@product.PortedDialedNumber</a>
                                             }
-                                            else if (!(product.ServiceId == Guid.Empty))
+                                        }
+                                    </p>
+                                }
+                                if (services.Any())
+                                {
+                                    <strong>Services</strong>
+                                    <p>
+                                        @{
+                                            foreach (var product in services)
                                             {
                                                 var serviceOutput = $"{product.Quantity} x {Model.Services.Where(x => x.ServiceId == product.ServiceId).FirstOrDefault().Name}";
                                                 @serviceOutput
                                             }
-                                            else if (!(product.ProductId == Guid.Empty))
+                                        }
+                                    </p>
+                                }
+                                if (products.Any())
+                                {
+                                    <strong>Products</strong>
+                                    <p>
+                                        @{
+                                            foreach (var product in products)
                                             {
                                                 var productOutput = $"{product.Quantity} x {Model.Products.Where(x => x.ProductId == product.ProductId).FirstOrDefault().Name}";
                                                 @productOutput

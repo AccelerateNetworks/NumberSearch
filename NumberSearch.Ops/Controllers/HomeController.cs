@@ -70,18 +70,19 @@ namespace NumberSearch.Ops.Controllers
         {
             // Show all orders
             var orders = await Order.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var productOrders = await ProductOrder.GetAllAsync(_postgresql).ConfigureAwait(false);
             var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
             var services = await Service.GetAllAsync(_postgresql).ConfigureAwait(false);
-            orders = orders.OrderByDescending(x => x.DateSubmitted).ToArray();
             var pairs = new List<OrderProducts>();
 
             foreach (var order in orders)
             {
-                var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                var orderProductOrders = productOrders.Where(x => x.OrderId == order.OrderId).ToArray();
+
                 pairs.Add(new OrderProducts
                 {
                     Order = order,
-                    ProductOrders = productOrders
+                    ProductOrders = orderProductOrders
                 });
             }
 

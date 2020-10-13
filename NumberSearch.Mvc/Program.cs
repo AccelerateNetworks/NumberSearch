@@ -36,7 +36,6 @@ namespace NumberSearch.Mvc
             finally
             {
                 Log.CloseAndFlush();
-
             }
 
         }
