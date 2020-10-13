@@ -36,32 +36,38 @@
                 {
                     var businessName = string.IsNullOrWhiteSpace(order.Order.BusinessName) ? "Consumer" : order.Order.BusinessName;
                     <tr>
-                        <th scope="row" data-order="@order.Order.DateSubmitted.Ticks">
-                            <a href="https://acceleratenetworks.com/cart/order/@order.Order.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                                Order
-                            </a>
-                            <h4 class="d-flex justify-content-between align-items-center mt-3">
-                                <span class="badge badge-info badge-pill">
-                                    @order.Order.DateSubmitted
-                                </span>
-                            </h4>
-                            @{
-                                if (!string.IsNullOrWhiteSpace(order.Order.BillingClientId))
-                                {
-                                    <a href="https://billing.acceleratenetworks.com/clients/@order?.Order?.BillingClientId/edit" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
-                                        Client
-                                    </a>
-                                }
-                            }
-                            @{
-                                if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceId))
-                                {
-                                    <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-info" target="_blank" rel="noopener noreferrer">
-                                        Invoice
-                                    </a>
-                                }
-                            }
-                        </th>
+                                    <th scope="row" data-order="@order.Order.DateSubmitted.Ticks">
+                                        <a href="https://acceleratenetworks.com/cart/order/@order.Order.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                                            Order
+                                        </a>
+                                        <a href="/Home/Emails/@order?.Order?.OrderId" class="btn btn-outline-secondary" target="_blank" rel="noopener noreferrer">
+                                            Emails
+                                        </a>
+                                        <a href="https://www.google.com/maps/place/@order?.Order?.Address,+@order?.Order?.City,+@order?.Order?.State+@order?.Order?.Zip/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+                                            Map
+                                        </a>
+                                        <h4 class="d-flex justify-content-between align-items-center mt-3">
+                                            <span class="badge badge-info badge-pill">
+                                                @order.Order.DateSubmitted
+                                            </span>
+                                        </h4>
+                                        @{
+                                            if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceId))
+                                            {
+                                                <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-info" target="_blank" rel="noopener noreferrer">
+                                                    Invoice
+                                                </a>
+                                            }
+                                        }
+                                        @{
+                                            if (!string.IsNullOrWhiteSpace(order.Order.BillingClientId))
+                                            {
+                                                <a href="https://billing.acceleratenetworks.com/clients/@order?.Order?.BillingClientId/edit" class="btn btn-outline-info" target="_blank" rel="noopener noreferrer">
+                                                    Client
+                                                </a>
+                                            }
+                                        }
+                                    </th>
                         <td>
                             <strong>Business Name</strong>
                             <p>@businessName</p>
@@ -100,13 +106,13 @@
                                         @{
                                             if (!string.IsNullOrWhiteSpace(product.DialedNumber))
                                             {
-                                                var dialedOutput = $"Purchased {product.DialedNumber}";
-                                                @dialedOutput
+                                                <strong>Purchased</strong>
+                                                <a class="btn btn-primary text-light" href="/Home/NumberOrders/@product.DialedNumber">@product.DialedNumber</a>
                                             }
                                             else if (!string.IsNullOrWhiteSpace(product.PortedDialedNumber))
                                             {
-                                                var portedOutput = $"Ported {product.PortedDialedNumber}";
-                                                @portedOutput
+                                                <strong>Ported</strong>
+                                                <a class="btn btn-primary text-light" href="/Home/PortRequests/@product.OrderId">@product.PortedDialedNumber</a>
                                             }
                                             else if (!(product.ServiceId == Guid.Empty))
                                             {

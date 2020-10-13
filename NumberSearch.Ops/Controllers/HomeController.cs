@@ -94,12 +94,42 @@ namespace NumberSearch.Ops.Controllers
         }
 
         [Authorize]
-        public async Task<IActionResult> NumberOrders()
+        [Route("/Home/NumberOrders")]
+        [Route("/Home/NumberOrders/{dialedNumber}")]
+        public async Task<IActionResult> NumberOrders(string dialedNumber)
         {
-            // Show all orders
-            var orders = await PurchasedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
 
-            return View("NumberOrders", orders.OrderByDescending(x => x.DateOrdered));
+            if (string.IsNullOrWhiteSpace(dialedNumber))
+            {
+                // Show all orders
+                var orders = await PurchasedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
+
+                return View("NumberOrders", orders.OrderByDescending(x => x.DateOrdered));
+            }
+            else
+            {
+                var order = await PurchasedPhoneNumber.GetByDialedNumberAsync(dialedNumber, _postgresql).ConfigureAwait(false);
+
+                return View("NumberOrders", new List<PurchasedPhoneNumber> { order });
+            }
+        }
+
+        [Authorize]
+        [Route("/Home/EmergencyInformation")]
+        [Route("/Home/EmergencyInformation/{dialedNumber}")]
+        public async Task<IActionResult> AllEmergencyInformation(string dialedNumber)
+        {
+            if (string.IsNullOrWhiteSpace(dialedNumber))
+            {
+                // Show all orders
+                var info = await EmergencyInformation.GetAllAsync(_postgresql).ConfigureAwait(false);
+                return View("EmergencyInformation", info.OrderByDescending(x => x.DateIngested));
+            }
+            else
+            {
+                var info = await EmergencyInformation.GetByDialedNumberAsync(dialedNumber, _postgresql).ConfigureAwait(false);
+                return View("EmergencyInformationEdit", info.FirstOrDefault());
+            }
         }
 
         [Authorize]
@@ -453,11 +483,22 @@ namespace NumberSearch.Ops.Controllers
         }
 
         [Authorize]
-        public async Task<IActionResult> Emails()
+        [Route("/Home/Emails")]
+        [Route("/Home/Emails/{orderId}")]
+        public async Task<IActionResult> Emails(Guid? orderId)
         {
-            var emails = await Email.GetAllAsync(_postgresql).ConfigureAwait(false);
+            if (orderId != null && orderId.HasValue)
+            {
+                var emails = await Email.GetByOrderAsync(orderId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
 
-            return View("Emails", emails);
+                return View("Emails", emails);
+            }
+            else
+            {
+                var emails = await Email.GetAllAsync(_postgresql).ConfigureAwait(false);
+
+                return View("Emails", emails);
+            }
         }
 
         [Authorize]

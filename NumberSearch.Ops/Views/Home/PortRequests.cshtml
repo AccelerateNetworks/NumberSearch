@@ -22,6 +22,9 @@
         <li class="nav-item">
             <a class="nav-link active" asp-controller="Home" asp-action="PortRequests">Port Requests</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Home" asp-action="EmergencyInformation">Emergency</a>
+        </li>
     </ul>
 </div>
 <div class="table-responsive">
@@ -99,6 +102,9 @@
                         </td>
                         <td>
                             <a class="btn btn-danger text-light" href="/Home/PortRequests/@port.OrderId">Edit</a>
+                            <a href="https://www.google.com/maps/place/@port?.Address,+@port?.City,+@port?.State+@port?.Zip/" class="btn btn-secondary mt-1" target="_blank" rel="noopener noreferrer">
+                                Map
+                            </a>
                         </td>
                     </tr>
                 }

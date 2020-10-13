@@ -1,0 +1,103 @@
+﻿@model IEnumerable<NumberSearch.DataAccess.EmergencyInformation>
+@{
+    ViewData["Title"] = "Emergency Information";
+}
+<br />
+<h1 class="display-4">Emergency Information</h1>
+<br />
+<div class="pb-3">
+    <ul class="nav nav-pills nav-fill nav-justified">
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Home" asp-action="Numbers">Numbers</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Home" asp-action="NumberOrders">Number Orders</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Home" asp-action="OwnedNumbers">Owned Numbers</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Home" asp-action="Emails">Sent Emails</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Home" asp-action="PortRequests">Port Requests</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" asp-controller="Home" asp-action="EmergencyInformation">Emergency</a>
+        </li>
+    </ul>
+</div>
+<div class="table-responsive">
+    <table class="table table-striped table-borderless table-hover" id="table">
+        <thead>
+            <tr>
+                <th scope="col">
+                    Number
+                </th>
+                <th>Status</th>
+                <th>Physical Location</th>
+                <th>
+                    Notes
+                </th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                foreach (var info in Model)
+                {
+                    <tr>
+                        <td>
+                            <h4>@info.DialedNumber</h4>
+                        </td>
+                        <td data-order="@info?.ModifyDate?.Ticks">
+                            @{
+                                var ingestedBadge = info.IngestedFrom;
+                                switch (info.IngestedFrom)
+                                {
+                                    case "FirstPointCom":
+                                        ingestedBadge = "<h4><span class='badge badge-info'>FirstPointCom</span></h4>";
+                                        break;
+                                    case "BulkVS":
+                                        ingestedBadge = "<h4><span class='badge badge-primary'>BulkVS</span></h4>";
+                                        break;
+                                    case "TeleMessage":
+                                        ingestedBadge = "<h4><span class='badge badge-warning'>TeleMessage</span></h4>";
+                                        break;
+                                }
+                            }
+                            @Html.Raw(ingestedBadge)
+                            <strong>Alert Group</strong>
+                            <p>@info.AlertGroup</p>
+                            <strong>Last Modified</strong>
+                            <p>@info.ModifyDate</p>
+                            <strong>Created</strong>
+                            <p>@info.CreatedDate</p>
+                        </td>
+                        <td>
+                            <strong>Address</strong>
+                            <p>@info.Address, @info.City, @info.State @info.Zip </p>
+                            @{
+                                if (!(string.IsNullOrWhiteSpace(info.UnitType)))
+                                {
+                                    <p>Unit @info.UnitNumber</p>
+                                    <strong>Unit Type</strong>
+                                    <p>@info.UnitType</p>
+                                }
+                            }
+                        </td>
+                        <td>
+                            @info.Note
+                        </td>
+                        <td>
+                            <a href="https://www.google.com/maps/place/@info?.Address,+@info?.City,+@info?.State+@info?.Zip/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+                                Map
+                            </a>
+                            <a class="btn btn-danger text-light mt-1" href="/Home/EmergencyInformation/@info.DialedNumber">Edit</a>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

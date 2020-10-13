@@ -7,14 +7,32 @@
 <br />
 <div class="pb-3">
     <a class="btn btn-outline-primary" href="/Home/PortRequests">Return to List</a>
-    <a href="https://acceleratenetworks.com/cart/order/@Model.PortRequest.OrderId" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+    <a href="https://acceleratenetworks.com/cart/order/@Model?.Order?.OrderId" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
         Order
     </a>
-    <a href="https://control.teli.net/lnp/view" target="_blank" rel="noopener noreferrer" class="btn btn-info">
-        Teli Port Request @Model?.PortRequest?.TeliId
-    </a>
+    @{
+        if (Model?.PortRequest is null)
+        {
+            <div class="alert alert-danger mt-3" role="alert">
+                This port request has not yet been submitted by the customer.
+            </div>
+        }
+
+        if (!string.IsNullOrWhiteSpace(Model?.PortRequest?.TeliId))
+        {
+            <a href="https://control.teli.net/lnp/view" target="_blank" rel="noopener noreferrer" class="btn btn-info">
+                Teli Port Request @Model?.PortRequest?.TeliId
+            </a>
+        }
+        else
+        {
+            <div class="alert alert-warning mt-3" role="alert">
+                This port request has not yet been submitted to Teli.
+            </div>
+        }
+    }
 </div>
-<form action="/Home/PortRequests/@Model.PortRequest.OrderId" method="post" class="needs-validation mb-3">
+<form action="/Home/PortRequests/@Model?.Order?.OrderId" method="post" class="needs-validation mb-3">
     @Html.AntiForgeryToken()
     <input asp-for="PortRequest.OrderId" type="text" value="@Model?.Order?.OrderId" hidden />
     <div class="row">
@@ -295,7 +313,7 @@
     <button type="submit" class="btn btn-warning text-light">Update</button>
     <br />
 </form>
-<form action="/Home/PortRequestsTeli/@Model.PortRequest.OrderId" method="post">
+<form action="/Home/PortRequestsTeli/@Model?.PortRequest?.OrderId" method="post">
     @Html.AntiForgeryToken()
     <input name="OrderId" value="@Model.Order.OrderId" hidden />
     @{

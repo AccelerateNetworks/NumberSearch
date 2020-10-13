@@ -38,6 +38,17 @@ namespace NumberSearch.DataAccess
             return result;
         }
 
+        public static async Task<IEnumerable<EmergencyInformation>> GetByDialedNumberAsync(string dialedNumber, string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<EmergencyInformation>("SELECT \"EmergencyInformationId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"TeliId\", \"FullName\", \"Address\", \"City\", \"State\", \"Zip\", \"UnitType\", \"UnitNumber\", \"CreatedDate\", \"ModifyDate\", \"AlertGroup\", \"Note\" FROM public.\"EmergencyInformation\" WHERE \"DialedNumber\" = @dialedNumber", new { dialedNumber })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
         public async Task<bool> PostAsync(string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);

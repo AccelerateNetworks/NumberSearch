@@ -22,6 +22,9 @@
         <li class="nav-item">
             <a class="nav-link" asp-controller="Home" asp-action="PortRequests">Port Requests</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Home" asp-action="EmergencyInformation">Emergency</a>
+        </li>
     </ul>
 </div>
 <div class="table-responsive">
@@ -33,7 +36,7 @@
                 </th>
                 <th>Status</th>
                 <th scope="col">
-                    Number Information
+                    Provider
                 </th>
                 <th>
                     Notes
@@ -93,8 +96,16 @@
                             @{
                                 if (!string.IsNullOrWhiteSpace(number.BillingClientId))
                                 {
-                                    <a href="https://billing.acceleratenetworks.com/clients/@number?.BillingClientId/edit" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+                                    <a href="https://billing.acceleratenetworks.com/clients/@number?.BillingClientId/edit" class="btn btn-secondary mt-1" target="_blank" rel="noopener noreferrer">
                                         Client
+                                    </a>
+                                }
+                            }
+                            @{
+                                if (!(number.EmergencyInformationId is null))
+                                {
+                                    <a href="/Home/EmergencyInformation/@number.DialedNumber" class="btn btn-info mt-1">
+                                        Emergency
                                     </a>
                                 }
                             }

@@ -1,0 +1,78 @@
+﻿@model NumberSearch.DataAccess.EmergencyInformation
+@{
+    ViewData["Title"] = "Emergency Information";
+}
+<br />
+<h1 class="display-4">Emergency Information for @Model?.DialedNumber</h1>
+<br />
+<div class="pb-3">
+    <a class="btn btn-primary" href="/Home/EmergencyInformation">Return to List</a>
+</div>
+<div class="table-responsive">
+    <table class="table table-striped table-borderless table-hover" id="table">
+        <thead>
+            <tr>
+                <th scope="col">
+                    Number
+                </th>
+                <th>Status</th>
+                <th>Physical Location</th>
+                <th>
+                    Notes
+                </th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <h4>@Model?.DialedNumber</h4>
+                </td>
+                <td data-order="@Model?.ModifyDate?.Ticks">
+                    @{
+                        var ingestedBadge = Model.IngestedFrom;
+                        switch (Model.IngestedFrom)
+                        {
+                            case "FirstPointCom":
+                                ingestedBadge = "<h4><span class='badge badge-info'>FirstPointCom</span></h4>";
+                                break;
+                            case "BulkVS":
+                                ingestedBadge = "<h4><span class='badge badge-primary'>BulkVS</span></h4>";
+                                break;
+                            case "TeleMessage":
+                                ingestedBadge = "<h4><span class='badge badge-warning'>TeleMessage</span></h4>";
+                                break;
+                        }
+                    }
+                    @Html.Raw(ingestedBadge)
+                    <strong>Alert Group</strong>
+                    <p>@Model.AlertGroup</p>
+                    <strong>Last Modified</strong>
+                    <p>@Model.ModifyDate</p>
+                    <strong>Created</strong>
+                    <p>@Model.CreatedDate</p>
+                </td>
+                <td>
+                    <strong>Address</strong>
+                    <p>@Model.Address, @Model.City, @Model.State @Model.Zip </p>
+                    @{
+                        if (!(string.IsNullOrWhiteSpace(Model.UnitType)))
+                        {
+                            <p>Unit @Model.UnitNumber</p>
+                            <strong>Unit Type</strong>
+                            <p>@Model.UnitType</p>
+                        }
+                    }
+                </td>
+                <td>
+                    @Model.Note
+                </td>
+                <td>
+                    <a href="https://www.google.com/maps/place/@Model?.Address,+@Model?.City,+@Model?.State+@Model?.Zip/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+                        Map
+                    </a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
