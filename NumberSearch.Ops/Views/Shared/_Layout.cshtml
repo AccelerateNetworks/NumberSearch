@@ -18,8 +18,28 @@
                     </a>
                 </div>
                 <div class="col-xl-9 col-md-9 d-flex flex-wrap justify-content-around align-items-center">
-                    <a class="p-2 text-dark" asp-controller="Home" asp-action="Orders">Orders</a>
-                    <a class="p-2 text-dark" asp-controller="Home" asp-action="Numbers">Numbers</a>
+                    <div class="nav-item dropdown">
+                        <div class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Orders
+                        </div>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" asp-controller="Home" asp-action="Orders">Orders</a>
+                            <a class="dropdown-item" asp-controller="Home" asp-action="TaxRates">Tax Rates</a>
+                        </div>
+                    </div>
+                    <div class="nav-item dropdown">
+                        <div class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Numbers
+                        </div>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" asp-controller="Home" asp-action="Numbers">Numbers</a>
+                            <a class="dropdown-item" asp-controller="Home" asp-action="NumberOrders">Purchased Numbers</a>
+                            <a class="dropdown-item" asp-controller="Home" asp-action="OwnedNumbers">Owned Numbers</a>
+                            <a class="dropdown-item" asp-controller="Home" asp-action="Emails">Sent Emails</a>
+                            <a class="dropdown-item" asp-controller="Home" asp-action="PortRequests">Port Requests</a>
+                            <a class="dropdown-item" asp-controller="Home" asp-action="EmergencyInformation">Emergency Information</a>
+                        </div>
+                    </div>
                     <a class="p-2 text-dark" asp-controller="Home" asp-action="Ingests">Ingests</a>
                     <a class="p-2 text-dark" asp-controller="Home" asp-action="Tests">Tests</a>
                     <partial name="_LoginPartial" />

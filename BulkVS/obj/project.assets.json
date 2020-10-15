@@ -49,11 +49,11 @@
           "lib/netstandard2.0/MailKit.dll": {}
         }
       },
-      "Microsoft.AspNetCore.Http.Features/3.1.8": {
+      "Microsoft.AspNetCore.Http.Features/3.1.9": {
         "type": "package",
         "dependencies": {
-          "Microsoft.Extensions.Primitives": "3.1.8",
-          "System.IO.Pipelines": "4.7.2"
+          "Microsoft.Extensions.Primitives": "3.1.9",
+          "System.IO.Pipelines": "4.7.3"
         },
         "compile": {
           "lib/netcoreapp3.1/Microsoft.AspNetCore.Http.Features.dll": {}
@@ -261,7 +261,7 @@
           "lib/netcoreapp3.1/Microsoft.Extensions.Options.dll": {}
         }
       },
-      "Microsoft.Extensions.Primitives/3.1.8": {
+      "Microsoft.Extensions.Primitives/3.1.9": {
         "type": "package",
         "compile": {
           "lib/netcoreapp3.1/Microsoft.Extensions.Primitives.dll": {}
@@ -303,7 +303,7 @@
           "lib/netstandard2.0/Newtonsoft.Json.dll": {}
         }
       },
-      "Npgsql/4.1.4": {
+      "Npgsql/4.1.5": {
         "type": "package",
         "dependencies": {
           "System.Runtime.CompilerServices.Unsafe": "4.6.0"
@@ -375,7 +375,7 @@
           "lib/netstandard1.3/System.Diagnostics.DiagnosticSource.dll": {}
         }
       },
-      "System.IO.Pipelines/4.7.2": {
+      "System.IO.Pipelines/4.7.3": {
         "type": "package",
         "compile": {
           "ref/netcoreapp2.0/System.IO.Pipelines.dll": {}
@@ -625,10 +625,10 @@
           "Dapper": "2.0.35",
           "Flurl.Http": "2.4.2",
           "MailKit": "2.9.0",
-          "Microsoft.AspNetCore.Http.Features": "3.1.8",
+          "Microsoft.AspNetCore.Http.Features": "3.1.9",
           "Microsoft.CSharp": "4.7.0",
           "MimeKit": "2.9.2",
-          "Npgsql": "4.1.4",
+          "Npgsql": "4.1.5",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "3.1.4",
           "Serilog": "2.10.0",
           "System.ServiceModel.Duplex": "4.7.0",
@@ -734,10 +734,10 @@
         "mailkit.nuspec"
       ]
     },
-    "Microsoft.AspNetCore.Http.Features/3.1.8": {
-      "sha512": "hPBe3ATzZxUqA6QaIKf9IVQa//Eake3jeqfwHyq95n0fe7j7v6hWc9QGGWQquA3psN7epz029jjTS4zvFLC32g==",
+    "Microsoft.AspNetCore.Http.Features/3.1.9": {
+      "sha512": "nKccHYOQ5gxClkFiKW+EgNvtdLIEUk2d9loxZma02q4nWhoPErqJowYA46ZDF4rF4I5kFaZbHJYRCKufVficJg==",
       "type": "package",
-      "path": "microsoft.aspnetcore.http.features/3.1.8",
+      "path": "microsoft.aspnetcore.http.features/3.1.9",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -747,7 +747,7 @@
         "lib/netcoreapp3.1/Microsoft.AspNetCore.Http.Features.xml",
         "lib/netstandard2.0/Microsoft.AspNetCore.Http.Features.dll",
         "lib/netstandard2.0/Microsoft.AspNetCore.Http.Features.xml",
-        "microsoft.aspnetcore.http.features.3.1.8.nupkg.sha512",
+        "microsoft.aspnetcore.http.features.3.1.9.nupkg.sha512",
         "microsoft.aspnetcore.http.features.nuspec"
       ]
     },
@@ -1088,10 +1088,10 @@
         "microsoft.extensions.options.nuspec"
       ]
     },
-    "Microsoft.Extensions.Primitives/3.1.8": {
-      "sha512": "XcIoXQhT0kwnEhOKv/LmpWR6yF6QWmBTy9Fcsz4aHuCOgTJ7Zd23ELtUA4BfwlYoFlSedavS+vURz9tNekd44g==",
+    "Microsoft.Extensions.Primitives/3.1.9": {
+      "sha512": "IrHecH0eGG7/XoeEtv++oLg/sJHRNyeCqlA9RhAo6ig4GpOTjtDr32sBMYuuLtUq8ALahneWkrOzoBAwJ4L4iA==",
       "type": "package",
-      "path": "microsoft.extensions.primitives/3.1.8",
+      "path": "microsoft.extensions.primitives/3.1.9",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -1100,7 +1100,7 @@
         "lib/netcoreapp3.1/Microsoft.Extensions.Primitives.xml",
         "lib/netstandard2.0/Microsoft.Extensions.Primitives.dll",
         "lib/netstandard2.0/Microsoft.Extensions.Primitives.xml",
-        "microsoft.extensions.primitives.3.1.8.nupkg.sha512",
+        "microsoft.extensions.primitives.3.1.9.nupkg.sha512",
         "microsoft.extensions.primitives.nuspec"
       ]
     },
@@ -1184,10 +1184,10 @@
         "newtonsoft.json.nuspec"
       ]
     },
-    "Npgsql/4.1.4": {
-      "sha512": "qLwnSF7GAAxxrNFH3EprG352CJbhTCIDkk9PJ3/6aBeMOZBq+QMI1Yxsi9aUrBJwE51PaMLIYw0eq/bv9CGQTw==",
+    "Npgsql/4.1.5": {
+      "sha512": "juDlNse+SKfXRP0VSgpJkpdCcaVLZt8m37EHdRX+8hw+GG69Eat1Y0MdEfl+oetdOnf9E133GjIDEjg9AF6HSQ==",
       "type": "package",
-      "path": "npgsql/4.1.4",
+      "path": "npgsql/4.1.5",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -1199,7 +1199,7 @@
         "lib/netstandard2.0/Npgsql.xml",
         "lib/netstandard2.1/Npgsql.dll",
         "lib/netstandard2.1/Npgsql.xml",
-        "npgsql.4.1.4.nupkg.sha512",
+        "npgsql.4.1.5.nupkg.sha512",
         "npgsql.nuspec",
         "postgresql.png"
       ]
@@ -1401,10 +1401,10 @@
         "version.txt"
       ]
     },
-    "System.IO.Pipelines/4.7.2": {
-      "sha512": "rGIIhoY3lUdn9rWeuGdgeZZ0P+SpJ1wZI5g8TnXqgvuhFgUP7iP9Nt5FZebYInQZQxqnwjPxdYYBE5l/8PJmqQ==",
+    "System.IO.Pipelines/4.7.3": {
+      "sha512": "zykThu9scJyg2Yeg27GMZCbjzniIsmjtNP5x6kQCd/8rEeKXRy20fP2NOMS7xQ+0pS/E85LZQA+K1aoQLxiUdw==",
       "type": "package",
-      "path": "system.io.pipelines/4.7.2",
+      "path": "system.io.pipelines/4.7.3",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -1423,7 +1423,7 @@
         "ref/net461/System.IO.Pipelines.xml",
         "ref/netcoreapp2.0/System.IO.Pipelines.dll",
         "ref/netcoreapp2.0/System.IO.Pipelines.xml",
-        "system.io.pipelines.4.7.2.nupkg.sha512",
+        "system.io.pipelines.4.7.3.nupkg.sha512",
         "system.io.pipelines.nuspec",
         "useSharedDesignerContext.txt",
         "version.txt"
@@ -2263,7 +2263,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.402\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.403\\RuntimeIdentifierGraph.json"
       }
     }
   }
