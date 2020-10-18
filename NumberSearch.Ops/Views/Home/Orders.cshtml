@@ -2,9 +2,7 @@
 @{
     ViewData["Title"] = "Orders";
 }
-<br />
-<h1 class="display-4">Orders</h1>
-<br />
+<h1 class="display-4 p-3">🛒 Orders</h1>
 <div class="table-responsive">
     <table class="table table-striped table-borderless table-hover" id="table">
         <thead>
@@ -14,6 +12,9 @@
                 </th>
                 <th scope="col">
                     Customer Information
+                </th>
+                <th>
+                    Cusomter Notes
                 </th>
                 <th scope="col">
                     Products Ordered
@@ -80,10 +81,11 @@
 
                                 @order.Order.Zip
                             </p>
+                        </td>
+                        <td>
                             @{
                                 if (!string.IsNullOrWhiteSpace(order.Order.CustomerNotes))
                                 {
-                                    <strong>Customer Notes</strong>
                                     <p>@order.Order.CustomerNotes</p>
                                 }
                             }

@@ -9,47 +9,87 @@
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
-    <div class="pt-3">
-        <div class="container">
-            <div class="row">
-                <div class="col-xl-3 col-md-3">
-                    <a asp-controller="Home" asp-action="Orders" class="navbar-brand mx-auto font-weight-normal">
-                        <img src="~/images/scaled/accelerate.png" alt="Accelerate Networks" class="img-fluid" style="width: 10rem;">
-                    </a>
+    <nav class="navbar navbar-dark sticky-top bg-light flex-md-nowrap p-0">
+        <a class="navbar-brand col-sm-3 col-md-2 mr-0 p-3" href="/">
+            <img src="~/images/scaled/accelerate.png" alt="Accelerate Networks" class="img-fluid" style="width: 10rem;">
+        </a>
+        @*<input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">*@
+        <ul class="navbar ml-auto">
+            <partial name="_LoginPartial" />
+        </ul>
+    </nav>
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-2 d-none d-md-block bg-white sidebar">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <h4 class="sidebar-heading d-flex justify-content-between align-items-center pt-3 mb-1 text-muted">
+                            <span>Orders</span>
+                        </h4>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Orders">
+                                🛒   Orders
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="TaxRates">
+                                ⚖️   Tax Rates
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Emails">
+                                📧    Sent Emails
+                            </a>
+                        </li>
+                        <h4 class="sidebar-heading d-flex justify-content-between align-items-center mt-1 mb-1 text-muted">
+                            <span>Phone Numbers</span>
+                        </h4>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Numbers">
+                                ☎️   Available Numbers
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="NumberOrders">
+                                🧾   Purchased Numbers
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="PortRequests">
+                                🚢   Port Requests
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="OwnedNumbers">
+                                🏢   Owned Numbers
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="EmergencyInformation">
+                                🚨   Emergency Information
+                            </a>
+                        </li>
+                        <h4 class="sidebar-heading d-flex justify-content-between align-items-center mt-1 mb-1 text-muted">
+                            <span>Tools</span>
+                        </h4>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Ingests">
+                                💨   Ingest Configuration
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Tests">
+                                🤔   Tests
+                            </a>
+                        </li>
+                    </ul>
                 </div>
-                <div class="col-xl-9 col-md-9 d-flex flex-wrap justify-content-around align-items-center">
-                    <div class="nav-item dropdown">
-                        <div class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Orders
-                        </div>
-                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" asp-controller="Home" asp-action="Orders">Orders</a>
-                            <a class="dropdown-item" asp-controller="Home" asp-action="TaxRates">Tax Rates</a>
-                        </div>
-                    </div>
-                    <div class="nav-item dropdown">
-                        <div class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Numbers
-                        </div>
-                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" asp-controller="Home" asp-action="Numbers">Numbers</a>
-                            <a class="dropdown-item" asp-controller="Home" asp-action="NumberOrders">Purchased Numbers</a>
-                            <a class="dropdown-item" asp-controller="Home" asp-action="OwnedNumbers">Owned Numbers</a>
-                            <a class="dropdown-item" asp-controller="Home" asp-action="Emails">Sent Emails</a>
-                            <a class="dropdown-item" asp-controller="Home" asp-action="PortRequests">Port Requests</a>
-                            <a class="dropdown-item" asp-controller="Home" asp-action="EmergencyInformation">Emergency Information</a>
-                        </div>
-                    </div>
-                    <a class="p-2 text-dark" asp-controller="Home" asp-action="Ingests">Ingests</a>
-                    <a class="p-2 text-dark" asp-controller="Home" asp-action="Tests">Tests</a>
-                    <partial name="_LoginPartial" />
-                </div>
-            </div>
+            </nav>
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10">
+                @RenderBody()
+            </main>
         </div>
     </div>
-    <main role="main" class="container">
-        @RenderBody()
-    </main>
 
     <script src="~/lib/jquery/dist/jquery.min.js" type="text/javascript"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" type="text/javascript" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
