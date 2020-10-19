@@ -367,20 +367,22 @@ namespace NumberSearch.Mvc.Controllers
                     PrimaryEmailAddress = order.Email,
                     CarbonCopy = configuration.GetConnectionString("SmtpUsername"),
                     MessageBody = $@"Hi {order.FirstName},
-                                                                                      
-Thank you for choosing Accelerate Networks!
-
-Your order Id is: {order.OrderId} and you have successfully added additional Porting information to accelerate the process.
-
-You can review your order at https://acceleratenetworks.com/Cart/Order/{order.OrderId}
-                                                                                      
-A delivery specialist will send you a follow up email to walk you through the next steps in the process.
-
-Thanks,
-
-Accelerate Networks",
+</br>
+</br>
+Thanks for adding porting information to your order!
+</br>
+</br>
+Feel free to <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>review the order here</a>, and let us know if you have any questions.
+</br>
+</br>
+Sincerely,
+</br>
+</br>
+Accelerate Networks
+</br>
+206-858-8757 (call or text)",
                     OrderId = order.OrderId,
-                    Subject = $"Order: {order.OrderId} Added Porting Information",
+                    Subject = $"Porting information added for {portedNumbers.FirstOrDefault().PortedDialedNumber}",
                     Multipart = multipart
                 };
 

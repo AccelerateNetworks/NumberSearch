@@ -110,7 +110,7 @@ namespace NumberSearch.DataAccess
                     Subject = Subject
                 };
 
-                var bodyText = new TextPart(TextFormat.Plain)
+                var bodyText = new TextPart(TextFormat.Html)
                 {
                     Text = MessageBody
                 };

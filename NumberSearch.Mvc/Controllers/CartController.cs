@@ -688,11 +688,17 @@ namespace NumberSearch.Mvc.Controllers
 
                         // Track the number of free ports this order qualifies for.
                         var freePortedNumbers = cart.Services.Count();
+                        var emailSubject = string.Empty;
 
                         foreach (var productOrder in cart.ProductOrders)
                         {
                             productOrder.OrderId = order.OrderId;
                             var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+
+                            if (!string.IsNullOrWhiteSpace(productOrder.DialedNumber))
+                            {
+                                emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? productOrder.DialedNumber : emailSubject;
+                            }
 
                             if (!string.IsNullOrWhiteSpace(productOrder.PortedDialedNumber))
                             {
@@ -723,6 +729,8 @@ namespace NumberSearch.Mvc.Controllers
                                         qty = 1
                                     });
                                 }
+
+                                emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? productOrder.PortedDialedNumber : emailSubject;
                             }
 
                             if (productOrder.ProductId != Guid.Empty)
@@ -740,6 +748,8 @@ namespace NumberSearch.Mvc.Controllers
                                         qty = productOrder.Quantity
                                     });
                                 }
+
+                                emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? product.Name : emailSubject;
                             }
 
                             if (productOrder.ServiceId != Guid.Empty)
@@ -757,6 +767,8 @@ namespace NumberSearch.Mvc.Controllers
                                         qty = productOrder.Quantity
                                     });
                                 }
+
+                                emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? service.Name : emailSubject;
                             }
                         }
 
@@ -848,20 +860,22 @@ namespace NumberSearch.Mvc.Controllers
                             PrimaryEmailAddress = order.Email,
                             CarbonCopy = _configuration.GetConnectionString("SmtpUsername"),
                             MessageBody = $@"Hi {order.FirstName},
-                                                                                      
-Thank you for choosing Accelerate Networks!
-
-Your order Id is: {order.OrderId} and it was submitted on {order.DateSubmitted.ToLocalTime().ToShortDateString()} at {order.DateSubmitted.ToLocalTime().ToShortTimeString()}.
-
-You can review your order at https://acceleratenetworks.com/Cart/Order/{order.OrderId}
-                                                                                      
-A delivery specialist will send you a follow up email to walk you through the next steps in the process.
-
+</br>
+</br>                                                                            
+Thank you for choosing Accelerate Networks! 
+</br>
+</br>                                                                            
+Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
+</br>
+</br>                                                                            
 Thanks,
-
-Accelerate Networks",
+</br>                                                                            
+</br>                                                                            
+Accelerate Networks
+</br>                                                                            
+206-858-8757 (call or text)",
                             OrderId = order.OrderId,
-                            Subject = $"Order: {order.OrderId}"
+                            Subject = $"Order confirmation for {emailSubject}"
                         };
 
                         var checkSend = await confirmationEmail.SendEmailAsync(_configuration.GetConnectionString("SmtpUsername"), _configuration.GetConnectionString("SmtpPassword")).ConfigureAwait(false);
