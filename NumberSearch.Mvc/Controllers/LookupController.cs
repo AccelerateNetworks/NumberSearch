@@ -4,11 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.Data247;
 using NumberSearch.Mvc.Models;
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
@@ -19,6 +21,8 @@ namespace NumberSearch.Mvc.Controllers
         private readonly Guid _teleToken;
         private readonly string _postgresql;
         private readonly string _bulkVSKey;
+        private readonly string _data247username;
+        private readonly string _data247password;
 
         public LookupController(IConfiguration config)
         {
@@ -26,7 +30,8 @@ namespace NumberSearch.Mvc.Controllers
             _teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
             _postgresql = _configuration.GetConnectionString("PostgresqlProd");
             _bulkVSKey = config.GetConnectionString("BulkVSAPIKEY");
-
+            _data247username = config.GetConnectionString("Data247Username");
+            _data247password = config.GetConnectionString("Data247Password");
         }
 
         public async Task<IActionResult> IndexAsync(string dialedNumber)
@@ -78,7 +83,10 @@ namespace NumberSearch.Mvc.Controllers
                         checkNumber.data.port_date = bulkResult.lrn;
                     }
 
+                    var numberName = await LIDBLookup.GetAsync(number, _data247username, _data247password).ConfigureAwait(false);
+
                     checkNumber.data.DialedNumber = number;
+                    checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.response?.results?.FirstOrDefault()?.name) ? string.Empty : numberName?.response?.results?.FirstOrDefault()?.name;
                     results.Add(checkNumber);
                 }
 

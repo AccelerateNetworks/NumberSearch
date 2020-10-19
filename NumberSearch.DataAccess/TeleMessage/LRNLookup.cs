@@ -10,6 +10,7 @@ namespace NumberSearch.DataAccess
         public int code { get; set; }
         public string status { get; set; }
         public TeleLRNResult data { get; set; }
+        public string LIDBName { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Mirrors the external API")]
         public class TeleLRNResult

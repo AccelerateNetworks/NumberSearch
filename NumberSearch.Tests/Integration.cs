@@ -5,6 +5,7 @@ using FirstCom;
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.Data247;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.TeleMesssage;
 
@@ -32,6 +33,8 @@ namespace NumberSearch.Tests
         private readonly string postgresql;
         private readonly string peerlessAPIKey;
         private readonly string invoiceNinjaToken;
+        private readonly string _data247username;
+        private readonly string _data247password;
 
         public Integration(ITestOutputHelper output)
         {
@@ -56,6 +59,8 @@ namespace NumberSearch.Tests
             postgresql = config.GetConnectionString("PostgresqlProd");
             peerlessAPIKey = config.GetConnectionString("PeerlessAPIKey");
             invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
+            _data247username = config.GetConnectionString("Data247Username");
+            _data247password = config.GetConnectionString("Data247Password");
         }
 
         [Fact]
@@ -352,6 +357,20 @@ namespace NumberSearch.Tests
             Assert.False(string.IsNullOrWhiteSpace(result.status));
             Assert.True(result.code == 200);
             Assert.False(string.IsNullOrWhiteSpace(result.data.lrn));
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+        }
+
+        [Fact]
+        public async Task LIDBLookupAsync()
+        {
+            // Arrange
+            string phoneNumber = "14257808879";
+
+            // Act
+            var result = await LIDBLookup.GetAsync(phoneNumber, _data247username, _data247password).ConfigureAwait(false);
+
+            // Assert        
+            Assert.NotNull(result);
             output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
         }
 
