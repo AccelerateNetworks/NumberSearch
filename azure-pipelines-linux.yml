@@ -27,6 +27,8 @@ variables:
   ConnectionStrings.MicrosoftClientSecret: $(MicrosoftClientSecret)
   ConnectionStrings.MicrosoftClientId: $(MicrosoftClientId)
   ConnectionStrings.InvoiceNinjaToken: $(InvoiceNinjaToken)
+  ConnectionStrings.Data247Username: $(Data247Username)
+  ConnectionStrings.Data247Password: $(Data247Password)
   ApplicationInsights.InstrumentationKey: $(InstrumentationKey)
 
 steps:
