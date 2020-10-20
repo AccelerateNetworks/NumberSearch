@@ -292,6 +292,14 @@
                         <label for="zip" class="text-muted">Notes</label>
                         <input asp-for="Order.CustomerNotes" type="text" class="form-control" id="customernotes" placeholder="Add important information for our staff">
                     </div>
+                    <div class="col-md-12">
+                        <div class="form-check">
+                            <input asp-for="Order.Quote" type="checkbox" class="form-check-input" id="defaultCheck1">
+                            <label class="form-check-label" for="defaultCheck1">
+                                Please send a quote
+                            </label>
+                        </div>
+                    </div>
                 </div>
                 @{
                     if (Model?.Order?.OrderId == Guid.Empty)

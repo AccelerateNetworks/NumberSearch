@@ -920,6 +920,13 @@ Accelerate Networks
                             tax_rate1 = billingTaxRate.rate
                         };
 
+                        // If they want just a Quote, create a quote in the billing system, not an invoice.
+                        if (order.Quote)
+                        {
+                            testCreate.is_quote = true;
+                            testCreate.invoice_type_id = 2;
+                        }
+
                         var createNewInvoice = await testCreate.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
 
                         // Update the order with the billing system's client and invoice Id's.
