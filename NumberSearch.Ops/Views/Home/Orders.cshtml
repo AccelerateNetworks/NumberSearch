@@ -28,36 +28,48 @@
                     var businessName = string.IsNullOrWhiteSpace(order.Order.BusinessName) ? "Consumer" : order.Order.BusinessName;
                     <tr>
                         <th scope="row" data-order="@order.Order.DateSubmitted.Ticks">
-                            <a href="https://acceleratenetworks.com/cart/order/@order.Order.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                                Order
-                            </a>
-                            <a href="/Home/Emails/@order?.Order?.OrderId" class="btn btn-outline-secondary" target="_blank" rel="noopener noreferrer">
-                                Emails
-                            </a>
-                            <a href="https://www.google.com/maps/place/@order?.Order?.Address,+@order?.Order?.City,+@order?.Order?.State+@order?.Order?.Zip/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
-                                Map
-                            </a>
+                            <div class="btn-group" role="group" aria-label="Basic example">
+                                <a href="https://acceleratenetworks.com/cart/order/@order.Order.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                                    Order
+                                </a>
+                                <a href="/Home/Emails/@order?.Order?.OrderId" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+                                    Emails
+                                </a>
+                                <a href="https://www.google.com/maps/place/@order?.Order?.Address,+@order?.Order?.City,+@order?.Order?.State+@order?.Order?.Zip/" class="btn btn-outline-secondary" target="_blank" rel="noopener noreferrer">
+                                    Map
+                                </a>
+                            </div>
                             <h4 class="d-flex justify-content-between align-items-center mt-3">
                                 <span class="badge badge-info badge-pill">
                                     @order.Order.DateSubmitted
                                 </span>
                             </h4>
-                            @{
-                                if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceId))
-                                {
-                                    <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-info" target="_blank" rel="noopener noreferrer">
-                                        Invoice
-                                    </a>
+                            <div class="btn-group mt-2" role="group" aria-label="Basic example">
+                                @{
+                                    if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceId))
+                                    {
+                                        <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-outline-primary" target="_blank" rel="noopener noreferrer">
+                                            Upfront
+                                        </a>
+                                    }
                                 }
-                            }
-                            @{
-                                if (!string.IsNullOrWhiteSpace(order.Order.BillingClientId))
-                                {
-                                    <a href="https://billing.acceleratenetworks.com/clients/@order?.Order?.BillingClientId/edit" class="btn btn-outline-info" target="_blank" rel="noopener noreferrer">
-                                        Client
-                                    </a>
+                                @{
+                                    if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceReoccuringId))
+                                    {
+                                        <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-outline-success" target="_blank" rel="noopener noreferrer">
+                                            Reoccuring
+                                        </a>
+                                    }
                                 }
-                            }
+                                @{
+                                    if (!string.IsNullOrWhiteSpace(order.Order.BillingClientId))
+                                    {
+                                        <a href="https://billing.acceleratenetworks.com/clients/@order?.Order?.BillingClientId/edit" class="btn btn-outline-info" target="_blank" rel="noopener noreferrer">
+                                            Client
+                                        </a>
+                                    }
+                                }
+                            </div>
                         </th>
                         <td>
                             <strong>Business Name</strong>
