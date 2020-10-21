@@ -66,32 +66,61 @@ namespace NumberSearch.Ops.Controllers
 
 
         [Authorize]
-        public async Task<IActionResult> Orders()
+        [Route("/")]
+        [Route("/Home/Order/")]
+        [Route("/Home/Order/{orderId}")]
+        public async Task<IActionResult> Orders(Guid? orderId)
         {
-            // Show all orders
-            var orders = await Order.GetAllAsync(_postgresql).ConfigureAwait(false);
-            var productOrders = await ProductOrder.GetAllAsync(_postgresql).ConfigureAwait(false);
-            var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
-            var services = await Service.GetAllAsync(_postgresql).ConfigureAwait(false);
-            var pairs = new List<OrderProducts>();
-
-            foreach (var order in orders)
+            if (orderId is null)
             {
-                var orderProductOrders = productOrders.Where(x => x.OrderId == order.OrderId).ToArray();
+                // Show all orders
+                var orders = await Order.GetAllAsync(_postgresql).ConfigureAwait(false);
+                var productOrders = await ProductOrder.GetAllAsync(_postgresql).ConfigureAwait(false);
+                var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
+                var services = await Service.GetAllAsync(_postgresql).ConfigureAwait(false);
+                var pairs = new List<OrderProducts>();
 
-                pairs.Add(new OrderProducts
+                foreach (var order in orders)
                 {
-                    Order = order,
-                    ProductOrders = orderProductOrders
+                    var orderProductOrders = productOrders.Where(x => x.OrderId == order.OrderId).ToArray();
+
+                    pairs.Add(new OrderProducts
+                    {
+                        Order = order,
+                        ProductOrders = orderProductOrders
+                    });
+                }
+
+                return View("Orders", new OrderResult
+                {
+                    Orders = pairs,
+                    Products = products,
+                    Services = services
                 });
             }
-
-            return View("Orders", new OrderResult
+            else
             {
-                Orders = pairs,
-                Products = products,
-                Services = services
-            });
+                var order = await Order.GetByIdAsync(orderId ?? new Guid(), _postgresql).ConfigureAwait(false);
+
+                return View("OrderEdit", order);
+            }
+        }
+
+        [Authorize]
+        [Route("/Home/Order/{orderId}")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OrderUpdate(Order order)
+        {
+            if (order is null)
+            {
+                return Redirect("/Home/Order");
+            }
+            else
+            {
+                order = await Order.GetByIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                return View("OrderEdit", order);
+            }
         }
 
         [Authorize]

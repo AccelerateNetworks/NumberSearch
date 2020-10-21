@@ -1,0 +1,155 @@
+﻿@model NumberSearch.DataAccess.Order
+@{
+    ViewData["Title"] = "Order";
+}
+<h1 class="display-4 p-3">🛒 Order @Model?.OrderId</h1>
+<div class="col-md-8 order-md-1 pb-5">
+    <h4 class="mb-3">Billing Information</h4>
+    <form action="/Home/Order/@Model?.OrderId" method="post" class="needs-validation">
+        @Html.AntiForgeryToken()
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="firstName">First name</label>
+                <input asp-for="FirstName" type="text" class="form-control" id="firstName" placeholder="Alexander" required>
+                <div class="invalid-feedback">
+                    Valid first name is required.
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="lastName">Last name</label>
+                <input asp-for="LastName" type="text" class="form-control" id="lastName" placeholder="Bell" required>
+                <div class="invalid-feedback">
+                    Valid last name is required.
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="email">Business Name (Optional)</label>
+            <input asp-for="BusinessName" type="text" class="form-control" id="businessName" placeholder="American Telegraph and Telephone Company">
+            <div class="invalid-feedback">
+                Please enter a valid business name.
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="email">Email </label>
+            <input asp-for="Email" type="email" class="form-control" id="email" placeholder="you@example.com" required>
+            <div class="invalid-feedback">
+                Please enter a valid email address for shipping updates.
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="address">Address</label>
+            <input asp-for="Address" type="text" class="form-control" id="address" placeholder="1234 Main St" required>
+            <div class="invalid-feedback">
+                Please enter your shipping address.
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="address2">Address 2 <span class="text-muted">(Optional)</span></label>
+            <input asp-for="Address2" type="text" class="form-control" id="address2" placeholder="Apartment or suite">
+        </div>
+
+        <div class="row">
+            <div class="col-md-5 mb-3">
+                <label for="country">City</label>
+                <input asp-for="City" type="text" class="form-control" id="city" placeholder="Seattle" required>
+                <div class="invalid-feedback">
+                    Please enter your shipping city.
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="state">State</label>
+                <select asp-for="State" class="custom-select d-block w-100" id="state" required>
+                    <option value="">Choose...</option>
+                    @{
+                        var states = new string[] { "Alabama",
+                                                        "Alaska",
+                                                        "Arizona",
+                                                        "Arkansas",
+                                                        "California",
+                                                        "Colorado",
+                                                        "Connecticut",
+                                                        "Delaware",
+                                                        "Florida",
+                                                        "Georgia",
+                                                        "Hawaii",
+                                                        "Idaho",
+                                                        "Illinois",
+                                                        "Indiana",
+                                                        "Iowa",
+                                                        "Kansas",
+                                                        "Kentucky",
+                                                        "Louisiana",
+                                                        "Maine",
+                                                        "Maryland",
+                                                        "Massachusetts",
+                                                        "Michigan",
+                                                        "Minnesota",
+                                                        "Mississippi",
+                                                        "Missouri",
+                                                        "Montana",
+                                                        "Nebraska",
+                                                        "Nevada",
+                                                        "New Hampshire",
+                                                        "New Jersey",
+                                                        "New Mexico",
+                                                        "New York",
+                                                        "North Carolina",
+                                                        "North Dakota",
+                                                        "Ohio",
+                                                        "Oklahoma",
+                                                        "Oregon",
+                                                        "Pennsylvania",
+                                                        "Rhode Island",
+                                                        "South Carolina",
+                                                        "South Dakota",
+                                                        "Tennessee",
+                                                        "Texas",
+                                                        "Utah",
+                                                        "Vermont",
+                                                        "Virginia",
+                                                        "Washington",
+                                                        "West Virginia",
+                                                        "Wisconsin",
+                                                        "Wyoming"
+                                                        };
+
+                        foreach (var state in states)
+                        {
+                            <option>@state</option>
+                        }
+                    }
+                </select>
+                <div class="invalid-feedback">
+                    Please provide a valid state.
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="zip">Zip</label>
+                <input asp-for="Zip" type="text" class="form-control" id="zip" placeholder="" required>
+                <div class="invalid-feedback">
+                    Zip code required.
+                </div>
+            </div>
+            <div class="col-md-12 mb-3">
+                <label for="zip" class="text-muted">Notes</label>
+                <input asp-for="CustomerNotes" type="text" class="form-control" id="customernotes" placeholder="Add important information for our staff">
+            </div>
+            <div class="col-md-12">
+                <div class="form-check">
+                    <input asp-for="Quote" type="checkbox" class="form-check-input" id="defaultCheck1">
+                    <label class="form-check-label" for="defaultCheck1">
+                        Please send a quote
+                    </label>
+                </div>
+            </div>
+        </div>
+        <br />
+        <button type="submit" class="btn btn-danger">Update</button>
+        <br />
+    </form>
+</div>

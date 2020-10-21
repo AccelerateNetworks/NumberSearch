@@ -19,6 +19,9 @@
                 <th scope="col">
                     Products Ordered
                 </th>
+                <th>
+                    Action
+                </th>
             </tr>
         </thead>
         <tbody>
@@ -57,7 +60,7 @@
                                     if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceReoccuringId))
                                     {
                                         <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-outline-success" target="_blank" rel="noopener noreferrer">
-                                            Reoccuring
+                                            Recurring
                                         </a>
                                     }
                                 }
@@ -178,6 +181,11 @@
                                     </p>
                                 }
                             }
+                        </td>
+                        <td>
+                            <a href="/Home/Order/@order?.Order?.OrderId" class="btn btn-danger" target="_blank" rel="noopener noreferrer">
+                                Edit
+                            </a>
                         </td>
                     </tr>
                 }
