@@ -118,6 +118,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public string filename { get; set; }
         public int invoice_design_id { get; set; }
         public Invoice_Items[] invoice_items { get; set; }
+        public InvoiceInvitations[] invitations { get; set; }
 
         public async Task<InvoiceDatum> PostAsync(string token)
         {
@@ -131,7 +132,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             var result = await url
                 .WithHeader(tokenHeader, token)
                 .WithHeader(contentHeader, contentHeaderValue)
-                .PostJsonAsync(new { client_id = id, tax_name1, tax_rate1,invoice_type_id, is_quote, invoice_items })
+                .PostJsonAsync(new { client_id = id, tax_name1, tax_rate1, invoice_type_id, is_quote, invoice_items })
                 .ReceiveJson<InvoiceSingle>()
                 .ConfigureAwait(false);
 
@@ -223,6 +224,14 @@ namespace NumberSearch.DataAccess.InvoiceNinja
     }
 }
 
+public class InvoiceInvitations
+{
+    public int id { get; set; }
+    public string key { get; set; }
+    public string link { get; set; }
+    public string sent_date { get; set; }
+    public string viewed_date { get; set; }
+}
 
 public class Email_Invoice
 {

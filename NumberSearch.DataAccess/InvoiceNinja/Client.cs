@@ -71,6 +71,24 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             // Unwrap the data we want from the single-field parent object.
             return result.data;
         }
+
+        public static async Task<ClientDatum> GetByIdWithInoviceLinksAsync(int clientId, string token)
+        {
+            string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
+            string endpoint = "clients";
+            string tokenHeader = "X-Ninja-Token";
+            string clientIdParameter = $"/{clientId}";
+            string invitationsParameter = $"?include=invoices.invitations";
+            string url = $"{baseUrl}{endpoint}{clientIdParameter}{invitationsParameter}";
+
+            var result = await url
+                .WithHeader(tokenHeader, token)
+                .GetJsonAsync<ClientSingle>()
+                .ConfigureAwait(false);
+
+            // Unwrap the data we want from the single-field parent object.
+            return result.data;
+        }
     }
 
     /// <summary>
@@ -152,6 +170,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public int credit_number_counter { get; set; }
         public string custom_messages { get; set; }
         public ClientContact[] contacts { get; set; }
+        public InvoiceDatum[] invoices { get; set; }
 
         public async Task<ClientDatum> PostAsync(string token)
         {

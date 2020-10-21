@@ -142,6 +142,19 @@ namespace NumberSearch.Tests
             output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
         }
 
+        [Fact]
+        public async Task GetAllBillingClientsByIdAsync()
+        {
+            // Act
+            var result = await Client.GetByIdWithInoviceLinksAsync(15, invoiceNinjaToken);
+
+            // Assert        
+            Assert.NotNull(result);
+            Assert.False(string.IsNullOrWhiteSpace(result.invoices.LastOrDefault().invitations.FirstOrDefault().link));
+            output.WriteLine(result.invoices.LastOrDefault().invitations.FirstOrDefault().link);
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+        }
+
         //[Fact]
         //public async Task CreateAndSendAnInvoiceAsync()
         //{
@@ -1134,37 +1147,37 @@ namespace NumberSearch.Tests
             }
         }
 
-        [Fact]
-        public async Task GetSaleTaxForOrderAsync()
-        {
-            var conn = postgresql;
+        //[Fact]
+        //public async Task GetSaleTaxForOrderAsync()
+        //{
+        //    var conn = postgresql;
 
-            var results = await Order.GetAllAsync(conn).ConfigureAwait(false);
+        //    var results = await Order.GetAllAsync(conn).ConfigureAwait(false);
 
-            Assert.NotNull(results);
-            Assert.NotEmpty(results);
+        //    Assert.NotNull(results);
+        //    Assert.NotEmpty(results);
 
-            var order = results.FirstOrDefault();
+        //    var order = results.FirstOrDefault();
 
-            var taxrate = await SalesTax.GetTaxRateAsync(order.Address, order.City, order.Zip).ConfigureAwait(false);
+        //    var taxrate = await SalesTax.GetTaxRateAsync(order.Address, order.City, order.Zip).ConfigureAwait(false);
 
-            Assert.True(taxrate > 0.0M);
-            output.WriteLine($"Taxrate: {taxrate}");
-        }
+        //    Assert.True(taxrate > 0.0M);
+        //    output.WriteLine($"Taxrate: {taxrate}");
+        //}
 
-        [Fact]
-        public async Task GetRawSaleTaxInfoAsync()
-        {
-            string address = "LINDERSON WAY SW";
-            string city = string.Empty;
-            string zip = "98501";
+        //[Fact]
+        //public async Task GetRawSaleTaxInfoAsync()
+        //{
+        //    string address = "LINDERSON WAY SW";
+        //    string city = string.Empty;
+        //    string zip = "98501";
 
-            var result = await SalesTax.GetAsync(address, city, zip).ConfigureAwait(false);
+        //    var result = await SalesTax.GetAsync(address, city, zip).ConfigureAwait(false);
 
-            Assert.NotNull(result);
-            Assert.True(result.rate1 > 0.0M);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
-        }
+        //    Assert.NotNull(result);
+        //    Assert.True(result.rate1 > 0.0M);
+        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+        //}
 
         [Fact]
         public async Task PostOrderAsync()
