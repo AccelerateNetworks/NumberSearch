@@ -5,146 +5,130 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-    <div class="container">
-        <br />
-        <div class="pricing-header mx-auto mb-3 text-center">
-            <h1 class="display-4">Business Tools</h1>
-        </div>
-        <br />
-        <div class="card-deck mb-3 text-center">
-            <div class="card mb-4 box-shadow">
-                <div class="card-header">
-                    <h4 class="my-0 font-weight-normal">Web Texting</h4>
-                </div>
-                <div class="card-body">
-                    <h1 class="card-title pricing-card-title">$10 <small class="text-muted">/ mo</small></h1>
-                    <ul class="list-unstyled mt-3 mb-4">
-                        <li>Text from any browser</li>
-                        <li>SMS and MMS Supported</li>
-                        <li>Never miss a customer</li>
-                        <li>Communicate seamlessly</li>
-                    </ul>
-                    <a class="btn btn-lg btn-outline-primary" asp-controller="Cart" asp-action="BuyService" asp-route-id="86a8576f-15e4-4547-8705-7c98dbe5e58d">Start texting today</a>
-                </div>
-            </div>
-            <div class="card mb-4 box-shadow">
-                <div class="card-header">
-                    <h4 class="my-0 font-weight-normal">LTE Backup</h4>
-                </div>
-                <div class="card-body">
-                    <h1 class="card-title pricing-card-title">$30 <small class="text-muted">/ mo</small></h1>
-                    <ul class="list-unstyled mt-3 mb-4">
-                        <li>Always stay online!</li>
-                        <li>No Overages</li>
-                        <li>No Worries</li>
-                        <li>Unlimited Bandwidth</li>
-                    </ul>
-                    <a class="btn btn-lg btn-primary" asp-controller="Cart" asp-action="BuyService" asp-route-id="c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c">Protect your business</a>
-                </div>
-            </div>
-        </div>
-        <div class="card-deck mb-3 text-center">
-            <div class="card mb-4 box-shadow">
-                <div class="card-header">
-                    <h4 class="my-0 font-weight-normal">Toll Free Number</h4>
-                </div>
-                <div class="card-body">
-                    <h1 class="card-title pricing-card-title">$10 <small class="text-muted">/ mo</small></h1>
-                    <ul class="list-unstyled mt-3 mb-4">
-                        <li>SMS & MMS support</li>
-                        <li>Search Custom Numbers</li>
-                        <li>Not local or regional</li>
-                        <li>Free for clients to call</li>
-                    </ul>
-                    <a class="btn btn-lg btn-primary" asp-controller="Cart" asp-action="BuyService" asp-route-id="07a7ef6b-eb30-4a81-bc86-be193ef03aa0">Impress your clients</a>
-                </div>
-            </div>
-            <div class="card mb-4 box-shadow">
-                <div class="card-header">
-                    <h4 class="my-0 font-weight-normal">Fax Server</h4>
-                </div>
-                <div class="card-body">
-                    <h1 class="card-title pricing-card-title">$10 <small class="text-muted">/ mo</small></h1>
-                    <ul class="list-unstyled mt-3 mb-4">
-                        <li>Includes an Extra Phone Number</li>
-                        <li>Faxes forwarded to your email!</li>
-                        <li>Send faxes from the Web</li>
-                        <li>Caller ID on incoming Faxes</li>
-                    </ul>
-                    <a class="btn btn-lg btn-primary" asp-controller="Cart" asp-action="BuyService" asp-route-id="1133e9ab-50f1-4eb6-a756-6b705dcbd6e5">Send a Fax</a>
-                </div>
-            </div>
-        </div>
-        <div class="pricing-header mx-auto mb-3 text-center">
-            <h1 class="display-4">Phone Service</h1>
-        </div>
-        <br />
-        <div class="card-deck mb-3 text-center">
-            <div class="card mb-4 box-shadow">
-                <div class="card-header">
-                    <h4 class="my-0 font-weight-normal">Standard Lines</h4>
-                </div>
-                <div class="card-body">
-                    <h1 class="card-title pricing-card-title">$35 <small class="text-muted">/ mo</small></h1>
-                    <ul class="list-unstyled mt-3 mb-4">
-                        <li>Unlimited Calling</li>
-                        <li>HD Voice</li>
-                        <li>Music on Hold</li>
-                        <li>Call Menus and more</li>
-                        <li>Support 1 Concurrent call</li>
-                        <li>Have as many phones as you want!</li>
-                    </ul>
-                    <div class="btn-group">
-                        <form method="get" class="input-group input-group-lg">
-                            <input type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
-                            <div class="input-group-append">
-                                <button type="submit" class="btn btn-outline-primary" asp-controller="Cart" asp-action="BuyService" asp-route-id="16e2c639-445b-4ae6-9925-07300318206b" id="button-addon1">Start talking today</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <div class="card mb-4 box-shadow">
-                <div class="card-header">
-                    <h4 class="my-0 font-weight-normal">Concurrent Seats</h4>
-                </div>
-                <div class="card-body">
-                    <h1 class="card-title pricing-card-title">$20 <small class="text-muted">/ mo</small></h1>
-                    <ul class="list-unstyled mt-3 mb-4">
-                        <li>Unlimited Calling</li>
-                        <li>HD Voice</li>
-                        <li>Music on Hold</li>
-                        <li>Call Menus and more!</li>
-                        <li>Supports 1 Concurrent call per Seat</li>
-                    </ul>
-                    <div class="btn-group">
-                        <form method="get" class="input-group input-group-lg">
-                            <input type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
-                            <div class="input-group-append">
-                                <button type="submit" class="btn btn-outline-primary" asp-controller="Cart" asp-action="BuyService" asp-route-id="48eb4627-8692-4a3b-8be1-be64bbeea534" id="button-addon2">Start talking today</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <br />
-        <a type="button" class="btn btn-success btn-lg btn-block" asp-controller="Hardware" asp-action="Index">Add Hardware ⮞</a>
-        <br />
+<div class="container">
+    <br />
+    <div class="pricing-header mx-auto mb-3 text-center">
+        <h1 class="display-4">Business Tools</h1>
     </div>
-<script>
-    window.erxesSettings = {
-        messenger: {
-            brand_id: "MkxXi6",
-        },
-    };
-
-    (function () {
-        var script = document.createElement('script');
-        script.src = "https://acceleratenetworks.app.erxes.io/widgets/build/messengerWidget.bundle.js";
-        script.async = true;
-        var entry = document.getElementsByTagName('script')[0];
-        entry.parentNode.insertBefore(script, entry);
-    })();
-
-</script>
+    <br />
+    <div class="card-deck mb-3 text-center">
+        <div class="card mb-4 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">Web Texting</h4>
+            </div>
+            <div class="card-body">
+                <h1 class="card-title pricing-card-title">$10 <small class="text-muted">/ mo</small></h1>
+                <ul class="list-unstyled mt-3 mb-4">
+                    <li>Text from any browser</li>
+                    <li>SMS and MMS Supported</li>
+                    <li>Never miss a customer</li>
+                    <li>Communicate seamlessly</li>
+                </ul>
+                <a class="btn btn-lg btn-outline-primary" asp-controller="Cart" asp-action="BuyService" asp-route-id="86a8576f-15e4-4547-8705-7c98dbe5e58d">Start texting today</a>
+            </div>
+        </div>
+        <div class="card mb-4 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">LTE Backup</h4>
+            </div>
+            <div class="card-body">
+                <h1 class="card-title pricing-card-title">$30 <small class="text-muted">/ mo</small></h1>
+                <ul class="list-unstyled mt-3 mb-4">
+                    <li>Always stay online!</li>
+                    <li>No Overages</li>
+                    <li>No Worries</li>
+                    <li>Unlimited Bandwidth</li>
+                </ul>
+                <a class="btn btn-lg btn-primary" asp-controller="Cart" asp-action="BuyService" asp-route-id="c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c">Protect your business</a>
+            </div>
+        </div>
+    </div>
+    <div class="card-deck mb-3 text-center">
+        <div class="card mb-4 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">Toll Free Number</h4>
+            </div>
+            <div class="card-body">
+                <h1 class="card-title pricing-card-title">$10 <small class="text-muted">/ mo</small></h1>
+                <ul class="list-unstyled mt-3 mb-4">
+                    <li>SMS & MMS support</li>
+                    <li>Search Custom Numbers</li>
+                    <li>Not local or regional</li>
+                    <li>Free for clients to call</li>
+                </ul>
+                <a class="btn btn-lg btn-primary" asp-controller="Cart" asp-action="BuyService" asp-route-id="07a7ef6b-eb30-4a81-bc86-be193ef03aa0">Impress your clients</a>
+            </div>
+        </div>
+        <div class="card mb-4 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">Fax Server</h4>
+            </div>
+            <div class="card-body">
+                <h1 class="card-title pricing-card-title">$10 <small class="text-muted">/ mo</small></h1>
+                <ul class="list-unstyled mt-3 mb-4">
+                    <li>Includes an Extra Phone Number</li>
+                    <li>Faxes forwarded to your email!</li>
+                    <li>Send faxes from the Web</li>
+                    <li>Caller ID on incoming Faxes</li>
+                </ul>
+                <a class="btn btn-lg btn-primary" asp-controller="Cart" asp-action="BuyService" asp-route-id="1133e9ab-50f1-4eb6-a756-6b705dcbd6e5">Send a Fax</a>
+            </div>
+        </div>
+    </div>
+    <div class="pricing-header mx-auto mb-3 text-center">
+        <h1 class="display-4">Phone Service</h1>
+    </div>
+    <br />
+    <div class="card-deck mb-3 text-center">
+        <div class="card mb-4 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">Standard Lines</h4>
+            </div>
+            <div class="card-body">
+                <h1 class="card-title pricing-card-title">$35 <small class="text-muted">/ mo</small></h1>
+                <ul class="list-unstyled mt-3 mb-4">
+                    <li>Unlimited Calling</li>
+                    <li>HD Voice</li>
+                    <li>Music on Hold</li>
+                    <li>Call Menus and more</li>
+                    <li>Support 1 Concurrent call</li>
+                    <li>Have as many phones as you want!</li>
+                </ul>
+                <div class="btn-group">
+                    <form method="get" class="input-group input-group-lg">
+                        <input type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-outline-primary" asp-controller="Cart" asp-action="BuyService" asp-route-id="16e2c639-445b-4ae6-9925-07300318206b" id="button-addon1">Start talking today</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-4 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">Concurrent Seats</h4>
+            </div>
+            <div class="card-body">
+                <h1 class="card-title pricing-card-title">$20 <small class="text-muted">/ mo</small></h1>
+                <ul class="list-unstyled mt-3 mb-4">
+                    <li>Unlimited Calling</li>
+                    <li>HD Voice</li>
+                    <li>Music on Hold</li>
+                    <li>Call Menus and more!</li>
+                    <li>Supports 1 Concurrent call per Seat</li>
+                </ul>
+                <div class="btn-group">
+                    <form method="get" class="input-group input-group-lg">
+                        <input type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-outline-primary" asp-controller="Cart" asp-action="BuyService" asp-route-id="48eb4627-8692-4a3b-8be1-be64bbeea534" id="button-addon2">Start talking today</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+    <a type="button" class="btn btn-success btn-lg btn-block" asp-controller="Hardware" asp-action="Index">Add Hardware ⮞</a>
+    <br />
+</div>
