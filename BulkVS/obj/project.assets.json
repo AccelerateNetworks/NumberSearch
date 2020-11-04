@@ -14,7 +14,7 @@
           "lib/netstandard2.0/Dapper.dll": {}
         }
       },
-      "Flurl/2.8.2": {
+      "Flurl/3.0.0": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/Flurl.dll": {}
@@ -23,10 +23,10 @@
           "lib/netstandard2.0/Flurl.dll": {}
         }
       },
-      "Flurl.Http/2.4.2": {
+      "Flurl.Http/3.0.0": {
         "type": "package",
         "dependencies": {
-          "Flurl": "2.8.2",
+          "Flurl": "3.0.0",
           "Newtonsoft.Json": "12.0.2",
           "System.Text.Encoding.CodePages": "4.5.1"
         },
@@ -623,7 +623,7 @@
         "framework": ".NETStandard,Version=v2.0",
         "dependencies": {
           "Dapper": "2.0.35",
-          "Flurl.Http": "2.4.2",
+          "Flurl.Http": "3.0.0",
           "MailKit": "2.9.0",
           "Microsoft.AspNetCore.Http.Features": "3.1.9",
           "Microsoft.CSharp": "4.7.0",
@@ -661,44 +661,40 @@
         "lib/netstandard2.0/Dapper.xml"
       ]
     },
-    "Flurl/2.8.2": {
-      "sha512": "3VEYAqkGTGHgla4xuyEB4d8XGLeMX2k05C4WfI7YmKQHsL7RhoGu3L6h1xsKKTPFWjEL13p09XOIGwD1pQ86dg==",
+    "Flurl/3.0.0": {
+      "sha512": "ChxU0nz82zTbMX25+B0HpvmYp63VsYWjYGI0N3ovsN6rzyxSwp3UMKm69dL1JA/sNCSCrTo70R9ZSiQCE6+Rqw==",
       "type": "package",
-      "path": "flurl/2.8.2",
+      "path": "flurl/3.0.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "flurl.2.8.2.nupkg.sha512",
+        "flurl.3.0.0.nupkg.sha512",
         "flurl.nuspec",
-        "lib/net40/Flurl.dll",
-        "lib/net40/Flurl.xml",
-        "lib/netstandard1.0/Flurl.dll",
-        "lib/netstandard1.0/Flurl.xml",
-        "lib/netstandard1.3/Flurl.dll",
-        "lib/netstandard1.3/Flurl.xml",
+        "icon.png",
+        "lib/net461/Flurl.dll",
+        "lib/net461/Flurl.pdb",
+        "lib/net461/Flurl.xml",
         "lib/netstandard2.0/Flurl.dll",
+        "lib/netstandard2.0/Flurl.pdb",
         "lib/netstandard2.0/Flurl.xml"
       ]
     },
-    "Flurl.Http/2.4.2": {
-      "sha512": "VfSJ0DKzh6kf2IOZGG1/JpHajhtqzGp1t+M1QSyFGse7c4Gg1DpH80LTveYea2hV1BEtvPPEp6A4iZ78D8bxGQ==",
+    "Flurl.Http/3.0.0": {
+      "sha512": "20y0rStrI5WH7YvB1bUrc9OYyiP3XRK4ikk8gCTL4sn0yPIlCNdEtHCnJtPY5GlcUvWfIoCbJjgoBnmRs1r11w==",
       "type": "package",
-      "path": "flurl.http/2.4.2",
+      "path": "flurl.http/3.0.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "flurl.http.2.4.2.nupkg.sha512",
+        "flurl.http.3.0.0.nupkg.sha512",
         "flurl.http.nuspec",
-        "lib/net45/Flurl.Http.dll",
-        "lib/net45/Flurl.Http.xml",
-        "lib/net46/Flurl.Http.dll",
-        "lib/net46/Flurl.Http.xml",
-        "lib/netstandard1.1/Flurl.Http.dll",
-        "lib/netstandard1.1/Flurl.Http.xml",
-        "lib/netstandard1.3/Flurl.Http.dll",
-        "lib/netstandard1.3/Flurl.Http.xml",
+        "icon.png",
+        "lib/net461/Flurl.Http.dll",
+        "lib/net461/Flurl.Http.pdb",
+        "lib/net461/Flurl.xml",
         "lib/netstandard2.0/Flurl.Http.dll",
-        "lib/netstandard2.0/Flurl.Http.xml"
+        "lib/netstandard2.0/Flurl.Http.pdb",
+        "lib/netstandard2.0/Flurl.xml"
       ]
     },
     "MailKit/2.9.0": {
