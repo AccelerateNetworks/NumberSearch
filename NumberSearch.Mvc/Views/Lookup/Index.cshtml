@@ -29,10 +29,13 @@
                     <div class="input-group-prepend">
                         <span class="input-group-text">+1</span>
                     </div>
-                    <textarea class="form-control" aria-label="With textarea" type="text" name="dialedNumber" placeholder="Enter Phone Numbers" value="@Model?.DialedNumber"></textarea>
+                    <textarea class="form-control" aria-label="With textarea" type="text" name="dialedNumber" placeholder="Enter Phone Numbers">@Model?.DialedNumber</textarea>
                     @*<input type="text" name="dialedNumber" class="form-control" placeholder="Enter a Phone Number" value="@Model?.DialedNumber">*@
-                    <button type="submit" class="btn btn-success pr-4 pl-4" onclick="displayBusyIndicator()">Investigate</button>
+                    @*<button type="submit" class="btn btn-success pr-4 pl-4" onclick="displayBusyIndicator()">Investigate</button>*@
                     @*<button class="btn btn-info pr-3 pl-3" onclick="displayBusyIndicator()" asp-controller="Porting" asp-action="CheckPortability">Port</button>*@
+                </div>
+                <div class="input-group mx-auto pt-2">
+                    <button type="submit" class="btn btn-success btn-block" onclick="displayBusyIndicator()">Investigate</button>
                 </div>
             </div>
         </form>
@@ -54,16 +57,16 @@
                                 Last Port Date
                             </th>
                             <th>
-                                LIBD Name
+                                Caller Name
                             </th>
                             <th>
                                 Creation Date
                             </th>
                             <th>
-                                LRN
+                                Local Routing #
                             </th>
                             <th>
-                                SPID Name
+                                Carrier
                             </th>
                         </tr>
                     </thead>
@@ -73,7 +76,7 @@
                             {
                                 <tr>
                                     <td>
-                                        @number.data?.DialedNumber
+                                        <h4>@number.data?.DialedNumber</h4>
                                     </td>
                                     <td>
                                         @number.data?.port_date
@@ -85,15 +88,13 @@
                                         @number.data?.creation_date
                                     </td>
                                     <td>
-                                        @number.data?.lrn
+                                        <h4>@number.data?.lrn</h4>
                                     </td>
                                     <td>
                                         <p>
                                             @number.data?.spid
-                                        </p>
-                                        <p>
+                                            -
                                             @number.data?.spid_name
-
                                         </p>
                                     </td>
                                 </tr>

@@ -21,9 +21,11 @@
                     <div class="input-group-prepend">
                         <span class="input-group-text">+1</span>
                     </div>
-                    <input type="text" name="Query" class="form-control" placeholder="Existing Phone Number">
-                    <button type="submit" class="btn btn-success" onclick="displayBusyIndicator()">Port</button>
-                    <button class="btn btn-info pr-3 pl-3" onclick="displayBusyIndicator()" asp-controller="Search" asp-action="Index">Search</button>
+                    <input type="text" name="Query" class="form-control" placeholder="Existing Phone Number" value="@Model?.PortedPhoneNumber?.PortedDialedNumber">
+                </div>
+                <div class="input-group mx-auto input-group-lg pt-2">
+                    <button class="btn btn-info btn-block" onclick="displayBusyIndicator()" asp-controller="Search" asp-action="Index">Search</button>
+                    <button type="submit" class="btn btn-success btn-block" onclick="displayBusyIndicator()">Port</button>
                 </div>
             </div>
         </form>
@@ -70,6 +72,60 @@
                     </tbody>
                 </table>
             </div>
+            if (Model?.PortedPhoneNumber?.LrnLookup != null)
+            {
+                <table class="table table-striped table-hover table-borderless">
+                    <thead>
+                        <tr>
+                            <th>
+                                Phone Number
+                            </th>
+                            <th>
+                                Last Port Date
+                            </th>
+                            <th>
+                                Caller Name
+                            </th>
+                            <th>
+                                Creation Date
+                            </th>
+                            <th>
+                                Local Routing #
+                            </th>
+                            <th>
+                                Carrier
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <h4>@Model?.PortedPhoneNumber?.LrnLookup?.data?.DialedNumber</h4>
+                            </td>
+                            <td>
+                                @Model?.PortedPhoneNumber?.LrnLookup?.data?.port_date
+                            </td>
+                            <td>
+                                @Model?.PortedPhoneNumber?.LrnLookup?.LIDBName
+                            </td>
+                            <td>
+                                @Model?.PortedPhoneNumber?.LrnLookup?.data?.creation_date
+                            </td>
+                            <td>
+                                <h4>@Model?.PortedPhoneNumber?.LrnLookup?.data?.lrn</h4>
+                            </td>
+                            <td>
+                                <p>
+                                    @Model?.PortedPhoneNumber?.LrnLookup?.data?.spid
+                                    -
+                                    @Model?.PortedPhoneNumber?.LrnLookup?.data?.spid_name
+
+                                </p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            }
         }
         else if (Model?.Cart != null && string.IsNullOrWhiteSpace(Model?.PortedPhoneNumber?.PortedDialedNumber))
         {

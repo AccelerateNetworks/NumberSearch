@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BulkVS;
+
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
 using MimeKit;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.Data247;
 using NumberSearch.DataAccess.TeleMesssage;
 
 using Serilog;
@@ -21,13 +24,16 @@ namespace NumberSearch.Mvc.Controllers
         private readonly IConfiguration configuration;
         private readonly string _postgresql;
         private readonly Guid _teleToken;
+        private readonly string _data247username;
+        private readonly string _data247password;
 
         public PortingController(IConfiguration config)
         {
             configuration = config;
             _postgresql = configuration.GetConnectionString("PostgresqlProd");
             _teleToken = Guid.Parse(configuration.GetConnectionString("TeleAPI"));
-
+            _data247username = config.GetConnectionString("Data247Username");
+            _data247password = config.GetConnectionString("Data247Password");
         }
 
         public IActionResult Index()
@@ -121,6 +127,14 @@ namespace NumberSearch.Mvc.Controllers
                                 break;
                         }
 
+                        // Lookup the number.
+                        var checkNumber = await LrnLookup.GetAsync(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
+
+                        var numberName = await LIDBLookup.GetAsync(dialedPhoneNumber, _data247username, _data247password).ConfigureAwait(false);
+
+                        checkNumber.data.DialedNumber = dialedPhoneNumber;
+                        checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.response?.results?.FirstOrDefault()?.name) ? string.Empty : numberName?.response?.results?.FirstOrDefault()?.name;
+
                         if (portable)
                         {
                             Log.Information($"[Portability] {dialedPhoneNumber} is Portable.");
@@ -135,7 +149,8 @@ namespace NumberSearch.Mvc.Controllers
                                 State = "Unknown State",
                                 DateIngested = DateTime.Now,
                                 IngestedFrom = "UserInput",
-                                Wireless = wireless
+                                Wireless = wireless,
+                                LrnLookup = checkNumber
                             };
 
                             return View("Index", new PortingResults
@@ -159,7 +174,8 @@ namespace NumberSearch.Mvc.Controllers
                                 State = "Unknown State",
                                 DateIngested = DateTime.Now,
                                 IngestedFrom = "UserInput",
-                                Wireless = wireless
+                                Wireless = wireless,
+                                LrnLookup = checkNumber
                             };
 
                             return View("Index", new PortingResults

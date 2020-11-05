@@ -72,7 +72,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 var checkConvert = int.TryParse(cleanedQuery, out var code);
 
-                if(checkConvert && AreaCode.All.Contains(code))
+                if (checkConvert && AreaCode.All.Contains(code))
                 {
                     cleanedQuery += "*******";
                 }
