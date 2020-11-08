@@ -301,6 +301,12 @@ namespace NumberSearch.Ingest
 
         public static async Task<bool> SendPortingNotificationEmailAsync(IEnumerable<ServiceProviderChanged> changes, string smtpUsername, string smtpPassword, string connectionString)
         {
+            if ((changes is null) || !changes.Any())
+            {
+                // Successfully did nothing.
+                return true;
+            }
+
             var options = new JsonSerializerOptions
             {
                 WriteIndented = true
@@ -321,7 +327,10 @@ namespace NumberSearch.Ingest
                 MessageBody = output.ToString()
             };
 
-            return await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);
+            var checkSend = await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);
+            var checkSave = await notificationEmail.PostAsync(connectionString).ConfigureAwait(false);
+
+            return checkSave && checkSend;
         }
     }
 }

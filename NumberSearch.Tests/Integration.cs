@@ -460,6 +460,26 @@ namespace NumberSearch.Tests
             output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
         }
 
+        [Fact]
+        public async Task TeliPortRequestStatusAsync()
+        {
+            // Arrange
+            var portRequests = new string[] { "3939", "5030", "4951", "4936" };
+
+            foreach (var request in portRequests)
+            {
+                // Act
+                var results = await LnpGet.GetAsync(request, token).ConfigureAwait(false);
+
+                // Assert
+                Assert.NotNull(results);
+                Assert.False(string.IsNullOrWhiteSpace(results.status));
+                Assert.True(results.code == 200);
+                output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+            }
+        }
+
+
         // Teli doesn't have a way to delete these so only want to test it when required.
         //[Fact]
         //public async Task TeliPortRequestAsync()

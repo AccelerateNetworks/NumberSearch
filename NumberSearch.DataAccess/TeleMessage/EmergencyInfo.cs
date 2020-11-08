@@ -1,5 +1,7 @@
 ﻿using Flurl.Http;
 
+using NumberSearch.DataAccess.TeleMessage;
+
 using Org.BouncyCastle.Ocsp;
 
 using System;
@@ -31,13 +33,6 @@ namespace NumberSearch.DataAccess
             public string did_note { get; set; }
         }
 
-        public class Error
-        {
-            public int code { get; set; }
-            public string status { get; set; }
-            public string data { get; set; }
-        }
-
         public static async Task<EmergencyInfo> GetAsync(string number, Guid token)
         {
             string baseUrl = "https://apiv1.teleapi.net/";
@@ -53,7 +48,7 @@ namespace NumberSearch.DataAccess
             }
             catch (FlurlHttpException)
             {
-                var result = await route.GetJsonAsync<Error>().ConfigureAwait(false);
+                var result = await route.GetJsonAsync<TeliError>().ConfigureAwait(false);
 
                 return new EmergencyInfo
                 {

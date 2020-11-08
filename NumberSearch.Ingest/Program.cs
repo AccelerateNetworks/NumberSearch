@@ -2,6 +2,7 @@
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.Models;
+using NumberSearch.DataAccess.TeleMesssage;
 
 using Serilog;
 
@@ -456,6 +457,79 @@ namespace NumberSearch.Ingest
                                     return combined;
                                 })
                             );
+
+                        await Task.WhenAll(tasks).ConfigureAwait(false);
+
+                        Log.Debug($"[TeleMessage] Priority ingest of Port Request statuses started at {DateTime.Now}.");
+
+                        await Task.Run(async () =>
+                        {
+                            // Ingest all avalible numbers from the TeleMessage.
+                            Log.Information("[TeleMessage] Ingesting Port Request statuses from TeleMessage");
+                            var teleStats = await Provider.TeleMessageAsync(teleToken, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
+
+                            var portRequests = await PortRequest.GetAllAsync(postgresSQL).ConfigureAwait(false);
+
+                            foreach (var request in portRequests.Where(x => !string.IsNullOrWhiteSpace(x.TeliId)).ToArray())
+                            {
+                                // The request is not complete, but it has been assigned an Id by Teli, which means that it's been submitted.
+                                if (!request.Completed && !string.IsNullOrWhiteSpace(request.TeliId))
+                                {
+                                    var teliStatus = await LnpGet.GetAsync(request.TeliId, teleToken).ConfigureAwait(false);
+
+                                    // All of the statuses for all of the numbers.
+                                    var numberStatuses = teliStatus?.data?.numbers_data?.Select(x => x.request_status);
+
+                                    var canceled = numberStatuses?.Where(x => x == "canceled");
+                                    var rejected = numberStatuses?.Where(x => x == "rejected");
+                                    var completed = numberStatuses?.Where(x => x == "completed");
+
+                                    // If the request can't be found in Teli's database.
+                                    if (teliStatus.code == 400)
+                                    {
+                                        request.DateUpdated = DateTime.Now;
+                                        request.Completed = false;
+                                    }
+                                    // If all the numbers have been ported.
+                                    else if ((completed != null) && (completed.Any()) && (completed.Count() == numberStatuses.Count()))
+                                    {
+                                        request.RequestStatus = "completed";
+                                        request.DateCompleted = DateTime.Now;
+                                        request.DateUpdated = DateTime.Now;
+                                        request.Completed = true;
+                                    }
+                                    // If the porting of a number has been canceled.
+                                    else if ((canceled != null) && (canceled.Any()))
+                                    {
+                                        request.RequestStatus = "canceled";
+                                        request.DateCompleted = DateTime.Now;
+                                        request.DateUpdated = DateTime.Now;
+                                        request.Completed = true;
+                                    }
+                                    // If a request to port a number has been rejected.
+                                    else if ((rejected != null) && (rejected.Any()))
+                                    {
+                                        request.RequestStatus = "rejected";
+                                        request.DateCompleted = DateTime.Now;
+                                        request.DateUpdated = DateTime.Now;
+                                        request.Completed = true;
+                                    }
+                                    // If the none of the port request completion criteria have been met.
+                                    else
+                                    {
+                                        request.RequestStatus = numberStatuses?.FirstOrDefault();
+                                        request.DateUpdated = DateTime.Now;
+                                        request.Completed = false;
+                                    }
+
+                                    // Update the request in the database.
+                                    var checkUpdate = await request.PutAsync(postgresSQL).ConfigureAwait(false);
+                                }
+                            }
+
+                            Log.Information("[TeleMessage] Completed the port request update process.");
+
+                        }).ConfigureAwait(false);
                     }
                 }
 
@@ -743,12 +817,12 @@ namespace NumberSearch.Ingest
                         }
                     }
                 }
-
-                Log.Information("[Heartbeat] Cycle complete.");
-
-                // Limit this to 1 request every 10 seconds to the database.
-                await Task.Delay(10000).ConfigureAwait(false);
             }
+
+            Log.Information("[Heartbeat] Cycle complete.");
+
+            // Limit this to 1 request every 10 seconds to the database.
+            await Task.Delay(10000).ConfigureAwait(false);
         }
     }
 }
