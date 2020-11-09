@@ -703,25 +703,25 @@ namespace NumberSearch.Tests
             output.WriteLine($"{count} Results Reviewed");
         }
 
-        [Fact]
-        public async Task BulkVSRESTNpaNxxGetAsyncTestAsync()
-        {
-            // Arrange
-            var npa = 206;
+        //[Fact]
+        //public async Task BulkVSRESTNpaNxxGetAsyncTestAsync()
+        //{
+        //    // Arrange
+        //    var npa = 206;
 
-            // Act
-            var results = await DataAccess.BulkVS.OrderTn.GetAsync(npa, bulkVSUsername, bulkVSPassword);
+        //    // Act
+        //    var results = await DataAccess.BulkVS.OrderTn.GetAsync(npa, bulkVSUsername, bulkVSPassword);
 
-            // Assert
-            Assert.NotNull(results);
-            int count = 0;
-            foreach (var result in results.ToArray())
-            {
-                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-                count++;
-            }
-            output.WriteLine($"{count} Results Reviewed");
-        }
+        //    // Assert
+        //    Assert.NotNull(results);
+        //    int count = 0;
+        //    foreach (var result in results.ToArray())
+        //    {
+        //        Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+        //        count++;
+        //    }
+        //    output.WriteLine($"{count} Results Reviewed");
+        //}
 
         [Fact]
         public async Task BulkVSLrnLookupAsync()

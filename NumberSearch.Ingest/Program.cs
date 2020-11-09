@@ -462,12 +462,12 @@ namespace NumberSearch.Ingest
 
                         await Task.WhenAll(tasks).ConfigureAwait(false);
 
-                        Log.Debug($"[TeleMessage] Priority ingest of Port Request statuses started at {DateTime.Now}.");
+                        Log.Debug($"[TeleMessage] [PortRequests] Priority ingest of Port Request statuses started at {DateTime.Now}.");
 
                         await Task.Run(async () =>
                         {
                             // Ingest all avalible numbers from the TeleMessage.
-                            Log.Information("[TeleMessage] Ingesting Port Request statuses from TeleMessage");
+                            Log.Information("[TeleMessage] [PortRequests] Ingesting Port Request statuses.");
                             var teleStats = await Provider.TeleMessageAsync(teleToken, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
 
                             var portRequests = await PortRequest.GetAllAsync(postgresSQL).ConfigureAwait(false);
@@ -526,6 +526,7 @@ namespace NumberSearch.Ingest
 
                                     // Update the request in the database.
                                     var checkUpdate = await request.PutAsync(postgresSQL).ConfigureAwait(false);
+                                    Log.Information($"[TeleMessage] [PortRequests] Updated Teli Port Request {request?.TeliId} - {request?.RequestStatus} - {request?.DateCompleted?.ToShortDateString()}");
 
                                     // Get the original order and the numbers associated with the outstanding Port Request.
                                     var originalOrder = await Order.GetByIdAsync(request.OrderId, postgresSQL).ConfigureAwait(false);
@@ -540,62 +541,78 @@ namespace NumberSearch.Ingest
 
                                     bool focChanged = false;
                                     bool portCompleted = false;
-                                    string formattedNumbers = string.Empty;
 
-                                    // Update the status of all of the numbers.
-                                    foreach (var number in teliStatus?.data?.numbers_data)
+                                    if (teliStatus?.data?.numbers_data != null && teliStatus.data.numbers_data.Any())
                                     {
-                                        var match = portedNumbers?.Where(x => x?.PortedDialedNumber == number?.number).FirstOrDefault();
-
-                                        if (match != null)
+                                        // Update the status of all of the numbers in the request.
+                                        foreach (var number in teliStatus?.data?.numbers_data)
                                         {
-                                            var checkFocDateParse = DateTime.TryParse(number?.foc_date, out var focDate);
+                                            var match = portedNumbers?.Where(x => x?.PortedDialedNumber == number?.number).FirstOrDefault();
 
-                                            // Update the request status if it has changed.
-                                            if (!string.IsNullOrWhiteSpace(number?.request_status) && (number?.request_status != match.RequestStatus))
+                                            if (match != null)
                                             {
-                                                match.RequestStatus = number?.request_status.Trim();
-                                                if (match.RequestStatus == "completed")
+                                                // Update the request status if it has changed.
+                                                if (!string.IsNullOrWhiteSpace(number?.request_status) && (number?.request_status != match.RequestStatus))
                                                 {
-                                                    portCompleted = true;
+                                                    match.RequestStatus = number?.request_status.Trim();
+                                                    if (match.RequestStatus == "completed")
+                                                    {
+                                                        portCompleted = true;
+                                                    }
                                                 }
+
+                                                // Update the FOC date if it has changed.
+                                                var checkFocDateParse = DateTime.TryParse(number?.foc_date, out var focDate);
+
+                                                if (checkFocDateParse && match.DateFirmOrderCommitment != focDate)
+                                                {
+                                                    match.DateFirmOrderCommitment = focDate;
+                                                    focChanged = true;
+                                                }
+
+                                                var checkPortedNumberUpdate = await match.PutAsync(postgresSQL).ConfigureAwait(false);
+                                                Log.Information($"[TeleMessage] [PortRequests] Updated Teli Port Request {request?.TeliId} - {match?.PortedDialedNumber} - {match?.RequestStatus} - {match?.DateFirmOrderCommitment?.ToShortDateString()}");
                                             }
-
-                                            // Update the FOC date if it has changed.
-                                            if (checkFocDateParse && match.DateFirmOrderCommitment != focDate)
+                                            else
                                             {
-                                                match.DateFirmOrderCommitment = focDate;
-                                                focChanged = true;
-                                                formattedNumbers += $"{formattedNumbers}</br>{match?.PortedDialedNumber} - {match?.DateFirmOrderCommitment?.ToShortDateString()}";
-                                            }
-                                        }
-                                        else
-                                        {
-                                            var checkFocDateParse = DateTime.TryParse(number?.foc_date, out var focDate);
+                                                // If the number isn't already assocaited with the Port request add it to the list of Ported Numbers.
+                                                bool checkNpa = int.TryParse(number?.number?.Substring(0, 3), out int npa);
+                                                bool checkNxx = int.TryParse(number?.number?.Substring(3, 3), out int nxx);
+                                                bool checkXxxx = int.TryParse(number?.number?.Substring(6, 4), out int xxxx);
 
-                                            var supriseNumber = new PortedPhoneNumber
-                                            {
-                                                PortedDialedNumber = number.number,
-                                                OrderId = originalOrder.OrderId,
-                                                PortRequestId = request.PortRequestId,
-                                                RequestStatus = number?.request_status.Trim()
-                                            };
+                                                var supriseNumber = new PortedPhoneNumber
+                                                {
+                                                    PortedDialedNumber = number?.number,
+                                                    NPA = npa,
+                                                    NXX = nxx,
+                                                    XXXX = xxxx,
+                                                    OrderId = originalOrder?.OrderId,
+                                                    PortRequestId = request?.PortRequestId,
+                                                    RequestStatus = number?.request_status.Trim()
+                                                };
 
-                                            if (checkFocDateParse)
-                                            {
-                                                supriseNumber.DateFirmOrderCommitment = focDate;
+                                                var checkFocDateParse = DateTime.TryParse(number?.foc_date, out var focDate);
+
+                                                if (checkFocDateParse)
+                                                {
+                                                    supriseNumber.DateFirmOrderCommitment = focDate;
+                                                }
+
+                                                var checkInsertPortedNumber = await supriseNumber.PostAsync(postgresSQL).ConfigureAwait(false);
+                                                Log.Information($"[TeleMessage] [PortRequests] Updated Teli Port Request {request?.TeliId} - {match?.PortedDialedNumber} - {match?.RequestStatus} - {match?.DateFirmOrderCommitment?.ToShortDateString()}");
                                             }
                                         }
                                     }
 
+                                    string formattedNumbers = string.Empty;
+
+                                    // If the port has just completed send out a notification email.
                                     if (portCompleted)
                                     {
-                                        if (string.IsNullOrWhiteSpace(formattedNumbers))
+                                        // If the ported number haven't already been formatted for inclusion in the email do it now.
+                                        foreach (var ported in portedNumbers)
                                         {
-                                            foreach (var ported in portedNumbers)
-                                            {
-                                                formattedNumbers += $"{formattedNumbers}</br>{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
-                                            }
+                                            formattedNumbers += $"{formattedNumbers}</br>{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
                                         }
 
                                         // Port date set or updated.
@@ -637,12 +654,9 @@ Accelerate Networks
                                     }
                                     else if (focChanged)
                                     {
-                                        if (string.IsNullOrWhiteSpace(formattedNumbers))
+                                        foreach (var ported in portedNumbers)
                                         {
-                                            foreach (var ported in portedNumbers)
-                                            {
-                                                formattedNumbers += $"{formattedNumbers}</br>{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
-                                            }
+                                            formattedNumbers += $"{formattedNumbers}</br>{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
                                         }
 
                                         // Port date set or updated.
@@ -972,12 +986,12 @@ Accelerate Networks
                         }
                     }
                 }
+
+                Log.Information("[Heartbeat] Cycle complete.");
+
+                // Limit this to 1 request every 10 seconds to the database.
+                await Task.Delay(10000).ConfigureAwait(false);
             }
-
-            Log.Information("[Heartbeat] Cycle complete.");
-
-            // Limit this to 1 request every 10 seconds to the database.
-            await Task.Delay(10000).ConfigureAwait(false);
         }
     }
 }
