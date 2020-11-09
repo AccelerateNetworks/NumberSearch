@@ -21,6 +21,8 @@ namespace NumberSearch.DataAccess
         public Guid? PortRequestId { get; set; }
         public Guid? OrderId { get; set; }
         public bool Wireless { get; set; }
+        public string RequestStatus { get; set; }
+        public DateTime? DateFirmOrderCommitment { get; set; }
         // Only used by the porting process to get helpful information on the ported phone number.
         public LrnLookup LrnLookup { get; set; }
 

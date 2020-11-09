@@ -10,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Ingest
@@ -524,6 +526,159 @@ namespace NumberSearch.Ingest
 
                                     // Update the request in the database.
                                     var checkUpdate = await request.PutAsync(postgresSQL).ConfigureAwait(false);
+
+                                    // Get the original order and the numbers associated with the outstanding Port Request.
+                                    var originalOrder = await Order.GetByIdAsync(request.OrderId, postgresSQL).ConfigureAwait(false);
+                                    var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(request.OrderId, postgresSQL).ConfigureAwait(false);
+
+                                    var notificationEmail = new Email
+                                    {
+                                        PrimaryEmailAddress = originalOrder?.Email,
+                                        CarbonCopy = config.GetConnectionString("SmtpUsername"),
+                                        OrderId = originalOrder.OrderId
+                                    };
+
+                                    bool focChanged = false;
+                                    bool portCompleted = false;
+                                    string formattedNumbers = string.Empty;
+
+                                    // Update the status of all of the numbers.
+                                    foreach (var number in teliStatus?.data?.numbers_data)
+                                    {
+                                        var match = portedNumbers?.Where(x => x?.PortedDialedNumber == number?.number).FirstOrDefault();
+
+                                        if (match != null)
+                                        {
+                                            var checkFocDateParse = DateTime.TryParse(number?.foc_date, out var focDate);
+
+                                            // Update the request status if it has changed.
+                                            if (!string.IsNullOrWhiteSpace(number?.request_status) && (number?.request_status != match.RequestStatus))
+                                            {
+                                                match.RequestStatus = number?.request_status.Trim();
+                                                if (match.RequestStatus == "completed")
+                                                {
+                                                    portCompleted = true;
+                                                }
+                                            }
+
+                                            // Update the FOC date if it has changed.
+                                            if (checkFocDateParse && match.DateFirmOrderCommitment != focDate)
+                                            {
+                                                match.DateFirmOrderCommitment = focDate;
+                                                focChanged = true;
+                                                formattedNumbers += $"{formattedNumbers}</br>{match?.PortedDialedNumber} - {match?.DateFirmOrderCommitment?.ToShortDateString()}";
+                                            }
+                                        }
+                                        else
+                                        {
+                                            var checkFocDateParse = DateTime.TryParse(number?.foc_date, out var focDate);
+
+                                            var supriseNumber = new PortedPhoneNumber
+                                            {
+                                                PortedDialedNumber = number.number,
+                                                OrderId = originalOrder.OrderId,
+                                                PortRequestId = request.PortRequestId,
+                                                RequestStatus = number?.request_status.Trim()
+                                            };
+
+                                            if (checkFocDateParse)
+                                            {
+                                                supriseNumber.DateFirmOrderCommitment = focDate;
+                                            }
+                                        }
+                                    }
+
+                                    if (portCompleted)
+                                    {
+                                        if (string.IsNullOrWhiteSpace(formattedNumbers))
+                                        {
+                                            foreach (var ported in portedNumbers)
+                                            {
+                                                formattedNumbers += $"{formattedNumbers}</br>{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
+                                            }
+                                        }
+
+                                        // Port date set or updated.
+                                        notificationEmail.Subject = $"Your phone number has switched to Accelerate Networks successfully!";
+                                        notificationEmail.MessageBody = $@"Hi {originalOrder.FirstName},
+</br>
+</br>                                                                            
+Great news, your old provider has released your phone numbers to Accelerate Networks!
+</br>
+</br>
+The port request for the numbers listed below has been set to {portedNumbers?.FirstOrDefault()?.DateFirmOrderCommitment?.ToShortDateString()}, port requests usually complete at 9 AM PDT on the day of port completion.
+</br>
+</br>
+Feel free to <a href='https://acceleratenetworks.com/Cart/Order/{originalOrder.OrderId}'>review the order here</a>, and let us know if you have any questions. It is now safe to cancel phone service with your old provider for the numbers that have ported in the list below.
+</br>
+</br>   
+Numbers tied to this port request:
+{formattedNumbers}
+</br>
+</br>
+Sincerely,
+</br>                                                                            
+</br>                                                                            
+Accelerate Networks
+</br>                                                                            
+206-858-8757 (call or text)";
+
+                                        var checkSend = await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);
+                                        var checkSave = await notificationEmail.PostAsync(postgresSQL).ConfigureAwait(false);
+
+                                        if (checkSend && checkSave)
+                                        {
+                                            Log.Information($"Sucessfully sent out the port date set email for Order {originalOrder.OrderId}.");
+                                        }
+                                        else
+                                        {
+                                            Log.Fatal($"Failed to sent out the port date set email for Order {originalOrder.OrderId}.");
+                                        }
+                                    }
+                                    else if (focChanged)
+                                    {
+                                        if (string.IsNullOrWhiteSpace(formattedNumbers))
+                                        {
+                                            foreach (var ported in portedNumbers)
+                                            {
+                                                formattedNumbers += $"{formattedNumbers}</br>{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
+                                            }
+                                        }
+
+                                        // Port date set or updated.
+                                        notificationEmail.Subject = $"Port completion date set for {portedNumbers?.FirstOrDefault()?.DateFirmOrderCommitment}";
+                                        notificationEmail.MessageBody = $@"Hi {originalOrder.FirstName},
+</br>
+</br>                                                                            
+Good news, your old provider is going to release your phone numbers to Accelerate Networks on {portedNumbers?.FirstOrDefault()?.DateFirmOrderCommitment?.ToShortDateString()}!
+</br>
+</br>    
+Feel free to <a href='https://acceleratenetworks.com/Cart/Order/{originalOrder.OrderId}'>review the order here</a>, and let us know if you have any questions.
+</br>
+</br>   
+Numbers porting to Accelerate Networks:
+{formattedNumbers}
+</br>
+</br>
+Sincerely,
+</br>                                                                            
+</br>                                                                            
+Accelerate Networks
+</br>                                                                            
+206-858-8757 (call or text)";
+
+                                        var checkSend = await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);
+                                        var checkSave = await notificationEmail.PostAsync(postgresSQL).ConfigureAwait(false);
+
+                                        if (checkSend && checkSave)
+                                        {
+                                            Log.Information($"Sucessfully sent out the port date set email for Order {originalOrder.OrderId}.");
+                                        }
+                                        else
+                                        {
+                                            Log.Fatal($"Failed to sent out the port date set email for Order {originalOrder.OrderId}.");
+                                        }
+                                    }
                                 }
                             }
 
