@@ -1,7 +1,5 @@
 ﻿using Flurl.Http;
 
-using Microsoft.EntityFrameworkCore.Internal;
-
 using Serilog;
 
 using System;

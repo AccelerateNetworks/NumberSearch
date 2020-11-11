@@ -53,7 +53,7 @@ namespace NumberSearch.Ops
                     .WriteTo.Async(a => a.Debug()))
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseUrls("https://*:5003", "http://*:5002");
+                    webBuilder.UseUrls("http://*:5002");
                     webBuilder.UseStartup<Startup>();
                 });
     }
