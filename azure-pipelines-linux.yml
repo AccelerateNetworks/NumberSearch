@@ -41,25 +41,25 @@ steps:
 
 - task: FileTransform@2
   inputs:
-    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Tests/bin/Release/netcoreapp3.1/'
+    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Tests/bin/Release/net5.0/'
     jsonTargetFiles: 'appsettings.json'
     xmlTransformationRules: '' # disabled
 
 - task: FileTransform@2
   inputs:
-    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Mvc/bin/Release/netcoreapp3.1/'
+    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Mvc/bin/Release/net5.0/'
     jsonTargetFiles: 'appsettings.json'
     xmlTransformationRules: '' # disabled
 
 - task: FileTransform@2
   inputs:
-    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ingest/bin/Release/netcoreapp3.1/'
+    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ingest/bin/Release/net5.0/'
     jsonTargetFiles: 'appsettings.json'
     xmlTransformationRules: '' # disabled
 
 - task: FileTransform@2
   inputs:
-    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ops/bin/Release/netcoreapp3.1/'
+    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ops/bin/Release/net5.0/'
     jsonTargetFiles: 'appsettings.json'
     xmlTransformationRules: '' # disabled
 
@@ -72,17 +72,17 @@ steps:
 - task: PublishPipelineArtifact@1
   inputs:
     artifactName: 'Mvc'
-    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Mvc/bin/Release/netcoreapp3.1/'
+    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Mvc/bin/Release/net5.0/'
     publishLocation: 'pipeline'
 
 - task: PublishPipelineArtifact@1
   inputs:
     artifactName: 'Ingest'
-    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ingest/bin/Release/netcoreapp3.1/'
+    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ingest/bin/Release/net5.0/'
     publishLocation: 'pipeline'
 
 - task: PublishPipelineArtifact@1
   inputs:
     artifactName: 'Ops'
-    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ops/bin/Release/netcoreapp3.1/'
+    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ops/bin/Release/net5.0/'
     publishLocation: 'pipeline'
