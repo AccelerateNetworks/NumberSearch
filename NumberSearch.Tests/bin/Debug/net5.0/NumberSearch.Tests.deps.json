@@ -30,7 +30,6 @@
           "Microsoft.AspNetCore.Mvc.Testing": "5.0.0",
           "Microsoft.CSharp": "4.7.0",
           "Microsoft.NET.Test.Sdk": "16.8.0",
-          "Npgsql.EntityFrameworkCore.PostgreSQL": "3.1.4",
           "NumberSearch.DataAccess": "1.0.0",
           "NumberSearch.Ingest": "1.0.0",
           "NumberSearch.Mvc": "1.0.0",
@@ -1952,23 +1951,6 @@
           "lib/netcoreapp3.0/Npgsql.dll": {}
         }
       },
-      "Npgsql.EntityFrameworkCore.PostgreSQL/3.1.4": {
-        "dependencies": {
-          "Microsoft.EntityFrameworkCore": "5.0.0",
-          "Microsoft.EntityFrameworkCore.Abstractions": "5.0.0",
-          "Microsoft.EntityFrameworkCore.Relational": "5.0.0",
-          "Npgsql": "4.1.5"
-        },
-        "runtime": {
-          "lib/netstandard2.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll": {
-            "assemblyVersion": "3.1.4.0",
-            "fileVersion": "3.1.4.0"
-          }
-        },
-        "compile": {
-          "lib/netstandard2.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll": {}
-        }
-      },
       "NuGet.Frameworks/5.0.0": {
         "runtime": {
           "lib/netstandard2.0/NuGet.Frameworks.dll": {
@@ -3421,7 +3403,6 @@
           "Microsoft.CSharp": "4.7.0",
           "MimeKit": "2.9.2",
           "Npgsql": "4.1.5",
-          "Npgsql.EntityFrameworkCore.PostgreSQL": "3.1.4",
           "Serilog": "2.10.0",
           "System.ServiceModel.Duplex": "4.8.0",
           "System.ServiceModel.Http": "4.8.0",
@@ -3440,7 +3421,6 @@
           "BulkVS": "1.0.0",
           "FirstCom": "1.0.0",
           "Microsoft.CSharp": "4.7.0",
-          "Npgsql.EntityFrameworkCore.PostgreSQL": "3.1.4",
           "NumberSearch.Mvc": "1.0.0",
           "Serilog": "2.10.0",
           "Serilog.Sinks.Async": "1.4.0",
@@ -3469,7 +3449,6 @@
           "Microsoft.Extensions.Logging.Debug": "5.0.0",
           "Microsoft.VisualStudio.Web.CodeGeneration.Design": "5.0.0",
           "NetEscapades.AspNetCore.SecurityHeaders": "0.12.1",
-          "Npgsql.EntityFrameworkCore.PostgreSQL": "3.1.4",
           "NumberSearch.DataAccess": "1.0.0",
           "Serilog": "2.10.0",
           "Serilog.AspNetCore": "3.4.0",
@@ -5959,13 +5938,6 @@
       "sha512": "sha512-juDlNse+SKfXRP0VSgpJkpdCcaVLZt8m37EHdRX+8hw+GG69Eat1Y0MdEfl+oetdOnf9E133GjIDEjg9AF6HSQ==",
       "path": "npgsql/4.1.5",
       "hashPath": "npgsql.4.1.5.nupkg.sha512"
-    },
-    "Npgsql.EntityFrameworkCore.PostgreSQL/3.1.4": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-T+BIWO+ceje5d52/sOwwqaU/F4Rm2jAWx5qA3+pUGbzY/ZXG0QbHQsyjyg0k8aef6JTq8FRk3FtRWkocsa1QWQ==",
-      "path": "npgsql.entityframeworkcore.postgresql/3.1.4",
-      "hashPath": "npgsql.entityframeworkcore.postgresql.3.1.4.nupkg.sha512"
     },
     "NuGet.Frameworks/5.0.0": {
       "type": "package",

@@ -24,7 +24,7 @@
                             <a href="https://acceleratenetworks.com/cart/order/@port.OrderId" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
                                 Order
                             </a>
-                            <h4 class="d-flex justify-content-between align-items-center mt-3">
+                            <h4 class="d-flex justify-content-between align-items-center mt-2">
                                 <span class="badge badge-info badge-pill">
                                     @port.DateSubmitted
                                 </span>
@@ -32,9 +32,43 @@
                             @{
                                 if (!string.IsNullOrWhiteSpace(port?.TeliId))
                                 {
-                                    <a href="https://control.teli.net/lnp/view" target="_blank" rel="noopener noreferrer" class="btn btn-info">
+                                    <a href="https://control.teli.net/lnp/view" target="_blank" rel="noopener noreferrer" class="btn btn-info mb-1">
                                         Teli Port Request @port?.TeliId
                                     </a>
+                                    if (port.Completed)
+                                    {
+                                        <h4><span class="badge badge-success">Completed @port?.DateCompleted?.ToShortDateString()</span></h4>
+                                    }
+                                    else
+                                    {
+                                        if (!string.IsNullOrWhiteSpace(port?.RequestStatus))
+                                        {
+                                            if (port?.RequestStatus == "processing")
+                                            {
+                                                <h4><span class="badge badge-warning">Processing @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                            }
+                                            else if (port?.RequestStatus == "canceled")
+                                            {
+                                                <h4><span class="badge badge-danger">Processing @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                            }
+                                            else if (port?.RequestStatus == "rejected")
+                                            {
+                                                <h4><span class="badge badge-danger">Processing @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                            }
+                                            else
+                                            {
+                                                <h4><span class="badge badge-warning">Submitted @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <h4><span class="badge badge-danger">Unsubmitted</span></h4>
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    <h4><span class="badge badge-danger">Unsubmitted</span></h4>
                                 }
                             }
                         </td>

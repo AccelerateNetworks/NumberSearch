@@ -107,8 +107,6 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public async Task<bool> PutAsync(string connectionString)
         {
-            DateSubmitted = DateTime.Now;
-
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection

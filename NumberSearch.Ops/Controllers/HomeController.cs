@@ -417,6 +417,7 @@ namespace NumberSearch.Ops.Controllers
                 {
                     var teliResponse = await LnpCreate.GetAsync(portRequest, numbers, _teleToken).ConfigureAwait(false);
                     portRequest.TeliId = teliResponse.data.id;
+                    portRequest.DateSubmitted = DateTime.Now;
                     var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
                 }
                 catch

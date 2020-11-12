@@ -1089,6 +1089,25 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task GetAllPortRequestsAsync()
+        {
+            var results = await PortRequest.GetAllAsync(postgresql).ConfigureAwait(false);
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+        }
+
+        [Fact]
+        public async Task GetPortRequestByOrderIdAsync()
+        {
+            var results = await PortRequest.GetAllAsync(postgresql).ConfigureAwait(false);
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            var order = await PortRequest.GetByOrderIdAsync(results.FirstOrDefault().OrderId, postgresql).ConfigureAwait(false);
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(order));
+        }
+
+        [Fact]
         public async Task GetAllSentEmailsAsync()
         {
             var results = await Email.GetAllAsync(postgresql).ConfigureAwait(false);
