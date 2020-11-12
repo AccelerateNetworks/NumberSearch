@@ -944,6 +944,9 @@ Accelerate Networks
 Thanks for considering Accelerate Networks, take a look at the <a href={reoccuringLink}'>monthly service cost here</a>, and the <a href='{oneTimeLink}'>upfront cost here</a>.
 </br>
 </br>                                                                            
+Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
+</br>
+</br>                                                                            
 Let us know if you have any questions!
 </br>
 </br>                                                                            
@@ -972,7 +975,11 @@ Accelerate Networks
 </br>
 </br>                                                                            
 Thanks for considering Accelerate Networks, take a look at the <a href={reoccuringLink}'>monthly service cost here</a>.
+</br>
 </br>                                                                            
+Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
+</br>
+</br>
 Let us know if you have any questions!
 </br>
 </br>                                                                            
@@ -1003,6 +1010,9 @@ Accelerate Networks
 Thanks for considering Accelerate Networks, take a look at the <a href='{oneTimeLink}'>upfront cost here</a>.
 </br>
 </br>                                                                            
+Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
+</br>
+</br>     
 Let us know if you have any questions!
 </br>
 </br>                                                                            
@@ -1039,6 +1049,9 @@ Accelerate Networks
 Thanks for choosing Accelerate Networks, take a look at the <a href={reoccuringLink}'>monthly service cost here</a>, and the <a href='{oneTimeLink}'>upfront cost here</a>.
 </br>
 </br>                                                                            
+Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
+</br>
+</br>                                                                            
 Let us know if you have any questions!
 </br>
 </br>                                                                            
@@ -1066,6 +1079,10 @@ Accelerate Networks
 </br>
 </br>                                                                            
 Thanks for choosing Accelerate Networks, take a look at the <a href={reoccuringLink}'>monthly service cost here</a>.
+</br>
+</br>                                                                            
+Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
+</br>
 </br>                                                                            
 Let us know if you have any questions!
 </br>
@@ -1094,6 +1111,9 @@ Accelerate Networks
 </br>
 </br>                                                                            
 Thanks for choosing Accelerate Networks, take a look at the <a href='{oneTimeLink}'>upfront cost here</a>.
+</br>
+</br>                                                                            
+Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
 </br>
 </br>                                                                            
 Let us know if you have any questions!

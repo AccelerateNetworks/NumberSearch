@@ -110,9 +110,9 @@ namespace NumberSearch.DataAccess
                     Subject = Subject
                 };
 
-                var bodyText = new TextPart(TextFormat.Html)
+                var builder = new BodyBuilder
                 {
-                    Text = MessageBody
+                    HtmlBody = MessageBody
                 };
 
                 var ordersInbox = MailboxAddress.Parse(username);
@@ -125,13 +125,10 @@ namespace NumberSearch.DataAccess
                 // If there's an attachment send it, if not just send the body.
                 if (Multipart != null && Multipart.Count > 0)
                 {
-                    Multipart.Add(bodyText);
-                    outboundMessage.Body = Multipart;
+                    builder.Attachments.Add(Multipart);
                 }
-                else
-                {
-                    outboundMessage.Body = bodyText;
-                }
+
+                outboundMessage.Body = builder.ToMessageBody();
 
                 using var smtp = new MailKit.Net.Smtp.SmtpClient();
                 smtp.MessageSent += (sender, args) => { };
