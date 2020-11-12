@@ -12,14 +12,18 @@
 /.vs
 /NumberSearch.DataAccess/bin/Debug/netstandard2.0
 /NumberSearch.DataAccess/obj
+/NumberSearch.Ingest/bin/
 /NumberSearch.Ingest/bin/Debug/netcoreapp3.1
 /NumberSearch.Ingest/obj
 /NumberSearch.Mvc/bin/Debug/netcoreapp3.1
 /NumberSearch.Tests/bin/Debug/netcoreapp3.1
+/NumberSearch.DataAccess/bin/
 /NumberSearch.DataAccess/bin/Release/netstandard2.0
+/NumberSearch.Mvc/bin
 /NumberSearch.Mvc/.config
 /NumberSearch.Mvc/bin/Release/netcoreapp3.1
 /NumberSearch.Mvc/Properties/PublishProfiles
+/NumberSearch.Tests/bin/
 /NumberSearch.Tests/bin/Release/netcoreapp3.1
 /NumberSearch.Ingest/bin/Release/netcoreapp3.1
 /BulkVS/obj/Debug/netcoreapp3.1
@@ -30,6 +34,7 @@
 /FirstCom/bin/Debug/netcoreapp3.1
 /FirstCom/obj
 /FirstCom/bin
+/NumberSearch.Ops/bin/
 /NumberSearch.Ops/bin/Debug/netcoreapp3.1
 /NumberSearch.Ops/obj
 *.txt
