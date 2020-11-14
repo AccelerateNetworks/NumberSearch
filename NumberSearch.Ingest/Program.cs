@@ -366,7 +366,30 @@ namespace NumberSearch.Ingest
                                 {
                                     // Ingest all avalible numbers from the TeleMessage.
                                     Log.Information("Ingesting data from TeleMessage");
-                                    var teleStats = await Provider.TeleMessageAsync(teleToken, new int[] { }, postgresSQL).ConfigureAwait(false);
+                                    var teleStats = new IngestStatistics
+                                    {
+                                        StartDate = DateTime.Now,
+                                        EndDate = DateTime.Now,
+                                        FailedToIngest = 0,
+                                        IngestedFrom = "TeleMessage",
+                                        IngestedNew = 0,
+                                        Lock = false,
+                                        NumbersRetrived = 0,
+                                        Removed = 0,
+                                        Unchanged = 0,
+                                        UpdatedExisting = 0,
+                                        Priority = true
+                                    };
+
+                                    try
+                                    {
+                                        teleStats = await Provider.TeleMessageAsync(teleToken, new int[] { }, postgresSQL).ConfigureAwait(false);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Fatal("[TeleMessage] Failed to completed the priority ingest process.");
+                                        Log.Fatal($"[TeleMessage] {ex.Message} {ex.InnerException}");
+                                    }
 
                                     // Remove the lock from the database to prevent it from getting cluttered with blank entries.
                                     var lockEntry = await IngestStatistics.GetLockAsync("TeleMessage", postgresSQL).ConfigureAwait(false);
@@ -430,7 +453,29 @@ namespace NumberSearch.Ingest
                                 {
                                     // Ingest all avalible numbers from the TeleMessage.
                                     Log.Information("[TeleMessage] Ingesting priority data from TeleMessage");
-                                    var teleStats = await Provider.TeleMessageAsync(teleToken, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
+                                    var teleStats = new IngestStatistics
+                                    {
+                                        StartDate = DateTime.Now,
+                                        EndDate = DateTime.Now,
+                                        FailedToIngest = 0,
+                                        IngestedFrom = "TeleMessage",
+                                        IngestedNew = 0,
+                                        Lock = false,
+                                        NumbersRetrived = 0,
+                                        Removed = 0,
+                                        Unchanged = 0,
+                                        UpdatedExisting = 0,
+                                        Priority = true
+                                    };
+                                    try
+                                    {
+                                        teleStats = await Provider.TeleMessageAsync(teleToken, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Fatal("[TeleMessage] Failed to completed the priority ingest process.");
+                                        Log.Fatal($"[TeleMessage] {ex.Message} {ex.InnerException}");
+                                    }
 
                                     var combined = new IngestStatistics
                                     {
