@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.Data247;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.TeleMesssage;
 using NumberSearch.Ops.Models;
@@ -38,6 +39,8 @@ namespace NumberSearch.Ops.Controllers
         private readonly string _bulkVSAPIKey;
         private readonly string _bulkVSAPISecret;
         private readonly string _invoiceNinjaToken;
+        private readonly string _data247username;
+        private readonly string _data247password;
 
         public HomeController(ILogger<HomeController> logger, IConfiguration config)
         {
@@ -50,6 +53,8 @@ namespace NumberSearch.Ops.Controllers
             _bulkVSAPIKey = config.GetConnectionString("BulkVSAPIKEY");
             _bulkVSAPISecret = config.GetConnectionString("BulkVSAPISecret");
             _invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
+            _data247username = config.GetConnectionString("Data247Username");
+            _data247password = config.GetConnectionString("Data247Password");
         }
 
         [Authorize]
@@ -236,7 +241,7 @@ namespace NumberSearch.Ops.Controllers
         [Route("/Home/PortRequests/{orderId}")]
         public async Task<IActionResult> PortRequests(Guid? orderId)
         {
-            if (orderId != null && orderId.HasValue)
+            if (orderId is not null && orderId.HasValue)
             {
                 var order = await Order.GetByIdAsync(orderId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
                 var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
@@ -368,11 +373,172 @@ namespace NumberSearch.Ops.Controllers
         [Route("/Home/PortRequests/{orderId}")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PortRequestUpdate(PortRequestResult result)
+        public async Task<IActionResult> PortRequestUpdate(PortRequestResult result, Guid? orderId, string dialedNumber)
         {
             var portRequest = result?.PortRequest ?? null;
 
-            if (portRequest is null)
+            if (!string.IsNullOrWhiteSpace(dialedNumber))
+            {
+                var order = await Order.GetByIdAsync(orderId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                var numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                var Query = dialedNumber;
+                // Clean up the query.
+                Query = Query?.Trim();
+
+                // Parse the query.
+                var converted = new List<char>();
+                foreach (var letter in Query)
+                {
+                    // Allow digits.
+                    if (char.IsDigit(letter))
+                    {
+                        converted.Add(letter);
+                    }
+                    // Allow stars.
+                    else if (letter == '*')
+                    {
+                        converted.Add(letter);
+                    }
+                    // Convert letters to digits.
+                    // This is disabled so as to avoid taking a dependancy on the Mvc project.
+                    //else if (char.IsLetter(letter))
+                    //{
+                    //    converted.Add(SearchController.LetterToKeypadDigit(letter));
+                    //}
+                    // Drop everything else.
+                }
+
+                // Drop leading 1's to improve the copy/paste experiance.
+                if (converted[0] == '1' && converted.Count >= 10)
+                {
+                    converted.Remove('1');
+                }
+
+                Query = new string(converted.ToArray());
+
+                if (Query != null && Query?.Length == 10)
+                {
+                    var dialedPhoneNumber = Query;
+
+                    bool checkNpa = int.TryParse(dialedPhoneNumber.Substring(0, 3), out int npa);
+                    bool checkNxx = int.TryParse(dialedPhoneNumber.Substring(3, 3), out int nxx);
+                    bool checkXxxx = int.TryParse(dialedPhoneNumber.Substring(6, 4), out int xxxx);
+
+                    if (checkNpa && checkNxx && checkXxxx)
+                    {
+                        try
+                        {
+                            var portable = await LnpCheck.IsPortable(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
+
+                            // Determine if the number is a wireless number.
+                            var lrnLookup = await LrnLookup.GetAsync(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
+
+                            bool wireless = false;
+
+                            switch (lrnLookup.data.ocn_type)
+                            {
+                                case "wireless":
+                                    wireless = true;
+                                    break;
+                                case "PCS":
+                                    wireless = true;
+                                    break;
+                                case "P RESELLER":
+                                    wireless = true;
+                                    break;
+                                case "Wireless":
+                                    wireless = true;
+                                    break;
+                                case "W RESELLER":
+                                    wireless = true;
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            // Lookup the number.
+                            var checkNumber = await LrnLookup.GetAsync(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
+
+                            var numberName = await LIDBLookup.GetAsync(dialedPhoneNumber, _data247username, _data247password).ConfigureAwait(false);
+
+                            checkNumber.data.DialedNumber = dialedPhoneNumber;
+                            checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.response?.results?.FirstOrDefault()?.name) ? string.Empty : numberName?.response?.results?.FirstOrDefault()?.name;
+
+                            if (portable)
+                            {
+                                Log.Information($"[Portability] {dialedPhoneNumber} is Portable.");
+
+                                var port = new PortedPhoneNumber
+                                {
+                                    PortedDialedNumber = dialedPhoneNumber,
+                                    NPA = npa,
+                                    NXX = nxx,
+                                    XXXX = xxxx,
+                                    City = "Unknown City",
+                                    State = "Unknown State",
+                                    DateIngested = DateTime.Now,
+                                    IngestedFrom = "UserInput",
+                                    Wireless = wireless,
+                                    LrnLookup = checkNumber,
+                                    OrderId = order.OrderId,
+                                    PortRequestId = portRequest.PortRequestId,
+                                };
+
+                                var checkSave = await port.PostAsync(_postgresql).ConfigureAwait(false);
+
+                                if (checkSave)
+                                {
+                                    numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                }
+                            }
+                            else
+                            {
+                                var port = new PortedPhoneNumber
+                                {
+                                    PortedDialedNumber = dialedPhoneNumber,
+                                    NPA = npa,
+                                    NXX = nxx,
+                                    XXXX = xxxx,
+                                    City = "Unknown City",
+                                    State = "Unknown State",
+                                    DateIngested = DateTime.Now,
+                                    IngestedFrom = "UserInput",
+                                    Wireless = wireless,
+                                    LrnLookup = checkNumber,
+                                    OrderId = order.OrderId,
+                                    PortRequestId = portRequest.PortRequestId,
+                                };
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Fatal($"[Portability] {ex.Message}");
+
+                            var port = new PortedPhoneNumber
+                            {
+                                PortedDialedNumber = dialedPhoneNumber,
+                                NPA = npa,
+                                NXX = nxx,
+                                XXXX = xxxx,
+                                City = "Unknown City",
+                                State = "Unknown State",
+                                DateIngested = DateTime.Now,
+                                IngestedFrom = "UserInput"
+                            };
+                        }
+                    }
+                }
+
+                return View("PortRequestEdit", new PortRequestResult
+                {
+                    Order = order,
+                    PortRequest = portRequest,
+                    PhoneNumbers = numbers
+                });
+            }
+            else if (portRequest is null)
             {
                 return Redirect("/Home/PortRequests");
             }

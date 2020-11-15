@@ -313,49 +313,76 @@
             <input asp-for="PortRequest.PartialPortDescription" type="text" value="@Model?.PortRequest?.PartialPortDescription" class="form-control" id="partialPortDescription" title="Describe what services the old carrier should leave alone. Contact the old carrier to confirm they will leave these services intact.">
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label for="locationType">Numbers to Port</label>
-            <div class="table-responsive">
-                <table class="table table-borderless table-hover table-striped">
-                    <thead>
-                        <tr>
-                            <th>
-                                Dialed Number
-                            </th>
-                            <th>
-                                Port Request Status
-                            </th>
-                            <th>
-                                Firm Order Commitment
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @{
-                            foreach (var number in Model?.PhoneNumbers)
-                            {
-                                <tr>
-                                    <td>
-                                        <h4>@number?.PortedDialedNumber</h4>
-                                    </td>
-                                    <td>
-                                        @number?.RequestStatus
-                                    </td>
-                                    <td>
-                                        @number?.DateFirmOrderCommitment
-                                    </td>
-                                </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
     <hr class="mb-4">
     <button type="submit" class="btn btn-warning text-light">Update</button>
     <br />
+</form>
+<div class="row">
+    <div class="col-md-6">
+        <label for="locationType">Numbers to Port</label>
+        <div class="table-responsive">
+            <table class="table table-borderless table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>
+                            Dialed Number
+                        </th>
+                        <th>
+                            Port Request Status
+                        </th>
+                        <th>
+                            Firm Order Commitment
+                        </th>
+                        <th>
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        foreach (var number in Model?.PhoneNumbers)
+                        {
+                            var statusText = number?.RequestStatus?.ToString() ?? "No Status";
+                            var focText = number?.DateFirmOrderCommitment?.ToString() ?? "Not Set";
+                            <tr>
+                                <td>
+                                    <h4>@number?.PortedDialedNumber</h4>
+                                </td>
+                                <td>
+                                    @statusText
+                                </td>
+                                <td>
+                                    @focText
+                                </td>
+                                <td>
+                                    <a class="btn btn-danger text-white">Remove</a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<form action="/Home/PortRequests/@Model?.Order?.OrderId" method="post" class="mb-5">
+    @Html.AntiForgeryToken()
+    <input name="OrderId" value="@Model.Order.OrderId" hidden />
+    <div class="input-group col-md-4 mb-3">
+        <input name="dialedNumber" type="text" class="form-control" id="dialedNumber" placeholder="Another Number to Port" title="Enter another dialed number that you wish to add to this port request.">
+        <div class="input-group-append">
+            @{
+                if (string.IsNullOrWhiteSpace(Model?.PortRequest?.TeliId))
+                {
+                    <button type="submit" class="btn btn-info">Add</button>
+                }
+                else
+                {
+                    <button type="submit" class="btn btn-info" disabled>Add</button>
+                }
+            }
+        </div>
+    </div>
 </form>
 <form action="/Home/PortRequestsTeli/@Model?.PortRequest?.OrderId" method="post">
     @Html.AntiForgeryToken()
