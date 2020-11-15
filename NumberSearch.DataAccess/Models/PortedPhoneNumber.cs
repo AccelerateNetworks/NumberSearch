@@ -145,5 +145,30 @@ namespace NumberSearch.DataAccess
                 return false;
             }
         }
+
+        public async Task<bool> DeleteAsync(string connectionString)
+        {
+            // Fail fast if we don have the primary key.
+            if (string.IsNullOrWhiteSpace(PortedDialedNumber))
+            {
+                return false;
+            }
+
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("DELETE FROM public.\"PortedPhoneNumbers\" WHERE \"PortedDialedNumber\" = @PortedDialedNumber",
+                new { PortedDialedNumber })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }

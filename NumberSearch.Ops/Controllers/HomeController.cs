@@ -369,6 +369,40 @@ namespace NumberSearch.Ops.Controllers
             }
         }
 
+        [Route("/Home/PortRequests/{orderId}/{dialedNumber}")]
+        public async Task<IActionResult> RemovePortedPhoneNumber(Guid? orderId, string dialedNumber)
+        {
+            if (!string.IsNullOrWhiteSpace(dialedNumber))
+            {
+                var order = await Order.GetByIdAsync(orderId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                var numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                var numberToRemove = numbers.Where(x => x.PortedDialedNumber == dialedNumber).FirstOrDefault();
+
+                if (numberToRemove is not null)
+                {
+                    var checkDelete = await numberToRemove.DeleteAsync(_postgresql).ConfigureAwait(false);
+
+                    if (checkDelete)
+                    {
+                        numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                    }
+                }
+
+                return View("PortRequestEdit", new PortRequestResult
+                {
+                    Order = order,
+                    PortRequest = portRequest,
+                    PhoneNumbers = numbers
+                });
+            }
+            else
+            {
+                return Redirect("/Home/PortRequests");
+            }
+        }
+
         [Authorize]
         [Route("/Home/PortRequests/{orderId}")]
         [HttpPost]
