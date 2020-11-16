@@ -355,7 +355,12 @@
                                     @focText
                                 </td>
                                 <td>
-                                    <a class="btn btn-danger text-white" href="/Home/PortRequests/@Model?.Order?.OrderId/@number?.PortedDialedNumber">Remove</a>
+                                    @{
+                                        if (string.IsNullOrWhiteSpace(Model?.PortRequest?.TeliId))
+                                        {
+                                            <a class="btn btn-danger text-white" href="/Home/PortRequests/@Model?.Order?.OrderId/@number?.PortedDialedNumber">Remove</a>
+                                        }
+                                    }
                                 </td>
                             </tr>
                         }
