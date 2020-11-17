@@ -36,14 +36,14 @@ namespace NumberSearch.Ingest
             var smtpPassword = config.GetConnectionString("SmtpPassword");
 
             Log.Logger = new LoggerConfiguration()
-                .WriteTo.Async(a => a.Console())
-                .WriteTo.Async(a => a.Debug())
-                .WriteTo.Async(a => a.File(
+                .WriteTo.Console()
+                .WriteTo.Debug()
+                .WriteTo.File(
                     $"{DateTime.Now:yyyyMMdd}_NumberSearch.Ingest.txt",
                     rollingInterval: RollingInterval.Day,
                     rollOnFileSizeLimit: true,
                     shared: true,
-                    flushToDiskInterval: new TimeSpan(1800000))
+                    flushToDiskInterval: new TimeSpan(1800000)
                 )
                 .CreateLogger();
 
