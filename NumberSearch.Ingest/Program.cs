@@ -592,7 +592,7 @@ namespace NumberSearch.Ingest
                                         // Update the status of all of the numbers in the request.
                                         foreach (var number in teliStatus?.data?.numbers_data)
                                         {
-                                            var match = portedNumbers?.Where(x => x?.PortedDialedNumber == number?.number).FirstOrDefault();
+                                            var match = portedNumbers?.Where(x => x?.PortedDialedNumber == number?.number.Trim()).FirstOrDefault();
 
                                             if (match != null)
                                             {

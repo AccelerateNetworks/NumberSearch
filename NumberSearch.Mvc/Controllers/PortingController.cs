@@ -371,10 +371,13 @@ namespace NumberSearch.Mvc.Controllers
                 // Associate the ported numbers with their porting information.
                 portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
 
+                string formattedNumbers = string.Empty;
+
                 foreach (var number in portedNumbers)
                 {
                     number.PortRequestId = portRequest.PortRequestId;
                     var checkPortUpdate = await number.PutAsync(_postgresql).ConfigureAwait(false);
+                    formattedNumbers += $"{formattedNumbers}</br>{number?.PortedDialedNumber}";
                 }
 
                 // Send out the confirmation email.
@@ -389,6 +392,10 @@ Thanks for adding porting information to your order!
 </br>
 </br>
 Feel free to <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>review the order here</a>, and let us know if you have any questions.
+</br>
+</br>
+Numbers tied to this port request:
+{formattedNumbers}
 </br>
 </br>
 Sincerely,
