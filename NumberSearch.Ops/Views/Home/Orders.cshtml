@@ -157,28 +157,28 @@
                                 if (services.Any())
                                 {
                                     <strong>Services</strong>
-                                    <p>
+                                    <ul>
                                         @{
                                             foreach (var product in services)
                                             {
-                                                var serviceOutput = $"{product.Quantity} x {Model.Services.Where(x => x.ServiceId == product.ServiceId).FirstOrDefault().Name}";
-                                                @serviceOutput
+                                                var serviceOutput = $"<li>{product.Quantity} x {Model.Services.Where(x => x.ServiceId == product.ServiceId).FirstOrDefault().Name}</li>";
+                                                @Html.Raw(serviceOutput)
                                             }
                                         }
-                                    </p>
+                                    </ul>
                                 }
                                 if (products.Any())
                                 {
                                     <strong>Products</strong>
-                                    <p>
+                                    <ul>
                                         @{
                                             foreach (var product in products)
                                             {
-                                                var productOutput = $"{product.Quantity} x {Model.Products.Where(x => x.ProductId == product.ProductId).FirstOrDefault().Name}";
-                                                @productOutput
+                                                var productOutput = $"<li>{product.Quantity} x {Model.Products.Where(x => x.ProductId == product.ProductId).FirstOrDefault().Name}</li>";
+                                                @Html.Raw(productOutput)
                                             }
                                         }
-                                    </p>
+                                    </ul>
                                 }
                             }
                         </td>
