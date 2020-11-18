@@ -13,6 +13,7 @@
 /NumberSearch.DataAccess/bin/Debug/netstandard2.0
 /NumberSearch.DataAccess/obj
 /NumberSearch.Ingest/bin/
+/NumberSearch.Ingest/bin/Debug/net5.0/ref/
 /NumberSearch.Ingest/bin/Debug/netcoreapp3.1
 /NumberSearch.Ingest/obj
 /NumberSearch.Mvc/bin/Debug/netcoreapp3.1
@@ -38,3 +39,5 @@
 /NumberSearch.Ops/bin/Debug/netcoreapp3.1
 /NumberSearch.Ops/obj
 *.txt
+*.dll
+*.pdb
