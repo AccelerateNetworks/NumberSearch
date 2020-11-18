@@ -778,8 +778,8 @@ namespace NumberSearch.Ops.Controllers
         /// <param name="query"> A complete or partial phone number. </param>
         /// <returns> A view of nothing, or the result of the query. </returns>
         [Authorize]
-        [Route("Numbers/{Query}")]
-        [Route("Numbers/")]
+        [Route("/Numbers/{Query}")]
+        [Route("/Numbers/")]
         public async Task<IActionResult> Numbers(string query, int page = 1)
         {
             // Fail fast

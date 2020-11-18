@@ -52,6 +52,9 @@
                         <th>
                             Ingested
                         </th>
+                        <th>
+                            Actions
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -90,6 +93,11 @@
                                 <td>@Html.Raw(number)</td>
                                 <td>@location</td>
                                 <td>From @Html.Raw(ingestedBadge) on @item.DateIngested (@elapsed.Hours Hours ago)</td>
+                                <td>
+                                    <a href="https://acceleratenetworks.com/Search?Query=@item.DialedNumber" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                                        Public
+                                    </a>
+                                </td>
                             </tr>
                         }
                     }

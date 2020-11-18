@@ -3,24 +3,86 @@
     ViewData["Title"] = "Order";
 }
 <h1 class="display-4 p-3">🛒 Order @Model?.OrderId</h1>
-<div class="col-md-8 order-md-1 pb-5">
+<div class="">
+    <div class="btn-group" role="group" aria-label="Basic example">
+        <a href="https://acceleratenetworks.com/cart/order/@Model?.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+            Order
+        </a>
+        <a href="/Home/Emails/@Model?.OrderId" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+            Emails
+        </a>
+        <a href="https://www.google.com/maps/place/@Model?.Address,+@Model?.City,+@Model?.State+@Model?.Zip/" class="btn btn-outline-secondary" target="_blank" rel="noopener noreferrer">
+            Map
+        </a>
+    </div>
+    <h4 class="d-flex justify-content-between align-items-center mt-3">
+        <span class="badge badge-info badge-pill">
+            @Model.DateSubmitted
+        </span>
+    </h4>
+    <div class="btn-group mt-2 mb-3" role="group" aria-label="Basic example">
+        @{
+            if (!string.IsNullOrWhiteSpace(Model?.BillingInvoiceId))
+            {
+                <a href="https://billing.acceleratenetworks.com/invoices/@Model?.BillingInvoiceId/edit" class="btn btn-outline-primary" target="_blank" rel="noopener noreferrer">
+                    Upfront
+                </a>
+            }
+        }
+        @{
+            if (!string.IsNullOrWhiteSpace(Model?.BillingInvoiceReoccuringId))
+            {
+                <a href="https://billing.acceleratenetworks.com/invoices/@Model?.BillingInvoiceReoccuringId/edit" class="btn btn-outline-success" target="_blank" rel="noopener noreferrer">
+                    Recurring
+                </a>
+            }
+        }
+        @{
+            if (!string.IsNullOrWhiteSpace(Model?.BillingClientId))
+            {
+                <a href="https://billing.acceleratenetworks.com/clients/@Model?.BillingClientId/edit" class="btn btn-outline-info" target="_blank" rel="noopener noreferrer">
+                    Client
+                </a>
+            }
+        }
+    </div>
+    <h4 class="mb-3">Order Information</h4>
+    <div class="row">
+        <div class="col mb-3">
+            <label for="firstName">Order Id</label>
+            <input value="@Model?.OrderId" type="text" class="form-control" placeholder="" readonly>
+        </div>
+        <div class="col mb-3">
+            <label for="lastName">Submitted On</label>
+            <input value="@Model?.DateSubmitted" type="text" class="form-control" placeholder="" readonly>
+        </div>
+    </div>
+    <h4 class="mb-3">Invoice Ninja</h4>
+    <div class="row">
+        <div class="col mb-3">
+            <label for="firstName">Upfront Invoice Id</label>
+            <input value="@Model?.BillingInvoiceId" type="text" class="form-control" placeholder="" readonly>
+        </div>
+        <div class="col mb-3">
+            <label for="lastName">Reoccuring Invoice Id</label>
+            <input value="@Model?.BillingInvoiceReoccuringId" type="text" class="form-control" placeholder="" readonly>
+        </div>
+        <div class="col mb-3">
+            <label for="lastName">Client Id</label>
+            <input value="@Model?.BillingClientId" type="text" class="form-control" placeholder="" readonly>
+        </div>
+    </div>
     <h4 class="mb-3">Billing Information</h4>
     <form action="/Home/Order/@Model?.OrderId" method="post" class="needs-validation">
         @Html.AntiForgeryToken()
         <div class="row">
-            <div class="col-md-6 mb-3">
+            <div class="col mb-3">
                 <label for="firstName">First name</label>
                 <input asp-for="FirstName" type="text" class="form-control" id="firstName" placeholder="Alexander" required>
-                <div class="invalid-feedback">
-                    Valid first name is required.
-                </div>
             </div>
-            <div class="col-md-6 mb-3">
+            <div class="col mb-3">
                 <label for="lastName">Last name</label>
                 <input asp-for="LastName" type="text" class="form-control" id="lastName" placeholder="Bell" required>
-                <div class="invalid-feedback">
-                    Valid last name is required.
-                </div>
             </div>
         </div>
 
