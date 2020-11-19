@@ -866,7 +866,6 @@ Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/O
 </br>                                                                            
 Thanks,
 </br>                                                                            
-</br>                                                                            
 Accelerate Networks
 </br>                                                                            
 206-858-8757 (call or text)",
@@ -952,7 +951,6 @@ Let us know if you have any questions!
 </br>                                                                            
 Sincerely,
 </br>                                                                            
-</br>                                                                            
 Accelerate Networks
 </br>                                                                            
 206-858-8757 (call or text)";
@@ -985,7 +983,6 @@ Let us know if you have any questions!
 </br>                                                                            
 Sincerely,
 </br>                                                                            
-</br>                                                                            
 Accelerate Networks
 </br>                                                                            
 206-858-8757 (call or text)";
@@ -1017,7 +1014,6 @@ Let us know if you have any questions!
 </br>
 </br>                                                                            
 Sincerely,
-</br>                                                                            
 </br>                                                                            
 Accelerate Networks
 </br>                                                                            
@@ -1057,7 +1053,6 @@ Let us know if you have any questions!
 </br>                                                                            
 Sincerely,
 </br>                                                                            
-</br>                                                                            
 Accelerate Networks
 </br>                                                                            
 206-858-8757 (call or text)";
@@ -1089,7 +1084,6 @@ Let us know if you have any questions!
 </br>                                                                            
 Sincerely,
 </br>                                                                            
-</br>                                                                            
 Accelerate Networks
 </br>                                                                            
 206-858-8757 (call or text)";
@@ -1120,7 +1114,6 @@ Let us know if you have any questions!
 </br>
 </br>                                                                            
 Sincerely,
-</br>                                                                            
 </br>                                                                            
 Accelerate Networks
 </br>                                                                            

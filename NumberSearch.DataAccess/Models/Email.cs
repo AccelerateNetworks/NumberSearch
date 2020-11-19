@@ -112,7 +112,7 @@ namespace NumberSearch.DataAccess
 
                 var builder = new BodyBuilder
                 {
-                    HtmlBody = MessageBody
+                    HtmlBody = @$"<!DOCTYPE html><html><head><title></title></head><body>{MessageBody}</body></html>"
                 };
 
                 var ordersInbox = MailboxAddress.Parse(username);

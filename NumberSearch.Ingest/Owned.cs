@@ -321,10 +321,13 @@ namespace NumberSearch.Ingest
 
             var notificationEmail = new Email
             {
-                PrimaryEmailAddress = "orders@acceleratenetworks.com",
+                PrimaryEmailAddress = "dan@acceleratenetworks.com",
+                CarbonCopy = "orders@acceleratenetworks.com",
                 DateSent = DateTime.Now,
                 Subject = $"[Ingest] {changes.Count()} phone numbers changed Service Providers.",
-                MessageBody = output.ToString()
+                MessageBody = output.ToString(),
+                OrderId = new Guid(),
+                Completed = true
             };
 
             var checkSend = await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);

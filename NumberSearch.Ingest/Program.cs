@@ -680,7 +680,6 @@ Numbers tied to this port request:
 </br>
 Sincerely,
 </br>                                                                            
-</br>                                                                            
 Accelerate Networks
 </br>                                                                            
 206-858-8757 (call or text)";
@@ -720,7 +719,6 @@ Numbers porting to Accelerate Networks:
 </br>
 </br>
 Sincerely,
-</br>                                                                            
 </br>                                                                            
 Accelerate Networks
 </br>                                                                            
