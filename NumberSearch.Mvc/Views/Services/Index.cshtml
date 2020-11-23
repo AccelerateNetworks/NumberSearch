@@ -8,6 +8,60 @@
 <div class="container">
     <br />
     <div class="pricing-header mx-auto mb-3 text-center">
+        <h1 class="display-4">Phone Service</h1>
+    </div>
+    <br />
+    <div class="card-deck mb-3 text-center">
+        <div class="card mb-4 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">Standard Lines</h4>
+            </div>
+            <div class="card-body">
+                <h1 class="card-title pricing-card-title">$35 <small class="text-muted">/ mo</small></h1>
+                <ul class="list-unstyled mt-3 mb-4">
+                    <li>Unlimited Calling</li>
+                    <li>HD Voice</li>
+                    <li>Music on Hold</li>
+                    <li>Call Menus and more</li>
+                    <li>Support 1 Concurrent call</li>
+                    <li>Have as many phones as you want!</li>
+                </ul>
+                <div class="btn-group">
+                    <form method="get" class="input-group input-group-lg">
+                        <input type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-outline-primary" asp-controller="Cart" asp-action="BuyService" asp-route-id="16e2c639-445b-4ae6-9925-07300318206b" id="button-addon1">Start talking today</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-4 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">Concurrent Seats</h4>
+            </div>
+            <div class="card-body">
+                <h1 class="card-title pricing-card-title">$20 <small class="text-muted">/ mo</small></h1>
+                <ul class="list-unstyled mt-3 mb-4">
+                    <li>Unlimited Calling</li>
+                    <li>HD Voice</li>
+                    <li>Music on Hold</li>
+                    <li>Call Menus and more!</li>
+                    <li>Supports 1 Concurrent call per Seat</li>
+                </ul>
+                <div class="btn-group">
+                    <form method="get" class="input-group input-group-lg">
+                        <input type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-outline-primary" asp-controller="Cart" asp-action="BuyService" asp-route-id="48eb4627-8692-4a3b-8be1-be64bbeea534" id="button-addon2">Start talking today</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="pricing-header mx-auto mb-3 text-center">
         <h1 class="display-4">Business Tools</h1>
     </div>
     <br />
@@ -75,60 +129,6 @@
             </div>
         </div>
     </div>
-    <div class="pricing-header mx-auto mb-3 text-center">
-        <h1 class="display-4">Phone Service</h1>
-    </div>
-    <br />
-    <div class="card-deck mb-3 text-center">
-        <div class="card mb-4 box-shadow">
-            <div class="card-header">
-                <h4 class="my-0 font-weight-normal">Standard Lines</h4>
-            </div>
-            <div class="card-body">
-                <h1 class="card-title pricing-card-title">$35 <small class="text-muted">/ mo</small></h1>
-                <ul class="list-unstyled mt-3 mb-4">
-                    <li>Unlimited Calling</li>
-                    <li>HD Voice</li>
-                    <li>Music on Hold</li>
-                    <li>Call Menus and more</li>
-                    <li>Support 1 Concurrent call</li>
-                    <li>Have as many phones as you want!</li>
-                </ul>
-                <div class="btn-group">
-                    <form method="get" class="input-group input-group-lg">
-                        <input type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
-                        <div class="input-group-append">
-                            <button type="submit" class="btn btn-outline-primary" asp-controller="Cart" asp-action="BuyService" asp-route-id="16e2c639-445b-4ae6-9925-07300318206b" id="button-addon1">Start talking today</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        <div class="card mb-4 box-shadow">
-            <div class="card-header">
-                <h4 class="my-0 font-weight-normal">Concurrent Seats</h4>
-            </div>
-            <div class="card-body">
-                <h1 class="card-title pricing-card-title">$20 <small class="text-muted">/ mo</small></h1>
-                <ul class="list-unstyled mt-3 mb-4">
-                    <li>Unlimited Calling</li>
-                    <li>HD Voice</li>
-                    <li>Music on Hold</li>
-                    <li>Call Menus and more!</li>
-                    <li>Supports 1 Concurrent call per Seat</li>
-                </ul>
-                <div class="btn-group">
-                    <form method="get" class="input-group input-group-lg">
-                        <input type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
-                        <div class="input-group-append">
-                            <button type="submit" class="btn btn-outline-primary" asp-controller="Cart" asp-action="BuyService" asp-route-id="48eb4627-8692-4a3b-8be1-be64bbeea534" id="button-addon2">Start talking today</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    <br />
     <a type="button" class="btn btn-success btn-lg btn-block" asp-controller="Hardware" asp-action="Index">Add Hardware ⮞</a>
     <br />
 </div>
