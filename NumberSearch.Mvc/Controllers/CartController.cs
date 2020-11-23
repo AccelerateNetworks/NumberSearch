@@ -856,18 +856,18 @@ namespace NumberSearch.Mvc.Controllers
                             PrimaryEmailAddress = order.Email,
                             CarbonCopy = _configuration.GetConnectionString("SmtpUsername"),
                             MessageBody = $@"Hi {order.FirstName},
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Thank you for choosing Accelerate Networks! 
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Thanks,
-</br>                                                                            
+<br />                                                                            
 Accelerate Networks
-</br>                                                                            
+<br />                                                                            
 206-858-8757 (call or text)",
                             OrderId = order.OrderId,
                             Subject = $"Order confirmation for {emailSubject}"
@@ -938,21 +938,21 @@ Accelerate Networks
 
                                 confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.invoice_number} and {createNewReoccuringInvoice.invoice_number} from Accelerate Networks";
                                 confirmationEmail.MessageBody = $@"Hi {order.FirstName},
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Thanks for considering Accelerate Networks, take a look at the <a href={reoccuringLink}'>monthly service cost here</a>, and the <a href='{oneTimeLink}'>upfront cost here</a>.
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Let us know if you have any questions!
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Sincerely,
-</br>                                                                            
+<br />                                                                            
 Accelerate Networks
-</br>                                                                            
+<br />                                                                            
 206-858-8757 (call or text)";
                             }
                             else if (reoccuringInvoice.invoice_items.Any())
@@ -970,21 +970,21 @@ Accelerate Networks
 
                                 confirmationEmail.Subject = $"Quote {createNewReoccuringInvoice.invoice_number} from Accelerate Networks";
                                 confirmationEmail.MessageBody = $@"Hi {order.FirstName},
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Thanks for considering Accelerate Networks, take a look at the <a href={reoccuringLink}'>monthly service cost here</a>.
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
-</br>
-</br>
+<br />
+<br />
 Let us know if you have any questions!
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Sincerely,
-</br>                                                                            
+<br />                                                                            
 Accelerate Networks
-</br>                                                                            
+<br />                                                                            
 206-858-8757 (call or text)";
                             }
                             else if (upfrontInvoice.invoice_items.Any())
@@ -1002,21 +1002,21 @@ Accelerate Networks
 
                                 confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.invoice_number} from Accelerate Networks";
                                 confirmationEmail.MessageBody = $@"Hi {order.FirstName},
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Thanks for considering Accelerate Networks, take a look at the <a href='{oneTimeLink}'>upfront cost here</a>.
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
-</br>
-</br>     
+<br />
+<br />     
 Let us know if you have any questions!
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Sincerely,
-</br>                                                                            
+<br />                                                                            
 Accelerate Networks
-</br>                                                                            
+<br />                                                                            
 206-858-8757 (call or text)";
                             }
                         }
@@ -1040,21 +1040,21 @@ Accelerate Networks
 
                                 confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.invoice_number} and {createNewReoccuringInvoice.invoice_number} from Accelerate Networks";
                                 confirmationEmail.MessageBody = $@"Hi {order.FirstName},
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Thanks for choosing Accelerate Networks, take a look at the <a href={reoccuringLink}'>monthly service cost here</a>, and the <a href='{oneTimeLink}'>upfront cost here</a>.
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Let us know if you have any questions!
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Sincerely,
-</br>                                                                            
+<br />                                                                            
 Accelerate Networks
-</br>                                                                            
+<br />                                                                            
 206-858-8757 (call or text)";
                             }
                             else if (reoccuringInvoice.invoice_items.Any())
@@ -1071,21 +1071,21 @@ Accelerate Networks
 
                                 confirmationEmail.Subject = $"Quote {createNewReoccuringInvoice.invoice_number} from Accelerate Networks";
                                 confirmationEmail.MessageBody = $@"Hi {order.FirstName},
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Thanks for choosing Accelerate Networks, take a look at the <a href={reoccuringLink}'>monthly service cost here</a>.
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Let us know if you have any questions!
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Sincerely,
-</br>                                                                            
+<br />                                                                            
 Accelerate Networks
-</br>                                                                            
+<br />                                                                            
 206-858-8757 (call or text)";
                             }
                             else if (upfrontInvoice.invoice_items.Any())
@@ -1102,21 +1102,21 @@ Accelerate Networks
 
                                 confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.invoice_number} from Accelerate Networks";
                                 confirmationEmail.MessageBody = $@"Hi {order.FirstName},
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Thanks for choosing Accelerate Networks, take a look at the <a href='{oneTimeLink}'>upfront cost here</a>.
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Let us know if you have any questions!
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Sincerely,
-</br>                                                                            
+<br />                                                                            
 Accelerate Networks
-</br>                                                                            
+<br />                                                                            
 206-858-8757 (call or text)";
                             }
                         }

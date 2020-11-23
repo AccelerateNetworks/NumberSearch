@@ -658,31 +658,31 @@ namespace NumberSearch.Ingest
                                             // If the ported number haven't already been formatted for inclusion in the email do it now.
                                             foreach (var ported in portedNumbers)
                                             {
-                                                formattedNumbers += $"{formattedNumbers}</br>{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
+                                                formattedNumbers += $"{formattedNumbers}<br />{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
                                             }
 
                                             // Port date set or updated.
                                             notificationEmail.Subject = $"Your phone number has switched to Accelerate Networks successfully!";
                                             notificationEmail.MessageBody = $@"Hi {originalOrder.FirstName},
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Great news, your old provider has released your phone numbers to Accelerate Networks!
-</br>
-</br>
+<br />
+<br />
 The port request for the numbers listed below has been set to {portedNumbers?.FirstOrDefault()?.DateFirmOrderCommitment?.ToShortDateString()}, port requests usually complete at 9 AM PDT on the day of port completion.
-</br>
-</br>
+<br />
+<br />
 Feel free to <a href='https://acceleratenetworks.com/Cart/Order/{originalOrder.OrderId}'>review the order here</a>, and let us know if you have any questions. It is now safe to cancel phone service with your old provider for the numbers that have ported in the list below.
-</br>
-</br>   
+<br />
+<br />   
 Numbers tied to this port request:
 {formattedNumbers}
-</br>
-</br>
+<br />
+<br />
 Sincerely,
-</br>                                                                            
+<br />                                                                            
 Accelerate Networks
-</br>                                                                            
+<br />                                                                            
 206-858-8757 (call or text)";
 
                                             var checkSend = await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);
@@ -701,28 +701,28 @@ Accelerate Networks
                                         {
                                             foreach (var ported in portedNumbers)
                                             {
-                                                formattedNumbers += $"{formattedNumbers}</br>{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
+                                                formattedNumbers += $"{formattedNumbers}<br />{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
                                             }
 
                                             // Port date set or updated.
                                             notificationEmail.Subject = $"Port completion date set for {portedNumbers?.FirstOrDefault()?.DateFirmOrderCommitment}";
                                             notificationEmail.MessageBody = $@"Hi {originalOrder.FirstName},
-</br>
-</br>                                                                            
+<br />
+<br />                                                                            
 Good news, your old provider is going to release your phone numbers to Accelerate Networks on {portedNumbers?.FirstOrDefault()?.DateFirmOrderCommitment?.ToShortDateString()}!
-</br>
-</br>    
+<br />
+<br />    
 Feel free to <a href='https://acceleratenetworks.com/Cart/Order/{originalOrder.OrderId}'>review the order here</a>, and let us know if you have any questions.
-</br>
-</br>   
+<br />
+<br />   
 Numbers porting to Accelerate Networks:
 {formattedNumbers}
-</br>
-</br>
+<br />
+<br />
 Sincerely,
-</br>                                                                            
+<br />                                                                            
 Accelerate Networks
-</br>                                                                            
+<br />                                                                            
 206-858-8757 (call or text)";
 
                                             var checkSend = await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);

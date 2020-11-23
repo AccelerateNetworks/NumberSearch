@@ -377,7 +377,7 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     number.PortRequestId = portRequest.PortRequestId;
                     var checkPortUpdate = await number.PutAsync(_postgresql).ConfigureAwait(false);
-                    formattedNumbers += $"{formattedNumbers}</br>{number?.PortedDialedNumber}";
+                    formattedNumbers += $"{formattedNumbers}<br />{number?.PortedDialedNumber}";
                 }
 
                 // Send out the confirmation email.
@@ -386,22 +386,22 @@ namespace NumberSearch.Mvc.Controllers
                     PrimaryEmailAddress = order.Email,
                     CarbonCopy = configuration.GetConnectionString("SmtpUsername"),
                     MessageBody = $@"Hi {order.FirstName},
-</br>
-</br>
+<br />
+<br />
 Thanks for adding porting information to your order!
-</br>
-</br>
+<br />
+<br />
 Feel free to <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>review the order here</a>, and let us know if you have any questions.
-</br>
-</br>
+<br />
+<br />
 Numbers tied to this port request:
 {formattedNumbers}
-</br>
-</br>
+<br />
+<br />
 Sincerely,
-</br>
+<br />
 Accelerate Networks
-</br>
+<br />
 206-858-8757 (call or text)",
                     OrderId = order.OrderId,
                     Subject = $"Porting information added for {portedNumbers.FirstOrDefault().PortedDialedNumber}",
