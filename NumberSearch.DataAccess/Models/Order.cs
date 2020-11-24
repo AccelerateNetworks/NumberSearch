@@ -27,6 +27,7 @@ namespace NumberSearch.DataAccess
         public decimal SalesTax { get; set; }
         public bool Quote { get; set; }
         public string BillingInvoiceReoccuringId { get; set; }
+        public string SalesEmail { get; set; }
 
 
         public static async Task<Order> GetByIdAsync(Guid orderId, string connectionString)
@@ -91,8 +92,6 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> PutAsync(string connectionString)
         {
-            DateSubmitted = DateTime.Now;
-
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection

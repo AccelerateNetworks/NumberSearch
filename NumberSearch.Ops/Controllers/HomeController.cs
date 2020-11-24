@@ -115,7 +115,7 @@ namespace NumberSearch.Ops.Controllers
         [Route("/Home/Order/{orderId}")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> OrderUpdate(Order order)
+        public async Task<IActionResult> OrderUpdate(Order? order)
         {
             if (order is null)
             {
@@ -123,8 +123,37 @@ namespace NumberSearch.Ops.Controllers
             }
             else
             {
-                order = await Order.GetByIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                var existingOrder = await Order.GetByIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                order.BillingClientId = existingOrder.BillingClientId;
+                order.BillingInvoiceId = existingOrder.BillingInvoiceId;
+                order.BillingInvoiceReoccuringId = existingOrder.BillingInvoiceReoccuringId;
+                order.DateSubmitted = existingOrder.DateSubmitted;
+
+                var checkUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
+
                 return View("OrderEdit", order);
+            }
+        }
+
+        [Authorize]
+        [Route("/Home/Order/{orderId}/Delete")]
+        public async Task<IActionResult> OrderDelete(string orderId)
+        {
+            if (string.IsNullOrWhiteSpace(orderId))
+            {
+                return Redirect("/Home/Order");
+            }
+            else
+            {
+                var order = await Order.GetByIdAsync(Guid.Parse(orderId), _postgresql).ConfigureAwait(false);
+
+                if (order is not null && order.OrderId == Guid.Parse(orderId))
+                {
+                    var checkDelete = await order.DeleteAsync(_postgresql).ConfigureAwait(false);
+                }
+
+                return Redirect("/Home/Order");
             }
         }
 
@@ -264,6 +293,27 @@ namespace NumberSearch.Ops.Controllers
         }
 
         [Authorize]
+        [Route("/Home/PortRequest/{orderId}/Delete")]
+        public async Task<IActionResult> PortRequestDelete(string orderId)
+        {
+            if (string.IsNullOrWhiteSpace(orderId))
+            {
+                return Redirect("/Home/PortRequests");
+            }
+            else
+            {
+                var portrequest = await PortRequest.GetByOrderIdAsync(Guid.Parse(orderId), _postgresql).ConfigureAwait(false);
+
+                if (portrequest is not null && portrequest.OrderId == Guid.Parse(orderId))
+                {
+                    var checkDelete = await portrequest.DeleteAsync(_postgresql).ConfigureAwait(false);
+                }
+
+                return Redirect("/Home/PortRequests");
+            }
+        }
+
+        [Authorize]
         [HttpGet]
         [Route("/Home/TaxRates")]
         [Route("/Home/TaxRates/{taxRateId}")]
@@ -369,6 +419,7 @@ namespace NumberSearch.Ops.Controllers
             }
         }
 
+        [Authorize]
         [Route("/Home/PortRequests/{orderId}/{dialedNumber}")]
         public async Task<IActionResult> RemovePortedPhoneNumber(Guid? orderId, string dialedNumber)
         {
