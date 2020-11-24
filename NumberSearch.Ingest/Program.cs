@@ -581,6 +581,7 @@ namespace NumberSearch.Ingest
                                         var notificationEmail = new Email
                                         {
                                             PrimaryEmailAddress = originalOrder?.Email,
+                                            SalesEmailAddress = string.IsNullOrWhiteSpace(originalOrder?.SalesEmail) ? string.Empty : originalOrder.SalesEmail,
                                             CarbonCopy = config.GetConnectionString("SmtpUsername"),
                                             OrderId = originalOrder.OrderId
                                         };

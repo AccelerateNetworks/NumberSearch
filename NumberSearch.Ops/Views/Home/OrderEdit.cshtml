@@ -46,35 +46,39 @@
             }
         }
     </div>
-    <h4 class="mb-3">Order Information</h4>
-    <div class="row">
-        <div class="col mb-3">
-            <label for="firstName">Order Id</label>
-            <input value="@Model?.OrderId" type="text" class="form-control" placeholder="" readonly>
-        </div>
-        <div class="col mb-3">
-            <label for="lastName">Submitted On</label>
-            <input value="@Model?.DateSubmitted" type="text" class="form-control" placeholder="" readonly>
-        </div>
-    </div>
-    <h4 class="mb-3">Invoice Ninja</h4>
-    <div class="row">
-        <div class="col mb-3">
-            <label for="firstName">Upfront Invoice Id</label>
-            <input value="@Model?.BillingInvoiceId" type="text" class="form-control" placeholder="" readonly>
-        </div>
-        <div class="col mb-3">
-            <label for="lastName">Reoccuring Invoice Id</label>
-            <input value="@Model?.BillingInvoiceReoccuringId" type="text" class="form-control" placeholder="" readonly>
-        </div>
-        <div class="col mb-3">
-            <label for="lastName">Client Id</label>
-            <input value="@Model?.BillingClientId" type="text" class="form-control" placeholder="" readonly>
-        </div>
-    </div>
-    <h4 class="mb-3">Billing Information</h4>
     <form action="/Home/Order/@Model?.OrderId" method="post" class="needs-validation">
         @Html.AntiForgeryToken()
+        <h4 class="mb-3">Order Information</h4>
+        <div class="row">
+            <div class="col mb-3">
+                <label for="firstName">Order Id</label>
+                <input value="@Model?.OrderId" type="text" class="form-control" placeholder="" readonly>
+            </div>
+            <div class="col mb-3">
+                <label for="lastName">Submitted On</label>
+                <input value="@Model?.DateSubmitted" type="text" class="form-control" placeholder="" readonly>
+            </div>
+            <div class="col mb-3">
+                <label for="lastName">Sales Email</label>
+                <input asp-for="SalesEmail" type="text" class="form-control" placeholder="scott@@acceleratenetworks.com">
+            </div>
+        </div>
+        <h4 class="mb-3">Invoice Ninja</h4>
+        <div class="row">
+            <div class="col mb-3">
+                <label for="firstName">Upfront Invoice Id</label>
+                <input value="@Model?.BillingInvoiceId" type="text" class="form-control" placeholder="" readonly>
+            </div>
+            <div class="col mb-3">
+                <label for="lastName">Reoccuring Invoice Id</label>
+                <input value="@Model?.BillingInvoiceReoccuringId" type="text" class="form-control" placeholder="" readonly>
+            </div>
+            <div class="col mb-3">
+                <label for="lastName">Client Id</label>
+                <input value="@Model?.BillingClientId" type="text" class="form-control" placeholder="" readonly>
+            </div>
+        </div>
+        <h4 class="mb-3">Billing Information</h4>
         <div class="row">
             <div class="col mb-3">
                 <label for="firstName">First name</label>

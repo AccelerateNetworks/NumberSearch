@@ -18,6 +18,7 @@ namespace NumberSearch.DataAccess
         public Guid EmailId { get; set; }
         public Guid OrderId { get; set; }
         public string PrimaryEmailAddress { get; set; }
+        public string SalesEmailAddress { get; set; }
         public string CarbonCopy { get; set; }
         public string Subject { get; set; }
         public string MessageBody { get; set; }
@@ -121,6 +122,12 @@ namespace NumberSearch.DataAccess
                 outboundMessage.From.Add(ordersInbox);
                 outboundMessage.Cc.Add(ordersInbox);
                 outboundMessage.To.Add(recipient);
+
+                if (!string.IsNullOrWhiteSpace(SalesEmailAddress))
+                {
+                    var sales = MailboxAddress.Parse(SalesEmailAddress);
+                    outboundMessage.Cc.Add(sales);
+                }
 
                 // If there's an attachment send it, if not just send the body.
                 if (Multipart != null && Multipart.Count > 0)
