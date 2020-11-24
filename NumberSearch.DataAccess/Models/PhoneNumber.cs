@@ -94,8 +94,8 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<IEnumerable<PhoneNumber>> RecommendedPaginatedSearchAsync(string query, int page, string connectionString)
         {
-            var offset = (page * 100) - 100;
-            var limit = 100;
+            var offset = (page * 50) - 50;
+            var limit = 50;
             // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
             query = query?.Trim()?.Replace('*', '_');
 
@@ -118,8 +118,8 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<IEnumerable<PhoneNumber>> SequentialPaginatedSearchAsync(string query, int page, string connectionString)
         {
-            var offset = (page * 100) - 100;
-            var limit = 100;
+            var offset = (page * 50) - 50;
+            var limit = 50;
             // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
             query = query?.Trim()?.Replace('*', '_');
 

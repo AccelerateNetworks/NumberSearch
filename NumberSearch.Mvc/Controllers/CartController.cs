@@ -58,7 +58,7 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [Route("Cart/BuyPhoneNumber/{dialedPhoneNumber}")]
-        public async Task<IActionResult> BuyPhoneNumberAsync(string dialedPhoneNumber, string Query)
+        public async Task<IActionResult> BuyPhoneNumberAsync(string dialedPhoneNumber, string Query, string View, string Page)
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
 
@@ -118,7 +118,8 @@ namespace NumberSearch.Mvc.Controllers
             else
             {
                 // Sadly its gone. And the user needs to pick a different number.
-                return RedirectToAction("Index", "Search", new { Query, Failed = phoneNumber.DialedNumber });
+                return Redirect($"/Search?Query={Query}&View={View}&Page={Page}Failed={phoneNumber.DialedNumber}#{phoneNumber.DialedNumber}");
+                //return RedirectToAction("Index", "Search", new { Query, View, Page, Failed = phoneNumber.DialedNumber });
             }
 
             // Check if this number has already been purchased.
@@ -133,7 +134,8 @@ namespace NumberSearch.Mvc.Controllers
             if (!purchasable)
             {
                 // Sadly its gone. And the user needs to pick a different number.
-                return RedirectToAction("Index", "Search", new { Query, Failed = phoneNumber.DialedNumber });
+                return Redirect($"/Search?Query={Query}&View={View}&Page={Page}Failed={phoneNumber.DialedNumber}#{phoneNumber.DialedNumber}");
+                //return RedirectToAction("Index", "Search", new { Query, View, Page, Failed = phoneNumber.DialedNumber });
             }
 
             var checkAdd = cart.AddPhoneNumber(phoneNumber, productOrder);
@@ -142,12 +144,14 @@ namespace NumberSearch.Mvc.Controllers
             if (checkAdd && checkSet)
             {
                 // TODO: Mark the item as sucessfully added.
-                return RedirectToAction("Index", "Search", new { Query });
+                return Redirect($"/Search?Query={Query}&View={View}&Page={Page}#{phoneNumber.DialedNumber}");
+                //return RedirectToAction("Index", "Search", new { Query, View, Page });
             }
             else
             {
                 // TODO: Tell the user about the failure
-                return RedirectToAction("Index", "Search", new { Query, Failed = phoneNumber.DialedNumber });
+                return Redirect($"/Search?Query={Query}&View={View}&Page={Page}Failed={phoneNumber.DialedNumber}#{phoneNumber.DialedNumber}");
+                //return RedirectToAction("Index", "Search", new { Query, View, Page, Failed = phoneNumber.DialedNumber });
             }
         }
 

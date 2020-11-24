@@ -17,6 +17,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="NumberSearch.Mvc_2020081320200813.txt" />
+    <None Remove="NumberSearch.Mvc_2020112420201124.txt" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="1.3.0">

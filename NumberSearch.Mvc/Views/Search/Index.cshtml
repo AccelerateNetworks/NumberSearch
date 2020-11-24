@@ -49,8 +49,8 @@
         }
         if (Model != null && Model?.PhoneNumbers?.Length > 0)
         {
-            var maxPage = Model.NumberOfResults / 100;
-            var pageResultsCount = Model.Page * 100;
+            var maxPage = Model.NumberOfResults / 50;
+            var pageResultsCount = Model.Page * 50;
 
             if (Model.CleanQuery.Length == 10 && Model.Query.Length == 3)
             {
@@ -80,7 +80,7 @@
                 </div>
                 <div class="btn-group float-right pt-2 pb-2" role="group" aria-label="pagination">
                     @{
-                        if ((Model.NumberOfResults % 100) > 1)
+                        if ((Model.NumberOfResults % 50) > 1)
                         {
                             maxPage += 1;
                         }
@@ -137,7 +137,7 @@
                                     number = $"{beginning}<b class='text-success'>{middle}</b>{end}";
                                 }
 
-                                <tr>
+                                <tr id="@item.DialedNumber">
                                     <td>
                                         @{
                                             if (item.NumberType == "Standard")
@@ -158,7 +158,7 @@
                                     <td>@Html.Raw(number)</td>
                                     <td>@location</td>
                                     <td>
-                                        <a asp-controller="Cart" asp-action="BuyPhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" target="_top">
+                                        <a asp-controller="Cart" asp-action="BuyPhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" asp-route-View="@Model.View" asp-route-Page="@Model.Page" target="_top">
                                             <input type="button" class="btn btn-outline-primary" value="Add to Cart">
                                         </a>
                                         @{

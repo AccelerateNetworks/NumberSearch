@@ -82,7 +82,7 @@ namespace NumberSearch.Mvc.Controllers
 
             // Handle out of range page values.
             page = page < 1 ? 1 : page;
-            page = page * 100 > count ? (count / 100) + 1 : page;
+            page = page * 50 > count ? (count / 50) + 1 : page;
 
             IEnumerable<PhoneNumber> results;
 
