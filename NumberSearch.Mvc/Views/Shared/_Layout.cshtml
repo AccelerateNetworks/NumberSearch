@@ -49,8 +49,16 @@
                     <a class="p-2 text-dark" asp-controller="Services" asp-action="Index">Services</a>
                     <a class="p-2 text-dark" asp-controller="Hardware" asp-action="Index">Hardware</a>
                     <a class="p-2 text-dark" asp-controller="Search" asp-action="Index">Numbers</a>
-                    <a class="p-2 text-dark" asp-controller="Lookup" asp-action="Index">Lookups</a>
-                    <a class="p-2 text-dark" asp-controller="Home" asp-action="Support">Support</a>
+
+                    <div class="dropdown">
+                        <a class="p-2 text-dark dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Support
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            <a class="dropdown-item" asp-controller="Home" asp-action="Support">Knowledge Base</a>
+                            <a class="dropdown-item" asp-controller="Lookup" asp-action="Index">Lookups</a>
+                        </div>
+                    </div>
                     <a class="p-2 text-dark" asp-controller="Home" asp-action="About">About</a>
                     <a class="p-2 text-dark" href="https://blog.acceleratenetworks.com/" target="_blank"
                        rel="noopener noreferrer">Blog</a>
