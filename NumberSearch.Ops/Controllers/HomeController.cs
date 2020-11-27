@@ -80,6 +80,7 @@ namespace NumberSearch.Ops.Controllers
             {
                 // Show all orders
                 var orders = await Order.GetAllAsync(_postgresql).ConfigureAwait(false);
+                var portRequests = await PortRequest.GetAllAsync(_postgresql).ConfigureAwait(false);
                 var productOrders = await ProductOrder.GetAllAsync(_postgresql).ConfigureAwait(false);
                 var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
                 var services = await Service.GetAllAsync(_postgresql).ConfigureAwait(false);
@@ -88,10 +89,12 @@ namespace NumberSearch.Ops.Controllers
                 foreach (var order in orders)
                 {
                     var orderProductOrders = productOrders.Where(x => x.OrderId == order.OrderId).ToArray();
+                    var portRequest = portRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefault();
 
                     pairs.Add(new OrderProducts
                     {
                         Order = order,
+                        PortRequest = portRequest,
                         ProductOrders = orderProductOrders
                     });
                 }
@@ -272,9 +275,9 @@ namespace NumberSearch.Ops.Controllers
         {
             if (orderId is not null && orderId.HasValue)
             {
-                var order = await Order.GetByIdAsync(orderId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
-                var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
-                var numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                var order = await Order.GetByIdAsync(orderId ?? Guid.Empty, _postgresql).ConfigureAwait(false);
+                var portRequest = await PortRequest.GetByOrderIdAsync(orderId ?? Guid.Empty, _postgresql).ConfigureAwait(false);
+                var numbers = await PortedPhoneNumber.GetByOrderIdAsync(orderId ?? Guid.Empty, _postgresql).ConfigureAwait(false);
 
                 return View("PortRequestEdit", new PortRequestResult
                 {

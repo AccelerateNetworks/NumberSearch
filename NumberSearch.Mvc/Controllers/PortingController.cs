@@ -304,40 +304,52 @@ namespace NumberSearch.Mvc.Controllers
 
             if (portRequest.BillImage != null && portRequest.BillImage.Length > 0)
             {
-                await portRequest.BillImage.CopyToAsync(stream).ConfigureAwait(false);
-
-                var root = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                var sink = Path.Combine(root, DateTime.Now.ToString("yyyy-MM-dd"));
-
-                // Verify that the sink directory exists, and create it otherwise.
-                if (!Directory.Exists(sink))
+                try
                 {
-                    Directory.CreateDirectory(sink);
+                    await portRequest.BillImage.CopyToAsync(stream).ConfigureAwait(false);
+
+                    var root = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                    var sink = Path.Combine(root, DateTime.Now.ToString("yyyy-MM-dd"));
+
+                    // Verify that the sink directory exists, and create it otherwise.
+                    if (!Directory.Exists(sink))
+                    {
+                        Directory.CreateDirectory(sink);
+                    }
+
+                    var fileExtension = Path.GetExtension(portRequest.BillImage.FileName);
+                    var fileName = Path.GetFileName(portRequest.BillImage.FileName);
+                    var fileStreamPath = Path.Combine(sink, fileName);
+
+                    // You have to rewind the MemoryStream before copying
+                    stream.Seek(0, SeekOrigin.Begin);
+
+                    using (FileStream fs = new FileStream(fileStreamPath, FileMode.OpenOrCreate))
+                    {
+                        await stream.CopyToAsync(fs).ConfigureAwait(false);
+                        await fs.FlushAsync().ConfigureAwait(false);
+                        Log.Information($"[Port Request] Saved the bill image file to: {fileStreamPath}");
+                    }
+
+                    // Yeet the image into an email attachment.
+                    var attachment = new MimePart("image", fileExtension)
+                    {
+                        Content = new MimeContent(stream, ContentEncoding.Default),
+                        ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
+                        ContentTransferEncoding = ContentEncoding.Base64,
+                        FileName = Path.GetFileName(portRequest.BillImage.FileName)
+                    };
+
+                    multipart.Add(attachment);
+
+                    Log.Information("[Port Request] Successfuly saved the bill image to the server and attached it to the confirmation email.");
                 }
-
-                var fileExtension = Path.GetExtension(portRequest.BillImage.FileName);
-                var fileName = Path.GetFileName(portRequest.BillImage.FileName);
-                var fileStreamPath = Path.Combine(sink, fileName);
-
-                // You have to rewind the MemoryStream before copying
-                stream.Seek(0, SeekOrigin.Begin);
-
-                using (FileStream fs = new FileStream(fileStreamPath, FileMode.OpenOrCreate))
+                catch (Exception ex)
                 {
-                    await stream.CopyToAsync(fs).ConfigureAwait(false);
-                    await fs.FlushAsync().ConfigureAwait(false);
+                    Log.Fatal("[Port Request] Failed to save the bill image to the server and attach it to the confirmation email.");
+                    Log.Fatal($"[Port Request] {ex.Message}");
+                    Log.Fatal($"[Port Request] {ex.InnerException}");
                 }
-
-                // Yeet the image into an email attachment.
-                var attachment = new MimePart("image", fileExtension)
-                {
-                    Content = new MimeContent(stream, ContentEncoding.Default),
-                    ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
-                    ContentTransferEncoding = ContentEncoding.Base64,
-                    FileName = Path.GetFileName(portRequest.BillImage.FileName)
-                };
-
-                multipart.Add(attachment);
             }
 
             var order = await Order.GetByIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
@@ -433,11 +445,11 @@ Accelerate Networks
 
                 if (checkSend && checkSave)
                 {
-                    Log.Information($"Sucessfully sent out the confirmation emails for {order.OrderId}.");
+                    Log.Information($"[Port Request] Sucessfully sent out the confirmation emails for {order.OrderId}.");
                 }
                 else
                 {
-                    Log.Fatal($"Failed to sent out the confirmation emails for {order.OrderId}.");
+                    Log.Fatal($"[Port Request] Failed to sent out the confirmation emails for {order.OrderId}.");
                 }
 
                 // Reset the session and clear the Cart.

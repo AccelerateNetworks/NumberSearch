@@ -14,6 +14,7 @@ namespace NumberSearch.Ops
     public class OrderProducts
     {
         public Order Order { get; set; }
+        public PortRequest PortRequest { get; set; }
         public IEnumerable<ProductOrder> ProductOrders { get; set; }
     }
 }

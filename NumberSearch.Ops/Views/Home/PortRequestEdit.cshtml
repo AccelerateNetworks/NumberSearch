@@ -5,10 +5,10 @@
 <h1 class="display-4 p-3">🚢 Port Requests</h1>
 <div class="pb-3">
     <a class="btn btn-outline-primary" href="/Home/PortRequests">Return to List</a>
-    <a href="https://acceleratenetworks.com/cart/order/@Model?.Order?.OrderId" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+    <a href="https://acceleratenetworks.com/cart/order/@Model?.PortRequest?.OrderId" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
         Order
     </a>
-    <a href="/Home/Emails/@Model?.Order?.OrderId" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+    <a href="/Home/Emails/@Model?.PortRequest?.OrderId" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
         Emails
     </a>
     @{
@@ -33,7 +33,7 @@
         }
     }
 </div>
-<form action="/Home/PortRequests/@Model?.Order?.OrderId" method="post" class="needs-validation mb-3">
+<form action="/Home/PortRequests/@Model?.PortRequest?.OrderId" method="post" class="needs-validation mb-3">
     @Html.AntiForgeryToken()
     <input asp-for="PortRequest.OrderId" type="text" value="@Model?.Order?.OrderId" hidden />
     <div class="row">
@@ -373,9 +373,9 @@
         </div>
     </div>
 </div>
-<form action="/Home/PortRequests/@Model?.Order?.OrderId" method="post" class="mb-5">
+<form action="/Home/PortRequests/@Model?.PortRequest?.OrderId" method="post" class="mb-5">
     @Html.AntiForgeryToken()
-    <input name="OrderId" value="@Model.Order.OrderId" hidden />
+    <input name="OrderId" value="@Model?.PortRequest?.OrderId" hidden />
     <div class="input-group col-md-4 mb-3">
         <input name="dialedNumber" type="text" class="form-control" id="dialedNumber" placeholder="Another Number to Port" title="Enter another dialed number that you wish to add to this port request.">
         <div class="input-group-append">
@@ -394,7 +394,7 @@
 </form>
 <form action="/Home/PortRequestsTeli/@Model?.PortRequest?.OrderId" method="post">
     @Html.AntiForgeryToken()
-    <input name="OrderId" value="@Model.Order.OrderId" hidden />
+    <input name="OrderId" value="@Model?.PortRequest?.OrderId" hidden />
     @{
         if (string.IsNullOrWhiteSpace(Model?.PortRequest?.TeliId))
         {
@@ -407,5 +407,5 @@
     }
 </form>
 <br />
-<a href="/Home/PortRequest/@Model?.Order?.OrderId/Delete" class="btn btn-danger">Delete</a>
+<a href="/Home/PortRequest/@Model?.PortRequest?.OrderId/Delete" class="btn btn-danger">Delete</a>
 <br />

@@ -35,10 +35,22 @@
                                 <a href="https://acceleratenetworks.com/cart/order/@order.Order.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
                                     Order
                                 </a>
-                                <a href="/Home/Emails/@order?.Order?.OrderId" class="btn btn-secondary">
+                                @if (order?.PortRequest is null)
+                                {
+                                    <a class="btn btn-outline-info disabled">
+                                        Port
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a href="/Home/PortRequests/@order?.Order?.OrderId" class="btn btn-info">
+                                        Port
+                                    </a>
+                                }
+                                <a href="/Home/Emails/@order?.Order?.OrderId" class="btn btn-warning text-light">
                                     Emails
                                 </a>
-                                <a href="https://www.google.com/maps/place/@order?.Order?.Address,+@order?.Order?.City,+@order?.Order?.State+@order?.Order?.Zip/" class="btn btn-outline-secondary" target="_blank" rel="noopener noreferrer">
+                                <a href="https://www.google.com/maps/place/@order?.Order?.Address,+@order?.Order?.City,+@order?.Order?.State+@order?.Order?.Zip/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
                                     Map
                                 </a>
                             </div>
@@ -51,7 +63,13 @@
                                 @{
                                     if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceId))
                                     {
-                                        <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-outline-primary" target="_blank" rel="noopener noreferrer">
+                                        <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
+                                            Upfront
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a class="btn btn-outline-success disabled">
                                             Upfront
                                         </a>
                                     }
@@ -59,7 +77,13 @@
                                 @{
                                     if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceReoccuringId))
                                     {
-                                        <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceReoccuringId/edit" class="btn btn-outline-success" target="_blank" rel="noopener noreferrer">
+                                        <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceReoccuringId/edit" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                                            Recurring
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a class="btn btn-outline-primary disabled">
                                             Recurring
                                         </a>
                                     }
@@ -67,7 +91,13 @@
                                 @{
                                     if (!string.IsNullOrWhiteSpace(order.Order.BillingClientId))
                                     {
-                                        <a href="https://billing.acceleratenetworks.com/clients/@order?.Order?.BillingClientId/edit" class="btn btn-outline-info" target="_blank" rel="noopener noreferrer">
+                                        <a href="https://billing.acceleratenetworks.com/clients/@order?.Order?.BillingClientId/edit" class="btn btn-info" target="_blank" rel="noopener noreferrer">
+                                            Client
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a class="btn btn-outline-info disabled">
                                             Client
                                         </a>
                                     }
