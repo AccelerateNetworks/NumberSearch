@@ -12,10 +12,12 @@ using NumberSearch.DataAccess.TeleMesssage;
 using Serilog;
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
@@ -558,135 +560,159 @@ namespace NumberSearch.Mvc.Controllers
 
                         // Submit the number orders and track the total cost.
                         var onetimeItems = new List<Invoice_Items>();
+                        var numberOrders = new ConcurrentDictionary<string, Invoice_Items>();
                         var reoccuringItems = new List<Invoice_Items>();
                         var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
                         var totalCost = 0;
 
+
+                        // Execute these API requests in parallel.
+                        using var semaphore = new SemaphoreSlim(Environment.ProcessorCount);
+
+                        var results = new List<Task>();
+
                         foreach (var nto in cart.PhoneNumbers)
                         {
-                            var cost = nto.NumberType == "Executive" ? 200 : nto.NumberType == "Premium" ? 40 : nto.NumberType == "Standard" ? 20 : 20;
-
-                            if (nto.IngestedFrom == "BulkVS")
+                            // Wait for an open slot in the semaphore before grabbing another thread from the threadpool.
+                            await semaphore.WaitAsync().ConfigureAwait(false);
+                            results.Add(Task.Run(async () =>
                             {
-                                // Buy it and save the reciept.
-                                var random = new Random();
-                                var pin = random.Next(100000, 99999999);
-
-                                var executeOrder = await BulkVSOrderPhoneNumber.GetAsync(nto.DialedNumber, "SFO", "Enabled", string.Empty, "false", pin.ToString(new CultureInfo("en-US")), _apiKey, _apiSecret).ConfigureAwait(false);
-
-                                var verifyOrder = new PurchasedPhoneNumber
+                                try
                                 {
-                                    OrderId = order.OrderId,
-                                    DateOrdered = order.DateSubmitted,
-                                    DialedNumber = nto.DialedNumber,
-                                    DateIngested = nto.DateIngested,
-                                    IngestedFrom = nto.IngestedFrom,
-                                    // Keep the raw response as a receipt.
-                                    OrderResponse = string.IsNullOrWhiteSpace(executeOrder?.result?.description) ? $"faultstring: {executeOrder?.fault?.faultstring}" : $"description: {executeOrder?.result?.description}, cnamlookup: {executeOrder?.result?.entry?.cnamlookup}, dn: {executeOrder?.result?.entry?.dn}, lidb: {executeOrder?.result?.entry?.lidb}, portoutpin: {executeOrder?.result?.entry?.portoutpin}, trunkgroup: {executeOrder?.result?.entry?.trunkgroup}",
-                                    // If the status code of the order comes back as 200 then it was sucessful.
-                                    Completed = executeOrder.result.entry.dn.Contains(nto.DialedNumber, StringComparison.InvariantCultureIgnoreCase)
-                                };
+                                    var cost = nto.NumberType == "Executive" ? 200 : nto.NumberType == "Premium" ? 40 : nto.NumberType == "Standard" ? 20 : 20;
 
-                                var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                    if (nto.IngestedFrom == "BulkVS")
+                                    {
+                                        // Buy it and save the reciept.
+                                        var random = new Random();
+                                        var pin = random.Next(100000, 99999999);
 
-                                totalCost += cost;
-                                onetimeItems.Add(new Invoice_Items
+                                        var executeOrder = await BulkVSOrderPhoneNumber.GetAsync(nto.DialedNumber, "SFO", "Enabled", string.Empty, "false", pin.ToString(new CultureInfo("en-US")), _apiKey, _apiSecret).ConfigureAwait(false);
+
+                                        var verifyOrder = new PurchasedPhoneNumber
+                                        {
+                                            OrderId = order.OrderId,
+                                            DateOrdered = order.DateSubmitted,
+                                            DialedNumber = nto.DialedNumber,
+                                            DateIngested = nto.DateIngested,
+                                            IngestedFrom = nto.IngestedFrom,
+                                            // Keep the raw response as a receipt.
+                                            OrderResponse = string.IsNullOrWhiteSpace(executeOrder?.result?.description) ? $"faultstring: {executeOrder?.fault?.faultstring}" : $"description: {executeOrder?.result?.description}, cnamlookup: {executeOrder?.result?.entry?.cnamlookup}, dn: {executeOrder?.result?.entry?.dn}, lidb: {executeOrder?.result?.entry?.lidb}, portoutpin: {executeOrder?.result?.entry?.portoutpin}, trunkgroup: {executeOrder?.result?.entry?.trunkgroup}",
+                                            // If the status code of the order comes back as 200 then it was sucessful.
+                                            Completed = executeOrder.result.entry.dn.Contains(nto.DialedNumber, StringComparison.InvariantCultureIgnoreCase)
+                                        };
+
+                                        var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
+
+                                        var checkAdd = numberOrders.TryAdd(nto.DialedNumber, new Invoice_Items
+                                        {
+                                            product_key = nto.DialedNumber,
+                                            notes = $"{nto.NumberType} Phone Number",
+                                            cost = cost,
+                                            qty = 1
+                                        });
+                                    }
+                                    else if (nto.IngestedFrom == "TeleMessage")
+                                    {
+                                        // Buy it and save the reciept.
+                                        var executeOrder = await DidsOrder.GetAsync(nto.DialedNumber, _CallFlow, _ChannelGroup, _teleToken).ConfigureAwait(false);
+
+                                        var verifyOrder = new PurchasedPhoneNumber
+                                        {
+                                            OrderId = order.OrderId,
+                                            DateOrdered = order.DateSubmitted,
+                                            DialedNumber = nto.DialedNumber,
+                                            DateIngested = nto.DateIngested,
+                                            IngestedFrom = nto.IngestedFrom,
+                                            // Keep the raw response as a receipt.
+                                            OrderResponse = JsonSerializer.Serialize(executeOrder),
+                                            // If the status code of the order comes back as 200 then it was sucessful.
+                                            Completed = executeOrder.code == 200
+                                        };
+
+                                        var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
+
+                                        if (checkVerifyOrder)
+                                        {
+                                            Log.Information($"Saved the TeleMessage order for {nto.DialedNumber} to the database.");
+                                        }
+                                        else
+                                        {
+                                            Log.Information($"Failed to save the TeleMessage order for {nto.DialedNumber} to the database.");
+
+                                        }
+
+                                        // Set a note for these number purchases inside of Tele's system.
+                                        var getTeleId = await UserDidsGet.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
+                                        var setTeleLabel = await UserDidsNote.SetNote($"{order?.BusinessName} {order?.FirstName} {order?.LastName}", getTeleId.data.id, _teleToken).ConfigureAwait(false);
+
+                                        if (setTeleLabel.code == 200)
+                                        {
+                                            Log.Information($"Sucessfully set TeleMessage label for {nto.DialedNumber} to {order?.BusinessName} {order?.FirstName} {order?.LastName}.");
+                                        }
+                                        else
+                                        {
+                                            Log.Fatal($"Failed to set TeleMessage label for {nto.DialedNumber} to {order?.BusinessName} {order?.FirstName} {order?.LastName}.");
+                                        }
+
+                                        var checkAdd = numberOrders.TryAdd(nto.DialedNumber, new Invoice_Items
+                                        {
+                                            product_key = nto.DialedNumber,
+                                            notes = $"{nto.NumberType} Phone Number",
+                                            cost = cost,
+                                            qty = 1
+                                        });
+                                    }
+                                    else if (nto.IngestedFrom == "FirstPointCom")
+                                    {
+                                        // Buy it and save the reciept.
+                                        var executeOrder = await FirstPointComOrderPhoneNumber.PostAsync(nto.DialedNumber, _fpcusername, _fpcpassword).ConfigureAwait(false);
+
+                                        var verifyOrder = new PurchasedPhoneNumber
+                                        {
+                                            OrderId = order.OrderId,
+                                            DateOrdered = order.DateSubmitted,
+                                            DialedNumber = nto.DialedNumber,
+                                            DateIngested = nto.DateIngested,
+                                            IngestedFrom = nto.IngestedFrom,
+                                            // Keep the raw response as a receipt.
+                                            OrderResponse = JsonSerializer.Serialize(executeOrder),
+                                            // If the status code of the order comes back as 200 then it was sucessful.
+                                            Completed = executeOrder.code == 0
+                                        };
+
+                                        var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
+
+                                        var checkAdd = numberOrders.TryAdd(nto.DialedNumber, new Invoice_Items
+                                        {
+                                            product_key = nto.DialedNumber,
+                                            notes = $"{nto.NumberType} Phone Number",
+                                            cost = cost,
+                                            qty = 1
+                                        });
+                                    }
+                                }
+                                catch (Exception ex)
                                 {
-                                    product_key = nto.DialedNumber,
-                                    notes = $"{nto.NumberType} Phone Number",
-                                    cost = cost,
-                                    qty = 1
-                                });
-                            }
-                            else if (nto.IngestedFrom == "TeleMessage")
+                                    Log.Fatal($"[Cart] Failed to purchase number {nto.DialedNumber}");
+                                    Log.Fatal($"[Cart] {ex.Message}");
+                                    Log.Fatal($"[Cart] {ex.InnerException}");
+                                }
+                                finally
+                                {
+                                    semaphore.Release();
+                                }
+                            }));
+                        }
+
+                        await Task.WhenAll(results).ConfigureAwait(false);
+
+                        if (!numberOrders.IsEmpty)
+                        {
+                            foreach (var item in numberOrders.Values)
                             {
-                                // Buy it and save the reciept.
-                                var executeOrder = await DidsOrder.GetAsync(nto.DialedNumber, _CallFlow, _ChannelGroup, _teleToken).ConfigureAwait(false);
-
-                                var verifyOrder = new PurchasedPhoneNumber
-                                {
-                                    OrderId = order.OrderId,
-                                    DateOrdered = order.DateSubmitted,
-                                    DialedNumber = nto.DialedNumber,
-                                    DateIngested = nto.DateIngested,
-                                    IngestedFrom = nto.IngestedFrom,
-                                    // Keep the raw response as a receipt.
-                                    OrderResponse = JsonSerializer.Serialize(executeOrder),
-                                    // If the status code of the order comes back as 200 then it was sucessful.
-                                    Completed = executeOrder.code == 200
-                                };
-
-                                var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
-
-                                if (checkVerifyOrder)
-                                {
-                                    Log.Information($"Saved the TeleMessage order for {nto.DialedNumber} to the database.");
-                                }
-                                else
-                                {
-                                    Log.Information($"Failed to save the TeleMessage order for {nto.DialedNumber} to the database.");
-
-                                }
-
-                                // Set a note for these number purchases inside of Tele's system.
-                                var getTeleId = await UserDidsGet.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
-                                var setTeleLabel = await UserDidsNote.SetNote($"{order?.BusinessName} {order?.FirstName} {order?.LastName}", getTeleId.data.id, _teleToken).ConfigureAwait(false);
-
-                                if (setTeleLabel.code == 200)
-                                {
-                                    Log.Information($"Sucessfully set TeleMessage label for {nto.DialedNumber} to {order?.BusinessName} {order?.FirstName} {order?.LastName}.");
-                                }
-                                else
-                                {
-                                    Log.Fatal($"Failed to set TeleMessage label for {nto.DialedNumber} to {order?.BusinessName} {order?.FirstName} {order?.LastName}.");
-                                }
-
-                                totalCost += cost;
-                                onetimeItems.Add(new Invoice_Items
-                                {
-                                    product_key = nto.DialedNumber,
-                                    notes = $"{nto.NumberType} Phone Number",
-                                    cost = cost,
-                                    qty = 1
-                                });
-                            }
-                            else if (nto.IngestedFrom == "FirstPointCom")
-                            {
-                                // Buy it and save the reciept.
-                                var executeOrder = await FirstPointComOrderPhoneNumber.PostAsync(nto.DialedNumber, _fpcusername, _fpcpassword).ConfigureAwait(false);
-
-                                var verifyOrder = new PurchasedPhoneNumber
-                                {
-                                    OrderId = order.OrderId,
-                                    DateOrdered = order.DateSubmitted,
-                                    DialedNumber = nto.DialedNumber,
-                                    DateIngested = nto.DateIngested,
-                                    IngestedFrom = nto.IngestedFrom,
-                                    // Keep the raw response as a receipt.
-                                    OrderResponse = JsonSerializer.Serialize(executeOrder),
-                                    // If the status code of the order comes back as 200 then it was sucessful.
-                                    Completed = executeOrder.code == 0
-                                };
-
-                                var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
-
-                                totalCost += cost;
-                                onetimeItems.Add(new Invoice_Items
-                                {
-                                    product_key = nto.DialedNumber,
-                                    notes = $"{nto.NumberType} Phone Number",
-                                    cost = cost,
-                                    qty = 1
-                                });
-                            }
-                            else
-                            {
-                                // Sadly its gone. And the user needs to pick a different number.
-                                return View("Index", new CartResult
-                                {
-                                    Cart = cart,
-                                    Message = $"Please remove {nto.DialedNumber} from your cart and try again. This number is not purchasable at this time."
-                                });
+                                onetimeItems.Add(numberOrders.FirstOrDefault().Value);
+                                totalCost += Convert.ToInt32(numberOrders.FirstOrDefault().Value.cost);
                             }
                         }
 
