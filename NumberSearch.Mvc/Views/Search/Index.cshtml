@@ -121,7 +121,7 @@
                                 match = Model.CleanQuery;
                             }
 
-                            foreach (var item in Model?.PhoneNumbers.OrderBy(x => x.NumberType))
+                            foreach (var item in Model?.PhoneNumbers)
                             {
                                 var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
                                 var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
@@ -158,9 +158,20 @@
                                     <td>@Html.Raw(number)</td>
                                     <td>@location</td>
                                     <td>
-                                        <a asp-controller="Cart" asp-action="BuyPhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" asp-route-View="@Model.View" asp-route-Page="@Model.Page" target="_top">
-                                            <input type="button" class="btn btn-outline-primary" value="Add to Cart">
-                                        </a>
+                                        @{
+                                            if (item.Purchased)
+                                            {
+                                                <a class="disabled">
+                                                    <input type="button" class="btn btn-outline-secondary disabled" value="Already Purchased">
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a asp-controller="Cart" asp-action="BuyPhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" asp-route-View="@Model.View" asp-route-Page="@Model.Page" target="_top">
+                                                    <input type="button" class="btn btn-outline-primary" value="Add to Cart">
+                                                </a>
+                                            }
+                                        }
                                         @{
                                             if (alreadyInCart.TryGetValue(item.DialedNumber, out var _))
                                             {

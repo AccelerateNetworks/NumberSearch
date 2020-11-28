@@ -16,6 +16,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -589,6 +590,7 @@ namespace NumberSearch.Mvc.Controllers
 
                                         var executeOrder = await BulkVSOrderPhoneNumber.GetAsync(nto.DialedNumber, "SFO", "Enabled", string.Empty, "false", pin.ToString(new CultureInfo("en-US")), _apiKey, _apiSecret).ConfigureAwait(false);
 
+                                        nto.Purchased = true;
                                         var verifyOrder = new PurchasedPhoneNumber
                                         {
                                             OrderId = order.OrderId,
@@ -602,7 +604,8 @@ namespace NumberSearch.Mvc.Controllers
                                             Completed = executeOrder.result.entry.dn.Contains(nto.DialedNumber, StringComparison.InvariantCultureIgnoreCase)
                                         };
 
-                                        var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                        var checkVerifyOrder = verifyOrder.PostAsync(_postgresql);
+                                        var checkMarkPurchased = nto.PutAsync(_postgresql);
 
                                         var checkAdd = numberOrders.TryAdd(nto.DialedNumber, new Invoice_Items
                                         {
@@ -611,12 +614,15 @@ namespace NumberSearch.Mvc.Controllers
                                             cost = cost,
                                             qty = 1
                                         });
+
+                                        await Task.WhenAll(new List<Task<bool>> { checkVerifyOrder, checkMarkPurchased }).ConfigureAwait(false);
                                     }
                                     else if (nto.IngestedFrom == "TeleMessage")
                                     {
                                         // Buy it and save the reciept.
                                         var executeOrder = await DidsOrder.GetAsync(nto.DialedNumber, _CallFlow, _ChannelGroup, _teleToken).ConfigureAwait(false);
 
+                                        nto.Purchased = true;
                                         var verifyOrder = new PurchasedPhoneNumber
                                         {
                                             OrderId = order.OrderId,
@@ -630,17 +636,8 @@ namespace NumberSearch.Mvc.Controllers
                                             Completed = executeOrder.code == 200
                                         };
 
-                                        var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
-
-                                        if (checkVerifyOrder)
-                                        {
-                                            Log.Information($"Saved the TeleMessage order for {nto.DialedNumber} to the database.");
-                                        }
-                                        else
-                                        {
-                                            Log.Information($"Failed to save the TeleMessage order for {nto.DialedNumber} to the database.");
-
-                                        }
+                                        var checkVerifyOrder = verifyOrder.PostAsync(_postgresql);
+                                        var checkMarkPurchased = nto.PutAsync(_postgresql);
 
                                         // Set a note for these number purchases inside of Tele's system.
                                         var getTeleId = await UserDidsGet.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
@@ -662,12 +659,16 @@ namespace NumberSearch.Mvc.Controllers
                                             cost = cost,
                                             qty = 1
                                         });
+
+                                        await Task.WhenAll(new List<Task<bool>> { checkVerifyOrder, checkMarkPurchased }).ConfigureAwait(false);
+
                                     }
                                     else if (nto.IngestedFrom == "FirstPointCom")
                                     {
                                         // Buy it and save the reciept.
                                         var executeOrder = await FirstPointComOrderPhoneNumber.PostAsync(nto.DialedNumber, _fpcusername, _fpcpassword).ConfigureAwait(false);
 
+                                        nto.Purchased = true;
                                         var verifyOrder = new PurchasedPhoneNumber
                                         {
                                             OrderId = order.OrderId,
@@ -681,7 +682,8 @@ namespace NumberSearch.Mvc.Controllers
                                             Completed = executeOrder.code == 0
                                         };
 
-                                        var checkVerifyOrder = await verifyOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                        var checkVerifyOrder = verifyOrder.PostAsync(_postgresql);
+                                        var checkMarkPurchased = nto.PutAsync(_postgresql);
 
                                         var checkAdd = numberOrders.TryAdd(nto.DialedNumber, new Invoice_Items
                                         {
@@ -690,6 +692,8 @@ namespace NumberSearch.Mvc.Controllers
                                             cost = cost,
                                             qty = 1
                                         });
+
+                                        await Task.WhenAll(new List<Task<bool>> { checkVerifyOrder, checkMarkPurchased }).ConfigureAwait(false);
                                     }
                                 }
                                 catch (Exception ex)
