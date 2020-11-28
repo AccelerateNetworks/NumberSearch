@@ -46,6 +46,11 @@ namespace NumberSearch.Mvc.Controllers
             return View();
         }
 
+        public IActionResult Features()
+        {
+            return View();
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
