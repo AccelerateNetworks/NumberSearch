@@ -170,6 +170,14 @@ namespace NumberSearch.Ops.Controllers
             {
                 var orders = await PurchasedPhoneNumber.GetByOrderIdAsync(orderId ?? Guid.Empty, _postgresql).ConfigureAwait(false);
 
+                if (orders is not null && orders.Any())
+                {
+                    foreach (var order in orders)
+                    {
+                        // Update the product orders here.
+                    }
+                }
+
                 return View("NumberOrders", orders.OrderByDescending(x => x.DateOrdered));
             }
             else if (string.IsNullOrWhiteSpace(dialedNumber))
