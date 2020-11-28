@@ -51,6 +51,17 @@ namespace NumberSearch.DataAccess
             return result;
         }
 
+        public static async Task<IEnumerable<PurchasedPhoneNumber>> GetByOrderIdAsync(Guid orderId, string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<PurchasedPhoneNumber>("SELECT \"PurchasedPhoneNumberId\", \"OrderId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"DateOrdered\", \"OrderResponse\", \"Completed\" FROM public.\"PurchasedPhoneNumbers\" WHERE \"OrderId\" = @orderId ", new { orderId })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
         /// <summary>
         /// Get every purchased phone number.
         /// </summary>

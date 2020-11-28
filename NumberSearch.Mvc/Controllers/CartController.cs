@@ -576,6 +576,10 @@ namespace NumberSearch.Mvc.Controllers
                         {
                             // Wait for an open slot in the semaphore before grabbing another thread from the threadpool.
                             await semaphore.WaitAsync().ConfigureAwait(false);
+
+                            var productOrder = cart.ProductOrders.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
+                            productOrder.OrderId = order.OrderId;
+
                             results.Add(Task.Run(async () =>
                             {
                                 try
@@ -606,6 +610,7 @@ namespace NumberSearch.Mvc.Controllers
 
                                         var checkVerifyOrder = verifyOrder.PostAsync(_postgresql);
                                         var checkMarkPurchased = nto.PutAsync(_postgresql);
+                                        var checkSubmitted = productOrder.PostAsync(_postgresql);
 
                                         var checkAdd = numberOrders.TryAdd(nto.DialedNumber, new Invoice_Items
                                         {
@@ -615,7 +620,7 @@ namespace NumberSearch.Mvc.Controllers
                                             qty = 1
                                         });
 
-                                        await Task.WhenAll(new List<Task<bool>> { checkVerifyOrder, checkMarkPurchased }).ConfigureAwait(false);
+                                        await Task.WhenAll(new List<Task<bool>> { checkVerifyOrder, checkMarkPurchased, checkSubmitted }).ConfigureAwait(false);
                                     }
                                     else if (nto.IngestedFrom == "TeleMessage")
                                     {
@@ -638,6 +643,7 @@ namespace NumberSearch.Mvc.Controllers
 
                                         var checkVerifyOrder = verifyOrder.PostAsync(_postgresql);
                                         var checkMarkPurchased = nto.PutAsync(_postgresql);
+                                        var checkSubmitted = productOrder.PostAsync(_postgresql);
 
                                         // Set a note for these number purchases inside of Tele's system.
                                         var getTeleId = await UserDidsGet.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
@@ -660,7 +666,7 @@ namespace NumberSearch.Mvc.Controllers
                                             qty = 1
                                         });
 
-                                        await Task.WhenAll(new List<Task<bool>> { checkVerifyOrder, checkMarkPurchased }).ConfigureAwait(false);
+                                        await Task.WhenAll(new List<Task<bool>> { checkVerifyOrder, checkMarkPurchased, checkSubmitted }).ConfigureAwait(false);
 
                                     }
                                     else if (nto.IngestedFrom == "FirstPointCom")
@@ -684,6 +690,7 @@ namespace NumberSearch.Mvc.Controllers
 
                                         var checkVerifyOrder = verifyOrder.PostAsync(_postgresql);
                                         var checkMarkPurchased = nto.PutAsync(_postgresql);
+                                        var checkSubmitted = productOrder.PostAsync(_postgresql);
 
                                         var checkAdd = numberOrders.TryAdd(nto.DialedNumber, new Invoice_Items
                                         {
@@ -693,7 +700,7 @@ namespace NumberSearch.Mvc.Controllers
                                             qty = 1
                                         });
 
-                                        await Task.WhenAll(new List<Task<bool>> { checkVerifyOrder, checkMarkPurchased }).ConfigureAwait(false);
+                                        await Task.WhenAll(new List<Task<bool>> { checkVerifyOrder, checkMarkPurchased, checkSubmitted }).ConfigureAwait(false);
                                     }
                                 }
                                 catch (Exception ex)
@@ -727,7 +734,6 @@ namespace NumberSearch.Mvc.Controllers
                         foreach (var productOrder in cart.ProductOrders)
                         {
                             productOrder.OrderId = order.OrderId;
-                            var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
 
                             if (!string.IsNullOrWhiteSpace(productOrder.DialedNumber))
                             {
@@ -765,6 +771,8 @@ namespace NumberSearch.Mvc.Controllers
                                 }
 
                                 emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? productOrder.PortedDialedNumber : emailSubject;
+
+                                var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
                             }
 
                             if (productOrder.ProductId != Guid.Empty)
@@ -784,6 +792,8 @@ namespace NumberSearch.Mvc.Controllers
                                 }
 
                                 emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? product.Name : emailSubject;
+
+                                var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
                             }
 
                             if (productOrder.ServiceId != Guid.Empty)
@@ -803,6 +813,8 @@ namespace NumberSearch.Mvc.Controllers
                                 }
 
                                 emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? service.Name : emailSubject;
+
+                                var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
                             }
                         }
 

@@ -162,11 +162,17 @@ namespace NumberSearch.Ops.Controllers
 
         [Authorize]
         [Route("/Home/NumberOrders")]
+        [Route("/Home/NumberOrder/{orderId}")]
         [Route("/Home/NumberOrders/{dialedNumber}")]
-        public async Task<IActionResult> NumberOrders(string dialedNumber)
+        public async Task<IActionResult> NumberOrders(Guid? orderId, string dialedNumber)
         {
+            if (orderId.HasValue)
+            {
+                var orders = await PurchasedPhoneNumber.GetByOrderIdAsync(orderId ?? Guid.Empty, _postgresql).ConfigureAwait(false);
 
-            if (string.IsNullOrWhiteSpace(dialedNumber))
+                return View("NumberOrders", orders.OrderByDescending(x => x.DateOrdered));
+            }
+            else if (string.IsNullOrWhiteSpace(dialedNumber))
             {
                 // Show all orders
                 var orders = await PurchasedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
