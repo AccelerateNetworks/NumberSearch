@@ -628,30 +628,30 @@ namespace NumberSearch.Tests
         //}
 
 
-        [Fact]
-        public async Task PComNetDIDInventorySearchAsyncTestAsync()
-        {
-            var DIDSearch = new DIDOrderQuery
-            {
-                DID = "12062670472",
-                NPA = "206",
-                NXX = "267",
-                RateCenter = "SEATTLE"
-            };
-            var ReturnAmount = 100;
+        //[Fact]
+        //public async Task PComNetDIDInventorySearchAsyncTestAsync()
+        //{
+        //    var DIDSearch = new DIDOrderQuery
+        //    {
+        //        DID = "12062670472",
+        //        NPA = "206",
+        //        NXX = "267",
+        //        RateCenter = "SEATTLE"
+        //    };
+        //    var ReturnAmount = 100;
 
-            var client = new DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
+        //    var client = new DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
 
-            var result = await client.DIDInventorySearchAsync(pComNetCredentials, DIDSearch, ReturnAmount);
+        //    var result = await client.DIDInventorySearchAsync(pComNetCredentials, DIDSearch, ReturnAmount);
 
-            Assert.NotNull(result);
-            Assert.NotEmpty(result.DIDOrder);
+        //    Assert.NotNull(result);
+        //    Assert.NotEmpty(result.DIDOrder);
 
-            foreach (var x in result.DIDOrder)
-            {
-                output.WriteLine(x.DID);
-            }
-        }
+        //    foreach (var x in result.DIDOrder)
+        //    {
+        //        output.WriteLine(x.DID);
+        //    }
+        //}
 
         [Fact]
         public async Task FirstComGetPhoneNumbersTestAsync()
