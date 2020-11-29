@@ -170,7 +170,15 @@
                                         @{
                                             foreach (var product in purchased)
                                             {
-                                                <a class="btn btn-outline-primary mt-1" href="/Home/NumberOrders/@product.DialedNumber">@product.DialedNumber</a>
+                                                var matchingPurchasedPhoneNumber = Model?.PurchasedPhoneNumbers?.Where(x => x?.DialedNumber == product?.DialedNumber).FirstOrDefault();
+                                                if (matchingPurchasedPhoneNumber is null)
+                                                {
+                                                    <a class="btn btn-outline-primary mt-1" href="/Home/NumberOrders/@product.DialedNumber">@product.DialedNumber ❓</a>
+                                                }
+                                                else
+                                                {
+                                                    <a class="btn btn-outline-primary mt-1" href="/Home/NumberOrders/@product.DialedNumber">@product.DialedNumber ✔️</a>
+                                                }
                                             }
                                         }
                                     </p>

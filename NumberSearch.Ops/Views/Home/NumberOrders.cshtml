@@ -23,54 +23,64 @@
         </thead>
         <tbody>
             @{
-                foreach (var order in Model.Where(x => x.IngestedFrom != "Test"))
+                if (Model?.FirstOrDefault() is null)
                 {
-                    var ingestedBadge = order.IngestedFrom;
-                    switch (order.IngestedFrom)
-                    {
-                        case "FirstPointCom":
-                            ingestedBadge = "<h4><span class='badge badge-info'>FirstPointCom</span></h4>";
-                            break;
-                        case "BulkVS":
-                            ingestedBadge = "<h4><span class='badge badge-primary'>BulkVS</span></h4>";
-                            break;
-                        case "TeleMessage":
-                            ingestedBadge = "<h4><span class='badge badge-warning'>TeleMessage</span></h4>";
-                            break;
-                    }
                     <tr>
-                        <td data-order="@order.DateOrdered.Ticks">
-                            <h4>@order.DialedNumber</h4>
-                        </td>
-                        <td scope="row">
-                            <a href="https://acceleratenetworks.com/cart/order/@order.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                                Order
-                            </a>
-                            <h4 class="d-flex justify-content-between align-items-center mt-3">
-                                <span class="badge badge-info badge-pill">
-                                    @order.DateOrdered
-                                </span>
-                            </h4>
-                            @{
-                                if (order.Completed)
-                                {
-                                    <h4><span class="badge badge-success">Completed</span></h4>
-                                }
-                                else
-                                {
-                                    <h4><span class="badge badge-danger">Failed</span></h4>
-                                }
-                            }
-                        </td>
-                        <td>
-                            @Html.Raw(ingestedBadge)
-                            <strong>Date Ingested</strong>
-                            <p>@order.DateIngested</p>
-                        </td>
-                        <td class="text-break">
-                            @order.OrderResponse
-                        </td>
+                                    <td colspan="4" class="alert-danger">There is no record of this number being purchased. ❓</td>
                     </tr>
+                }
+                else
+                {
+                    foreach (var order in Model.Where(x => x?.IngestedFrom != "Test"))
+                    {
+                        var ingestedBadge = order?.IngestedFrom;
+                        switch (order?.IngestedFrom)
+                        {
+                            case "FirstPointCom":
+                                ingestedBadge = "<h4><span class='badge badge-info'>FirstPointCom</span></h4>";
+                                break;
+                            case "BulkVS":
+                                ingestedBadge = "<h4><span class='badge badge-primary'>BulkVS</span></h4>";
+                                break;
+                            case "TeleMessage":
+                                ingestedBadge = "<h4><span class='badge badge-warning'>TeleMessage</span></h4>";
+                                break;
+                        }
+                        <tr>
+                            <td data-order="@order.DateOrdered.Ticks">
+                                <h4>@order.DialedNumber</h4>
+                            </td>
+                            <td scope="row">
+                                <a href="https://acceleratenetworks.com/cart/order/@order.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                                    Order
+                                </a>
+                                <h4 class="d-flex justify-content-between align-items-center mt-3">
+                                    <span class="badge badge-info badge-pill">
+                                        @order.DateOrdered
+                                    </span>
+                                </h4>
+                                @{
+                                    if (order.Completed)
+                                    {
+                                        <h4><span class="badge badge-success">Completed</span></h4>
+                                    }
+                                    else
+                                    {
+                                        <h4><span class="badge badge-danger">Failed</span></h4>
+                                    }
+                                }
+                            </td>
+                            <td>
+                                @Html.Raw(ingestedBadge)
+                                <strong>Date Ingested</strong>
+                                <p>@order.DateIngested</p>
+                            </td>
+                            <td class="text-break">
+                                @order.OrderResponse
+                            </td>
+                        </tr>
+                    }
+
                 }
             }
         </tbody>

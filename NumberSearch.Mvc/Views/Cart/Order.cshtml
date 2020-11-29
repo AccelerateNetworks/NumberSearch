@@ -43,10 +43,20 @@
                     var portedTotal = 0;
                     foreach (var number in numbers)
                     {
+                        var matchingPurchasedNumber = Model?.PurchasedPhoneNumbers?.Where(x => x.DialedNumber == number.DialedNumber).FirstOrDefault();
                         <li class="list-group-item d-flex justify-content-between lh-condensed">
                             <div>
-                                <h6 class="my-0">Phone Number</h6>
-                                <small class="text-muted">(@number.NPA) @number.NXX @number.XXXX</small>
+                                @{
+                                    if (matchingPurchasedNumber is null)
+                                    {
+                                        <h6 class="my-0">Phone Number ❓</h6>
+                                    }
+                                    else
+                                    {
+                                        <h6 class="my-0">Phone Number ✔️</h6>
+                                    }
+                                }
+                                <small class="text-muted">(@number.NPA  ) @number.NXX.ToString("000") @number.XXXX.ToString("0000")</small>
                             </div>
                             @{
                                 if (number.NumberType == "Executive")

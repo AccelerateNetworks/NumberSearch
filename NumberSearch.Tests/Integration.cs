@@ -1186,6 +1186,17 @@ namespace NumberSearch.Tests
             }
         }
 
+
+        [Fact]
+        public async Task GetOrderByBackGroundworkNotCompletedAsync()
+        {
+            var conn = postgresql;
+
+            var results = await Order.GetByBackGroundworkNotCompletedAsync(conn).ConfigureAwait(false);
+
+            Assert.NotNull(results);
+        }
+
         //[Fact]
         //public async Task GetSaleTaxForOrderAsync()
         //{

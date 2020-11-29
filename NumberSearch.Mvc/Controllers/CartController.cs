@@ -443,10 +443,10 @@ namespace NumberSearch.Mvc.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
         public async Task<IActionResult> ExistingOrderAsync(Guid Id, bool? AddPortingInfo)
         {
-            if (Id != null)
+            if (Id != Guid.Empty)
             {
                 var order = await Order.GetByIdAsync(Id, _postgresql).ConfigureAwait(false);
-                if (order == null || order.OrderId == null || string.IsNullOrWhiteSpace(order.Email))
+                if (order == null || string.IsNullOrWhiteSpace(order.Email))
                 {
                     return View("Index", new CartResult
                     {
@@ -456,6 +456,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
 
                 var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
 
                 // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
                 // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
@@ -467,7 +468,16 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     if (item?.DialedNumber?.Length == 10)
                     {
-                        var phoneNumber = await PurchasedPhoneNumber.GetByDialedNumberAndOrderIdAsync(item.DialedNumber, order.OrderId, _postgresql).ConfigureAwait(false);
+                        var phoneNumber = purchasedPhoneNumbers.Where(x => x.DialedNumber == item?.DialedNumber).FirstOrDefault();
+
+                        if (phoneNumber is null)
+                        {
+                            phoneNumber = new PurchasedPhoneNumber
+                            {
+                                DialedNumber = item?.DialedNumber,
+                                IngestedFrom = "Not Purchased"
+                            };
+                        }
 
                         bool checkNpa = int.TryParse(phoneNumber.DialedNumber.Substring(0, 3), out int npa);
                         bool checkNxx = int.TryParse(phoneNumber.DialedNumber.Substring(3, 3), out int nxx);
@@ -509,7 +519,8 @@ namespace NumberSearch.Mvc.Controllers
                     PhoneNumbers = phoneNumbers,
                     Products = products,
                     Services = services,
-                    PortedPhoneNumbers = portedPhoneNumbers
+                    PortedPhoneNumbers = portedPhoneNumbers,
+                    PurchasedPhoneNumbers = purchasedPhoneNumbers
                 };
 
                 if (AddPortingInfo != null)
@@ -561,169 +572,60 @@ namespace NumberSearch.Mvc.Controllers
 
                         // Submit the number orders and track the total cost.
                         var onetimeItems = new List<Invoice_Items>();
-                        var numberOrders = new ConcurrentDictionary<string, Invoice_Items>();
                         var reoccuringItems = new List<Invoice_Items>();
                         var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
                         var totalCost = 0;
 
 
-                        // Execute these API requests in parallel.
-                        using var semaphore = new SemaphoreSlim(Environment.ProcessorCount);
-
-                        var results = new List<Task>();
-
                         foreach (var nto in cart.PhoneNumbers)
                         {
-                            // Wait for an open slot in the semaphore before grabbing another thread from the threadpool.
-                            await semaphore.WaitAsync().ConfigureAwait(false);
-
                             var productOrder = cart.ProductOrders.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
                             productOrder.OrderId = order.OrderId;
 
-                            results.Add(Task.Run(async () =>
+                            var cost = nto.NumberType == "Executive" ? 200 : nto.NumberType == "Premium" ? 40 : nto.NumberType == "Standard" ? 20 : 20;
+
+                            if (nto.IngestedFrom == "BulkVS")
                             {
-                                try
+                                var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+
+                                totalCost += cost;
+
+                                onetimeItems.Add(new Invoice_Items
                                 {
-                                    var cost = nto.NumberType == "Executive" ? 200 : nto.NumberType == "Premium" ? 40 : nto.NumberType == "Standard" ? 20 : 20;
-
-                                    if (nto.IngestedFrom == "BulkVS")
-                                    {
-                                        // Buy it and save the reciept.
-                                        var random = new Random();
-                                        var pin = random.Next(100000, 99999999);
-
-                                        var executeOrder = await BulkVSOrderPhoneNumber.GetAsync(nto.DialedNumber, "SFO", "Enabled", string.Empty, "false", pin.ToString(new CultureInfo("en-US")), _apiKey, _apiSecret).ConfigureAwait(false);
-
-                                        nto.Purchased = true;
-                                        var verifyOrder = new PurchasedPhoneNumber
-                                        {
-                                            OrderId = order.OrderId,
-                                            DateOrdered = order.DateSubmitted,
-                                            DialedNumber = nto.DialedNumber,
-                                            DateIngested = nto.DateIngested,
-                                            IngestedFrom = nto.IngestedFrom,
-                                            // Keep the raw response as a receipt.
-                                            OrderResponse = string.IsNullOrWhiteSpace(executeOrder?.result?.description) ? $"faultstring: {executeOrder?.fault?.faultstring}" : $"description: {executeOrder?.result?.description}, cnamlookup: {executeOrder?.result?.entry?.cnamlookup}, dn: {executeOrder?.result?.entry?.dn}, lidb: {executeOrder?.result?.entry?.lidb}, portoutpin: {executeOrder?.result?.entry?.portoutpin}, trunkgroup: {executeOrder?.result?.entry?.trunkgroup}",
-                                            // If the status code of the order comes back as 200 then it was sucessful.
-                                            Completed = executeOrder.result.entry.dn.Contains(nto.DialedNumber, StringComparison.InvariantCultureIgnoreCase)
-                                        };
-
-                                        var checkVerifyOrder = verifyOrder.PostAsync(_postgresql);
-                                        var checkMarkPurchased = nto.PutAsync(_postgresql);
-                                        var checkSubmitted = productOrder.PostAsync(_postgresql);
-
-                                        var checkAdd = numberOrders.TryAdd(nto.DialedNumber, new Invoice_Items
-                                        {
-                                            product_key = nto.DialedNumber,
-                                            notes = $"{nto.NumberType} Phone Number",
-                                            cost = cost,
-                                            qty = 1
-                                        });
-
-                                        await Task.WhenAll(new List<Task<bool>> { checkVerifyOrder, checkMarkPurchased, checkSubmitted }).ConfigureAwait(false);
-                                    }
-                                    else if (nto.IngestedFrom == "TeleMessage")
-                                    {
-                                        // Buy it and save the reciept.
-                                        var executeOrder = await DidsOrder.GetAsync(nto.DialedNumber, _CallFlow, _ChannelGroup, _teleToken).ConfigureAwait(false);
-
-                                        nto.Purchased = true;
-                                        var verifyOrder = new PurchasedPhoneNumber
-                                        {
-                                            OrderId = order.OrderId,
-                                            DateOrdered = order.DateSubmitted,
-                                            DialedNumber = nto.DialedNumber,
-                                            DateIngested = nto.DateIngested,
-                                            IngestedFrom = nto.IngestedFrom,
-                                            // Keep the raw response as a receipt.
-                                            OrderResponse = JsonSerializer.Serialize(executeOrder),
-                                            // If the status code of the order comes back as 200 then it was sucessful.
-                                            Completed = executeOrder.code == 200
-                                        };
-
-                                        var checkVerifyOrder = verifyOrder.PostAsync(_postgresql);
-                                        var checkMarkPurchased = nto.PutAsync(_postgresql);
-                                        var checkSubmitted = productOrder.PostAsync(_postgresql);
-
-                                        // Set a note for these number purchases inside of Tele's system.
-                                        var getTeleId = await UserDidsGet.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
-                                        var setTeleLabel = await UserDidsNote.SetNote($"{order?.BusinessName} {order?.FirstName} {order?.LastName}", getTeleId.data.id, _teleToken).ConfigureAwait(false);
-
-                                        if (setTeleLabel.code == 200)
-                                        {
-                                            Log.Information($"Sucessfully set TeleMessage label for {nto.DialedNumber} to {order?.BusinessName} {order?.FirstName} {order?.LastName}.");
-                                        }
-                                        else
-                                        {
-                                            Log.Fatal($"Failed to set TeleMessage label for {nto.DialedNumber} to {order?.BusinessName} {order?.FirstName} {order?.LastName}.");
-                                        }
-
-                                        var checkAdd = numberOrders.TryAdd(nto.DialedNumber, new Invoice_Items
-                                        {
-                                            product_key = nto.DialedNumber,
-                                            notes = $"{nto.NumberType} Phone Number",
-                                            cost = cost,
-                                            qty = 1
-                                        });
-
-                                        await Task.WhenAll(new List<Task<bool>> { checkVerifyOrder, checkMarkPurchased, checkSubmitted }).ConfigureAwait(false);
-
-                                    }
-                                    else if (nto.IngestedFrom == "FirstPointCom")
-                                    {
-                                        // Buy it and save the reciept.
-                                        var executeOrder = await FirstPointComOrderPhoneNumber.PostAsync(nto.DialedNumber, _fpcusername, _fpcpassword).ConfigureAwait(false);
-
-                                        nto.Purchased = true;
-                                        var verifyOrder = new PurchasedPhoneNumber
-                                        {
-                                            OrderId = order.OrderId,
-                                            DateOrdered = order.DateSubmitted,
-                                            DialedNumber = nto.DialedNumber,
-                                            DateIngested = nto.DateIngested,
-                                            IngestedFrom = nto.IngestedFrom,
-                                            // Keep the raw response as a receipt.
-                                            OrderResponse = JsonSerializer.Serialize(executeOrder),
-                                            // If the status code of the order comes back as 200 then it was sucessful.
-                                            Completed = executeOrder.code == 0
-                                        };
-
-                                        var checkVerifyOrder = verifyOrder.PostAsync(_postgresql);
-                                        var checkMarkPurchased = nto.PutAsync(_postgresql);
-                                        var checkSubmitted = productOrder.PostAsync(_postgresql);
-
-                                        var checkAdd = numberOrders.TryAdd(nto.DialedNumber, new Invoice_Items
-                                        {
-                                            product_key = nto.DialedNumber,
-                                            notes = $"{nto.NumberType} Phone Number",
-                                            cost = cost,
-                                            qty = 1
-                                        });
-
-                                        await Task.WhenAll(new List<Task<bool>> { checkVerifyOrder, checkMarkPurchased, checkSubmitted }).ConfigureAwait(false);
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    Log.Fatal($"[Cart] Failed to purchase number {nto.DialedNumber}");
-                                    Log.Fatal($"[Cart] {ex.Message}");
-                                    Log.Fatal($"[Cart] {ex.InnerException}");
-                                }
-                                finally
-                                {
-                                    semaphore.Release();
-                                }
-                            }));
-                        }
-
-                        await Task.WhenAll(results).ConfigureAwait(false);
-
-                        if (!numberOrders.IsEmpty)
-                        {
-                            foreach (var item in numberOrders.Values)
+                                    product_key = nto.DialedNumber,
+                                    notes = $"{nto.NumberType} Phone Number",
+                                    cost = cost,
+                                    qty = 1
+                                });
+                            }
+                            else if (nto.IngestedFrom == "TeleMessage")
                             {
-                                onetimeItems.Add(numberOrders.FirstOrDefault().Value);
-                                totalCost += Convert.ToInt32(numberOrders.FirstOrDefault().Value.cost);
+
+                                var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+
+                                totalCost += cost;
+
+                                onetimeItems.Add(new Invoice_Items
+                                {
+                                    product_key = nto.DialedNumber,
+                                    notes = $"{nto.NumberType} Phone Number",
+                                    cost = cost,
+                                    qty = 1
+                                });
+                            }
+                            else if (nto.IngestedFrom == "FirstPointCom")
+                            {
+                                var checkSubmitted = productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+
+                                totalCost += cost;
+
+                                onetimeItems.Add(new Invoice_Items
+                                {
+                                    product_key = nto.DialedNumber,
+                                    notes = $"{nto.NumberType} Phone Number",
+                                    cost = cost,
+                                    qty = 1
+                                });
                             }
                         }
 

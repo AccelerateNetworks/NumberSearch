@@ -42,6 +42,10 @@ namespace NumberSearch.Mvc
             services.AddRazorPages();
 
             services.AddApplicationInsightsTelemetry();
+
+            services.AddSingleton<MonitorLoop>();
+            services.AddHostedService<QueuedHostedService>();
+            services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
         }
 
 

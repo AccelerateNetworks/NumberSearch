@@ -1,5 +1,6 @@
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using Serilog;
@@ -25,7 +26,14 @@ namespace NumberSearch.Mvc
             try
             {
                 Log.Information("Starting web host");
-                CreateHostBuilder(args).Build().Run();
+                var host = CreateHostBuilder(args).Build();
+
+                // Background tasks
+                var monitorLoop = host.Services.GetRequiredService<MonitorLoop>();
+                monitorLoop.StartMonitorLoop();
+
+                host.Run();
+
                 return 0;
             }
             catch (Exception ex)

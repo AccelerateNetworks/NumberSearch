@@ -14,6 +14,7 @@ namespace NumberSearch.Mvc
         public IEnumerable<Service> Services { get; set; }
         public IEnumerable<ProductOrder> ProductOrders { get; set; }
         public IEnumerable<PortedPhoneNumber> PortedPhoneNumbers { get; set; }
+        public IEnumerable<PurchasedPhoneNumber> PurchasedPhoneNumbers { get; set; }
         public Order Order { get; set; }
 
         enum CartKey
