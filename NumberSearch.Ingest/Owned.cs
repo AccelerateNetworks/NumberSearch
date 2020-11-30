@@ -314,10 +314,7 @@ namespace NumberSearch.Ingest
 
             var output = new StringBuilder();
 
-            foreach (var change in changes)
-            {
-                output.Append(JsonSerializer.Serialize(change, options));
-            }
+            output.Append(JsonSerializer.Serialize(changes, options));
 
             var notificationEmail = new Email
             {
