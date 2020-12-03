@@ -104,7 +104,7 @@ namespace NumberSearch.DataAccess
 
             var result = await connection
                 .QueryAsync<PhoneNumber>("SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\", \"Purchased\" FROM public.\"PhoneNumbers\" " +
-                "WHERE \"DialedNumber\" LIKE @query ORDER BY \"NumberType\" OFFSET @offset LIMIT @limit",
+                "WHERE \"DialedNumber\" LIKE @query ORDER BY \"NumberType\", \"DialedNumber\" OFFSET @offset LIMIT @limit",
                 new { query = $"%{query}%", offset, limit })
                 .ConfigureAwait(false);
 

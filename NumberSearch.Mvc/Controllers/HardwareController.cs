@@ -20,7 +20,9 @@ namespace NumberSearch.Mvc.Controllers
         public async Task<IActionResult> IndexAsync()
         {
             var products = await Product.GetAllAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-            return View("Index", products);
+            var cart = Cart.GetFromSession(HttpContext.Session);
+
+            return View("Index", new HardwareResult { Cart = cart, Products = products });
         }
     }
 }

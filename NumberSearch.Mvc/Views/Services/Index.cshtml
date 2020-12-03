@@ -1,4 +1,4 @@
-﻿@model IEnumerable<NumberSearch.DataAccess.Service>
+﻿@model Cart
 
 @{
     ViewData["Title"] = "Services";
@@ -28,7 +28,17 @@
                 </ul>
                 <div class="btn-group">
                     <form method="get" class="input-group input-group-lg">
-                        <input type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                        @{
+                            var lines = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("16e2c639-445b-4ae6-9925-07300318206b")).FirstOrDefault();
+                            if (lines is not null && lines.Quantity > 0)
+                            {
+                                <input type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@lines?.Quantity">
+                            }
+                            else
+                            {
+                                <input type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                            }
+                        }
                         <div class="input-group-append">
                             <button type="submit" class="btn btn-outline-primary" asp-controller="Cart" asp-action="BuyService" asp-route-id="16e2c639-445b-4ae6-9925-07300318206b" id="button-addon1">Start talking today</button>
                         </div>
@@ -52,7 +62,17 @@
                 </ul>
                 <div class="btn-group">
                     <form method="get" class="input-group input-group-lg">
-                        <input type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                        @{
+                            var seats = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("48eb4627-8692-4a3b-8be1-be64bbeea534")).FirstOrDefault();
+                            if (seats is not null && seats.Quantity > 0)
+                            {
+                                <input type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@seats?.Quantity">
+                            }
+                            else
+                            {
+                                <input type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                            }
+                        }
                         <div class="input-group-append">
                             <button type="submit" class="btn btn-outline-primary" asp-controller="Cart" asp-action="BuyService" asp-route-id="48eb4627-8692-4a3b-8be1-be64bbeea534" id="button-addon2">Start talking today</button>
                         </div>

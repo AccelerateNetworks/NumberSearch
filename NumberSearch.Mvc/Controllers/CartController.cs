@@ -120,8 +120,11 @@ namespace NumberSearch.Mvc.Controllers
             }
             else
             {
+                // Remove numbers that are unpurchasable.
+                var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+
                 // Sadly its gone. And the user needs to pick a different number.
-                return Redirect($"/Search?Query={Query}&View={View}&Page={Page}Failed={phoneNumber.DialedNumber}#{phoneNumber.DialedNumber}");
+                return Redirect($"/Search?Query={Query}&View={View}&Page={Page}&Failed={phoneNumber.DialedNumber}#{phoneNumber.DialedNumber}");
                 //return RedirectToAction("Index", "Search", new { Query, View, Page, Failed = phoneNumber.DialedNumber });
             }
 
@@ -137,7 +140,7 @@ namespace NumberSearch.Mvc.Controllers
             if (!purchasable)
             {
                 // Sadly its gone. And the user needs to pick a different number.
-                return Redirect($"/Search?Query={Query}&View={View}&Page={Page}Failed={phoneNumber.DialedNumber}#{phoneNumber.DialedNumber}");
+                return Redirect($"/Search?Query={Query}&View={View}&Page={Page}&Failed={phoneNumber.DialedNumber}#{phoneNumber.DialedNumber}");
                 //return RedirectToAction("Index", "Search", new { Query, View, Page, Failed = phoneNumber.DialedNumber });
             }
 
@@ -153,7 +156,7 @@ namespace NumberSearch.Mvc.Controllers
             else
             {
                 // TODO: Tell the user about the failure
-                return Redirect($"/Search?Query={Query}&View={View}&Page={Page}Failed={phoneNumber.DialedNumber}#{phoneNumber.DialedNumber}");
+                return Redirect($"/Search?Query={Query}&View={View}&Page={Page}&Failed={phoneNumber.DialedNumber}#{phoneNumber.DialedNumber}");
                 //return RedirectToAction("Index", "Search", new { Query, View, Page, Failed = phoneNumber.DialedNumber });
             }
         }
@@ -302,12 +305,14 @@ namespace NumberSearch.Mvc.Controllers
             if (checkAdd && checkSet)
             {
                 // TODO: Mark the item as sucessfully added.
-                return RedirectToAction("Index", "Hardware");
+                //return RedirectToAction("Index", "Hardware");
+                return Redirect($"/Hardware#{product.Name}");
             }
             else
             {
                 // TODO: Tell the user about the failure
-                return RedirectToAction("Index", "Hardware");
+                //return RedirectToAction("Index", "Hardware");
+                return Redirect($"/Hardware#{product.Name}");
             }
         }
 
@@ -339,7 +344,7 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [Route("Cart/RemovePhoneNumber/{dialedPhoneNumber}")]
-        public IActionResult RemovePhoneNumber(string dialedPhoneNumber)
+        public IActionResult RemovePhoneNumber(string dialedPhoneNumber, string Query, string View, string Page)
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
 
@@ -352,12 +357,12 @@ namespace NumberSearch.Mvc.Controllers
             if (checkRemove && checkSet)
             {
                 // TODO: Mark the item as removed.
-                return RedirectToAction("Index");
+                return Redirect($"/Search?Query={Query}&View={View}&Page={Page}&Failed={phoneNumber.DialedNumber}#{phoneNumber.DialedNumber}");
             }
             else
             {
                 // TODO: Tell the user about the failure.
-                return RedirectToAction("Index");
+                return Redirect($"/Search?Query={Query}&View={View}&Page={Page}&Failed={phoneNumber.DialedNumber}#{phoneNumber.DialedNumber}");
             }
         }
 
