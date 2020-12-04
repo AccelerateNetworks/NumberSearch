@@ -947,11 +947,27 @@ namespace NumberSearch.Tests
         public async Task PostPhoneNumberAsync()
         {
             var conn = postgresql;
-            var results = await PhoneNumber.GetAllAsync(conn);
-            var number = results.OrderBy(x => x.DialedNumber).LastOrDefault();
-            number.IngestedFrom = "IntegrationTest";
-            number.XXXX++;
-            number.DialedNumber = $"{number.NPA}{number.NXX}{number.XXXX}";
+            var number = new PhoneNumber
+            {
+                DialedNumber = "1111111111",
+                NPA = 111,
+                NXX = 111,
+                XXXX = 1111,
+                City = "Test",
+                DateIngested = DateTime.Now,
+                IngestedFrom = "IntegrationTest",
+                NumberType = "Standard",
+                Purchased = false,
+                State = "WA"
+            };
+
+            var existing = await PhoneNumber.GetAsync(number.DialedNumber, postgresql).ConfigureAwait(false);
+
+            if (existing is not null && existing?.DialedNumber?.Length == 10)
+            {
+                var checkDeleteNumber = existing.DeleteAsync(postgresql).ConfigureAwait(false);
+            }
+
             var response = await number.PostAsync(conn);
             Assert.True(response);
 

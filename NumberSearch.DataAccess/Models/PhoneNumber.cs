@@ -305,7 +305,7 @@ namespace NumberSearch.DataAccess
         public static async Task<bool> BulkPostAsync(IEnumerable<PhoneNumber> numbers, string connectionString)
         {
             // Make sure there are some numbers incoming.
-            if (numbers == null && numbers?.ToArray()?.Length < 0)
+            if (numbers is null || numbers?.ToArray()?.Length < 0)
             {
                 return false;
             }
@@ -315,9 +315,9 @@ namespace NumberSearch.DataAccess
             foreach (var number in numbers?.ToArray())
             {
                 // If anything is null bail out.
-                if (!(number.NPA < 100 || number.NXX < 100 || number.XXXX < 1 || number.DialedNumber == null || number.City == null || number.State == null || number.IngestedFrom == null || number.NumberType == null))
+                if (!(number.NPA < 100 || number.NXX < 100 || number.XXXX < 1 || number.DialedNumber == null || number.City == null || number.State == null || number.IngestedFrom == null || number.NumberType == null || number.Purchased == null))
                 {
-                    values.Add($"('{number.DialedNumber}', {number.NPA}, {number.NXX}, {number.XXXX.ToString("0000", new CultureInfo("en-US"))}, '{number.City}', '{number.State}', '{number.IngestedFrom}', '{DateTime.Now}', '{number.NumberType}')");
+                    values.Add($"('{number.DialedNumber}', {number.NPA}, {number.NXX}, {number.XXXX.ToString("0000", new CultureInfo("en-US"))}, '{number.City}', '{number.State}', '{number.IngestedFrom}', '{DateTime.Now}', '{number.NumberType}', '{number.Purchased}')");
                 }
             }
 
