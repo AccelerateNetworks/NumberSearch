@@ -8,9 +8,6 @@
 }
 
 <script type="text/javascript">
-
-
-
     @{
         var graphData = Model?.Ingests.Take(31).ToArray();
         var commaString = string.Empty;
@@ -239,6 +236,36 @@
                                 }
                                 @standardPortion.Value.ToString("F") %
                             </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-striped table-borderless">
+                    <thead>
+                        <tr>
+                            <th>Prority Area Codes</th>
+                            @{
+                                foreach (var code in Model?.PriorityAreaCodes)
+                                {
+                                    <th>
+                                        (@code.Item1)
+                                    </th>
+                                }
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Count</td>
+                            @{
+                                foreach (var code in Model?.PriorityAreaCodes)
+                                {
+                                    <td>
+                                        @code.Item2
+                                    </td>
+                                }
+                            }
                         </tr>
                     </tbody>
                 </table>

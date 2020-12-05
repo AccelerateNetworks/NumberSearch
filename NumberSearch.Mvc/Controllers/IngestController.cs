@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.Models;
 
 using System.Collections.Generic;
 using System.Linq;
@@ -35,11 +36,19 @@ namespace NumberSearch.Mvc.Controllers
             var standard = await PhoneNumber.GetCountByNumberType("Standard", _postgresql).ConfigureAwait(false);
 
             var total = await PhoneNumber.GetTotal(_postgresql).ConfigureAwait(false);
+            var numbers = await PhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var numbersByAreaCode = new List<(int, int)>();
+
+            foreach (var code in AreaCode.Priority)
+            {
+                numbersByAreaCode.Add((code, numbers.Where(x => x.NPA == code).Count()));
+            }
 
             return View("Index", new IngestResults
             {
                 Ingests = ingests,
                 CurrentState = currentState,
+                PriorityAreaCodes = numbersByAreaCode,
                 TotalPhoneNumbers = total,
                 TotalExecutiveNumbers = executive,
                 TotalPremiumNumbers = premium,
