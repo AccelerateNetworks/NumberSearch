@@ -160,7 +160,8 @@
             <div class="alert alert-success" role="alert">
                 @total
             </div>
-            var last = $"Last ingest performed at {Model?.Ingests.FirstOrDefault()?.StartDate}";
+            var timeAgo = DateTime.Now - Model?.Ingests.FirstOrDefault()?.StartDate;
+            var last = $"Last ingest performed {timeAgo.GetValueOrDefault().TotalMinutes} Minutes ago.";
             <div class="alert alert-info" role="alert">
                 @last
             </div>
