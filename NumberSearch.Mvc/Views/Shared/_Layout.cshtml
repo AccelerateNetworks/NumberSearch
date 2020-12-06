@@ -41,11 +41,17 @@
         <div class="container">
             <div class="row">
                 <div class="col-xl-3 col-md-3">
-                    <a asp-controller="Home" asp-action="Index" class="navbar-brand mx-auto font-weight-normal">
+                    @*Desktop*@
+                    <a asp-controller="Home" asp-action="Index" class="navbar-brand mx-auto font-weight-normal d-none d-sm-block">
                         <img src="~/images/scaled/accelerate.png" alt="Accelerate Networks" class="img-fluid" style="width: 10rem;">
                     </a>
+                    @*Mobile*@
+                    <a asp-controller="Home" asp-action="Index" class="navbar-brand d-sm-none d-block mx-auto pr-5 pl-5">
+                        <img src="~/images/scaled/accelerate.png" alt="Accelerate Networks" class="img-fluid">
+                    </a>
                 </div>
-                <div class="col-xl-9 col-md-9 d-flex flex-wrap justify-content-around align-items-center">
+                @*Desktop*@
+                <div class="col-md-9 col-sm-12 d-flex flex-wrap justify-content-around align-items-center">
                     <a class="p-2 text-dark" asp-controller="Services" asp-action="Index">Services</a>
                     <a class="p-2 text-dark" asp-controller="Hardware" asp-action="Index">Hardware</a>
                     <a class="p-2 text-dark" asp-controller="Search" asp-action="Index">Numbers</a>

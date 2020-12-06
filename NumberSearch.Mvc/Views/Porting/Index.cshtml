@@ -52,8 +52,8 @@
                             var number = Model.PortedPhoneNumber.PortedDialedNumber;
                             <tr>
                                 <td scope="row"><h4>@formattedNumber</h4></td>
-                                <td>@Html.Raw(number)</td>
-                                <td>@location</td>
+                                <td class="d-none d-sm-block">@Html.Raw(number)</td>
+                                <td class="d-none d-sm-block">@location</td>
                                 <td>
                                     <a asp-controller="Cart" asp-action="PortPhoneNumber" asp-route-id="@Model.PortedPhoneNumber.PortedDialedNumber" target="_top">
                                         <input type="button" class="btn btn-outline-primary" value="Add to Cart">
@@ -74,57 +74,60 @@
             </div>
             if (Model?.PortedPhoneNumber?.LrnLookup != null)
             {
-                <table class="table table-striped table-hover table-borderless">
-                    <thead>
-                        <tr>
-                            <th>
-                                Phone Number
-                            </th>
-                            <th>
-                                Last Port Date
-                            </th>
-                            <th>
-                                Caller Name
-                            </th>
-                            <th>
-                                Creation Date
-                            </th>
-                            <th>
-                                Local Routing #
-                            </th>
-                            <th>
-                                Carrier
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <h4>@Model?.PortedPhoneNumber?.LrnLookup?.data?.DialedNumber</h4>
-                            </td>
-                            <td>
-                                @Model?.PortedPhoneNumber?.LrnLookup?.data?.port_date
-                            </td>
-                            <td>
-                                @Model?.PortedPhoneNumber?.LrnLookup?.LIDBName
-                            </td>
-                            <td>
-                                @Model?.PortedPhoneNumber?.LrnLookup?.data?.creation_date
-                            </td>
-                            <td>
-                                <h4>@Model?.PortedPhoneNumber?.LrnLookup?.data?.lrn</h4>
-                            </td>
-                            <td>
-                                <p>
-                                    @Model?.PortedPhoneNumber?.LrnLookup?.data?.spid
-                                    -
-                                    @Model?.PortedPhoneNumber?.LrnLookup?.data?.spid_name
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover table-borderless">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Phone Number
+                                </th>
+                                <th>
+                                    Last Port Date
+                                </th>
+                                <th>
+                                    Caller Name
+                                </th>
+                                <th>
+                                    Creation Date
+                                </th>
+                                <th>
+                                    Local Routing #
+                                </th>
+                                <th>
+                                    Carrier
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <h4>@Model?.PortedPhoneNumber?.LrnLookup?.data?.DialedNumber</h4>
+                                </td>
+                                <td>
+                                    @Model?.PortedPhoneNumber?.LrnLookup?.data?.port_date
+                                </td>
+                                <td>
+                                    @Model?.PortedPhoneNumber?.LrnLookup?.LIDBName
+                                </td>
+                                <td>
+                                    @Model?.PortedPhoneNumber?.LrnLookup?.data?.creation_date
+                                </td>
+                                <td>
+                                    <h4>@Model?.PortedPhoneNumber?.LrnLookup?.data?.lrn</h4>
+                                </td>
+                                <td>
+                                    <p>
+                                        @Model?.PortedPhoneNumber?.LrnLookup?.data?.spid
+                                        -
+                                        @Model?.PortedPhoneNumber?.LrnLookup?.data?.spid_name
 
-                                </p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                                    </p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
             }
         }
         else if (Model?.Cart != null && string.IsNullOrWhiteSpace(Model?.PortedPhoneNumber?.PortedDialedNumber))
