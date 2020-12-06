@@ -25,7 +25,7 @@
                 </div>
                 <div class="input-group mx-auto input-group-lg pt-2">
                     <button class="btn btn-info btn-block" onclick="displayBusyIndicator()" asp-controller="Search" asp-action="Index">Search</button>
-                    <button type="submit" class="btn btn-success btn-block" onclick="displayBusyIndicator()">Port</button>
+                    <button type="submit" class="btn btn-success btn-block" onclick="displayBusyIndicator()">Transfer</button>
                 </div>
             </div>
         </form>
@@ -52,8 +52,8 @@
                             var number = Model.PortedPhoneNumber.PortedDialedNumber;
                             <tr>
                                 <td scope="row"><h4>@formattedNumber</h4></td>
-                                <td class="d-none d-sm-block">@Html.Raw(number)</td>
-                                <td class="d-none d-sm-block">@location</td>
+                                <td class="d-none d-sm-table-cell">@Html.Raw(number)</td>
+                                <td class="d-none d-sm-table-cell">@location</td>
                                 <td>
                                     <a asp-controller="Cart" asp-action="PortPhoneNumber" asp-route-id="@Model.PortedPhoneNumber.PortedDialedNumber" target="_top">
                                         <input type="button" class="btn btn-outline-primary" value="Add to Cart">
