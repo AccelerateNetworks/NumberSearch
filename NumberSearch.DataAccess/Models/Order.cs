@@ -83,14 +83,12 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> PostAsync(string connectionString)
         {
-            DateSubmitted = DateTime.Now;
-
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"Orders\"(\"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\", \"BusinessName\", \"CustomerNotes\", \"BillingClientId\", \"BillingInvoiceId\", \"Quote\", \"BillingInvoiceReoccuringId\", \"SalesEmail\", \"BackgroundWorkCompleted\") " +
-                "VALUES(@FirstName, @LastName, @Email, @Address, @Address2, @City, @State, @Zip, @DateSubmitted, @BusinessName, @CustomerNotes, @BillingClientId, @BillingInvoiceId, @Quote, @BillingInvoiceReoccuringId, @SalesEmail, @BackgroundWorkCompleted)",
-                new { FirstName, LastName, Email, Address, Address2, City, State, Zip, DateSubmitted, BusinessName, CustomerNotes, BillingClientId, BillingInvoiceId, Quote, BillingInvoiceReoccuringId, SalesEmail, BackgroundWorkCompleted })
+                .ExecuteAsync("INSERT INTO public.\"Orders\"(\"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\", \"BusinessName\", \"CustomerNotes\", \"BillingClientId\", \"BillingInvoiceId\", \"Quote\", \"BillingInvoiceReoccuringId\", \"SalesEmail\", \"BackgroundWorkCompleted\") " +
+                "VALUES(@OrderID, @FirstName, @LastName, @Email, @Address, @Address2, @City, @State, @Zip, @DateSubmitted, @BusinessName, @CustomerNotes, @BillingClientId, @BillingInvoiceId, @Quote, @BillingInvoiceReoccuringId, @SalesEmail, @BackgroundWorkCompleted)",
+                new { OrderId, FirstName, LastName, Email, Address, Address2, City, State, Zip, DateSubmitted, BusinessName, CustomerNotes, BillingClientId, BillingInvoiceId, Quote, BillingInvoiceReoccuringId, SalesEmail, BackgroundWorkCompleted })
                 .ConfigureAwait(false);
 
             if (result == 1)

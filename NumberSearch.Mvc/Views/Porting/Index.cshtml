@@ -55,14 +55,17 @@
                                 <td class="d-none d-sm-table-cell">@Html.Raw(number)</td>
                                 <td class="d-none d-sm-table-cell">@location</td>
                                 <td>
-                                    <a asp-controller="Cart" asp-action="PortPhoneNumber" asp-route-id="@Model.PortedPhoneNumber.PortedDialedNumber" target="_top">
-                                        <input type="button" class="btn btn-outline-primary" value="Add to Cart">
-                                    </a>
                                     @{
                                         if (alreadyInCart.TryGetValue(Model.PortedPhoneNumber.PortedDialedNumber, out var _))
                                         {
                                             <a asp-controller="Cart" asp-action="RemovePortedPhoneNumber" asp-route-id="@Model.PortedPhoneNumber.PortedDialedNumber" target="_top">
                                                 <input type="button" class="btn btn-outline-danger" value="Remove">
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a asp-controller="Cart" asp-action="PortPhoneNumber" asp-route-id="@Model.PortedPhoneNumber.PortedDialedNumber" target="_top">
+                                                <input type="button" class="btn btn-outline-primary" value="Add to Cart">
                                             </a>
                                         }
                                     }
