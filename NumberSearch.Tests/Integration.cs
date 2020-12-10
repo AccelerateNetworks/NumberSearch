@@ -1259,17 +1259,17 @@ namespace NumberSearch.Tests
 
             result.FirstName = "Integration";
             result.LastName = "Test";
+            result.OrderId = Guid.NewGuid();
 
             var response = await result.PostAsync(conn);
             Assert.True(response);
 
             // Clean up.
-            var fromDb = await Order.GetByEmailAsync(result.Email, conn).ConfigureAwait(false);
+            var fromDb = await Order.GetByIdAsync(result.OrderId, conn);
 
-            var newOrderFromDb = fromDb.Where(x => x.FirstName == result.FirstName && x.LastName == result.LastName).FirstOrDefault();
-            Assert.False(newOrderFromDb is null);
+            Assert.False(fromDb is null);
 
-            var checkDelete = await newOrderFromDb.DeleteAsync(conn).ConfigureAwait(false);
+            var checkDelete = await fromDb.DeleteAsync(conn).ConfigureAwait(false);
             Assert.True(checkDelete);
         }
 
