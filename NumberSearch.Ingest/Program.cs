@@ -1042,6 +1042,23 @@ Accelerate Networks
             {
                 // Hopefully we never get here.
                 Log.Fatal("[Heartbeat] This is a complete application failure. We've broken out of the infinte loop.");
+
+                // Notify someone that there's been a failure.
+                var notificationEmail = new Email
+                {
+                    PrimaryEmailAddress = "thomas.ryan@outlook.com",
+                    CarbonCopy = "dan@acceleratenetworks.com",
+                    DateSent = DateTime.Now,
+                    Subject = $"[Ingest] App is down.",
+                    MessageBody = $"Something has gone wrong and the ingest app is down at {DateTime.Now}. Please capture the logs and then restart or redeploy the ingest application to restore service.",
+                    OrderId = new Guid(),
+                    Completed = true
+                };
+
+                var checkSend = await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);
+                var checkSave = await notificationEmail.PostAsync(postgresSQL).ConfigureAwait(false);
+
+                // Save the log.
                 Log.CloseAndFlush();
             }
         }
