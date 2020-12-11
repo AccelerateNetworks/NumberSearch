@@ -299,7 +299,7 @@ namespace NumberSearch.Ingest
             return owned;
         }
 
-        public static async Task<bool> SendPortingNotificationEmailAsync(IEnumerable<ServiceProviderChanged> changes, string smtpUsername, string smtpPassword, string connectionString)
+        public static async Task<bool> SendPortingNotificationEmailAsync(IEnumerable<ServiceProviderChanged> changes, string smtpUsername, string smtpPassword, string emailPrimary, string emailCC, string connectionString)
         {
             if ((changes is null) || !changes.Any())
             {
@@ -318,8 +318,8 @@ namespace NumberSearch.Ingest
 
             var notificationEmail = new Email
             {
-                PrimaryEmailAddress = "dan@acceleratenetworks.com",
-                CarbonCopy = "orders@acceleratenetworks.com",
+                PrimaryEmailAddress = emailPrimary,
+                CarbonCopy = emailCC,
                 DateSent = DateTime.Now,
                 Subject = $"[Ingest] {changes.Count()} phone numbers changed Service Providers.",
                 MessageBody = output.ToString(),

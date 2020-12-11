@@ -32,6 +32,10 @@ namespace NumberSearch.Ingest
             var peerlessApiKey = config.GetConnectionString("PeerlessAPIKey");
             var smtpUsername = config.GetConnectionString("SmtpUsername");
             var smtpPassword = config.GetConnectionString("SmtpPassword");
+            var emailOrders = config.GetConnectionString("EmailOrders");
+            var emailDan = config.GetConnectionString("EmailDan");
+            var emailTom = config.GetConnectionString("EmailTom");
+
 
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
@@ -582,7 +586,7 @@ namespace NumberSearch.Ingest
                                         {
                                             PrimaryEmailAddress = originalOrder?.Email,
                                             SalesEmailAddress = string.IsNullOrWhiteSpace(originalOrder?.SalesEmail) ? string.Empty : originalOrder.SalesEmail,
-                                            CarbonCopy = config.GetConnectionString("SmtpUsername"),
+                                            CarbonCopy = emailOrders,
                                             OrderId = originalOrder.OrderId
                                         };
 
@@ -979,7 +983,7 @@ Accelerate Networks
                                             if (changedNumbers != null && changedNumbers.Any())
                                             {
                                                 Log.Information($"[OwnedNumbers] Emailing out a notification that {changedNumbers.Count()} numbers LRN updates.");
-                                                var checkSend = await Owned.SendPortingNotificationEmailAsync(changedNumbers, smtpUsername, smtpPassword, postgresSQL).ConfigureAwait(false);
+                                                var checkSend = await Owned.SendPortingNotificationEmailAsync(changedNumbers, smtpUsername, smtpPassword, emailDan, emailOrders, postgresSQL).ConfigureAwait(false);
                                             }
                                         }
                                         catch (Exception ex)
@@ -1046,8 +1050,8 @@ Accelerate Networks
                 // Notify someone that there's been a failure.
                 var notificationEmail = new Email
                 {
-                    PrimaryEmailAddress = "thomas.ryan@outlook.com",
-                    CarbonCopy = "dan@acceleratenetworks.com",
+                    PrimaryEmailAddress = emailTom,
+                    CarbonCopy = emailDan,
                     DateSent = DateTime.Now,
                     Subject = $"[Ingest] App is down.",
                     MessageBody = $"Something has gone wrong and the ingest app is down at {DateTime.Now}. Please capture the logs and then restart or redeploy the ingest application to restore service.",

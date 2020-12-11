@@ -35,6 +35,7 @@ namespace NumberSearch.Mvc.Controllers
         private readonly string _fpcusername;
         private readonly string _fpcpassword;
         private readonly string _invoiceNinjaToken;
+        private readonly string _emailOrders;
 
         public CartController(IConfiguration config)
         {
@@ -48,6 +49,7 @@ namespace NumberSearch.Mvc.Controllers
             _fpcusername = config.GetConnectionString("PComNetUsername");
             _fpcpassword = config.GetConnectionString("PComNetPassword");
             _invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
+            _emailOrders = config.GetConnectionString("EmailOrders");
         }
 
         public IActionResult Index()
@@ -816,7 +818,7 @@ namespace NumberSearch.Mvc.Controllers
                             var confirmationEmail = new Email
                             {
                                 PrimaryEmailAddress = order.Email,
-                                CarbonCopy = _configuration.GetConnectionString("SmtpUsername"),
+                                CarbonCopy = _emailOrders,
                                 MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
