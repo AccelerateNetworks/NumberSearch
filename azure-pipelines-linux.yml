@@ -29,6 +29,9 @@ variables:
   ConnectionStrings.InvoiceNinjaToken: $(InvoiceNinjaToken)
   ConnectionStrings.Data247Username: $(Data247Username)
   ConnectionStrings.Data247Password: $(Data247Password)
+  ConnectionStrings.EmailOrders: $(EmailOrders)
+  ConnectionStrings.EmailDan: $(EmailDan)
+  ConnectionStrings.EmailTom: $(EmailTom)
   ApplicationInsights.InstrumentationKey: $(InstrumentationKey)
 
 steps:
