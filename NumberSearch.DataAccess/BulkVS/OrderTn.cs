@@ -56,7 +56,7 @@ namespace NumberSearch.DataAccess.BulkVS
             {
                 if (item.TN.Length == 10)
                 {
-                    bool checkNpa = int.TryParse(item.TN.Substring(3), out int npa);
+                    bool checkNpa = int.TryParse(item.TN.Substring(0,3), out int npa);
                     bool checkNxx = int.TryParse(item.TN.Substring(3, 3), out int nxx);
                     bool checkXxxx = int.TryParse(item.TN.Substring(6), out int xxxx);
 
