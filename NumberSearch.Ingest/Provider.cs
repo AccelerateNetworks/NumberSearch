@@ -3,6 +3,7 @@
 using FirstCom;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.BulkVS;
 
 using Serilog;
 
@@ -49,12 +50,24 @@ namespace NumberSearch.Ingest
         /// <param name="apiSecret"> The bulkVS API secret. </param>
         /// <param name="connectionString"> The connection string for the database. </param>
         /// <returns></returns>
-        public static async Task<IngestStatistics> BulkVSAsync(string apiKey, string apiSecret, int[] areaCodes, string connectionString)
+        public static async Task<IngestStatistics> BulkVSAsync(string username, string password, int[] areaCodes, string connectionString)
         {
             var start = DateTime.Now;
 
-            var numbers = await MainBulkVS.GetValidNumbersByNPAAsync(apiKey, apiSecret, areaCodes).ConfigureAwait(false);
+            var numbers = new List<PhoneNumber>();
 
+            foreach (var code in areaCodes)
+            {
+                try
+                {
+                    numbers.AddRange(await OrderTn.GetAsync(code, username, password).ConfigureAwait(false));
+                    Log.Information($"[BulkVS] Found {numbers.Count} Phone Numbers");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"[BulkVS] Area code {code} failed @ {DateTime.Now}: {ex.Message}");
+                }
+            }
             var typedNumbers = Services.AssignNumberTypes(numbers).ToArray();
 
             var stats = await Services.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
