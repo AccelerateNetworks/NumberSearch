@@ -137,51 +137,102 @@
                                     number = $"{beginning}<b class='text-success'>{middle}</b>{end}";
                                 }
 
-                                <tr id="@item.DialedNumber">
-                                    <td class="d-none d-sm-table-cell">
-                                        @{
-                                            if (item.NumberType == "Standard")
-                                            {
-                                                <h4><span class="badge badge-secondary">Standard</span></h4>
+                                if (alreadyInCart.TryGetValue(item.DialedNumber, out var _))
+                                {
+                                    <tr id="@item.DialedNumber" class="table-info">
+                                        <td class="d-none d-sm-table-cell">
+                                            @{
+                                                if (item.NumberType == "Standard")
+                                                {
+                                                    <h4><span class="badge badge-secondary">Standard</span></h4>
+                                                }
+                                                else if (item.NumberType == "Premium")
+                                                {
+                                                    <h4><span class="badge badge-primary">Premium</span></h4>
+                                                }
+                                                else if (item.NumberType == "Executive")
+                                                {
+                                                    <h4><span class="badge badge-success">Executive</span></h4>
+                                                }
                                             }
-                                            else if (item.NumberType == "Premium")
-                                            {
-                                                <h4><span class="badge badge-primary">Premium</span></h4>
+                                        </td>
+                                        <td scope="row"><h4>@formattedNumber</h4></td>
+                                        <td class="d-none d-sm-table-cell">@Html.Raw(number)</td>
+                                        <td class="d-none d-sm-table-cell">@location</td>
+                                        <td>
+                                            @{
+                                                if (item.Purchased)
+                                                {
+                                                    <a class="disabled">
+                                                        <input type="button" class="btn btn-outline-secondary disabled" value="Already Purchased">
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <a asp-controller="Cart" asp-action="BuyPhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" asp-route-View="@Model.View" asp-route-Page="@Model.Page" target="_top">
+                                                        <input type="button" class="btn btn-outline-primary" value="Add to Cart">
+                                                    </a>
+                                                }
                                             }
-                                            else if (item.NumberType == "Executive")
-                                            {
-                                                <h4><span class="badge badge-success">Executive</span></h4>
+                                            @{
+                                                if (alreadyInCart.TryGetValue(item.DialedNumber, out var _))
+                                                {
+                                                    <a asp-controller="Cart" asp-action="RemovePhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" target="_top">
+                                                        <input type="button" class="btn btn-outline-danger" value="Remove">
+                                                    </a>
+                                                }
                                             }
-                                        }
-                                    </td>
-                                    <td scope="row"><h4>@formattedNumber</h4></td>
-                                    <td class="d-none d-sm-table-cell">@Html.Raw(number)</td>
-                                    <td class="d-none d-sm-table-cell">@location</td>
-                                    <td>
-                                        @{
-                                            if (item.Purchased)
-                                            {
-                                                <a class="disabled">
-                                                    <input type="button" class="btn btn-outline-secondary disabled" value="Already Purchased">
-                                                </a>
+                                        </td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    <tr id="@item.DialedNumber">
+                                        <td class="d-none d-sm-table-cell">
+                                            @{
+                                                if (item.NumberType == "Standard")
+                                                {
+                                                    <h4><span class="badge badge-secondary">Standard</span></h4>
+                                                }
+                                                else if (item.NumberType == "Premium")
+                                                {
+                                                    <h4><span class="badge badge-primary">Premium</span></h4>
+                                                }
+                                                else if (item.NumberType == "Executive")
+                                                {
+                                                    <h4><span class="badge badge-success">Executive</span></h4>
+                                                }
                                             }
-                                            else
-                                            {
-                                                <a asp-controller="Cart" asp-action="BuyPhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" asp-route-View="@Model.View" asp-route-Page="@Model.Page" target="_top">
-                                                    <input type="button" class="btn btn-outline-primary" value="Add to Cart">
-                                                </a>
+                                        </td>
+                                        <td scope="row"><h4>@formattedNumber</h4></td>
+                                        <td class="d-none d-sm-table-cell">@Html.Raw(number)</td>
+                                        <td class="d-none d-sm-table-cell">@location</td>
+                                        <td>
+                                            @{
+                                                if (item.Purchased)
+                                                {
+                                                    <a class="disabled">
+                                                        <input type="button" class="btn btn-outline-secondary disabled" value="Already Purchased">
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <a asp-controller="Cart" asp-action="BuyPhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" asp-route-View="@Model.View" asp-route-Page="@Model.Page" target="_top">
+                                                        <input type="button" class="btn btn-outline-primary" value="Add to Cart">
+                                                    </a>
+                                                }
                                             }
-                                        }
-                                        @{
-                                            if (alreadyInCart.TryGetValue(item.DialedNumber, out var _))
-                                            {
-                                                <a asp-controller="Cart" asp-action="RemovePhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" target="_top">
-                                                    <input type="button" class="btn btn-outline-danger" value="Remove">
-                                                </a>
+                                            @{
+                                                if (alreadyInCart.TryGetValue(item.DialedNumber, out var _))
+                                                {
+                                                    <a asp-controller="Cart" asp-action="RemovePhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" target="_top">
+                                                        <input type="button" class="btn btn-outline-danger" value="Remove">
+                                                    </a>
+                                                }
                                             }
-                                        }
-                                    </td>
-                                </tr>
+                                        </td>
+                                    </tr>
+                                }
                             }
                         }
                     </tbody>
@@ -221,4 +272,5 @@
             </div>
         }
     }
+    <br />
 </div>

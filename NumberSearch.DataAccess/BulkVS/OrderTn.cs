@@ -28,7 +28,16 @@ namespace NumberSearch.DataAccess.BulkVS
             string npaParameter = $"?Npa={npa}";
             string nxxParameter = string.IsNullOrWhiteSpace(nxx) ? string.Empty : $"?Nxx={nxx}";
             string route = $"{baseUrl}{endpoint}{npaParameter}{nxxParameter}";
-            return await route.WithBasicAuth(username, password).GetJsonAsync<IEnumerable<OrderTn>>().ConfigureAwait(false);
+            try
+            {
+                return await route.WithBasicAuth(username, password).GetJsonAsync<IEnumerable<OrderTn>>().ConfigureAwait(false);
+            }
+            catch (FlurlHttpException ex)
+            {
+                Log.Warning($"[Ingest] [BulkVS] No results found for area code {npa}.");
+
+                return new List<OrderTn>() { };
+            }
         }
 
         public static async Task<IEnumerable<PhoneNumber>> GetAsync(int inNpa, string username, string password)

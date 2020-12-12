@@ -86,6 +86,12 @@ namespace NumberSearch.Mvc.Controllers
                 else
                 {
                     Log.Warning($"[BulkVS] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {npanxx}.");
+
+                    // Remove numbers that are unpurchasable.
+                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+
+                    // Sadly its gone. And the user needs to pick a different number.
+                    return Redirect($"/Search?Query={Query}&View={View}&Page={Page}&Failed={phoneNumber.DialedNumber}#{phoneNumber.DialedNumber}");
                 }
 
             }
@@ -102,6 +108,12 @@ namespace NumberSearch.Mvc.Controllers
                 else
                 {
                     Log.Warning($"[TeleMessage] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {phoneNumber.DialedNumber}.");
+
+                    // Remove numbers that are unpurchasable.
+                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+
+                    // Sadly its gone. And the user needs to pick a different number.
+                    return Redirect($"/Search?Query={Query}&View={View}&Page={Page}&Failed={phoneNumber.DialedNumber}#{phoneNumber.DialedNumber}");
                 }
 
             }
@@ -118,6 +130,12 @@ namespace NumberSearch.Mvc.Controllers
                 else
                 {
                     Log.Warning($"[FirstPointCom] Failed to find {phoneNumber.DialedNumber} in {results.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
+
+                    // Remove numbers that are unpurchasable.
+                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+
+                    // Sadly its gone. And the user needs to pick a different number.
+                    return Redirect($"/Search?Query={Query}&View={View}&Page={Page}&Failed={phoneNumber.DialedNumber}#{phoneNumber.DialedNumber}");
                 }
             }
             else
@@ -141,6 +159,9 @@ namespace NumberSearch.Mvc.Controllers
 
             if (!purchasable)
             {
+                // Remove numbers that are unpurchasable.
+                var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+
                 // Sadly its gone. And the user needs to pick a different number.
                 return Redirect($"/Search?Query={Query}&View={View}&Page={Page}&Failed={phoneNumber.DialedNumber}#{phoneNumber.DialedNumber}");
                 //return RedirectToAction("Index", "Search", new { Query, View, Page, Failed = phoneNumber.DialedNumber });
@@ -703,7 +724,7 @@ namespace NumberSearch.Mvc.Controllers
                                         onetimeItems.Add(new Invoice_Items
                                         {
                                             product_key = product.Name,
-                                            notes = $"{product.Name} {product.Description}",
+                                            notes = $"{product.Description}",
                                             cost = product.Price,
                                             qty = productOrder.Quantity
                                         });
@@ -724,7 +745,7 @@ namespace NumberSearch.Mvc.Controllers
                                         reoccuringItems.Add(new Invoice_Items
                                         {
                                             product_key = service.Name,
-                                            notes = $"{service.Name} {service.Description}",
+                                            notes = $"{service.Description}",
                                             cost = service.Price,
                                             qty = productOrder.Quantity
                                         });
@@ -1085,18 +1106,27 @@ Accelerate Networks
                                 }
                             }
 
-                            // Send out the confirmation email to the customer.
-                            var checkSend = await confirmationEmail.SendEmailAsync(_configuration.GetConnectionString("SmtpUsername"), _configuration.GetConnectionString("SmtpPassword")).ConfigureAwait(false);
-                            var checkSave = await confirmationEmail.PostAsync(_postgresql).ConfigureAwait(false);
-
-                            if (checkSend && checkSave)
+                            // If there are notes on the order don't send out any emails.
+                            if (string.IsNullOrWhiteSpace(order.CustomerNotes))
                             {
-                                Log.Information($"Sucessfully sent out the confirmation emails for {order.OrderId}.");
+                                // Send out the confirmation email to the customer.
+                                var checkSend = await confirmationEmail.SendEmailAsync(_configuration.GetConnectionString("SmtpUsername"), _configuration.GetConnectionString("SmtpPassword")).ConfigureAwait(false);
+                                var checkSave = await confirmationEmail.PostAsync(_postgresql).ConfigureAwait(false);
+
+                                if (checkSend && checkSave)
+                                {
+                                    Log.Information($"Sucessfully sent out the confirmation emails for {order.OrderId}.");
+                                }
+                                else
+                                {
+                                    Log.Fatal($"Failed to sent out the confirmation emails for {order.OrderId}.");
+                                }
                             }
                             else
                             {
-                                Log.Fatal($"Failed to sent out the confirmation emails for {order.OrderId}.");
+                                Log.Information($"Skipped sending out the confirmation emails for {order.OrderId} due to customer notes.");
                             }
+
 
                             if (cart.PortedPhoneNumbers.Any())
                             {
