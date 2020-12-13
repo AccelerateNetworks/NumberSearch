@@ -5,6 +5,7 @@ using FirstCom;
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Data247;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.TeleMesssage;
@@ -14,6 +15,7 @@ using ServiceReference;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 using Xunit;
@@ -722,6 +724,29 @@ namespace NumberSearch.Tests
             }
             output.WriteLine($"{count} Results Reviewed");
         }
+
+        [Fact]
+        public async Task BulkVSRESTOrderPostAsyncTestAsync()
+        {
+            // Arrange
+            var order = new OrderTnRequestBody
+            {
+                TN = "13109060901",
+                Lidb = "Accelerate Networks",
+                PortoutPin = "3591344",
+                TrunkGroup = "Primary",
+                Sms = true,
+                Mms = false
+            };
+
+            // Act
+            var results = await order.PostAsync(bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+
+            // Assert
+            Assert.NotNull(results);
+            output.WriteLine(JsonSerializer.Serialize(results));
+        }
+
 
         [Fact]
         public async Task BulkVSLrnLookupAsync()

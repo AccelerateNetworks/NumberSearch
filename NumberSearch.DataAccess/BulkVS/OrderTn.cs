@@ -6,11 +6,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.BulkVS
 {
-
     public class OrderTn
     {
         public string TN { get; set; }
@@ -19,7 +19,6 @@ namespace NumberSearch.DataAccess.BulkVS
         public string PerMinuteRate { get; set; }
         public string Mrc { get; set; }
         public string Nrc { get; set; }
-
 
         public static async Task<IEnumerable<OrderTn>> GetRawAsync(string npa, string nxx, string username, string password)
         {
@@ -56,7 +55,7 @@ namespace NumberSearch.DataAccess.BulkVS
             {
                 if (item.TN.Length == 10)
                 {
-                    bool checkNpa = int.TryParse(item.TN.Substring(0,3), out int npa);
+                    bool checkNpa = int.TryParse(item.TN.Substring(0, 3), out int npa);
                     bool checkNxx = int.TryParse(item.TN.Substring(3, 3), out int nxx);
                     bool checkXxxx = int.TryParse(item.TN.Substring(6), out int xxxx);
 
@@ -102,4 +101,89 @@ namespace NumberSearch.DataAccess.BulkVS
             return output;
         }
     }
+
+    public class OrderTnRequestBody
+    {
+        public string TN { get; set; }
+        public string Lidb { get; set; }
+        [JsonPropertyName("Portout Pin")]
+        public string PortoutPin { get; set; }
+        [JsonPropertyName("Trunk Group")]
+        public string TrunkGroup { get; set; }
+        public bool Sms { get; set; }
+        public bool Mms { get; set; }
+
+        /// <summary>
+        /// Submit an order for a phone number to BulkVS.
+        /// </summary>
+        /// <param name="username"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        public async Task<OrderTnResponseBody> PostAsync(string username, string password)
+        {
+            string baseUrl = "https://portal.bulkvs.com/api/v1.0/";
+            string endpoint = "orderTn";
+            string route = $"{baseUrl}{endpoint}";
+            try
+            {
+                return await route.WithBasicAuth(username, password).PostJsonAsync(this).ReceiveJson<OrderTnResponseBody>().ConfigureAwait(false);
+            }
+            catch (FlurlHttpException ex)
+            {
+                Log.Warning($"[Ingest] [BulkVS] Failed to order {TN}.");
+
+                var error = await ex.GetResponseJsonAsync<OrderTnFailed>();
+
+                return new OrderTnResponseBody
+                {
+                    TN = TN,
+                    Failed = error
+                };
+            }
+        }
+    }
+
+    public class OrderTnResponseBody
+    {
+        public string TN { get; set; }
+        public string Status { get; set; }
+        public string Lidb { get; set; }
+        public string PortoutPin { get; set; }
+        public OrderTnRouting Routing { get; set; }
+        public OrderTnMessaging Messaging { get; set; }
+        public OrderTnTNDetails TNDetails { get; set; }
+        public OrderTnFailed Failed { get; set; }
+    }
+
+    public class OrderTnRouting
+    {
+        public string TrunkGroup { get; set; }
+        public string CustomURI { get; set; }
+        public string CallForward { get; set; }
+    }
+
+    public class OrderTnMessaging
+    {
+        public bool Sms { get; set; }
+        public bool Mms { get; set; }
+    }
+
+    public class OrderTnTNDetails
+    {
+        public string RateCenter { get; set; }
+        public string State { get; set; }
+        public int Tier { get; set; }
+        public bool Cnam { get; set; }
+        public string ActivationDate { get; set; }
+    }
+
+
+    public class OrderTnFailed
+    {
+        public string TN { get; set; }
+        public string Status { get; set; }
+        public string Code { get; set; }
+        public string Description { get; set; }
+    }
+
 }
