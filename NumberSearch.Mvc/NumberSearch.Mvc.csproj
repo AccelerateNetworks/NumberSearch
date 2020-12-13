@@ -127,7 +127,7 @@
     <Content Update="wwwroot\images\original\DSC08279-2.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\images\original\DSC08288.jpg">
+    <Content Update="wwwroot\images\original\DSC08288-2.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Update="wwwroot\images\original\favicon-194x194.png">
