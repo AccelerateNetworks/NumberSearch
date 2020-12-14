@@ -1031,26 +1031,6 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
-        public async Task CheckIfNumberExistsTestAsync()
-        {
-            var conn = postgresql;
-            var results = await PhoneNumber.GetAllAsync(conn);
-            var existingNumbers = await PhoneNumber.GetAllAsync(conn);
-            var dict = existingNumbers.ToDictionary(x => x.DialedNumber, x => x);
-
-            foreach (var result in results.ToArray())
-            {
-                var check = result.ExistsInDb(dict);
-                Assert.True(check);
-            }
-            var badExample = results.OrderBy(x => x.DialedNumber).LastOrDefault();
-            var newXXXX = badExample.XXXX + 1;
-            badExample.DialedNumber = $"{badExample.NPA}{badExample.NXX}{newXXXX}";
-            var badCheck = badExample.ExistsInDb(dict);
-            Assert.False(badCheck);
-        }
-
-        [Fact]
         public async Task PostIngestCyclesAsync()
         {
             var cycle = new IngestCycle
