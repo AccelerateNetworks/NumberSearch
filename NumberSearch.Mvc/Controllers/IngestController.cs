@@ -36,12 +36,11 @@ namespace NumberSearch.Mvc.Controllers
             var standard = await PhoneNumber.GetCountByNumberType("Standard", _postgresql).ConfigureAwait(false);
 
             var total = await PhoneNumber.GetTotal(_postgresql).ConfigureAwait(false);
-            var numbers = await PhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
             var numbersByAreaCode = new List<(int, int)>();
 
             foreach (var code in AreaCode.Priority)
             {
-                numbersByAreaCode.Add((code, numbers.Where(x => x.NPA == code).Count()));
+                numbersByAreaCode.Add((code, await PhoneNumber.GetCountByAreaCode(code, _postgresql).ConfigureAwait(false)));
             }
 
             return View("Index", new IngestResults
