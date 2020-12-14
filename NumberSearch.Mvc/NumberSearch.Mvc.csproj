@@ -175,6 +175,15 @@
     <Content Update="wwwroot\images\scaled\DSC07553.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Update="wwwroot\images\scaled\DSC08263-3.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\images\scaled\DSC08279-2.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\images\scaled\DSC08288-2.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="wwwroot\images\scaled\edmondscoc.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
