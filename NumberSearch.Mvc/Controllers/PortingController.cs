@@ -409,7 +409,7 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     number.PortRequestId = portRequest.PortRequestId;
                     var checkPortUpdate = await number.PutAsync(_postgresql).ConfigureAwait(false);
-                    formattedNumbers += $"{formattedNumbers}<br />{number?.PortedDialedNumber}";
+                    formattedNumbers += $"<br />{number?.PortedDialedNumber}";
                 }
 
                 // Send out the confirmation email.
