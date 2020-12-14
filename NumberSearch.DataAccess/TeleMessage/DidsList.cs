@@ -92,6 +92,7 @@ namespace NumberSearch.DataAccess.TeleMesssage
                         DialedNumber = item.number,
                         City = !string.IsNullOrWhiteSpace(item.ratecenter) ? item.ratecenter : "Unknown City",
                         State = !string.IsNullOrWhiteSpace(item.state) ? item.state : "Unknown State",
+                        DateIngested = DateTime.Now,
                         IngestedFrom = "TeleMessage"
                     });
                 }
@@ -129,6 +130,7 @@ namespace NumberSearch.DataAccess.TeleMesssage
                         DialedNumber = item.number,
                         City = !string.IsNullOrWhiteSpace(item.ratecenter) ? item.ratecenter : "Unknown City",
                         State = !string.IsNullOrWhiteSpace(item.state) ? item.state : "Unknown State",
+                        DateIngested = DateTime.Now,
                         IngestedFrom = "TeleMessage"
                     });
                 }

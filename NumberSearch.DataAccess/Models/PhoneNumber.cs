@@ -49,6 +49,22 @@ namespace NumberSearch.DataAccess
         }
 
         /// <summary>
+        /// Get a list of all phone numbers in the database.
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<string>> GetAllNumbersAsync(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<string>("SELECT \"DialedNumber\" FROM public.\"PhoneNumbers\"")
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        /// <summary>
         /// Find a single phone number based on the complete number.
         /// </summary>
         /// <param name="dialedNumber"></param>
@@ -283,7 +299,7 @@ namespace NumberSearch.DataAccess
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"PhoneNumbers\"(\"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\", \"Purchased\") " +
                 "VALUES(@DialedNumber, @NPA, @NXX, @XXXX, @City, @State, @IngestedFrom, @DateIngested, @NumberType, @Purchased)",
-                new { DialedNumber, NPA, NXX, XXXX, City, State, IngestedFrom, DateIngested = DateTime.Now, NumberType, Purchased })
+                new { DialedNumber, NPA, NXX, XXXX, City, State, IngestedFrom, DateIngested, NumberType, Purchased })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -315,9 +331,9 @@ namespace NumberSearch.DataAccess
             foreach (var number in numbers?.ToArray())
             {
                 // If anything is null bail out.
-                if (!(number.NPA < 100 || number.NXX < 100 || number.XXXX < 1 || number.DialedNumber == null || number.City == null || number.State == null || number.IngestedFrom == null || number.NumberType == null || number.Purchased == null))
+                if (!(number.NPA < 100 || number.NXX < 100 || number.XXXX < 1 || number.DialedNumber == null || number.City == null || number.State == null || number.IngestedFrom == null || number.NumberType == null))
                 {
-                    values.Add($"('{number.DialedNumber}', {number.NPA}, {number.NXX}, {number.XXXX.ToString("0000", new CultureInfo("en-US"))}, '{number.City}', '{number.State}', '{number.IngestedFrom}', '{DateTime.Now}', '{number.NumberType}', '{number.Purchased}')");
+                    values.Add($"('{number.DialedNumber}', {number.NPA}, {number.NXX}, {number.XXXX.ToString("0000", new CultureInfo("en-US"))}, '{number.City}', '{number.State}', '{number.IngestedFrom}', '{number.DateIngested}', '{number.NumberType}', '{number.Purchased}')");
                 }
             }
 
@@ -369,18 +385,6 @@ namespace NumberSearch.DataAccess
             {
                 return false;
             }
-        }
-
-        /// <summary>
-        /// Check if a specific phone number already exists in the database.
-        /// </summary>
-        /// <param name="postgresSQL"> The db connection string. </param>
-        /// <returns> True if it does exist, and False if it doesn't. </returns>
-        public bool ExistsInDb(Dictionary<string, PhoneNumber> existingNumbers)
-        {
-            var check = existingNumbers?.TryGetValue(DialedNumber, out PhoneNumber _) ?? false;
-
-            return check;
         }
     }
 }

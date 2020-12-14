@@ -57,7 +57,7 @@ namespace NumberSearch.DataAccess.BulkVS
                 {
                     bool checkNpa = int.TryParse(item.TN.Substring(0, 3), out int npa);
                     bool checkNxx = int.TryParse(item.TN.Substring(3, 3), out int nxx);
-                    bool checkXxxx = int.TryParse(item.TN.Substring(6), out int xxxx);
+                    bool checkXxxx = int.TryParse(item.TN.Substring(6, 4), out int xxxx);
 
                     if (checkNpa && checkNxx && checkXxxx)
                     {
@@ -69,6 +69,7 @@ namespace NumberSearch.DataAccess.BulkVS
                             DialedNumber = item.TN,
                             City = string.IsNullOrWhiteSpace(item.RateCenter) ? "Unknown City" : item.RateCenter,
                             State = string.IsNullOrWhiteSpace(item.State) ? "Unknown State" : item.State,
+                            DateIngested = DateTime.Now,
                             IngestedFrom = "BulkVS"
                         });
                     }
@@ -77,7 +78,7 @@ namespace NumberSearch.DataAccess.BulkVS
                 {
                     bool checkNpa = int.TryParse(item.TN.Substring(1, 3), out int npa);
                     bool checkNxx = int.TryParse(item.TN.Substring(4, 3), out int nxx);
-                    bool checkXxxx = int.TryParse(item.TN.Substring(7), out int xxxx);
+                    bool checkXxxx = int.TryParse(item.TN.Substring(7, 4), out int xxxx);
 
                     if (checkNpa && checkNxx && checkXxxx)
                     {
@@ -89,6 +90,7 @@ namespace NumberSearch.DataAccess.BulkVS
                             DialedNumber = item.TN,
                             City = string.IsNullOrWhiteSpace(item.RateCenter) ? "Unknown City" : item.RateCenter,
                             State = string.IsNullOrWhiteSpace(item.State) ? "Unknown State" : item.State,
+                            DateIngested = DateTime.Now,
                             IngestedFrom = "BulkVS"
                         });
                     }

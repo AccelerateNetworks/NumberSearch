@@ -902,6 +902,15 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task GetAllPhoneNumbersAsStringsAsync()
+        {
+            var conn = postgresql;
+            var results = await PhoneNumber.GetAllNumbersAsync(conn);
+            Assert.NotNull(results);
+            output.WriteLine($"{results.Count()} Results Reviewed");
+        }
+
+        [Fact]
         public async Task GetPhoneNumbersByQueryAsync()
         {
             var conn = postgresql;

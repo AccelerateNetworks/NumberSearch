@@ -4,6 +4,7 @@ using Serilog;
 
 using ServiceReference;
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -50,6 +51,7 @@ namespace FirstCom
                         DialedNumber = item.DID.Substring(1),
                         City = "Unknown City",
                         State = "Unknown State",
+                        DateIngested = DateTime.Now,
                         IngestedFrom = "FirstPointCom"
                     });
                 }

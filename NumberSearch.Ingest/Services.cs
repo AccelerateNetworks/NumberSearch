@@ -123,13 +123,13 @@ namespace NumberSearch.Ingest
 
             if (numbers.Length > 0)
             {
-                var existingNumbers = await PhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
-                var dict = existingNumbers.ToDictionary(x => x.DialedNumber, x => x);
+                var existingNumbers = await PhoneNumber.GetAllNumbersAsync(connectionString).ConfigureAwait(false);
+                var dict = existingNumbers.ToDictionary(x => x, x => x);
                 // Submit the batch to the remote database.
                 foreach (var number in numbers)
                 {
                     // Check if it already exists.
-                    var inDb = number.ExistsInDb(dict);
+                    var inDb = dict?.TryGetValue(number.DialedNumber, out var _) ?? false;
 
                     if (inDb)
                     {
@@ -187,6 +187,12 @@ namespace NumberSearch.Ingest
                     try
                     {
                         var result = await update.PutAsync(connectionString).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Fatal(ex.Message);
+                        Log.Fatal(ex.InnerException.ToString());
+                        Log.Fatal($"{update.DialedNumber} {update.NPA} {update.NXX} {update.XXXX} {update.City} {update.State} {update.IngestedFrom} {update.NumberType} {update.DateIngested} {update.Purchased}");
                     }
                     finally
                     {

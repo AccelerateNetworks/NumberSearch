@@ -1,6 +1,4 @@
-﻿using BulkVS;
-
-using FirstCom;
+﻿using FirstCom;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
