@@ -61,6 +61,8 @@ namespace NumberSearch.Ingest
             var teleMessagePriortyTimer = new Stopwatch();
             var peerlessPriortyTimer = new Stopwatch();
             var ownedPhoneNumbers = new Stopwatch();
+            // 20 Minutes in miliseconds
+            var priortyIngestCycleTime = 1200000;
 
             try
             {
@@ -159,7 +161,7 @@ namespace NumberSearch.Ingest
                         }
 
                         // Priority ingest.
-                        if (lastRun != null && ((bulkVSPriortyTimer.ElapsedMilliseconds >= 3600000) || (!bulkVSPriortyTimer.IsRunning)))
+                        if (lastRun != null && ((bulkVSPriortyTimer.ElapsedMilliseconds >= priortyIngestCycleTime) || (!bulkVSPriortyTimer.IsRunning)))
                         {
                             if (!bulkVSPriortyTimer.IsRunning)
                             {
@@ -288,7 +290,7 @@ namespace NumberSearch.Ingest
                         }
 
                         // Priority ingest.
-                        if (lastRun != null && ((firstPointComPriortyTimer.ElapsedMilliseconds >= 3600000) || (!firstPointComPriortyTimer.IsRunning)))
+                        if (lastRun != null && ((firstPointComPriortyTimer.ElapsedMilliseconds >= priortyIngestCycleTime) || (!firstPointComPriortyTimer.IsRunning)))
                         {
                             if (!firstPointComPriortyTimer.IsRunning)
                             {
@@ -441,7 +443,7 @@ namespace NumberSearch.Ingest
                         }
 
                         // Priority ingest.
-                        if (lastRun != null && ((teleMessagePriortyTimer.ElapsedMilliseconds >= 3600000) || (!teleMessagePriortyTimer.IsRunning)))
+                        if (lastRun != null && ((teleMessagePriortyTimer.ElapsedMilliseconds >= priortyIngestCycleTime) || (!teleMessagePriortyTimer.IsRunning)))
                         {
                             if (!teleMessagePriortyTimer.IsRunning)
                             {
@@ -831,7 +833,7 @@ Accelerate Networks
                         }
 
                         // Priority ingest.
-                        if (lastRun != null && ((peerlessPriortyTimer.ElapsedMilliseconds >= 3600000) || (!peerlessPriortyTimer.IsRunning)))
+                        if (lastRun != null && ((peerlessPriortyTimer.ElapsedMilliseconds >= priortyIngestCycleTime) || (!peerlessPriortyTimer.IsRunning)))
                         {
                             if (!peerlessPriortyTimer.IsRunning)
                             {
