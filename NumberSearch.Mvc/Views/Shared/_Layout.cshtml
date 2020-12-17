@@ -61,51 +61,50 @@
                             Support
                         </a>
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                <a class="dropdown-item" asp-controller="Home" asp-action="Support">Knowledge Base</a>
-                                <a class="dropdown-item" asp-controller="Lookup" asp-action="Index">Bulk</a>
-                            </div>
+                            <a class="dropdown-item" asp-controller="Home" asp-action="Support">Knowledge Base</a>
+                            <a class="dropdown-item" asp-controller="Lookup" asp-action="Index">Bulk</a>
                         </div>
-                        <div class="dropdown">
-                            <a class="p-2 text-dark dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                About
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                <a class="dropdown-item" asp-controller="Home" asp-action="About">About</a>
-                                <a class="dropdown-item" asp-controller="Home" asp-action="Features">Features</a>
-                                <a class="dropdown-item" href="https://blog.acceleratenetworks.com/" target="_blank"
-                                   rel="noopener noreferrer">Blog</a>
-                            </div>
-                        </div>
-                        @await Component.InvokeAsync("HeaderCart")
                     </div>
+                    <div class="dropdown">
+                        <a class="p-2 text-dark dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            About
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            <a class="dropdown-item" asp-controller="Home" asp-action="About">About</a>
+                            <a class="dropdown-item" asp-controller="Home" asp-action="Features">Features</a>
+                            <a class="dropdown-item" href="https://blog.acceleratenetworks.com/" target="_blank"
+                               rel="noopener noreferrer">Blog</a>
+                        </div>
+                    </div>
+                    @await Component.InvokeAsync("HeaderCart")
                 </div>
             </div>
         </div>
-        <main role="main">
-            @RenderBody()
-        </main>
-        <div class="p-3 bg-light">
-            <div class="container">
-                <footer class="footer pt-4 my-md-5 pt-md-5">
-                    <div class="row">
-                        <div class="col">
-                            <h5>Proudly made in Seattle, WA</h5>
-                            <small class="d-block mb-3 text-muted">© 2020 Accelerate Networks</small>
-                        </div>
-                        <div class="col text-right">
-                            <a href="tel:12068588757">1-(206)-858-8757</a>
-                            <br><a href="mailto:support@acceleratenetworks.com">support@acceleratenetworks.com</a>
-                        </div>
+    </div>
+    <main role="main">
+        @RenderBody()
+    </main>
+    <div class="p-3 bg-light">
+        <div class="container">
+            <footer class="footer pt-4 my-md-5 pt-md-5">
+                <div class="row">
+                    <div class="col">
+                        <h5>Proudly made in Seattle, WA</h5>
+                        <small class="d-block mb-3 text-muted">© 2020 Accelerate Networks</small>
                     </div>
-                </footer>
-            </div>
+                    <div class="col text-right">
+                        <a href="tel:12068588757">1-(206)-858-8757</a>
+                        <br><a href="mailto:support@acceleratenetworks.com">support@acceleratenetworks.com</a>
+                    </div>
+                </div>
+            </footer>
         </div>
+    </div>
 
-        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-        <script src="~/js/site.js" asp-append-version="true"></script>
-        @RenderSection("Scripts", required: false)
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @RenderSection("Scripts", required: false)
 </body>
 </html>
