@@ -6,6 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="keywords" content="Phones, VOIP, Texting, Business, Phone Numbers, Desk Phones, PBX, LTE Backup">
     <meta name="description" content="Accelerate Networks provides desk phones, VOIP services, and phone numbers for businesses in the Seattle area. If your business needs phones, Accelerate Networks can help." />
+    @{
+        if (ViewData["noindex"] != null)
+        {
+            <meta name="robots" content="noindex">
+        }
+    }
     <title>@ViewData["Title"] | Accelerate Networks</title>
     <link rel="icon" href="~/images/scaled/favicon-194x194.png">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
@@ -62,7 +68,7 @@
                         </a>
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                             <a class="dropdown-item" asp-controller="Home" asp-action="Support">Knowledge Base</a>
-                            <a class="dropdown-item" asp-controller="Lookup" asp-action="Index">Bulk</a>
+                            <a class="dropdown-item" asp-controller="Lookup" asp-action="Index">Lookup/Port</a>
                         </div>
                     </div>
                     <div class="dropdown">

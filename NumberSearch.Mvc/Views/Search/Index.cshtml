@@ -10,6 +10,12 @@
     }
 
     var alreadyInCart = Model?.Cart?.PhoneNumbers.ToDictionary(x => x?.DialedNumber, x => x);
+
+    // If we are showing any results, put a no index tag on the page.
+    if (Model?.NumberOfResults > 0 || !string.IsNullOrWhiteSpace(Model?.Message))
+    {
+        ViewData["noindex"] = "noindex";
+    }
 }
 
 <div class="container">

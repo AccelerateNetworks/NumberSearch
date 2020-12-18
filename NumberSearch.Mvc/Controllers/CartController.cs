@@ -135,7 +135,7 @@ namespace NumberSearch.Mvc.Controllers
                     var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
 
                     // Sadly its gone. And the user needs to pick a different number.
-                    return Redirect($"/Search?Query={Query}&View={View}&Page={Page}&Failed={phoneNumber.DialedNumber}#{phoneNumber.DialedNumber}");
+                    return Redirect($"/Search?Query={Query}&View={View}&Page={Page}&Failed={phoneNumber.DialedNumber}");
                 }
             }
             else
@@ -144,7 +144,7 @@ namespace NumberSearch.Mvc.Controllers
                 var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
 
                 // Sadly its gone. And the user needs to pick a different number.
-                return Redirect($"/Search?Query={Query}&View={View}&Page={Page}&Failed={phoneNumber.DialedNumber}#{phoneNumber.DialedNumber}");
+                return Redirect($"/Search?Query={Query}&View={View}&Page={Page}&Failed={phoneNumber.DialedNumber}");
                 //return RedirectToAction("Index", "Search", new { Query, View, Page, Failed = phoneNumber.DialedNumber });
             }
 
@@ -163,7 +163,7 @@ namespace NumberSearch.Mvc.Controllers
                 var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
 
                 // Sadly its gone. And the user needs to pick a different number.
-                return Redirect($"/Search?Query={Query}&View={View}&Page={Page}&Failed={phoneNumber.DialedNumber}#{phoneNumber.DialedNumber}");
+                return Redirect($"/Search?Query={Query}&View={View}&Page={Page}&Failed={phoneNumber.DialedNumber}");
                 //return RedirectToAction("Index", "Search", new { Query, View, Page, Failed = phoneNumber.DialedNumber });
             }
 
@@ -1130,8 +1130,7 @@ Accelerate Networks
 
                             if (cart.PortedPhoneNumbers.Any())
                             {
-                                cart.Order = order;
-                                var checkSet = cart.SetToSession(HttpContext.Session);
+                                HttpContext.Session.Clear();
 
                                 return View("Success", new OrderWithPorts
                                 {

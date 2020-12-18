@@ -298,6 +298,28 @@ namespace NumberSearch.Mvc.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddPortingInformationAsync(PortRequest portRequest)
         {
+            var order = await Order.GetByIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
+
+            // Prevent duplicate submissions of port requests.
+            if (order is not null && order.OrderId != Guid.Empty)
+            {
+                var existing = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                if (existing is not null && existing.OrderId != Guid.Empty && existing.OrderId == order.OrderId)
+                {
+                    // Reset the session and clear the Cart.
+                    HttpContext.Session.Clear();
+
+                    return View("Success", new OrderWithPorts
+                    {
+                        Order = order,
+                        PortRequest = existing
+                    });
+                }
+            }
+
+            var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
+
             // http://www.mimekit.net/docs/html/Creating-Messages.htm
             var multipart = new Multipart("mixed");
             using var stream = new System.IO.MemoryStream();
@@ -350,49 +372,6 @@ namespace NumberSearch.Mvc.Controllers
                     Log.Fatal($"[Port Request] {ex.Message}");
                     Log.Fatal($"[Port Request] {ex.InnerException}");
                 }
-            }
-
-            var order = await Order.GetByIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
-
-            var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
-
-            var wireless = 0;
-
-            // Determine if its a wireless number.
-            foreach (var number in portedNumbers)
-            {
-                var lrnLookup = await LrnLookup.GetAsync(number.PortedDialedNumber, _teleToken).ConfigureAwait(false);
-
-                switch (lrnLookup.data.ocn_type)
-                {
-                    case "wireless":
-                        wireless++;
-                        break;
-                    case "PCS":
-                        wireless++;
-                        break;
-                    case "P RESELLER":
-                        wireless++;
-                        break;
-                    case "Wireless":
-                        wireless++;
-                        break;
-                    case "W RESELLER":
-                        wireless++;
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            // TODO: Figure out how to handle senarios where not all of the numbers are wireless in the order.
-            if (wireless == portedNumbers.Count())
-            {
-                portRequest.WirelessNumber = true;
-            }
-            else
-            {
-                portRequest.WirelessNumber = false;
             }
 
             // Save the rest of the data to the DB.
