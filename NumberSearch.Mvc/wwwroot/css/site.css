@@ -32,6 +32,7 @@ body {
 
 .container-narrow > hr {
     margin: 2rem 0;
+    margin: 2rem 0;
 }
 
 /* Main marketing message and sign up button */
@@ -101,4 +102,54 @@ body {
     margin-bottom: 10px;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
+}
+
+.btn-primary {
+    background-color: #3279B2;
+    border-color: #3279B2;
+}
+
+    .btn-primary:hover {
+        background-color: #BB6026;
+        border-color: #BB6026;
+    }
+
+.btn-outline-primary {
+    color: #3279B2;
+    border-color: #3279B2;
+}
+
+    .btn-outline-primary:hover {
+        background-color: #BB6026;
+        border-color: #BB6026;
+    }
+
+/* unvisited link */
+a:link {
+    color: #3279B2;
+}
+
+/* mouse over link */
+a:hover {
+    color: #BB6026;
+}
+
+/* selected link */
+a:active {
+    color: #3279B2;
+}
+
+.btn-info {
+    background-color: #3279B2;
+    border-color: #3279B2;
+}
+
+    .btn-info:hover {
+        background-color: #BB6026;
+        border-color: #BB6026;
+    }
+
+.text-primary {
+    color: #3279B2 !important;
+    font-size: 1.6rem;
 }
