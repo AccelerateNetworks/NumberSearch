@@ -683,6 +683,17 @@ namespace NumberSearch.Ops.Controllers
                 var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
                 var numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
 
+                // Prevent duplicate submissions.
+                if (!string.IsNullOrWhiteSpace(portRequest.TeliId))
+                {
+                    return View("PortRequestEdit", new PortRequestResult
+                    {
+                        Order = order,
+                        PortRequest = portRequest,
+                        PhoneNumbers = numbers
+                    });
+                }
+
                 try
                 {
                     var teliResponse = await LnpCreate.GetAsync(portRequest, numbers, _teleToken).ConfigureAwait(false);
