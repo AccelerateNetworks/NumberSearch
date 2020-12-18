@@ -380,12 +380,12 @@ namespace NumberSearch.Mvc.Controllers
             if (checkRemove && checkSet)
             {
                 // TODO: Mark the item as removed.
-                return Redirect($"/Search?Query={Query}&View={View}&Page={Page}&Failed={phoneNumber.DialedNumber}#{phoneNumber.DialedNumber}");
+                return Redirect($"/Search?Query={Query}&View={View}&Page={Page}#{phoneNumber.DialedNumber}");
             }
             else
             {
                 // TODO: Tell the user about the failure.
-                return Redirect($"/Search?Query={Query}&View={View}&Page={Page}&Failed={phoneNumber.DialedNumber}#{phoneNumber.DialedNumber}");
+                return Redirect($"/Search?Query={Query}&View={View}&Page={Page}#{phoneNumber.DialedNumber}");
             }
         }
 

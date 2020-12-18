@@ -20,13 +20,13 @@
 
 <div class="container">
     <br />
-    <div class="pricing-header mx-auto mb-3 text-center">
-        <h1 class="display-4">Number Search</h1>
-    </div>
+    @*<div class="pricing-header mx-auto mb-3 text-center">
+            <h1 class="display-4">Number Search</h1>
+        </div>*@
     <br />
     <div class="jumbotron mb-3">
-        <h1 class="display-4 pb-3">Numbers for all your needs!</h1>
-        <p>To search by area code, enter the area code and press search.</p>
+        <h1 class="display-4 pb-3">Number Search</h1>
+        <p>To search by area code, enter the area code and press search. To bring your number with you, enter the 10 digit number and press transfer.</p>
         <p class="pb-3">For advanced search, use * to pad your search, for example ***word to search for a number containing word, but exclude the area code.</p>
         <form class="form-row justify-content-center" action="/Search">
             <div class="form-group">
@@ -145,7 +145,7 @@
 
                                 if (alreadyInCart.TryGetValue(item.DialedNumber, out var _))
                                 {
-                                    <tr id="@item.DialedNumber" class="table-info">
+                                    <tr id="@item.DialedNumber" class="table-success">
                                         <td class="d-none d-sm-table-cell">
                                             @{
                                                 if (item.NumberType == "Standard")
@@ -173,18 +173,17 @@
                                                         <input type="button" class="btn btn-outline-secondary disabled" value="Already Purchased">
                                                     </a>
                                                 }
-                                                else
-                                                {
-                                                    <a asp-controller="Cart" asp-action="BuyPhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" asp-route-View="@Model.View" asp-route-Page="@Model.Page" target="_top">
-                                                        <input type="button" class="btn btn-outline-primary" value="Add to Cart">
-                                                    </a>
-                                                }
-                                            }
-                                            @{
-                                                if (alreadyInCart.TryGetValue(item.DialedNumber, out var _))
+                                                else if (alreadyInCart.TryGetValue(item.DialedNumber, out var _))
                                                 {
                                                     <a asp-controller="Cart" asp-action="RemovePhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" target="_top">
                                                         <input type="button" class="btn btn-outline-danger" value="Remove">
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <a asp-controller="Cart" asp-action="BuyPhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" asp-route-View="@Model.View" asp-route-Page="@Model.Page" class="btn btn-outline-primary" target="_top">
+                                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" hidden></span>
+                                                        Add to Cart
                                                     </a>
                                                 }
                                             }
@@ -221,18 +220,17 @@
                                                         <input type="button" class="btn btn-outline-secondary disabled" value="Already Purchased">
                                                     </a>
                                                 }
-                                                else
-                                                {
-                                                    <a asp-controller="Cart" asp-action="BuyPhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" asp-route-View="@Model.View" asp-route-Page="@Model.Page" target="_top">
-                                                        <input type="button" class="btn btn-outline-primary" value="Add to Cart">
-                                                    </a>
-                                                }
-                                            }
-                                            @{
-                                                if (alreadyInCart.TryGetValue(item.DialedNumber, out var _))
+                                                else if (alreadyInCart.TryGetValue(item.DialedNumber, out var _))
                                                 {
                                                     <a asp-controller="Cart" asp-action="RemovePhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" target="_top">
                                                         <input type="button" class="btn btn-outline-danger" value="Remove">
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <a asp-controller="Cart" asp-action="BuyPhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" asp-route-View="@Model.View" asp-route-Page="@Model.Page" class="btn btn-outline-primary" target="_top">
+                                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" hidden></span>
+                                                        Add to Cart
                                                     </a>
                                                 }
                                             }
