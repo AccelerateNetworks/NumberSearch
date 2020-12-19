@@ -1,6 +1,4 @@
-﻿using BulkVS;
-
-using CsvHelper;
+﻿using CsvHelper;
 
 using FirstCom;
 
@@ -8,9 +6,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Data247;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.TeleMesssage;
@@ -41,6 +39,8 @@ namespace NumberSearch.Ops.Controllers
         private readonly string _invoiceNinjaToken;
         private readonly string _data247username;
         private readonly string _data247password;
+        private readonly string _bulkVSusername;
+        private readonly string _bulkVSpassword;
 
         public HomeController(ILogger<HomeController> logger, IConfiguration config)
         {
@@ -52,6 +52,8 @@ namespace NumberSearch.Ops.Controllers
             _teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
             _bulkVSAPIKey = config.GetConnectionString("BulkVSAPIKEY");
             _bulkVSAPISecret = config.GetConnectionString("BulkVSAPISecret");
+            _bulkVSusername = config.GetConnectionString("BulkVSUsername");
+            _bulkVSpassword = config.GetConnectionString("BulkVSPassword");
             _invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
             _data247username = config.GetConnectionString("Data247Username");
             _data247password = config.GetConnectionString("Data247Password");
@@ -266,7 +268,7 @@ namespace NumberSearch.Ops.Controllers
             var orders = await PurchasedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
 
             var filePath = Path.GetFullPath(Path.Combine("wwwroot", "csv"));
-            var fileName = $"PurchasedNumbers{DateTime.Now.ToString("yyyyMMdd")}.csv";
+            var fileName = $"PurchasedNumbers{DateTime.Now:yyyyMMdd}.csv";
             var completePath = Path.Combine(filePath, fileName);
 
             using var writer = new StreamWriter(completePath);
@@ -782,8 +784,10 @@ namespace NumberSearch.Ops.Controllers
             {
                 npa ??= string.Empty;
                 nxx ??= string.Empty;
+                var checkNPA = int.TryParse(npa, out var NPA);
+                var checkNXX = int.TryParse(nxx, out var NXX);
 
-                var checkNumber = await NpaNxxBulkVS.GetAsync(npa + nxx, _bulkVSAPIKey, _bulkVSAPISecret).ConfigureAwait(false);
+                var checkNumber = await OrderTn.GetAsync(NPA, NXX, _bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
 
                 return View("Tests", new TestResults
                 {
@@ -916,49 +920,20 @@ namespace NumberSearch.Ops.Controllers
         public static char LetterToKeypadDigit(char letter)
         {
             // Map the chars to their keypad numerical values.
-            switch (letter)
+            return letter switch
             {
-                case '+':
-                    return '0';
-                case 'a':
-                case 'b':
-                case 'c':
-                    return '2';
-                case 'd':
-                case 'e':
-                case 'f':
-                    return '3';
-                case 'g':
-                case 'h':
-                case 'i':
-                    return '4';
-                case 'j':
-                case 'k':
-                case 'l':
-                    return '5';
-                case 'm':
-                case 'n':
-                case 'o':
-                    return '6';
-                case 'p':
-                case 'q':
-                case 'r':
-                case 's':
-                    return '7';
-                case 't':
-                case 'u':
-                case 'v':
-                    return '8';
-                case 'w':
-                case 'x':
-                case 'y':
-                case 'z':
-                    return '9';
-                default:
-                    // The digit 1 isn't mapped to any chars on a phone keypad.
-                    // If the char isn't mapped to anything, respect it's existence by mapping it to a wildcard.
-                    return '*';
-            }
+                '+' => '0',
+                'a' or 'b' or 'c' => '2',
+                'd' or 'e' or 'f' => '3',
+                'g' or 'h' or 'i' => '4',
+                'j' or 'k' or 'l' => '5',
+                'm' or 'n' or 'o' => '6',
+                'p' or 'q' or 'r' or 's' => '7',
+                't' or 'u' or 'v' => '8',
+                'w' or 'x' or 'y' or 'z' => '9',
+                _ => '*',// The digit 1 isn't mapped to any chars on a phone keypad.
+                         // If the char isn't mapped to anything, respect it's existence by mapping it to a wildcard.
+            };
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

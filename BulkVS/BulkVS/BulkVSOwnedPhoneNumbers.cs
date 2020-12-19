@@ -13,7 +13,6 @@ namespace BulkVS
 
     public class BulkVSOwnedPhoneNumbers
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
         public static async Task<IEnumerable<OwnedPhoneNumber>> GetAllAsync(string apiKey, string apiSecret)
         {
             using var client = new bulkvsPortClient(bulkvsPortClient.EndpointConfiguration.bulkvsPort);

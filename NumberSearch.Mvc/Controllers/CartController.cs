@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.TeleMesssage;
 
@@ -36,6 +37,8 @@ namespace NumberSearch.Mvc.Controllers
         private readonly string _fpcpassword;
         private readonly string _invoiceNinjaToken;
         private readonly string _emailOrders;
+        private readonly string _bulkVSusername;
+        private readonly string _bulkVSpassword;
 
         public CartController(IConfiguration config)
         {
@@ -46,6 +49,8 @@ namespace NumberSearch.Mvc.Controllers
             _ = int.TryParse(_configuration.GetConnectionString("ChannelGroup"), out _ChannelGroup);
             _apiKey = config.GetConnectionString("BulkVSAPIKEY");
             _apiSecret = config.GetConnectionString("BulkVSAPISecret");
+            _bulkVSusername = config.GetConnectionString("BulkVSUsername");
+            _bulkVSpassword = config.GetConnectionString("BulkVSPassword");
             _fpcusername = config.GetConnectionString("PComNetUsername");
             _fpcpassword = config.GetConnectionString("PComNetPassword");
             _invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
@@ -76,7 +81,7 @@ namespace NumberSearch.Mvc.Controllers
             if (phoneNumber.IngestedFrom == "BulkVS")
             {
                 var npanxx = $"{phoneNumber.NPA}{phoneNumber.NXX}";
-                var doesItStillExist = await NpaNxxBulkVS.GetAsync(npanxx, _apiKey, _apiSecret).ConfigureAwait(false);
+                var doesItStillExist = await OrderTn.GetAsync(phoneNumber.NPA, phoneNumber.NXX, _bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
                 var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
                 if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
                 {
@@ -473,7 +478,6 @@ namespace NumberSearch.Mvc.Controllers
 
         // Show orders that have already been submitted.
         [Route("Cart/Order/{Id}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
         public async Task<IActionResult> ExistingOrderAsync(Guid Id, bool? AddPortingInfo)
         {
             if (Id != Guid.Empty)

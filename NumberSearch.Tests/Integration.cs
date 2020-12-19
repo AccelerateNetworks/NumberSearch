@@ -680,32 +680,6 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
-        public async Task BulkVSNpaNxxGetAsyncTestAsync()
-        {
-            // Arrange
-            var npanxx = "206279";
-
-            // Act
-            var results = await NpaNxxBulkVS.GetAsync(npanxx, bulkVSKey, bulkVSSecret);
-
-            // Assert
-            Assert.NotNull(results);
-            int count = 0;
-            foreach (var result in results.ToArray())
-            {
-                Assert.True(result.NPA > 99);
-                Assert.True(result.NXX > 99);
-                Assert.True(result.XXXX > 1);
-                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-                Assert.False(string.IsNullOrWhiteSpace(result.City));
-                Assert.False(string.IsNullOrWhiteSpace(result.State));
-                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
-                count++;
-            }
-            output.WriteLine($"{count} Results Reviewed");
-        }
-
-        [Fact]
         public async Task BulkVSRESTNpaNxxGetAsyncTestAsync()
         {
             // Arrange
@@ -761,46 +735,6 @@ namespace NumberSearch.Tests
             Assert.NotNull(result);
             Assert.True(!string.IsNullOrWhiteSpace(result.spid));
             output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
-        }
-
-        [Fact]
-        public async Task BulkVSNpaNxxGetAsyncBadInputTestAsync()
-        {
-            // Arrange
-            var npanxx = "999999";
-
-            // Act
-            var results = await NpaNxxBulkVS.GetAsync(npanxx, bulkVSKey, bulkVSSecret);
-
-            // Assert
-            Assert.NotNull(results);
-            Assert.True(results.ToArray().Length == 0);
-        }
-
-        [Fact]
-        public async Task BulkVSNpaGetAsyncTestAsync()
-        {
-            // Arrange
-            var npa = "206";
-
-            // Act
-            var results = await NpaBulkVS.GetAsync(npa, bulkVSKey, bulkVSSecret);
-
-            // Assert
-            Assert.NotNull(results);
-            int count = 0;
-            foreach (var result in results.ToArray())
-            {
-                Assert.True(result.NPA > 99);
-                Assert.True(result.NXX > 99);
-                Assert.True(result.XXXX > 1);
-                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-                Assert.False(string.IsNullOrWhiteSpace(result.City));
-                Assert.False(string.IsNullOrWhiteSpace(result.State));
-                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
-                count++;
-            }
-            output.WriteLine($"{count} Results Reviewed");
         }
 
         [Fact]
@@ -1266,7 +1200,7 @@ namespace NumberSearch.Tests
 
             var orders = await Order.GetAllAsync(conn).ConfigureAwait(false);
 
-            var selectedOrders = orders.Where(x => (x.OrderId != null) && (x.OrderId != Guid.Empty)).FirstOrDefault();
+            var selectedOrders = orders.Where(x => x.OrderId != Guid.Empty).FirstOrDefault();
             Assert.False(selectedOrders is null);
 
             var result = await Order.GetByIdAsync(selectedOrders.OrderId, conn);
