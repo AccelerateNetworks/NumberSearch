@@ -105,11 +105,13 @@ body {
 }
 
 .btn-primary {
+    color: white;
     background-color: #3279B2;
     border-color: #3279B2;
 }
 
     .btn-primary:hover {
+        color: white;
         background-color: #BB6026;
         border-color: #BB6026;
     }
@@ -140,11 +142,13 @@ a:active {
 }
 
 .btn-info {
+    color: white;
     background-color: #3279B2;
     border-color: #3279B2;
 }
 
     .btn-info:hover {
+        color: white;
         background-color: #BB6026;
         border-color: #BB6026;
     }
