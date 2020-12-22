@@ -292,6 +292,32 @@ namespace NumberSearch.DataAccess
             };
         }
 
+        /// <summary>
+        /// Delete only numbers that haven't been reingested recently that were ingested from a specific provider.
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        public static async Task<IngestStatistics> DeleteOldByProviderAndAreaCode(DateTime ingestStart, TimeSpan cycleTime, int areaCode, string ingestedFrom, string connectionString)
+        {
+            var start = DateTime.Now;
+
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("DELETE FROM public.\"PhoneNumbers\" " +
+                "WHERE \"NPA\" = @areaCode AND \"DateIngested\" < @DateIngested AND \"IngestedFrom\" = @IngestedFrom",
+                new { areaCode, DateIngested = ingestStart - cycleTime, IngestedFrom = ingestedFrom })
+                .ConfigureAwait(false);
+
+            return new IngestStatistics
+            {
+                Removed = result,
+                IngestedFrom = $"{ingestedFrom} Cleanup",
+                StartDate = start,
+                EndDate = DateTime.Now
+            };
+        }
+
 
         /// <summary>
         /// Added new numbers to the database.

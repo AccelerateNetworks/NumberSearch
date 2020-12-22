@@ -195,6 +195,13 @@ namespace NumberSearch.Ingest
                                             Priority = true
                                         };
 
+                                        // Remove stale priority numbers
+                                        foreach (var code in AreaCode.Priority)
+                                        {
+                                            var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, new TimeSpan(priortyIngestCycleTime), code, lastRun.IngestedFrom, postgresSQL).ConfigureAwait(false);
+                                            combined.Removed += removedNumbers.Removed;
+                                        }
+
                                         if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
                                         {
                                             Log.Information("[BulkVS] Completed the priority ingest process.");
@@ -323,6 +330,13 @@ namespace NumberSearch.Ingest
                                             UpdatedExisting = FirstPointComStats.UpdatedExisting,
                                             Priority = true
                                         };
+
+                                        // Remove stale priority numbers
+                                        foreach (var code in AreaCode.Priority)
+                                        {
+                                            var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, new TimeSpan(priortyIngestCycleTime), code, lastRun.IngestedFrom, postgresSQL).ConfigureAwait(false);
+                                            combined.Removed += removedNumbers.Removed;
+                                        }
 
                                         if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
                                         {
@@ -498,6 +512,13 @@ namespace NumberSearch.Ingest
                                             UpdatedExisting = teleStats.UpdatedExisting,
                                             Priority = true
                                         };
+
+                                        // Remove stale priority numbers
+                                        foreach (var code in AreaCode.Priority)
+                                        {
+                                            var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, new TimeSpan(priortyIngestCycleTime), code, lastRun.IngestedFrom, postgresSQL).ConfigureAwait(false);
+                                            combined.Removed += removedNumbers.Removed;
+                                        }
 
                                         if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
                                         {
