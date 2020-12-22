@@ -35,7 +35,7 @@
                             @{
                                 if (!string.IsNullOrWhiteSpace(port?.TeliId))
                                 {
-                                    <a href="https://control.teli.net/lnp/view" target="_blank" rel="noopener noreferrer" class="btn btn-info mb-1">
+                                    <a href="https://control.teli.net/lnp/view?request_id=@port?.TeliId" target="_blank" rel="noopener noreferrer" class="btn btn-info mb-1">
                                         Teli Port Request @port?.TeliId
                                     </a>
                                     if (port.Completed)
