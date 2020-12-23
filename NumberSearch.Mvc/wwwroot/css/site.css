@@ -127,19 +127,19 @@ body {
     }
 
 /* unvisited link */
-a:link {
+a {
     color: #3279B2;
 }
 
-/* mouse over link */
-a:hover {
-    color: #BB6026;
-}
+    /* mouse over link */
+    a:hover {
+        color: #BB6026;
+    }
 
-/* selected link */
-a:active {
-    color: #3279B2;
-}
+    /* selected link */
+    a:active {
+        color: #3279B2;
+    }
 
 .btn-info {
     color: white;
