@@ -1,5 +1,7 @@
 ﻿using Flurl.Http;
 
+using Newtonsoft.Json;
+
 using Serilog;
 
 using System;
@@ -172,7 +174,9 @@ namespace NumberSearch.DataAccess.BulkVS
         public string TN { get; set; }
         public string Lidb { get; set; }
         [JsonPropertyName("Portout Pin")]
+        [JsonProperty("Portout Pin")]
         public string PortoutPin { get; set; }
+        [JsonProperty("Trunk Group")]
         [JsonPropertyName("Trunk Group")]
         public string TrunkGroup { get; set; }
         public bool Sms { get; set; }

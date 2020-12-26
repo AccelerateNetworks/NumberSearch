@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.TeleMesssage;
 
 using Serilog;
@@ -35,6 +36,8 @@ namespace NumberSearch.Mvc
         private readonly string _apiSecret;
         private readonly string _fpcusername;
         private readonly string _fpcpassword;
+        private readonly string _bulkVSusername;
+        private readonly string _bulkVSpassword;
 
         public MonitorLoop(IBackgroundTaskQueue taskQueue,
             ILogger<MonitorLoop> logger,
@@ -51,6 +54,8 @@ namespace NumberSearch.Mvc
             _apiSecret = configuration.GetConnectionString("BulkVSAPISecret");
             _fpcusername = configuration.GetConnectionString("PComNetUsername");
             _fpcpassword = configuration.GetConnectionString("PComNetPassword");
+            _bulkVSusername = configuration.GetConnectionString("BulkVSUsername");
+            _bulkVSpassword = configuration.GetConnectionString("BulkVSPassword");
         }
 
         public void StartMonitorLoop()
@@ -81,6 +86,11 @@ namespace NumberSearch.Mvc
                             while (!token.IsCancellationRequested)
                             {
                                 var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                // Create a single PIN for this order.
+                                var random = new Random();
+                                var pin = random.Next(100000, 99999999);
+
                                 foreach (var productOrder in productOrders)
                                 {
                                     if (!string.IsNullOrWhiteSpace(productOrder.DialedNumber))
@@ -96,10 +106,17 @@ namespace NumberSearch.Mvc
                                                     if (nto.IngestedFrom == "BulkVS")
                                                     {
                                                         // Buy it and save the reciept.
-                                                        var random = new Random();
-                                                        var pin = random.Next(100000, 99999999);
+                                                        var executeOrder = new OrderTnRequestBody
+                                                        {
+                                                            TN = nto.DialedNumber,
+                                                            Lidb = "Accelerate Networks",
+                                                            PortoutPin = pin.ToString(new CultureInfo("en-US")),
+                                                            TrunkGroup = "SFO",
+                                                            Sms = true,
+                                                            Mms = false
+                                                        };
 
-                                                        var executeOrder = await BulkVSOrderPhoneNumber.GetAsync(nto.DialedNumber, "SFO", "Enabled", string.Empty, "false", pin.ToString(new CultureInfo("en-US")), _apiKey, _apiSecret).ConfigureAwait(false);
+                                                        var orderResponse = await executeOrder.PostAsync(_bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
 
                                                         nto.Purchased = true;
                                                         var verifyOrder = new PurchasedPhoneNumber
@@ -110,9 +127,9 @@ namespace NumberSearch.Mvc
                                                             DateIngested = nto.DateIngested,
                                                             IngestedFrom = nto.IngestedFrom,
                                                             // Keep the raw response as a receipt.
-                                                            OrderResponse = string.IsNullOrWhiteSpace(executeOrder?.result?.description) ? $"faultstring: {executeOrder?.fault?.faultstring}" : $"description: {executeOrder?.result?.description}, cnamlookup: {executeOrder?.result?.entry?.cnamlookup}, dn: {executeOrder?.result?.entry?.dn}, lidb: {executeOrder?.result?.entry?.lidb}, portoutpin: {executeOrder?.result?.entry?.portoutpin}, trunkgroup: {executeOrder?.result?.entry?.trunkgroup}",
+                                                            OrderResponse = JsonSerializer.Serialize(orderResponse),
                                                             // If the status code of the order comes back as 200 then it was sucessful.
-                                                            Completed = executeOrder.result.entry.dn.Contains(nto.DialedNumber, StringComparison.InvariantCultureIgnoreCase)
+                                                            Completed = orderResponse.Failed is null
                                                         };
 
                                                         var checkVerifyOrder = verifyOrder.PostAsync(_postgresql);
