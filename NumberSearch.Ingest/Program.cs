@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Models;
 using NumberSearch.DataAccess.TeleMesssage;
 
@@ -944,7 +945,7 @@ Accelerate Networks
                                             Log.Information("[OwnedNumbers] Ingesting data from OwnedNumbers.");
                                             var firstComNumbers = await Owned.FirstPointComAsync(username, password).ConfigureAwait(false);
                                             var teleMessageNumbers = await Owned.TeleMessageAsync(teleToken).ConfigureAwait(false);
-                                            var bulkVSNumbers = await BulkVS.BulkVSOwnedPhoneNumbers.GetAllAsync(bulkVSKey, bulkVSSecret).ConfigureAwait(false);
+                                            var bulkVSNumbers = await TnRecord.GetOwnedAsync(bulkVSusername, bulkVSpassword).ConfigureAwait(false);
 
                                             if (firstComNumbers != null)
                                             {

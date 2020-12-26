@@ -15,8 +15,12 @@ namespace NumberSearch.DataAccess.BulkVS
     public class OrderTn
     {
         public string TN { get; set; }
+        [JsonPropertyName("Rate Center")]
+        [JsonProperty("Rate Center")]
         public string RateCenter { get; set; }
         public string State { get; set; }
+        [JsonPropertyName("Per Minute Rate")]
+        [JsonProperty("Per Minute Rate")]
         public string PerMinuteRate { get; set; }
         public string Mrc { get; set; }
         public string Nrc { get; set; }
@@ -220,15 +224,23 @@ namespace NumberSearch.DataAccess.BulkVS
         public string PortoutPin { get; set; }
         public OrderTnRouting Routing { get; set; }
         public OrderTnMessaging Messaging { get; set; }
+        [JsonPropertyName("TN Details")]
+        [JsonProperty("TN Details")]
         public OrderTnTNDetails TNDetails { get; set; }
         public OrderTnFailed Failed { get; set; }
     }
 
     public class OrderTnRouting
     {
+        [JsonPropertyName("Trunk Group")]
+        [JsonProperty("Trunk Group")]
         public string TrunkGroup { get; set; }
+        [JsonPropertyName("Custom URI")]
+        [JsonProperty("Custom URI")]
         public string CustomURI { get; set; }
-        public string CallForward { get; set; }
+        [JsonPropertyName("Call Forward")]
+        [JsonProperty("Call Forward")]
+        public object CallForward { get; set; }
     }
 
     public class OrderTnMessaging
@@ -239,10 +251,14 @@ namespace NumberSearch.DataAccess.BulkVS
 
     public class OrderTnTNDetails
     {
+        [JsonPropertyName("Rate Center")]
+        [JsonProperty("Rate Center")]
         public string RateCenter { get; set; }
         public string State { get; set; }
         public int Tier { get; set; }
         public bool Cnam { get; set; }
+        [JsonPropertyName("Activation Date")]
+        [JsonProperty("Activation Date")]
         public string ActivationDate { get; set; }
     }
 

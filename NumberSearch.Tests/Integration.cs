@@ -750,6 +750,32 @@ namespace NumberSearch.Tests
             Assert.NotEmpty(results);
         }
 
+        [Fact]
+        public async Task BulkVSRESTGetAllOwnedNumbersAsync()
+        {
+            // Arrange
+
+            // Act
+            var results = await TnRecord.GetAsync(bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+
+            // Assert
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+        }
+
+        [Fact]
+        public async Task BulkVSRESTGetAllOwnedNumbersAsOwnedAsync()
+        {
+            // Arrange
+
+            // Act
+            var results = await TnRecord.GetOwnedAsync(bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+
+            // Assert
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+        }
+
         //[Fact]
         //public async Task TelePhoneNumbersTestAsync()
         //{
