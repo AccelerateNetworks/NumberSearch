@@ -1,7 +1,14 @@
 ﻿@model NumberSearch.Mvc.SearchResults;
 
 @{
-    ViewData["Title"] = "Phone Numbers";
+    if (string.IsNullOrWhiteSpace(Model?.Query))
+    {
+        ViewData["Title"] = $"Phone Numbers";
+    }
+    else
+    {
+        ViewData["Title"] = $"{Model?.Query}";
+    }
 
     var searchText = string.Empty;
     if (Model?.Query != null)
