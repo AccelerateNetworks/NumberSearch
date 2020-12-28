@@ -410,9 +410,9 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("UPDATE public.\"PhoneNumbers\" SET \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"NumberType\" = @NumberType, \"Purchased\" = @Purchased " +
+                .ExecuteAsync("UPDATE public.\"PhoneNumbers\" SET \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"NumberType\" = @NumberType, \"Purchased\" = @Purchased, \"City\" = @City, \"State\" = @State " +
                 "WHERE \"DialedNumber\" = @DialedNumber",
-                new { IngestedFrom, DateIngested, NumberType, Purchased, DialedNumber })
+                new { IngestedFrom, DateIngested, NumberType, Purchased, City, State, DialedNumber })
                 .ConfigureAwait(false);
 
             if (result == 1)

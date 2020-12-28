@@ -686,7 +686,7 @@ namespace NumberSearch.Tests
             var npa = 206;
 
             // Act
-            var results = await DataAccess.BulkVS.OrderTn.GetAsync(npa, bulkVSUsername, bulkVSPassword);
+            var results = await OrderTn.GetAsync(npa, bulkVSUsername, bulkVSPassword);
 
             // Assert
             Assert.NotNull(results);
@@ -697,6 +697,7 @@ namespace NumberSearch.Tests
                 count++;
             }
             output.WriteLine($"{count} Results Reviewed");
+            output.WriteLine(JsonSerializer.Serialize(results.FirstOrDefault()));
         }
 
         [Fact]
@@ -762,6 +763,20 @@ namespace NumberSearch.Tests
             Assert.NotNull(results);
             Assert.NotEmpty(results);
         }
+
+        [Fact]
+        public async Task BulkVSRESTValidatePortabilityAsync()
+        {
+            // Arrange
+            var portedNumber = "8605530426";
+            // Act
+            var results = await ValidatePortability.GetAsync(portedNumber, bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+
+            // Assert
+            Assert.NotNull(results);
+            output.WriteLine(JsonSerializer.Serialize(results));
+        }
+
 
         [Fact]
         public async Task BulkVSRESTGetAllOwnedNumbersAsOwnedAsync()
