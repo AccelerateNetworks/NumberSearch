@@ -777,7 +777,6 @@ namespace NumberSearch.Tests
             output.WriteLine(JsonSerializer.Serialize(results));
         }
 
-
         [Fact]
         public async Task BulkVSRESTGetAllOwnedNumbersAsOwnedAsync()
         {
@@ -789,6 +788,37 @@ namespace NumberSearch.Tests
             // Assert
             Assert.NotNull(results);
             Assert.NotEmpty(results);
+        }
+
+        [Fact]
+        public async Task BulkVSRESTGetAllPortRequestsAsync()
+        {
+            // Arrange
+
+            // Act
+            var results = await PortTn.GetAllAsync(bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+
+            // Assert
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+        }
+
+        [Fact]
+        public async Task BulkVSRESTGetPortRequestsAsync()
+        {
+            // Arrange
+
+            // Act
+            var results = await PortTn.GetAllAsync(bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+
+            // Assert
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+
+            var result = await PortTn.GetAsync(results.FirstOrDefault().OrderId, bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+
+            Assert.NotNull(result);
+            output.WriteLine(JsonSerializer.Serialize(result));
         }
 
         //[Fact]
