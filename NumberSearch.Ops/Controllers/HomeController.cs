@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Ops.Controllers
@@ -41,6 +42,8 @@ namespace NumberSearch.Ops.Controllers
         private readonly string _data247password;
         private readonly string _bulkVSusername;
         private readonly string _bulkVSpassword;
+        private readonly string _emailOrders;
+
 
         public HomeController(ILogger<HomeController> logger, IConfiguration config)
         {
@@ -57,6 +60,7 @@ namespace NumberSearch.Ops.Controllers
             _invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
             _data247username = config.GetConnectionString("Data247Username");
             _data247password = config.GetConnectionString("Data247Password");
+            _emailOrders = config.GetConnectionString("EmailOrders");
         }
 
         [Authorize]
@@ -706,6 +710,97 @@ namespace NumberSearch.Ops.Controllers
                 catch
                 {
                     Log.Fatal($"[PortRequest] Failed to submit port request to Teli.");
+                }
+
+                return View("PortRequestEdit", new PortRequestResult
+                {
+                    Order = order,
+                    PortRequest = portRequest,
+                    PhoneNumbers = numbers
+                });
+            }
+        }
+
+        [Authorize]
+        [Route("/Home/PortRequestsBulkVS/{orderId}")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PortRequestSendToBulkVS(string OrderId)
+        {
+            if (string.IsNullOrWhiteSpace(OrderId))
+            {
+                return Redirect("/Home/PortRequests");
+            }
+            else
+            {
+                var order = await Order.GetByIdAsync(Guid.Parse(OrderId), _postgresql).ConfigureAwait(false);
+                var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                var numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                // Prevent duplicate submissions.
+                if (!string.IsNullOrWhiteSpace(portRequest.TeliId))
+                {
+                    return View("PortRequestEdit", new PortRequestResult
+                    {
+                        Order = order,
+                        PortRequest = portRequest,
+                        PhoneNumbers = numbers
+                    });
+                }
+
+                try
+                {
+                    // Add a 1 for US phone numbers because that's what BulkVS expects.
+                    var TNs = numbers.Select(x => $"1{x.PortedDialedNumber}").ToArray();
+
+                    // Extract the street number from the address.
+                    // https://stackoverflow.com/questions/26122519/how-to-extract-address-components-from-a-string
+                    Match match = Regex.Match(portRequest.Address, @"([^\d]*)(\d*)(.*)");
+                    string streetNumber = match.Groups[2].Value;
+
+                    var bulkVSPortRequest = new PortTnRequest
+                    {
+                        ReferenceId = string.Empty,
+                        TNList = TNs,
+                        BTN = portRequest.BillingPhone,
+                        SubscriberType = portRequest.LocationType,
+                        AccountNumber = portRequest.ProviderAccountNumber,
+                        Pin = portRequest.ProviderPIN,
+                        Name = string.IsNullOrWhiteSpace(portRequest.BusinessName) ? $"Accelerate Networks" : $"{portRequest.BusinessName}",
+                        Contact = string.IsNullOrWhiteSpace(portRequest.BusinessContact) ? $"{portRequest.ResidentialFirstName} {portRequest.ResidentialLastName}" : portRequest.BusinessContact,
+                        StreetNumber = streetNumber,
+                        StreetName = portRequest.Address.Substring(streetNumber.Length).Trim(),
+                        City = portRequest.City,
+                        State = portRequest.State,
+                        Zip = portRequest.Zip,
+                        RDD = string.Empty,
+                        Time = string.Empty,
+                        PortoutPin = portRequest.ProviderPIN,
+                        TrunkGroup = "SFO",
+                        Lidb = "Accelerate Networks",
+                        Sms = true,
+                        Mms = true,
+                        SignLoa = false,
+                        Notify = _emailOrders
+                    };
+
+                    var bulkResponse = await bulkVSPortRequest.PutAsync(_bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
+
+                    if (!string.IsNullOrWhiteSpace(bulkResponse?.OrderId))
+                    {
+                        // Rename this to VendorOrderId, rather than TeliId.
+                        portRequest.TeliId = bulkResponse?.OrderId;
+                        portRequest.DateSubmitted = DateTime.Now;
+                        var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        Log.Fatal($"[PortRequest] Failed to submit port request to BulkVS.");
+                    }
+                }
+                catch
+                {
+                    Log.Fatal($"[PortRequest] Failed to submit port request to BulkVS.");
                 }
 
                 return View("PortRequestEdit", new PortRequestResult
