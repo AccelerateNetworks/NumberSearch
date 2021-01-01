@@ -2,6 +2,7 @@
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
+using NumberSearch.DataAccess.TeleMesssage;
 
 using Serilog;
 
@@ -93,6 +94,7 @@ namespace NumberSearch.Ingest
             // Pass this provider a blank array if you want it to figure out what NPAs are available. 
             var npas = areaCodes.Length > 0 ? areaCodes : new int[] { };
 
+            // Capture the NPAs.
             try
             {
                 if (npas.Length > 0)
@@ -112,12 +114,34 @@ namespace NumberSearch.Ingest
                 Log.Error($"[TeleMessage] No NPAs Retrived.");
             }
 
+            // Capture the numbers using their NPA's.
             foreach (var npa in npas)
             {
-                var localNumbers = await TeleMessage.GetXXXXsByNPAAsync(npa, token).ConfigureAwait(false);
-                readyToSubmit.AddRange(localNumbers);
+                try
+                {
+                    var localNumbers = await TeleMessage.GetXXXXsByNPAAsync(npa, token).ConfigureAwait(false);
+                    readyToSubmit.AddRange(localNumbers);
 
-                Log.Information($"[TeleMessage] Found {localNumbers.Length} Phone Numbers for the {npa} Area Code.");
+                    Log.Information($"[TeleMessage] Found {localNumbers.Length} Phone Numbers for the {npa} Area Code.");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"[TeleMessage] {ex.Message} {ex.InnerException}");
+                    Log.Information($"[TeleMessage] Found 0 Phone Numbers for the {npa} Area Code.");
+                }
+            }
+
+            // Capture the tollfree numbers.
+            try
+            {
+                var tollfree = await DidsList.GetAllTollfreeAsync(token).ConfigureAwait(false);
+                readyToSubmit.AddRange(tollfree);
+                Log.Information($"[TeleMessage] Found {tollfree.Count()} Tollfree Phone Numbers.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"[TeleMessage] {ex.Message} {ex.InnerException}");
+                Log.Information($"[TeleMessage] Found 0 Tollfree Phone Numbers.");
             }
 
             Log.Information($"[TeleMessage] Found {readyToSubmit.Count} Phone Numbers");

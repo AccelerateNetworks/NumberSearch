@@ -428,6 +428,25 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task TeleGetAllTollfreeAsync()
+        {
+            // Arrange
+
+            // Act
+            var results = await DidsList.GetRawAllTollfreeAsync(token).ConfigureAwait(false);
+
+            // Assert
+            Assert.NotNull(results);
+            Assert.False(string.IsNullOrWhiteSpace(results.status));
+            Assert.True(results.code == 200);
+            foreach (var result in results.data.dids)
+            {
+                Assert.False(string.IsNullOrWhiteSpace(result.number));
+            }
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+        }
+
+        [Fact]
         public async Task TeliEnableCNAMAsync()
         {
             // Arrange
