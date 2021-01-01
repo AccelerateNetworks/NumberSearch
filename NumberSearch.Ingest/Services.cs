@@ -1,4 +1,5 @@
 ﻿using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.Models;
 
 using Serilog;
 
@@ -23,6 +24,7 @@ namespace NumberSearch.Ingest
             var Executive = "Executive";
             var Premium = "Premium";
             var Standard = "Standard";
+            var Tollfree = "Tollfree";
 
             // Bail early if there's no data.
             if (numbers is null || !numbers.Any()) { return numbers; }
@@ -87,6 +89,15 @@ namespace NumberSearch.Ingest
                 if (count == 10)
                 {
                     number.NumberType = Executive;
+                }
+
+                // Overwrite the number type with Tollfree, as that's the primary type.
+                foreach (var tollfree in AreaCode.TollFree)
+                {
+                    if (tollfree == number.NPA)
+                    {
+                        number.NumberType = Tollfree;
+                    }
                 }
             }
 
