@@ -433,15 +433,13 @@ namespace NumberSearch.Tests
             // Arrange
 
             // Act
-            var results = await DidsList.GetRawAllTollfreeAsync(token).ConfigureAwait(false);
+            var results = await DidsList.GetAllTollfreeAsync(token).ConfigureAwait(false);
 
             // Assert
             Assert.NotNull(results);
-            Assert.False(string.IsNullOrWhiteSpace(results.status));
-            Assert.True(results.code == 200);
-            foreach (var result in results.data.dids)
+            foreach (var result in results)
             {
-                Assert.False(string.IsNullOrWhiteSpace(result.number));
+                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
             }
             output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
         }

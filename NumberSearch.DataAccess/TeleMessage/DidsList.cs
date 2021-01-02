@@ -175,8 +175,8 @@ namespace NumberSearch.DataAccess.TeleMesssage
                         NXX = nxx,
                         XXXX = xxxx,
                         DialedNumber = item.number,
-                        City = !string.IsNullOrWhiteSpace(item.ratecenter) ? item.ratecenter : "Unknown City",
-                        State = !string.IsNullOrWhiteSpace(item.state) ? item.state : "Unknown State",
+                        City = "Tollfree",
+                        State = string.Empty,
                         DateIngested = DateTime.Now,
                         NumberType = "Tollfree",
                         IngestedFrom = "TeleMessage"

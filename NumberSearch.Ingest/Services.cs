@@ -97,6 +97,8 @@ namespace NumberSearch.Ingest
                     if (tollfree == number.NPA)
                     {
                         number.NumberType = Tollfree;
+                        number.City = "Tollfree";
+                        number.State = string.Empty;
                     }
                 }
             }
