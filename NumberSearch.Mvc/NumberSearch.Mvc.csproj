@@ -56,7 +56,6 @@
     <PackageReference Include="System.ServiceModel.Security" Version="4.8.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BulkVS\BulkVS.csproj" />
     <ProjectReference Include="..\FirstCom\FirstCom.csproj" />
     <ProjectReference Include="..\NumberSearch.DataAccess\NumberSearch.DataAccess.csproj" />
   </ItemGroup>

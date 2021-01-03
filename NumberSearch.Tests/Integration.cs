@@ -756,19 +756,6 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
-        public async Task BulkVSGetAllOwnedNumbersAsync()
-        {
-            // Arrange
-
-            // Act
-            var results = await BulkVSOwnedPhoneNumbers.GetAllAsync(bulkVSKey, bulkVSSecret).ConfigureAwait(false);
-
-            // Assert
-            Assert.NotNull(results);
-            Assert.NotEmpty(results);
-        }
-
-        [Fact]
         public async Task BulkVSRESTGetAllOwnedNumbersAsync()
         {
             // Arrange
