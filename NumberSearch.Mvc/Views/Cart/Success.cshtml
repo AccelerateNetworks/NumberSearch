@@ -31,7 +31,7 @@
             partial();
         });
 
-        $('input').on('keyup', function () {
+        $("#callerId").on('keyup', function () {
             $("#charCount").text(`  ${15 - this.value.length} Characters Remaining`);
         });
 
@@ -298,8 +298,8 @@
                             </div>
                         </div>*@
                     <div class="col-md-6">
-                        <label for="billingPhone">Caller ID <span class="text-muted">(15 Characters Maximum)</span></label>
-                        <input asp-for="PortRequest.CallerId" type="text" value="@Model?.PortRequest?.CallerId" class="form-control" id="billingPhone" title="Sets Caller ID (aka CNAM) for all numbers in this port order, 15 character limit. Only letters, numbers, and spaces are allowed." placeholder="Alexander" maxlength="15" pattern="[a-zA-Z0-9\s]+">
+                        <label for="callerId">Caller ID <span class="text-muted">(15 Characters Maximum)</span></label>
+                        <input asp-for="PortRequest.CallerId" type="text" value="@Model?.PortRequest?.CallerId" class="form-control" id="callerId" title="Sets Caller ID (aka CNAM) for all numbers in this port order, 15 character limit. Only letters, numbers, and spaces are allowed." placeholder="Alexander" maxlength="15" pattern="[a-zA-Z0-9\s]+">
                         <label><strong id="charCount"></strong></label>
                     </div>
                     <div class="col-md-6">
