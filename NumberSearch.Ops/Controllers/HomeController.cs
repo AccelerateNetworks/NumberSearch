@@ -755,7 +755,7 @@ namespace NumberSearch.Ops.Controllers
 
                     // Extract the street number from the address.
                     // https://stackoverflow.com/questions/26122519/how-to-extract-address-components-from-a-string
-                    Match match = Regex.Match(portRequest.Address, @"([^\d]*)(\d*)(.*)");
+                    Match match = Regex.Match(portRequest.Address.Trim(), @"([^\d]*)(\d*)(.*)");
                     string streetNumber = match.Groups[2].Value;
 
                     var bulkVSPortRequest = new PortTnRequest
@@ -769,15 +769,15 @@ namespace NumberSearch.Ops.Controllers
                         Name = string.IsNullOrWhiteSpace(portRequest.BusinessName) ? $"Accelerate Networks" : $"{portRequest.BusinessName}",
                         Contact = string.IsNullOrWhiteSpace(portRequest.BusinessContact) ? $"{portRequest.ResidentialFirstName} {portRequest.ResidentialLastName}" : portRequest.BusinessContact,
                         StreetNumber = streetNumber,
-                        StreetName = portRequest.Address.Substring(streetNumber.Length).Trim(),
+                        StreetName = $"{portRequest.Address.Substring(streetNumber.Length).Trim()} {portRequest.Address2}",
                         City = portRequest.City,
-                        State = portRequest.State,
+                        State = "WA",
                         Zip = portRequest.Zip,
-                        RDD = string.Empty,
-                        Time = string.Empty,
+                        RDD = DateTime.Now.AddDays(3).ToString("yyyy-MM-dd"),
+                        Time = "20:00:00",
                         PortoutPin = portRequest.ProviderPIN,
                         TrunkGroup = "SFO",
-                        Lidb = "Accelerate Networks",
+                        Lidb = portRequest.CallerId,
                         Sms = true,
                         Mms = true,
                         SignLoa = false,
