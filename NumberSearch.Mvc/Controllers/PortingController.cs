@@ -1,11 +1,10 @@
-﻿using BulkVS;
-
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
 using MimeKit;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Data247;
 using NumberSearch.DataAccess.TeleMesssage;
 
@@ -26,6 +25,7 @@ namespace NumberSearch.Mvc.Controllers
         private readonly Guid _teleToken;
         private readonly string _data247username;
         private readonly string _data247password;
+        private readonly string _bulkVSAPIKey;
 
         public PortingController(IConfiguration config)
         {
@@ -34,6 +34,7 @@ namespace NumberSearch.Mvc.Controllers
             _teleToken = Guid.Parse(configuration.GetConnectionString("TeleAPI"));
             _data247username = config.GetConnectionString("Data247Username");
             _data247password = config.GetConnectionString("Data247Password");
+            _bulkVSAPIKey = config.GetConnectionString("BulkVSAPIKEY");
         }
 
         public IActionResult Index()
@@ -102,13 +103,13 @@ namespace NumberSearch.Mvc.Controllers
                         var portable = await LnpCheck.IsPortable(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
 
                         // Determine if the number is a wireless number.
-                        var lrnLookup = await LrnLookup.GetAsync(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
+                        var checkNumber = await LrnBulkCnam.GetAsync(dialedPhoneNumber, _bulkVSAPIKey).ConfigureAwait(false);
 
                         bool wireless = false;
 
-                        switch (lrnLookup.data.ocn_type)
+                        switch (checkNumber.lectype)
                         {
-                            case "wireless":
+                            case "WIRELESS":
                                 wireless = true;
                                 break;
                             case "PCS":
@@ -127,12 +128,8 @@ namespace NumberSearch.Mvc.Controllers
                                 break;
                         }
 
-                        // Lookup the number.
-                        var checkNumber = await LrnLookup.GetAsync(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
-
                         var numberName = await LIDBLookup.GetAsync(dialedPhoneNumber, _data247username, _data247password).ConfigureAwait(false);
 
-                        checkNumber.data.DialedNumber = dialedPhoneNumber;
                         checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.response?.results?.FirstOrDefault()?.name) ? string.Empty : numberName?.response?.results?.FirstOrDefault()?.name;
 
                         if (portable)

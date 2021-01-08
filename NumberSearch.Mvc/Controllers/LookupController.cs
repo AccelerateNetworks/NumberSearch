@@ -1,9 +1,8 @@
-﻿using BulkVS;
-
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Data247;
 using NumberSearch.DataAccess.TeleMesssage;
 using NumberSearch.Mvc.Models;
@@ -72,23 +71,18 @@ namespace NumberSearch.Mvc.Controllers
                     }
                 }
 
-                var results = new List<LrnLookup>();
+                var results = new List<LrnBulkCnam>();
 
                 foreach (var number in parsedNumbers)
                 {
-                    var checkNumber = await LrnLookup.GetAsync(number, _teleToken).ConfigureAwait(false);
-                    if (string.IsNullOrWhiteSpace(checkNumber.data.lrn))
-                    {
-                        var bulkResult = await LrnBulkCnam.GetAsync(number, _bulkVSKey).ConfigureAwait(false);
+                    var checkNumber = await LrnBulkCnam.GetAsync(number, _bulkVSKey).ConfigureAwait(false);
 
-                        checkNumber.data.spid = bulkResult.spid;
-                        checkNumber.data.spid_name = bulkResult.lec;
-                        checkNumber.data.port_date = bulkResult.lrn;
-                    }
+                    //checkNumber.data.spid = bulkResult.spid;
+                    //checkNumber.data.spid_name = bulkResult.lec;
+                    //checkNumber.data.port_date = bulkResult.activation;
 
                     var numberName = await LIDBLookup.GetAsync(number, _data247username, _data247password).ConfigureAwait(false);
 
-                    checkNumber.data.DialedNumber = number;
                     checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.response?.results?.FirstOrDefault()?.name) ? string.Empty : numberName?.response?.results?.FirstOrDefault()?.name;
                     results.Add(checkNumber);
                 }
@@ -160,14 +154,14 @@ namespace NumberSearch.Mvc.Controllers
                             var portable = await LnpCheck.IsPortable(number, _teleToken).ConfigureAwait(false);
 
                             // Lookup the number.
-                            var checkNumber = await LrnLookup.GetAsync(number, _teleToken).ConfigureAwait(false);
+                            var checkNumber = await LrnBulkCnam.GetAsync(number, _bulkVSKey).ConfigureAwait(false);
 
                             // Determine if the number is a wireless number.
                             bool wireless = false;
 
-                            switch (checkNumber.data.ocn_type)
+                            switch (checkNumber.lectype)
                             {
-                                case "wireless":
+                                case "WIRELESS":
                                     wireless = true;
                                     break;
                                 case "PCS":
@@ -188,7 +182,6 @@ namespace NumberSearch.Mvc.Controllers
 
                             var numberName = await LIDBLookup.GetAsync(number, _data247username, _data247password).ConfigureAwait(false);
 
-                            checkNumber.data.DialedNumber = number;
                             checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.response?.results?.FirstOrDefault()?.name) ? string.Empty : numberName?.response?.results?.FirstOrDefault()?.name;
 
                             if (portable)

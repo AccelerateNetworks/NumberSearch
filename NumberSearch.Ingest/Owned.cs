@@ -1,8 +1,7 @@
-﻿using BulkVS;
-
-using FirstCom;
+﻿using FirstCom;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Models;
 using NumberSearch.DataAccess.TeleMesssage;
 
@@ -189,20 +188,11 @@ namespace NumberSearch.Ingest
                 }
                 else
                 {
-                    var result = await LrnLookup.GetAsync(number.DialedNumber, teleToken).ConfigureAwait(false);
+                    var result = await LrnBulkCnam.GetAsync(number.DialedNumber, bulkApiKey).ConfigureAwait(false);
 
-                    var provider = "TeleMessage";
-                    var newSpid = result.data.spid;
-                    var newSpidName = result.data.spid_name;
-
-                    if (string.IsNullOrWhiteSpace(newSpid) || string.IsNullOrWhiteSpace(newSpidName))
-                    {
-                        var bulkResult = await LrnBulkCnam.GetAsync(number.DialedNumber, bulkApiKey).ConfigureAwait(false);
-
-                        provider = "BulkVS";
-                        newSpid = bulkResult?.spid ?? string.Empty;
-                        newSpidName = bulkResult?.lec ?? string.Empty;
-                    }
+                    var provider = "BulkVS";
+                    var newSpid = result?.spid ?? string.Empty;
+                    var newSpidName = result?.lec ?? string.Empty;
 
                     var checkSPID = newSpid != number.SPID;
                     var checkSPIDName = newSpidName != number.SPIDName;

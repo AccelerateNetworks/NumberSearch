@@ -49,9 +49,6 @@
                                 Caller Name
                             </th>
                             <th>
-                                Creation Date
-                            </th>
-                            <th>
                                 Local Routing #
                             </th>
                             <th>
@@ -65,25 +62,24 @@
                             {
                                 <tr>
                                     <td>
-                                        <h4>@number.data?.DialedNumber</h4>
+                                        <h4>@number?.tn</h4>
                                     </td>
                                     <td>
-                                        @number.data?.port_date
+                                        @number?.LastPorted
                                     </td>
                                     <td>
                                         @number?.LIDBName
                                     </td>
                                     <td>
-                                        @number.data?.creation_date
-                                    </td>
-                                    <td>
-                                        <h4>@number.data?.lrn</h4>
+                                        <h4>@number?.lrn</h4>
                                     </td>
                                     <td>
                                         <p>
-                                            @number.data?.spid
+                                            @number?.spid
                                             -
-                                            @number.data?.spid_name
+                                            @number?.lec
+                                            -
+                                            @number?.lectype
                                         </p>
                                     </td>
                                 </tr>
@@ -170,9 +166,6 @@
                                 Caller Name
                             </th>
                             <th>
-                                Creation Date
-                            </th>
-                            <th>
                                 Local Routing #
                             </th>
                             <th>
@@ -186,25 +179,24 @@
                             {
                                 <tr>
                                     <td>
-                                        <h4>@number?.LrnLookup?.data?.DialedNumber</h4>
+                                        <h4>@number?.LrnLookup?.tn</h4>
                                     </td>
                                     <td>
-                                        @number?.LrnLookup?.data?.port_date
+                                        @number?.LrnLookup?.LastPorted
                                     </td>
                                     <td>
                                         @number?.LrnLookup?.LIDBName
                                     </td>
                                     <td>
-                                        @number?.LrnLookup?.data?.creation_date
-                                    </td>
-                                    <td>
-                                        <h4>@number?.LrnLookup?.data?.lrn</h4>
+                                        <h4>@number?.LrnLookup?.lrn</h4>
                                     </td>
                                     <td>
                                         <p>
-                                            @number?.LrnLookup?.data?.spid
+                                            @number?.LrnLookup?.spid
                                             -
-                                            @number?.LrnLookup?.data?.spid_name
+                                            @number?.LrnLookup?.lec
+                                            -
+                                            @number?.LrnLookup?.lectype
                                         </p>
                                     </td>
                                 </tr>
@@ -276,9 +268,6 @@
                                 Caller Name
                             </th>
                             <th>
-                                Creation Date
-                            </th>
-                            <th>
                                 Local Routing #
                             </th>
                             <th>
@@ -292,25 +281,24 @@
                             {
                                 <tr>
                                     <td>
-                                        <h4>@number?.LrnLookup?.data?.DialedNumber</h4>
+                                        <h4>@number?.LrnLookup?.tn</h4>
                                     </td>
                                     <td>
-                                        @number?.LrnLookup?.data?.port_date
+                                        @number?.LrnLookup?.LastPorted
                                     </td>
                                     <td>
                                         @number?.LrnLookup?.LIDBName
                                     </td>
                                     <td>
-                                        @number?.LrnLookup?.data?.creation_date
-                                    </td>
-                                    <td>
-                                        <h4>@number?.LrnLookup?.data?.lrn</h4>
+                                        <h4>@number?.LrnLookup?.lrn</h4>
                                     </td>
                                     <td>
                                         <p>
-                                            @number?.LrnLookup?.data?.spid
+                                            @number?.LrnLookup?.spid
                                             -
-                                            @number?.LrnLookup?.data?.spid_name
+                                            @number?.LrnLookup?.lec
+                                            -
+                                            @number?.LrnLookup?.lectype
                                         </p>
                                     </td>
                                 </tr>

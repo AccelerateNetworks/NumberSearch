@@ -91,9 +91,6 @@
                                     Caller Name
                                 </th>
                                 <th>
-                                    Creation Date
-                                </th>
-                                <th>
                                     Local Routing #
                                 </th>
                                 <th>
@@ -104,26 +101,24 @@
                         <tbody>
                             <tr>
                                 <td>
-                                    <h4>@Model?.PortedPhoneNumber?.LrnLookup?.data?.DialedNumber</h4>
+                                    <h4>@Model?.PortedPhoneNumber?.LrnLookup?.tn</h4>
                                 </td>
                                 <td>
-                                    @Model?.PortedPhoneNumber?.LrnLookup?.data?.port_date
+                                    @Model?.PortedPhoneNumber?.LrnLookup?.LastPorted
                                 </td>
                                 <td>
                                     @Model?.PortedPhoneNumber?.LrnLookup?.LIDBName
                                 </td>
                                 <td>
-                                    @Model?.PortedPhoneNumber?.LrnLookup?.data?.creation_date
-                                </td>
-                                <td>
-                                    <h4>@Model?.PortedPhoneNumber?.LrnLookup?.data?.lrn</h4>
+                                    <h4>@Model?.PortedPhoneNumber?.LrnLookup?.lrn</h4>
                                 </td>
                                 <td>
                                     <p>
-                                        @Model?.PortedPhoneNumber?.LrnLookup?.data?.spid
+                                        @Model?.PortedPhoneNumber?.LrnLookup?.spid
                                         -
-                                        @Model?.PortedPhoneNumber?.LrnLookup?.data?.spid_name
-
+                                        @Model?.PortedPhoneNumber?.LrnLookup?.lec
+                                        -
+                                        @Model?.PortedPhoneNumber?.LrnLookup?.lectype
                                     </p>
                                 </td>
                             </tr>

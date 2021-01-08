@@ -1,6 +1,4 @@
-﻿using BulkVS;
-
-using FirstCom;
+﻿using FirstCom;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -13,13 +11,9 @@ using NumberSearch.DataAccess.TeleMesssage;
 using Serilog;
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
@@ -204,13 +198,13 @@ namespace NumberSearch.Mvc.Controllers
                 bool checkXxxx = int.TryParse(dialedPhoneNumber.Substring(6, 4), out int xxxx);
 
                 // Determine if the number is a wireless number.
-                var lrnLookup = await LrnLookup.GetAsync(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
+                var lrnLookup = await LrnBulkCnam.GetAsync(dialedPhoneNumber, _apiKey).ConfigureAwait(false);
 
                 bool wireless = false;
 
-                switch (lrnLookup.data.ocn_type)
+                switch (lrnLookup.lectype)
                 {
-                    case "wireless":
+                    case "WIRELESS":
                         wireless = true;
                         break;
                     case "PCS":
@@ -229,7 +223,7 @@ namespace NumberSearch.Mvc.Controllers
                         break;
                 }
 
-                Log.Information($"[AddToCart] {dialedPhoneNumber} has an OCN Type of {lrnLookup.data.ocn_type}.");
+                Log.Information($"[AddToCart] {dialedPhoneNumber} has an OCN Type of {lrnLookup.lectype}.");
 
                 if (checkNpa && checkNxx && checkXxxx)
                 {

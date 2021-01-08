@@ -2,6 +2,8 @@
 
 using Npgsql;
 
+using NumberSearch.DataAccess.BulkVS;
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -24,7 +26,7 @@ namespace NumberSearch.DataAccess
         public string RequestStatus { get; set; }
         public DateTime? DateFirmOrderCommitment { get; set; }
         // Only used by the porting process to get helpful information on the ported phone number.
-        public LrnLookup LrnLookup { get; set; }
+        public LrnBulkCnam LrnLookup { get; set; }
 
         /// <summary>
         /// Get a list of all phone numbers in the database.

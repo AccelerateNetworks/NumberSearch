@@ -542,14 +542,14 @@ namespace NumberSearch.Ops.Controllers
                         {
                             var portable = await LnpCheck.IsPortable(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
 
-                            // Determine if the number is a wireless number.
-                            var lrnLookup = await LrnLookup.GetAsync(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
+                            // Lookup the number.
+                            var checkNumber = await LrnBulkCnam.GetAsync(dialedPhoneNumber, _bulkVSAPIKey).ConfigureAwait(false);
 
                             bool wireless = false;
 
-                            switch (lrnLookup.data.ocn_type)
+                            switch (checkNumber.lectype)
                             {
-                                case "wireless":
+                                case "WIRELESS":
                                     wireless = true;
                                     break;
                                 case "PCS":
@@ -568,12 +568,8 @@ namespace NumberSearch.Ops.Controllers
                                     break;
                             }
 
-                            // Lookup the number.
-                            var checkNumber = await LrnLookup.GetAsync(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
-
                             var numberName = await LIDBLookup.GetAsync(dialedPhoneNumber, _data247username, _data247password).ConfigureAwait(false);
 
-                            checkNumber.data.DialedNumber = dialedPhoneNumber;
                             checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.response?.results?.FirstOrDefault()?.name) ? string.Empty : numberName?.response?.results?.FirstOrDefault()?.name;
 
                             if (portable)
