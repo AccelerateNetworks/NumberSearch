@@ -79,17 +79,17 @@ namespace NumberSearch.Mvc
                         _taskQueue.QueueBackgroundWorkItem(async token =>
                         {
                             Log.Information(
-                                "[Background Worker] Queued Background Task {order.OrderId} is starting.", order.OrderId);
+                                $"[Background Worker] Queued Background Task {order.OrderId} is starting.");
 
                             while (!token.IsCancellationRequested)
                             {
-                                var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
 
                                 // Create a single PIN for this order.
                                 var random = new Random();
                                 var pin = random.Next(100000, 99999999);
 
-                                foreach (var productOrder in productOrders)
+                                foreach (var productOrder in purchasedPhoneNumbers)
                                 {
                                     if (!string.IsNullOrWhiteSpace(productOrder.DialedNumber))
                                     {
@@ -97,7 +97,7 @@ namespace NumberSearch.Mvc
                                         {
                                             var nto = await PhoneNumber.GetAsync(productOrder.DialedNumber, _postgresql).ConfigureAwait(false);
 
-                                            if (nto is not null && !nto.Purchased)
+                                            if (nto is not null && !productOrder.Completed)
                                             {
                                                 try
                                                 {
@@ -117,23 +117,14 @@ namespace NumberSearch.Mvc
                                                         var orderResponse = await executeOrder.PostAsync(_bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
 
                                                         nto.Purchased = true;
-                                                        var verifyOrder = new PurchasedPhoneNumber
-                                                        {
-                                                            OrderId = order.OrderId,
-                                                            DateOrdered = order.DateSubmitted,
-                                                            DialedNumber = nto.DialedNumber,
-                                                            DateIngested = nto.DateIngested,
-                                                            IngestedFrom = nto.IngestedFrom,
-                                                            // Keep the raw response as a receipt.
-                                                            OrderResponse = JsonSerializer.Serialize(orderResponse),
-                                                            // If the status code of the order comes back as 200 then it was sucessful.
-                                                            Completed = orderResponse.Failed is null
-                                                        };
+                                                        productOrder.DateOrdered = DateTime.Now;
+                                                        // Keep the raw response as a receipt.
+                                                        productOrder.OrderResponse = JsonSerializer.Serialize(orderResponse);
+                                                        // If the status code of the order comes back as 200 then it was sucessful.
+                                                        productOrder.Completed = orderResponse.Failed is null;
 
-                                                        var checkVerifyOrder = verifyOrder.PostAsync(_postgresql);
-                                                        var checkMarkPurchased = nto.PutAsync(_postgresql);
-
-                                                        await Task.WhenAll(new List<Task<bool>> { checkVerifyOrder, checkMarkPurchased }).ConfigureAwait(false);
+                                                        var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
+                                                        var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
                                                     }
                                                     else if (nto.IngestedFrom == "TeleMessage")
                                                     {
@@ -141,21 +132,12 @@ namespace NumberSearch.Mvc
                                                         var executeOrder = await DidsOrder.GetAsync(nto.DialedNumber, _CallFlow, _ChannelGroup, _teleToken).ConfigureAwait(false);
 
                                                         nto.Purchased = true;
-                                                        var verifyOrder = new PurchasedPhoneNumber
-                                                        {
-                                                            OrderId = order.OrderId,
-                                                            DateOrdered = order.DateSubmitted,
-                                                            DialedNumber = nto.DialedNumber,
-                                                            DateIngested = nto.DateIngested,
-                                                            IngestedFrom = nto.IngestedFrom,
-                                                            // Keep the raw response as a receipt.
-                                                            OrderResponse = JsonSerializer.Serialize(executeOrder),
-                                                            // If the status code of the order comes back as 200 then it was sucessful.
-                                                            Completed = executeOrder.code == 200
-                                                        };
+                                                        productOrder.DateOrdered = DateTime.Now;
+                                                        productOrder.OrderResponse = JsonSerializer.Serialize(executeOrder);
+                                                        productOrder.Completed = executeOrder.code == 200;
 
-                                                        var checkVerifyOrder = verifyOrder.PostAsync(_postgresql);
-                                                        var checkMarkPurchased = nto.PutAsync(_postgresql);
+                                                        var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
+                                                        var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
 
                                                         // Set a note for these number purchases inside of Tele's system.
                                                         var getTeleId = await UserDidsGet.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
@@ -169,9 +151,6 @@ namespace NumberSearch.Mvc
                                                         {
                                                             Log.Fatal($"Failed to set TeleMessage label for {nto.DialedNumber} to {order?.BusinessName} {order?.FirstName} {order?.LastName}.");
                                                         }
-
-                                                        await Task.WhenAll(new List<Task<bool>> { checkVerifyOrder, checkMarkPurchased }).ConfigureAwait(false);
-
                                                     }
                                                     else if (nto.IngestedFrom == "FirstPointCom")
                                                     {
@@ -179,23 +158,12 @@ namespace NumberSearch.Mvc
                                                         var executeOrder = await FirstPointComOrderPhoneNumber.PostAsync(nto.DialedNumber, _fpcusername, _fpcpassword).ConfigureAwait(false);
 
                                                         nto.Purchased = true;
-                                                        var verifyOrder = new PurchasedPhoneNumber
-                                                        {
-                                                            OrderId = order.OrderId,
-                                                            DateOrdered = order.DateSubmitted,
-                                                            DialedNumber = nto.DialedNumber,
-                                                            DateIngested = nto.DateIngested,
-                                                            IngestedFrom = nto.IngestedFrom,
-                                                            // Keep the raw response as a receipt.
-                                                            OrderResponse = JsonSerializer.Serialize(executeOrder),
-                                                            // If the status code of the order comes back as 200 then it was sucessful.
-                                                            Completed = executeOrder.code == 0
-                                                        };
+                                                        productOrder.DateOrdered = DateTime.Now;
+                                                        productOrder.OrderResponse = JsonSerializer.Serialize(executeOrder);
+                                                        productOrder.Completed = executeOrder.code == 0;
 
-                                                        var checkVerifyOrder = verifyOrder.PostAsync(_postgresql);
-                                                        var checkMarkPurchased = nto.PutAsync(_postgresql);
-
-                                                        await Task.WhenAll(new List<Task<bool>> { checkVerifyOrder, checkMarkPurchased }).ConfigureAwait(false);
+                                                        var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
+                                                        var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
                                                     }
                                                 }
                                                 catch (Exception ex)

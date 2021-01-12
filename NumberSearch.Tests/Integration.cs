@@ -626,23 +626,23 @@ namespace NumberSearch.Tests
             output.WriteLine(results);
         }
 
-        //[Fact]
-        //public async Task LocalNumberPortabilityTestAsync()
-        //{
-        //    // Arrange
-        //    string query = "1";
+        [Fact]
+        public async Task LocalNumberPortabilityTestAsync()
+        {
+            // Arrange
+            string query = "1";
 
-        //    // Act
-        //    var result = await LnpCheck.IsPortable(query, token);
+            // Act
+            var result = await LnpCheck.IsPortable(query, token);
 
-        //    // Assert
-        //    Assert.False(result);
+            // Assert
+            Assert.False(result);
 
-        //    result = await LnpCheck.IsPortable("8662214141", token);
+            result = await LnpCheck.IsPortable("8662214141", token);
 
-        //    // Assert
-        //    Assert.True(result);
-        //}
+            // Assert
+            Assert.True(result);
+        }
 
 
         //[Fact]
@@ -823,32 +823,6 @@ namespace NumberSearch.Tests
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
-        //[Fact]
-        //public async Task TelePhoneNumbersTestAsync()
-        //{
-        //    // Arrange
-        //    var query = "206";
-
-        //    // Act
-        //    var results = await DidsList.GetAsync(query, token);
-
-        //    // Assert
-        //    Assert.NotNull(results);
-        //    int count = 0;
-        //    foreach (var result in results.ToArray())
-        //    {
-        //        Assert.True(result.NPA > 99);
-        //        Assert.True(result.NXX > 99);
-        //        Assert.True(result.XXXX > 0);
-        //        Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-        //        Assert.False(string.IsNullOrWhiteSpace(result.City));
-        //        Assert.False(string.IsNullOrWhiteSpace(result.State));
-        //        Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
-        //        count++;
-        //    }
-        //    output.WriteLine($"{count} Results Reviewed");
-        //}
-
         [Fact]
         public async Task TeleNumberDetailsTestAsync()
         {
@@ -863,26 +837,26 @@ namespace NumberSearch.Tests
             output.WriteLine(results.code.ToString());
         }
 
-        //[Fact]
-        //public async Task TeleNoteTestAsync()
-        //{
-        //    // Arrange
-        //    var number = "2068588757";
+        [Fact]
+        public async Task TeleNoteTestAsync()
+        {
+            // Arrange
+            var number = "2068588757";
 
-        //    // Act
-        //    var results = await UserDidsGet.GetAsync(number, token).ConfigureAwait(false);
+            // Act
+            var results = await UserDidsGet.GetAsync(number, token).ConfigureAwait(false);
 
-        //    Assert.NotNull(results);
-        //    output.WriteLine(results.data.id);
+            Assert.NotNull(results);
+            output.WriteLine(results.data.id);
 
-        //    var note = $"This is a test note.";
+            var note = $"This is a test note.";
 
-        //    var setNote = await UserDidsNote.SetNote(note, results.data.id, token).ConfigureAwait(false);
+            var setNote = await UserDidsNote.SetNote(note, results.data.id, token).ConfigureAwait(false);
 
-        //    Assert.NotNull(setNote);
-        //    Assert.True(setNote.code == 200);
-        //    output.WriteLine(setNote.data);
-        //}
+            Assert.NotNull(setNote);
+            Assert.True(setNote.code == 200);
+            output.WriteLine(setNote.data);
+        }
 
 
         [Fact]
@@ -1117,12 +1091,72 @@ namespace NumberSearch.Tests
         [Fact]
         public async Task GetCountPhoneNumbersAsync()
         {
-            var conn = postgresql;
-
-            var result = await PhoneNumber.GetCountByProvider("BulkVS", conn);
+            var result = await PhoneNumber.GetCountByProvider("BulkVS", postgresql);
 
             Assert.True(result > 0);
             output.WriteLine(result.ToString());
+        }
+
+        [Fact]
+        public async Task GetVerifiedNumbersAsync()
+        {
+            var results = await VerifiedPhoneNumber.GetAllAsync(postgresql).ConfigureAwait(false);
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+
+            results = await VerifiedPhoneNumber.GetByOrderIdAsync(results.FirstOrDefault().OrderId ?? Guid.Empty, postgresql).ConfigureAwait(false);
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+        }
+
+        [Fact]
+        public async Task PostPutDeleteVerifiedNumbersAsync()
+        {
+            var testNumber = new VerifiedPhoneNumber
+            {
+                VerifiedPhoneNumberId = Guid.NewGuid(),
+                VerifiedDialedNumber = "2068588757",
+                NPA = 206,
+                NXX = 858,
+                XXXX = 8757,
+                ServiceProfileIdentifier = "test",
+                Activation = "test",
+                City = "test",
+                DateIngested = DateTime.Now,
+                DateToExpire = DateTime.Now,
+                LocalAccessTransportArea = "test",
+                IngestedFrom = "test",
+                Jurisdiction = "test",
+                LastPorted = DateTime.Now,
+                LIDBName = "test",
+                Local = "test",
+                LocalExchangeCarrier = "test",
+                LocalExchangeCarrierType = "test",
+                LocalRoutingNumber = "test",
+                NumberType = "test",
+                OperatingCompanyNumber = "test",
+                OrderId = Guid.NewGuid(),
+                Province = "test",
+                RateCenter = "test",
+                Wireless = true
+            };
+
+            var checkPost = await testNumber.PostAsync(postgresql).ConfigureAwait(false);
+            Assert.True(checkPost);
+
+            var checkSave = await VerifiedPhoneNumber.GetByOrderIdAsync(testNumber.OrderId ?? Guid.Empty, postgresql).ConfigureAwait(false);
+            Assert.True(checkSave.FirstOrDefault().VerifiedDialedNumber == testNumber.VerifiedDialedNumber);
+
+            testNumber.LocalAccessTransportArea = "testtest";
+            var checkPut = await testNumber.PutAsync(postgresql).ConfigureAwait(false);
+            Assert.True(checkPut);
+
+            checkSave = await VerifiedPhoneNumber.GetByOrderIdAsync(testNumber.OrderId ?? Guid.Empty, postgresql).ConfigureAwait(false);
+            Assert.True(checkSave.FirstOrDefault().LocalAccessTransportArea == testNumber.LocalAccessTransportArea);
+
+            var checkDelete = await testNumber.DeleteAsync(postgresql).ConfigureAwait(false);
+            Assert.True(checkDelete);
         }
 
         [Fact]

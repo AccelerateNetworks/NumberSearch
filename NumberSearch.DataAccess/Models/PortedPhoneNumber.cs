@@ -12,6 +12,7 @@ namespace NumberSearch.DataAccess
 {
     public class PortedPhoneNumber
     {
+        public Guid PortedPhoneNumberId { get; set; }
         public string PortedDialedNumber { get; set; }
         public int NPA { get; set; }
         public int NXX { get; set; }
@@ -38,7 +39,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\", \"Wireless\", \"RequestStatus\", \"DateFirmOrderCommitment\" FROM public.\"PortedPhoneNumbers\"")
+                .QueryAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\", \"Wireless\", \"RequestStatus\", \"DateFirmOrderCommitment\", \"PortedPhoneNumberId\" FROM public.\"PortedPhoneNumbers\"")
                 .ConfigureAwait(false);
 
             return result;
@@ -55,7 +56,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\", \"Wireless\", \"RequestStatus\", \"DateFirmOrderCommitment\" FROM public.\"PortedPhoneNumbers\" " +
+                .QueryAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\", \"Wireless\", \"RequestStatus\", \"DateFirmOrderCommitment\", \"PortedPhoneNumberId\" FROM public.\"PortedPhoneNumbers\" " +
                 "WHERE \"OrderId\" = @orderId", new { orderId })
                 .ConfigureAwait(false);
 
@@ -73,7 +74,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\", \"Wireless\", \"RequestStatus\", \"DateFirmOrderCommitment\" FROM public.\"PortedPhoneNumbers\" " +
+                .QueryAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\", \"Wireless\", \"RequestStatus\", \"DateFirmOrderCommitment\", \"PortedPhoneNumberId\" FROM public.\"PortedPhoneNumbers\" " +
                 "WHERE \"PortRequestId\" = @portRequestId", new { portRequestId })
                 .ConfigureAwait(false);
 
@@ -86,13 +87,31 @@ namespace NumberSearch.DataAccess
         /// <param name="dialedNumber"></param>
         /// <param name="connectionString"></param>
         /// <returns></returns>
-        public static async Task<PortedPhoneNumber> GetByDialedNumberAsync(string dialedNumber, string connectionString)
+        public static async Task<IEnumerable<PortedPhoneNumber>> GetByDialedNumberAsync(string dialedNumber, string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryFirstOrDefaultAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\", \"Wireless\", \"RequestStatus\", \"DateFirmOrderCommitment\" FROM public.\"PortedPhoneNumbers\" " +
+                .QueryAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\", \"Wireless\", \"RequestStatus\", \"DateFirmOrderCommitment\", \"PortedPhoneNumberId\" FROM public.\"PortedPhoneNumbers\" " +
                 "WHERE \"PortedDialedNumber\" = @dialedNumber", new { dialedNumber })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Find a single phone number based on the complete number.
+        /// </summary>
+        /// <param name="dialedNumber"></param>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        public static async Task<PortedPhoneNumber> GetByIdAsync(Guid PortedPhoneNumberId, string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryFirstOrDefaultAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\", \"Wireless\", \"RequestStatus\", \"DateFirmOrderCommitment\", \"PortedPhoneNumberId\" FROM public.\"PortedPhoneNumbers\" " +
+                "WHERE \"PortedPhoneNumberId\" = @PortedPhoneNumberId", new { PortedPhoneNumberId })
                 .ConfigureAwait(false);
 
             return result;
@@ -103,8 +122,8 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("UPDATE public.\"PortedPhoneNumbers\" SET \"City\" = @City, \"State\" = @State, \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"PortRequestId\" = @PortRequestId, \"OrderId\" = @OrderId, \"Wireless\" = @Wireless, \"RequestStatus\" = @RequestStatus, \"DateFirmOrderCommitment\" = @DateFirmOrderCommitment WHERE \"PortedDialedNumber\" = @PortedDialedNumber",
-                new { City, State, IngestedFrom, DateIngested = DateTime.Now, PortRequestId, OrderId, Wireless, RequestStatus, DateFirmOrderCommitment, PortedDialedNumber })
+                .ExecuteAsync("UPDATE public.\"PortedPhoneNumbers\" SET \"City\" = @City, \"State\" = @State, \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"PortRequestId\" = @PortRequestId, \"OrderId\" = @OrderId, \"Wireless\" = @Wireless, \"RequestStatus\" = @RequestStatus, \"DateFirmOrderCommitment\" = @DateFirmOrderCommitment WHERE \"PortedPhoneNumberId\" = @PortedPhoneNumberId",
+                new { City, State, IngestedFrom, DateIngested = DateTime.Now, PortRequestId, OrderId, Wireless, RequestStatus, DateFirmOrderCommitment, PortedPhoneNumberId })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -151,7 +170,7 @@ namespace NumberSearch.DataAccess
         public async Task<bool> DeleteAsync(string connectionString)
         {
             // Fail fast if we don have the primary key.
-            if (string.IsNullOrWhiteSpace(PortedDialedNumber))
+            if (PortedPhoneNumberId == Guid.Empty)
             {
                 return false;
             }
@@ -159,8 +178,8 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("DELETE FROM public.\"PortedPhoneNumbers\" WHERE \"PortedDialedNumber\" = @PortedDialedNumber",
-                new { PortedDialedNumber })
+                .ExecuteAsync("DELETE FROM public.\"PortedPhoneNumbers\" WHERE \"PortedPhoneNumberId\" = @PortedPhoneNumberId",
+                new { PortedPhoneNumberId })
                 .ConfigureAwait(false);
 
             if (result == 1)

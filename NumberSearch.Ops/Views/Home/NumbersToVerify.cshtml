@@ -1,0 +1,104 @@
+﻿@model IEnumerable<NumberSearch.DataAccess.VerifiedPhoneNumber>
+@{
+    ViewData["Title"] = "Purchased Numbers";
+}
+<h1 class="display-4 p-3">🛎️ Numbers to Verify</h1>
+<div class="table-responsive">
+    <table class="table table-striped table-borderless table-hover" id="table">
+        <thead>
+            <tr>
+                <th>
+                    Number
+                </th>
+                <th scope="col">
+                    Date Ordered
+                </th>
+                <th>
+                    Last Port Date
+                </th>
+                <th>
+                    Caller Name
+                </th>
+                <th>
+                    Local Routing #
+                </th>
+                <th>
+                    Carrier
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model?.FirstOrDefault() is null)
+                {
+                    <tr>
+                        <td colspan="4" class="alert-danger">There no numbers to verify for this order.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var order in Model.Where(x => x?.IngestedFrom != "Test"))
+                    {
+                        var ingestedBadge = order?.IngestedFrom;
+                        switch (order?.IngestedFrom)
+                        {
+                            case "FirstPointCom":
+                                ingestedBadge = "<h4><span class='badge badge-info'>FirstPointCom</span></h4>";
+                                break;
+                            case "BulkVS":
+                                ingestedBadge = "<h4><span class='badge badge-primary'>BulkVS</span></h4>";
+                                break;
+                            case "TeleMessage":
+                                ingestedBadge = "<h4><span class='badge badge-warning'>TeleMessage</span></h4>";
+                                break;
+                        }
+                        <tr>
+                            <td data-order="@order.DateToExpire.Ticks">
+                                <h4>@order.VerifiedDialedNumber</h4>
+                            </td>
+                            <td scope="row">
+                                <a href="https://acceleratenetworks.com/cart/order/@order.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                                    Order
+                                </a>
+                                <h4 class="d-flex justify-content-between align-items-center mt-3">
+                                    <span class="badge badge-info badge-pill">
+                                        @order.DateIngested
+                                    </span>
+                                </h4>
+                                @{
+                                    if (order.DateToExpire >= DateTime.Now)
+                                    {
+                                        <h4><span class="badge badge-success">Active</span></h4>
+                                    }
+                                    else
+                                    {
+                                        <h4><span class="badge badge-danger">Expired</span></h4>
+                                    }
+                                }
+                            </td>
+                            <td>
+                                @order?.LastPorted
+                            </td>
+                            <td>
+                                @order?.LIDBName
+                            </td>
+                            <td>
+                                <h4>@order?.LocalRoutingNumber</h4>
+                            </td>
+                            <td>
+                                <p>
+                                    @order?.ServiceProfileIdentifier
+                                    -
+                                    @order?.LocalExchangeCarrier
+                                    -
+                                    @order?.LocalExchangeCarrierType
+                                </p>
+                            </td>
+                        </tr>
+                    }
+
+                }
+            }
+        </tbody>
+    </table>
+</div>

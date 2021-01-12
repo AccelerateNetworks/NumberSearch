@@ -18,6 +18,8 @@ namespace NumberSearch.DataAccess
         public string PortedDialedNumber { get; set; }
         public int Quantity { get; set; }
         public DateTime CreateDate { get; set; }
+        public Guid? PortedPhoneNumberId { get; set; }
+        public Guid? VerifiedPhoneNumberId { get; set; }
 
         public static async Task<IEnumerable<ProductOrder>> GetAllAsync(string connectionString)
         {
@@ -25,7 +27,7 @@ namespace NumberSearch.DataAccess
 
             var result = await connection
                 .QueryAsync<ProductOrder>
-                ("SELECT \"OrderId\", \"ProductId\", \"ServiceId\", \"DialedNumber\", \"PortedDialedNumber\", \"Quantity\", \"CreateDate\" FROM public.\"ProductOrders\"")
+                ("SELECT \"OrderId\", \"ProductId\", \"ServiceId\", \"DialedNumber\", \"PortedDialedNumber\", \"Quantity\", \"CreateDate\", \"PortedPhoneNumberId\", \"VerifiedPhoneNumberId\" FROM public.\"ProductOrders\"")
                 .ConfigureAwait(false);
 
             return result;
@@ -42,7 +44,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<ProductOrder>("SELECT \"OrderId\", \"ProductId\", \"ServiceId\", \"DialedNumber\", \"PortedDialedNumber\", \"Quantity\", \"CreateDate\" FROM public.\"ProductOrders\" " +
+                .QueryAsync<ProductOrder>("SELECT \"OrderId\", \"ProductId\", \"ServiceId\", \"DialedNumber\", \"PortedDialedNumber\", \"Quantity\", \"CreateDate\", \"PortedPhoneNumberId\", \"VerifiedPhoneNumberId\" FROM public.\"ProductOrders\" " +
                 "WHERE \"OrderId\" = @OrderId",
                 new { OrderId })
                 .ConfigureAwait(false);
@@ -63,9 +65,9 @@ namespace NumberSearch.DataAccess
             CreateDate = DateTime.Now;
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"ProductOrders\"(\"OrderId\", \"ProductId\", \"ServiceId\", \"DialedNumber\", \"PortedDialedNumber\", \"Quantity\", \"CreateDate\") " +
-                "VALUES(@OrderId, @ProductId, @ServiceId, @DialedNumber, @PortedDialedNumber, @Quantity, @CreateDate)",
-                new { OrderId, ProductId, ServiceId, DialedNumber, PortedDialedNumber, Quantity, CreateDate })
+                .ExecuteAsync("INSERT INTO public.\"ProductOrders\"(\"OrderId\", \"ProductId\", \"ServiceId\", \"DialedNumber\", \"PortedDialedNumber\", \"Quantity\", \"CreateDate\", \"PortedPhoneNumberId\", \"VerifiedPhoneNumberId\") " +
+                "VALUES(@OrderId, @ProductId, @ServiceId, @DialedNumber, @PortedDialedNumber, @Quantity, @CreateDate, @PortedPhoneNumberId, @VerifiedPhoneNumberId)",
+                new { OrderId, ProductId, ServiceId, DialedNumber, PortedDialedNumber, Quantity, CreateDate, PortedPhoneNumberId, VerifiedPhoneNumberId })
                 .ConfigureAwait(false);
 
             if (result == 1)

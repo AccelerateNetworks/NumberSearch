@@ -144,15 +144,20 @@
                                 var ported = new List<NumberSearch.DataAccess.ProductOrder>();
                                 var services = new List<NumberSearch.DataAccess.ProductOrder>();
                                 var products = new List<NumberSearch.DataAccess.ProductOrder>();
+                                var verified = new List<NumberSearch.DataAccess.ProductOrder>();
                                 foreach (var product in order.ProductOrders)
                                 {
                                     if (!string.IsNullOrWhiteSpace(product.DialedNumber))
                                     {
                                         purchased.Add(product);
                                     }
-                                    else if (!string.IsNullOrWhiteSpace(product.PortedDialedNumber))
+                                    else if (!string.IsNullOrWhiteSpace(product.PortedDialedNumber) || product.PortedPhoneNumberId is not null)
                                     {
                                         ported.Add(product);
+                                    }
+                                    else if (product.VerifiedPhoneNumberId is not null)
+                                    {
+                                        verified.Add(product);
                                     }
                                     else if (!(product.ServiceId == Guid.Empty))
                                     {
@@ -191,6 +196,18 @@
                                             foreach (var product in ported)
                                             {
                                                 <a class="btn btn-outline-primary mt-1" href="/Home/PortRequests/@product.OrderId">@product.PortedDialedNumber</a>
+                                            }
+                                        }
+                                    </p>
+                                }
+                                if (verified.Any())
+                                {
+                                    <strong>Verified</strong>
+                                    <p>
+                                        @{
+                                            foreach (var product in verified)
+                                            {
+                                                <a class="btn btn-outline-primary mt-1" href="/Home/NumbersToVerify/@product.OrderId">@Model?.VerifiedPhoneNumbers.Where(x => x.VerifiedPhoneNumberId == product.VerifiedPhoneNumberId).FirstOrDefault().VerifiedDialedNumber</a>
                                             }
                                         }
                                     </p>

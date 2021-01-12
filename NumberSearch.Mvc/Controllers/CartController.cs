@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
+using NumberSearch.DataAccess.Data247;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.TeleMesssage;
 
@@ -33,14 +34,14 @@ namespace NumberSearch.Mvc.Controllers
         private readonly string _emailOrders;
         private readonly string _bulkVSusername;
         private readonly string _bulkVSpassword;
+        private readonly string _data247username;
+        private readonly string _data247password;
 
         public CartController(IConfiguration config)
         {
             _configuration = config;
             _teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
             _postgresql = _configuration.GetConnectionString("PostgresqlProd");
-            _ = int.TryParse(_configuration.GetConnectionString("CallFlow"), out _CallFlow);
-            _ = int.TryParse(_configuration.GetConnectionString("ChannelGroup"), out _ChannelGroup);
             _apiKey = config.GetConnectionString("BulkVSAPIKEY");
             _apiSecret = config.GetConnectionString("BulkVSAPISecret");
             _bulkVSusername = config.GetConnectionString("BulkVSUsername");
@@ -49,6 +50,8 @@ namespace NumberSearch.Mvc.Controllers
             _fpcpassword = config.GetConnectionString("PComNetPassword");
             _invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
             _emailOrders = config.GetConnectionString("EmailOrders");
+            _data247username = config.GetConnectionString("Data247Username");
+            _data247password = config.GetConnectionString("Data247Password");
         }
 
         public IActionResult Index()
@@ -147,11 +150,8 @@ namespace NumberSearch.Mvc.Controllers
                 //return RedirectToAction("Index", "Search", new { Query, View, Page, Failed = phoneNumber.DialedNumber });
             }
 
-            // Check if this number has already been purchased.
-            var phoneNumberOrder = await PurchasedPhoneNumber.GetByDialedNumberAsync(phoneNumber.DialedNumber, _postgresql).ConfigureAwait(false);
-
             // Prevent a duplicate order.
-            if (phoneNumberOrder != null)
+            if (phoneNumber.Purchased)
             {
                 purchasable = false;
             }
@@ -188,11 +188,10 @@ namespace NumberSearch.Mvc.Controllers
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            var portedPhoneNumber = await PortedPhoneNumber.GetByDialedNumberAsync(dialedPhoneNumber, _postgresql).ConfigureAwait(false);
+            var portedPhoneNumber = new PortedPhoneNumber();
 
-            if (portedPhoneNumber is null || string.IsNullOrWhiteSpace(portedPhoneNumber.PortedDialedNumber))
+            if (!string.IsNullOrWhiteSpace(dialedPhoneNumber) && dialedPhoneNumber.Length == 10)
             {
-
                 bool checkNpa = int.TryParse(dialedPhoneNumber.Substring(0, 3), out int npa);
                 bool checkNxx = int.TryParse(dialedPhoneNumber.Substring(3, 3), out int nxx);
                 bool checkXxxx = int.TryParse(dialedPhoneNumber.Substring(6, 4), out int xxxx);
@@ -227,25 +226,29 @@ namespace NumberSearch.Mvc.Controllers
 
                 if (checkNpa && checkNxx && checkXxxx)
                 {
-                    var port = new PortedPhoneNumber
+                    portedPhoneNumber = new PortedPhoneNumber
                     {
+                        PortedPhoneNumberId = Guid.NewGuid(),
                         PortedDialedNumber = dialedPhoneNumber,
                         NPA = npa,
                         NXX = nxx,
                         XXXX = xxxx,
-                        City = "Unknown City",
-                        State = "Unknown State",
+                        City = lrnLookup?.city,
+                        State = lrnLookup?.province,
                         DateIngested = DateTime.Now,
                         IngestedFrom = "UserInput",
                         Wireless = wireless
                     };
-
-                    var checkSubmission = await port.PostAsync(_postgresql).ConfigureAwait(false);
-
-                    if (checkSubmission)
+                }
+                else
+                {
+                    // TODO: Tell the user about the failure
+                    return View("../Porting/Index", new PortingResults
                     {
-                        portedPhoneNumber = await PortedPhoneNumber.GetByDialedNumberAsync(port.PortedDialedNumber, _postgresql).ConfigureAwait(false);
-                    }
+                        Cart = cart,
+                        Message = $"Failed to add {dialedPhoneNumber} to your cart.",
+                        AlertType = "alert-danger"
+                    });
                 }
             }
 
@@ -280,7 +283,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
             }
 
-            var productOrder = new ProductOrder { PortedDialedNumber = portedPhoneNumber.PortedDialedNumber, Quantity = 1 };
+            var productOrder = new ProductOrder { PortedDialedNumber = portedPhoneNumber?.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber.PortedPhoneNumberId, Quantity = 1 };
 
             var checkAdd = cart.AddPortedPhoneNumber(portedPhoneNumber, productOrder);
             var checkSet = cart.SetToSession(HttpContext.Session);
@@ -305,6 +308,142 @@ namespace NumberSearch.Mvc.Controllers
                     Cart = cart,
                     Message = $"Failed to add {dialedPhoneNumber} to your cart.",
                     AlertType = "alert-danger"
+                });
+            }
+        }
+
+
+        [Route("Cart/VerifyPhoneNumber/{dialedPhoneNumber}")]
+        public async Task<IActionResult> VerifyPhoneNumberAsync(string dialedPhoneNumber)
+        {
+            var cart = Cart.GetFromSession(HttpContext.Session);
+
+            if (!string.IsNullOrWhiteSpace(dialedPhoneNumber) && dialedPhoneNumber.Length == 10)
+            {
+                bool checkNpa = int.TryParse(dialedPhoneNumber.Substring(0, 3), out int npa);
+                bool checkNxx = int.TryParse(dialedPhoneNumber.Substring(3, 3), out int nxx);
+                bool checkXxxx = int.TryParse(dialedPhoneNumber.Substring(6, 4), out int xxxx);
+
+                if (checkNpa && checkNxx && checkXxxx)
+                {
+                    try
+                    {
+                        // Determine if the number is a wireless number.
+                        var checkNumber = await LrnBulkCnam.GetAsync(dialedPhoneNumber, _apiKey).ConfigureAwait(false);
+
+                        bool wireless = false;
+
+                        switch (checkNumber.lectype)
+                        {
+                            case "WIRELESS":
+                                wireless = true;
+                                break;
+                            case "PCS":
+                                wireless = true;
+                                break;
+                            case "P RESELLER":
+                                wireless = true;
+                                break;
+                            case "Wireless":
+                                wireless = true;
+                                break;
+                            case "W RESELLER":
+                                wireless = true;
+                                break;
+                            default:
+                                break;
+                        }
+
+                        var numberName = await LIDBLookup.GetAsync(dialedPhoneNumber, _data247username, _data247password).ConfigureAwait(false);
+
+                        checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.response?.results?.FirstOrDefault()?.name) ? string.Empty : numberName?.response?.results?.FirstOrDefault()?.name;
+
+                        var checkLong = long.TryParse(checkNumber.activation, out var timeInSeconds);
+
+                        var verifiedPhoneNumber = new VerifiedPhoneNumber
+                        {
+                            VerifiedPhoneNumberId = Guid.NewGuid(),
+                            VerifiedDialedNumber = checkNumber.tn.Substring(1),
+                            NPA = npa,
+                            NXX = nxx,
+                            XXXX = xxxx,
+                            IngestedFrom = "BulkVS",
+                            DateIngested = DateTime.Now,
+                            OrderId = Guid.Empty,
+                            Wireless = wireless,
+                            NumberType = "Standard",
+                            LocalRoutingNumber = checkNumber.lrn,
+                            OperatingCompanyNumber = checkNumber.ocn,
+                            City = checkNumber.city,
+                            LocalAccessTransportArea = checkNumber.lata,
+                            RateCenter = checkNumber.ratecenter,
+                            Province = checkNumber.province,
+                            Jurisdiction = checkNumber.jurisdiction,
+                            Local = checkNumber.local,
+                            LocalExchangeCarrier = checkNumber.lec,
+                            LocalExchangeCarrierType = checkNumber.lectype,
+                            ServiceProfileIdentifier = checkNumber.spid,
+                            Activation = checkNumber.activation,
+                            LIDBName = checkNumber.LIDBName,
+                            LastPorted = checkLong ? new DateTime(1970, 1, 1).AddSeconds(timeInSeconds) : DateTime.Now,
+                            DateToExpire = DateTime.Now.AddYears(1)
+                        };
+
+                        var productOrder = new ProductOrder { VerifiedPhoneNumberId = verifiedPhoneNumber.VerifiedPhoneNumberId, Quantity = 1 };
+
+                        var checkAdd = cart.AddVerifiedPhoneNumber(verifiedPhoneNumber, productOrder);
+                        var checkSet = cart.SetToSession(HttpContext.Session);
+
+                        if (checkAdd && checkSet)
+                        {
+                            // TODO: Mark the item as sucessfully added.
+                            return View("../PortNotifier/Index", new PortNotifierResults
+                            {
+                                VerifiedPhoneNumber = verifiedPhoneNumber,
+                                Cart = cart
+                            });
+                        }
+                        else
+                        {
+                            return View("../PortNotifier/Index", new PortNotifierResults
+                            {
+                                VerifiedPhoneNumber = new VerifiedPhoneNumber(),
+                                Message = $"Failed to verify phone number {dialedPhoneNumber}. :(",
+                                AlertType = "alert-danger",
+                                Cart = cart
+                            });
+                        }
+                    }
+                    catch
+                    {
+                        return View("../PortNotifier/Index", new PortNotifierResults
+                        {
+                            VerifiedPhoneNumber = new VerifiedPhoneNumber(),
+                            Message = $"Failed to verify phone number {dialedPhoneNumber}. :(",
+                            AlertType = "alert-danger",
+                            Cart = cart
+                        });
+                    }
+                }
+                else
+                {
+                    return View("../PortNotifier/Index", new PortNotifierResults
+                    {
+                        VerifiedPhoneNumber = new VerifiedPhoneNumber(),
+                        Message = $"Failed to verify phone number {dialedPhoneNumber}. :(",
+                        AlertType = "alert-danger",
+                        Cart = cart
+                    });
+                }
+            }
+            else
+            {
+                return View("../PortNotifier/Index", new PortNotifierResults
+                {
+                    VerifiedPhoneNumber = new VerifiedPhoneNumber(),
+                    Message = $"Failed to verify phone number {dialedPhoneNumber}. :(",
+                    AlertType = "alert-danger",
+                    Cart = cart
                 });
             }
         }
@@ -393,16 +532,71 @@ namespace NumberSearch.Mvc.Controllers
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            var portedPhoneNumber = new PortedPhoneNumber { PortedDialedNumber = dialedPhoneNumber };
-            var productOrder = new ProductOrder { PortedDialedNumber = dialedPhoneNumber };
+            var portedPhoneNumber = cart.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == dialedPhoneNumber).FirstOrDefault();
 
-            var checkRemove = cart.RemovePortedPhoneNumber(portedPhoneNumber, productOrder);
-            var checkSet = cart.SetToSession(HttpContext.Session);
-
-            if (checkRemove && checkSet)
+            if (portedPhoneNumber is not null)
             {
-                // TODO: Mark the item as removed.
+                var productOrder = cart.ProductOrders.Where(x => x.PortedPhoneNumberId == portedPhoneNumber.PortedPhoneNumberId).FirstOrDefault();
+
+                if (productOrder is not null)
+                {
+                    var checkRemove = cart.RemovePortedPhoneNumber(portedPhoneNumber, productOrder);
+                    var checkSet = cart.SetToSession(HttpContext.Session);
+
+                    if (checkRemove && checkSet)
+                    {
+                        // TODO: Mark the item as removed.
+                        return RedirectToAction("Index");
+                    }
+                    else
+                    {
+                        // TODO: Tell the user about the failure.
+                        return RedirectToAction("Index");
+                    }
+                }
+                else
+                {
+                    // TODO: Tell the user about the failure.
+                    return RedirectToAction("Index");
+                }
+            }
+            else
+            {
+                // TODO: Tell the user about the failure.
                 return RedirectToAction("Index");
+            }
+        }
+
+        [Route("Cart/RemoveVerifiedPhoneNumber/{dialedPhoneNumber}")]
+        public IActionResult RemoveVerifiedPhoneNumber(string dialedPhoneNumber)
+        {
+            var cart = Cart.GetFromSession(HttpContext.Session);
+
+            var verifedPhoneNumber = cart.VerifiedPhoneNumbers.Where(x => x.VerifiedDialedNumber == dialedPhoneNumber).FirstOrDefault();
+            if (verifedPhoneNumber is not null)
+            {
+                var productOrder = cart.ProductOrders.Where(x => x.VerifiedPhoneNumberId == verifedPhoneNumber.VerifiedPhoneNumberId).FirstOrDefault();
+                if (productOrder is not null)
+                {
+                    var checkRemove = cart.RemoveVerifiedPhoneNumber(verifedPhoneNumber, productOrder);
+                    var checkSet = cart.SetToSession(HttpContext.Session);
+
+                    if (checkRemove && checkSet)
+                    {
+                        // TODO: Mark the item as removed.
+                        return RedirectToAction("Index");
+                    }
+                    else
+                    {
+                        // TODO: Tell the user about the failure.
+                        return RedirectToAction("Index");
+                    }
+                }
+                else
+                {
+                    // TODO: Tell the user about the failure.
+                    return RedirectToAction("Index");
+                }
             }
             else
             {
@@ -488,50 +682,16 @@ namespace NumberSearch.Mvc.Controllers
 
                 var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
                 var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
 
                 // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
                 // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
-                var phoneNumbers = new List<PhoneNumber>();
-                var portedPhoneNumbers = new List<PortedPhoneNumber>();
                 var products = new List<Product>();
                 var services = new List<Service>();
                 foreach (var item in productOrders)
                 {
-                    if (item?.DialedNumber?.Length == 10)
-                    {
-                        var phoneNumber = purchasedPhoneNumbers.Where(x => x.DialedNumber == item?.DialedNumber).FirstOrDefault();
-
-                        if (phoneNumber is null)
-                        {
-                            phoneNumber = new PurchasedPhoneNumber
-                            {
-                                DialedNumber = item?.DialedNumber,
-                                IngestedFrom = "Not Purchased"
-                            };
-                        }
-
-                        bool checkNpa = int.TryParse(phoneNumber.DialedNumber.Substring(0, 3), out int npa);
-                        bool checkNxx = int.TryParse(phoneNumber.DialedNumber.Substring(3, 3), out int nxx);
-                        bool checkXxxx = int.TryParse(phoneNumber.DialedNumber.Substring(6), out int xxxx);
-
-                        if (checkNpa && checkNxx && checkXxxx)
-                        {
-                            phoneNumbers.Add(new PhoneNumber
-                            {
-                                NPA = npa,
-                                NXX = nxx,
-                                XXXX = xxxx,
-                                DialedNumber = phoneNumber.DialedNumber,
-                                IngestedFrom = phoneNumber.IngestedFrom
-                            });
-                        }
-                    }
-                    else if (item?.PortedDialedNumber?.Length == 10)
-                    {
-                        var portedPhoneNumber = await PortedPhoneNumber.GetByDialedNumberAsync(item.PortedDialedNumber, _postgresql).ConfigureAwait(false);
-                        portedPhoneNumbers.Add(portedPhoneNumber);
-                    }
-                    else if (item?.ProductId != Guid.Empty)
+                    if (item?.ProductId != Guid.Empty)
                     {
                         var product = await Product.GetAsync(item.ProductId, _postgresql).ConfigureAwait(false);
                         products.Add(product);
@@ -546,11 +706,12 @@ namespace NumberSearch.Mvc.Controllers
                 var cart = new Cart
                 {
                     Order = order,
+                    PhoneNumbers = new List<PhoneNumber>(),
                     ProductOrders = productOrders,
-                    PhoneNumbers = phoneNumbers,
                     Products = products,
                     Services = services,
                     PortedPhoneNumbers = portedPhoneNumbers,
+                    VerifiedPhoneNumbers = verifiedPhoneNumbers,
                     PurchasedPhoneNumbers = purchasedPhoneNumbers
                 };
 
@@ -608,13 +769,12 @@ namespace NumberSearch.Mvc.Controllers
                             // Submit the number orders and track the total cost.
                             var onetimeItems = new List<Invoice_Items>();
                             var reoccuringItems = new List<Invoice_Items>();
-                            var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
                             var totalCost = 0;
-
 
                             foreach (var nto in cart.PhoneNumbers)
                             {
                                 var productOrder = cart.ProductOrders.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
+                                var numberToBePurchased = cart.PhoneNumbers.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
                                 productOrder.OrderId = order.OrderId;
 
                                 var cost = nto.NumberType == "Executive" ? 200 : nto.NumberType == "Premium" ? 40 : nto.NumberType == "Standard" ? 20 : 20;
@@ -622,6 +782,22 @@ namespace NumberSearch.Mvc.Controllers
                                 if (nto.IngestedFrom == "BulkVS")
                                 {
                                     var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                    var purchsedNumber = new PurchasedPhoneNumber
+                                    {
+                                        Completed = false,
+                                        DateIngested = numberToBePurchased.DateIngested,
+                                        DateOrdered = DateTime.Now,
+                                        NPA = numberToBePurchased.NPA,
+                                        NXX = numberToBePurchased.NXX,
+                                        XXXX = numberToBePurchased.XXXX,
+                                        DialedNumber = numberToBePurchased.DialedNumber,
+                                        IngestedFrom = numberToBePurchased.IngestedFrom,
+                                        NumberType = numberToBePurchased.NumberType,
+                                        OrderId = order.OrderId,
+                                        OrderResponse = string.Empty
+                                    };
+
+                                    var checkPurchaseOrder = await purchsedNumber.PostAsync(_postgresql).ConfigureAwait(false);
 
                                     totalCost += cost;
 
@@ -635,8 +811,24 @@ namespace NumberSearch.Mvc.Controllers
                                 }
                                 else if (nto.IngestedFrom == "TeleMessage")
                                 {
-
                                     var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+
+                                    var purchsedNumber = new PurchasedPhoneNumber
+                                    {
+                                        Completed = false,
+                                        DateIngested = numberToBePurchased.DateIngested,
+                                        DateOrdered = DateTime.Now,
+                                        NPA = numberToBePurchased.NPA,
+                                        NXX = numberToBePurchased.NXX,
+                                        XXXX = numberToBePurchased.XXXX,
+                                        DialedNumber = numberToBePurchased.DialedNumber,
+                                        IngestedFrom = numberToBePurchased.IngestedFrom,
+                                        NumberType = numberToBePurchased.NumberType,
+                                        OrderId = order.OrderId,
+                                        OrderResponse = string.Empty
+                                    };
+
+                                    var checkPurchaseOrder = await purchsedNumber.PostAsync(_postgresql).ConfigureAwait(false);
 
                                     totalCost += cost;
 
@@ -651,6 +843,23 @@ namespace NumberSearch.Mvc.Controllers
                                 else if (nto.IngestedFrom == "FirstPointCom")
                                 {
                                     var checkSubmitted = productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+
+                                    var purchsedNumber = new PurchasedPhoneNumber
+                                    {
+                                        Completed = false,
+                                        DateIngested = numberToBePurchased.DateIngested,
+                                        DateOrdered = DateTime.Now,
+                                        NPA = numberToBePurchased.NPA,
+                                        NXX = numberToBePurchased.NXX,
+                                        XXXX = numberToBePurchased.XXXX,
+                                        DialedNumber = numberToBePurchased.DialedNumber,
+                                        IngestedFrom = numberToBePurchased.IngestedFrom,
+                                        NumberType = numberToBePurchased.NumberType,
+                                        OrderId = order.OrderId,
+                                        OrderResponse = string.Empty
+                                    };
+
+                                    var checkPurchaseOrder = await purchsedNumber.PostAsync(_postgresql).ConfigureAwait(false);
 
                                     totalCost += cost;
 
@@ -677,9 +886,9 @@ namespace NumberSearch.Mvc.Controllers
                                     emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? productOrder.DialedNumber : emailSubject;
                                 }
 
-                                if (!string.IsNullOrWhiteSpace(productOrder.PortedDialedNumber))
+                                if (productOrder.PortedPhoneNumberId is not null)
                                 {
-                                    var ported = cart.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == productOrder.PortedDialedNumber).FirstOrDefault();
+                                    var ported = cart.PortedPhoneNumbers.Where(x => x.PortedPhoneNumberId == productOrder.PortedPhoneNumberId).FirstOrDefault();
 
                                     // Discount one ported number for each service they purchase.
                                     var calculatedCost = 20;
@@ -700,7 +909,7 @@ namespace NumberSearch.Mvc.Controllers
                                         totalCost += calculatedCost;
                                         onetimeItems.Add(new Invoice_Items
                                         {
-                                            product_key = productOrder.PortedDialedNumber,
+                                            product_key = ported.PortedDialedNumber,
                                             notes = $"Phone Number to Port to our Network",
                                             cost = calculatedCost,
                                             qty = 1
@@ -708,6 +917,27 @@ namespace NumberSearch.Mvc.Controllers
                                     }
 
                                     emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? productOrder.PortedDialedNumber : emailSubject;
+
+                                    var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                }
+
+                                if (productOrder.VerifiedPhoneNumberId is not null)
+                                {
+                                    var verfied = cart.VerifiedPhoneNumbers.Where(x => x.VerifiedPhoneNumberId == productOrder.VerifiedPhoneNumberId).FirstOrDefault();
+
+                                    if (verfied != null)
+                                    {
+                                        totalCost += 10;
+                                        onetimeItems.Add(new Invoice_Items
+                                        {
+                                            product_key = verfied.VerifiedDialedNumber,
+                                            notes = $"Phone Number to Verify Daily",
+                                            cost = 10,
+                                            qty = 1
+                                        });
+                                    }
+
+                                    emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? verfied.VerifiedDialedNumber : emailSubject;
 
                                     var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
                                 }
@@ -758,16 +988,21 @@ namespace NumberSearch.Mvc.Controllers
                             // Associate the ported numbers with this order.
                             foreach (var portedNumber in cart.PortedPhoneNumbers)
                             {
-                                var fromDb = await PortedPhoneNumber.GetByDialedNumberAsync(portedNumber.PortedDialedNumber, _postgresql).ConfigureAwait(false);
+                                portedNumber.OrderId = order.OrderId;
 
-                                if (fromDb != null && fromDb?.PortedDialedNumber == portedNumber.PortedDialedNumber)
-                                {
-                                    fromDb.OrderId = order.OrderId;
+                                var checkPort = await portedNumber.PostAsync(_postgresql).ConfigureAwait(false);
 
-                                    var checkPortUpdate = await fromDb.PutAsync(_postgresql).ConfigureAwait(false);
+                                Log.Information($"[Checkout] Saved port request for number {portedNumber.PortedDialedNumber}.");
+                            }
 
-                                    Log.Information($"[Checkout] Set the OrderId for port request number {portedNumber.PortedDialedNumber}.");
-                                }
+                            // Associate the verified numbers with this order.
+                            foreach (var verifiedNumber in cart.VerifiedPhoneNumbers)
+                            {
+                                verifiedNumber.OrderId = order.OrderId;
+
+                                var checkVerified = await verifiedNumber.PostAsync(_postgresql).ConfigureAwait(false);
+
+                                Log.Information($"[Checkout] Saved Verified Number {verifiedNumber.VerifiedDialedNumber} to the Database.");
                             }
 
                             // Handle the tax information for the invoice and fall back to simplier queries if we get failures.

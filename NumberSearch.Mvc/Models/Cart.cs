@@ -14,6 +14,7 @@ namespace NumberSearch.Mvc
         public IEnumerable<Service> Services { get; set; }
         public IEnumerable<ProductOrder> ProductOrders { get; set; }
         public IEnumerable<PortedPhoneNumber> PortedPhoneNumbers { get; set; }
+        public IEnumerable<VerifiedPhoneNumber> VerifiedPhoneNumbers { get; set; }
         public IEnumerable<PurchasedPhoneNumber> PurchasedPhoneNumbers { get; set; }
         public Order Order { get; set; }
 
@@ -24,6 +25,8 @@ namespace NumberSearch.Mvc
             Services,
             ProductOrders,
             PortedPhoneNumbers,
+            VerifiedPhoneNumber,
+            PurchasedPhoneNumber,
             Order
         }
 
@@ -39,6 +42,8 @@ namespace NumberSearch.Mvc
             var service = session.Get<List<Service>>(CartKey.Services.ToString());
             var productOrders = session.Get<List<ProductOrder>>(CartKey.ProductOrders.ToString());
             var portedPhoneNumbers = session.Get<List<PortedPhoneNumber>>(CartKey.PortedPhoneNumbers.ToString());
+            var verfiedPhoneNumbers = session.Get<List<VerifiedPhoneNumber>>(CartKey.VerifiedPhoneNumber.ToString());
+            var purchasedPhoneNumbers = session.Get<List<PurchasedPhoneNumber>>(CartKey.PurchasedPhoneNumber.ToString());
             var order = session.Get<Order>(CartKey.Order.ToString());
 
             return new Cart
@@ -48,6 +53,8 @@ namespace NumberSearch.Mvc
                 Services = service ?? new List<Service>(),
                 ProductOrders = productOrders ?? new List<ProductOrder>(),
                 PortedPhoneNumbers = portedPhoneNumbers ?? new List<PortedPhoneNumber>(),
+                VerifiedPhoneNumbers = verfiedPhoneNumbers ?? new List<VerifiedPhoneNumber>(),
+                PurchasedPhoneNumbers = purchasedPhoneNumbers ?? new List<PurchasedPhoneNumber>(),
                 Order = order ?? new Order()
             };
         }
@@ -64,6 +71,8 @@ namespace NumberSearch.Mvc
             session.Set<List<Service>>(CartKey.Services.ToString(), Services?.ToList());
             session.Set<List<ProductOrder>>(CartKey.ProductOrders.ToString(), ProductOrders?.ToList());
             session.Set<List<PortedPhoneNumber>>(CartKey.PortedPhoneNumbers.ToString(), PortedPhoneNumbers?.ToList());
+            session.Set<List<VerifiedPhoneNumber>>(CartKey.VerifiedPhoneNumber.ToString(), VerifiedPhoneNumbers?.ToList());
+            session.Set<List<PurchasedPhoneNumber>>(CartKey.PurchasedPhoneNumber.ToString(), PurchasedPhoneNumbers?.ToList());
             session.Set<Order>(CartKey.Order.ToString(), Order);
 
             return true;
@@ -115,12 +124,44 @@ namespace NumberSearch.Mvc
             var productOrders = this.ProductOrdersToDictionary();
 
             // If it's a valid phone number make sure the keys match.
-            if (portedPhoneNumber?.PortedDialedNumber?.Length == 10 && portedPhoneNumber.PortedDialedNumber == productOrder?.PortedDialedNumber)
+            if (portedPhoneNumber?.PortedPhoneNumberId is not null && portedPhoneNumber.PortedPhoneNumberId == productOrder?.PortedPhoneNumberId)
             {
-                portedPhoneNumbers[portedPhoneNumber.PortedDialedNumber] = portedPhoneNumber;
+                portedPhoneNumbers[portedPhoneNumber.PortedPhoneNumberId.ToString()] = portedPhoneNumber;
                 PortedPhoneNumbers = portedPhoneNumbers.Values.ToArray();
 
-                productOrders[productOrder.PortedDialedNumber] = productOrder;
+                productOrders[productOrder.PortedPhoneNumberId.ToString()] = productOrder;
+                ProductOrders = productOrders.Values.ToArray();
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Add a verified Phone Number to the cart.
+        /// </summary>
+        /// <param name="verifiedPhoneNumber"></param>
+        /// <param name="productOrder"></param>
+        /// <returns></returns>
+        public bool AddVerifiedPhoneNumber(VerifiedPhoneNumber verifiedPhoneNumber, ProductOrder productOrder)
+        {
+            verifiedPhoneNumber ??= new VerifiedPhoneNumber();
+            productOrder ??= new ProductOrder();
+
+            // We're using dictionaries here to prevent duplicates.
+            var verifiedPhoneNumbers = this.VerifiedPhoneNumbersToDictionary();
+            var productOrders = this.ProductOrdersToDictionary();
+
+            // If it's a valid phone number make sure the keys match.
+            if (verifiedPhoneNumber?.VerifiedPhoneNumberId is not null && verifiedPhoneNumber.VerifiedPhoneNumberId == productOrder?.VerifiedPhoneNumberId)
+            {
+                verifiedPhoneNumbers[verifiedPhoneNumber.VerifiedPhoneNumberId.ToString()] = verifiedPhoneNumber;
+                VerifiedPhoneNumbers = verifiedPhoneNumbers.Values.ToArray();
+
+                productOrders[productOrder.VerifiedPhoneNumberId.ToString()] = productOrder;
                 ProductOrders = productOrders.Values.ToArray();
 
                 return true;
@@ -236,10 +277,10 @@ namespace NumberSearch.Mvc
             var portedPhoneNumbers = this.PortedPhoneNumbersToDictionary();
             var productOrders = this.ProductOrdersToDictionary();
 
-            if (portedPhoneNumber?.PortedDialedNumber?.Length == 10 && portedPhoneNumber.PortedDialedNumber == productOrder?.PortedDialedNumber)
+            if (portedPhoneNumber?.PortedPhoneNumberId is not null && portedPhoneNumber.PortedPhoneNumberId == productOrder?.PortedPhoneNumberId)
             {
-                var checkRemovePortedPhoneNumber = portedPhoneNumbers.Remove(portedPhoneNumber.PortedDialedNumber);
-                var checkRemoveProductOrder = productOrders.Remove(productOrder.PortedDialedNumber);
+                var checkRemovePortedPhoneNumber = portedPhoneNumbers.Remove(portedPhoneNumber.PortedPhoneNumberId.ToString());
+                var checkRemoveProductOrder = productOrders.Remove(productOrder.PortedPhoneNumberId.ToString());
 
                 if (checkRemovePortedPhoneNumber && checkRemoveProductOrder)
                 {
@@ -258,6 +299,44 @@ namespace NumberSearch.Mvc
                 return false;
             }
         }
+
+        /// <summary>
+        /// Remove a verified number form the cart.
+        /// </summary>
+        /// <param name="verifiedPhoneNumber"></param>
+        /// <param name="productOrder"></param>
+        /// <returns></returns>
+        public bool RemoveVerifiedPhoneNumber(VerifiedPhoneNumber verifiedPhoneNumber, ProductOrder productOrder)
+        {
+            verifiedPhoneNumber ??= new VerifiedPhoneNumber();
+            productOrder ??= new ProductOrder();
+
+            var verifedPhoneNumbers = this.VerifiedPhoneNumbersToDictionary();
+            var productOrders = this.ProductOrdersToDictionary();
+
+            if (verifiedPhoneNumber?.VerifiedPhoneNumberId is not null && verifiedPhoneNumber.VerifiedPhoneNumberId == productOrder?.VerifiedPhoneNumberId)
+            {
+                var checkRemovePortedPhoneNumber = verifedPhoneNumbers.Remove(verifiedPhoneNumber.VerifiedPhoneNumberId.ToString());
+                var checkRemoveProductOrder = productOrders.Remove(productOrder.VerifiedPhoneNumberId.ToString());
+
+                if (checkRemovePortedPhoneNumber && checkRemoveProductOrder)
+                {
+                    VerifiedPhoneNumbers = verifedPhoneNumbers.Values.ToArray();
+                    ProductOrders = productOrders.Values.ToArray();
+
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
 
         /// <summary>
         /// Remove a product from the Cart.
@@ -335,7 +414,7 @@ namespace NumberSearch.Mvc
 
         public Dictionary<string, ProductOrder> ProductOrdersToDictionary()
         {
-            return ProductOrders.ToDictionary(x => !string.IsNullOrEmpty(x.DialedNumber) ? x.DialedNumber : !string.IsNullOrEmpty(x.PortedDialedNumber) ? x.PortedDialedNumber : x.ProductId == System.Guid.Empty ? x.ServiceId.ToString() : x.ProductId.ToString(), x => x);
+            return ProductOrders.ToDictionary(x => !string.IsNullOrEmpty(x.DialedNumber) ? x.DialedNumber : x.PortedPhoneNumberId != null ? x.PortedPhoneNumberId.ToString() : x.VerifiedPhoneNumberId != null ? x.VerifiedPhoneNumberId.ToString() : x.ProductId == System.Guid.Empty ? x.ServiceId.ToString() : x.ProductId.ToString(), x => x);
         }
 
         public Dictionary<string, PhoneNumber> PhoneNumbersToDictionary()
@@ -345,7 +424,17 @@ namespace NumberSearch.Mvc
 
         public Dictionary<string, PortedPhoneNumber> PortedPhoneNumbersToDictionary()
         {
-            return PortedPhoneNumbers.ToDictionary(x => x.PortedDialedNumber, x => x);
+            return PortedPhoneNumbers.ToDictionary(x => x.PortedPhoneNumberId.ToString(), x => x);
+        }
+
+        public Dictionary<string, VerifiedPhoneNumber> VerifiedPhoneNumbersToDictionary()
+        {
+            return VerifiedPhoneNumbers.ToDictionary(x => x.VerifiedPhoneNumberId.ToString(), x => x);
+        }
+
+        public Dictionary<string, PurchasedPhoneNumber> PurchasedPhoneNumbersToDictionary()
+        {
+            return PurchasedPhoneNumbers.ToDictionary(x => x.DialedNumber, x => x);
         }
 
         public Dictionary<string, Product> ProductsToDictionary()

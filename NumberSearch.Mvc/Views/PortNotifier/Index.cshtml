@@ -1,0 +1,135 @@
+﻿@model NumberSearch.Mvc.PortNotifierResults;
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var alreadyInCart = Model?.Cart?.VerifiedPhoneNumbers.ToDictionary(x => x?.VerifiedDialedNumber, x => x);
+}
+
+<div class="container">
+    <br />
+    <div class="pricing-header mx-auto mb-3 text-center">
+        <h1 class="display-4">Port Notifier</h1>
+    </div>
+    <p class="lead text-center mx-auto">
+        Receive an email when the underlying carrier for a phone number changes.
+    </p>
+    <p>
+        We keep a tab on any phone number you provide and let you know when it moves from one carrier to another. Every hour we check with our partners to verify the current status of the phone number and immediately report any change to you. If anything happens, we’ll be the first to let you know about it!
+    </p>
+    <br />
+    <div class="jumbotron mb-3">
+        <h1 class="display-4">Verify your Phone Number's details!</h1>
+        <p>To see the current status of a phone number look it up here.</p>
+        <form class="form-row justify-content-center">
+            <div class="form-group">
+                <div class="input-group mx-auto input-group-lg">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">+1</span>
+                    </div>
+                    <input type="text" name="Query" class="form-control" placeholder="Enter a Phone Number" value="@Model?.VerifiedPhoneNumber?.VerifiedDialedNumber">
+                </div>
+                <div class="input-group mx-auto input-group-lg pt-2">
+                    <button type="submit" class="btn btn-success btn-block" onclick="displayBusyIndicator()">Verify</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <partial name="_LoadingPartial" />
+
+    @{
+        if (Model != null && !string.IsNullOrWhiteSpace(Model?.VerifiedPhoneNumber?.VerifiedDialedNumber))
+        {
+            var alertType = Model?.AlertType ?? "alert-success";
+            <div class="alert @alertType" role="alert">
+                @{
+                    var message = Model?.Message ?? "This phone number can be ported to our network!";
+                }
+                @message
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped table-borderless table-hover">
+                    <tbody>
+                        @{
+                            var location = $"{Model.VerifiedPhoneNumber?.City ?? "Unknown City"}, {Model.VerifiedPhoneNumber?.Province ?? "Unknown State"}";
+                            var formattedNumber = $"({Model.VerifiedPhoneNumber.NPA}) {Model.VerifiedPhoneNumber.NXX}-{Model.VerifiedPhoneNumber.XXXX.ToString("0000")}";
+                            var number = Model.VerifiedPhoneNumber.VerifiedDialedNumber;
+                            <tr>
+                                <td scope="row"><h4>@formattedNumber</h4></td>
+                                <td class="d-none d-sm-table-cell">@Html.Raw(number)</td>
+                                <td class="d-none d-sm-table-cell">@location</td>
+                                <td>
+                                    @{
+                                        if (alreadyInCart.TryGetValue(Model.VerifiedPhoneNumber.VerifiedDialedNumber, out var _))
+                                        {
+                                            <a asp-controller="Cart" asp-action="RemoveVerifiedPhoneNumber" asp-route-id="@Model.VerifiedPhoneNumber.VerifiedDialedNumber" target="_top">
+                                                <input type="button" class="btn btn-outline-danger" value="Remove">
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a asp-controller="Cart" asp-action="VerifyPhoneNumber" asp-route-id="@Model.VerifiedPhoneNumber.VerifiedDialedNumber" target="_top">
+                                                <input type="button" class="btn btn-outline-primary" value="Add to Cart">
+                                            </a>
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-borderless">
+                    <thead>
+                        <tr>
+                            <th>
+                                Phone Number
+                            </th>
+                            <th>
+                                Last Port Date
+                            </th>
+                            <th>
+                                Caller Name
+                            </th>
+                            <th>
+                                Local Routing #
+                            </th>
+                            <th>
+                                Carrier
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <h4>@Model?.VerifiedPhoneNumber?.VerifiedDialedNumber</h4>
+                            </td>
+                            <td>
+                                @Model?.VerifiedPhoneNumber?.LastPorted
+                            </td>
+                            <td>
+                                @Model?.VerifiedPhoneNumber?.LIDBName
+                            </td>
+                            <td>
+                                <h4>@Model?.VerifiedPhoneNumber?.LocalRoutingNumber</h4>
+                            </td>
+                            <td>
+                                <p>
+                                    @Model?.VerifiedPhoneNumber?.ServiceProfileIdentifier
+                                    -
+                                    @Model?.VerifiedPhoneNumber?.LocalExchangeCarrier
+                                    -
+                                    @Model?.VerifiedPhoneNumber?.LocalExchangeCarrierType
+                                </p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        }
+    }
+</div>

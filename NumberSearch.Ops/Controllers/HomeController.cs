@@ -89,6 +89,7 @@ namespace NumberSearch.Ops.Controllers
                 var portRequests = await PortRequest.GetAllAsync(_postgresql).ConfigureAwait(false);
                 var productOrders = await ProductOrder.GetAllAsync(_postgresql).ConfigureAwait(false);
                 var purchasedNumbers = await PurchasedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
+                var verifiedNumbers = await VerifiedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
                 var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
                 var services = await Service.GetAllAsync(_postgresql).ConfigureAwait(false);
                 var pairs = new List<OrderProducts>();
@@ -111,7 +112,8 @@ namespace NumberSearch.Ops.Controllers
                     Orders = pairs,
                     Products = products,
                     Services = services,
-                    PurchasedPhoneNumbers = purchasedNumbers
+                    PurchasedPhoneNumbers = purchasedNumbers,
+                    VerifiedPhoneNumbers = verifiedNumbers
                 });
             }
             else
@@ -200,6 +202,34 @@ namespace NumberSearch.Ops.Controllers
                 var order = await PurchasedPhoneNumber.GetByDialedNumberAsync(dialedNumber, _postgresql).ConfigureAwait(false);
 
                 return View("NumberOrders", new List<PurchasedPhoneNumber> { order });
+            }
+        }
+
+        [Authorize]
+        [Route("/Home/NumbersToVerify")]
+        [Route("/Home/NumbersToVerify/{orderId}")]
+        public async Task<IActionResult> NumbersToVerify(Guid? orderId)
+        {
+            if (orderId.HasValue)
+            {
+                var orders = await VerifiedPhoneNumber.GetByOrderIdAsync(orderId ?? Guid.Empty, _postgresql).ConfigureAwait(false);
+
+                if (orders is not null && orders.Any())
+                {
+                    foreach (var order in orders)
+                    {
+                        // Update the product orders here.
+                    }
+                }
+
+                return View("NumbersToVerify", orders);
+            }
+            else
+            {
+                // Show all orders
+                var orders = await VerifiedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
+
+                return View("NumbersToVerify", orders.OrderByDescending(x => x.DateToExpire));
             }
         }
 

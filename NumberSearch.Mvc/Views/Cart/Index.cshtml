@@ -23,7 +23,7 @@
     }
     @{
         var productOrders = Model?.Cart?.ProductOrdersToDictionary();
-        if (Model?.Cart?.PhoneNumbers.Count() > 0 || Model?.Cart?.Products.Count() > 0 || Model?.Cart?.Services.Count() > 0 || Model?.Cart?.PortedPhoneNumbers.Count() > 0)
+        if (Model?.Cart?.PhoneNumbers.Count() > 0 || Model?.Cart?.Products.Count() > 0 || Model?.Cart?.Services.Count() > 0 || Model?.Cart?.PortedPhoneNumbers.Count() > 0 || Model?.Cart?.VerifiedPhoneNumbers.Count() > 0)
         {
             <div class="row">
                 <div class="table-responsive">
@@ -91,6 +91,25 @@
                                         <td>$@calculatedCost</td>
                                         <td>
                                             <a asp-controller="Cart" asp-action="RemovePortedPhoneNumber" asp-route-id="@item.PortedDialedNumber" target="_top">
+                                                <input type="button" class="btn btn-outline-danger" value="Remove">
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            @{
+                                foreach (var item in Model?.Cart?.VerifiedPhoneNumbers)
+                                {
+                                    var location = $"{item?.City ?? "Unknown City"}, {item?.Province ?? "Unknown State"}";
+                                    var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
+                                    var number = item.VerifiedDialedNumber;
+                                    <tr>
+                                        <td scope="row"><h4>@formattedNumber</h4></td>
+                                        <td>@Html.Raw(number)</td>
+                                        <td>@location</td>
+                                        <td>$10</td>
+                                        <td>
+                                            <a asp-controller="Cart" asp-action="RemoveVerifiedPhoneNumber" asp-route-id="@item.VerifiedDialedNumber" target="_top">
                                                 <input type="button" class="btn btn-outline-danger" value="Remove">
                                             </a>
                                         </td>

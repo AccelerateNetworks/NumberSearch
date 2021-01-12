@@ -10,6 +10,7 @@ namespace NumberSearch.Ops
         public IEnumerable<Product> Products { get; set; }
         public IEnumerable<Service> Services { get; set; }
         public IEnumerable<PurchasedPhoneNumber> PurchasedPhoneNumbers { get; set; }
+        public IEnumerable<VerifiedPhoneNumber> VerifiedPhoneNumbers { get; set; }
     }
 
     public class OrderProducts
