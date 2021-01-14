@@ -1342,18 +1342,9 @@ Accelerate Networks
                             // If there are notes on the order don't send out any emails.
                             if (string.IsNullOrWhiteSpace(order.CustomerNotes))
                             {
-                                // Send out the confirmation email to the customer.
-                                var checkSend = await confirmationEmail.SendEmailAsync(_configuration.GetConnectionString("SmtpUsername"), _configuration.GetConnectionString("SmtpPassword")).ConfigureAwait(false);
+                                // Queue up the confirmation email.
+                                confirmationEmail.Completed = false;
                                 var checkSave = await confirmationEmail.PostAsync(_postgresql).ConfigureAwait(false);
-
-                                if (checkSend && checkSave)
-                                {
-                                    Log.Information($"Sucessfully sent out the confirmation emails for {order.OrderId}.");
-                                }
-                                else
-                                {
-                                    Log.Fatal($"Failed to sent out the confirmation emails for {order.OrderId}.");
-                                }
                             }
                             else
                             {

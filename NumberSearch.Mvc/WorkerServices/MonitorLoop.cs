@@ -36,6 +36,8 @@ namespace NumberSearch.Mvc
         private readonly string _fpcpassword;
         private readonly string _bulkVSusername;
         private readonly string _bulkVSpassword;
+        private readonly string _emailUsername;
+        private readonly string _emailPassword;
 
         public MonitorLoop(IBackgroundTaskQueue taskQueue,
             ILogger<MonitorLoop> logger,
@@ -54,6 +56,8 @@ namespace NumberSearch.Mvc
             _fpcpassword = configuration.GetConnectionString("PComNetPassword");
             _bulkVSusername = configuration.GetConnectionString("BulkVSUsername");
             _bulkVSpassword = configuration.GetConnectionString("BulkVSPassword");
+            _emailUsername = _configuration.GetConnectionString("SmtpUsername");
+            _emailPassword = _configuration.GetConnectionString("SmtpPassword");
         }
 
         public void StartMonitorLoop()
@@ -83,6 +87,7 @@ namespace NumberSearch.Mvc
 
                             while (!token.IsCancellationRequested)
                             {
+                                // Execute the phone number purchases required for this order.
                                 var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
 
                                 // Create a single PIN for this order.
@@ -178,6 +183,32 @@ namespace NumberSearch.Mvc
                                         {
                                             // Prevent throwing if the Delay is cancelled
                                         }
+                                    }
+                                }
+
+                                // Send out the confirmation emails.
+                                var emails = await Email.GetByOrderAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                foreach (var message in emails)
+                                {
+                                    // Send the message the email server.
+                                    var checkSend = await message.SendEmailAsync(_emailUsername, _emailPassword).ConfigureAwait(false);
+
+                                    // Mark it as sent.
+                                    message.DateSent = DateTime.Now;
+                                    message.Completed = checkSend;
+
+                                    // Update the database with the email's new status.
+                                    var checkSave = await message.PostAsync(_postgresql).ConfigureAwait(false);
+
+                                    // Log the success or failure of the operation.
+                                    if (checkSend && checkSave)
+                                    {
+                                        Log.Information($"Sucessfully sent out email {message.EmailId} for order {order.OrderId}.");
+                                    }
+                                    else
+                                    {
+                                        Log.Fatal($"Failed to sent out the email {message.EmailId} for order {order.OrderId}.");
                                     }
                                 }
 
