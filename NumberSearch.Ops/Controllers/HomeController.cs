@@ -732,6 +732,12 @@ namespace NumberSearch.Ops.Controllers
                     portRequest.TeliId = teliResponse.data.id;
                     portRequest.DateSubmitted = DateTime.Now;
                     var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
+
+                    foreach (var number in numbers)
+                    {
+                        number.ExternalPortRequestId = teliResponse.data.id;
+                        var checkUpdateId = await number.PutAsync(_postgresql).ConfigureAwait(false);
+                    }
                 }
                 catch
                 {
@@ -833,6 +839,13 @@ namespace NumberSearch.Ops.Controllers
                                 portRequest.TeliId = bulkResponse?.OrderId;
                                 portRequest.DateSubmitted = DateTime.Now;
                                 var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
+
+                                foreach (var number in localTNs)
+                                {
+                                    var updatedNumber = numbers.Where(x => $"1{x.PortedDialedNumber}" == number).FirstOrDefault();
+                                    updatedNumber.ExternalPortRequestId = bulkResponse?.OrderId;
+                                    var checkUpdateId = await updatedNumber.PutAsync(_postgresql).ConfigureAwait(false);
+                                }
                             }
                             else
                             {
@@ -879,6 +892,12 @@ namespace NumberSearch.Ops.Controllers
                             portRequest.TeliId = bulkResponse?.OrderId;
                             portRequest.DateSubmitted = DateTime.Now;
                             var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
+
+                            foreach (var number in numbers)
+                            {
+                                number.ExternalPortRequestId = bulkResponse?.OrderId;
+                                var checkUpdateId = await number.PutAsync(_postgresql).ConfigureAwait(false);
+                            }
                         }
                         else
                         {

@@ -1160,6 +1160,78 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task GetAllPortedPhoneNumbersAsync()
+        {
+            var results = await PortedPhoneNumber.GetAllAsync(postgresql).ConfigureAwait(false);
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results.LastOrDefault()));
+
+            var order = results.LastOrDefault();
+            results = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId ?? Guid.Empty, postgresql).ConfigureAwait(false);
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+
+            //results = await PortedPhoneNumber.GetByPortRequestIdAsync(order.PortRequestId ?? Guid.Empty, postgresql).ConfigureAwait(false);
+            //Assert.NotNull(results);
+            //Assert.NotEmpty(results);
+            //output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+
+            results = await PortedPhoneNumber.GetByDialedNumberAsync(order.PortedDialedNumber, postgresql).ConfigureAwait(false);
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+
+            var result = await PortedPhoneNumber.GetByIdAsync(order.PortedPhoneNumberId, postgresql).ConfigureAwait(false);
+            Assert.NotNull(result);
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+        }
+
+        [Fact]
+        public async Task PostPutDeletePortedPhoneNumberAsync()
+        {
+            var ported = new PortedPhoneNumber
+            {
+                PortedPhoneNumberId = Guid.NewGuid(),
+                PortedDialedNumber = "2068588757",
+                NPA = 206,
+                NXX = 858,
+                XXXX = 8757,
+                State = "test",
+                RequestStatus = "test",
+                City = "test",
+                DateFirmOrderCommitment = DateTime.Now,
+                DateIngested = DateTime.Now,
+                ExternalPortRequestId = "test",
+                IngestedFrom = "test",
+                OrderId = Guid.NewGuid(),
+                PortRequestId = Guid.NewGuid(),
+                Wireless = false
+            };
+
+            var checkPost = await ported.PostAsync(postgresql).ConfigureAwait(false);
+            Assert.True(checkPost);
+
+            var verifyPost = await PortedPhoneNumber.GetByOrderIdAsync(ported.OrderId ?? Guid.Empty, postgresql).ConfigureAwait(false);
+            Assert.NotNull(verifyPost);
+            Assert.NotEmpty(verifyPost);
+            var verified = verifyPost.FirstOrDefault();
+            Assert.True(ported.OrderId == verified.OrderId);
+
+            verified.ExternalPortRequestId = "testtest";
+            var checkPut = await verified.PutAsync(postgresql).ConfigureAwait(false);
+            Assert.True(checkPut);
+
+            var verifyPut = await PortedPhoneNumber.GetByIdAsync(verified.PortedPhoneNumberId, postgresql).ConfigureAwait(false);
+            Assert.NotNull(verifyPut);
+            Assert.True(verifyPut.ExternalPortRequestId == verified.ExternalPortRequestId);
+
+            var checkDelete = await verifyPut.DeleteAsync(postgresql).ConfigureAwait(false);
+            Assert.True(checkDelete);
+        }
+
+        [Fact]
         public async Task GetAllPortRequestsAsync()
         {
             var results = await PortRequest.GetAllAsync(postgresql).ConfigureAwait(false);
