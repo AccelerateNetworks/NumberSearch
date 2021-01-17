@@ -36,22 +36,6 @@ namespace NumberSearch.Tests
         }
 
         [Theory]
-        [InlineData("/")]
-        [InlineData("/Contact")]
-        public async Task GetStaticPagesAsync(string url)
-        {
-            // Arrange
-            var response = await _client.GetAsync(url);
-
-            // Act
-            response.EnsureSuccessStatusCode();
-            var stringResponse = await response.Content.ReadAsStringAsync();
-
-            // Assert
-            Assert.Contains("Seattle", stringResponse);
-        }
-
-        [Theory]
         [InlineData("/Services")]
         [InlineData("/Search")]
         [InlineData("/Home/Support")]
