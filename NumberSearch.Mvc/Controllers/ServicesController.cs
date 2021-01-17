@@ -7,8 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace NumberSearch.Mvc.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class ServicesController : Controller
     {
+        [HttpGet]
         public IActionResult Index()
         {
             var cart = Cart.GetFromSession(HttpContext.Session);

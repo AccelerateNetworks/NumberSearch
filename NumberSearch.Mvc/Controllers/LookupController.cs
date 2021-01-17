@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class LookupController : Controller
     {
         private readonly IConfiguration _configuration;
@@ -35,6 +36,8 @@ namespace NumberSearch.Mvc.Controllers
             _data247password = config.GetConnectionString("Data247Password");
         }
 
+
+        [HttpGet]
         public async Task<IActionResult> IndexAsync(string dialedNumber)
         {
             // Lookup numbers in bulk
@@ -99,6 +102,7 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
+        [HttpGet]
         public async Task<IActionResult> BulkPortAsync(string dialedNumber)
         {
             // Add portable numbers to cart in bulk

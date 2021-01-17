@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class CartController : Controller
     {
         private readonly IConfiguration _configuration;
@@ -54,6 +55,7 @@ namespace NumberSearch.Mvc.Controllers
             _data247password = config.GetConnectionString("Data247Password");
         }
 
+        [HttpGet]
         public IActionResult Index()
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
@@ -64,6 +66,7 @@ namespace NumberSearch.Mvc.Controllers
             });
         }
 
+        [HttpGet]
         [Route("Cart/BuyPhoneNumber/{dialedPhoneNumber}")]
         public async Task<IActionResult> BuyPhoneNumberAsync(string dialedPhoneNumber, string Query, string View, string Page)
         {
@@ -183,6 +186,7 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
+        [HttpGet]
         [Route("Cart/PortPhoneNumber/{dialedPhoneNumber}")]
         public async Task<IActionResult> PortPhoneNumberAsync(string dialedPhoneNumber)
         {
@@ -312,7 +316,7 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
-
+        [HttpGet]
         [Route("Cart/VerifyPhoneNumber/{dialedPhoneNumber}")]
         public async Task<IActionResult> VerifyPhoneNumberAsync(string dialedPhoneNumber)
         {
@@ -448,6 +452,7 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
+        [HttpGet]
         [Route("Cart/BuyProduct/{productId}")]
         public async Task<IActionResult> BuyProductAsync(Guid productId, int Quantity)
         {
@@ -477,6 +482,7 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
+        [HttpGet]
         [Route("Cart/BuyService/{serviceId}")]
         public async Task<IActionResult> BuyServiceAsync(Guid serviceId, int Quantity)
         {
@@ -504,6 +510,7 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
+        [HttpGet]
         [Route("Cart/RemovePhoneNumber/{dialedPhoneNumber}")]
         public IActionResult RemovePhoneNumber(string dialedPhoneNumber, string Query, string View, string Page)
         {
@@ -527,6 +534,7 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
+        [HttpGet]
         [Route("Cart/RemovePortedPhoneNumber/{dialedPhoneNumber}")]
         public IActionResult RemovePortedPhoneNumber(string dialedPhoneNumber)
         {
@@ -567,6 +575,7 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
+        [HttpGet]
         [Route("Cart/RemoveVerifiedPhoneNumber/{dialedPhoneNumber}")]
         public IActionResult RemoveVerifiedPhoneNumber(string dialedPhoneNumber)
         {
@@ -605,6 +614,7 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
+        [HttpGet]
         [Route("Cart/RemoveProduct/{productId}")]
         public IActionResult RemoveProduct(Guid productId)
         {
@@ -628,6 +638,7 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
+        [HttpGet]
         [Route("Cart/RemoveService/{serviceId}")]
         public IActionResult RemoveService(Guid serviceId)
         {
@@ -651,6 +662,7 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
+        [HttpGet]
         [Route("Cart/Checkout")]
         public IActionResult Checkout()
         {
@@ -664,6 +676,7 @@ namespace NumberSearch.Mvc.Controllers
             return View("Order", cart);
         }
 
+        [HttpGet]
         // Show orders that have already been submitted.
         [Route("Cart/Order/{Id}")]
         public async Task<IActionResult> ExistingOrderAsync(Guid Id, bool? AddPortingInfo)
@@ -740,8 +753,8 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
-        [Route("Cart/Submit")]
         [HttpPost]
+        [Route("Cart/Submit")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitAsync(Order order)
         {

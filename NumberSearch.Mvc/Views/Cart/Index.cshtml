@@ -54,9 +54,10 @@
                                             }
                                         }
                                         <td>
-                                            <a asp-controller="Cart" asp-action="RemovePhoneNumber" asp-route-id="@item.DialedNumber" target="_top">
-                                                <input type="button" class="btn btn-outline-danger" value="Remove">
-                                            </a>
+                                            <button onclick="removeFromCart(@item.DialedNumber, this)" class="btn btn-outline-danger">
+                                                <span class="d-none spinner-border spinner-border-sm" role="status"></span>
+                                                &nbsp;Remove
+                                            </button>
                                         </td>
                                     </tr>
                                 }

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class SearchController : Controller
     {
         private readonly IConfiguration configuration;
@@ -26,6 +27,7 @@ namespace NumberSearch.Mvc.Controllers
         /// <returns> A view of nothing, or the result of the query. </returns>
         [Route("Search/{Query}")]
         [Route("Search/")]
+        [HttpGet]
         public async Task<IActionResult> IndexAsync(string query, string failed, string view, int page = 1)
         {
             // Fail fast

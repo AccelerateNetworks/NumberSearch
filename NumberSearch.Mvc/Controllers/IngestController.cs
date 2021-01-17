@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class IngestController : Controller
     {
         private readonly IConfiguration _configuration;
@@ -21,6 +22,7 @@ namespace NumberSearch.Mvc.Controllers
             _postgresql = _configuration.GetConnectionString("PostgresqlProd");
         }
 
+        [HttpGet]
         public async Task<IActionResult> IndexAsync()
         {
             var ingests = await IngestStatistics.GetAllAsync(_postgresql).ConfigureAwait(false);

@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class PortNotifierController : Controller
     {
         private readonly IConfiguration configuration;
@@ -31,6 +32,7 @@ namespace NumberSearch.Mvc.Controllers
             _bulkVSAPIKey = config.GetConnectionString("BulkVSAPIKEY");
         }
 
+        [HttpGet]
         public async Task<IActionResult> IndexAsync(string Query)
         {
             var cart = Cart.GetFromSession(HttpContext.Session);

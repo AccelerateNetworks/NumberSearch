@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class PortingController : Controller
     {
         private readonly IConfiguration configuration;
@@ -37,11 +38,13 @@ namespace NumberSearch.Mvc.Controllers
             _bulkVSAPIKey = config.GetConnectionString("BulkVSAPIKEY");
         }
 
+        [HttpGet]
         public IActionResult Index()
         {
             return View();
         }
 
+        [HttpGet]
         public async Task<IActionResult> CheckPortabilityAsync(string Query)
         {
             var cart = Cart.GetFromSession(HttpContext.Session);

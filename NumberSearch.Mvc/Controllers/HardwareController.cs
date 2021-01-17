@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class HardwareController : Controller
     {
         private readonly IConfiguration configuration;
@@ -17,6 +18,7 @@ namespace NumberSearch.Mvc.Controllers
             configuration = config;
         }
 
+        [HttpGet]
         public async Task<IActionResult> IndexAsync()
         {
             var products = await Product.GetAllAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);

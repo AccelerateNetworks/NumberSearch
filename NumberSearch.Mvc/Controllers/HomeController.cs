@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -16,41 +17,49 @@ namespace NumberSearch.Mvc.Controllers
             _logger = logger;
         }
 
+        [HttpGet]
         public IActionResult Index()
         {
             return View();
         }
 
+        [HttpGet]
         public IActionResult Privacy()
         {
             return View();
         }
 
+        [HttpGet]
         public IActionResult Services()
         {
             return View();
         }
 
+        [HttpGet]
         public IActionResult Order()
         {
             return View();
         }
 
+        [HttpGet]
         public IActionResult Support()
         {
             return View();
         }
 
+        [HttpGet]
         public IActionResult About()
         {
             return View();
         }
 
+        [HttpGet]
         public IActionResult Features()
         {
             return View();
         }
 
+        [HttpGet]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

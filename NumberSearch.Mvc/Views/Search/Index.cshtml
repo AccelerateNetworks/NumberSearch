@@ -180,22 +180,23 @@
                                             @{
                                                 if (item.Purchased)
                                                 {
-                                                    <a class="disabled">
-                                                        <input type="button" class="btn btn-outline-secondary disabled" value="Already Purchased">
-                                                    </a>
+                                                    <button class="btn btn-outline-secondary disabled">
+                                                        Already Purchased
+                                                    </button>
                                                 }
                                                 else if (alreadyInCart.TryGetValue(item.DialedNumber, out var _))
                                                 {
-                                                    <a asp-controller="Cart" asp-action="RemovePhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" target="_top">
-                                                        <input type="button" class="btn btn-outline-danger" value="Remove">
-                                                    </a>
+                                                    <button onclick="removeFromCart(@item.DialedNumber, this)" class="btn btn-outline-danger">
+                                                        <span class="d-none spinner-border spinner-border-sm" role="status"></span>
+                                                        &nbsp;Remove
+                                                    </button>
                                                 }
                                                 else
                                                 {
-                                                    <a asp-controller="Cart" asp-action="BuyPhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" asp-route-View="@Model.View" asp-route-Page="@Model.Page" class="btn btn-outline-primary" target="_top">
-                                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" hidden></span>
-                                                        Add to Cart
-                                                    </a>
+                                                    <button onclick="addToCart(@item.DialedNumber, this)" class="btn btn-outline-primary">
+                                                        <span class="d-none spinner-border spinner-border-sm" role="status"></span>
+                                                        &nbsp;Add to Cart
+                                                    </button>
                                                 }
                                             }
                                         </td>
@@ -231,22 +232,23 @@
                                             @{
                                                 if (item.Purchased)
                                                 {
-                                                    <a class="disabled">
-                                                        <input type="button" class="btn btn-outline-secondary disabled" value="Already Purchased">
-                                                    </a>
+                                                    <button class="btn btn-outline-secondary disabled">
+                                                        Already Purchased
+                                                    </button>
                                                 }
                                                 else if (alreadyInCart.TryGetValue(item.DialedNumber, out var _))
                                                 {
-                                                    <a asp-controller="Cart" asp-action="RemovePhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" target="_top">
-                                                        <input type="button" class="btn btn-outline-danger" value="Remove">
-                                                    </a>
+                                                    <button onclick="removeFromCart(@item.DialedNumber, this)" class="btn btn-outline-danger">
+                                                        <span class="d-none spinner-border spinner-border-sm" role="status"></span>
+                                                        &nbsp;Remove
+                                                    </button>
                                                 }
                                                 else
                                                 {
-                                                    <a asp-controller="Cart" asp-action="BuyPhoneNumber" asp-route-id="@item.DialedNumber" asp-route-Query="@Model.Query" asp-route-View="@Model.View" asp-route-Page="@Model.Page" class="btn btn-outline-primary" target="_top">
-                                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" hidden></span>
-                                                        Add to Cart
-                                                    </a>
+                                                    <button onclick="addToCart(@item.DialedNumber, this)" class="btn btn-outline-primary">
+                                                        <span class="d-none spinner-border spinner-border-sm" role="status"></span>
+                                                        &nbsp;Add to Cart
+                                                    </button>
                                                 }
                                             }
                                         </td>
