@@ -157,6 +157,7 @@ namespace NumberSearch.Mvc.Controllers
                 return BadRequest($"{dialedPhoneNumber} is no longer available.");
             }
 
+            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
             var checkAdd = cart.AddPhoneNumber(phoneNumber, productOrder);
             var checkSet = cart.SetToSession(HttpContext.Session);
@@ -230,6 +231,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
             }
 
+            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
 
             // Prevent the user from adding ported numbers that are both wireless and not wireless to the same order.
@@ -347,6 +349,7 @@ namespace NumberSearch.Mvc.Controllers
 
                         var productOrder = new ProductOrder { VerifiedPhoneNumberId = verifiedPhoneNumber.VerifiedPhoneNumberId, Quantity = 1 };
 
+                        await HttpContext.Session.LoadAsync().ConfigureAwait(false);
                         var cart = Cart.GetFromSession(HttpContext.Session);
                         var checkAdd = cart.AddVerifiedPhoneNumber(verifiedPhoneNumber, productOrder);
                         var checkSet = cart.SetToSession(HttpContext.Session);
@@ -391,6 +394,7 @@ namespace NumberSearch.Mvc.Controllers
                 Quantity = Quantity > 0 ? Quantity : 1
             };
 
+            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
             var checkAdd = cart.AddProduct(product, productOrder);
             var checkSet = cart.SetToSession(HttpContext.Session);
@@ -413,6 +417,7 @@ namespace NumberSearch.Mvc.Controllers
                 Quantity = Quantity > 0 ? Quantity : 1
             };
 
+            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
             var checkAdd = cart.AddService(service, productOrder);
             var checkSet = cart.SetToSession(HttpContext.Session);
@@ -431,6 +436,7 @@ namespace NumberSearch.Mvc.Controllers
             var phoneNumber = new PhoneNumber { DialedNumber = dialedPhoneNumber };
             var productOrder = new ProductOrder { DialedNumber = dialedPhoneNumber };
 
+            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
             var checkRemove = cart.RemovePhoneNumber(phoneNumber, productOrder);
             var checkSet = cart.SetToSession(HttpContext.Session);
@@ -446,6 +452,7 @@ namespace NumberSearch.Mvc.Controllers
                 return BadRequest(ModelState);
             }
 
+            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
 
             var portedPhoneNumber = cart.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == dialedPhoneNumber).FirstOrDefault();
@@ -482,6 +489,7 @@ namespace NumberSearch.Mvc.Controllers
                 return BadRequest(ModelState);
             }
 
+            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
 
             var verifedPhoneNumber = cart.VerifiedPhoneNumbers.Where(x => x.VerifiedDialedNumber == dialedPhoneNumber).FirstOrDefault();
@@ -517,6 +525,7 @@ namespace NumberSearch.Mvc.Controllers
             var product = new Product { ProductId = productId };
             var productOrder = new ProductOrder { ProductId = productId };
 
+            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
             var checkRemove = cart.RemoveProduct(product, productOrder);
             var checkSet = cart.SetToSession(HttpContext.Session);
@@ -535,6 +544,7 @@ namespace NumberSearch.Mvc.Controllers
             var service = new Service { ServiceId = serviceId };
             var productOrder = new ProductOrder { ServiceId = serviceId };
 
+            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
             var checkRemove = cart.RemoveService(service, productOrder);
             var checkSet = cart.SetToSession(HttpContext.Session);

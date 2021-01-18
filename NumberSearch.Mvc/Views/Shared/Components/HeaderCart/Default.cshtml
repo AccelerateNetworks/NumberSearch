@@ -3,10 +3,10 @@
 @{
     if (Model?.Count < 1)
     {
-        <a class="btn btn-outline-dark btn-lg" asp-controller="Cart" asp-action="Index">Cart</a>
+        <a id="headerCart" class="btn btn-outline-dark btn-lg" asp-controller="Cart" asp-action="Index">Cart&nbsp;<span id="cartCounter" class="d-none badge badge-success badge-pill">0</span></a>
     }
     else
     {
-        <a class="btn btn-outline-success btn-lg" asp-controller="Cart" asp-action="Index">Checkout&nbsp;<span class="badge badge-success badge-pill">@Model?.Count</span></a>
+        <a id="headerCart" class="btn btn-outline-success btn-lg" asp-controller="Cart" asp-action="Index">Checkout&nbsp;<span id="cartCounter" class="badge badge-success badge-pill">@Model?.Count</span></a>
     }
 }

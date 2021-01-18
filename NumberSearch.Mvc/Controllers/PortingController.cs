@@ -45,6 +45,7 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpGet]
+        [HttpPost]
         public async Task<IActionResult> CheckPortabilityAsync(string Query)
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
@@ -419,17 +420,7 @@ Accelerate Networks
                     Multipart = multipart
                 };
 
-                var checkSend = await confirmationEmail.SendEmailAsync(configuration.GetConnectionString("SmtpUsername"), configuration.GetConnectionString("SmtpPassword")).ConfigureAwait(false);
                 var checkSave = await confirmationEmail.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
-
-                if (checkSend && checkSave)
-                {
-                    Log.Information($"[Port Request] Sucessfully sent out the confirmation emails for {order.OrderId}.");
-                }
-                else
-                {
-                    Log.Fatal($"[Port Request] Failed to sent out the confirmation emails for {order.OrderId}.");
-                }
 
                 // Reset the session and clear the Cart.
                 HttpContext.Session.Clear();

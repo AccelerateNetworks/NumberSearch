@@ -1,5 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
+using NumberSearch.DataAccess;
+
+using System.Collections.Generic;
+
 namespace NumberSearch.Mvc.ViewComponents
 {
     public class HeaderCart : ViewComponent
@@ -8,7 +12,7 @@ namespace NumberSearch.Mvc.ViewComponents
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            return View(cart.ProductOrders);
+            return View(cart?.ProductOrders);
         }
     }
 }

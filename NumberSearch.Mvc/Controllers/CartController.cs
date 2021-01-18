@@ -56,7 +56,7 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> IndexAsync()
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
 
@@ -667,6 +667,11 @@ namespace NumberSearch.Mvc.Controllers
         public IActionResult Checkout()
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
+
+            if (cart.ProductOrders.Count() == 0)
+            {
+                return View("Index", new CartResult { Cart = cart });
+            }
 
             // Create a GUID for an order to prevent multiple order submissions from repeated button clicking.
             cart.Order.OrderId = Guid.NewGuid();
