@@ -19,12 +19,13 @@ $('input[type="file"]').change(function (e) {
     $('.custom-file-label').html(fileName);
 });
 
+var cartCounter = parseInt($('#cartCounter').text());
+
 function PhoneNumberAdd(dialedNumber, element) {
     var removeButton = `<button onclick="PhoneNumberRemove(${dialedNumber}, this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>`;
     var checkoutCart = `<a id="headerCart" class="btn btn-outline-success btn-lg" href="/Cart">Checkout&nbsp;<span id="cartCounter" class="badge badge-success badge-pill">0</span></a>`;
     var spinner = $(element).find('span');
     var cart = $('#headerCart');
-    var counter = $('#cartCounter');
     spinner.removeClass('d-none');
     var request = new XMLHttpRequest();
     var route = `/Cart/PhoneNumber/Add/${dialedNumber}`;
@@ -34,11 +35,9 @@ function PhoneNumberAdd(dialedNumber, element) {
             console.log(`Added ${dialedNumber} to cart.`)
             spinner.addClass('d-none');
             $(element).replaceWith(removeButton);
-            var count = parseInt(counter.text());
             $(cart).replaceWith(checkoutCart);
-            counter = $('#cartCounter');
-            counter.text(count + 1);;
-            counter.removeClass('d-none');
+            cartCounter++;
+            $('#cartCounter').text(cartCounter).removeClass('d-none');
         } else {
             console.log(`Failed to add ${dialedNumber} to cart.`)
             spinner.addClass('d-none')
@@ -50,8 +49,6 @@ function PhoneNumberAdd(dialedNumber, element) {
 function PhoneNumberRemove(dialedNumber, element) {
     var addButton = `<button onclick="PhoneNumberAdd(${dialedNumber}, this)" class="btn btn-outline-primary"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Add to Cart</button>`;
     var spinner = $(element).find('span');
-    var cart = $('#headerCart');
-    var counter = $('#cartCounter');
     spinner.removeClass('d-none');
     var request = new XMLHttpRequest();
     var route = `/Cart/PhoneNumber/Remove/${dialedNumber}`;
@@ -61,9 +58,8 @@ function PhoneNumberRemove(dialedNumber, element) {
             console.log(`Removed ${dialedNumber} from cart.`)
             spinner.addClass('d-none');
             $(element).replaceWith(addButton);
-            var count = parseInt($(counter).text());
-            counter.text(count - 1);
-            counter.removeClass('d-none');
+            cartCounter--;
+            $('#cartCounter').text(cartCounter).removeClass('d-none');
         } else {
             console.log(`Failed to remove ${dialedNumber} from cart.`)
             spinner.addClass('d-none')
