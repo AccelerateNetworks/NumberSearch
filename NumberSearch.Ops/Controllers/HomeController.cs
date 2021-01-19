@@ -790,7 +790,7 @@ namespace NumberSearch.Ops.Controllers
                     var lookups = new List<LrnBulkCnam>();
                     foreach (var item in numbers)
                     {
-                        var spidCheck = await LrnBulkCnam.GetAsync(item.PortedDialedNumber, _bulkVSAPISecret).ConfigureAwait(false);
+                        var spidCheck = await LrnBulkCnam.GetAsync(item.PortedDialedNumber, _bulkVSAPIKey).ConfigureAwait(false);
                         lookups.Add(spidCheck);
                     }
 
@@ -905,7 +905,7 @@ namespace NumberSearch.Ops.Controllers
                         }
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
                     Log.Fatal($"[PortRequest] Failed to submit port request to BulkVS.");
                 }

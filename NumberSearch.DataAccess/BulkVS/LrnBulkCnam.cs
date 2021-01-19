@@ -37,18 +37,26 @@ namespace NumberSearch.DataAccess.BulkVS
             string aniParameter = $"&ani={dialedNumber}";
             string formatParameter = $"&format=json";
             string route = $"{baseUrl}{apikeyParameter}{didParameter}{aniParameter}{formatParameter}";
-            var result = await route.GetJsonAsync<LrnBulkCnam>().ConfigureAwait(false);
 
-            // Handle the last ported date.
-            // https://stackoverflow.com/questions/2477712/convert-local-time-10-digit-number-to-a-readable-datetime-format
-            var checkParse = long.TryParse(result.activation, out var portTime);
-
-            if (checkParse)
+            try
             {
-                result.LastPorted = new DateTime(1970, 1, 1).AddSeconds(portTime);
-            }
+                var result = await route.GetJsonAsync<LrnBulkCnam>().ConfigureAwait(false);
 
-            return result;
+                // Handle the last ported date.
+                // https://stackoverflow.com/questions/2477712/convert-local-time-10-digit-number-to-a-readable-datetime-format
+                var checkParse = long.TryParse(result.activation, out var portTime);
+
+                if (checkParse)
+                {
+                    result.LastPorted = new DateTime(1970, 1, 1).AddSeconds(portTime);
+                }
+
+                return result;
+            }
+            catch (FlurlHttpException ex)
+            {
+                return new LrnBulkCnam();
+            }
         }
     }
 }
