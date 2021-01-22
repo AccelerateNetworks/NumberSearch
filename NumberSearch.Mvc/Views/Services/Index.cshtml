@@ -27,22 +27,22 @@
                     <li>Have as many phones as you want!</li>
                 </ul>
                 <div class="btn-group">
-                    <form method="get" class="input-group input-group-lg">
+                    <div class="input-group input-group-lg">
                         @{
                             var lines = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("16e2c639-445b-4ae6-9925-07300318206b")).FirstOrDefault();
                             if (lines is not null && lines.Quantity > 0)
                             {
-                                <input type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@lines?.Quantity">
+                                <input id="lines" type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@lines?.Quantity">
                             }
                             else
                             {
-                                <input type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                <input id="lines" type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
                             }
                         }
                         <div class="input-group-append">
-                            <button type="submit" class="btn btn-outline-primary" asp-controller="Cart" asp-action="BuyService" asp-route-id="16e2c639-445b-4ae6-9925-07300318206b" id="button-addon1">Start talking today</button>
+                            <button onclick="AddToCart('Service','16e2c639-445b-4ae6-9925-07300318206b', $('#lines').val(), this)" class="btn btn-outline-primary">Start talking today</button>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -61,22 +61,22 @@
                     <li>Buy 1 Seat for every phone you order!</li>
                 </ul>
                 <div class="btn-group">
-                    <form method="get" class="input-group input-group-lg">
+                    <div class="input-group input-group-lg">
                         @{
                             var seats = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("48eb4627-8692-4a3b-8be1-be64bbeea534")).FirstOrDefault();
                             if (seats is not null && seats.Quantity > 0)
                             {
-                                <input type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@seats?.Quantity">
+                                <input id="seats" type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@seats?.Quantity">
                             }
                             else
                             {
-                                <input type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                <input id="seats" type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
                             }
                         }
                         <div class="input-group-append">
-                            <button type="submit" class="btn btn-outline-primary" asp-controller="Cart" asp-action="BuyService" asp-route-id="48eb4627-8692-4a3b-8be1-be64bbeea534" id="button-addon2">Start talking today</button>
+                            <button onclick="AddToCart('Service', '48eb4627-8692-4a3b-8be1-be64bbeea534', $('#seats').val(), this)" class="btn btn-outline-primary">Start talking today</button>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>

@@ -25,7 +25,7 @@ $('input[type="file"]').change(function (e) {
 var cartCounter = 0;
 
 function AddToCart(type, id, quantity, element) {
-    var removeButton = `<button onclick="RemoveFromCart('${type}', ${id}, 1, this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>`;
+    var removeButton = `<button onclick="RemoveFromCart('${type}', '${id}', ${quantity}, this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>`;
     var checkoutCart = `<a id="headerCart" class="btn btn-outline-success btn-lg" href="/Cart">Checkout&nbsp;<span id="cartCounter" class="badge badge-success badge-pill">0</span></a>`;
     var cart = $('#headerCart');
     let spinner = $(element).find('span');
@@ -51,7 +51,7 @@ function AddToCart(type, id, quantity, element) {
 }
 
 function RemoveFromCart(type, id, quantity, element) {
-    var addButton = `<button onclick="AddToCart('${type}', ${id}, 1, this)" class="btn btn-outline-primary"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Add to Cart</button>`;
+    var addButton = `<button onclick="AddToCart('${type}', '${id}', ${quantity}, this)" class="btn btn-outline-primary"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Add to Cart</button>`;
     let spinner = $(element).find('span');
     spinner.removeClass('d-none');
     var request = new XMLHttpRequest();

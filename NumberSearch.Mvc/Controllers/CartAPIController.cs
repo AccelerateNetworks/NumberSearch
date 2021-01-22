@@ -517,7 +517,7 @@ namespace NumberSearch.Mvc.Controllers
             var checkAdd = cart.AddProduct(product, productOrder);
             var checkSet = cart.SetToSession(_httpContext.Session);
 
-            return Ok();
+            return Ok(productId.ToString());
         }
 
         public async Task<IActionResult> BuyServiceAsync(Guid serviceId, int Quantity)
@@ -539,7 +539,7 @@ namespace NumberSearch.Mvc.Controllers
             var checkAdd = cart.AddService(service, productOrder);
             var checkSet = cart.SetToSession(_httpContext.Session);
 
-            return Ok();
+            return Ok(serviceId.ToString());
         }
 
         public async Task<IActionResult> RemovePhoneNumberAsync(string dialedPhoneNumber)
@@ -643,7 +643,7 @@ namespace NumberSearch.Mvc.Controllers
             var checkRemove = cart.RemoveProduct(product, productOrder);
             var checkSet = cart.SetToSession(_httpContext.Session);
 
-            return Ok();
+            return Ok(productId.ToString());
         }
 
         public async Task<IActionResult> RemoveServiceAsync(Guid serviceId)
@@ -661,7 +661,7 @@ namespace NumberSearch.Mvc.Controllers
             var checkRemove = cart.RemoveService(service, productOrder);
             var checkSet = cart.SetToSession(_httpContext.Session);
 
-            return Ok();
+            return Ok(serviceId.ToString());
         }
     }
 }
