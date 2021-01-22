@@ -380,7 +380,7 @@ namespace NumberSearch.Mvc.Controllers
 
             if (checkAdd && checkSet)
             {
-                return Ok(portedPhoneNumber.Wireless ? $"Sucessfully added wireless phone number {portedPhoneNumber.PortedDialedNumber} to your cart!" : $"Sucessfully added {dialedPhoneNumber} to your cart!");
+                return Ok(portedPhoneNumber.PortedDialedNumber);
             }
             else
             {

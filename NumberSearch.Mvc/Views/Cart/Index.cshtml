@@ -54,7 +54,7 @@
                                             }
                                         }
                                         <td>
-                                            <button onclick="PhoneNumberRemove(@item.DialedNumber, this)" class="btn btn-outline-danger">
+                                            <button onclick="RemoveFromCart('PhoneNumber','@item.DialedNumber', 1, this)" class="btn btn-outline-danger">
                                                 <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                 Remove
                                             </button>
@@ -91,9 +91,10 @@
                                         <td>@location</td>
                                         <td>$@calculatedCost</td>
                                         <td>
-                                            <a asp-controller="Cart" asp-action="RemovePortedPhoneNumber" asp-route-id="@item.PortedDialedNumber" target="_top">
-                                                <input type="button" class="btn btn-outline-danger" value="Remove">
-                                            </a>
+                                            <button onclick="RemoveFromCart('PortedPhoneNumber','@item.PortedDialedNumber', 1, this)" class="btn btn-outline-danger">
+                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                Remove
+                                            </button>
                                         </td>
                                     </tr>
                                 }
@@ -110,9 +111,10 @@
                                         <td>@location</td>
                                         <td>$10</td>
                                         <td>
-                                            <a asp-controller="Cart" asp-action="RemoveVerifiedPhoneNumber" asp-route-id="@item.VerifiedDialedNumber" target="_top">
-                                                <input type="button" class="btn btn-outline-danger" value="Remove">
-                                            </a>
+                                            <button onclick="RemoveFromCart('VerifiedPhoneNumber', '@item.VerifiedDialedNumber', 1, this)" class="btn btn-outline-danger">
+                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                Remove
+                                            </button>
                                         </td>
                                     </tr>
                                 }
@@ -137,9 +139,10 @@
                                         <td>at $@item.Price each</td>
                                         <td>$@localTotal</td>
                                         <td>
-                                            <a asp-controller="Cart" asp-action="RemoveProduct" asp-route-id="@item.ProductId" target="_top">
-                                                <input type="button" class="btn btn-outline-danger" value="Remove">
-                                            </a>
+                                            <button onclick="RemoveFromCart('Product', '@item.ProductId', 1, this)" class="btn btn-outline-danger">
+                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                Remove
+                                            </button>
                                         </td>
                                     </tr>
                                 }
@@ -164,9 +167,10 @@
                                         <td>at $@item.Price per</td>
                                         <td>$@localTotal</td>
                                         <td>
-                                            <a asp-controller="Cart" asp-action="RemoveService" asp-route-id="@item.ServiceId" target="_top">
-                                                <input type="button" class="btn btn-outline-danger" value="Remove">
-                                            </a>
+                                            <button onclick="RemoveFromCart('Service', '@item.ServiceId', 1, this)" class="btn btn-outline-danger">
+                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                Remove
+                                            </button>
                                         </td>
                                     </tr>
                                 }

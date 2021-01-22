@@ -58,15 +58,11 @@
                                     @{
                                         if (alreadyInCart.TryGetValue(Model.PortedPhoneNumber.PortedDialedNumber, out var _))
                                         {
-                                            <a asp-controller="Cart" asp-action="RemovePortedPhoneNumber" asp-route-id="@Model.PortedPhoneNumber.PortedDialedNumber" target="_top">
-                                                <input type="button" class="btn btn-outline-danger" value="Remove">
-                                            </a>
+                                            <button onclick="RemoveFromCart('PortedPhoneNumber', '@Model.PortedPhoneNumber.PortedDialedNumber', 1, this)" class="btn btn-outline-danger">Remove</button>
                                         }
                                         else
                                         {
-                                            <a asp-controller="Cart" asp-action="PortPhoneNumber" asp-route-id="@Model.PortedPhoneNumber.PortedDialedNumber" target="_top">
-                                                <input type="button" class="btn btn-outline-primary" value="Add to Cart">
-                                            </a>
+                                            <button onclick="AddToCart('PortedPhoneNumber', '@Model.PortedPhoneNumber.PortedDialedNumber', 1, this)" class="btn btn-outline-primary">Add to Cart</button>
                                         }
                                     }
                                 </td>
