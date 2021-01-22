@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 using NumberSearch.DataAccess;
 
@@ -19,9 +18,12 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpGet]
+        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
         public async Task<IActionResult> IndexAsync()
         {
             var products = await Product.GetAllAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+
+            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
 
             return View("Index", new HardwareResult { Cart = cart, Products = products });

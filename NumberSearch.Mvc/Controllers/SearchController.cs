@@ -29,6 +29,7 @@ namespace NumberSearch.Mvc.Controllers
         [HttpGet("Search/{Query}")]
         [HttpPost("Search/")]
         [HttpPost("Search/{Query}")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> IndexAsync(string query, string failed, string view, int page = 1)
         {
             // Fail fast

@@ -33,6 +33,7 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpGet]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> IndexAsync(string Query)
         {
             var cart = Cart.GetFromSession(HttpContext.Session);

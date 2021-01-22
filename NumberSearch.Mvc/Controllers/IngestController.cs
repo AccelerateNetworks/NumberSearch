@@ -23,6 +23,7 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpGet]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> IndexAsync()
         {
             var ingests = await IngestStatistics.GetAllAsync(_postgresql).ConfigureAwait(false);

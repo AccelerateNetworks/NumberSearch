@@ -11,8 +11,10 @@ namespace NumberSearch.Mvc.Controllers
     public class ServicesController : Controller
     {
         [HttpGet]
-        public IActionResult Index()
+        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
+        public async Task<IActionResult> IndexAsync()
         {
+            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
 
             return View("Index", cart);

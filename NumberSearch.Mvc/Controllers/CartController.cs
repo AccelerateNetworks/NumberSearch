@@ -56,6 +56,7 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpGet]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> IndexAsync()
         {
             await HttpContext.Session.LoadAsync().ConfigureAwait(false);
@@ -69,6 +70,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [HttpGet]
         [Route("Cart/Checkout")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> CheckoutAsync()
         {
             await HttpContext.Session.LoadAsync().ConfigureAwait(false);
@@ -89,6 +91,7 @@ namespace NumberSearch.Mvc.Controllers
 
         // Show orders that have already been submitted.
         [HttpGet("Cart/Order/{Id}")]
+        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
         public async Task<IActionResult> ExistingOrderAsync(Guid Id, bool? AddPortingInfo)
         {
             if (Id != Guid.Empty)
@@ -165,6 +168,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [HttpPost("Cart/Submit")]
         [ValidateAntiForgeryToken]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> SubmitAsync(Order order)
         {
             if (order != null && !string.IsNullOrWhiteSpace(order.Email))

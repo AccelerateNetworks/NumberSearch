@@ -54,6 +54,7 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpGet("Add/{type}/{id}/{quantity}")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddToCartAsync([FromRoute] string type, [FromRoute] string id, [FromRoute] int quantity = 1)
         {
             if (!ModelState.IsValid && !string.IsNullOrWhiteSpace(type) && !string.IsNullOrWhiteSpace(id))
@@ -97,6 +98,7 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpGet("Remove/{type}/{id}/{quantity}")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> RemoveFromCartAsync([FromRoute] string type, [FromRoute] string id, [FromRoute] int quantity = 1)
         {
             if (!ModelState.IsValid && !string.IsNullOrWhiteSpace(type) && !string.IsNullOrWhiteSpace(id))

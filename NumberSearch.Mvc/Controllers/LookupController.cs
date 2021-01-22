@@ -38,6 +38,7 @@ namespace NumberSearch.Mvc.Controllers
 
 
         [HttpGet]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> IndexAsync(string dialedNumber)
         {
             // Lookup numbers in bulk
@@ -103,6 +104,7 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpGet]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> BulkPortAsync(string dialedNumber)
         {
             // Add portable numbers to cart in bulk

@@ -39,6 +39,7 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpGet]
+        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
         public IActionResult Index()
         {
             return View();
@@ -46,6 +47,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [HttpGet]
         [HttpPost]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> CheckPortabilityAsync(string Query)
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
@@ -231,6 +233,7 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpPost]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> RequestPortAsync(string Query)
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
@@ -297,6 +300,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddPortingInformationAsync(PortRequest portRequest)
         {
             var order = await Order.GetByIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
