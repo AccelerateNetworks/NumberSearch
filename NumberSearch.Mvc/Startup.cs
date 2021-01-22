@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using Serilog;
+
+using System;
 
 namespace NumberSearch.Mvc
 {
@@ -33,6 +36,7 @@ namespace NumberSearch.Mvc
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDistributedMemoryCache();
+            services.AddResponseCaching();
 
             services.AddSession();
 
@@ -43,14 +47,11 @@ namespace NumberSearch.Mvc
 
             services.AddRazorPages();
 
-            services.AddApplicationInsightsTelemetry();
-
             services.AddSwaggerGen();
 
             services.AddSingleton<MonitorLoop>();
             services.AddHostedService<QueuedHostedService>();
             services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
-
         }
 
 
@@ -87,6 +88,23 @@ namespace NumberSearch.Mvc
             });
 
             app.UseRouting();
+            app.UseResponseCaching();
+
+            // using Microsoft.AspNetCore.Http;
+
+            app.Use(async (context, next) =>
+            {
+                context.Response.GetTypedHeaders().CacheControl =
+                    new Microsoft.Net.Http.Headers.CacheControlHeaderValue()
+                    {
+                        Public = true,
+                        MaxAge = TimeSpan.FromSeconds(10)
+                    };
+                context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Vary] =
+                    new string[] { "Accept-Encoding" };
+
+                await next();
+            });
 
             app.UseAuthorization();
 

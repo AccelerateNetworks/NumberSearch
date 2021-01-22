@@ -6,7 +6,7 @@
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <UserSecretsId>328593cf-cbb9-48e9-8938-e38a44c8291d</UserSecretsId>
     <LangVersion>latest</LangVersion>
-    <ApplicationInsightsResourceId>/subscriptions/dd4e7397-befc-4010-84b2-7a6deffd4709/resourcegroups/NumberSearch.Mvc-1/providers/microsoft.insights/components/NumberSearch.Mvc-1</ApplicationInsightsResourceId>
+    <ApplicationInsightsResourceId>/subscriptions/dd4e7397-befc-4010-84b2-7a6deffd4709/resourceGroups/NumberSearch.Mvc-1/providers/microsoft.insights/components/NumberSearch</ApplicationInsightsResourceId>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
   </PropertyGroup>
   <ItemGroup>

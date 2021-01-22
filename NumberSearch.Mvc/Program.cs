@@ -56,8 +56,7 @@ namespace NumberSearch.Mvc
                     .WriteTo.Async(a => a.File($"NumberSearch.Mvc_{DateTime.Now:yyyyMMdd}.txt",
                     rollingInterval: RollingInterval.Day,
                     rollOnFileSizeLimit: true))
-                    .WriteTo.Async(a => a.Debug())
-                    .WriteTo.Async(a => a.ApplicationInsights(TelemetryConfiguration.Active, TelemetryConverter.Traces)))
+                    .WriteTo.Async(a => a.Debug()))
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();

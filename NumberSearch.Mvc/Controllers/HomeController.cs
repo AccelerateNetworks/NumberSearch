@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using NumberSearch.DataAccess;
+
 using System.Diagnostics;
-using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
 {
@@ -18,42 +16,49 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpGet]
+        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30)]
         public IActionResult Index()
         {
             return View();
         }
 
         [HttpGet]
+        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30)]
         public IActionResult Privacy()
         {
             return View();
         }
 
         [HttpGet]
+        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30)]
         public IActionResult Services()
         {
             return View();
         }
 
         [HttpGet]
+        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30)]
         public IActionResult Order()
         {
             return View();
         }
 
         [HttpGet]
+        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30)]
         public IActionResult Support()
         {
             return View();
         }
 
         [HttpGet]
+        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30)]
         public IActionResult About()
         {
             return View();
         }
 
         [HttpGet]
+        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30)]
         public IActionResult Features()
         {
             return View();

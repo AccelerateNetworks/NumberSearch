@@ -53,9 +53,130 @@ namespace NumberSearch.Mvc.Controllers
             _data247password = config.GetConnectionString("Data247Password");
         }
 
-        // GET: api/Games/5
-        [HttpGet("PhoneNumber/Add/{dialedPhoneNumber}")]
-        public async Task<IActionResult> BuyPhoneNumberAsync([FromRoute] string dialedPhoneNumber)
+        [HttpGet("Add/{type}/{id}/{quantity}")]
+        public async Task<IActionResult> AddToCartAsync([FromRoute] string type, [FromRoute] string id, [FromRoute] int quantity = 1)
+        {
+            if (!ModelState.IsValid && !string.IsNullOrWhiteSpace(type) && !string.IsNullOrWhiteSpace(id))
+            {
+                return BadRequest(ModelState);
+            }
+
+            var cart = new CartServices(_configuration, HttpContext);
+
+            switch (type)
+            {
+                case "PhoneNumber":
+                    return await cart.BuyPhoneNumberAsync(id).ConfigureAwait(false);
+                case "PortedPhoneNumber":
+                    return await cart.PortPhoneNumberAsync(id).ConfigureAwait(false);
+                case "VerifyPhoneNumber":
+                    return await cart.VerifyPhoneNumberAsync(id).ConfigureAwait(false);
+                case "Product":
+                    var checkProduct = Guid.TryParse(id, out var productId);
+                    if (checkProduct)
+                    {
+                        return await cart.BuyProductAsync(productId, quantity).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        return BadRequest($"Product Id {id} can't be parsed as a GUID.");
+                    }
+                case "Service":
+                    var checkService = Guid.TryParse(id, out var serviceId);
+                    if (checkService)
+                    {
+                        return await cart.BuyServiceAsync(serviceId, quantity).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        return BadRequest($"Service Id {id} can't be parsed as a GUID.");
+                    }
+                default:
+                    return NotFound(ModelState);
+            }
+        }
+
+        [HttpGet("Remove/{type}/{id}/{quantity}")]
+        public async Task<IActionResult> RemoveFromCartAsync([FromRoute] string type, [FromRoute] string id, [FromRoute] int quantity = 1)
+        {
+            if (!ModelState.IsValid && !string.IsNullOrWhiteSpace(type) && !string.IsNullOrWhiteSpace(id))
+            {
+                return BadRequest(ModelState);
+            }
+
+            var cart = new CartServices(_configuration, HttpContext);
+
+            switch (type)
+            {
+                case "PhoneNumber":
+                    return await cart.RemovePhoneNumberAsync(id).ConfigureAwait(false);
+                case "PortedPhoneNumber":
+                    return await cart.RemovePortedPhoneNumberAsync(id).ConfigureAwait(false);
+                case "VerifyPhoneNumber":
+                    return await cart.RemoveVerifiedPhoneNumberAsync(id).ConfigureAwait(false);
+                case "Product":
+                    var checkProduct = Guid.TryParse(id, out var productId);
+                    if (checkProduct)
+                    {
+                        return await cart.RemoveProductAsync(productId).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        return BadRequest($"Product Id {id} can't be parsed as a GUID.");
+                    }
+                case "Service":
+                    var checkService = Guid.TryParse(id, out var serviceId);
+                    if (checkService)
+                    {
+                        return await cart.RemoveServiceAsync(serviceId).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        return BadRequest($"Service Id {id} can't be parsed as a GUID.");
+                    }
+                default:
+                    return NotFound(ModelState);
+            }
+        }
+    }
+
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public class CartServices : Controller
+    {
+        private readonly IConfiguration _configuration;
+        private readonly Guid _teleToken;
+        private readonly string _postgresql;
+        private readonly string _apiKey;
+        private readonly string _apiSecret;
+        private readonly string _fpcusername;
+        private readonly string _fpcpassword;
+        private readonly string _invoiceNinjaToken;
+        private readonly string _emailOrders;
+        private readonly string _bulkVSusername;
+        private readonly string _bulkVSpassword;
+        private readonly string _data247username;
+        private readonly string _data247password;
+        private HttpContext _httpContext;
+
+        public CartServices(IConfiguration config, HttpContext httpContext)
+        {
+            _configuration = config;
+            _teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
+            _postgresql = _configuration.GetConnectionString("PostgresqlProd");
+            _apiKey = config.GetConnectionString("BulkVSAPIKEY");
+            _apiSecret = config.GetConnectionString("BulkVSAPISecret");
+            _bulkVSusername = config.GetConnectionString("BulkVSUsername");
+            _bulkVSpassword = config.GetConnectionString("BulkVSPassword");
+            _fpcusername = config.GetConnectionString("PComNetUsername");
+            _fpcpassword = config.GetConnectionString("PComNetPassword");
+            _invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
+            _emailOrders = config.GetConnectionString("EmailOrders");
+            _data247username = config.GetConnectionString("Data247Username");
+            _data247password = config.GetConnectionString("Data247Password");
+            _httpContext = httpContext;
+        }
+
+        public async Task<IActionResult> BuyPhoneNumberAsync(string dialedPhoneNumber)
         {
             if (!ModelState.IsValid)
             {
@@ -157,16 +278,15 @@ namespace NumberSearch.Mvc.Controllers
                 return BadRequest($"{dialedPhoneNumber} is no longer available.");
             }
 
-            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
-            var cart = Cart.GetFromSession(HttpContext.Session);
+            await _httpContext.Session.LoadAsync().ConfigureAwait(false);
+            var cart = Cart.GetFromSession(_httpContext.Session);
             var checkAdd = cart.AddPhoneNumber(phoneNumber, productOrder);
-            var checkSet = cart.SetToSession(HttpContext.Session);
+            var checkSet = cart.SetToSession(_httpContext.Session);
 
             return Ok(dialedPhoneNumber);
         }
 
-        [HttpGet("PortedPhoneNumber/Add/{dialedPhoneNumber}")]
-        public async Task<IActionResult> PortPhoneNumberAsync([FromRoute] string dialedPhoneNumber)
+        public async Task<IActionResult> PortPhoneNumberAsync(string dialedPhoneNumber)
         {
             if (!ModelState.IsValid)
             {
@@ -231,8 +351,8 @@ namespace NumberSearch.Mvc.Controllers
                 }
             }
 
-            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
-            var cart = Cart.GetFromSession(HttpContext.Session);
+            await _httpContext.Session.LoadAsync().ConfigureAwait(false);
+            var cart = Cart.GetFromSession(_httpContext.Session);
 
             // Prevent the user from adding ported numbers that are both wireless and not wireless to the same order.
             if (cart.PortedPhoneNumbers.Any())
@@ -256,7 +376,7 @@ namespace NumberSearch.Mvc.Controllers
             var productOrder = new ProductOrder { PortedDialedNumber = portedPhoneNumber?.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber.PortedPhoneNumberId, Quantity = 1 };
 
             var checkAdd = cart.AddPortedPhoneNumber(portedPhoneNumber, productOrder);
-            var checkSet = cart.SetToSession(HttpContext.Session);
+            var checkSet = cart.SetToSession(_httpContext.Session);
 
             if (checkAdd && checkSet)
             {
@@ -268,8 +388,7 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
-        [HttpGet("VerifiedPhoneNumber/Add/{dialedPhoneNumber}")]
-        public async Task<IActionResult> VerifyPhoneNumberAsync([FromRoute] string dialedPhoneNumber)
+        public async Task<IActionResult> VerifyPhoneNumberAsync(string dialedPhoneNumber)
         {
             if (!ModelState.IsValid)
             {
@@ -349,10 +468,10 @@ namespace NumberSearch.Mvc.Controllers
 
                         var productOrder = new ProductOrder { VerifiedPhoneNumberId = verifiedPhoneNumber.VerifiedPhoneNumberId, Quantity = 1 };
 
-                        await HttpContext.Session.LoadAsync().ConfigureAwait(false);
-                        var cart = Cart.GetFromSession(HttpContext.Session);
+                        await _httpContext.Session.LoadAsync().ConfigureAwait(false);
+                        var cart = Cart.GetFromSession(_httpContext.Session);
                         var checkAdd = cart.AddVerifiedPhoneNumber(verifiedPhoneNumber, productOrder);
-                        var checkSet = cart.SetToSession(HttpContext.Session);
+                        var checkSet = cart.SetToSession(_httpContext.Session);
 
                         if (checkAdd && checkSet)
                         {
@@ -379,8 +498,7 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
-        [HttpGet("Product/Add/{productId}")]
-        public async Task<IActionResult> BuyProductAsync([FromRoute] Guid productId, int Quantity)
+        public async Task<IActionResult> BuyProductAsync(Guid productId, int Quantity)
         {
             if (!ModelState.IsValid)
             {
@@ -394,16 +512,15 @@ namespace NumberSearch.Mvc.Controllers
                 Quantity = Quantity > 0 ? Quantity : 1
             };
 
-            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
-            var cart = Cart.GetFromSession(HttpContext.Session);
+            await _httpContext.Session.LoadAsync().ConfigureAwait(false);
+            var cart = Cart.GetFromSession(_httpContext.Session);
             var checkAdd = cart.AddProduct(product, productOrder);
-            var checkSet = cart.SetToSession(HttpContext.Session);
+            var checkSet = cart.SetToSession(_httpContext.Session);
 
             return Ok();
         }
 
-        [HttpGet("Service/Add/{serviceId}")]
-        public async Task<IActionResult> BuyServiceAsync([FromRoute] Guid serviceId, int Quantity)
+        public async Task<IActionResult> BuyServiceAsync(Guid serviceId, int Quantity)
         {
             if (!ModelState.IsValid)
             {
@@ -417,16 +534,15 @@ namespace NumberSearch.Mvc.Controllers
                 Quantity = Quantity > 0 ? Quantity : 1
             };
 
-            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
-            var cart = Cart.GetFromSession(HttpContext.Session);
+            await _httpContext.Session.LoadAsync().ConfigureAwait(false);
+            var cart = Cart.GetFromSession(_httpContext.Session);
             var checkAdd = cart.AddService(service, productOrder);
-            var checkSet = cart.SetToSession(HttpContext.Session);
+            var checkSet = cart.SetToSession(_httpContext.Session);
 
             return Ok();
         }
 
-        [HttpGet("PhoneNumber/Remove/{dialedPhoneNumber}")]
-        public async Task<IActionResult> RemovePhoneNumberAsync([FromRoute] string dialedPhoneNumber)
+        public async Task<IActionResult> RemovePhoneNumberAsync(string dialedPhoneNumber)
         {
             if (!ModelState.IsValid)
             {
@@ -436,24 +552,23 @@ namespace NumberSearch.Mvc.Controllers
             var phoneNumber = new PhoneNumber { DialedNumber = dialedPhoneNumber };
             var productOrder = new ProductOrder { DialedNumber = dialedPhoneNumber };
 
-            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
-            var cart = Cart.GetFromSession(HttpContext.Session);
+            await _httpContext.Session.LoadAsync().ConfigureAwait(false);
+            var cart = Cart.GetFromSession(_httpContext.Session);
             var checkRemove = cart.RemovePhoneNumber(phoneNumber, productOrder);
-            var checkSet = cart.SetToSession(HttpContext.Session);
+            var checkSet = cart.SetToSession(_httpContext.Session);
 
             return Ok(dialedPhoneNumber);
         }
 
-        [HttpGet("PortedPhoneNumber/Remove/{dialedPhoneNumber}")]
-        public async Task<IActionResult> RemovePortedPhoneNumberAsync([FromRoute] string dialedPhoneNumber)
+        public async Task<IActionResult> RemovePortedPhoneNumberAsync(string dialedPhoneNumber)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
-            var cart = Cart.GetFromSession(HttpContext.Session);
+            await _httpContext.Session.LoadAsync().ConfigureAwait(false);
+            var cart = Cart.GetFromSession(_httpContext.Session);
 
             var portedPhoneNumber = cart.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == dialedPhoneNumber).FirstOrDefault();
 
@@ -464,7 +579,7 @@ namespace NumberSearch.Mvc.Controllers
                 if (productOrder is not null)
                 {
                     var checkRemove = cart.RemovePortedPhoneNumber(portedPhoneNumber, productOrder);
-                    var checkSet = cart.SetToSession(HttpContext.Session);
+                    var checkSet = cart.SetToSession(_httpContext.Session);
 
                     return Ok(dialedPhoneNumber);
                 }
@@ -481,16 +596,15 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
-        [HttpGet("VerifiedPhoneNumber/Remove/{dialedPhoneNumber}")]
-        public async Task<IActionResult> RemoveVerifiedPhoneNumberAsync([FromRoute] string dialedPhoneNumber)
+        public async Task<IActionResult> RemoveVerifiedPhoneNumberAsync(string dialedPhoneNumber)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
-            var cart = Cart.GetFromSession(HttpContext.Session);
+            await _httpContext.Session.LoadAsync().ConfigureAwait(false);
+            var cart = Cart.GetFromSession(_httpContext.Session);
 
             var verifedPhoneNumber = cart.VerifiedPhoneNumbers.Where(x => x.VerifiedDialedNumber == dialedPhoneNumber).FirstOrDefault();
             if (verifedPhoneNumber is not null)
@@ -499,7 +613,7 @@ namespace NumberSearch.Mvc.Controllers
                 if (productOrder is not null)
                 {
                     var checkRemove = cart.RemoveVerifiedPhoneNumber(verifedPhoneNumber, productOrder);
-                    var checkSet = cart.SetToSession(HttpContext.Session);
+                    var checkSet = cart.SetToSession(_httpContext.Session);
 
                     return Ok(dialedPhoneNumber);
                 }
@@ -514,8 +628,7 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
-        [HttpGet("Product/Remove/{productId}")]
-        public async Task<IActionResult> RemoveProductAsync([FromRoute] Guid productId)
+        public async Task<IActionResult> RemoveProductAsync(Guid productId)
         {
             if (!ModelState.IsValid)
             {
@@ -525,16 +638,15 @@ namespace NumberSearch.Mvc.Controllers
             var product = new Product { ProductId = productId };
             var productOrder = new ProductOrder { ProductId = productId };
 
-            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
-            var cart = Cart.GetFromSession(HttpContext.Session);
+            await _httpContext.Session.LoadAsync().ConfigureAwait(false);
+            var cart = Cart.GetFromSession(_httpContext.Session);
             var checkRemove = cart.RemoveProduct(product, productOrder);
-            var checkSet = cart.SetToSession(HttpContext.Session);
+            var checkSet = cart.SetToSession(_httpContext.Session);
 
             return Ok();
         }
 
-        [HttpGet("Service/Remove/{serviceId}")]
-        public async Task<IActionResult> RemoveServiceAsync([FromRoute] Guid serviceId)
+        public async Task<IActionResult> RemoveServiceAsync(Guid serviceId)
         {
             if (!ModelState.IsValid)
             {
@@ -544,10 +656,10 @@ namespace NumberSearch.Mvc.Controllers
             var service = new Service { ServiceId = serviceId };
             var productOrder = new ProductOrder { ServiceId = serviceId };
 
-            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
-            var cart = Cart.GetFromSession(HttpContext.Session);
+            await _httpContext.Session.LoadAsync().ConfigureAwait(false);
+            var cart = Cart.GetFromSession(_httpContext.Session);
             var checkRemove = cart.RemoveService(service, productOrder);
-            var checkSet = cart.SetToSession(HttpContext.Session);
+            var checkSet = cart.SetToSession(_httpContext.Session);
 
             return Ok();
         }

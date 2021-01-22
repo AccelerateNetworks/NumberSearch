@@ -186,14 +186,14 @@
                                                 }
                                                 else if (alreadyInCart.TryGetValue(item.DialedNumber, out var _))
                                                 {
-                                                    <button onclick="PhoneNumberRemove(@item.DialedNumber, this)" class="btn btn-outline-danger">
+                                                    <button onclick="RemoveFromCart('PhoneNumber', @item.DialedNumber, 1, this)" class="btn btn-outline-danger">
                                                         <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                         Remove
                                                     </button>
                                                 }
                                                 else
                                                 {
-                                                    <button onclick="PhoneNumberAdd(@item.DialedNumber, this)" class="btn btn-outline-primary">
+                                                    <button onclick="AddToCart('PhoneNumber', @item.DialedNumber, 1, this)" class="btn btn-outline-primary">
                                                         <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                         Add to Cart
                                                     </button>
@@ -238,14 +238,14 @@
                                                 }
                                                 else if (alreadyInCart.TryGetValue(item.DialedNumber, out var _))
                                                 {
-                                                    <button onclick="PhoneNumberRemove(@item.DialedNumber, this)" class="btn btn-outline-danger">
+                                                    <button onclick="RemoveFromCart('PhoneNumber', @item.DialedNumber, 1, this)" class="btn btn-outline-danger">
                                                         <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                         Remove
                                                     </button>
                                                 }
                                                 else
                                                 {
-                                                    <button onclick="PhoneNumberAdd(@item.DialedNumber, this)" class="btn btn-outline-primary">
+                                                    <button onclick="AddToCart('PhoneNumber', @item.DialedNumber, 1, this)" class="btn btn-outline-primary">
                                                         <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                         Add to Cart
                                                     </button>

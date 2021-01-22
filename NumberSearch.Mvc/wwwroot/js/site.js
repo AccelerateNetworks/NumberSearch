@@ -2,6 +2,9 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // Write your JavaScript code.
+
+$(document).ready();
+
 function displayBusyIndicator() {
     document.getElementById("loading").style.display = "block";
 }
@@ -19,89 +22,51 @@ $('input[type="file"]').change(function (e) {
     $('.custom-file-label').html(fileName);
 });
 
-var cartCounter = parseInt($('#cartCounter').text());
+var cartCounter = 0;
 
-function PhoneNumberAdd(dialedNumber, element) {
-    var removeButton = `<button onclick="PhoneNumberRemove(${dialedNumber}, this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>`;
+function AddToCart(type, id, quantity, element) {
+    var removeButton = `<button onclick="RemoveFromCart('${type}', ${id}, 1, this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>`;
     var checkoutCart = `<a id="headerCart" class="btn btn-outline-success btn-lg" href="/Cart">Checkout&nbsp;<span id="cartCounter" class="badge badge-success badge-pill">0</span></a>`;
-    var spinner = $(element).find('span');
     var cart = $('#headerCart');
+    let spinner = $(element).find('span');
     spinner.removeClass('d-none');
     var request = new XMLHttpRequest();
-    var route = `/Cart/PhoneNumber/Add/${dialedNumber}`;
+    var route = `/Cart/Add/${type}/${id}/${quantity}`;
     request.open('GET', route, true);
     request.onload = function () {
-        if (this.response == dialedNumber) {
-            console.log(`Added ${dialedNumber} to cart.`)
+        if (this.response == id) {
+            console.log(`Added ${type} ${id} to cart.`)
             spinner.addClass('d-none');
             $(element).replaceWith(removeButton);
-            $(cart).replaceWith(checkoutCart);
+            cartCounter = parseInt($('#cartCounter').text());
             cartCounter++;
+            $(cart).replaceWith(checkoutCart);
             $('#cartCounter').text(cartCounter).removeClass('d-none');
         } else {
-            console.log(`Failed to add ${dialedNumber} to cart.`)
+            console.log(`Failed to add ${type} ${id} to cart.`)
             spinner.addClass('d-none')
         }
     };
     request.send();
 }
 
-function PhoneNumberRemove(dialedNumber, element) {
-    var addButton = `<button onclick="PhoneNumberAdd(${dialedNumber}, this)" class="btn btn-outline-primary"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Add to Cart</button>`;
-    var spinner = $(element).find('span');
+function RemoveFromCart(type, id, quantity, element) {
+    var addButton = `<button onclick="AddToCart('${type}', ${id}, 1, this)" class="btn btn-outline-primary"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Add to Cart</button>`;
+    let spinner = $(element).find('span');
     spinner.removeClass('d-none');
     var request = new XMLHttpRequest();
-    var route = `/Cart/PhoneNumber/Remove/${dialedNumber}`;
+    var route = `/Cart/Remove/${type}/${id}/${quantity}`;
     request.open('GET', route, true);
     request.onload = function () {
-        if (this.response == dialedNumber) {
-            console.log(`Removed ${dialedNumber} from cart.`)
+        if (this.response == id) {
+            console.log(`Removed ${type} ${id} from cart.`)
             spinner.addClass('d-none');
             $(element).replaceWith(addButton);
+            cartCounter = parseInt($('#cartCounter').text());
             cartCounter--;
             $('#cartCounter').text(cartCounter).removeClass('d-none');
         } else {
-            console.log(`Failed to remove ${dialedNumber} from cart.`)
-            spinner.addClass('d-none')
-        }
-    };
-    request.send();
-}
-
-function ServiceAdd(serviceId, quantity, element) {
-    var removeButton = `<button onclick="ServiceRemove(${serviceId}, this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>`;
-    let spinner = $(element).find('span');
-    spinner.removeClass('d-none');
-    var request = new XMLHttpRequest();
-    var route = `/Cart/Service/Add/${dialedNumber}?quantity=${quantity}`;
-    request.open('GET', route, true);
-    request.onload = function () {
-        if (this.response == dialedNumber) {
-            console.log(`Added ${serviceId} to cart.`)
-            spinner.addClass('d-none');
-            $(element).replaceWith(removeButton);
-        } else {
-            console.log(`Failed to add ${serviceId} to cart.`)
-            spinner.addClass('d-none')
-        }
-    };
-    request.send();
-}
-
-function ServiceRemove(serviceId, element) {
-    var addButton = `<button onclick="ServiceAdd(${serviceId}, this)" class="btn btn-outline-primary"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Add to Cart</button>`;
-    let spinner = $(element).find('span');
-    spinner.removeClass('d-none');
-    var request = new XMLHttpRequest();
-    var route = `/Cart/Service/Remove/${serviceId}`;
-    request.open('GET', route, true);
-    request.onload = function () {
-        if (this.response == dialedNumber) {
-            console.log(`Removed ${serviceId} from cart.`)
-            spinner.addClass('d-none');
-            $(element).replaceWith(addButton);
-        } else {
-            console.log(`Failed to remove ${serviceId} from cart.`)
+            console.log(`Failed to remove ${type} ${id} from cart.`)
             spinner.addClass('d-none')
         }
     };
