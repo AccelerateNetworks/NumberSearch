@@ -69,7 +69,7 @@ namespace NumberSearch.Mvc.Controllers
                     return await cart.BuyPhoneNumberAsync(id).ConfigureAwait(false);
                 case "PortedPhoneNumber":
                     return await cart.PortPhoneNumberAsync(id).ConfigureAwait(false);
-                case "VerifyPhoneNumber":
+                case "VerifiedPhoneNumber":
                     return await cart.VerifyPhoneNumberAsync(id).ConfigureAwait(false);
                 case "Product":
                     var checkProduct = Guid.TryParse(id, out var productId);
@@ -112,7 +112,7 @@ namespace NumberSearch.Mvc.Controllers
                     return await cart.RemovePhoneNumberAsync(id).ConfigureAwait(false);
                 case "PortedPhoneNumber":
                     return await cart.RemovePortedPhoneNumberAsync(id).ConfigureAwait(false);
-                case "VerifyPhoneNumber":
+                case "VerifiedPhoneNumber":
                     return await cart.RemoveVerifiedPhoneNumberAsync(id).ConfigureAwait(false);
                 case "Product":
                     var checkProduct = Guid.TryParse(id, out var productId);

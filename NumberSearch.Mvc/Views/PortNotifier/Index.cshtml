@@ -63,15 +63,11 @@
                                     @{
                                         if (alreadyInCart.TryGetValue(Model.VerifiedPhoneNumber.VerifiedDialedNumber, out var _))
                                         {
-                                            <a asp-controller="Cart" asp-action="RemoveVerifiedPhoneNumber" asp-route-id="@Model.VerifiedPhoneNumber.VerifiedDialedNumber" target="_top">
-                                                <input type="button" class="btn btn-outline-danger" value="Remove">
-                                            </a>
+                                            <button onclick="RemoveFromCart('VerifiedPhoneNumber', '@Model.VerifiedPhoneNumber.VerifiedDialedNumber', 1, this)" class="btn btn-outline-danger">Remove</button>
                                         }
                                         else
                                         {
-                                            <a asp-controller="Cart" asp-action="VerifyPhoneNumber" asp-route-id="@Model.VerifiedPhoneNumber.VerifiedDialedNumber" target="_top">
-                                                <input type="button" class="btn btn-outline-primary" value="Add to Cart">
-                                            </a>
+                                            <button onclick="AddToCart('VerifiedPhoneNumber', '@Model.VerifiedPhoneNumber.VerifiedDialedNumber', 1, this)" class="btn btn-outline-primary">Add to Cart</button>
                                         }
                                     }
                                 </td>
