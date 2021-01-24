@@ -226,7 +226,7 @@ namespace NumberSearch.Ingest
                                 Log.Information("[BulkVS] [PortRequests] Ingesting Port Request statuses.");
 
                                 var portRequests = await PortRequest.GetAllAsync(postgresSQL).ConfigureAwait(false);
-                                var bulkVSPortRequests = portRequests.Where(x => (x.VendorSubmittedTo == "BulkVS" && x.Completed is false));
+                                var bulkVSPortRequests = portRequests.Where(x => (x.VendorSubmittedTo == "BulkVS" && x.Completed is false && x.DateSubmitted > DateTime.Now.AddYears(-3)));
 
                                 foreach (var request in bulkVSPortRequests)
                                 {
@@ -765,14 +765,12 @@ Accelerate Networks
                             {
                                 // Ingest all avalible numbers from the TeleMessage.
                                 Log.Information("[TeleMessage] [PortRequests] Ingesting Port Request statuses.");
-                                var teleStats = await Provider.TeleMessageAsync(teleToken, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
 
                                 var portRequests = await PortRequest.GetAllAsync(postgresSQL).ConfigureAwait(false);
 
-                                foreach (var request in portRequests.Where(x => (x.VendorSubmittedTo == "TeliMessage" && x.Completed is false)).ToArray())
+                                foreach (var request in portRequests.Where(x => (x.VendorSubmittedTo == "TeliMessage" && x.Completed is false && x.DateSubmitted > DateTime.Now.AddYears(-3))).ToArray())
                                 {
-
-                                    var teliStatus = await LnpGet.GetAsync(request.TeliId, teleToken).ConfigureAwait(false);
+                                    var teliStatus = await LnpGet.GetAsync(request?.TeliId, teleToken).ConfigureAwait(false);
 
                                     // All of the statuses for all of the numbers.
                                     var numberStatuses = teliStatus?.data?.numbers_data?.Select(x => x.request_status);

@@ -33,11 +33,8 @@
                                 </span>
                             </h4>
                             @{
-                                if (!string.IsNullOrWhiteSpace(port?.TeliId))
+                                if (!string.IsNullOrWhiteSpace(port?.VendorSubmittedTo))
                                 {
-                                    <a href="https://control.teli.net/lnp/view?request_id=@port?.TeliId" target="_blank" rel="noopener noreferrer" class="btn btn-info mb-1">
-                                        Teli Port Request @port?.TeliId
-                                    </a>
                                     if (port.Completed)
                                     {
                                         <h4><span class="badge badge-success">Completed @port?.DateCompleted?.ToShortDateString()</span></h4>
@@ -46,21 +43,42 @@
                                     {
                                         if (!string.IsNullOrWhiteSpace(port?.RequestStatus))
                                         {
-                                            if (port?.RequestStatus == "processing")
+                                            switch (port?.RequestStatus)
                                             {
-                                                <h4><span class="badge badge-warning">Processing @port?.DateSubmitted.ToShortDateString()</span></h4>
-                                            }
-                                            else if (port?.RequestStatus == "canceled")
-                                            {
-                                                <h4><span class="badge badge-danger">Processing @port?.DateSubmitted.ToShortDateString()</span></h4>
-                                            }
-                                            else if (port?.RequestStatus == "rejected")
-                                            {
-                                                <h4><span class="badge badge-danger">Processing @port?.DateSubmitted.ToShortDateString()</span></h4>
-                                            }
-                                            else
-                                            {
-                                                <h4><span class="badge badge-warning">Submitted @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                case "SUBMITTED":
+                                                    <h4><span class="badge badge-warning">Submitted @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    break;
+                                                case "EXCEPTION":
+                                                    <h4><span class="badge badge-danger">Exception @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    break;
+                                                case "COMPLETE":
+                                                    <h4><span class="badge badge-warning">Complete @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    break;
+                                                case "PENDING":
+                                                    <h4><span class="badge badge-warning">Pending @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    break;
+                                                case "REQUESTED_SUPP":
+                                                    <h4><span class="badge badge-danger">Supplimental Information Requested @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    break;
+                                                case "FOC":
+                                                    <h4><span class="badge badge-warning">FOC Date Set @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    break;
+                                                case "CANCELLED":
+                                                    <h4><span class="badge badge-danger">Cancelled @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    break;
+                                                case "processing":
+                                                    <h4><span class="badge badge-warning">Processing @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    break;
+                                                case "canceled":
+                                                    <h4><span class="badge badge-danger">Processing @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    break;
+                                                case "rejected":
+                                                    <h4><span class="badge badge-danger">Processing @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    break;
+                                                default:
+                                                    <h4><span class="badge badge-warning">Submitted @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    break;
+
                                             }
                                         }
                                         else
