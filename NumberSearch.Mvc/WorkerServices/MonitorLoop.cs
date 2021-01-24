@@ -90,6 +90,8 @@ namespace NumberSearch.Mvc
                                 // Execute the phone number purchases required for this order.
                                 var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
 
+                                Log.Information($"[Background Worker] {purchasedPhoneNumbers.Count()} phone numbers to purchase.");
+
                                 // Create a single PIN for this order.
                                 var random = new Random();
                                 var pin = random.Next(100000, 99999999);
@@ -130,6 +132,8 @@ namespace NumberSearch.Mvc
 
                                                         var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
                                                         var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
+
+                                                        Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from BulkVS.");
                                                     }
                                                     else if (nto.IngestedFrom == "TeleMessage")
                                                     {
@@ -144,17 +148,19 @@ namespace NumberSearch.Mvc
                                                         var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
                                                         var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
 
+                                                        Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from TeliMessage.");
+
                                                         // Set a note for these number purchases inside of Tele's system.
                                                         var getTeleId = await UserDidsGet.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
                                                         var setTeleLabel = await UserDidsNote.SetNote($"{order?.BusinessName} {order?.FirstName} {order?.LastName}", getTeleId.data.id, _teleToken).ConfigureAwait(false);
 
                                                         if (setTeleLabel.code == 200)
                                                         {
-                                                            Log.Information($"Sucessfully set TeleMessage label for {nto.DialedNumber} to {order?.BusinessName} {order?.FirstName} {order?.LastName}.");
+                                                            Log.Information($"[Background Worker] Sucessfully set TeleMessage label for {nto.DialedNumber} to {order?.BusinessName} {order?.FirstName} {order?.LastName}.");
                                                         }
                                                         else
                                                         {
-                                                            Log.Fatal($"Failed to set TeleMessage label for {nto.DialedNumber} to {order?.BusinessName} {order?.FirstName} {order?.LastName}.");
+                                                            Log.Fatal($"[Background Worker] Failed to set TeleMessage label for {nto.DialedNumber} to {order?.BusinessName} {order?.FirstName} {order?.LastName}.");
                                                         }
                                                     }
                                                     else if (nto.IngestedFrom == "FirstPointCom")
@@ -169,6 +175,8 @@ namespace NumberSearch.Mvc
 
                                                         var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
                                                         var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
+
+                                                        Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from FirstPointCom.");
                                                     }
                                                 }
                                                 catch (Exception ex)
@@ -188,32 +196,39 @@ namespace NumberSearch.Mvc
 
                                 // Send out the confirmation emails.
                                 var emails = await Email.GetByOrderAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                Log.Information($"[Background Worker] {emails.Count()} emails to send.");
 
                                 foreach (var message in emails)
                                 {
                                     // Send the message the email server.
                                     var checkSend = await message.SendEmailAsync(_emailUsername, _emailPassword).ConfigureAwait(false);
 
+                                    // If it didn't work try it again.
+                                    if (!checkSend)
+                                    {
+                                        checkSend = await message.SendEmailAsync(_emailUsername, _emailPassword).ConfigureAwait(false);
+                                    }
+
                                     // Mark it as sent.
                                     message.DateSent = DateTime.Now;
                                     message.Completed = checkSend;
 
                                     // Update the database with the email's new status.
-                                    var checkSave = await message.PostAsync(_postgresql).ConfigureAwait(false);
+                                    var checkSave = await message.PutAsync(_postgresql).ConfigureAwait(false);
 
                                     // Log the success or failure of the operation.
                                     if (checkSend && checkSave)
                                     {
-                                        Log.Information($"Sucessfully sent out email {message.EmailId} for order {order.OrderId}.");
+                                        Log.Information($"[Background Worker] Sucessfully sent out email {message.EmailId} for order {order.OrderId}.");
                                     }
                                     else
                                     {
-                                        Log.Fatal($"Failed to sent out the email {message.EmailId} for order {order.OrderId}.");
+                                        Log.Fatal($"[Background Worker] Failed to sent out the email {message.EmailId} for order {order.OrderId}.");
                                     }
                                 }
 
                                 Log.Information(
-                                    "[Background Worker] Queued Background Task {order.OrderId} is Completed.", order.OrderId);
+                                    $"[Background Worker] Queued Background Task {order.OrderId} is Completed.");
 
                                 break;
                             }

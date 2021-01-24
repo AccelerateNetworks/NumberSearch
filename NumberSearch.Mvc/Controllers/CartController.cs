@@ -185,6 +185,9 @@ namespace NumberSearch.Mvc.Controllers
                     // Create a new order.
                     if (orderExists is null)
                     {
+                        // Prevent the background work from happening before it's queued up.
+                        order.BackgroundWorkCompleted = true;
+
                         // Save to db.
                         var submittedOrder = await order.PostAsync(_postgresql).ConfigureAwait(false);
 
@@ -778,6 +781,9 @@ Accelerate Networks
                                 Log.Information($"Skipped sending out the confirmation emails for {order.OrderId} due to customer notes.");
                             }
 
+                            // Allow the background work to commence.
+                            order.BackgroundWorkCompleted = false;
+                            var checkOrderUpdate = order.PutAsync(_postgresql).ConfigureAwait(false);
 
                             if (cart.PortedPhoneNumbers.Any())
                             {

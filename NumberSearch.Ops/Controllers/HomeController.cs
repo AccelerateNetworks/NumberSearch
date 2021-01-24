@@ -731,6 +731,7 @@ namespace NumberSearch.Ops.Controllers
                     var teliResponse = await LnpCreate.GetAsync(portRequest, numbers, _teleToken).ConfigureAwait(false);
                     portRequest.TeliId = teliResponse.data.id;
                     portRequest.DateSubmitted = DateTime.Now;
+                    portRequest.VendorSubmittedTo = "TeliMessage";
                     var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
 
                     foreach (var number in numbers)
@@ -891,6 +892,7 @@ namespace NumberSearch.Ops.Controllers
                             // Rename this to VendorOrderId, rather than TeliId.
                             portRequest.TeliId = bulkResponse?.OrderId;
                             portRequest.DateSubmitted = DateTime.Now;
+                            portRequest.VendorSubmittedTo = "BulkVS";
                             var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
 
                             foreach (var number in numbers)

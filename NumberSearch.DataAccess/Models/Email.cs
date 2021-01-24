@@ -56,7 +56,7 @@ namespace NumberSearch.DataAccess
             var result = await connection
                 .QueryAsync<Email>("SELECT \"EmailId\", \"OrderId\", \"PrimaryEmailAddress\", \"CarbonCopy\", \"Subject\", \"MessageBody\", \"DateSent\", \"Completed\" " +
                 "FROM public.\"SentEmails\" " +
-                "WHERE \"OrderId\" = @Orderid",
+                "WHERE \"OrderId\" = @OrderId",
                 new { OrderId })
                 .ConfigureAwait(false);
 
@@ -167,7 +167,8 @@ namespace NumberSearch.DataAccess
 
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"SentEmails\" (\"OrderId\", \"PrimaryEmailAddress\", \"CarbonCopy\", \"Subject\", \"MessageBody\", \"DateSent\", \"Completed\") " +
-                "VALUES ( @OrderId, @PrimaryEmailAddress, @CarbonCopy, @Subject, @MessageBody, @DateSent, @Completed )", new { OrderId, PrimaryEmailAddress, CarbonCopy, Subject, MessageBody, DateSent, Completed })
+                "VALUES ( @OrderId, @PrimaryEmailAddress, @CarbonCopy, @Subject, @MessageBody, @DateSent, @Completed )",
+                new { OrderId, PrimaryEmailAddress, CarbonCopy, Subject, MessageBody, DateSent, Completed })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -196,7 +197,9 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("UPDATE public.\"SentEmails\" SET \"DateSent\" = @DateSent, \"Completed\" = @Completed WHERE \"EmailId\" = @EmailId", new { DateSent, Completed, EmailId })
+                .ExecuteAsync("UPDATE public.\"SentEmails\" SET \"OrderId\"= @OrderId, \"PrimaryEmailAddress\"= @PrimaryEmailAddress, \"CarbonCopy\"= @CarbonCopy, \"Subject\"= @Subject, \"MessageBody\"= @MessageBody, \"DateSent\"= @DateSent, \"Completed\"= @Completed " +
+                "WHERE \"EmailId\" = @EmailId",
+                new { OrderId, PrimaryEmailAddress, CarbonCopy, Subject, MessageBody, DateSent, Completed, EmailId })
                 .ConfigureAwait(false);
 
             if (result == 1)

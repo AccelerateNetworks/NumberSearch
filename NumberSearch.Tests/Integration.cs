@@ -1281,7 +1281,7 @@ namespace NumberSearch.Tests
                 Subject = "Test",
                 DateSent = DateTime.Now,
                 CarbonCopy = "Test",
-                Completed = true,
+                Completed = false,
                 MessageBody = "This is an integration test.",
                 OrderId = Guid.NewGuid()
             };
@@ -1300,7 +1300,22 @@ namespace NumberSearch.Tests
                 Assert.Equal(email.CarbonCopy, item.CarbonCopy);
                 Assert.Equal(email.MessageBody, item.MessageBody);
 
-                var checkDelete = await item.DeleteAsync(postgresql).ConfigureAwait(false);
+                item.DateSent = DateTime.Now;
+                item.Completed = true;
+
+                var checkUpdate = await item.PutAsync(postgresql).ConfigureAwait(false);
+                Assert.True(checkUpdate);
+
+                var updatedDb = await Email.GetAsync(item.EmailId, postgresql).ConfigureAwait(false);
+                Assert.NotNull(updatedDb);
+                Assert.Equal(updatedDb.PrimaryEmailAddress, item.PrimaryEmailAddress);
+                Assert.Equal(updatedDb.Subject, item.Subject);
+                Assert.Equal(updatedDb.CarbonCopy, item.CarbonCopy);
+                Assert.Equal(updatedDb.MessageBody, item.MessageBody);
+                Assert.Equal(updatedDb.Completed, item.Completed);
+                Assert.True(updatedDb.Completed);
+
+                var checkDelete = await updatedDb.DeleteAsync(postgresql).ConfigureAwait(false);
                 Assert.True(checkDelete);
             }
         }
