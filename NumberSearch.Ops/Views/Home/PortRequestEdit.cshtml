@@ -18,19 +18,6 @@
                 This port request has not yet been submitted by the customer.
             </div>
         }
-
-        if (!string.IsNullOrWhiteSpace(Model?.PortRequest?.TeliId))
-        {
-            <a href="https://control.teli.net/lnp/view?request_id=@Model?.PortRequest?.TeliId" target="_blank" rel="noopener noreferrer" class="btn btn-info">
-                Teli Port Request @Model?.PortRequest?.TeliId
-            </a>
-        }
-        else
-        {
-            <div class="alert alert-warning mt-3" role="alert">
-                This port request has not yet been submitted to Teli.
-            </div>
-        }
     }
 </div>
 <form action="/Home/PortRequests/@Model?.PortRequest?.OrderId" method="post" class="needs-validation mb-3">
@@ -328,6 +315,9 @@
                 <thead>
                     <tr>
                         <th>
+                            Port Request
+                        </th>
+                        <th>
                             Dialed Number
                         </th>
                         <th>
@@ -348,6 +338,26 @@
                             var statusText = number?.RequestStatus?.ToString() ?? "No Status";
                             var focText = number?.DateFirmOrderCommitment?.ToString() ?? "Not Set";
                             <tr>
+                                <td>
+                                    @{
+                                        if (Model?.PortRequest?.VendorSubmittedTo == "TeliMessage")
+                                        {
+                                            <a href="https://control.teli.net/lnp/view?request_id=@number?.ExternalPortRequestId" target="_blank" rel="noopener noreferrer" class="btn btn-info">
+                                                Teli @number?.ExternalPortRequestId
+                                            </a>
+                                        }
+                                        else if (Model?.PortRequest?.VendorSubmittedTo == "BulkVS")
+                                        {
+                                            <a href="https://control.teli.net/lnp/view?request_id=@number?.ExternalPortRequestId" target="_blank" rel="noopener noreferrer" class="btn btn-info">
+                                                BulkVS @number?.ExternalPortRequestId
+                                            </a>
+                                        }
+                                        else
+                                        {
+
+                                        }
+                                    }
+                                </td>
                                 <td>
                                     <h4>@number?.PortedDialedNumber</h4>
                                 </td>

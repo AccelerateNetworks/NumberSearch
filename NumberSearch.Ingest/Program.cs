@@ -782,8 +782,7 @@ Accelerate Networks
                                     // If the request can't be found in Teli's database.
                                     if (teliStatus.code == 400)
                                     {
-                                        request.DateUpdated = DateTime.Now;
-                                        request.Completed = false;
+                                        continue;
                                     }
                                     // If all the numbers have been ported.
                                     else if ((completed != null) && (completed.Any()) && (completed.Count() == numberStatuses.Count()))
