@@ -769,153 +769,151 @@ Accelerate Networks
 
                                 var portRequests = await PortRequest.GetAllAsync(postgresSQL).ConfigureAwait(false);
 
-                                foreach (var request in portRequests.Where(x => !string.IsNullOrWhiteSpace(x.TeliId)).ToArray())
+                                foreach (var request in portRequests.Where(x => (x.VendorSubmittedTo == "TeliMessage" && x.Completed is false)).ToArray())
                                 {
-                                    // The request is not complete, but it has been assigned an Id by Teli, which means that it's been submitted.
-                                    if (!request.Completed && !string.IsNullOrWhiteSpace(request.TeliId))
+
+                                    var teliStatus = await LnpGet.GetAsync(request.TeliId, teleToken).ConfigureAwait(false);
+
+                                    // All of the statuses for all of the numbers.
+                                    var numberStatuses = teliStatus?.data?.numbers_data?.Select(x => x.request_status);
+
+                                    var canceled = numberStatuses?.Where(x => x == "canceled");
+                                    var rejected = numberStatuses?.Where(x => x == "rejected");
+                                    var completed = numberStatuses?.Where(x => x == "completed");
+
+                                    // If the request can't be found in Teli's database.
+                                    if (teliStatus.code == 400)
                                     {
-                                        var teliStatus = await LnpGet.GetAsync(request.TeliId, teleToken).ConfigureAwait(false);
+                                        request.DateUpdated = DateTime.Now;
+                                        request.Completed = false;
+                                    }
+                                    // If all the numbers have been ported.
+                                    else if ((completed != null) && (completed.Any()) && (completed.Count() == numberStatuses.Count()))
+                                    {
+                                        request.RequestStatus = "completed";
+                                        request.DateCompleted = DateTime.Now;
+                                        request.DateUpdated = DateTime.Now;
+                                        request.Completed = true;
+                                    }
+                                    // If the porting of a number has been canceled.
+                                    else if ((canceled != null) && (canceled.Any()))
+                                    {
+                                        request.RequestStatus = "canceled";
+                                        request.DateCompleted = DateTime.Now;
+                                        request.DateUpdated = DateTime.Now;
+                                        request.Completed = true;
+                                    }
+                                    // If a request to port a number has been rejected.
+                                    else if ((rejected != null) && (rejected.Any()))
+                                    {
+                                        request.RequestStatus = "rejected";
+                                        request.DateCompleted = DateTime.Now;
+                                        request.DateUpdated = DateTime.Now;
+                                        request.Completed = true;
+                                    }
+                                    // If the none of the port request completion criteria have been met.
+                                    else
+                                    {
+                                        request.RequestStatus = numberStatuses?.FirstOrDefault();
+                                        request.DateUpdated = DateTime.Now;
+                                        request.Completed = false;
+                                    }
 
-                                        // All of the statuses for all of the numbers.
-                                        var numberStatuses = teliStatus?.data?.numbers_data?.Select(x => x.request_status);
+                                    // Update the request in the database.
+                                    var checkUpdate = await request.PutAsync(postgresSQL).ConfigureAwait(false);
+                                    Log.Information($"[TeleMessage] [PortRequests] Updated Teli Port Request {request?.TeliId} - {request?.RequestStatus} - {request?.DateCompleted?.ToShortDateString()}");
 
-                                        var canceled = numberStatuses?.Where(x => x == "canceled");
-                                        var rejected = numberStatuses?.Where(x => x == "rejected");
-                                        var completed = numberStatuses?.Where(x => x == "completed");
+                                    // Get the original order and the numbers associated with the outstanding Port Request.
+                                    var originalOrder = await Order.GetByIdAsync(request.OrderId, postgresSQL).ConfigureAwait(false);
+                                    var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(request.OrderId, postgresSQL).ConfigureAwait(false);
 
-                                        // If the request can't be found in Teli's database.
-                                        if (teliStatus.code == 400)
+                                    var notificationEmail = new Email
+                                    {
+                                        PrimaryEmailAddress = originalOrder?.Email,
+                                        SalesEmailAddress = string.IsNullOrWhiteSpace(originalOrder?.SalesEmail) ? string.Empty : originalOrder.SalesEmail,
+                                        CarbonCopy = emailOrders,
+                                        OrderId = originalOrder.OrderId
+                                    };
+
+                                    bool focChanged = false;
+                                    bool portCompleted = false;
+
+                                    if (teliStatus?.data?.numbers_data != null && teliStatus.data.numbers_data.Any())
+                                    {
+                                        // Update the status of all of the numbers in the request.
+                                        foreach (var number in teliStatus?.data?.numbers_data)
                                         {
-                                            request.DateUpdated = DateTime.Now;
-                                            request.Completed = false;
-                                        }
-                                        // If all the numbers have been ported.
-                                        else if ((completed != null) && (completed.Any()) && (completed.Count() == numberStatuses.Count()))
-                                        {
-                                            request.RequestStatus = "completed";
-                                            request.DateCompleted = DateTime.Now;
-                                            request.DateUpdated = DateTime.Now;
-                                            request.Completed = true;
-                                        }
-                                        // If the porting of a number has been canceled.
-                                        else if ((canceled != null) && (canceled.Any()))
-                                        {
-                                            request.RequestStatus = "canceled";
-                                            request.DateCompleted = DateTime.Now;
-                                            request.DateUpdated = DateTime.Now;
-                                            request.Completed = true;
-                                        }
-                                        // If a request to port a number has been rejected.
-                                        else if ((rejected != null) && (rejected.Any()))
-                                        {
-                                            request.RequestStatus = "rejected";
-                                            request.DateCompleted = DateTime.Now;
-                                            request.DateUpdated = DateTime.Now;
-                                            request.Completed = true;
-                                        }
-                                        // If the none of the port request completion criteria have been met.
-                                        else
-                                        {
-                                            request.RequestStatus = numberStatuses?.FirstOrDefault();
-                                            request.DateUpdated = DateTime.Now;
-                                            request.Completed = false;
-                                        }
+                                            var match = portedNumbers?.Where(x => x?.PortedDialedNumber == number?.number.Trim()).FirstOrDefault();
 
-                                        // Update the request in the database.
-                                        var checkUpdate = await request.PutAsync(postgresSQL).ConfigureAwait(false);
-                                        Log.Information($"[TeleMessage] [PortRequests] Updated Teli Port Request {request?.TeliId} - {request?.RequestStatus} - {request?.DateCompleted?.ToShortDateString()}");
-
-                                        // Get the original order and the numbers associated with the outstanding Port Request.
-                                        var originalOrder = await Order.GetByIdAsync(request.OrderId, postgresSQL).ConfigureAwait(false);
-                                        var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(request.OrderId, postgresSQL).ConfigureAwait(false);
-
-                                        var notificationEmail = new Email
-                                        {
-                                            PrimaryEmailAddress = originalOrder?.Email,
-                                            SalesEmailAddress = string.IsNullOrWhiteSpace(originalOrder?.SalesEmail) ? string.Empty : originalOrder.SalesEmail,
-                                            CarbonCopy = emailOrders,
-                                            OrderId = originalOrder.OrderId
-                                        };
-
-                                        bool focChanged = false;
-                                        bool portCompleted = false;
-
-                                        if (teliStatus?.data?.numbers_data != null && teliStatus.data.numbers_data.Any())
-                                        {
-                                            // Update the status of all of the numbers in the request.
-                                            foreach (var number in teliStatus?.data?.numbers_data)
+                                            if (match != null)
                                             {
-                                                var match = portedNumbers?.Where(x => x?.PortedDialedNumber == number?.number.Trim()).FirstOrDefault();
-
-                                                if (match != null)
+                                                // Update the request status if it has changed.
+                                                if (!string.IsNullOrWhiteSpace(number?.request_status) && (number?.request_status != match.RequestStatus))
                                                 {
-                                                    // Update the request status if it has changed.
-                                                    if (!string.IsNullOrWhiteSpace(number?.request_status) && (number?.request_status != match.RequestStatus))
+                                                    match.RequestStatus = number?.request_status.Trim();
+                                                    if (match.RequestStatus == "completed")
                                                     {
-                                                        match.RequestStatus = number?.request_status.Trim();
-                                                        if (match.RequestStatus == "completed")
-                                                        {
-                                                            portCompleted = true;
-                                                        }
+                                                        portCompleted = true;
                                                     }
-
-                                                    // Update the FOC date if it has changed.
-                                                    var checkFocDateParse = DateTime.TryParse(number?.foc_date, out var focDate);
-
-                                                    if (checkFocDateParse && match.DateFirmOrderCommitment != focDate)
-                                                    {
-                                                        match.DateFirmOrderCommitment = focDate;
-                                                        focChanged = true;
-                                                    }
-
-                                                    var checkPortedNumberUpdate = await match.PutAsync(postgresSQL).ConfigureAwait(false);
-                                                    Log.Information($"[TeleMessage] [PortRequests] Updated Teli Port Request {request?.TeliId} - {match?.PortedDialedNumber} - {match?.RequestStatus} - {match?.DateFirmOrderCommitment?.ToShortDateString()}");
                                                 }
-                                                else
+
+                                                // Update the FOC date if it has changed.
+                                                var checkFocDateParse = DateTime.TryParse(number?.foc_date, out var focDate);
+
+                                                if (checkFocDateParse && match.DateFirmOrderCommitment != focDate)
                                                 {
-                                                    // If the number isn't already assocaited with the Port request add it to the list of Ported Numbers.
-                                                    bool checkNpa = int.TryParse(number?.number?.Substring(0, 3), out int npa);
-                                                    bool checkNxx = int.TryParse(number?.number?.Substring(3, 3), out int nxx);
-                                                    bool checkXxxx = int.TryParse(number?.number?.Substring(6, 4), out int xxxx);
-
-                                                    var supriseNumber = new PortedPhoneNumber
-                                                    {
-                                                        PortedDialedNumber = number?.number,
-                                                        NPA = npa,
-                                                        NXX = nxx,
-                                                        XXXX = xxxx,
-                                                        OrderId = originalOrder?.OrderId,
-                                                        PortRequestId = request?.PortRequestId,
-                                                        RequestStatus = number?.request_status.Trim()
-                                                    };
-
-                                                    var checkFocDateParse = DateTime.TryParse(number?.foc_date, out var focDate);
-
-                                                    if (checkFocDateParse)
-                                                    {
-                                                        supriseNumber.DateFirmOrderCommitment = focDate;
-                                                    }
-
-                                                    var checkInsertPortedNumber = await supriseNumber.PostAsync(postgresSQL).ConfigureAwait(false);
-                                                    Log.Information($"[TeleMessage] [PortRequests] Updated Teli Port Request {request?.TeliId} - {match?.PortedDialedNumber} - {match?.RequestStatus} - {match?.DateFirmOrderCommitment?.ToShortDateString()}");
+                                                    match.DateFirmOrderCommitment = focDate;
+                                                    focChanged = true;
                                                 }
+
+                                                var checkPortedNumberUpdate = await match.PutAsync(postgresSQL).ConfigureAwait(false);
+                                                Log.Information($"[TeleMessage] [PortRequests] Updated Teli Port Request {request?.TeliId} - {match?.PortedDialedNumber} - {match?.RequestStatus} - {match?.DateFirmOrderCommitment?.ToShortDateString()}");
+                                            }
+                                            else
+                                            {
+                                                // If the number isn't already assocaited with the Port request add it to the list of Ported Numbers.
+                                                bool checkNpa = int.TryParse(number?.number?.Substring(0, 3), out int npa);
+                                                bool checkNxx = int.TryParse(number?.number?.Substring(3, 3), out int nxx);
+                                                bool checkXxxx = int.TryParse(number?.number?.Substring(6, 4), out int xxxx);
+
+                                                var supriseNumber = new PortedPhoneNumber
+                                                {
+                                                    PortedDialedNumber = number?.number,
+                                                    NPA = npa,
+                                                    NXX = nxx,
+                                                    XXXX = xxxx,
+                                                    OrderId = originalOrder?.OrderId,
+                                                    PortRequestId = request?.PortRequestId,
+                                                    RequestStatus = number?.request_status.Trim()
+                                                };
+
+                                                var checkFocDateParse = DateTime.TryParse(number?.foc_date, out var focDate);
+
+                                                if (checkFocDateParse)
+                                                {
+                                                    supriseNumber.DateFirmOrderCommitment = focDate;
+                                                }
+
+                                                var checkInsertPortedNumber = await supriseNumber.PostAsync(postgresSQL).ConfigureAwait(false);
+                                                Log.Information($"[TeleMessage] [PortRequests] Updated Teli Port Request {request?.TeliId} - {match?.PortedDialedNumber} - {match?.RequestStatus} - {match?.DateFirmOrderCommitment?.ToShortDateString()}");
                                             }
                                         }
+                                    }
 
-                                        string formattedNumbers = string.Empty;
+                                    string formattedNumbers = string.Empty;
 
-                                        // If the port has just completed send out a notification email.
-                                        if (portCompleted)
+                                    // If the port has just completed send out a notification email.
+                                    if (portCompleted)
+                                    {
+                                        // If the ported number haven't already been formatted for inclusion in the email do it now.
+                                        foreach (var ported in portedNumbers)
                                         {
-                                            // If the ported number haven't already been formatted for inclusion in the email do it now.
-                                            foreach (var ported in portedNumbers)
-                                            {
-                                                formattedNumbers += $"{formattedNumbers}<br />{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
-                                            }
+                                            formattedNumbers += $"{formattedNumbers}<br />{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
+                                        }
 
-                                            // Port date set or updated.
-                                            notificationEmail.Subject = $"Your phone number has switched to Accelerate Networks successfully!";
-                                            notificationEmail.MessageBody = $@"Hi {originalOrder.FirstName},
+                                        // Port date set or updated.
+                                        notificationEmail.Subject = $"Your phone number has switched to Accelerate Networks successfully!";
+                                        notificationEmail.MessageBody = $@"Hi {originalOrder.FirstName},
 <br />
 <br />                                                                            
 Great news, your old provider has released your phone numbers to Accelerate Networks!
@@ -937,28 +935,28 @@ Accelerate Networks
 <br />                                                                            
 206-858-8757 (call or text)";
 
-                                            var checkSend = await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);
-                                            var checkSave = await notificationEmail.PostAsync(postgresSQL).ConfigureAwait(false);
+                                        var checkSend = await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);
+                                        var checkSave = await notificationEmail.PostAsync(postgresSQL).ConfigureAwait(false);
 
-                                            if (checkSend && checkSave)
-                                            {
-                                                Log.Information($"Sucessfully sent out the port date set email for Order {originalOrder.OrderId}.");
-                                            }
-                                            else
-                                            {
-                                                Log.Fatal($"Failed to sent out the port date set email for Order {originalOrder.OrderId}.");
-                                            }
-                                        }
-                                        else if (focChanged)
+                                        if (checkSend && checkSave)
                                         {
-                                            foreach (var ported in portedNumbers)
-                                            {
-                                                formattedNumbers += $"{formattedNumbers}<br />{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
-                                            }
+                                            Log.Information($"Sucessfully sent out the port date set email for Order {originalOrder.OrderId}.");
+                                        }
+                                        else
+                                        {
+                                            Log.Fatal($"Failed to sent out the port date set email for Order {originalOrder.OrderId}.");
+                                        }
+                                    }
+                                    else if (focChanged)
+                                    {
+                                        foreach (var ported in portedNumbers)
+                                        {
+                                            formattedNumbers += $"{formattedNumbers}<br />{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
+                                        }
 
-                                            // Port date set or updated.
-                                            notificationEmail.Subject = $"Port completion date set for {portedNumbers?.FirstOrDefault()?.DateFirmOrderCommitment}";
-                                            notificationEmail.MessageBody = $@"Hi {originalOrder.FirstName},
+                                        // Port date set or updated.
+                                        notificationEmail.Subject = $"Port completion date set for {portedNumbers?.FirstOrDefault()?.DateFirmOrderCommitment}";
+                                        notificationEmail.MessageBody = $@"Hi {originalOrder.FirstName},
 <br />
 <br />                                                                            
 Good news, your old provider is going to release your phone numbers to Accelerate Networks on {portedNumbers?.FirstOrDefault()?.DateFirmOrderCommitment?.ToShortDateString()}!
@@ -977,19 +975,19 @@ Accelerate Networks
 <br />                                                                            
 206-858-8757 (call or text)";
 
-                                            var checkSend = await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);
-                                            var checkSave = await notificationEmail.PostAsync(postgresSQL).ConfigureAwait(false);
+                                        var checkSend = await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);
+                                        var checkSave = await notificationEmail.PostAsync(postgresSQL).ConfigureAwait(false);
 
-                                            if (checkSend && checkSave)
-                                            {
-                                                Log.Information($"Sucessfully sent out the port date set email for Order {originalOrder.OrderId}.");
-                                            }
-                                            else
-                                            {
-                                                Log.Fatal($"Failed to sent out the port date set email for Order {originalOrder.OrderId}.");
-                                            }
+                                        if (checkSend && checkSave)
+                                        {
+                                            Log.Information($"Sucessfully sent out the port date set email for Order {originalOrder.OrderId}.");
+                                        }
+                                        else
+                                        {
+                                            Log.Fatal($"Failed to sent out the port date set email for Order {originalOrder.OrderId}.");
                                         }
                                     }
+
                                 }
 
                                 Log.Information("[TeleMessage] Completed the port request update process.");
