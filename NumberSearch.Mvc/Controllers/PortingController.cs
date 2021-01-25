@@ -134,7 +134,17 @@ namespace NumberSearch.Mvc.Controllers
                                 break;
                         }
 
-                        var numberName = await LIDBLookup.GetAsync(dialedPhoneNumber, _data247username, _data247password).ConfigureAwait(false);
+                        var numberName = new LIDBLookup();
+                        try
+                        {
+                            numberName = await LIDBLookup.GetAsync(dialedPhoneNumber, _data247username, _data247password).ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error($"[Lookups] Failed to get LIBDName from Data 24/7 for number {dialedPhoneNumber}.");
+                            Log.Error(ex.Message);
+                            Log.Error(ex.InnerException.ToString());
+                        }
 
                         checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.response?.results?.FirstOrDefault()?.name) ? string.Empty : numberName?.response?.results?.FirstOrDefault()?.name;
 

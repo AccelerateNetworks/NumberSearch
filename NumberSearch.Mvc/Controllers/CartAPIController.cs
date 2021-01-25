@@ -433,10 +433,6 @@ namespace NumberSearch.Mvc.Controllers
                                 break;
                         }
 
-                        var numberName = await LIDBLookup.GetAsync(dialedPhoneNumber, _data247username, _data247password).ConfigureAwait(false);
-
-                        checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.response?.results?.FirstOrDefault()?.name) ? string.Empty : numberName?.response?.results?.FirstOrDefault()?.name;
-
                         var checkLong = long.TryParse(checkNumber.activation, out var timeInSeconds);
 
                         var verifiedPhoneNumber = new VerifiedPhoneNumber
