@@ -313,7 +313,7 @@ namespace NumberSearch.Ingest
                                         request.RequestStatus = "CANCELLED";
                                         request.DateCompleted = DateTime.Now;
                                         request.DateUpdated = DateTime.Now;
-                                        request.Completed = true;
+                                        request.Completed = false;
                                     }
                                     // If a request to port a number has been rejected.
                                     else if ((rejected != null) && (rejected.Any()))
@@ -321,7 +321,7 @@ namespace NumberSearch.Ingest
                                         request.RequestStatus = "EXCEPTION";
                                         request.DateCompleted = DateTime.Now;
                                         request.DateUpdated = DateTime.Now;
-                                        request.Completed = true;
+                                        request.Completed = false;
                                     }
                                     // If the none of the port request completion criteria have been met.
                                     else
@@ -798,7 +798,7 @@ Accelerate Networks
                                         request.RequestStatus = "canceled";
                                         request.DateCompleted = DateTime.Now;
                                         request.DateUpdated = DateTime.Now;
-                                        request.Completed = true;
+                                        request.Completed = false;
                                     }
                                     // If a request to port a number has been rejected.
                                     else if ((rejected != null) && (rejected.Any()))
@@ -806,7 +806,7 @@ Accelerate Networks
                                         request.RequestStatus = "rejected";
                                         request.DateCompleted = DateTime.Now;
                                         request.DateUpdated = DateTime.Now;
-                                        request.Completed = true;
+                                        request.Completed = false;
                                     }
                                     // If the none of the port request completion criteria have been met.
                                     else
