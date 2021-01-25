@@ -83,6 +83,40 @@
                         {
                             <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Recommended&Page=@Model.Page">Recommended</a>
                             <a class="btn btn-outline-secondary active" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Sequential&Page=@Model.Page">Sequential</a>
+                            <script type="text/javascript">
+                                // Handles issue #124 on Github
+                                // https://github.com/AccelerateNetworks/NumberSearch/issues/124
+                                $(document).ready(function () {
+                                    numbers = $("tr");
+                                    last = numbers[0];
+                                    blockColors = ["table-secondary", "table-default "];
+                                    flag = true;
+                                    lastArr = last.className.split(" ");
+                                    if (lastArr.indexOf(blockColors[0]) == -1) {
+                                        last.className += " " + blockColors[0];
+                                    }
+                                    for (x = 1; x < numbers.length; x++) {
+                                        if (parseInt(numbers[x].id) != parseInt(last.id) + 1) {
+                                            flag = !flag;
+
+                                        }
+                                        if (flag) {
+                                            currentClassArr = numbers[x].className.split(" ");
+                                            if (currentClassArr.indexOf(blockColors[0]) == -1) {
+                                                numbers[x].className += " " + blockColors[0];
+                                            }
+                                        }
+                                        else {
+                                            currentClassArr = numbers[x].className.split(" ");
+                                            if (currentClassArr.indexOf(blockColors[1]) == -1) {
+                                                numbers[x].className += " " + blockColors[1];
+                                            }
+                                        }
+
+                                        last = numbers[x];
+                                    }
+                                });
+                            </script>
                         }
                         else
                         {
