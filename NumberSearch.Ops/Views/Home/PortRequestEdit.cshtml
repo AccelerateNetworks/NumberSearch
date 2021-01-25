@@ -348,13 +348,13 @@
                                         }
                                         else if (Model?.PortRequest?.VendorSubmittedTo == "BulkVS")
                                         {
-                                            <a href="https://control.teli.net/lnp/view?request_id=@number?.ExternalPortRequestId" target="_blank" rel="noopener noreferrer" class="btn btn-info">
+                                            <a href="https://portal.bulkvs.com/" target="_blank" rel="noopener noreferrer" class="btn btn-info">
                                                 BulkVS @number?.ExternalPortRequestId
                                             </a>
                                         }
                                         else
                                         {
-
+                                            @number?.ExternalPortRequestId
                                         }
                                     }
                                 </td>
@@ -369,7 +369,7 @@
                                 </td>
                                 <td>
                                     @{
-                                        if (string.IsNullOrWhiteSpace(Model?.PortRequest?.TeliId))
+                                        if (string.IsNullOrWhiteSpace(number?.ExternalPortRequestId))
                                         {
                                             <a class="btn btn-danger text-white" href="/Home/PortRequests/@Model?.Order?.OrderId/@number?.PortedDialedNumber">Remove</a>
                                         }
@@ -390,7 +390,7 @@
         <input name="dialedNumber" type="text" class="form-control" id="dialedNumber" placeholder="Another Number to Port" title="Enter another dialed number that you wish to add to this port request.">
         <div class="input-group-append">
             @{
-                if (string.IsNullOrWhiteSpace(Model?.PortRequest?.TeliId))
+                if (string.IsNullOrWhiteSpace(Model?.PortRequest?.VendorSubmittedTo))
                 {
                     <button type="submit" class="btn btn-info">Add</button>
                 }
@@ -406,7 +406,7 @@
     @Html.AntiForgeryToken()
     <input name="OrderId" value="@Model?.PortRequest?.OrderId" hidden />
     @{
-        if (string.IsNullOrWhiteSpace(Model?.PortRequest?.TeliId))
+        if (string.IsNullOrWhiteSpace(Model?.PortRequest?.VendorSubmittedTo))
         {
             <button type="submit" class="btn btn-danger">Submit to Teli</button>
         }
@@ -422,7 +422,7 @@
 
     <input name="OrderId" value="@Model?.PortRequest?.OrderId" hidden />
     @{
-        if (string.IsNullOrWhiteSpace(Model?.PortRequest?.TeliId))
+        if (string.IsNullOrWhiteSpace(Model?.PortRequest?.VendorSubmittedTo))
         {
             <button type="submit" class="btn btn-danger">Submit to BulkVS</button>
         }
