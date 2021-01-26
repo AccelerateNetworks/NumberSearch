@@ -9,5 +9,6 @@ namespace NumberSearch.Ops
         public Order Order { get; set; }
         public PortRequest PortRequest { get; set; }
         public IEnumerable<PortedPhoneNumber> PhoneNumbers { get; set; }
+        public string Message { get; set; }
     }
 }

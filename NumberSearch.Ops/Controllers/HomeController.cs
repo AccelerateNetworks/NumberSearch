@@ -749,18 +749,28 @@ namespace NumberSearch.Ops.Controllers
                         number.ExternalPortRequestId = teliResponse.data.id;
                         var checkUpdateId = await number.PutAsync(_postgresql).ConfigureAwait(false);
                     }
+
+                    return View("PortRequestEdit", new PortRequestResult
+                    {
+                        Order = order,
+                        PortRequest = portRequest,
+                        PhoneNumbers = numbers
+                    });
                 }
-                catch
+                catch (Exception ex)
                 {
                     Log.Fatal($"[PortRequest] Failed to submit port request to Teli.");
-                }
+                    Log.Error(ex.Message);
+                    Log.Error(ex.StackTrace.ToString());
 
-                return View("PortRequestEdit", new PortRequestResult
-                {
-                    Order = order,
-                    PortRequest = portRequest,
-                    PhoneNumbers = numbers
-                });
+                    return View("PortRequestEdit", new PortRequestResult
+                    {
+                        Order = order,
+                        PortRequest = portRequest,
+                        PhoneNumbers = numbers,
+                        Message = "Failed to submit port request to Teli: " + ex.Message + " " + ex.StackTrace
+                    });
+                }
             }
         }
 
@@ -916,18 +926,28 @@ namespace NumberSearch.Ops.Controllers
                             Log.Fatal($"[PortRequest] Failed to submit port request to BulkVS.");
                         }
                     }
+
+                    return View("PortRequestEdit", new PortRequestResult
+                    {
+                        Order = order,
+                        PortRequest = portRequest,
+                        PhoneNumbers = numbers
+                    });
                 }
                 catch (Exception ex)
                 {
-                    Log.Fatal($"[PortRequest] Failed to submit port request to BulkVS.");
-                }
+                    Log.Error($"[PortRequest] Failed to submit port request to BulkVS.");
+                    Log.Error(ex.Message);
+                    Log.Error(ex.StackTrace.ToString());
 
-                return View("PortRequestEdit", new PortRequestResult
-                {
-                    Order = order,
-                    PortRequest = portRequest,
-                    PhoneNumbers = numbers
-                });
+                    return View("PortRequestEdit", new PortRequestResult
+                    {
+                        Order = order,
+                        PortRequest = portRequest,
+                        PhoneNumbers = numbers,
+                        Message = "Failed to submit port request to BulkVS: " + ex.Message + " " + ex.StackTrace
+                    });
+                }
             }
         }
 
