@@ -59,6 +59,14 @@
                 <input value="@Model?.DateSubmitted" type="text" class="form-control" placeholder="" readonly>
             </div>
             <div class="col mb-3">
+                <label for="backgroundWorkCompleted">Background Work Completed</label>
+                <input asp-for="BackgroundWorkCompleted" type="checkbox" class="form-control">
+            </div>
+            <div class="col mb-3">
+                <label for="completed">Completed</label>
+                <input asp-for="Completed" type="checkbox" class="form-control">
+            </div>
+            <div class="col mb-3">
                 <label for="lastName">Sales Email</label>
                 <input asp-for="SalesEmail" type="text" class="form-control" placeholder="scott@@acceleratenetworks.com">
             </div>
