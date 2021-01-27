@@ -3,6 +3,16 @@
 @{
     ViewData["Title"] = "Order";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var numbers = Model?.PhoneNumbers?.ToArray();
+    var purchased = Model?.PurchasedPhoneNumbers?.ToArray();
+    var ported = Model?.PortedPhoneNumbers?.ToArray();
+    var products = Model?.Products?.ToArray();
+    var services = Model?.Services?.ToArray();
+    var verified = Model?.VerifiedPhoneNumbers?.ToArray();
+    var sumOfitems = numbers.Length + ported.Length + products.Length + services.Length + purchased.Length + verified.Length;
+    var productOrders = Model.ProductOrdersToDictionary();
+
 }
 
 <div class="container">
@@ -62,6 +72,39 @@
                         <span class="badge badge-primary badge-pill">⚙️ Processing</span>
                     </h4>
                 </div>
+                if ((purchased is not null) && (purchased.Any()) && (purchased?.Where(x => x.Completed is true).ToArray().Length == purchased?.Length))
+                {
+                    <div class="col">
+                        <h4>
+                            <span class="badge badge-primary badge-pill">✔️ Purchased</span>
+                        </h4>
+                    </div>
+                }
+                else if (purchased is not null && purchased.Any())
+                {
+                    <div class="col">
+                        <h4>
+                            <span class="badge badge-primary badge-pill">❓ Purchased</span>
+                        </h4>
+                    </div>
+                }
+                var c = ported?.Where(x => x.Completed is true).ToArray().Length;
+                if ((ported is not null) && (ported.Any()) && (ported?.Where(x => x.Completed is true).ToArray().Length == ported?.Length))
+                {
+                    <div class="col">
+                        <h4>
+                            <span class="badge badge-primary badge-pill">✔️ Transferred</span>
+                        </h4>
+                    </div>
+                }
+                else if (ported is not null && ported.Any())
+                {
+                    <div class="col">
+                        <h4>
+                            <span class="badge badge-primary badge-pill">❓ Transferred</span>
+                        </h4>
+                    </div>
+                }
                 <div class="col">
                     <h4>
                         <span class="badge badge-secondary badge-pill">Completed</span>
@@ -121,16 +164,6 @@
         <div class="col-md-4 order-md-2 mb-4">
             <h4 class="d-flex justify-content-between align-items-center mb-3">
                 <span class="text-muted">Your Order</span>
-                @{
-                    var numbers = Model?.PhoneNumbers?.ToArray();
-                    var purchased = Model?.PurchasedPhoneNumbers?.ToArray();
-                    var ported = Model?.PortedPhoneNumbers?.ToArray();
-                    var products = Model?.Products?.ToArray();
-                    var services = Model?.Services?.ToArray();
-                    var verified = Model?.VerifiedPhoneNumbers?.ToArray();
-                    var sumOfitems = numbers.Length + ported.Length + products.Length + services.Length + purchased.Length + verified.Length;
-                    var productOrders = Model.ProductOrdersToDictionary();
-                }
                 <span class="badge badge-success badge-pill">@sumOfitems</span>
             </h4>
             <ul class="list-group mb-3">

@@ -259,9 +259,10 @@ namespace NumberSearch.Ingest
                                                 if (!string.IsNullOrWhiteSpace(matchingNumber.LNPStatus) && matchingNumber.LNPStatus != number.RequestStatus)
                                                 {
                                                     number.RequestStatus = matchingNumber.LNPStatus.Trim();
-                                                    if (number.RequestStatus == "COMPLETE" || number.RequestStatus == "CANCELLED")
+                                                    if (number.RequestStatus == "COMPLETE")
                                                     {
                                                         portCompleted = true;
+                                                        number.Completed = true;
                                                     }
                                                 }
 
@@ -851,6 +852,7 @@ Accelerate Networks
                                                     if (match.RequestStatus == "completed")
                                                     {
                                                         portCompleted = true;
+                                                        match.Completed = true;
                                                     }
                                                 }
 
