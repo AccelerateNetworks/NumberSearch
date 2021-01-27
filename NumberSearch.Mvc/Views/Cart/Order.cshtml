@@ -246,12 +246,28 @@
                         {
                             calculatedCost = 2;
                         }
-
+                        var date = number.DateFirmOrderCommitment is null ? "Date Not Set" : number.DateFirmOrderCommitment.GetValueOrDefault(DateTime.Now).ToShortDateString();
+                        var status = string.IsNullOrWhiteSpace(number.RequestStatus) ? "Status Not Set" : number.RequestStatus;
                         portedTotal += calculatedCost;
                         <li class="list-group-item d-flex justify-content-between lh-condensed">
                             <div>
-                                <h6 class="my-0">Porting Phone Number</h6>
+                                @{
+                                    if (number.Completed)
+                                    {
+                                        <h6 class="my-0">Porting Phone Number ✔️</h6>
+                                    }
+                                    else
+                                    {
+                                        <h6 class="my-0">Porting Phone Number ❓</h6>
+                                    }
+                                }
                                 <small class="text-muted">(@number.NPA) @number.NXX @number.XXXX.ToString("0000")</small>
+                                @{
+                                    if (number.DateFirmOrderCommitment is not null && !string.IsNullOrWhiteSpace(number.RequestStatus))
+                                    {
+                                        <h6 class="text-muted">@status - @date</h6>
+                                    }
+                                }
                             </div>
                             <span class="text-muted">$@calculatedCost</span>
                         </li>
