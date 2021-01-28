@@ -207,7 +207,16 @@
                         <li class="list-group-item d-flex justify-content-between lh-condensed">
                             <div>
                                 <h6 class="my-0">Phone Number ✔️</h6>
-                                <small class="text-muted">(@number.NPA) @number.NXX.ToString("000") @number.XXXX.ToString("0000")</small>
+                                @{
+                                    if (number.NPA == 0 && number.NXX == 0 && number.XXXX == 0)
+                                    {
+                                        <small class="text-muted">@number.DialedNumber</small>
+                                    }
+                                    else
+                                    {
+                                        <small class="text-muted">(@number.NPA) @number.NXX.ToString("000") @number.XXXX.ToString("0000")</small>
+                                    }
+                                }
                             </div>
                             @{
                                 if (number.NumberType == "Executive")

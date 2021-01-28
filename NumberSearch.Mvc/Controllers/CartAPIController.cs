@@ -555,7 +555,14 @@ namespace NumberSearch.Mvc.Controllers
             var checkRemove = cart.RemovePhoneNumber(phoneNumber, productOrder);
             var checkSet = cart.SetToSession(_httpContext.Session);
 
-            return Ok(dialedPhoneNumber);
+            if (checkRemove && checkSet)
+            {
+                return Ok(dialedPhoneNumber);
+            }
+            else
+            {
+                return NotFound(dialedPhoneNumber);
+            }
         }
 
         public async Task<IActionResult> RemovePortedPhoneNumberAsync(string dialedPhoneNumber)
@@ -574,11 +581,13 @@ namespace NumberSearch.Mvc.Controllers
             {
                 var productOrder = cart.ProductOrders.Where(x => x.PortedPhoneNumberId == portedPhoneNumber.PortedPhoneNumberId).FirstOrDefault();
 
-                if (productOrder is not null)
-                {
-                    var checkRemove = cart.RemovePortedPhoneNumber(portedPhoneNumber, productOrder);
-                    var checkSet = cart.SetToSession(_httpContext.Session);
+                var newProductOrder = new ProductOrder { PortedDialedNumber = portedPhoneNumber?.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber.PortedPhoneNumberId, Quantity = 1 };
 
+                var checkRemove = cart.RemovePortedPhoneNumber(portedPhoneNumber, productOrder ?? newProductOrder);
+                var checkSet = cart.SetToSession(_httpContext.Session);
+
+                if (checkRemove && checkSet)
+                {
                     return Ok(dialedPhoneNumber);
                 }
                 else
@@ -608,11 +617,13 @@ namespace NumberSearch.Mvc.Controllers
             if (verifedPhoneNumber is not null)
             {
                 var productOrder = cart.ProductOrders.Where(x => x.VerifiedPhoneNumberId == verifedPhoneNumber.VerifiedPhoneNumberId).FirstOrDefault();
-                if (productOrder is not null)
-                {
-                    var checkRemove = cart.RemoveVerifiedPhoneNumber(verifedPhoneNumber, productOrder);
-                    var checkSet = cart.SetToSession(_httpContext.Session);
+                var newProductOrder = new ProductOrder { VerifiedPhoneNumberId = verifedPhoneNumber.VerifiedPhoneNumberId, Quantity = 1 };
 
+                var checkRemove = cart.RemoveVerifiedPhoneNumber(verifedPhoneNumber, productOrder ?? newProductOrder);
+                var checkSet = cart.SetToSession(_httpContext.Session);
+
+                if (checkRemove && checkSet)
+                {
                     return Ok(dialedPhoneNumber);
                 }
                 else
@@ -641,7 +652,14 @@ namespace NumberSearch.Mvc.Controllers
             var checkRemove = cart.RemoveProduct(product, productOrder);
             var checkSet = cart.SetToSession(_httpContext.Session);
 
-            return Ok(productId.ToString());
+            if (checkRemove && checkSet)
+            {
+                return Ok(productId.ToString());
+            }
+            else
+            {
+                return NotFound(productId.ToString());
+            }
         }
 
         public async Task<IActionResult> RemoveServiceAsync(Guid serviceId)
@@ -659,7 +677,14 @@ namespace NumberSearch.Mvc.Controllers
             var checkRemove = cart.RemoveService(service, productOrder);
             var checkSet = cart.SetToSession(_httpContext.Session);
 
-            return Ok(serviceId.ToString());
+            if (checkRemove && checkSet)
+            {
+                return Ok(serviceId.ToString());
+            }
+            else
+            {
+                return NotFound(serviceId.ToString());
+            }
         }
     }
 }
