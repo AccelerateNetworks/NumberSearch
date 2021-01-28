@@ -92,10 +92,6 @@ namespace NumberSearch.Mvc
 
                                 Log.Information($"[Background Worker] {purchasedPhoneNumbers.Count()} phone numbers to purchase.");
 
-                                // Create a single PIN for this order.
-                                var random = new Random();
-                                var pin = random.Next(100000, 99999999);
-
                                 foreach (var productOrder in purchasedPhoneNumbers)
                                 {
                                     if (!string.IsNullOrWhiteSpace(productOrder.DialedNumber))
@@ -115,7 +111,7 @@ namespace NumberSearch.Mvc
                                                         {
                                                             TN = nto.DialedNumber,
                                                             Lidb = "Accelerate Networks",
-                                                            PortoutPin = pin.ToString(new CultureInfo("en-US")),
+                                                            PortoutPin = productOrder.PIN,
                                                             TrunkGroup = "SFO",
                                                             Sms = true,
                                                             Mms = false

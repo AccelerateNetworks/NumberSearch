@@ -22,6 +22,7 @@ namespace NumberSearch.DataAccess
         public int NXX { get; set; }
         public int XXXX { get; set; }
         public string NumberType { get; set; }
+        public string PIN { get; set; }
 
         /// <summary>
         /// Get every purchased phone number.
@@ -33,7 +34,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<PurchasedPhoneNumber>("SELECT \"PurchasedPhoneNumberId\", \"OrderId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"DateOrdered\", \"OrderResponse\", \"Completed\", \"NPA\", \"NXX\", \"XXXX\", \"NumberType\" FROM public.\"PurchasedPhoneNumbers\"")
+                .QueryAsync<PurchasedPhoneNumber>("SELECT \"PurchasedPhoneNumberId\", \"OrderId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"DateOrdered\", \"OrderResponse\", \"Completed\", \"NPA\", \"NXX\", \"XXXX\", \"NumberType\", \"PIN\" FROM public.\"PurchasedPhoneNumbers\"")
                 .ConfigureAwait(false);
 
             return result;
@@ -49,7 +50,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryFirstOrDefaultAsync<PurchasedPhoneNumber>("SELECT \"PurchasedPhoneNumberId\", \"OrderId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"DateOrdered\", \"OrderResponse\", \"Completed\", \"NPA\", \"NXX\", \"XXXX\", \"NumberType\" FROM public.\"PurchasedPhoneNumbers\" WHERE \"DialedNumber\" = @dialedNumber AND \"OrderId\" = @orderId ", new { dialedNumber, orderId })
+                .QueryFirstOrDefaultAsync<PurchasedPhoneNumber>("SELECT \"PurchasedPhoneNumberId\", \"OrderId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"DateOrdered\", \"OrderResponse\", \"Completed\", \"NPA\", \"NXX\", \"XXXX\", \"NumberType\", \"PIN\" FROM public.\"PurchasedPhoneNumbers\" WHERE \"DialedNumber\" = @dialedNumber AND \"OrderId\" = @orderId ", new { dialedNumber, orderId })
                 .ConfigureAwait(false);
 
             return result;
@@ -60,7 +61,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<PurchasedPhoneNumber>("SELECT \"PurchasedPhoneNumberId\", \"OrderId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"DateOrdered\", \"OrderResponse\", \"Completed\", \"NPA\", \"NXX\", \"XXXX\", \"NumberType\" FROM public.\"PurchasedPhoneNumbers\" WHERE \"OrderId\" = @orderId ", new { orderId })
+                .QueryAsync<PurchasedPhoneNumber>("SELECT \"PurchasedPhoneNumberId\", \"OrderId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"DateOrdered\", \"OrderResponse\", \"Completed\", \"NPA\", \"NXX\", \"XXXX\", \"NumberType\", \"PIN\" FROM public.\"PurchasedPhoneNumbers\" WHERE \"OrderId\" = @orderId ", new { orderId })
                 .ConfigureAwait(false);
 
             return result;
@@ -76,7 +77,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryFirstOrDefaultAsync<PurchasedPhoneNumber>("SELECT \"PurchasedPhoneNumberId\", \"OrderId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"DateOrdered\", \"OrderResponse\", \"Completed\", \"NPA\", \"NXX\", \"XXXX\", \"NumberType\" FROM public.\"PurchasedPhoneNumbers\" WHERE \"DialedNumber\" = @dialedNumber", new { dialedNumber })
+                .QueryFirstOrDefaultAsync<PurchasedPhoneNumber>("SELECT \"PurchasedPhoneNumberId\", \"OrderId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"DateOrdered\", \"OrderResponse\", \"Completed\", \"NPA\", \"NXX\", \"XXXX\", \"NumberType\", \"PIN\" FROM public.\"PurchasedPhoneNumbers\" WHERE \"DialedNumber\" = @dialedNumber", new { dialedNumber })
                 .ConfigureAwait(false);
 
             return result;
@@ -95,8 +96,8 @@ namespace NumberSearch.DataAccess
             DateOrdered = DateTime.Now;
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"PurchasedPhoneNumbers\"(\"OrderId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"DateOrdered\", \"OrderResponse\", \"Completed\", \"NPA\", \"NXX\", \"XXXX\", \"NumberType\") VALUES (@OrderId, @DialedNumber, @IngestedFrom, @DateIngested, @DateOrdered, @OrderResponse, @Completed, @NPA, @NXX, @XXXX, @NumberType)",
-                new { OrderId, DialedNumber, IngestedFrom, DateIngested, DateOrdered, OrderResponse, Completed, NPA, NXX, XXXX, NumberType })
+                .ExecuteAsync("INSERT INTO public.\"PurchasedPhoneNumbers\"(\"OrderId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"DateOrdered\", \"OrderResponse\", \"Completed\", \"NPA\", \"NXX\", \"XXXX\", \"NumberType\", \"PIN\") VALUES (@OrderId, @DialedNumber, @IngestedFrom, @DateIngested, @DateOrdered, @OrderResponse, @Completed, @NPA, @NXX, @XXXX, @NumberType, @PIN)",
+                new { OrderId, DialedNumber, IngestedFrom, DateIngested, DateOrdered, OrderResponse, Completed, NPA, NXX, XXXX, NumberType, PIN })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -119,9 +120,9 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("UPDATE public.\"PurchasedPhoneNumbers\" SET \"OrderId\" = @OrderId, \"DialedNumber\" = @DialedNumber, \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"DateOrdered\" = @DateOrdered, \"OrderResponse\" = @OrderResponse, \"Completed\" = @Completed, \"NPA\" = @NPA, \"NXX\" = @NXX, \"XXXX\" = @XXXX, \"NumberType\"= @NumberType " +
+                .ExecuteAsync("UPDATE public.\"PurchasedPhoneNumbers\" SET \"OrderId\" = @OrderId, \"DialedNumber\" = @DialedNumber, \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"DateOrdered\" = @DateOrdered, \"OrderResponse\" = @OrderResponse, \"Completed\" = @Completed, \"NPA\" = @NPA, \"NXX\" = @NXX, \"XXXX\" = @XXXX, \"NumberType\"= @NumberType, \"PIN\" = @PIN " +
                 "WHERE \"PurchasedPhoneNumberId\" = @PurchasedPhoneNumberId",
-                new { OrderId, DialedNumber, IngestedFrom, DateIngested, DateOrdered, OrderResponse, Completed, NPA, NXX, XXXX, NumberType, PurchasedPhoneNumberId })
+                new { OrderId, DialedNumber, IngestedFrom, DateIngested, DateOrdered, OrderResponse, Completed, NPA, NXX, XXXX, NumberType, PIN, PurchasedPhoneNumberId })
                 .ConfigureAwait(false);
 
             if (result == 1)

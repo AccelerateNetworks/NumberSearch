@@ -202,6 +202,10 @@ namespace NumberSearch.Mvc.Controllers
                             var reoccuringItems = new List<Invoice_Items>();
                             var totalCost = 0;
 
+                            // Create a single PIN for this order.
+                            var random = new Random();
+                            var pin = random.Next(100000, 99999999);
+
                             foreach (var nto in cart.PhoneNumbers)
                             {
                                 var productOrder = cart.ProductOrders.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
@@ -225,7 +229,8 @@ namespace NumberSearch.Mvc.Controllers
                                         IngestedFrom = numberToBePurchased.IngestedFrom,
                                         NumberType = numberToBePurchased.NumberType,
                                         OrderId = order.OrderId,
-                                        OrderResponse = string.Empty
+                                        OrderResponse = string.Empty,
+                                        PIN = pin.ToString()
                                     };
 
                                     var checkPurchaseOrder = await purchsedNumber.PostAsync(_postgresql).ConfigureAwait(false);
@@ -667,6 +672,7 @@ Sincerely,
 Accelerate Networks
 <br />                                                                            
 206-858-8757 (call or text)";
+
                                 }
                             }
                             else
@@ -767,6 +773,96 @@ Sincerely,
 Accelerate Networks
 <br />                                                                            
 206-858-8757 (call or text)";
+
+                                    // This order is just for purchasing phone numbers.
+                                    if (cart.PhoneNumbers.Count() == cart.ProductOrders.Count())
+                                    {
+                                        var formattedNumbers = string.Empty;
+
+                                        foreach (var item in cart.PhoneNumbers)
+                                        {
+                                            if (item.IngestedFrom == "BulkVS")
+                                            {
+                                                formattedNumbers += $"{item.DialedNumber} <strong>PIN: {pin}</strong><br />";
+                                            }
+                                            else
+                                            {
+                                                formattedNumbers += $"{item.DialedNumber}<br />";
+                                            }
+                                        }
+
+                                        if (cart.PhoneNumbers.Count() > 1)
+                                        {
+                                            confirmationEmail.Subject = $"Order for {cart.PhoneNumbers.FirstOrDefault().DialedNumber} is complete!";
+                                            confirmationEmail.MessageBody = $@"Hi {order.FirstName},
+<br />
+<br />  
+The order for {cart.PhoneNumbers.FirstOrDefault().DialedNumber} is ready, let us know if you would like this number to forward to another phone number immediately.
+<br />
+<br />  
+To port these numbers to another provider, please pay <a href='{oneTimeLink}'>this invoice</a> and submit a port out request with your new provider using the following information:
+<br />
+<br />  
+Account number: {cart.PhoneNumbers.FirstOrDefault().DialedNumber}
+<br />  
+Business Name: {order.BusinessName}
+<br />  
+Authorized Contact: {order.FirstName} {order.LastName}
+<br />  
+Address: {order.Address} {order.Address2} {order.City}, {order.State} {order.Zip}
+<br />  
+<br />  
+{formattedNumbers}
+<br />  
+<a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>Original order</a>
+<br />  
+<br />  
+If you need anything please let us know!
+<br />  
+<br /> 
+Sincerely,
+<br /> 
+Accelerate Networks
+<br /> 
+206-858-8757 (call/text)";
+                                        }
+                                        else
+                                        {
+
+                                            confirmationEmail.Subject = $"Order for {cart.PhoneNumbers.FirstOrDefault().DialedNumber} is complete!";
+                                            confirmationEmail.MessageBody = $@"Hi {order.FirstName},
+<br />
+<br />  
+The order for {cart.PhoneNumbers.FirstOrDefault().DialedNumber} is ready, let us know if you would like this number to forward to another phone number immediately.
+<br />
+<br />  
+To port this number to another provider, please pay <a href='{oneTimeLink}'>this invoice</a> and submit a port out request with your new provider using the following information:
+<br />
+<br />  
+Account number: {cart.PhoneNumbers.FirstOrDefault().DialedNumber}
+<br />  
+Business Name: {order.BusinessName}
+<br />  
+Authorized Contact: {order.FirstName} {order.LastName}
+<br />  
+Address: {order.Address} {order.Address2} {order.City}, {order.State} {order.Zip}
+<br />  
+PIN: {pin}
+<br />  
+<br />  
+<a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>Original order</a>
+<br />  
+<br />  
+If you need anything please let us know!
+<br />  
+<br /> 
+Sincerely,
+<br /> 
+Accelerate Networks
+<br /> 
+206-858-8757 (call/text)";
+                                        }
+                                    }
                                 }
                             }
 
