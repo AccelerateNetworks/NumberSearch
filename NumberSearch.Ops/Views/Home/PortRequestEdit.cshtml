@@ -30,7 +30,7 @@
     @{
         if (!string.IsNullOrWhiteSpace(Model?.PortRequest?.BillImagePath))
         {
-            <a class="btn btn-outline-success" href="\Home\BillImage\@Model?.Order?.OrderId" target="_blank">Customer's Bill</a>
+            <a class="btn btn-outline-success" href="/Home/BillImage/@Model?.Order?.OrderId" target="_blank">Customer's Bill</a>
         }
     }
 </div>
