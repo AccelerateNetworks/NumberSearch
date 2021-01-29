@@ -32,6 +32,7 @@ variables:
   ConnectionStrings.EmailOrders: $(EmailOrders)
   ConnectionStrings.EmailDan: $(EmailDan)
   ConnectionStrings.EmailTom: $(EmailTom)
+  ConnectionStrings.AzureStorageAccount: $(AzureStorageAccount)
   ApplicationInsights.InstrumentationKey: $(InstrumentationKey)
 
 steps:
