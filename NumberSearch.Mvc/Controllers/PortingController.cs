@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure.Storage.Blobs;
+
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
 using MimeKit;
@@ -27,6 +29,7 @@ namespace NumberSearch.Mvc.Controllers
         private readonly string _data247username;
         private readonly string _data247password;
         private readonly string _bulkVSAPIKey;
+        private readonly string _azureStorage;
 
         public PortingController(IConfiguration config)
         {
@@ -36,6 +39,7 @@ namespace NumberSearch.Mvc.Controllers
             _data247username = config.GetConnectionString("Data247Username");
             _data247password = config.GetConnectionString("Data247Password");
             _bulkVSAPIKey = config.GetConnectionString("BulkVSAPIKEY");
+            _azureStorage = config.GetConnectionString("AzureStorageAccount");
         }
 
         [HttpGet]
@@ -345,40 +349,60 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     await portRequest.BillImage.CopyToAsync(stream).ConfigureAwait(false);
 
-                    var root = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                    var sink = Path.Combine(root, DateTime.Now.ToString("yyyy-MM-dd"));
+                    //var root = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                    //var sink = Path.Combine(root, DateTime.Now.ToString("yyyy-MM-dd"));
 
-                    // Verify that the sink directory exists, and create it otherwise.
-                    if (!Directory.Exists(sink))
-                    {
-                        Directory.CreateDirectory(sink);
-                    }
+                    //// Verify that the sink directory exists, and create it otherwise.
+                    //if (!Directory.Exists(sink))
+                    //{
+                    //    Directory.CreateDirectory(sink);
+                    //}
 
                     var fileExtension = Path.GetExtension(portRequest.BillImage.FileName);
-                    var fileName = Path.GetFileName(portRequest.BillImage.FileName);
-                    var fileStreamPath = Path.Combine(sink, fileName);
+                    var fileName = $"{Guid.NewGuid()}{fileExtension}";
+                    //var fileStreamPath = Path.Combine(sink, fileName);
 
+                    //// You have to rewind the MemoryStream before copying
+                    //stream.Seek(0, SeekOrigin.Begin);
+
+                    //using (FileStream fs = new FileStream(fileStreamPath, FileMode.OpenOrCreate))
+                    //{
+                    //    await stream.CopyToAsync(fs).ConfigureAwait(false);
+                    //    await fs.FlushAsync().ConfigureAwait(false);
+                    //    Log.Information($"[Port Request] Saved the bill image file to: {fileStreamPath}");
+                    //}
+
+                    // Create a BlobServiceClient object which will be used to create a container client
+                    BlobServiceClient blobServiceClient = new BlobServiceClient(_azureStorage);
+
+                    //Create a unique name for the container
+                    string containerName = portRequest.OrderId.ToString();
+
+                    // Create the container and return a container client object
+                    var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+                    await containerClient.CreateIfNotExistsAsync();
+
+                    // Get a reference to a blob
+                    BlobClient blobClient = containerClient.GetBlobClient(fileName);
+
+                    // Open the file and upload its data
                     // You have to rewind the MemoryStream before copying
                     stream.Seek(0, SeekOrigin.Begin);
+                    await blobClient.UploadAsync(stream, true);
 
-                    using (FileStream fs = new FileStream(fileStreamPath, FileMode.OpenOrCreate))
-                    {
-                        await stream.CopyToAsync(fs).ConfigureAwait(false);
-                        await fs.FlushAsync().ConfigureAwait(false);
-                        Log.Information($"[Port Request] Saved the bill image file to: {fileStreamPath}");
-                    }
+                    portRequest.BillImagePath = fileName;
 
                     // Yeet the image into an email attachment.
-                    var attachment = new MimePart("image", fileExtension)
-                    {
-                        Content = new MimeContent(stream, ContentEncoding.Default),
-                        ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
-                        ContentTransferEncoding = ContentEncoding.Base64,
-                        FileName = Path.GetFileName(portRequest.BillImage.FileName)
-                    };
+                    //var attachment = new MimePart("image", fileExtension)
+                    //{
+                    //    Content = new MimeContent(stream, ContentEncoding.Default),
+                    //    ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
+                    //    ContentTransferEncoding = ContentEncoding.Base64,
+                    //    FileName = Path.GetFileName(portRequest.BillImage.FileName)
+                    //};
 
-                    multipart.Add(attachment);
-
+                    //multipart.Add(attachment);
+                    Log.Information($"[Port Request] BlobContainer: {containerClient.Name} BlobClient: {blobClient.Name}");
                     Log.Information("[Port Request] Successfuly saved the bill image to the server and attached it to the confirmation email.");
                 }
                 catch (Exception ex)

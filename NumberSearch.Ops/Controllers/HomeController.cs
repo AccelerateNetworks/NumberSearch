@@ -1,4 +1,7 @@
-﻿using CsvHelper;
+﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+
+using CsvHelper;
 
 using FirstCom;
 
@@ -43,7 +46,7 @@ namespace NumberSearch.Ops.Controllers
         private readonly string _bulkVSusername;
         private readonly string _bulkVSpassword;
         private readonly string _emailOrders;
-
+        private readonly string _azureStorage;
 
         public HomeController(ILogger<HomeController> logger, IConfiguration config)
         {
@@ -61,6 +64,7 @@ namespace NumberSearch.Ops.Controllers
             _data247username = config.GetConnectionString("Data247Username");
             _data247password = config.GetConnectionString("Data247Password");
             _emailOrders = config.GetConnectionString("EmailOrders");
+            _azureStorage = config.GetConnectionString("AzureStorageAccount");
         }
 
         [Authorize]
@@ -348,6 +352,52 @@ namespace NumberSearch.Ops.Controllers
         }
 
         [Authorize]
+        [Route("/Home/BillImage/{orderId}/")]
+        public async Task<FileContentResult> DownloadAsync(string orderId)
+        {
+            // Create a BlobServiceClient object which will be used to create a container client
+            BlobServiceClient blobServiceClient = new BlobServiceClient(_azureStorage);
+
+            //Create a unique name for the container
+            string containerName = orderId;
+
+            // Create the container and return a container client object
+            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+
+            var files = new List<BlobItem>();
+
+            await foreach (var item in containerClient.GetBlobsAsync())
+            {
+                files.Add(item);
+            }
+
+            var billImage = files.FirstOrDefault();
+
+            if (billImage is null)
+            {
+                //return new FileContentResult();
+            }
+
+            var blobClient = containerClient.GetBlobClient(billImage.Name);
+            var download = await blobClient.DownloadAsync();
+
+            var fileBytes = new byte[] { };
+
+            using (var downloadFileStream = new MemoryStream())
+            {
+                await download.Value.Content.CopyToAsync(downloadFileStream);
+
+                fileBytes = downloadFileStream.ToArray();
+            }
+
+
+            return new FileContentResult(fileBytes, download.Value.ContentType)
+            {
+                FileDownloadName = billImage.Name
+            };
+        }
+
+        [Authorize]
         [Route("/Home/PortRequest/{orderId}/Delete")]
         public async Task<IActionResult> PortRequestDelete(string orderId)
         {
@@ -510,8 +560,7 @@ namespace NumberSearch.Ops.Controllers
         }
 
         [Authorize]
-        [Route("/Home/PortRequests/{orderId}")]
-        [HttpPost]
+        [HttpPost("/Home/PortRequests/{orderId}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PortRequestUpdate(PortRequestResult result, Guid? orderId, string dialedNumber)
         {
@@ -710,8 +759,7 @@ namespace NumberSearch.Ops.Controllers
         }
 
         [Authorize]
-        [Route("/Home/PortRequestsTeli/{orderId}")]
-        [HttpPost]
+        [HttpPost("/Home/PortRequestsTeli/{orderId}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PortRequestSendToTeli(string OrderId)
         {
@@ -775,8 +823,7 @@ namespace NumberSearch.Ops.Controllers
         }
 
         [Authorize]
-        [Route("/Home/PortRequestsBulkVS/{orderId}")]
-        [HttpPost]
+        [HttpPost("/Home/PortRequestsBulkVS/{orderId}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PortRequestSendToBulkVS(string OrderId)
         {

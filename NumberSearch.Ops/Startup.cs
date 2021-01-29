@@ -46,7 +46,7 @@ namespace NumberSearch.Ops
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddControllersWithViews();
-            services.AddRazorPages();
+            services.AddRazorPages().AddRazorRuntimeCompilation();
 
             services.Configure<IdentityOptions>(options =>
             {

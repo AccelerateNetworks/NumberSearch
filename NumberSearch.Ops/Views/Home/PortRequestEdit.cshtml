@@ -27,6 +27,12 @@
             </div>
         }
     }
+    @{
+        if (!string.IsNullOrWhiteSpace(Model?.PortRequest?.BillImagePath))
+        {
+            <a class="btn btn-outline-success" href="\Home\BillImage\@Model?.Order?.OrderId" target="_blank">Customer's Bill</a>
+        }
+    }
 </div>
 <form action="/Home/PortRequests/@Model?.PortRequest?.OrderId" method="post" class="needs-validation mb-3">
     @Html.AntiForgeryToken()
@@ -263,14 +269,14 @@
             <label><strong id="charCount"></strong></label>
         </div>
         <div class="col-md-6">
-            <label for="inputGroupFile02">An Image of Your Current Bill</label>
-            <div class="input-group">
-                <div class="custom-file">
-                    <input asp-for="PortRequest.BillImage" type="file" class="custom-file-input" id="inputGroupFile02" />
-                    <span asp-validation-for="PortRequest.BillImage"></span>
-                    <label class="custom-file-label" for="inputGroupFile02">Choose file</label>
-                </div>
-            </div>
+            @*<label for="inputGroupFile02">An Image of Your Current Bill</label>
+                <div class="input-group">
+                    <div class="custom-file">
+                        <input asp-for="PortRequest.BillImage" type="file" class="custom-file-input" id="inputGroupFile02" />
+                        <span asp-validation-for="PortRequest.BillImage"></span>
+                        <label class="custom-file-label" for="inputGroupFile02">Choose file</label>
+                    </div>
+                </div>*@
         </div>
     </div>
 
