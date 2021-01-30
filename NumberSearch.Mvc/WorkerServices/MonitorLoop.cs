@@ -196,6 +196,11 @@ namespace NumberSearch.Mvc
 
                                 foreach (var message in emails)
                                 {
+                                    if (!string.IsNullOrWhiteSpace(order.SalesEmail))
+                                    {
+                                        message.SalesEmailAddress = order.SalesEmail;
+                                    }
+
                                     // Send the message the email server.
                                     var checkSend = await message.SendEmailAsync(_emailUsername, _emailPassword).ConfigureAwait(false);
 

@@ -460,6 +460,10 @@ Accelerate Networks
 
                 var checkSave = await confirmationEmail.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
 
+                // Trigger the backwork process to run again and send this email.
+                order.BackgroundWorkCompleted = false;
+                var checkOrder = await order.PutAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+
                 // Reset the session and clear the Cart.
                 HttpContext.Session.Clear();
 

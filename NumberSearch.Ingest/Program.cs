@@ -360,6 +360,7 @@ namespace NumberSearch.Ingest
 
                                         // Port date set or updated.
                                         notificationEmail.Subject = $"Your phone number has switched to Accelerate Networks successfully!";
+                                        notificationEmail.SalesEmailAddress = string.IsNullOrWhiteSpace(originalOrder.SalesEmail) ? string.Empty : originalOrder.SalesEmail;
                                         notificationEmail.MessageBody = $@"Hi {originalOrder.FirstName},
 <br />
 <br />                                                                            
@@ -403,6 +404,7 @@ Accelerate Networks
 
                                         // Port date set or updated.
                                         notificationEmail.Subject = $"Port completion date set for {portedNumbers?.FirstOrDefault()?.DateFirmOrderCommitment}";
+                                        notificationEmail.SalesEmailAddress = string.IsNullOrWhiteSpace(originalOrder.SalesEmail) ? string.Empty : originalOrder.SalesEmail;
                                         notificationEmail.MessageBody = $@"Hi {originalOrder.FirstName},
 <br />
 <br />                                                                            
@@ -912,6 +914,7 @@ Accelerate Networks
 
                                         // Port date set or updated.
                                         notificationEmail.Subject = $"Your phone number has switched to Accelerate Networks successfully!";
+                                        notificationEmail.SalesEmailAddress = string.IsNullOrWhiteSpace(originalOrder.SalesEmail) ? string.Empty : originalOrder.SalesEmail;
                                         notificationEmail.MessageBody = $@"Hi {originalOrder.FirstName},
 <br />
 <br />                                                                            
@@ -955,6 +958,7 @@ Accelerate Networks
 
                                         // Port date set or updated.
                                         notificationEmail.Subject = $"Port completion date set for {portedNumbers?.FirstOrDefault()?.DateFirmOrderCommitment}";
+                                        notificationEmail.SalesEmailAddress = string.IsNullOrWhiteSpace(originalOrder.SalesEmail) ? string.Empty : originalOrder.SalesEmail;
                                         notificationEmail.MessageBody = $@"Hi {originalOrder.FirstName},
 <br />
 <br />                                                                            

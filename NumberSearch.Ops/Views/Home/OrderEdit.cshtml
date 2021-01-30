@@ -66,10 +66,6 @@
                 <label for="completed">Completed</label>
                 <input asp-for="Completed" type="checkbox" class="form-control">
             </div>
-            <div class="col mb-3">
-                <label for="lastName">Sales Email</label>
-                <input asp-for="SalesEmail" type="text" class="form-control" placeholder="scott@@acceleratenetworks.com">
-            </div>
         </div>
         <h4 class="mb-3">Invoice Ninja</h4>
         <div class="row">
@@ -209,6 +205,25 @@
                     Zip code required.
                 </div>
             </div>
+        </div>
+        <h4 class="mb-3">Installation Information</h4>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="installdate">Preferred Install Date</label>
+                <input asp-for="InstallDate" type="datetime-local" class="form-control" id="installdate">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="sales">Sales Representative</label>
+                <select asp-for="SalesEmail" class="custom-select mr-sm-2" id="sales">
+                    <option selected>Choose...</option>
+                    <option value="scott@acceleratenetworks.com">Scott</option>
+                    <option value="kyle@acceleratenetworks.com">Kyle</option>
+                    <option value="dan@acceleratenetworks.com">Dan</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
             <div class="col-md-12 mb-3">
                 <label for="zip" class="text-muted">Notes</label>
                 <input asp-for="CustomerNotes" type="text" class="form-control" id="customernotes" placeholder="Add important information for our staff">
