@@ -487,8 +487,27 @@
                             Zip code required.
                         </div>
                     </div>
+                </div>
+                <br />
+                <h4 class="mb-3">Installation Information</h4>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="installdate">Preferred Install Date</label>
+                        <input asp-for="Order.InstallDate" type="datetime-local" class="form-control" id="installdate">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="sales">Sales Representative</label>
+                        <select asp-for="Order.SalesEmail" class="custom-select mr-sm-2" id="sales">
+                            <option selected>Choose...</option>
+                            <option value="scott@acceleratenetworks.com">Scott</option>
+                            <option value="kyle@acceleratenetworks.com">Kyle</option>
+                            <option value="dan@acceleratenetworks.com">Dan</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-md-12 mb-3">
-                        <label for="zip" class="text-muted">Notes</label>
+                        <label for="customernotes">Notes</label>
                         <input asp-for="Order.CustomerNotes" type="text" class="form-control" id="customernotes" placeholder="Add important information for our staff">
                     </div>
                     <div class="col-md-12">
