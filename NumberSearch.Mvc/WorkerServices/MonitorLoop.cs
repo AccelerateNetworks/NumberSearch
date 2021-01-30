@@ -196,6 +196,11 @@ namespace NumberSearch.Mvc
 
                                 foreach (var message in emails)
                                 {
+                                    if (message.Completed)
+                                    {
+                                        continue;
+                                    }
+
                                     if (!string.IsNullOrWhiteSpace(order.SalesEmail))
                                     {
                                         message.SalesEmailAddress = order.SalesEmail;
