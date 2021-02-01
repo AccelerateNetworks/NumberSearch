@@ -1227,6 +1227,19 @@ namespace NumberSearch.Ops.Controllers
         }
 
         [Authorize]
+        [HttpGet("/Home/Emails/{orderId}")]
+        public async Task<IActionResult> ResendEmails(Guid orderId)
+        {
+            var order = await Order.GetByIdAsync(orderId, _postgresql).ConfigureAwait(false);
+            order.BackgroundWorkCompleted = false;
+            var checkUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
+
+            var emails = await Email.GetAllAsync(_postgresql).ConfigureAwait(false);
+
+            return View("Emails", emails);
+        }
+
+        [Authorize]
         public async Task<IActionResult> Ingests(int cycle, string ingestedFrom, string enabled, string runNow)
         {
             var ingests = await IngestCycle.GetAllAsync(_postgresql).ConfigureAwait(false);

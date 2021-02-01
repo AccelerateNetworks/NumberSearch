@@ -7,6 +7,8 @@ using MimeKit.Text;
 
 using Npgsql;
 
+using Serilog;
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -123,7 +125,7 @@ namespace NumberSearch.DataAccess
                 outboundMessage.Cc.Add(ordersInbox);
                 outboundMessage.To.Add(recipient);
 
-                if (!string.IsNullOrWhiteSpace(SalesEmailAddress))
+                if (!string.IsNullOrWhiteSpace(SalesEmailAddress) && SalesEmailAddress.Contains("@"))
                 {
                     var sales = MailboxAddress.Parse(SalesEmailAddress);
                     outboundMessage.Cc.Add(sales);
@@ -149,8 +151,11 @@ namespace NumberSearch.DataAccess
                 Completed = true;
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                Log.Fatal($"[Email] Failed to send email {EmailId}.");
+                Log.Fatal(ex.Message);
+                Log.Fatal(ex.StackTrace);
                 Completed = false;
                 return false;
             }

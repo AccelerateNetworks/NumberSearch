@@ -58,6 +58,18 @@
                             <strong>Body</strong>
                             <p>@Html.Raw(email.MessageBody)</p>
                         </td>
+                        <td>
+                            @{
+                                if (!email.Completed)
+                                {
+                                    <a href="/Home/Emails/@email.OrderId" class="btn btn-danger">Force Send</a>
+                                }
+                                else
+                                {
+                                    <a class="btn btn-danger disabled">Force Send</a>
+                                }
+                            }
+                        </td>
                     </tr>
                 }
             }

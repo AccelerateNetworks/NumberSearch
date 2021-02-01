@@ -530,6 +530,7 @@ Accelerate Networks
                             // Create a billing client and send out an invoice.
                             var billingClients = await Client.GetByEmailAsync(order.Email, _invoiceNinjaToken).ConfigureAwait(false);
                             var billingClient = billingClients.data.FirstOrDefault();
+
                             if (billingClient is null)
                             {
                                 // Create a new client in the billing system.
@@ -546,6 +547,11 @@ Accelerate Networks
                                 };
 
                                 billingClient = await newBillingClient.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                Log.Information($"[Checkout] Created billing client {billingClient.name}, {billingClient.id}.");
+                            }
+                            else
+                            {
+                                Log.Information($"[Checkout] Found billing client {billingClient.name}, {billingClient.id}.");
                             }
 
                             // Create the invoices for this order and submit it to the billing system.
