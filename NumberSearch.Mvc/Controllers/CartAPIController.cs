@@ -503,7 +503,7 @@ namespace NumberSearch.Mvc.Controllers
                 return BadRequest(ModelState);
             }
 
-            var product = await Product.GetAsync(productId, _postgresql).ConfigureAwait(false);
+            var product = await Product.GetByIdAsync(productId, _postgresql).ConfigureAwait(false);
             var productOrder = new ProductOrder
             {
                 ProductId = product.ProductId,

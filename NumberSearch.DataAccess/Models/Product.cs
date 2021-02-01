@@ -15,6 +15,7 @@ namespace NumberSearch.DataAccess
         public int Price { get; set; }
         public string Description { get; set; }
         public string Image { get; set; }
+        public bool Public { get; set; }
 
         /// <summary>
         /// Get a product by its Id.
@@ -22,12 +23,12 @@ namespace NumberSearch.DataAccess
         /// <param name="ProductId"></param>
         /// <param name="connectionString"></param>
         /// <returns></returns>
-        public static async Task<Product> GetAsync(Guid productId, string connectionString)
+        public static async Task<Product> GetByIdAsync(Guid productId, string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryFirstOrDefaultAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\" FROM public.\"Products\" " +
+                .QueryFirstOrDefaultAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\", \"Public\" FROM public.\"Products\" " +
                 "WHERE \"ProductId\" = @productId",
                 new { productId })
                 .ConfigureAwait(false);
@@ -46,7 +47,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\" FROM public.\"Products\" " +
+                .QueryAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\", \"Public\" FROM public.\"Products\" " +
                 "WHERE \"Name\" = @name",
                 new { name })
                 .ConfigureAwait(false);
@@ -59,7 +60,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\" FROM public.\"Products\"")
+                .QueryAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\", \"Public\" FROM public.\"Products\"")
                 .ConfigureAwait(false);
 
             return result;
@@ -75,9 +76,9 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"Products\"(\"Name\", \"Price\", \"Description\", \"Image\") " +
-                "VALUES(@Name, @Price, @Description, @Image)",
-                new { Name, Price, Description, Image })
+                .ExecuteAsync("INSERT INTO public.\"Products\"(\"Name\", \"Price\", \"Description\", \"Image\", \"Public\") " +
+                "VALUES(@Name, @Price, @Description, @Image, @Public)",
+                new { Name, Price, Description, Image, Public })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -101,9 +102,34 @@ namespace NumberSearch.DataAccess
 
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"Products\" " +
-                "SET \"Name\" = @Name, \"Price\" = @Price, \"Description\" = @Description, \"Image\" = @Image " +
-                "WHERE \"ProductId\" = @productId",
-                new { Name, Price, Description, Image, ProductId })
+                "SET \"Name\" = @Name, \"Price\" = @Price, \"Description\" = @Description, \"Image\" = @Image, \"Public\" = @Public " +
+                "WHERE \"ProductId\" = @ProductId",
+                new { Name, Price, Description, Image, Public, ProductId })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteAsync(string connectionString)
+        {
+            // Fail fast if we don have the primary key.
+            if (ProductId == Guid.Empty)
+            {
+                return false;
+            }
+
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("DELETE FROM public.\"Products\" WHERE \"ProductId\" = @ProductId",
+                new { ProductId })
                 .ConfigureAwait(false);
 
             if (result == 1)

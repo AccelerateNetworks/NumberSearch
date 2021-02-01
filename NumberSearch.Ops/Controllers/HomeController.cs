@@ -420,6 +420,134 @@ namespace NumberSearch.Ops.Controllers
 
         [Authorize]
         [HttpGet]
+        [Route("/Home/Inventory")]
+        [Route("/Home/Inventory/{productId}")]
+        public async Task<IActionResult> Inventory(Guid? productId)
+        {
+            if (productId != null)
+            {
+                var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
+                var shipments = await ProductShipment.GetByProductIdAsync(productId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+
+                return View("Inventory", new InventoryResult { Products = products, ProductShipments = shipments });
+            }
+            else
+            {
+                var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
+                var shipments = await ProductShipment.GetAllAsync(_postgresql).ConfigureAwait(false);
+
+                return View("Inventory", new InventoryResult { Products = products, ProductShipments = shipments });
+            }
+        }
+
+        [Authorize]
+        [Route("/Home/Inventory/{productShipmentId}/Delete")]
+        public async Task<IActionResult> ProductShipmentDelete(Guid productShipmentId)
+        {
+            if (productShipmentId == Guid.Empty)
+            {
+                return Redirect("/Home/Inventory");
+            }
+            else
+            {
+                var order = await ProductShipment.GetByIdAsync(productShipmentId, _postgresql).ConfigureAwait(false);
+
+                if (order is not null && order.ProductShipmentId == productShipmentId)
+                {
+                    var checkDelete = await order.DeleteAsync(_postgresql).ConfigureAwait(false);
+                }
+
+                return Redirect("/Home/Inventory");
+            }
+        }
+
+        [Authorize]
+        [Route("/Home/Inventory")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ShipmentCreate(ProductShipment shipment)
+        {
+            if (shipment.ProductId == Guid.Empty)
+            {
+                return Redirect("/Home/Inventory");
+            }
+            else
+            {
+                shipment.DateCreated = DateTime.Now;
+                var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
+                var checkExists = await ProductShipment.GetByIdAsync(shipment.ProductShipmentId, _postgresql).ConfigureAwait(false);
+
+                if (checkExists is null)
+                {
+                    if (string.IsNullOrWhiteSpace(shipment.Name))
+                    {
+                        shipment.Name = products.Where(x => x.ProductId == shipment.ProductId).FirstOrDefault().Name;
+                    }
+                    var checkSave = await shipment.PostAsync(_postgresql).ConfigureAwait(false);
+                }
+                else
+                {
+                    if (string.IsNullOrWhiteSpace(shipment.Name))
+                    {
+                        shipment.Name = products.Where(x => x.ProductId == shipment.ProductId).FirstOrDefault().Name;
+                    }
+
+                    var checkUpdate = await shipment.PutAsync(_postgresql).ConfigureAwait(false);
+                }
+
+                var shipments = await ProductShipment.GetAllAsync(_postgresql).ConfigureAwait(false);
+
+                return View("Inventory", new InventoryResult { Products = products, ProductShipments = shipments });
+            }
+        }
+
+        [Authorize]
+        [Route("/Home/Product/{productId}/Delete")]
+        public async Task<IActionResult> ProductDelete(Guid productId)
+        {
+            if (productId == Guid.Empty)
+            {
+                return Redirect("/Home/Inventory");
+            }
+            else
+            {
+                var order = await Product.GetByIdAsync(productId, _postgresql).ConfigureAwait(false);
+
+                if (order is not null && order.ProductId == productId)
+                {
+                    var checkDelete = await order.DeleteAsync(_postgresql).ConfigureAwait(false);
+                }
+
+                return Redirect("/Home/Inventory");
+            }
+        }
+
+        [Authorize]
+        [Route("/Home/Product")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ProductCreate(Product product)
+        {
+            var checkExists = await Product.GetByIdAsync(product.ProductId, _postgresql).ConfigureAwait(false);
+
+            if (checkExists is null)
+            {
+                var checkSave = await product.PostAsync(_postgresql).ConfigureAwait(false);
+            }
+            else
+            {
+                var checkUpdate = await product.PutAsync(_postgresql).ConfigureAwait(false);
+            }
+
+            var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var shipments = await ProductShipment.GetAllAsync(_postgresql).ConfigureAwait(false);
+
+            return View("Inventory", new InventoryResult { Products = products, ProductShipments = shipments });
+        }
+
+
+        [Authorize]
+        [HttpGet]
         [Route("/Home/TaxRates")]
         [Route("/Home/TaxRates/{taxRateId}")]
         public async Task<IActionResult> TaxRates(int? taxRateId)

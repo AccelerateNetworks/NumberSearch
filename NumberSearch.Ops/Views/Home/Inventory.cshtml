@@ -1,0 +1,200 @@
+﻿@model InventoryResult
+@{
+    ViewData["Title"] = "Inventory";
+}
+<h1 class="display-4 p-3">📦 Inventory</h1>
+@{
+    if (!string.IsNullOrWhiteSpace(Model.Message))
+    {
+        <div class="alert alert-info" role="alert">
+            @Model.Message
+        </div>
+    }
+}
+<form action="/Home/Product" method="post">
+    @Html.AntiForgeryToken()
+    <div class="row">
+        <div class="col mb-3">
+            <label for="productId">Product Id</label>
+            <input asp-for="Product.ProductId" type="text" class="form-control" id="productId" readonly />
+        </div>
+        <div class="col mb-3">
+            <label for="name">Name</label>
+            <input asp-for="Product.Name" type="text" class="form-control" id="name" placeholder="BestPhone">
+        </div>
+        <div class="col mb-3">
+            <label for="description">Description</label>
+            <input asp-for="Product.Description" type="text" class="form-control" id="description" placeholder="A cool new product!" required>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col mb-3">
+            <label for="price">Price</label>
+            <input asp-for="Product.Price" type="number" class="form-control" id="price" placeholder="200">
+        </div>
+        <div class="col mb-3">
+            <label for="image">Image Path</label>
+            <input asp-for="Product.Image" type="text" class="form-control" id="image" placeholder="">
+        </div>
+        <div class="col mb-3">
+            <label for="public">Publicly Visible</label>
+            <input asp-for="Product.Public" type="checkbox" class="form-control" id="public">
+        </div>
+    </div>
+    <button type="submit" class="btn btn-danger">Create or Update</button>
+    <br />
+</form>
+<br />
+<div class="table-responsive">
+    <table class="table table-striped table-borderless table-hover" id="table">
+        <thead>
+            <tr>
+                <th scope="col">
+                    Name
+                </th>
+                <th scope="col">
+                    Price
+                </th>
+                <th scope="col">
+                    Description
+                </th>
+                <th>
+                    Public
+                </th>
+                <th scope="col">
+                    Actions
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                foreach (var product in Model?.Products?.OrderByDescending(x => x.Name))
+                {
+                    <tr>
+                        <td>
+                            @product.Name
+                        </td>
+                        <td>
+                            @product.Price
+                        </td>
+                        <td>
+                            @product.Description
+                        </td>
+                        <td>
+                            @product.Public
+                        </td>
+                        <td>
+                            <a href="/Home/Product/@product.ProductId/Delete" class="btn btn-danger">Delete</a>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+<br />
+<h1 class="display-4">Shipments</h1>
+<br />
+<form action="/Home/Inventory" method="post">
+    @Html.AntiForgeryToken()
+    <div class="row">
+        <div class="col mb-3">
+            <label for="address">Product Name</label>
+            <input asp-for="Shipment.ProductShipmentId" type="text" value="@Guid.NewGuid()" hidden />
+            <select asp-for="Shipment.ProductId" class="custom-select mr-sm-2" id="name" required>
+                <option selected>Choose...</option>
+                @{
+                    foreach (var product in Model.Products?.OrderByDescending(x => x.Name))
+                    {
+                        <option value="@product.ProductId">@product.Name</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col mb-3">
+            <label for="country">Purchase Price</label>
+            <input asp-for="Shipment.PurchasePrice" type="text" class="form-control" id="purchaseprice" placeholder="$69.69">
+        </div>
+        <div class="col mb-3">
+            <label for="zip">Quantity</label>
+            <input asp-for="Shipment.Quantity" type="number" class="form-control" id="quantity" placeholder="1" required>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col mb-3">
+            <label for="country">Sourced From</label>
+            <input asp-for="Shipment.ShipmentSource" type="text" class="form-control" id="source" placeholder="ebay">
+        </div>
+        <div class="col mb-3">
+            <label for="zip">Shipment Type</label>
+            <select asp-for="Shipment.ShipmentType" class="custom-select mr-sm-2" id="shipmenttype" required>
+                <option selected>Choose...</option>
+                <option value="Ordered">Ordered</option>
+                <option value="Instock">Instock</option>
+                <option value="Assigned">Assigned</option>
+            </select>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-danger">Create or Update</button>
+    <br />
+</form>
+<br />
+<div class="table-responsive">
+    <table class="table table-striped table-borderless table-hover" id="table">
+        <thead>
+            <tr>
+                <th scope="col">
+                    Name
+                </th>
+                <th scope="col">
+                    Purchase Price
+                </th>
+                <th scope="col">
+                    Shipment Source
+                </th>
+                <th scope="col">
+                    Shipment Type
+                </th>
+                <th scope="col">
+                    Quantity
+                </th>
+                <th scope="col">
+                    Date Created
+                </th>
+                <th scope="col">
+                    Actions
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                foreach (var shipment in Model?.ProductShipments?.OrderByDescending(x => x.DateCreated))
+                {
+                    <tr>
+                        <td>
+                            @shipment.Name
+                        </td>
+                        <td>
+                            @shipment.PurchasePrice
+                        </td>
+                        <td>
+                            @shipment.ShipmentSource
+                        </td>
+                        <td>
+                            @shipment.ShipmentType
+                        </td>
+                        <td>
+                            @shipment.Quantity
+                        </td>
+                        <td>
+                            @shipment.DateCreated
+                        </td>
+                        <td>
+                            <a href="/Home/Inventory/@shipment.ProductShipmentId/Delete" class="btn btn-danger">Delete</a>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

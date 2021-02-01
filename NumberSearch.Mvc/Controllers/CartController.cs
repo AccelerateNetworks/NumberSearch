@@ -120,7 +120,7 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     if (item?.ProductId != Guid.Empty)
                     {
-                        var product = await Product.GetAsync(item.ProductId, _postgresql).ConfigureAwait(false);
+                        var product = await Product.GetByIdAsync(item.ProductId, _postgresql).ConfigureAwait(false);
                         products.Add(product);
                     }
                     else if (item?.ServiceId != Guid.Empty)
