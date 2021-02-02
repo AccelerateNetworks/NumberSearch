@@ -1227,7 +1227,7 @@ namespace NumberSearch.Ops.Controllers
         }
 
         [Authorize]
-        [HttpGet("/Home/Emails/{orderId}")]
+        [HttpGet("/Home/Emails/{orderId}/Resend")]
         public async Task<IActionResult> ResendEmails(Guid orderId)
         {
             var order = await Order.GetByIdAsync(orderId, _postgresql).ConfigureAwait(false);
