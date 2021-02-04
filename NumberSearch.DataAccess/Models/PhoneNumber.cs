@@ -377,18 +377,9 @@ namespace NumberSearch.DataAccess
 
             using var connection = new NpgsqlConnection(connectionString);
 
-            string sql = $"INSERT INTO public.\"PhoneNumbers\"(\"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\", \"Purchased\") VALUES";
-
-            foreach (var value in values)
-            {
-                sql += $" {value},";
-            }
-
-            // Remove the extra comma.
-            sql = sql.Substring(0, sql.Length - 1);
+            string sql = $"INSERT INTO public.\"PhoneNumbers\"(\"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\", \"Purchased\") VALUES {string.Join(", ", values)}";
 
             var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
-
 
             if (result > 1)
             {
