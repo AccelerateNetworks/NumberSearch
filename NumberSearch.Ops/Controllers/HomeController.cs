@@ -1042,10 +1042,26 @@ namespace NumberSearch.Ops.Controllers
                                     updatedNumber.ExternalPortRequestId = bulkResponse?.OrderId;
                                     var checkUpdateId = await updatedNumber.PutAsync(_postgresql).ConfigureAwait(false);
                                 }
+
+                                return View("PortRequestEdit", new PortRequestResult
+                                {
+                                    Order = order,
+                                    Message = $"{bulkResponse.Description} - {bulkResponse.Code}",
+                                    PortRequest = portRequest,
+                                    PhoneNumbers = numbers
+                                });
                             }
                             else
                             {
                                 Log.Fatal($"[PortRequest] Failed to submit port request to BulkVS.");
+
+                                return View("PortRequestEdit", new PortRequestResult
+                                {
+                                    Order = order,
+                                    Message = $"{bulkResponse.Description} - {bulkResponse.Code}",
+                                    PortRequest = portRequest,
+                                    PhoneNumbers = numbers
+                                });
                             }
                         }
                     }
@@ -1095,10 +1111,26 @@ namespace NumberSearch.Ops.Controllers
                                 number.ExternalPortRequestId = bulkResponse?.OrderId;
                                 var checkUpdateId = await number.PutAsync(_postgresql).ConfigureAwait(false);
                             }
+
+                            return View("PortRequestEdit", new PortRequestResult
+                            {
+                                Order = order,
+                                Message = $"{bulkResponse.Description} - {bulkResponse.Code}",
+                                PortRequest = portRequest,
+                                PhoneNumbers = numbers
+                            });
                         }
                         else
                         {
                             Log.Fatal($"[PortRequest] Failed to submit port request to BulkVS.");
+
+                            return View("PortRequestEdit", new PortRequestResult
+                            {
+                                Order = order,
+                                Message = $"{bulkResponse.Description} - {bulkResponse.Code}",
+                                PortRequest = portRequest,
+                                PhoneNumbers = numbers
+                            });
                         }
                     }
 
