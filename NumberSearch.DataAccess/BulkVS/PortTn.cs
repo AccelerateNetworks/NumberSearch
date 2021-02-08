@@ -161,16 +161,8 @@ namespace NumberSearch.DataAccess.BulkVS
             string baseUrl = "https://portal.bulkvs.com/api/v1.0/";
             string endpoint = "portTn";
             string route = $"{baseUrl}{endpoint}";
-            try
-            {
-                return await route.WithBasicAuth(username, password).PutJsonAsync(this).ReceiveJson<PortTNResponse>();
-            }
-            catch (FlurlHttpException ex)
-            {
-                Log.Warning($"[Porting] [BulkVS] Failed to submit port request.");
 
-                return new PortTNResponse { Description = ex.Message };
-            }
+            return await route.WithBasicAuth(username, password).PutJsonAsync(this).ReceiveJson<PortTNResponse>();
         }
 
         public class PortTNResponse
