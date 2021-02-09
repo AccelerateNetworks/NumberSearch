@@ -60,7 +60,7 @@ namespace NumberSearch.DataAccess.BulkVS
             {
                 // If the number has at least 10 chars then it could be a valid phone number.
                 // If the number starts with a 1 then it's a US number, we want to ignore internation numbers.
-                if (item.TN.Length >= 10 && item.TN[0] == '1')
+                if (item.TN.Length == 10 || item.TN.Length == 11)
                 {
                     item.TN = item.TN.Substring(item.TN.Length - 10);
                 }
