@@ -58,51 +58,35 @@ namespace NumberSearch.DataAccess.BulkVS
 
             foreach (var item in results?.ToArray())
             {
-                if (item.TN.Length == 10)
+                // If the number has at least 10 chars then it could be a valid phone number.
+                // If the number starts with a 1 then it's a US number, we want to ignore internation numbers.
+                if (item.TN.Length >= 10 && item.TN[0] == '1')
                 {
-                    bool checkNpa = int.TryParse(item.TN.Substring(0, 3), out int npa);
-                    bool checkNxx = int.TryParse(item.TN.Substring(3, 3), out int nxx);
-                    bool checkXxxx = int.TryParse(item.TN.Substring(6, 4), out int xxxx);
-
-                    if (checkNpa && checkNxx && checkXxxx)
-                    {
-                        output.Add(new PhoneNumber
-                        {
-                            NPA = npa,
-                            NXX = nxx,
-                            XXXX = xxxx,
-                            DialedNumber = item.TN,
-                            City = string.IsNullOrWhiteSpace(item.RateCenter) ? "Unknown City" : item.RateCenter,
-                            State = string.IsNullOrWhiteSpace(item.State) ? "Unknown State" : item.State,
-                            DateIngested = DateTime.Now,
-                            IngestedFrom = "BulkVS"
-                        });
-                    }
-                }
-                else if (item.TN.Length == 11)
-                {
-                    bool checkNpa = int.TryParse(item.TN.Substring(1, 3), out int npa);
-                    bool checkNxx = int.TryParse(item.TN.Substring(4, 3), out int nxx);
-                    bool checkXxxx = int.TryParse(item.TN.Substring(7, 4), out int xxxx);
-
-                    if (checkNpa && checkNxx && checkXxxx)
-                    {
-                        output.Add(new PhoneNumber
-                        {
-                            NPA = npa,
-                            NXX = nxx,
-                            XXXX = xxxx,
-                            DialedNumber = item.TN,
-                            City = string.IsNullOrWhiteSpace(item.RateCenter) ? "Unknown City" : item.RateCenter,
-                            State = string.IsNullOrWhiteSpace(item.State) ? "Unknown State" : item.State,
-                            DateIngested = DateTime.Now,
-                            IngestedFrom = "BulkVS"
-                        });
-                    }
+                    item.TN = item.TN.Substring(item.TN.Length - 10);
                 }
                 else
                 {
                     Log.Warning($"[Ingest] [BulkVS] Failed to parse {item.TN}. Passed neither the 10 or 11 char checks.");
+                    continue;
+                }
+
+                bool checkNpa = int.TryParse(item.TN.Substring(0, 3), out int npa);
+                bool checkNxx = int.TryParse(item.TN.Substring(3, 3), out int nxx);
+                bool checkXxxx = int.TryParse(item.TN.Substring(6, 4), out int xxxx);
+
+                if (checkNpa && checkNxx && checkXxxx)
+                {
+                    output.Add(new PhoneNumber
+                    {
+                        NPA = npa,
+                        NXX = nxx,
+                        XXXX = xxxx,
+                        DialedNumber = item.TN,
+                        City = string.IsNullOrWhiteSpace(item.RateCenter) ? "Unknown City" : item.RateCenter,
+                        State = string.IsNullOrWhiteSpace(item.State) ? "Unknown State" : item.State,
+                        DateIngested = DateTime.Now,
+                        IngestedFrom = "BulkVS"
+                    });
                 }
             }
             return output;

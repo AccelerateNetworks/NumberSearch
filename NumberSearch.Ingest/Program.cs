@@ -242,6 +242,12 @@ namespace NumberSearch.Ingest
                                         {
                                             var bulkStatus = await PortTn.GetAsync(number.ExternalPortRequestId, bulkVSusername, bulkVSpassword).ConfigureAwait(false);
 
+                                            // If we get no numbers back for this order number skip it.
+                                            if (bulkStatus.TNList is null || !bulkStatus.TNList.Any())
+                                            {
+                                                continue;
+                                            }
+
                                             var matchingNumber = bulkStatus.TNList.Where(x => x.TN == $"1{number.PortedDialedNumber}").FirstOrDefault();
 
                                             if (matchingNumber is not null)
