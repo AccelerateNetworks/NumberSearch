@@ -361,7 +361,7 @@ namespace NumberSearch.Ingest
                                         // If the ported number haven't already been formatted for inclusion in the email do it now.
                                         foreach (var ported in portedNumbers)
                                         {
-                                            formattedNumbers += $"{formattedNumbers}<br />{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
+                                            formattedNumbers += $"<br />{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
                                         }
 
                                         // Port date set or updated.
@@ -405,7 +405,7 @@ Accelerate Networks
                                     {
                                         foreach (var ported in portedNumbers)
                                         {
-                                            formattedNumbers += $"{formattedNumbers}<br />{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
+                                            formattedNumbers += $"<br />{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
                                         }
 
                                         // Port date set or updated.
@@ -915,7 +915,7 @@ Accelerate Networks
                                         // If the ported number haven't already been formatted for inclusion in the email do it now.
                                         foreach (var ported in portedNumbers)
                                         {
-                                            formattedNumbers += $"{formattedNumbers}<br />{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
+                                            formattedNumbers += $"<br />{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
                                         }
 
                                         // Port date set or updated.
@@ -959,7 +959,7 @@ Accelerate Networks
                                     {
                                         foreach (var ported in portedNumbers)
                                         {
-                                            formattedNumbers += $"{formattedNumbers}<br />{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
+                                            formattedNumbers += $"<br />{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
                                         }
 
                                         // Port date set or updated.
