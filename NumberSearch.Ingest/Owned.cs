@@ -131,6 +131,7 @@ namespace NumberSearch.Ingest
                     number.IngestedFrom = item.IngestedFrom;
                     number.EmergencyInformationId = item.EmergencyInformationId;
                     number.Notes = string.IsNullOrWhiteSpace(number.Notes) ? item.Notes : number.Notes;
+                    number.Notes = string.IsNullOrWhiteSpace(number.Notes) ? item.Notes : number.Notes;
 
                     var checkCreate = await number.PutAsync(connectionString).ConfigureAwait(false);
                     updatedExisting++;
@@ -156,6 +157,99 @@ namespace NumberSearch.Ingest
 
             Log.Information($"[OwnedNumbers] Updated {updatedExisting} owned numbers.");
             Log.Information($"[OwnedNumbers] Added {ingestedNew} new owned numbers.");
+
+            return stats;
+        }
+
+        public static async Task<IngestStatistics> OfferUnassignedNumberForSaleAsync(string bulkVSAPIKey, string connectionString)
+        {
+            var start = DateTime.Now;
+            var ingestedNew = 0;
+            var updatedExisting = 0;
+
+            var numbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
+
+            var newUnassigned = new List<PhoneNumber>();
+
+            foreach (var item in numbers)
+            {
+                if (item.Notes.Trim() == "Unassigned")
+                {
+                    var number = await PhoneNumber.GetAsync(item.DialedNumber, connectionString).ConfigureAwait(false);
+
+                    if (number is null)
+                    {
+                        // If the number has at least 10 chars then it could be a valid phone number.
+                        // If the number starts with a 1 then it's a US number, we want to ignore internation numbers.
+                        if (item.DialedNumber.Length == 10 || item.DialedNumber.Length == 11)
+                        {
+                            item.DialedNumber = item.DialedNumber.Substring(item.DialedNumber.Length - 10);
+                        }
+                        else
+                        {
+                            Log.Warning($"[Ingest] [OwnedNumber] Failed to parse {item.DialedNumber}. Passed neither the 10 or 11 char checks.");
+                            continue;
+                        }
+
+                        bool checkNpa = int.TryParse(item.DialedNumber.Substring(0, 3), out int npa);
+                        bool checkNxx = int.TryParse(item.DialedNumber.Substring(3, 3), out int nxx);
+                        bool checkXxxx = int.TryParse(item.DialedNumber.Substring(6, 4), out int xxxx);
+
+                        if (checkNpa && checkNxx && checkXxxx)
+                        {
+                            var lrnInfo = await LrnBulkCnam.GetAsync(item.DialedNumber, bulkVSAPIKey).ConfigureAwait(false);
+
+                            number = new PhoneNumber
+                            {
+                                NPA = npa,
+                                NXX = nxx,
+                                XXXX = xxxx,
+                                DialedNumber = item.DialedNumber,
+                                City = string.IsNullOrWhiteSpace(lrnInfo.city) ? "Unknown City" : lrnInfo.city,
+                                State = string.IsNullOrWhiteSpace(lrnInfo.province) ? "Unknown State" : lrnInfo.province,
+                                DateIngested = item.DateIngested,
+                                IngestedFrom = "OwnedNumber"
+                            };
+                        }
+
+                        newUnassigned.Add(number);
+                        ingestedNew++;
+
+                        Log.Information($"[Ingest] [OwnedNumber] Put unassigned number {item.DialedNumber} up for sale.");
+                    }
+                    else
+                    {
+                        number.DateIngested = item.DateIngested;
+                        number.IngestedFrom = "OwnedNumber";
+
+                        var checkCreate = await number.PutAsync(connectionString).ConfigureAwait(false);
+                        updatedExisting++;
+
+                        Log.Information($"[Ingest] [OwnedNumber] Continued offering unassigned number {item.DialedNumber} up for sale.");
+                    }
+                }
+            }
+
+            var typedNumbers = Services.AssignNumberTypes(newUnassigned).ToArray();
+
+            var unassignedNumberStats = await Services.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
+
+            var end = DateTime.Now;
+
+            var stats = new IngestStatistics
+            {
+                StartDate = start,
+                EndDate = end,
+                IngestedFrom = "OwnedNumbers",
+                NumbersRetrived = numbers.Count(),
+                Priority = false,
+                Lock = false,
+                IngestedNew = ingestedNew,
+                UpdatedExisting = updatedExisting,
+                Removed = 0,
+                Unchanged = 0,
+                FailedToIngest = 0
+            };
 
             return stats;
         }

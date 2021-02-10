@@ -174,6 +174,21 @@ namespace NumberSearch.Mvc
 
                                                         Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from FirstPointCom.");
                                                     }
+                                                    else if (nto.IngestedFrom == "OwnedNumber")
+                                                    {
+                                                        var ownedNumber = await OwnedPhoneNumber.GetByDialedNumberAsync(nto.DialedNumber, _postgresql).ConfigureAwait(false);
+                                                        // We already own it.
+                                                        nto.Purchased = true;
+                                                        productOrder.DateOrdered = DateTime.Now;
+                                                        productOrder.OrderResponse = JsonSerializer.Serialize(ownedNumber);
+                                                        productOrder.OrderResponse = "We already own this number.";
+                                                        productOrder.Completed = true;
+
+                                                        var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
+                                                        var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
+
+                                                        Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from OwnedNumbers.");
+                                                    }
                                                 }
                                                 catch (Exception ex)
                                                 {

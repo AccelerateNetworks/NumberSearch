@@ -1196,6 +1196,7 @@ Accelerate Networks
                                         {
                                             Log.Fatal("[OwnedNumbers] Failed to retrive owned numbers.");
                                             Log.Fatal(ex.Message);
+                                            Log.Fatal(ex.StackTrace);
                                         }
 
                                         // Update emergency info
@@ -1245,6 +1246,9 @@ Accelerate Networks
                                             Log.Fatal("[OwnedNumbers] Failed to look for LRN changes on owned numbers.");
                                             Log.Fatal(ex.Message);
                                         }
+
+                                        // Offer unassigned phone numbers we own for purchase on the website.
+                                        var unassignedNubmers = await Owned.OfferUnassignedNumberForSaleAsync(bulkVSKey, postgresSQL).ConfigureAwait(false);
 
                                         // Remove the lock from the database to prevent it from getting cluttered with blank entries.
                                         var lockEntry = await IngestStatistics.GetLockAsync("OwnedNumbers", postgresSQL).ConfigureAwait(false);

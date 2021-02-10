@@ -312,6 +312,37 @@ namespace NumberSearch.Mvc.Controllers
                                         qty = 1
                                     });
                                 }
+                                else if (nto.IngestedFrom == "OwnedNumber")
+                                {
+                                    var checkSubmitted = productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+
+                                    var purchsedNumber = new PurchasedPhoneNumber
+                                    {
+                                        Completed = false,
+                                        DateIngested = numberToBePurchased.DateIngested,
+                                        DateOrdered = DateTime.Now,
+                                        NPA = numberToBePurchased.NPA,
+                                        NXX = numberToBePurchased.NXX,
+                                        XXXX = numberToBePurchased.XXXX,
+                                        DialedNumber = numberToBePurchased.DialedNumber,
+                                        IngestedFrom = numberToBePurchased.IngestedFrom,
+                                        NumberType = numberToBePurchased.NumberType,
+                                        OrderId = order.OrderId,
+                                        OrderResponse = string.Empty
+                                    };
+
+                                    var checkPurchaseOrder = await purchsedNumber.PostAsync(_postgresql).ConfigureAwait(false);
+
+                                    totalCost += cost;
+
+                                    onetimeItems.Add(new Invoice_Items
+                                    {
+                                        product_key = nto.DialedNumber,
+                                        notes = $"{nto.NumberType} Phone Number",
+                                        cost = cost,
+                                        qty = 1
+                                    });
+                                }
                             }
 
                             // Track the number of free ports this order qualifies for.

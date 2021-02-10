@@ -256,6 +256,26 @@ namespace NumberSearch.Mvc.Controllers
                     return BadRequest($"{dialedPhoneNumber} is no longer available.");
                 }
             }
+            else if (phoneNumber.IngestedFrom == "OwnedNumber")
+            {
+                // Verify that we still have the number.
+                var matchingNumber = await OwnedPhoneNumber.GetByDialedNumberAsync(phoneNumber.DialedNumber, _postgresql).ConfigureAwait(false);
+                if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
+                {
+                    purchasable = true;
+                    Log.Information($"[OwnedNumber] Found {phoneNumber.DialedNumber}.");
+                }
+                else
+                {
+                    Log.Warning($"[OwnedNumber] Failed to find {phoneNumber.DialedNumber}.");
+
+                    // Remove numbers that are unpurchasable.
+                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+
+                    // Sadly its gone. And the user needs to pick a different number.
+                    return BadRequest($"{dialedPhoneNumber} is no longer available.");
+                }
+            }
             else
             {
                 // Remove numbers that are unpurchasable.
