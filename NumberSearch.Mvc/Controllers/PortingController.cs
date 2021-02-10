@@ -339,8 +339,6 @@ namespace NumberSearch.Mvc.Controllers
 
             var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
 
-            // http://www.mimekit.net/docs/html/Creating-Messages.htm
-            var multipart = new Multipart("mixed");
             using var stream = new System.IO.MemoryStream();
 
             if (portRequest.BillImage != null && portRequest.BillImage.Length > 0)
@@ -349,28 +347,8 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     await portRequest.BillImage.CopyToAsync(stream).ConfigureAwait(false);
 
-                    //var root = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                    //var sink = Path.Combine(root, DateTime.Now.ToString("yyyy-MM-dd"));
-
-                    //// Verify that the sink directory exists, and create it otherwise.
-                    //if (!Directory.Exists(sink))
-                    //{
-                    //    Directory.CreateDirectory(sink);
-                    //}
-
                     var fileExtension = Path.GetExtension(portRequest.BillImage.FileName);
                     var fileName = $"{Guid.NewGuid()}{fileExtension}";
-                    //var fileStreamPath = Path.Combine(sink, fileName);
-
-                    //// You have to rewind the MemoryStream before copying
-                    //stream.Seek(0, SeekOrigin.Begin);
-
-                    //using (FileStream fs = new FileStream(fileStreamPath, FileMode.OpenOrCreate))
-                    //{
-                    //    await stream.CopyToAsync(fs).ConfigureAwait(false);
-                    //    await fs.FlushAsync().ConfigureAwait(false);
-                    //    Log.Information($"[Port Request] Saved the bill image file to: {fileStreamPath}");
-                    //}
 
                     // Create a BlobServiceClient object which will be used to create a container client
                     BlobServiceClient blobServiceClient = new BlobServiceClient(_azureStorage);
@@ -392,16 +370,6 @@ namespace NumberSearch.Mvc.Controllers
 
                     portRequest.BillImagePath = fileName;
 
-                    // Yeet the image into an email attachment.
-                    //var attachment = new MimePart("image", fileExtension)
-                    //{
-                    //    Content = new MimeContent(stream, ContentEncoding.Default),
-                    //    ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
-                    //    ContentTransferEncoding = ContentEncoding.Base64,
-                    //    FileName = Path.GetFileName(portRequest.BillImage.FileName)
-                    //};
-
-                    //multipart.Add(attachment);
                     Log.Information($"[Port Request] BlobContainer: {containerClient.Name} BlobClient: {blobClient.Name}");
                     Log.Information("[Port Request] Successfuly saved the bill image to the server and attached it to the confirmation email.");
                 }
@@ -454,8 +422,7 @@ Accelerate Networks
 <br />
 206-858-8757 (call or text)",
                     OrderId = order.OrderId,
-                    Subject = $"Porting information added for {portedNumbers.FirstOrDefault().PortedDialedNumber}",
-                    Multipart = multipart
+                    Subject = $"Porting information added for {portedNumbers.FirstOrDefault().PortedDialedNumber}"
                 };
 
                 var checkSave = await confirmationEmail.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);

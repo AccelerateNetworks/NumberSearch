@@ -1,5 +1,9 @@
 ﻿using FirstCom;
 
+using Ical.Net.CalendarComponents;
+using Ical.Net.DataTypes;
+using Ical.Net.Serialization;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
@@ -14,6 +18,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -508,6 +513,7 @@ namespace NumberSearch.Mvc.Controllers
                             var confirmationEmail = new Email
                             {
                                 PrimaryEmailAddress = order.Email,
+                                SalesEmailAddress = order.SalesEmail,
                                 CarbonCopy = _emailOrders,
                                 MessageBody = $@"Hi {order.FirstName},
 <br />
@@ -870,6 +876,38 @@ Accelerate Networks
                                         }
                                     }
                                 }
+                            }
+
+                            // Create a calendar invite for the install date.
+                            if (order.InstallDate > DateTime.Now)
+                            {
+                                var end = order.InstallDate.GetValueOrDefault().AddHours(3);
+
+                                var attendee = new Attendee
+                                {
+                                    CommonName = order.FirstName + " " + order.LastName,
+                                    Rsvp = true,
+                                    Value = new Uri($"mailto:{order.Email}")
+                                };
+
+                                var ourRep = string.IsNullOrWhiteSpace(order.SalesEmail) ? new Uri($"mailto:{_emailOrders}") : new Uri($"mailto:{order.SalesEmail}");
+
+                                var e = new CalendarEvent
+                                {
+                                    Start = new CalDateTime(order.InstallDate.GetValueOrDefault()),
+                                    End = new CalDateTime(end),
+                                    Summary = "Accelerate Networks Phone Install",
+                                    Attendees = new List<Attendee> { attendee, new Attendee { CommonName = "Accelerate Networks", Rsvp = true, Value = ourRep } },
+                                    Organizer = new Organizer { CommonName = "Accelerate Networks", Value = new Uri($"mailto:{_emailOrders}") },
+                                };
+
+                                var calendar = new Ical.Net.Calendar();
+                                calendar.Events.Add(e);
+
+                                var serializer = new CalendarSerializer();
+                                var icalString = serializer.SerializeToString(calendar);
+
+                                confirmationEmail.CalendarInvite = icalString;
                             }
 
                             // If there are notes on the order don't send out any emails.

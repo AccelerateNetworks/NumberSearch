@@ -11,6 +11,7 @@ using Serilog;
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess
@@ -26,7 +27,7 @@ namespace NumberSearch.DataAccess
         public string MessageBody { get; set; }
         public DateTime DateSent { get; set; }
         public bool Completed { get; set; }
-        public Multipart Multipart { get; set; }
+        public string CalendarInvite { get; set; }
 
         /// <summary>
         /// Get all emails.
@@ -38,7 +39,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<Email>("SELECT \"EmailId\", \"OrderId\", \"PrimaryEmailAddress\", \"CarbonCopy\", \"Subject\", \"MessageBody\", \"DateSent\", \"Completed\" " +
+                .QueryAsync<Email>("SELECT \"EmailId\", \"OrderId\", \"PrimaryEmailAddress\", \"CarbonCopy\", \"Subject\", \"MessageBody\", \"DateSent\", \"Completed\", \"SalesEmailAddress\", \"CalendarInvite\" " +
                 "FROM public.\"SentEmails\" ORDER BY \"DateSent\" DESC")
                 .ConfigureAwait(false);
 
@@ -56,7 +57,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<Email>("SELECT \"EmailId\", \"OrderId\", \"PrimaryEmailAddress\", \"CarbonCopy\", \"Subject\", \"MessageBody\", \"DateSent\", \"Completed\" " +
+                .QueryAsync<Email>("SELECT \"EmailId\", \"OrderId\", \"PrimaryEmailAddress\", \"CarbonCopy\", \"Subject\", \"MessageBody\", \"DateSent\", \"Completed\", \"SalesEmailAddress\", \"CalendarInvite\" " +
                 "FROM public.\"SentEmails\" " +
                 "WHERE \"OrderId\" = @OrderId",
                 new { OrderId })
@@ -76,7 +77,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryFirstOrDefaultAsync<Email>("SELECT \"EmailId\", \"OrderId\", \"PrimaryEmailAddress\", \"CarbonCopy\", \"Subject\", \"MessageBody\", \"DateSent\", \"Completed\" " +
+                .QueryFirstOrDefaultAsync<Email>("SELECT \"EmailId\", \"OrderId\", \"PrimaryEmailAddress\", \"CarbonCopy\", \"Subject\", \"MessageBody\", \"DateSent\", \"Completed\", \"SalesEmailAddress\", \"CalendarInvite\" " +
                 "FROM public.\"SentEmails\" " +
                 "WHERE \"EmailId\" = @EmailId",
                 new { EmailId })
@@ -132,9 +133,18 @@ namespace NumberSearch.DataAccess
                 }
 
                 // If there's an attachment send it, if not just send the body.
-                if (Multipart != null && Multipart.Count > 0)
+                //if (Multipart != null && Multipart.Count > 0)
+                //{
+                //    builder.Attachments.Add(Multipart);
+                //}
+
+                if (!string.IsNullOrWhiteSpace(CalendarInvite))
                 {
-                    builder.Attachments.Add(Multipart);
+                    var icsFile = Path.Combine(AppContext.BaseDirectory, "acceleratenetworks.ics");
+
+                    System.IO.File.WriteAllText(icsFile, CalendarInvite);
+
+                    builder.Attachments.Add(icsFile);
                 }
 
                 outboundMessage.Body = builder.ToMessageBody();
@@ -171,9 +181,9 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"SentEmails\" (\"OrderId\", \"PrimaryEmailAddress\", \"CarbonCopy\", \"Subject\", \"MessageBody\", \"DateSent\", \"Completed\") " +
-                "VALUES ( @OrderId, @PrimaryEmailAddress, @CarbonCopy, @Subject, @MessageBody, @DateSent, @Completed )",
-                new { OrderId, PrimaryEmailAddress, CarbonCopy, Subject, MessageBody, DateSent, Completed })
+                .ExecuteAsync("INSERT INTO public.\"SentEmails\" (\"OrderId\", \"PrimaryEmailAddress\", \"CarbonCopy\", \"Subject\", \"MessageBody\", \"DateSent\", \"Completed\", \"SalesEmailAddress\", \"CalendarInvite\") " +
+                "VALUES ( @OrderId, @PrimaryEmailAddress, @CarbonCopy, @Subject, @MessageBody, @DateSent, @Completed, @SalesEmailAddress, @CalendarInvite)",
+                new { OrderId, PrimaryEmailAddress, CarbonCopy, Subject, MessageBody, DateSent, Completed, SalesEmailAddress, CalendarInvite })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -202,9 +212,9 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("UPDATE public.\"SentEmails\" SET \"OrderId\"= @OrderId, \"PrimaryEmailAddress\"= @PrimaryEmailAddress, \"CarbonCopy\"= @CarbonCopy, \"Subject\"= @Subject, \"MessageBody\"= @MessageBody, \"DateSent\"= @DateSent, \"Completed\"= @Completed " +
+                .ExecuteAsync("UPDATE public.\"SentEmails\" SET \"OrderId\"= @OrderId, \"PrimaryEmailAddress\"= @PrimaryEmailAddress, \"CarbonCopy\"= @CarbonCopy, \"Subject\"= @Subject, \"MessageBody\"= @MessageBody, \"DateSent\"= @DateSent, \"Completed\" = @Completed, \"SalesEmailAddress\" = @SalesEmailAddress, \"CalendarInvite\" = @CalendarInvite " +
                 "WHERE \"EmailId\" = @EmailId",
-                new { OrderId, PrimaryEmailAddress, CarbonCopy, Subject, MessageBody, DateSent, Completed, EmailId })
+                new { OrderId, PrimaryEmailAddress, CarbonCopy, Subject, MessageBody, DateSent, Completed, EmailId, SalesEmailAddress, CalendarInvite })
                 .ConfigureAwait(false);
 
             if (result == 1)
