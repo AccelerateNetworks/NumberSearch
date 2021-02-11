@@ -183,9 +183,13 @@ namespace NumberSearch.Mvc
                                                         productOrder.OrderResponse = JsonSerializer.Serialize(ownedNumber);
                                                         productOrder.OrderResponse = "We already own this number.";
                                                         productOrder.Completed = true;
+                                                        ownedNumber.BillingClientId = order.BillingClientId;
+                                                        ownedNumber.Notes = $"Purchased in Order {order.OrderId}";
+                                                        ownedNumber.OwnedBy = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName;
 
                                                         var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
                                                         var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
+                                                        var checkOwnedNumber = await ownedNumber.PutAsync(_postgresql).ConfigureAwait(false);
 
                                                         Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from OwnedNumbers.");
                                                     }
