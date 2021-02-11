@@ -173,11 +173,11 @@ namespace NumberSearch.Ingest
 
             foreach (var item in numbers)
             {
-                if (item.Notes.Trim() == "Unassigned")
+                if (item?.Notes != null && item?.Notes.Trim() == "Unassigned")
                 {
                     var number = await PhoneNumber.GetAsync(item.DialedNumber, connectionString).ConfigureAwait(false);
 
-                    if (number is null)
+                    if (number is null || string.IsNullOrWhiteSpace(number?.DialedNumber))
                     {
                         // If the number has at least 10 chars then it could be a valid phone number.
                         // If the number starts with a 1 then it's a US number, we want to ignore internation numbers.
