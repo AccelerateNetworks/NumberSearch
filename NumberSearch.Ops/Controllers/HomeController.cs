@@ -639,6 +639,8 @@ namespace NumberSearch.Ops.Controllers
                     Log.Fatal($"[Checkout] Failed to get the Sale Tax rate for {location.Address}, {location.City}, {location.Zip}.");
                     Log.Fatal(ex.Message);
                     Log.Fatal(ex.StackTrace);
+                    Log.Fatal(ex.InnerException.Message);
+                    Log.Fatal(ex.InnerException.StackTrace);
 
                     var result = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
 
