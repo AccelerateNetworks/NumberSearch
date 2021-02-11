@@ -1253,6 +1253,9 @@ Accelerate Networks
                                         // Offer unassigned phone numbers we own for purchase on the website.
                                         var unassignedNubmers = await Owned.OfferUnassignedNumberForSaleAsync(bulkVSKey, postgresSQL).ConfigureAwait(false);
 
+                                        // Match up owned numbers and their billingClients.
+                                        var billingClients = await Owned.MatchOwnedNumbersToBillingClientsAsync(postgresSQL).ConfigureAwait(false);
+
                                         // Remove the lock from the database to prevent it from getting cluttered with blank entries.
                                         var lockEntry = await IngestStatistics.GetLockAsync("OwnedNumbers", postgresSQL).ConfigureAwait(false);
                                         var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);

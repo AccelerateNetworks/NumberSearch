@@ -127,13 +127,9 @@ namespace NumberSearch.Ingest
                 }
                 else
                 {
-                    number.DateIngested = item.DateIngested;
-                    number.IngestedFrom = item.IngestedFrom;
-                    number.EmergencyInformationId = item.EmergencyInformationId;
-                    number.Notes = string.IsNullOrWhiteSpace(number.Notes) ? item.Notes : number.Notes;
-                    number.Notes = string.IsNullOrWhiteSpace(number.Notes) ? item.Notes : number.Notes;
+                    item.Notes = string.IsNullOrWhiteSpace(number.Notes) ? item.Notes : number.Notes;
 
-                    var checkCreate = await number.PutAsync(connectionString).ConfigureAwait(false);
+                    var checkCreate = await item.PutAsync(connectionString).ConfigureAwait(false);
                     updatedExisting++;
                 }
             }
@@ -253,6 +249,70 @@ namespace NumberSearch.Ingest
 
             return stats;
         }
+
+        public static async Task<IngestStatistics> MatchOwnedNumbersToBillingClientsAsync(string connectionString)
+        {
+            var start = DateTime.Now;
+            var updatedExisting = 0;
+
+            var numbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
+            var purcahsed = await PurchasedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
+            var ported = await PortedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
+
+            foreach (var number in numbers.Where(x => string.IsNullOrWhiteSpace(x.BillingClientId)))
+            {
+                var match = purcahsed.Where(x => x.DialedNumber == number.DialedNumber).FirstOrDefault();
+
+                if (match is null)
+                {
+                    var match2 = ported.Where(x => x.PortedDialedNumber == number.DialedNumber).FirstOrDefault();
+
+                    if (match2 is null)
+                    {
+                        // Do nothing if we can't find a match in our system for this number.
+                        continue;
+                    }
+
+                    var order = await Order.GetByIdAsync(match2.OrderId ?? Guid.NewGuid(), connectionString).ConfigureAwait(false);
+
+                    number.BillingClientId = order.BillingClientId;
+                    number.OwnedBy = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName;
+
+                    var checkUpdate = await number.PutAsync(connectionString).ConfigureAwait(false);
+                    updatedExisting++;
+                }
+                else
+                {
+                    var order = await Order.GetByIdAsync(match.OrderId, connectionString).ConfigureAwait(false);
+
+                    number.BillingClientId = order.BillingClientId;
+                    number.OwnedBy = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName;
+
+                    var checkUpdate = await number.PutAsync(connectionString).ConfigureAwait(false);
+                    updatedExisting++;
+                }
+            }
+
+            var end = DateTime.Now;
+
+            var stats = new IngestStatistics
+            {
+                StartDate = start,
+                EndDate = end,
+                IngestedFrom = "OwnedNumbers",
+                NumbersRetrived = numbers.Count(),
+                Priority = false,
+                Lock = false,
+                IngestedNew = 0,
+                UpdatedExisting = updatedExisting,
+                Removed = 0,
+                Unchanged = 0,
+                FailedToIngest = 0
+            };
+
+            return stats;
+        }
+
 
         public class ServiceProviderChanged
         {
