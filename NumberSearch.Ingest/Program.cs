@@ -255,7 +255,11 @@ namespace NumberSearch.Ingest
                                                 var checkRDDParse = DateTime.TryParse(matchingNumber.RDD, out var FOCDate);
 
                                                 // If the FOC Date has been changed update it.
-                                                if (checkRDDParse && (FOCDate != number.DateFirmOrderCommitment))
+                                                if (checkRDDParse && (number.DateFirmOrderCommitment is null))
+                                                {
+                                                    number.DateFirmOrderCommitment = FOCDate;
+                                                }
+                                                else if (checkRDDParse && (FOCDate != number.DateFirmOrderCommitment))
                                                 {
                                                     number.DateFirmOrderCommitment = FOCDate;
                                                     focChanged = true;
@@ -274,7 +278,6 @@ namespace NumberSearch.Ingest
 
                                                 var checkPortedNumberUpdate = await number.PutAsync(postgresSQL).ConfigureAwait(false);
                                                 Log.Information($"[BulkVS] [PortRequests] Updated BulkVS Port Request {request?.TeliId} - {number?.PortedDialedNumber} - {number?.RequestStatus} - {number?.DateFirmOrderCommitment?.ToShortDateString()}");
-
                                             }
                                         }
                                     }
