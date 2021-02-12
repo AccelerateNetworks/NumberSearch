@@ -3,8 +3,37 @@
     ViewData["Title"] = "Owned Phone Number";
 }
 <h1 class="display-4 p-3">🏢 Owned Numbers</h1>
-<div class="pb-3">
+
+<div class="btn-group pb-3" role="group" aria-label="Basic example">
     <a class="btn btn-primary" href="/Home/OwnedNumbers">Return to List</a>
+    @{
+        if (!string.IsNullOrWhiteSpace(Model?.BillingClientId))
+        {
+            <a href="https://billing.acceleratenetworks.com/clients/@Model?.BillingClientId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
+                Billing
+            </a>
+        }
+        else
+        {
+            <a class="btn btn-outline-success disabled">
+                Billing
+            </a>
+        }
+    }
+    @{
+        if (!(Model?.EmergencyInformationId is null))
+        {
+            <a href="/Home/EmergencyInformation/@Model?.DialedNumber" class="btn btn-info">
+                Emergency
+            </a>
+        }
+        else
+        {
+            <a class="btn btn-outline-info disabled">
+                Emergency
+            </a>
+        }
+    }
 </div>
 <form action="/Home/OwnedNumbers/@Model.DialedNumber" method="post" class="needs-validation">
     @Html.AntiForgeryToken()

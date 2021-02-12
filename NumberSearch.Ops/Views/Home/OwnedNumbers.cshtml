@@ -17,6 +17,9 @@
                 <th>
                     Notes
                 </th>
+                <th>
+                    Client and Billing Id
+                </th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -68,23 +71,41 @@
                             <p>@number.Notes</p>
                         </td>
                         <td>
-                            <a class="btn btn-danger text-light" href="/Home/OwnedNumbers/@number.DialedNumber">Edit</a>
-                            @{
-                                if (!string.IsNullOrWhiteSpace(number.BillingClientId))
-                                {
-                                    <a href="https://billing.acceleratenetworks.com/clients/@number?.BillingClientId/edit" class="btn btn-secondary mt-1" target="_blank" rel="noopener noreferrer">
-                                        Client
-                                    </a>
+                            <p>@number.OwnedBy</p>
+                            <p>@number.BillingClientId</p>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group" aria-label="Basic example">
+                                <a class="btn btn-danger text-light" href="/Home/OwnedNumbers/@number.DialedNumber">Edit</a>
+                                @{
+                                    if (!string.IsNullOrWhiteSpace(number.BillingClientId))
+                                    {
+                                        <a href="https://billing.acceleratenetworks.com/clients/@number?.BillingClientId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
+                                            Billing
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a class="btn btn-outline-success disabled">
+                                            Billing
+                                        </a>
+                                    }
                                 }
-                            }
-                            @{
-                                if (!(number.EmergencyInformationId is null))
-                                {
-                                    <a href="/Home/EmergencyInformation/@number.DialedNumber" class="btn btn-info mt-1">
-                                        Emergency
-                                    </a>
+                                @{
+                                    if (!(number.EmergencyInformationId is null))
+                                    {
+                                        <a href="/Home/EmergencyInformation/@number.DialedNumber" class="btn btn-info">
+                                            Emergency
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a class="btn btn-outline-info disabled">
+                                            Emergency
+                                        </a>
+                                    }
                                 }
-                            }
+                            </div>
                         </td>
                     </tr>
                 }
