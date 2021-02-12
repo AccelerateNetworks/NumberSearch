@@ -270,26 +270,45 @@ namespace NumberSearch.Ingest
                     if (match2 is null)
                     {
                         // Do nothing if we can't find a match in our system for this number.
+                        Log.Information($"[OwnedNumbers] [ClientMatch] Couldn't associate Owned Number {number.DialedNumber} with a billing client.");
                         continue;
                     }
 
                     var order = await Order.GetByIdAsync(match2.OrderId ?? Guid.NewGuid(), connectionString).ConfigureAwait(false);
 
-                    number.BillingClientId = order.BillingClientId;
-                    number.OwnedBy = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName;
+                    if (order is not null && !string.IsNullOrWhiteSpace(order?.BillingClientId))
+                    {
+                        number.BillingClientId = order?.BillingClientId;
+                        number.OwnedBy = string.IsNullOrWhiteSpace(order?.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order?.BusinessName;
 
-                    var checkUpdate = await number.PutAsync(connectionString).ConfigureAwait(false);
-                    updatedExisting++;
+                        var checkUpdate = await number.PutAsync(connectionString).ConfigureAwait(false);
+                        updatedExisting++;
+
+                        Log.Information($"[OwnedNumbers] [ClientMatch] Associated Owned Number {match2?.PortedDialedNumber} with billing client id {order?.BillingClientId}");
+                    }
+                    else
+                    {
+                        Log.Information($"[OwnedNumbers] [ClientMatch] Couldn't associate Owned Number {match2?.PortedDialedNumber} with a billing client.");
+                    }
                 }
                 else
                 {
                     var order = await Order.GetByIdAsync(match.OrderId, connectionString).ConfigureAwait(false);
 
-                    number.BillingClientId = order.BillingClientId;
-                    number.OwnedBy = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName;
+                    if (order is not null && !string.IsNullOrWhiteSpace(order?.BillingClientId))
+                    {
+                        number.BillingClientId = order?.BillingClientId;
+                        number.OwnedBy = string.IsNullOrWhiteSpace(order?.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order?.BusinessName;
 
-                    var checkUpdate = await number.PutAsync(connectionString).ConfigureAwait(false);
-                    updatedExisting++;
+                        var checkUpdate = await number.PutAsync(connectionString).ConfigureAwait(false);
+                        updatedExisting++;
+
+                        Log.Information($"[OwnedNumbers] [ClientMatch] Associated Owned Number {match?.DialedNumber} with billing client id {order?.BillingClientId}");
+                    }
+                    else
+                    {
+                        Log.Information($"[OwnedNumbers] [ClientMatch] Couldn't associate Owned Number {match?.DialedNumber} with a billing client.");
+                    }
                 }
             }
 
