@@ -16,6 +16,7 @@ namespace NumberSearch.DataAccess
         public string Description { get; set; }
         public string Image { get; set; }
         public bool Public { get; set; }
+        public int QuantityAvailable { get; set; }
 
         /// <summary>
         /// Get a product by its Id.
@@ -28,7 +29,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryFirstOrDefaultAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\", \"Public\" FROM public.\"Products\" " +
+                .QueryFirstOrDefaultAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\", \"Public\", \"QuantityAvailable\" FROM public.\"Products\" " +
                 "WHERE \"ProductId\" = @productId",
                 new { productId })
                 .ConfigureAwait(false);
@@ -47,7 +48,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\", \"Public\" FROM public.\"Products\" " +
+                .QueryAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\", \"Public\", \"QuantityAvailable\" FROM public.\"Products\" " +
                 "WHERE \"Name\" = @name",
                 new { name })
                 .ConfigureAwait(false);
@@ -60,7 +61,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\", \"Public\" FROM public.\"Products\"")
+                .QueryAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\", \"Public\", \"QuantityAvailable\" FROM public.\"Products\"")
                 .ConfigureAwait(false);
 
             return result;
@@ -76,9 +77,9 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"Products\"(\"Name\", \"Price\", \"Description\", \"Image\", \"Public\") " +
-                "VALUES(@Name, @Price, @Description, @Image, @Public)",
-                new { Name, Price, Description, Image, Public })
+                .ExecuteAsync("INSERT INTO public.\"Products\"(\"Name\", \"Price\", \"Description\", \"Image\", \"Public\", \"QuantityAvailable\") " +
+                "VALUES(@Name, @Price, @Description, @Image, @Public, @QuantityAvailable)",
+                new { Name, Price, Description, Image, Public, QuantityAvailable })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -102,9 +103,9 @@ namespace NumberSearch.DataAccess
 
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"Products\" " +
-                "SET \"Name\" = @Name, \"Price\" = @Price, \"Description\" = @Description, \"Image\" = @Image, \"Public\" = @Public " +
+                "SET \"Name\" = @Name, \"Price\" = @Price, \"Description\" = @Description, \"Image\" = @Image, \"Public\" = @Public, \"QuantityAvailable\" = @QuantityAvailable " +
                 "WHERE \"ProductId\" = @ProductId",
-                new { Name, Price, Description, Image, Public, ProductId })
+                new { Name, Price, Description, Image, Public, ProductId, QuantityAvailable })
                 .ConfigureAwait(false);
 
             if (result == 1)
