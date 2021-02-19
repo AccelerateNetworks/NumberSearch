@@ -493,7 +493,16 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="installdate">Preferred Install Date</label>
-                        <input asp-for="Order.InstallDate" type="datetime-local" class="form-control" id="installdate" min="@DateTime.Now.AddDays(3).ToString("yyyy-MM-ddThh:mm")" max="@DateTime.Now.AddDays(31).ToString("yyyy-MM-ddThh:mm")" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}">
+                        @{
+                            if (Model?.Order?.InstallDate is null)
+                            {
+                                <input asp-for="Order.InstallDate" type="datetime-local" class="form-control" id="installdate" min="@DateTime.Now.AddDays(3).ToString("yyyy-MM-ddThh:mm")" max="@DateTime.Now.AddDays(31).ToString("yyyy-MM-ddThh:mm")" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}">
+                            }
+                            else
+                            {
+                                <input asp-for="Order.InstallDate" type="datetime-local" class="form-control" id="installdate" readonly>
+                            }
+                        }
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="sales">Sales Representative</label>
