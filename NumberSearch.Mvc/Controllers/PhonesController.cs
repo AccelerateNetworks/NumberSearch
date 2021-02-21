@@ -16,5 +16,19 @@ namespace NumberSearch.Mvc.Controllers
         {
             return View();
         }
+
+        [HttpGet]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult GXP2170()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult GXP2135()
+        {
+            return View();
+        }
     }
 }
