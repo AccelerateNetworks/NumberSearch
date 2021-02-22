@@ -412,12 +412,13 @@ Accelerate Networks
                                         }
 
                                         // Port date set or updated.
-                                        notificationEmail.Subject = $"Port completion date set for {portedNumbers?.FirstOrDefault()?.DateFirmOrderCommitment}";
+                                        var hasFOCdate = portedNumbers?.Where(x => x.DateFirmOrderCommitment != null).FirstOrDefault();
+                                        notificationEmail.Subject = $"Port completion date set for {hasFOCdate?.DateFirmOrderCommitment}";
                                         notificationEmail.SalesEmailAddress = string.IsNullOrWhiteSpace(originalOrder.SalesEmail) ? string.Empty : originalOrder.SalesEmail;
                                         notificationEmail.MessageBody = $@"Hi {originalOrder.FirstName},
 <br />
 <br />                                                                            
-Good news, your old provider is going to release your phone numbers to Accelerate Networks on {portedNumbers?.FirstOrDefault()?.DateFirmOrderCommitment?.ToShortDateString()}!
+Good news, your old provider is going to release your phone numbers to Accelerate Networks on {hasFOCdate?.DateFirmOrderCommitment?.ToShortDateString()}!
 <br />
 <br />    
 Feel free to <a href='https://acceleratenetworks.com/Cart/Order/{originalOrder.OrderId}'>review the order here</a>, and let us know if you have any questions.
@@ -966,12 +967,13 @@ Accelerate Networks
                                         }
 
                                         // Port date set or updated.
-                                        notificationEmail.Subject = $"Port completion date set for {portedNumbers?.FirstOrDefault()?.DateFirmOrderCommitment}";
+                                        var hasFOCdate = portedNumbers?.Where(x => x.DateFirmOrderCommitment != null).FirstOrDefault();
+                                        notificationEmail.Subject = $"Port completion date set for {hasFOCdate?.DateFirmOrderCommitment}";
                                         notificationEmail.SalesEmailAddress = string.IsNullOrWhiteSpace(originalOrder.SalesEmail) ? string.Empty : originalOrder.SalesEmail;
                                         notificationEmail.MessageBody = $@"Hi {originalOrder.FirstName},
 <br />
 <br />                                                                            
-Good news, your old provider is going to release your phone numbers to Accelerate Networks on {portedNumbers?.FirstOrDefault()?.DateFirmOrderCommitment?.ToShortDateString()}!
+Good news, your old provider is going to release your phone numbers to Accelerate Networks on {hasFOCdate?.DateFirmOrderCommitment?.ToShortDateString()}!
 <br />
 <br />    
 Feel free to <a href='https://acceleratenetworks.com/Cart/Order/{originalOrder.OrderId}'>review the order here</a>, and let us know if you have any questions.
