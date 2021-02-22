@@ -106,7 +106,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<SalesTax> GetAsync(string streetAddress, string city, string zip)
         {
-            string baseUrl = "https://webgis.dor.wa.gov/webapi/";
+            string baseUrl = "http://webgis.dor.wa.gov/webapi/";
             string endpoint = "AddressRates.aspx";
             string outputParameter = $"?output=xml";
             string addrParameter = $"&addr={streetAddress}";
