@@ -619,7 +619,28 @@ namespace NumberSearch.Ops.Controllers
             {
                 try
                 {
-                    var specificTaxRate = await SalesTax.GetAsync(location.Address, location.City, location.Zip).ConfigureAwait(false);
+                    // Retry logic because this endpoint is sketchy.
+                    var specificTaxRate = new SalesTax();
+                    var retryCount = 0;
+
+                    while (specificTaxRate?.localrate == 0M)
+                    {
+                        try
+                        {
+                            specificTaxRate = await SalesTax.GetAsync(location.Address, location.City, location.Zip).ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            if (retryCount > 10)
+                            {
+                                throw ex;
+                            }
+
+                            retryCount++;
+                            await Task.Delay(1000);
+                            // Do nothing after waiting for a bit.
+                        }
+                    }
 
                     var rateName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(specificTaxRate.rate.name.ToLowerInvariant());
                     var taxRateName = $"{rateName}, WA - {specificTaxRate.loccode}";
