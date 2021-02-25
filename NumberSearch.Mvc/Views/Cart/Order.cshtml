@@ -10,8 +10,8 @@
     var products = Model?.Products?.ToArray();
     var services = Model?.Services?.ToArray();
     var verified = Model?.VerifiedPhoneNumbers?.ToArray();
-    var sumOfitems = numbers.Length + ported.Length + products.Length + services.Length + purchased.Length + verified.Length;
-    var productOrders = Model.ProductOrdersToDictionary();
+    var sumOfitems = numbers?.Length + ported?.Length + products?.Length + services?.Length + purchased?.Length + verified?.Length;
+    var productOrders = Model?.ProductOrdersToDictionary();
 
 }
 
@@ -350,6 +350,30 @@
                         <h4 class="d-flex justify-content-between align-items-center mt-3">
                             <span class="badge badge-info badge-pill">@Model.Order.DateSubmitted</span>
                         </h4>
+                    }
+                    if (!string.IsNullOrWhiteSpace(Model?.Order?.UpfrontInvoiceLink) && !string.IsNullOrWhiteSpace(Model?.Order?.ReoccuringInvoiceLink))
+                    {
+                        <h4 class="d-flex justify-content-between align-items-center mt-3">
+                            <span class="text-muted">Pay Now</span>
+                        </h4>
+                        <div class="btn-group mt-3" role="group" aria-label="billing links">
+                            <a class="btn btn-primary" href="@Model?.Order?.UpfrontInvoiceLink" target="_blank" rel="noopener noreferrer">Upfront</a>
+                            <a class="btn btn-primary" href="@Model?.Order?.ReoccuringInvoiceLink" target="_blank" rel="noopener noreferrer">Monthly</a>
+                        </div>
+                    }
+                    else if (!string.IsNullOrWhiteSpace(Model?.Order?.UpfrontInvoiceLink))
+                    {
+                        <h4 class="d-flex justify-content-between align-items-center mt-3">
+                            <span class="text-muted">Pay Now</span>
+                        </h4>
+                        <a class="btn btn-primary mt-3" href="@Model?.Order?.UpfrontInvoiceLink" target="_blank" rel="noopener noreferrer">Upfront</a>
+                    }
+                    else if (!string.IsNullOrWhiteSpace(Model?.Order?.ReoccuringInvoiceLink))
+                    {
+                        <h4 class="d-flex justify-content-between align-items-center mt-3">
+                            <span class="text-muted">Pay Now</span>
+                        </h4>
+                        <a class="btn btn-primary mt-3" href="@Model?.Order?.ReoccuringInvoiceLink" target="_blank" rel="noopener noreferrer">Monthly</a>
                     }
                 }
             </ul>
