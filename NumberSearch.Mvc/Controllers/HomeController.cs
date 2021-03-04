@@ -22,16 +22,10 @@ namespace NumberSearch.Mvc.Controllers
             return View();
         }
 
-        [HttpGet]
+        [HttpGet("Home/Privacy")]
+        [HttpGet("Privacy")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
         public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        [HttpGet]
-        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
-        public IActionResult Services()
         {
             return View();
         }
@@ -43,21 +37,24 @@ namespace NumberSearch.Mvc.Controllers
             return View();
         }
 
-        [HttpGet]
+        [HttpGet("Home/Support")]
+        [HttpGet("Support")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
         public IActionResult Support()
         {
             return View();
         }
 
-        [HttpGet]
+        [HttpGet("Home/About")]
+        [HttpGet("About")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
         public IActionResult About()
         {
             return View();
         }
 
-        [HttpGet]
+        [HttpGet("Home/Features")]
+        [HttpGet("Features")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
         public IActionResult Features()
         {
