@@ -10,7 +10,7 @@
         <h1 class="display-4">Available Hardware</h1>
     </div>
     <br />
-    <div class="row">
+    <div class="row row-cols-1 row-cols-md-3">
         @{
             var inCart = Model?.Cart?.ProductOrders;
             var products = Model.Products.ToArray();
@@ -23,8 +23,8 @@
                     quantity = quantityCount.Quantity;
                 }
 
-                <div class="col-md-4" id="@product.Name">
-                    <div class="card mb-4 box-shadow">
+                <div class="col mb-4" id="@product.Name">
+                    <div class="card h-100 box-shadow">
                         <img class="card-img-top" src="@product.Image" />
                         <div class="card-body">
                             <div class="card-title">
