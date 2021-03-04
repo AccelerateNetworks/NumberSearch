@@ -138,10 +138,10 @@ namespace NumberSearch.Mvc.Controllers
                                 break;
                         }
 
-                        var numberName = new LIDBLookup();
                         try
                         {
-                            numberName = await LIDBLookup.GetAsync(dialedPhoneNumber, _data247username, _data247password).ConfigureAwait(false);
+                            var numberName = await LIDBLookup.GetAsync(dialedPhoneNumber, _data247username, _data247password).ConfigureAwait(false);
+                            checkNumber.LIDBName = numberName?.response?.results?.FirstOrDefault()?.name;
                         }
                         catch (Exception ex)
                         {
@@ -149,8 +149,6 @@ namespace NumberSearch.Mvc.Controllers
                             Log.Error(ex.Message);
                             Log.Error(ex.InnerException.ToString());
                         }
-
-                        checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.response?.results?.FirstOrDefault()?.name) ? string.Empty : numberName?.response?.results?.FirstOrDefault()?.name;
 
                         if (portable)
                         {
