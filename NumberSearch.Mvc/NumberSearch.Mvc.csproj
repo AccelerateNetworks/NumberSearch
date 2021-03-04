@@ -213,6 +213,9 @@
     <Content Update="wwwroot\images\scaled\gsba-logo.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Update="wwwroot\images\scaled\gxp2135_front-400.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="wwwroot\images\scaled\gxp2140-400.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
