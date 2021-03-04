@@ -41,6 +41,20 @@
             <input asp-for="Product.Public" type="checkbox" class="form-control" id="public">
         </div>
     </div>
+    <div class="row">
+        <div class="col mb-3">
+            <label for="price">Support Link</label>
+            <input asp-for="Product.SupportLink" type="text" class="form-control" id="supportLink" placeholder="https://acceleratenetworks.com/Phones/GRP2615">
+        </div>
+        @*<div class="col mb-3">
+                <label for="image">Image Path</label>
+                <input asp-for="Product.Image" type="text" class="form-control" id="image" placeholder="">
+            </div>
+            <div class="col mb-3">
+                <label for="public">Publicly Visible</label>
+                <input asp-for="Product.Public" type="checkbox" class="form-control" id="public">
+            </div>*@
+    </div>
     <button type="submit" class="btn btn-danger">Create or Update</button>
     <br />
 </form>
