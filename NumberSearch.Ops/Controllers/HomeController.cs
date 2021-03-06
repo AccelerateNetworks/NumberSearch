@@ -79,7 +79,6 @@ namespace NumberSearch.Ops.Controllers
             return View();
         }
 
-
         [Authorize]
         [Route("/")]
         [Route("/Home/Order/")]
@@ -530,6 +529,7 @@ namespace NumberSearch.Ops.Controllers
             }
         }
 
+
         [Authorize]
         [Route("/Home/Product")]
         [HttpPost]
@@ -572,6 +572,50 @@ namespace NumberSearch.Ops.Controllers
 
                 return Redirect("/Home/Product");
             }
+        }
+
+        [Authorize]
+        [HttpGet]
+        [Route("/Home/Coupons")]
+        [Route("/Home/Coupons/{couponId}")]
+        public async Task<IActionResult> Coupons(Guid? couponId)
+        {
+            if (couponId is null)
+            {
+                var results = await Coupon.GetAllAsync(_postgresql).ConfigureAwait(false);
+
+                return View("Coupons", new CouponResult { Coupons = results });
+            }
+            else
+            {
+                // Show all orders
+                var result = await Coupon.GetByIdAsync(couponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+
+                return View("Coupons", new CouponResult { Coupons = new List<Coupon> { result } });
+            }
+        }
+
+
+        [Authorize]
+        [Route("/Home/Coupon")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CouponCreate(Coupon coupon)
+        {
+            var checkExists = await Coupon.GetByIdAsync(coupon.CouponId, _postgresql).ConfigureAwait(false);
+
+            if (checkExists is null)
+            {
+                var checkSave = await coupon.PostAsync(_postgresql).ConfigureAwait(false);
+            }
+            else
+            {
+                var checkUpdate = await coupon.PutAsync(_postgresql).ConfigureAwait(false);
+            }
+
+            var coupons = await Coupon.GetAllAsync(_postgresql).ConfigureAwait(false);
+
+            return View("Coupons", new CouponResult { Coupons = coupons });
         }
 
         [Authorize]

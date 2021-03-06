@@ -42,6 +42,9 @@ function AddToCart(type, id, quantity, element) {
             cartCounter++;
             $(cart).replaceWith(checkoutCart);
             $('#cartCounter').text(cartCounter).removeClass('d-none');
+            if (type == 'Coupon') {
+                location.reload();
+            }
         } else {
             console.log(`Failed to add ${type} ${id} to cart.`)
             spinner.addClass('d-none')

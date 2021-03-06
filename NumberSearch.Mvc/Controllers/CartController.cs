@@ -121,6 +121,7 @@ namespace NumberSearch.Mvc.Controllers
                 // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
                 var products = new List<Product>();
                 var services = new List<Service>();
+                var coupons = new List<Coupon>();
                 foreach (var item in productOrders)
                 {
                     if (item?.ProductId != Guid.Empty)
@@ -133,6 +134,11 @@ namespace NumberSearch.Mvc.Controllers
                         var service = await Service.GetAsync(item.ServiceId, _postgresql).ConfigureAwait(false);
                         services.Add(service);
                     }
+                    else if (item?.CouponId is not null)
+                    {
+                        var coupon = await Coupon.GetByIdAsync(item.CouponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                        coupons.Add(coupon);
+                    }
                 }
 
                 var cart = new Cart
@@ -142,6 +148,7 @@ namespace NumberSearch.Mvc.Controllers
                     ProductOrders = productOrders,
                     Products = products,
                     Services = services,
+                    Coupons = coupons,
                     PortedPhoneNumbers = portedPhoneNumbers,
                     VerifiedPhoneNumbers = verifiedPhoneNumbers,
                     PurchasedPhoneNumbers = purchasedPhoneNumbers
@@ -345,8 +352,8 @@ namespace NumberSearch.Mvc.Controllers
                                 }
                             }
 
-                            // Track the number of free ports this order qualifies for.
-                            var freePortedNumbers = cart.Services.Count();
+                            var totalPortingCost = 0;
+                            var chargeForInstallation = true;
                             var emailSubject = string.Empty;
 
                             foreach (var productOrder in cart.ProductOrders)
@@ -362,19 +369,7 @@ namespace NumberSearch.Mvc.Controllers
                                 {
                                     var ported = cart.PortedPhoneNumbers.Where(x => x.PortedPhoneNumberId == productOrder.PortedPhoneNumberId).FirstOrDefault();
 
-                                    // Discount one ported number for each service they purchase.
                                     var calculatedCost = 20;
-
-                                    if (freePortedNumbers > 0)
-                                    {
-                                        freePortedNumbers--;
-                                        calculatedCost = 0;
-                                    }
-                                    // If they use up all of their free ports, then charge $2 a line.
-                                    else if (freePortedNumbers == 0 && cart.Services.Any())
-                                    {
-                                        calculatedCost = 2;
-                                    }
 
                                     if (ported != null)
                                     {
@@ -387,6 +382,8 @@ namespace NumberSearch.Mvc.Controllers
                                             qty = 1
                                         });
                                     }
+
+                                    totalPortingCost += calculatedCost;
 
                                     emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? productOrder.PortedDialedNumber : emailSubject;
 
@@ -452,6 +449,42 @@ namespace NumberSearch.Mvc.Controllers
                                     }
 
                                     emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? service.Name : emailSubject;
+
+                                    var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                }
+
+                                // Apply coupon discounts
+                                if (productOrder.CouponId is not null)
+                                {
+                                    var coupon = cart.Coupons.Where(x => x.CouponId == productOrder.CouponId).FirstOrDefault();
+
+                                    if (coupon is not null)
+                                    {
+                                        if (coupon.Name == "WaivePort")
+                                        {
+
+                                            totalCost -= totalPortingCost;
+                                            onetimeItems.Add(new Invoice_Items
+                                            {
+                                                product_key = coupon.Name,
+                                                notes = coupon.Description,
+                                                cost = totalPortingCost * -1,
+                                                qty = 1
+                                            });
+                                        }
+                                        else if (coupon.Name == "WaiveInstallation")
+                                        {
+
+                                            chargeForInstallation = false;
+                                            onetimeItems.Add(new Invoice_Items
+                                            {
+                                                product_key = coupon.Name,
+                                                notes = coupon.Description,
+                                                cost = 60 * -1,
+                                                qty = 1
+                                            });
+                                        }
+                                    }
 
                                     var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
                                 }

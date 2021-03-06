@@ -6,7 +6,6 @@ using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
-using NumberSearch.DataAccess.Data247;
 using NumberSearch.DataAccess.TeleMesssage;
 
 using Serilog;
@@ -23,34 +22,10 @@ namespace NumberSearch.Mvc.Controllers
     public class CartAPIController : ControllerBase
     {
         private readonly IConfiguration _configuration;
-        private readonly Guid _teleToken;
-        private readonly string _postgresql;
-        private readonly string _apiKey;
-        private readonly string _apiSecret;
-        private readonly string _fpcusername;
-        private readonly string _fpcpassword;
-        private readonly string _invoiceNinjaToken;
-        private readonly string _emailOrders;
-        private readonly string _bulkVSusername;
-        private readonly string _bulkVSpassword;
-        private readonly string _data247username;
-        private readonly string _data247password;
 
         public CartAPIController(IConfiguration config)
         {
             _configuration = config;
-            _teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
-            _postgresql = _configuration.GetConnectionString("PostgresqlProd");
-            _apiKey = config.GetConnectionString("BulkVSAPIKEY");
-            _apiSecret = config.GetConnectionString("BulkVSAPISecret");
-            _bulkVSusername = config.GetConnectionString("BulkVSUsername");
-            _bulkVSpassword = config.GetConnectionString("BulkVSPassword");
-            _fpcusername = config.GetConnectionString("PComNetUsername");
-            _fpcpassword = config.GetConnectionString("PComNetPassword");
-            _invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
-            _emailOrders = config.GetConnectionString("EmailOrders");
-            _data247username = config.GetConnectionString("Data247Username");
-            _data247password = config.GetConnectionString("Data247Password");
         }
 
         [HttpGet("Add/{type}/{id}/{quantity}")]
@@ -92,6 +67,8 @@ namespace NumberSearch.Mvc.Controllers
                     {
                         return BadRequest($"Service Id {id} can't be parsed as a GUID.");
                     }
+                case "Coupon":
+                    return await cart.AddCouponAsync(id, quantity).ConfigureAwait(false);
                 default:
                     return NotFound(ModelState);
             }
@@ -135,6 +112,16 @@ namespace NumberSearch.Mvc.Controllers
                     else
                     {
                         return BadRequest($"Service Id {id} can't be parsed as a GUID.");
+                    }
+                case "Coupon":
+                    var checkCoupon = Guid.TryParse(id, out var couponId);
+                    if (checkCoupon)
+                    {
+                        return await cart.RemoveCouponAsync(couponId).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        return BadRequest($"Coupon Id {id} can't be parsed as a GUID.");
                     }
                 default:
                     return NotFound(ModelState);
@@ -560,6 +547,40 @@ namespace NumberSearch.Mvc.Controllers
             return Ok(serviceId.ToString());
         }
 
+        public async Task<IActionResult> AddCouponAsync(string couponName, int Quantity)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            couponName = couponName.Trim();
+
+            var coupons = await Coupon.GetAllAsync(_postgresql).ConfigureAwait(false);
+
+            var coupon = coupons.Where(x => x.Name.Replace(" ", string.Empty).ToLowerInvariant() == couponName.Replace(" ", string.Empty).ToLowerInvariant()).FirstOrDefault();
+
+            if (coupon is null)
+            {
+                return BadRequest("Coupon not found.");
+            }
+            else
+            {
+                var productOrder = new ProductOrder
+                {
+                    CouponId = coupon.CouponId,
+                    Quantity = Quantity > 0 ? Quantity : 1
+                };
+
+                await _httpContext.Session.LoadAsync().ConfigureAwait(false);
+                var cart = Cart.GetFromSession(_httpContext.Session);
+                var checkAdd = cart.AddCoupon(coupon, productOrder);
+                var checkSet = cart.SetToSession(_httpContext.Session);
+
+                return Ok(couponName.ToString());
+            }
+        }
+
         public async Task<IActionResult> RemovePhoneNumberAsync(string dialedPhoneNumber)
         {
             if (!ModelState.IsValid)
@@ -704,6 +725,31 @@ namespace NumberSearch.Mvc.Controllers
             else
             {
                 return NotFound(serviceId.ToString());
+            }
+        }
+
+        public async Task<IActionResult> RemoveCouponAsync(Guid couponId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var coupon = new Coupon { CouponId = couponId };
+            var productOrder = new ProductOrder { CouponId = couponId };
+
+            await _httpContext.Session.LoadAsync().ConfigureAwait(false);
+            var cart = Cart.GetFromSession(_httpContext.Session);
+            var checkRemove = cart.RemoveCoupon(coupon, productOrder);
+            var checkSet = cart.SetToSession(_httpContext.Session);
+
+            if (checkRemove && checkSet)
+            {
+                return Ok(couponId.ToString());
+            }
+            else
+            {
+                return NotFound(couponId.ToString());
             }
         }
     }

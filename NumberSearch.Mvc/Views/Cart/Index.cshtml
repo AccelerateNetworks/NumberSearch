@@ -63,24 +63,12 @@
                                 }
                             }
                             @{
-                                // Track the number of free ports this order qualifies for.
                                 var freePortedNumbers = Model?.Cart.Services.Count();
 
                                 foreach (var item in Model?.Cart?.PortedPhoneNumbers)
                                 {
-                                    // Discount one ported number for each service they purchase.
                                     var calculatedCost = 20;
 
-                                    if (freePortedNumbers > 0)
-                                    {
-                                        freePortedNumbers--;
-                                        calculatedCost = 0;
-                                    }
-                                    // If they use up all of their free ports, then charge $2 a line.
-                                    else if (freePortedNumbers == 0 && (Model?.Cart.Services.Any() ?? false))
-                                    {
-                                        calculatedCost = 2;
-                                    }
 
                                     var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
                                     var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
@@ -168,6 +156,24 @@
                                         <td>$@localTotal</td>
                                         <td>
                                             <button onclick="RemoveFromCart('Service', '@item.ServiceId', 1, this)" class="btn btn-outline-danger">
+                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                Remove
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            @{
+                                foreach (var item in Model?.Cart?.Coupons)
+                                {
+                                    var productOrder = productOrders[item?.CouponId.ToString()];
+                                    <tr>
+                                        <td scope="row"><h4>@item.Name</h4></td>
+                                        <td>Discount</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            <button onclick="RemoveFromCart('Coupon', '@item.CouponId', 1, this)" class="btn btn-outline-danger">
                                                 <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                 Remove
                                             </button>

@@ -10,7 +10,8 @@
     var products = Model?.Products?.ToArray();
     var services = Model?.Services?.ToArray();
     var verified = Model?.VerifiedPhoneNumbers?.ToArray();
-    var sumOfitems = numbers?.Length + ported?.Length + products?.Length + services?.Length + purchased?.Length + verified?.Length;
+    var coupons = Model?.Coupons?.ToArray();
+    var sumOfitems = numbers?.Length + ported?.Length + products?.Length + services?.Length + purchased?.Length + verified?.Length + coupons?.Length;
     var productOrders = Model?.ProductOrdersToDictionary();
 
 }
@@ -173,6 +174,7 @@
                     var numbersTotal = 0;
                     var portedTotal = 0;
                     var verifiedTotal = 0;
+                    var couponTotal = 0;
                     foreach (var number in numbers)
                     {
                         <li class="list-group-item d-flex justify-content-between lh-condensed">
@@ -239,22 +241,11 @@
                     }
 
 
-                    var freePortedNumbers = Model?.Services.Count();
                     foreach (var number in ported)
                     {
                         // Discount one ported number for each service they purchase.
                         var calculatedCost = 20;
 
-                        if (freePortedNumbers > 0)
-                        {
-                            freePortedNumbers--;
-                            calculatedCost = 0;
-                        }
-                        // If they use up all of their free ports, then charge $2 a line.
-                        else if (freePortedNumbers == 0 && (Model?.Services.Any() ?? false))
-                        {
-                            calculatedCost = 2;
-                        }
                         var date = number.DateFirmOrderCommitment is null ? "Date Not Set" : number.DateFirmOrderCommitment.GetValueOrDefault(DateTime.Now).ToShortDateString();
                         var status = string.IsNullOrWhiteSpace(number.RequestStatus) ? "Status Not Set" : number.RequestStatus;
                         portedTotal += calculatedCost;
@@ -330,6 +321,29 @@
                             <span class="text-muted">$@localTotal</span>
                         </li>
                     }
+                    foreach (var coupon in coupons)
+                    {
+                        var productOrder = productOrders[coupon?.CouponId.ToString()];
+                        var localTotal = 0;
+                        if (coupon.Name == "WaivePort")
+                        {
+                            localTotal = portedTotal;
+                            couponTotal += localTotal * -1;
+                        }
+                        else if (coupon.Name == "WaiveInstallation")
+                        {
+                            localTotal = 60;
+                        }
+                        <li class="list-group-item d-flex justify-content-between lh-condensed bg-light">
+                            <div class="text-success">
+                                <h6 class="my-0">
+                                    @coupon.Name
+                                </h6>
+                                <small class="text-success">@coupon.Description</small>
+                            </div>
+                            <span class="text-success">-$@localTotal</span>
+                        </li>
+                    }
                 }
                 <li class="list-group-item d-flex justify-content-between lh-condensed">
                     <div>
@@ -337,10 +351,23 @@
                         <small class="text-muted">Plus state and local taxes</small>
                     </div>
                     @{
-                        var total = numbersTotal + portedTotal + productsTotal + servicesTotal + verifiedTotal;
+                        var total = numbersTotal + portedTotal + productsTotal + servicesTotal + verifiedTotal + couponTotal;
                         <strong>$@total</strong>
                     }
                 </li>
+                @{
+                    if (Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted == DateTime.MinValue)
+                    {
+                        <div class="card p-2 mt-3">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="couponText" placeholder="Coupon code">
+                                <div class="input-group-append">
+                                    <button type="submit" class="btn btn-secondary" onclick="AddToCart('Coupon', document.getElementById('couponText').value, 1, this);">Redeem</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
                 @{
                     if (Model.Order.DateSubmitted > DateTime.Now.AddYears(-99))
                     {

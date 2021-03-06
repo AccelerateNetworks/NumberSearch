@@ -17,6 +17,8 @@ namespace NumberSearch.Mvc
         public IEnumerable<PortedPhoneNumber> PortedPhoneNumbers { get; set; }
         public IEnumerable<VerifiedPhoneNumber> VerifiedPhoneNumbers { get; set; }
         public IEnumerable<PurchasedPhoneNumber> PurchasedPhoneNumbers { get; set; }
+        public IEnumerable<Coupon> Coupons { get; set; }
+
         public Order Order { get; set; }
 
         enum CartKey
@@ -28,6 +30,7 @@ namespace NumberSearch.Mvc
             PortedPhoneNumbers,
             VerifiedPhoneNumber,
             PurchasedPhoneNumber,
+            Coupon,
             Order
         }
 
@@ -58,6 +61,7 @@ namespace NumberSearch.Mvc
                 PortedPhoneNumbers = cart?.PortedPhoneNumbers ?? new List<PortedPhoneNumber>(),
                 VerifiedPhoneNumbers = cart?.VerifiedPhoneNumbers ?? new List<VerifiedPhoneNumber>(),
                 PurchasedPhoneNumbers = cart?.PurchasedPhoneNumbers ?? new List<PurchasedPhoneNumber>(),
+                Coupons = cart?.Coupons ?? new List<Coupon>(),
                 Order = cart?.Order ?? new Order()
             };
         }
@@ -220,6 +224,33 @@ namespace NumberSearch.Mvc
                 Services = services.Values;
 
                 productOrders[productOrder.ServiceId.ToString()] = productOrder;
+                ProductOrders = productOrders.Values;
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Add a Coupon to the Cart.
+        /// </summary>
+        /// <param name="coupon"></param>
+        /// <param name="productOrder"></param>
+        /// <returns></returns>
+        public bool AddCoupon(Coupon coupon, ProductOrder productOrder)
+        {
+            var coupons = this.CouponsToDictionary();
+            var productOrders = this.ProductOrdersToDictionary();
+
+            if (!string.IsNullOrWhiteSpace(coupon?.Name) && coupon?.CouponId == productOrder?.CouponId)
+            {
+                coupons[coupon.CouponId.ToString()] = coupon;
+                Coupons = coupons.Values;
+
+                productOrders[productOrder.CouponId.ToString()] = productOrder;
                 ProductOrders = productOrders.Values;
 
                 return true;
@@ -416,9 +447,51 @@ namespace NumberSearch.Mvc
             }
         }
 
+        /// <summary>
+        /// Remove a Coupon from the Cart.
+        /// </summary>
+        /// <param name="coupon"></param>
+        /// <param name="productOrder"></param>
+        /// <returns></returns>
+        public bool RemoveCoupon(Coupon coupon, ProductOrder productOrder)
+        {
+            coupon ??= new Coupon();
+            productOrder ??= new ProductOrder();
+
+            var coupons = this.CouponsToDictionary();
+            var productOrders = this.ProductOrdersToDictionary();
+
+            if (coupon.CouponId == productOrder?.CouponId)
+            {
+                var checkRemoveService = coupons.Remove(coupon.CouponId.ToString());
+                var checkRemoveProductorder = productOrders.Remove(productOrder.CouponId.ToString());
+
+                if (checkRemoveService && checkRemoveProductorder)
+                {
+                    Coupons = coupons.Values;
+                    ProductOrders = productOrders.Values;
+
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public Dictionary<string, ProductOrder> ProductOrdersToDictionary()
         {
-            return ProductOrders.ToDictionary(x => !string.IsNullOrEmpty(x.DialedNumber) ? x.DialedNumber : x.PortedPhoneNumberId != null ? x.PortedPhoneNumberId.ToString() : x.VerifiedPhoneNumberId != null ? x.VerifiedPhoneNumberId.ToString() : x.ProductId == System.Guid.Empty ? x.ServiceId.ToString() : x.ProductId.ToString(), x => x);
+            return ProductOrders.ToDictionary(x => !string.IsNullOrEmpty(x.DialedNumber)
+            ? x.DialedNumber : x.PortedPhoneNumberId != null
+            ? x.PortedPhoneNumberId.ToString() : x.VerifiedPhoneNumberId != null
+            ? x.VerifiedPhoneNumberId.ToString() : x.ProductId != System.Guid.Empty
+            ? x.ProductId.ToString() : x.ServiceId != System.Guid.Empty
+            ? x.ServiceId.ToString() : x.CouponId.ToString(), x => x);
         }
 
         public Dictionary<string, PhoneNumber> PhoneNumbersToDictionary()
@@ -449,6 +522,11 @@ namespace NumberSearch.Mvc
         public Dictionary<string, Service> ServicesToDictionary()
         {
             return Services.ToDictionary(x => x.ServiceId.ToString(), x => x);
+        }
+
+        public Dictionary<string, Coupon> CouponsToDictionary()
+        {
+            return Coupons.ToDictionary(x => x.CouponId.ToString(), x => x);
         }
     }
 }
