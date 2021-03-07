@@ -490,6 +490,31 @@ namespace NumberSearch.Mvc.Controllers
                                 }
                             }
 
+                            // Handle hardware installation senarios, if hardware is in the order.
+                            if (cart?.Products is not null && cart.Products.Any())
+                            {
+                                if (order.OnsiteInstallation)
+                                {
+                                    onetimeItems.Add(new Invoice_Items
+                                    {
+                                        product_key = "Onsite Hardware Installation",
+                                        notes = $"We'll come visit you and get all your phones setup.",
+                                        cost = 60,
+                                        qty = 1
+                                    });
+                                }
+                                else
+                                {
+                                    onetimeItems.Add(new Invoice_Items
+                                    {
+                                        product_key = "Remote Installation",
+                                        notes = $"We'll walk you through getting all your phones setup virtually.",
+                                        cost = 0,
+                                        qty = 1
+                                    });
+                                }
+                            }
+
                             // Associate the ported numbers with this order.
                             foreach (var portedNumber in cart.PortedPhoneNumbers)
                             {
