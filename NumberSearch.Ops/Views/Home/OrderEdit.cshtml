@@ -208,6 +208,21 @@
         </div>
         <h4 class="mb-3">Installation Information</h4>
         <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="installationType">Installation Location</label>
+                <div class="form-group">
+                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                        <label class="btn btn-outline-secondary">
+                            <input asp-for="OnsiteInstallation" type="radio" id="ltoption1" value="false" disabled> Remote
+                        </label>
+                        <label class="btn btn-outline-secondary">
+                            <input asp-for="OnsiteInstallation" type="radio" id="ltoption2" value="true" disabled> Onsite
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
             <div class="col-md-6 mb-3">
                 <label for="installdate">Preferred Install Date</label>
                 <input asp-for="InstallDate" type="datetime-local" class="form-control" id="installdate">
