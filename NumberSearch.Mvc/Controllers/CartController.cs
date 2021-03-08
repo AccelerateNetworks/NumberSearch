@@ -1,5 +1,4 @@
-﻿using FirstCom;
-
+﻿
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
@@ -8,17 +7,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
-using NumberSearch.DataAccess.BulkVS;
-using NumberSearch.DataAccess.Data247;
 using NumberSearch.DataAccess.InvoiceNinja;
-using NumberSearch.DataAccess.TeleMesssage;
 
 using Serilog;
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -460,7 +455,7 @@ namespace NumberSearch.Mvc.Controllers
 
                                     if (coupon is not null)
                                     {
-                                        if (coupon.Name == "WaivePort")
+                                        if (coupon.Name == "Waive Port")
                                         {
 
                                             totalCost -= totalPortingCost;
@@ -472,7 +467,7 @@ namespace NumberSearch.Mvc.Controllers
                                                 qty = 1
                                             });
                                         }
-                                        else if (coupon.Name == "WaiveInstallation")
+                                        else if (coupon.Name == "Waive Installation")
                                         {
 
                                             chargeForInstallation = false;
