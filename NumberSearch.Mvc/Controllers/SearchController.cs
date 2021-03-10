@@ -106,6 +106,23 @@ namespace NumberSearch.Mvc.Controllers
 
             var cart = Cart.GetFromSession(HttpContext.Session);
 
+            // The query is a complete phone number and we have no results, perhaps they mean to port it?
+            if (cleanedQuery.Length == 10 && !results.Any())
+            {
+                return View("Index", new SearchResults
+                {
+                    CleanQuery = cleanedQuery,
+                    NumberOfResults = count,
+                    Page = page,
+                    View = !string.IsNullOrWhiteSpace(view) ? view : "Recommended",
+                    Message = !string.IsNullOrWhiteSpace(failed) ? $"{failed} is not purchasable at this time." : $"Did you mean to Transfer this number to our network? {query} is not purchasable.",
+                    AlertType = "alert-warning",
+                    PhoneNumbers = results,
+                    Query = query,
+                    Cart = cart
+                });
+            }
+
             return View("Index", new SearchResults
             {
                 CleanQuery = cleanedQuery,
@@ -113,7 +130,7 @@ namespace NumberSearch.Mvc.Controllers
                 Page = page,
                 View = !string.IsNullOrWhiteSpace(view) ? view : "Recommended",
                 Message = !string.IsNullOrWhiteSpace(failed) ? $"{failed} is not purchasable at this time." : string.Empty,
-                PhoneNumbers = results.ToArray(),
+                PhoneNumbers = results,
                 Query = query,
                 Cart = cart
             });

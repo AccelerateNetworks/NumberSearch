@@ -64,6 +64,7 @@ namespace NumberSearch.Mvc.Controllers
                 return View("Index", new PortingResults
                 {
                     PortedPhoneNumber = new PortedPhoneNumber { },
+                    Query = Query,
                     Cart = cart
                 });
             }
@@ -172,6 +173,7 @@ namespace NumberSearch.Mvc.Controllers
                             {
                                 PortedPhoneNumber = port,
                                 Cart = cart,
+                                Query = Query,
                                 Message = wireless ? "This wireless phone number can be ported to our network!" : "This phone number can be ported to our network!"
                             });
                         }
@@ -197,6 +199,7 @@ namespace NumberSearch.Mvc.Controllers
                             {
                                 PortedPhoneNumber = port,
                                 Cart = cart,
+                                Query = Query,
                                 Message = wireless ? "This wireless phone number can likely be ported to our network!" : "This phone number can likely be ported to our network!"
                             });
                         }
@@ -221,6 +224,7 @@ namespace NumberSearch.Mvc.Controllers
                         {
                             PortedPhoneNumber = port,
                             Cart = cart,
+                            Query = Query,
                             Message = "This phone number can likely be ported to our network!"
                         });
                     }
@@ -230,6 +234,7 @@ namespace NumberSearch.Mvc.Controllers
                     return View("Index", new PortingResults
                     {
                         PortedPhoneNumber = new PortedPhoneNumber { },
+                        Query = Query,
                         Cart = cart
                     });
                 }
@@ -239,6 +244,9 @@ namespace NumberSearch.Mvc.Controllers
                 return View("Index", new PortingResults
                 {
                     PortedPhoneNumber = new PortedPhoneNumber { },
+                    Message = $"Did you mean to Search for purchasable numbers? {Query} isn't transferable.",
+                    AlertType = "alert-warning",
+                    Query = Query,
                     Cart = cart
                 });
             }
@@ -279,6 +287,7 @@ namespace NumberSearch.Mvc.Controllers
                         return View("Index", new PortingResults
                         {
                             PortedPhoneNumber = port,
+                            Query = Query,
                             Cart = cart
                         });
                     }
@@ -287,6 +296,7 @@ namespace NumberSearch.Mvc.Controllers
                         return View("Index", new PortingResults
                         {
                             PortedPhoneNumber = new PortedPhoneNumber { },
+                            Query = Query,
                             Cart = cart
                         });
                     }
@@ -296,6 +306,7 @@ namespace NumberSearch.Mvc.Controllers
                     return View("Index", new PortingResults
                     {
                         PortedPhoneNumber = new PortedPhoneNumber { },
+                        Query = Query,
                         Cart = cart
                     });
                 }
@@ -305,6 +316,7 @@ namespace NumberSearch.Mvc.Controllers
                 return View("Index", new PortingResults
                 {
                     PortedPhoneNumber = new PortedPhoneNumber { },
+                    Query = Query,
                     Cart = cart
                 });
             }

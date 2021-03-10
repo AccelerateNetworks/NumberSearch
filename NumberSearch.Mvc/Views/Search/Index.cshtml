@@ -56,11 +56,21 @@
     @{
         if (!string.IsNullOrWhiteSpace(Model?.Message))
         {
-            <div class="alert alert-danger" role="alert">
-                @Model?.Message
-            </div>
+            if (string.IsNullOrWhiteSpace(Model?.AlertType))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @Model?.Message
+                </div>
+            }
+            else
+            {
+                var alertType = Model?.AlertType ?? "alert-danger";
+                <div class="alert @alertType" role="alert">
+                    @Model?.Message
+                </div>
+            }
         }
-        if (Model != null && Model?.PhoneNumbers?.Length > 0)
+        if (Model != null && Model?.PhoneNumbers?.Count() > 0)
         {
             var maxPage = Model.NumberOfResults / 50;
             var pageResultsCount = Model.Page * 50;
@@ -319,13 +329,13 @@
                     </div>
                 </form>
             </div>
+            <br />
         }
-        else if (Model != null && Model?.PhoneNumbers?.Length == 0)
+        else if (Model != null && Model?.PhoneNumbers?.Count() == 0)
         {
             <div class="alert alert-danger" role="alert">
                 No available numbers found!
             </div>
         }
     }
-    <br />
 </div>

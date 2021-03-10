@@ -4,6 +4,12 @@
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var alreadyInCart = Model?.Cart?.PortedPhoneNumbers.ToDictionary(x => x?.PortedDialedNumber, x => x);
+
+    var searchText = string.Empty;
+    if (Model?.Query != null)
+    {
+        searchText = Model.Query;
+    }
 }
 
 <div class="container">
@@ -21,7 +27,7 @@
                     <div class="input-group-prepend">
                         <span class="input-group-text">+1</span>
                     </div>
-                    <input type="text" name="Query" class="form-control" placeholder="Existing Phone Number" value="@Model?.PortedPhoneNumber?.PortedDialedNumber">
+                    <input type="text" name="Query" class="form-control" placeholder="Existing Phone Number" value="@searchText">
                 </div>
                 <div class="input-group mx-auto input-group-lg pt-2">
                     <button class="btn btn-info btn-block" onclick="displayBusyIndicator()" asp-controller="Search" asp-action="Index">Search</button>
@@ -126,8 +132,12 @@
         }
         else if (Model?.Cart != null && string.IsNullOrWhiteSpace(Model?.PortedPhoneNumber?.PortedDialedNumber))
         {
-            <div class="alert alert-danger" role="alert">
-                The phone number entered isn't portable to our network. Please try another number or contact us directly for more information.
+            var alertType = Model?.AlertType ?? "alert-danger";
+            <div class="alert @alertType" role="alert">
+                @{
+                    var message = Model?.Message ?? "The phone number entered isn't portable to our network. Please try another number or contact us directly for more information.";
+                }
+                @message
             </div>
         }
     }
