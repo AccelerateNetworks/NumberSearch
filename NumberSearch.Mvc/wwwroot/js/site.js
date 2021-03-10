@@ -75,3 +75,12 @@ function RemoveFromCart(type, id, quantity, element) {
     };
     request.send();
 }
+
+window.addEventListener('scroll', moveScrollIndicator);
+
+function moveScrollIndicator() {
+    var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+    var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    var scrolled = (winScroll / height) * 100;
+    document.getElementById("scrollIndicator").style.width = scrolled + "%";
+}
