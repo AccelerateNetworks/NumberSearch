@@ -46,11 +46,11 @@
             <label for="price">Support Link</label>
             <input asp-for="Product.SupportLink" type="text" class="form-control" id="supportLink" placeholder="https://acceleratenetworks.com/Phones/GRP2615">
         </div>
+        <div class="col mb-3">
+            <label for="image">Quantity Available</label>
+            <input asp-for="Product.QuantityAvailable" type="number" class="form-control" id="available" readonly>
+        </div>
         @*<div class="col mb-3">
-                <label for="image">Image Path</label>
-                <input asp-for="Product.Image" type="text" class="form-control" id="image" placeholder="">
-            </div>
-            <div class="col mb-3">
                 <label for="public">Publicly Visible</label>
                 <input asp-for="Product.Public" type="checkbox" class="form-control" id="public">
             </div>*@
@@ -78,6 +78,9 @@
                 <th>
                     Public
                 </th>
+                <th>
+                    Quantity Avalible
+                </th>
                 <th scope="col">
                     Actions
                 </th>
@@ -102,6 +105,9 @@
                         </td>
                         <td>
                             @product?.Public
+                        </td>
+                        <td>
+                            @product?.QuantityAvailable
                         </td>
                         <td>
                             <div class="btn-group" role="group" aria-label="Basic example">

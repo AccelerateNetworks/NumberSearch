@@ -479,7 +479,8 @@ namespace NumberSearch.Ops.Controllers
                 {
                     var relatedShipments = shipments.Where(x => x.ProductId == product.ProductId);
                     var instockItems = relatedShipments.Where(x => x.ShipmentType == "Instock").Sum(x => x.Quantity);
-                    product.QuantityAvailable = instockItems;
+                    var assignedItems = relatedShipments.Where(x => x.ShipmentType == "Assigned").Sum(x => x.Quantity);
+                    product.QuantityAvailable = instockItems - assignedItems;
 
                     var checkStock = await product.PutAsync(_postgresql).ConfigureAwait(false);
                 }
