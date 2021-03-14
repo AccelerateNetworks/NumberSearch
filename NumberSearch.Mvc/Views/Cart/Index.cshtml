@@ -180,14 +180,50 @@
                                         </td>
                                     </tr>
                                 }
+
+
                             }
                         </tbody>
                     </table>
                 </div>
             </div>
+            if (!Model.Cart.Services.Any())
+            {
+                <div class="row mt-3">
+                    <div class="col">
+                        <p class="display-4 text-center">Forgetting anything?</p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col">
+                        <a class="btn btn-primary btn-lg btn-block" asp-controller="Services" asp-action="Index">⮜ Add Services</a>
+                    </div>
+                    <div class="col">
+                        <a class="btn btn-primary btn-lg btn-block" asp-controller="Search" asp-action="Index">Add Numbers ⮞</a>
+                    </div>
+                </div>
+            }
+            if (!Model.Cart.Products.Any())
+            {
+                <div class="row mt-3">
+                    <div class="col">
+                        <p class="display-4 text-center">Forgetting anything?</p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col">
+                        <a class="btn btn-primary btn-lg btn-block" asp-controller="Hardware" asp-action="Index">⮜ Add Hardware</a>
+                    </div>
+                    <div class="col">
+                        <a class="btn btn-primary btn-lg btn-block" asp-controller="Search" asp-action="Index">Add Numbers ⮞</a>
+                    </div>
+                </div>
+            }
             <div class="row">
-                <hr class="mb-4">
-                <a class="btn btn-success btn-lg btn-block" asp-controller="Cart" asp-action="Checkout">Complete your Order</a>
+                <div class="col">
+                    <br />
+                    <a class="btn btn-success btn-lg btn-block" asp-controller="Cart" asp-action="Checkout">Complete your Order 🛒</a>
+                </div>
             </div>
             <br />
         }
