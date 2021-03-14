@@ -3,15 +3,14 @@
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<video playsinline="playsinline" autoplay="autoplay" muted="muted" loop="loop" width="100%" class="pt-3">
+<video playsinline="playsinline" autoplay="autoplay" muted="muted" loop="loop" width="100%" class="">
     <source src="~/videos/intro.mp4" type="video/mp4">
     <img class="first-slide img-fluid" src="./images/scaled/GRP2615-front.jpg" alt="First slide">
 </video>
 <div class="container">
     <div class="jumbotron mb-3 mt-3">
         <h1 class="display-4 pb-3">Number Search</h1>
-        <p>To search by area code, enter the area code and press search. To bring your number with you, enter the 10 digit number and press transfer.</p>
-        <p class="pb-3">For advanced search, use * to pad your search, for example ***word to search for a number containing word, but exclude the area code.</p>
+        <p>Find the perfect number! Enter an area code or word and press Search to see what is available.</p>
         <form class="form-row justify-content-center" action="/Search">
             <div class="form-group">
                 <div class="input-group mx-auto input-group-lg">
@@ -22,7 +21,7 @@
                 </div>
                 <div class="input-group mx-auto input-group-lg pt-2">
                     <button type="submit" class="btn btn-success btn-block" onclick="displayBusyIndicator()">Search</button>
-                    <button class="btn btn-info btn-block" onclick="displayBusyIndicator()" asp-controller="Porting" asp-action="CheckPortability">Transfer</button>
+                    @*<button class="btn btn-info btn-block" onclick="displayBusyIndicator()" asp-controller="Porting" asp-action="CheckPortability">Transfer</button>*@
                 </div>
             </div>
         </form>
@@ -37,7 +36,7 @@
             <p>Improve your communications by talking to us today!</p>
             <p>
                 <a class="btn btn-success btn-lg" href="/Services">Start Now</a>
-                <h5>(206) 858 8757</h5>
+                <h5>(206) 858-8757</h5>
             </p>
         </div>
     </div>
