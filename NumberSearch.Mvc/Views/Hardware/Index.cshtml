@@ -14,7 +14,7 @@
         @{
             var inCart = Model?.Cart?.ProductOrders;
             var products = Model.Products.ToArray();
-            foreach (var product in products?.Where(x => x.Public is true))
+            foreach (var product in products?.Where(x => x.Public is true).OrderByDescending(x => x.DisplayPriority))
             {
                 var quantity = 0;
                 var quantityCount = inCart?.Where(x => x.ProductId == product.ProductId).FirstOrDefault();

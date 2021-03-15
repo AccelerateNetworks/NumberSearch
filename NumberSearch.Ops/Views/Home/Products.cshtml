@@ -50,10 +50,10 @@
             <label for="image">Quantity Available</label>
             <input asp-for="Product.QuantityAvailable" type="number" class="form-control" id="available" readonly>
         </div>
-        @*<div class="col mb-3">
-                <label for="public">Publicly Visible</label>
-                <input asp-for="Product.Public" type="checkbox" class="form-control" id="public">
-            </div>*@
+        <div class="col mb-3">
+            <label for="image">Display Priority (0 is the highest Priority)</label>
+            <input asp-for="Product.DisplayPriority" type="number" class="form-control" id="displayPriority">
+        </div>
     </div>
     <button type="submit" class="btn btn-danger">Create or Update</button>
     <br />
