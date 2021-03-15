@@ -30,5 +30,12 @@ namespace NumberSearch.Mvc.Controllers
         {
             return View();
         }
+
+        [HttpGet]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult T54W()
+        {
+            return View();
+        }
     }
 }
