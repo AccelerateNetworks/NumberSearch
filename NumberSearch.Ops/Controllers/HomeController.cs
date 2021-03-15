@@ -998,15 +998,19 @@ namespace NumberSearch.Ops.Controllers
                 var order = await Order.GetByIdAsync(Guid.Parse(OrderId), _postgresql).ConfigureAwait(false);
                 var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
                 var numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                numbers = numbers.Where(x => string.IsNullOrWhiteSpace(x.ExternalPortRequestId)).ToList();
 
                 // Prevent duplicate submissions.
-                if (!string.IsNullOrWhiteSpace(portRequest.TeliId))
+                if (numbers is null || !numbers.Any())
                 {
+                    numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
                     return View("PortRequestEdit", new PortRequestResult
                     {
                         Order = order,
                         PortRequest = portRequest,
-                        PhoneNumbers = numbers
+                        PhoneNumbers = numbers,
+                        Message = "All of the Numbers in the Port Request have already been submitted to a vendor."
                     });
                 }
 
@@ -1024,6 +1028,8 @@ namespace NumberSearch.Ops.Controllers
                         var checkUpdateId = await number.PutAsync(_postgresql).ConfigureAwait(false);
                     }
 
+                    numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
                     return View("PortRequestEdit", new PortRequestResult
                     {
                         Order = order,
@@ -1036,6 +1042,8 @@ namespace NumberSearch.Ops.Controllers
                     Log.Fatal($"[PortRequest] Failed to submit port request to Teli.");
                     Log.Error(ex.Message);
                     Log.Error(ex.StackTrace.ToString());
+
+                    numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
 
                     return View("PortRequestEdit", new PortRequestResult
                     {
@@ -1062,15 +1070,19 @@ namespace NumberSearch.Ops.Controllers
                 var order = await Order.GetByIdAsync(Guid.Parse(OrderId), _postgresql).ConfigureAwait(false);
                 var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
                 var numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                numbers = numbers.Where(x => string.IsNullOrWhiteSpace(x.ExternalPortRequestId)).ToList();
 
                 // Prevent duplicate submissions.
-                if (!string.IsNullOrWhiteSpace(portRequest.TeliId))
+                if (numbers is null || !numbers.Any())
                 {
+                    numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
                     return View("PortRequestEdit", new PortRequestResult
                     {
                         Order = order,
                         PortRequest = portRequest,
-                        PhoneNumbers = numbers
+                        PhoneNumbers = numbers,
+                        Message = "All of the Numbers in the Port Request have already been submitted to a vendor."
                     });
                 }
 
@@ -1125,41 +1137,54 @@ namespace NumberSearch.Ops.Controllers
                                 Notify = _emailOrders
                             };
 
-                            var bulkResponse = await bulkVSPortRequest.PutAsync(_bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
-
-                            if (!string.IsNullOrWhiteSpace(bulkResponse?.OrderId))
+                            try
                             {
-                                // Rename this to VendorOrderId, rather than TeliId.
-                                portRequest.TeliId = bulkResponse?.OrderId;
-                                portRequest.DateSubmitted = DateTime.Now;
-                                var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
+                                var bulkResponse = await bulkVSPortRequest.PutAsync(_bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
 
-                                foreach (var number in localTNs)
+                                if (!string.IsNullOrWhiteSpace(bulkResponse?.OrderId))
                                 {
-                                    var updatedNumber = numbers.Where(x => $"1{x.PortedDialedNumber}" == number).FirstOrDefault();
-                                    updatedNumber.ExternalPortRequestId = bulkResponse?.OrderId;
-                                    var checkUpdateId = await updatedNumber.PutAsync(_postgresql).ConfigureAwait(false);
+                                    // Rename this to VendorOrderId, rather than TeliId.
+                                    portRequest.TeliId = bulkResponse?.OrderId;
+                                    portRequest.DateSubmitted = DateTime.Now;
+                                    var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
+
+                                    foreach (var number in localTNs)
+                                    {
+                                        var updatedNumber = numbers.Where(x => $"1{x.PortedDialedNumber}" == number).FirstOrDefault();
+                                        updatedNumber.ExternalPortRequestId = bulkResponse?.OrderId;
+                                        var checkUpdateId = await updatedNumber.PutAsync(_postgresql).ConfigureAwait(false);
+                                    }
+
+                                    numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                    return View("PortRequestEdit", new PortRequestResult
+                                    {
+                                        Order = order,
+                                        Message = $"{bulkResponse.Description} - {bulkResponse.Code}",
+                                        PortRequest = portRequest,
+                                        PhoneNumbers = numbers
+                                    });
                                 }
-
-                                return View("PortRequestEdit", new PortRequestResult
+                                else
                                 {
-                                    Order = order,
-                                    Message = $"{bulkResponse.Description} - {bulkResponse.Code}",
-                                    PortRequest = portRequest,
-                                    PhoneNumbers = numbers
-                                });
+                                    Log.Fatal($"[PortRequest] Failed to submit port request to BulkVS.");
+
+                                    numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                    return View("PortRequestEdit", new PortRequestResult
+                                    {
+                                        Order = order,
+                                        Message = $"{bulkResponse.Description} - {bulkResponse.Code}",
+                                        PortRequest = portRequest,
+                                        PhoneNumbers = numbers
+                                    });
+                                }
                             }
-                            else
+                            catch (Exception ex)
                             {
-                                Log.Fatal($"[PortRequest] Failed to submit port request to BulkVS.");
-
-                                return View("PortRequestEdit", new PortRequestResult
-                                {
-                                    Order = order,
-                                    Message = $"{bulkResponse.Description} - {bulkResponse.Code}",
-                                    PortRequest = portRequest,
-                                    PhoneNumbers = numbers
-                                });
+                                Log.Error($"[PortRequest] Failed to submit port request to BulkVS.");
+                                Log.Error(ex.Message);
+                                Log.Error(ex.StackTrace.ToString());
                             }
                         }
                     }
@@ -1209,6 +1234,8 @@ namespace NumberSearch.Ops.Controllers
                                 number.ExternalPortRequestId = bulkResponse?.OrderId;
                                 var checkUpdateId = await number.PutAsync(_postgresql).ConfigureAwait(false);
                             }
+
+                            numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
 
                             return View("PortRequestEdit", new PortRequestResult
                             {

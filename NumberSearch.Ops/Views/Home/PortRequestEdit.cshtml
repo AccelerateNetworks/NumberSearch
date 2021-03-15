@@ -1,6 +1,7 @@
 ﻿@model NumberSearch.Ops.PortRequestResult
 @{
     ViewData["Title"] = "Port Request";
+    var unSubmitted = Model?.PhoneNumbers?.Where(x => string.IsNullOrWhiteSpace(x.ExternalPortRequestId)).ToList();
 }
 <h1 class="display-4 p-3">🚢 Port Requests</h1>
 <div class="pb-3">
@@ -56,9 +57,9 @@
     </div>
     <div class="row">
         <div class="col-md-4 mb-3">
-            <label for="teliId">Teli Port Request Id</label>
-            <input asp-for="PortRequest.TeliId" type="text" value="@Model?.PortRequest?.TeliId" class="form-control" id="teliId" placeholder="4963"
-                   title="The Id for this Port Request in Teli's system.">
+            <label for="vendor">Vendor Submitted To</label>
+            <input asp-for="PortRequest.VendorSubmittedTo" type="text" value="@Model?.PortRequest?.VendorSubmittedTo" class="form-control" id="teliId" placeholder="Unsubmitted" readonly
+                   title="The vendor this Port Request was submitted to.">
         </div>
     </div>
     <div class="row">
@@ -420,7 +421,7 @@
     @Html.AntiForgeryToken()
     <input name="OrderId" value="@Model?.PortRequest?.OrderId" hidden />
     @{
-        if (string.IsNullOrWhiteSpace(Model?.PortRequest?.VendorSubmittedTo))
+        if (unSubmitted?.Count() > 0)
         {
             <button type="submit" class="btn btn-danger">Submit to Teli</button>
         }
@@ -436,7 +437,7 @@
 
     <input name="OrderId" value="@Model?.PortRequest?.OrderId" hidden />
     @{
-        if (string.IsNullOrWhiteSpace(Model?.PortRequest?.VendorSubmittedTo))
+        if (unSubmitted?.Count() > 0)
         {
             <button type="submit" class="btn btn-danger">Submit to BulkVS</button>
         }
