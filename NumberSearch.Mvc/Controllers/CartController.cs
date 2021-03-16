@@ -534,34 +534,24 @@ namespace NumberSearch.Mvc.Controllers
                             SalesTax specificTaxRate = null;
                             try
                             {
-                                specificTaxRate = await SalesTax.GetAsync(order.Address, order.City, order.Zip).ConfigureAwait(false);
+                                // Use our own API
+                                specificTaxRate = await SalesTax.GetLocalAPIAsync(order.Address, string.Empty, order.Zip).ConfigureAwait(false);
                             }
                             catch
                             {
-                                Log.Fatal($"[Checkout] Failed to get the Sale Tax rate for {order.Address}, {order.City}, {order.Zip}.");
+                                Log.Fatal($"[Checkout] Failed to get the Sale Tax rate from the local API for {order.Address}, {order.Zip}.");
                             }
 
                             if (specificTaxRate is null)
                             {
                                 try
                                 {
-                                    specificTaxRate = await SalesTax.GetAsync(string.Empty, order.City, order.Zip).ConfigureAwait(false);
+                                    // Fall back to using the state's API
+                                    specificTaxRate = await SalesTax.GetAsync(order.Address, order.City, order.Zip).ConfigureAwait(false);
                                 }
                                 catch
                                 {
-                                    Log.Fatal($"[Checkout] Failed to get the Sale Tax rate for {order.City}, {order.Zip}.");
-                                }
-                            }
-
-                            if (specificTaxRate is null)
-                            {
-                                try
-                                {
-                                    specificTaxRate = await SalesTax.GetAsync(string.Empty, string.Empty, order.Zip).ConfigureAwait(false);
-                                }
-                                catch
-                                {
-                                    Log.Fatal($"[Checkout] Failed to get the Sale Tax rate for {order.Zip}.");
+                                    Log.Fatal($"[Checkout] Failed to get the Sale Tax rate from the state's API for {order.City}, {order.Zip}.");
                                 }
                             }
 

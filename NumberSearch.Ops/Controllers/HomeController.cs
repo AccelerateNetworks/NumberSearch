@@ -672,7 +672,7 @@ namespace NumberSearch.Ops.Controllers
                     {
                         try
                         {
-                            specificTaxRate = await SalesTax.GetAsync(location.Address, location.City, location.Zip).ConfigureAwait(false);
+                            specificTaxRate = await SalesTax.GetLocalAPIAsync(location.Address, location.City, location.Zip).ConfigureAwait(false);
                         }
                         catch (Exception ex)
                         {
