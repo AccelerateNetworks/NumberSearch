@@ -1373,19 +1373,19 @@ namespace NumberSearch.Tests
         //    output.WriteLine($"Taxrate: {taxrate}");
         //}
 
-        //[Fact]
-        //public async Task GetRawSaleTaxInfoAsync()
-        //{
-        //    string address = "LINDERSON WAY SW";
-        //    string city = string.Empty;
-        //    string zip = "98501";
+        [Fact]
+        public async Task GetRawSaleTaxInfoAsync()
+        {
+            string address = "6300 linderson way";
+            string city = string.Empty;
+            string zip = "98501";
 
-        //    var result = await SalesTax.GetAsync(address, city, zip).ConfigureAwait(false);
+            var result = await SalesTax.GetLocalAPIAsync(address, city, zip).ConfigureAwait(false);
 
-        //    Assert.NotNull(result);
-        //    Assert.True(result.rate1 > 0.0M);
-        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
-        //}
+            Assert.NotNull(result);
+            Assert.True(result.rate1 > 0.0M);
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+        }
 
         [Fact]
         public async Task PostOrderAsync()

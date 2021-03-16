@@ -324,12 +324,12 @@
                     {
                         var productOrder = productOrders[coupon?.CouponId.ToString()];
                         var localTotal = 0;
-                        if (coupon.Name == "WaivePort")
+                        if (coupon.Name == "Waive Port")
                         {
                             localTotal = portedTotal;
                             couponTotal += localTotal * -1;
                         }
-                        else if (coupon.Name == "WaiveInstallation")
+                        else if (coupon.Name == "Waive Installation")
                         {
                             localTotal = 60;
                         }

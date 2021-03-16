@@ -97,6 +97,25 @@ namespace NumberSearch.DataAccess
             return apiResponse.rate1;
         }
 
+        public static async Task<SalesTax> GetLocalAPIAsync(string streetAddress, string city, string zip)
+        {
+            string baseUrl = "https://wataxlookup.acceleratenetworks.com/";
+            string endpoint = "AddressRates.aspx";
+            string outputParameter = $"?output=xml";
+            string addrParameter = $"&addr={streetAddress}";
+            string cityParameter = $"&city={city}";
+            string zipParameter = $"&zip={zip}";
+            string url = $"{baseUrl}{endpoint}{outputParameter}{addrParameter}{cityParameter}{zipParameter}";
+
+            var result = await url.GetStreamAsync().ConfigureAwait(false);
+
+            // Learn more about this XML serialization method: https://docs.microsoft.com/en-us/dotnet/standard/serialization/how-to-deserialize-an-object
+            var serializer = new XmlSerializer(typeof(SalesTax));
+            var apiResponse = (SalesTax)serializer.Deserialize(result);
+
+            return apiResponse;
+        }
+
         /// <summary>
         /// Get the Sale Tax rate for a specific address.
         /// </summary>
