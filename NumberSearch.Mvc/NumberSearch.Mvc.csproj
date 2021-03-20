@@ -257,6 +257,15 @@
     <Content Update="wwwroot\images\scaled\SNO-PA1image1scaled.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Update="wwwroot\images\scaled\YEA-WH62-DUAL-UC-400.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\images\scaled\YEA-WH62-MONO-UC-400.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\images\scaled\YEA-WH63-UC-400.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="wwwroot\images\scaled\yealinkcp930w-400.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
