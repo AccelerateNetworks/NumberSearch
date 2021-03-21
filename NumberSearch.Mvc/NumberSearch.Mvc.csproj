@@ -257,6 +257,12 @@
     <Content Update="wwwroot\images\scaled\SNO-PA1image1scaled.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Update="wwwroot\images\scaled\YEA-BLT60-400.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\images\scaled\YEA-CP960-WM-400.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="wwwroot\images\scaled\YEA-WH62-DUAL-UC-400.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
