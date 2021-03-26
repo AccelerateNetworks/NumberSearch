@@ -284,6 +284,15 @@
     <Content Update="wwwroot\images\scaled\yealinkt57w-400.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Update="wwwroot\images\svg\accelerate-a.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\images\svg\accelerate-an.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\images\svg\accelerate.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="wwwroot\js\site.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
