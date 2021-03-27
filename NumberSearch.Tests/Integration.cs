@@ -6,6 +6,7 @@ using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Data247;
 using NumberSearch.DataAccess.InvoiceNinja;
+using NumberSearch.DataAccess.TeleDynamics;
 using NumberSearch.DataAccess.TeleMesssage;
 
 using ServiceReference;
@@ -35,6 +36,8 @@ namespace NumberSearch.Tests
         private readonly string invoiceNinjaToken;
         private readonly string _data247username;
         private readonly string _data247password;
+        private readonly string _teleDynamicsUsername;
+        private readonly string _teleDynamicsPassword;
 
         public Integration(ITestOutputHelper output)
         {
@@ -61,6 +64,8 @@ namespace NumberSearch.Tests
             invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
             _data247username = config.GetConnectionString("Data247Username");
             _data247password = config.GetConnectionString("Data247Password");
+            _teleDynamicsUsername = config.GetConnectionString("TeleDynamicsUsername");
+            _teleDynamicsPassword = config.GetConnectionString("TeleDynamicsPassword");
         }
 
         [Fact]
@@ -773,6 +778,19 @@ namespace NumberSearch.Tests
             var portedNumber = "8605530426";
             // Act
             var results = await ValidatePortability.GetAsync(portedNumber, bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+
+            // Assert
+            Assert.NotNull(results);
+            output.WriteLine(JsonSerializer.Serialize(results));
+        }
+
+        [Fact]
+        public async Task TeleDynamicsProductCheckQuantityAsync()
+        {
+            // Arrange
+            var partNumber = "yea-sip-t54w";
+            // Act
+            var results = await VendorProduct.GetAsync(partNumber, _teleDynamicsUsername, _teleDynamicsPassword).ConfigureAwait(false);
 
             // Assert
             Assert.NotNull(results);
