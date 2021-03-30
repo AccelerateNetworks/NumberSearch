@@ -1,0 +1,89 @@
+﻿@model HardwareResult
+@{
+    ViewData["Title"] = "Hardware";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <br />
+    <div class="pricing-header mx-auto mb-3 text-center">
+        <h1 class="display-4">Our Hardware Price List</h1>
+    </div>
+    <br />
+    <div class="table-responsive-xl">
+        <table class="table table-bordered table-hover table-striped">
+            <thead>
+                <tr>
+                    <th>
+                        Product Name
+                    </th>
+                    <th>
+                        Public Price
+                    </th>
+                    <th>
+                        Vendor Part Number
+                    </th>
+                    <th>
+                        Vendor Unit Price
+                    </th>
+                    <th>
+                        Vendor MSRP
+                    </th>
+                    <th>
+                        Vendor MAP
+                    </th>
+                    <th>
+                        Publicly Visible
+                    </th>
+                    <th>
+                        Quantity in our local Inventory
+                    </th>
+                    <th>
+                        Support
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    foreach (var product in Model?.Products)
+                    {
+                        <tr>
+                            <td>
+                                @product.Name
+                            </td>
+                            <td>
+                                @product.Price
+                            </td>
+                            <td>
+                                @product.VendorPartNumber
+                            </td>
+                            <td>
+                                @product.Vendor?.UnitPrice
+                            </td>
+                            <td>
+                                @product.Vendor?.MSRP
+                            </td>
+                            <td>
+                                @product.Vendor?.MAP
+                            </td>
+                            <td>
+                                @product.Public
+                            </td>
+                            <td>
+                                @product.QuantityAvailable
+                            </td>
+                            <td>
+                                @{
+                                    if (!string.IsNullOrWhiteSpace(product.SupportLink))
+                                    {
+                                        <a class="btn btn-outline-info float-right" href="@product.SupportLink">Learn More</a>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
