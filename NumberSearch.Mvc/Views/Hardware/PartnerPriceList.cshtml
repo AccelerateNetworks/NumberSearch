@@ -36,7 +36,10 @@
                         Publicly Visible
                     </th>
                     <th>
-                        Quantity in our local Inventory
+                        Local Inventory
+                    </th>
+                    <th>
+                        Remote Inventory
                     </th>
                     <th>
                         Support
@@ -52,25 +55,28 @@
                                 @product.Name
                             </td>
                             <td>
-                                @product.Price
+                                @product.Price.ToString("C2")
                             </td>
                             <td>
                                 @product.VendorPartNumber
                             </td>
                             <td>
-                                @product.Vendor?.UnitPrice
+                                @product.Vendor?.UnitPrice.ToString("C2")
                             </td>
                             <td>
-                                @product.Vendor?.MSRP
+                                @product.Vendor?.MSRP.ToString("C2")
                             </td>
                             <td>
-                                @product.Vendor?.MAP
+                                @product.Vendor?.MAP.ToString("C2")
                             </td>
                             <td>
                                 @product.Public
                             </td>
                             <td>
                                 @product.QuantityAvailable
+                            </td>
+                            <td>
+                                @product.Vendor?.Quantity
                             </td>
                             <td>
                                 @{
