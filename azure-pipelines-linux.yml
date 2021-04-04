@@ -35,7 +35,8 @@ variables:
   ConnectionStrings.AzureStorageAccount: $(AzureStorageAccount)
   ConnectionStrings.TeleDynamicsUsername: $(TeleDynamicsUsername)
   ConnectionStrings.TeleDynamicsPassword: $(TeleDynamicsPassword)
-  ApplicationInsights.InstrumentationKey: $(InstrumentationKey)
+  ApplicationInsights.InstrumentationKey: $(AIInstrumentationKey)
+  ApplicationInsights.ConnectionString: $(AIConnectionString)
 
 steps:
 - task: UseDotNet@2
