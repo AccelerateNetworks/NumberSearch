@@ -52,6 +52,7 @@ namespace NumberSearch.Mvc
             services.AddSingleton<MonitorLoop>();
             services.AddHostedService<QueuedHostedService>();
             services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+            services.AddApplicationInsightsTelemetry(Configuration["APPINSIGHTS_CONNECTIONSTRING"]);
         }
 
 
