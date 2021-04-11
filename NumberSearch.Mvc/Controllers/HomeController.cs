@@ -61,6 +61,13 @@ namespace NumberSearch.Mvc.Controllers
             return View();
         }
 
+        [HttpGet("releases/android/RELEASE")]
+        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
+        public IActionResult AndroidReleaseFile()
+        {
+            return View();
+        }
+
         [HttpGet]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
