@@ -93,6 +93,7 @@
                         {
                             <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Recommended&Page=@Model.Page">Recommended</a>
                             <a class="btn btn-outline-secondary active" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Sequential&Page=@Model.Page">Sequential</a>
+                            <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Location&Page=@Model.Page">Location</a>
                             <script type="text/javascript">
                                 // Handles issue #124 on Github
                                 // https://github.com/AccelerateNetworks/NumberSearch/issues/124
@@ -128,10 +129,17 @@
                                 });
                             </script>
                         }
+                        else if (Model?.View == "Location")
+                        {
+                            <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Recommended&Page=@Model.Page">Recommended</a>
+                            <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Sequential&Page=@Model.Page">Sequential</a>
+                            <a class="btn btn-outline-secondary active" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Location&Page=@Model.Page">Location</a>
+                        }
                         else
                         {
                             <a class="btn btn-outline-secondary active" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Recommended&Page=@Model.Page">Recommended</a>
                             <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Sequential&Page=@Model.Page">Sequential</a>
+                            <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Location&Page=@Model.Page">Location</a>
                         }
                     }
                 </div>

@@ -151,6 +151,30 @@ namespace NumberSearch.DataAccess
             return result;
         }
 
+        /// <summary>
+        /// Find a phone number based on matching it to a query and returns paginated results with a list of numbers ordered by location.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<PhoneNumber>> LocationPaginatedSearchAsync(string query, int page, string connectionString)
+        {
+            var offset = (page * 50) - 50;
+            var limit = 50;
+            // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
+            query = query?.Trim()?.Replace('*', '_');
+
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<PhoneNumber>("SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\", \"Purchased\" FROM public.\"PhoneNumbers\" " +
+                "WHERE \"DialedNumber\" LIKE @query ORDER BY \"City\" OFFSET @offset LIMIT @limit",
+                new { query = $"%{query}%", offset, limit })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
         public static async Task<int> NumberOfResultsInQuery(string query, string connectionString)
         {
             // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.

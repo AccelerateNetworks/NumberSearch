@@ -99,6 +99,10 @@ namespace NumberSearch.Mvc.Controllers
             {
                 results = await PhoneNumber.SequentialPaginatedSearchAsync(cleanedQuery, page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
             }
+            else if (!string.IsNullOrWhiteSpace(view) && view == "Location")
+            {
+                results = await PhoneNumber.LocationPaginatedSearchAsync(cleanedQuery, page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            }
             else
             {
                 results = await PhoneNumber.RecommendedPaginatedSearchAsync(cleanedQuery, page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
