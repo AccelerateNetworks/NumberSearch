@@ -6,6 +6,7 @@ using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Data247;
 using NumberSearch.DataAccess.InvoiceNinja;
+using NumberSearch.DataAccess.LCGuide;
 using NumberSearch.DataAccess.TeleDynamics;
 using NumberSearch.DataAccess.TeleMesssage;
 
