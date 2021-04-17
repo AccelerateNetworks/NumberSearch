@@ -393,6 +393,21 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task RateCenterLookupAsync()
+        {
+            // Arrange
+            string npa = "425";
+            string nxx = "780";
+
+            // Act
+            var result = await RateCenterLookup.GetAsync(npa, nxx).ConfigureAwait(false);
+
+            // Assert        
+            Assert.NotNull(result);
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+        }
+
+        [Fact]
         public async Task TeleNPAsTestAsync()
         {
             // Arrange

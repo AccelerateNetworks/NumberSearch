@@ -30,6 +30,9 @@ namespace NumberSearch.Ingest
 
             var numbers = await FirstPointCom.GetValidNumbersByNPAAsync(username, password, areaCodes).ConfigureAwait(false);
 
+            var locations = await Services.AssignRatecenterAndRegionAsync(numbers).ConfigureAwait(false);
+            numbers = locations.ToArray();
+
             var typedNumbers = Services.AssignNumberTypes(numbers).ToArray();
 
             var stats = await Services.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
@@ -67,6 +70,10 @@ namespace NumberSearch.Ingest
                     Log.Error($"[BulkVS] Area code {code} failed @ {DateTime.Now}: {ex.Message}");
                 }
             }
+
+            var locations = await Services.AssignRatecenterAndRegionAsync(numbers).ConfigureAwait(false);
+            numbers = locations.ToList();
+
             var typedNumbers = Services.AssignNumberTypes(numbers).ToArray();
 
             var stats = await Services.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);

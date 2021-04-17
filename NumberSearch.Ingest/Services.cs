@@ -1,4 +1,5 @@
 ﻿using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.LCGuide;
 using NumberSearch.DataAccess.Models;
 
 using Serilog;
@@ -246,6 +247,42 @@ namespace NumberSearch.Ingest
             }
 
             return stats;
+        }
+
+        /// <summary>
+        /// Assigns the correct city and state information to a phone number.
+        /// </summary>
+        /// <param name="numbers"> A list of phone numbers. </param>
+        /// <returns> A list of phone numbers. </returns>
+        public static async Task<IEnumerable<PhoneNumber>> AssignRatecenterAndRegionAsync(IEnumerable<PhoneNumber> numbers)
+        {
+            // Cache the lookups because API requests are expensive and phone numbers tend to be ingested in groups.
+            var npaNxxLookup = new Dictionary<string, RateCenterLookup>();
+
+            foreach (var number in numbers)
+            {
+                var checkMatch = npaNxxLookup.TryGetValue($"{number.NPA}{number.NXX}", out var match);
+
+                if (checkMatch)
+                {
+                    number.City = match.RateCenter;
+                    number.State = match.Region;
+                }
+                else
+                {
+                    match = await RateCenterLookup.GetAsync(number.NPA.ToString(), number.NXX.ToString()).ConfigureAwait(false);
+
+                    if (match is not null)
+                    {
+                        npaNxxLookup.Add($"{number.NPA}{number.NXX}", match);
+
+                        number.City = match.RateCenter;
+                        number.State = match.Region;
+                    }
+                }
+            }
+
+            return numbers;
         }
     }
 }

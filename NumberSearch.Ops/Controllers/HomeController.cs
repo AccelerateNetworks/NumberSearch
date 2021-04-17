@@ -873,10 +873,10 @@ namespace NumberSearch.Ops.Controllers
                                     break;
                             }
 
-                            var numberName = new LIDBLookup();
+                            var numberName = new RateCenterLookup();
                             try
                             {
-                                numberName = await LIDBLookup.GetAsync(dialedPhoneNumber, _data247username, _data247password).ConfigureAwait(false);
+                                numberName = await RateCenterLookup.GetAsync(dialedPhoneNumber, _data247username, _data247password).ConfigureAwait(false);
                             }
                             catch (Exception ex)
                             {
