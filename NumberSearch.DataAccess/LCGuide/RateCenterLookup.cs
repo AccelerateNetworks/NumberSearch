@@ -18,7 +18,7 @@ namespace NumberSearch.DataAccess.LCGuide
 
             var result = await route.GetStringAsync().ConfigureAwait(false);
 
-            if (!string.IsNullOrWhiteSpace(result))
+            if (result.Contains("</rc>") && result.Contains("<region>"))
             {
                 var rateCenterStart = result.IndexOf("<rc>") + "<rc>".Length;
                 var rateCenterEnd = result.IndexOf("</rc>");

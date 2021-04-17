@@ -409,6 +409,20 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task BadRateCenterLookupAsync()
+        {
+            // Arrange
+            string npa = "844";
+            string nxx = "646";
+
+            // Act
+            var result = await RateCenterLookup.GetAsync(npa, nxx).ConfigureAwait(false);
+
+            // Assert        
+            Assert.Null(result);
+        }
+
+        [Fact]
         public async Task TeleNPAsTestAsync()
         {
             // Arrange

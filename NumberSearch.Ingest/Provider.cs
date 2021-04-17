@@ -153,6 +153,9 @@ namespace NumberSearch.Ingest
 
             Log.Information($"[TeleMessage] Found {readyToSubmit.Count} Phone Numbers");
 
+            var locations = await Services.AssignRatecenterAndRegionAsync(readyToSubmit).ConfigureAwait(false);
+            readyToSubmit = locations.ToList();
+
             var typedNumbers = Services.AssignNumberTypes(readyToSubmit).ToArray();
 
             var stats = await Services.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);

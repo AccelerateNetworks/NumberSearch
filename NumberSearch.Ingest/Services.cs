@@ -263,6 +263,15 @@ namespace NumberSearch.Ingest
 
             foreach (var number in numbers)
             {
+                foreach (var area in AreaCode.TollFree)
+                {
+                    if (number.NPA == area)
+                    {
+                        // Skip tollfree numbers
+                        continue;
+                    }
+                }
+
                 var checkMatch = npaNxxLookup.TryGetValue($"{number.NPA}{number.NXX}", out var match);
 
                 if (checkMatch)
