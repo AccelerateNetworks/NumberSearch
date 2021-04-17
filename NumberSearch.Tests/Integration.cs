@@ -971,6 +971,29 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task GetPhoneNumbersByLocationPaginatedAsync()
+        {
+            var conn = postgresql;
+            var results = await PhoneNumber.LocationPaginatedSearchAsync("*", 1, conn);
+            Assert.NotNull(results);
+            int count = 0;
+            foreach (var result in results)
+            {
+                Assert.True(result.NPA > 99);
+                Assert.True(result.NXX > 99);
+                // XXXX can be 0001 which as an int is 1.
+                Assert.True(result.XXXX > 0);
+                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+                Assert.False(string.IsNullOrWhiteSpace(result.City));
+                Assert.False(string.IsNullOrWhiteSpace(result.State));
+                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+                count++;
+            }
+            output.WriteLine($"{count} Results Reviewed");
+            Assert.True(count > 0);
+        }
+
+        [Fact]
         // This was deleting the database everytime it ran.
         // Now it only delete stale numbers that haven't been updated in the last 3 days.
         public async Task DeleteOldPhoneNumberAsync()
