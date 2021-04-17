@@ -9,7 +9,7 @@
 
 <script type="text/javascript">
     @{
-        var graphData = Model?.Ingests.Take(31).ToArray();
+        var graphData = Model?.Ingests.Where(x => x.StartDate > DateTime.Now.AddHours(-12)).OrderBy(x => x.StartDate).ToArray();
         var commaString = string.Empty;
         foreach (var ingest in graphData)
         {
@@ -67,7 +67,7 @@
         commaString = string.Empty;
         foreach (var ingest in graphData)
         {
-            commaString += $"\"{ingest.StartDate.ToShortDateString()}\", ";
+            commaString += $"\"{ingest.StartDate.ToString("h:mm tt")}\", ";
         }
         @Html.Raw($"var dateArr = [{commaString}];");
     }
@@ -156,12 +156,12 @@
     @{
         if (Model != null && Model?.Ingests.Count() > 0)
         {
-            var total = $"{Model.Ingests.Count()} ingests have been performed!";
-            <div class="alert alert-success" role="alert">
-                @total
-            </div>
+            @*var total = $"{Model.Ingests.Count()} ingests have been performed!";
+                <div class="alert alert-success" role="alert">
+                    @total
+                </div>*@
             var timeAgo = DateTime.Now - Model?.Ingests.FirstOrDefault()?.StartDate;
-            var last = $"Last ingest performed {timeAgo.GetValueOrDefault().TotalMinutes} Minutes ago.";
+            var last = $"Last ingest performed {timeAgo.GetValueOrDefault().Minutes} Minutes ago.";
             var oneHour = DateTime.Now - DateTime.Now.AddHours(-1);
             if (timeAgo > oneHour)
             {
@@ -171,12 +171,26 @@
             }
             else
             {
-                <div class="alert alert-info" role="alert">
+                <div class="alert alert-success" role="alert">
                     @last
                 </div>
             }
+
+            var statusSymbol = "✔️";
+            foreach (var code in Model?.PriorityAreaCodes)
+            {
+                if (code.Item2 < 10)
+                {
+                    statusSymbol = "⚠️";
+                }
+                else if (code.Item2 < 1000)
+                {
+                    statusSymbol = "❌";
+                }
+            }
+
             <h1 class="display-4">
-                Provider Health
+                Provider Health @statusSymbol
             </h1>
             <h4>@Model?.TotalPhoneNumbers Phone Numbers Total</h4>
             <div class="table-responsive">
