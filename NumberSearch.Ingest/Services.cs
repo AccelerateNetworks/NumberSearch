@@ -256,6 +256,8 @@ namespace NumberSearch.Ingest
         /// <returns> A list of phone numbers. </returns>
         public static async Task<IEnumerable<PhoneNumber>> AssignRatecenterAndRegionAsync(IEnumerable<PhoneNumber> numbers)
         {
+            Log.Information($"Ingesting the Ratecenters and Regions on {numbers.Count()} phone numbers.");
+
             // Cache the lookups because API requests are expensive and phone numbers tend to be ingested in groups.
             var npaNxxLookup = new Dictionary<string, RateCenterLookup>();
 
@@ -270,17 +272,28 @@ namespace NumberSearch.Ingest
                 }
                 else
                 {
-                    match = await RateCenterLookup.GetAsync(number.NPA.ToString(), number.NXX.ToString()).ConfigureAwait(false);
-
-                    if (match is not null)
+                    try
                     {
-                        npaNxxLookup.Add($"{number.NPA}{number.NXX}", match);
+                        match = await RateCenterLookup.GetAsync(number.NPA.ToString(), number.NXX.ToString()).ConfigureAwait(false);
 
-                        number.City = match.RateCenter;
-                        number.State = match.Region;
+                        if (match is not null)
+                        {
+                            npaNxxLookup.Add($"{number.NPA}{number.NXX}", match);
+
+                            number.City = match.RateCenter;
+                            number.State = match.Region;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"Faild to ingesting the Ratecenter and Region on {number.DialedNumber}");
+                        Log.Error(ex.Message);
+                        Log.Error(ex.StackTrace);
                     }
                 }
             }
+
+            Log.Information($"Ingesting the Ratecenters and Regions on {numbers.Count()} phone numbers.");
 
             return numbers;
         }
