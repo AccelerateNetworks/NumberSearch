@@ -175,6 +175,24 @@ namespace NumberSearch.DataAccess
             return result;
         }
 
+        public static async Task<IEnumerable<PhoneNumber>> LocationByCityPaginatedSearchAsync(string query, string city, int page, string connectionString)
+        {
+            var offset = (page * 50) - 50;
+            var limit = 50;
+            // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
+            query = query?.Trim()?.Replace('*', '_');
+
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<PhoneNumber>("SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\", \"Purchased\" FROM public.\"PhoneNumbers\" " +
+                "WHERE \"DialedNumber\" LIKE @query AND \"City\" = @city ORDER BY \"NumberType\" OFFSET @offset LIMIT @limit",
+                new { query = $"%{query}%", city, offset, limit })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
         public static async Task<int> NumberOfResultsInQuery(string query, string connectionString)
         {
             // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
@@ -185,6 +203,38 @@ namespace NumberSearch.DataAccess
             var result = await connection
                 .QueryFirstOrDefaultAsync<int>("SELECT COUNT(*) FROM public.\"PhoneNumbers\" " +
                 "WHERE \"DialedNumber\" LIKE @query",
+                new { query = $"%{query}%" })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        public static async Task<int> NumberOfResultsInQueryWithCity(string query, string city, string connectionString)
+        {
+            // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
+            query = query?.Trim()?.Replace('*', '_');
+
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryFirstOrDefaultAsync<int>("SELECT COUNT(*) FROM public.\"PhoneNumbers\" " +
+                "WHERE \"DialedNumber\" LIKE @query AND \"City\" = @city ",
+                new { query = $"%{query}%", city })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        public static async Task<IEnumerable<string>> CitiesInQueryAsync(string query, string connectionString)
+        {
+            // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
+            query = query?.Trim()?.Replace('*', '_');
+
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<string>("SELECT DISTINCT \"City\" FROM public.\"PhoneNumbers\" " +
+                "WHERE \"DialedNumber\" LIKE @query ",
                 new { query = $"%{query}%" })
                 .ConfigureAwait(false);
 

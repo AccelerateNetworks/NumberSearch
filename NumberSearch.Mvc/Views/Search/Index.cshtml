@@ -131,9 +131,18 @@
                         }
                         else if (Model?.View == "Location")
                         {
-                            <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Recommended&Page=@Model.Page">Recommended</a>
-                            <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Sequential&Page=@Model.Page">Sequential</a>
-                            <a class="btn btn-outline-secondary active" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Location&Page=@Model.Page">Location</a>
+                            if (string.IsNullOrWhiteSpace(Model?.City))
+                            {
+                                <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Recommended&Page=@Model.Page">Recommended</a>
+                                <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Sequential&Page=@Model.Page">Sequential</a>
+                                <a class="btn btn-outline-secondary active" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Location&Page=@Model.Page">Location</a>
+                            }
+                            else
+                            {
+                                <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&City=@Model.City&View=Recommended&Page=@Model.Page">Recommended</a>
+                                <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&City=@Model.City&View=Sequential&Page=@Model.Page">Sequential</a>
+                                <a class="btn btn-outline-secondary active" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&City=@Model.City&View=Location&Page=@Model.Page">Location</a>
+                            }
                         }
                         else
                         {
@@ -152,7 +161,14 @@
                         if (Model.Page > 1)
                         {
                             var previousPage = Model.Page - 1;
-                            <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=@Model.View&Page=@previousPage">Previous</a>
+                            if (string.IsNullOrWhiteSpace(Model?.City))
+                            {
+                                <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=@Model.View&Page=@previousPage">Previous</a>
+                            }
+                            else
+                            {
+                                <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&City=@Model?.City&View=@Model.View&Page=@previousPage">Previous</a>
+                            }
                             <a class="btn btn-outline-dark disabled">Page @Model.Page of @maxPage</a>
                         }
                         else
@@ -163,7 +179,14 @@
                         if (Model.NumberOfResults > pageResultsCount)
                         {
                             var nextPage = Model.Page + 1;
-                            <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=@Model.View&Page=@nextPage">Next</a>
+                            if (string.IsNullOrWhiteSpace(Model?.City))
+                            {
+                                <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=@Model.View&Page=@nextPage">Next</a>
+                            }
+                            else
+                            {
+                                <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&City=@Model.City&View=@Model.View&Page=@nextPage">Next</a>
+                            }
                         }
                         else
                         {
@@ -172,6 +195,28 @@
                     }
                 </div>
             </form>
+            if (Model?.View == "Location")
+            {
+                <p>Filter by City</p>
+                <div class="mb-3">
+                    @{
+                        foreach (var city in Model?.Cities)
+                        {
+                            if (city == Model?.City)
+                            {
+                                <div class="btn-group">
+                                    <a class="btn btn-outline-info active mb-1" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&City=@city&View=Location&Page=@Model.Page">@city</a>
+                                    <a class="btn btn-outline-danger mb-1" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Location&Page=@Model.Page">Remove</a>
+                                </div>
+                            }
+                            else
+                            {
+                                <a class="btn btn-outline-info mb-1" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&City=@city&View=Location&Page=@Model.Page">@city</a>
+                            }
+                        }
+                    }
+                </div>
+            }
             <div class="table-responsive">
                 <table class="table table-striped table-borderless table-hover">
                     <tbody>
@@ -311,12 +356,19 @@
                     </tbody>
                 </table>
                 <form action="/Search">
-                    <div class="btn-group float-right pb-3" role="group" aria-label="pagination">
+                    <div class="btn-group float-right pt-2 pb-2" role="group" aria-label="pagination">
                         @{
                             if (Model.Page > 1)
                             {
                                 var previousPage = Model.Page - 1;
-                                <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=@Model.View&Page=@previousPage">Previous</a>
+                                if (string.IsNullOrWhiteSpace(Model?.City))
+                                {
+                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=@Model.View&Page=@previousPage">Previous</a>
+                                }
+                                else
+                                {
+                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&City=@Model?.City&View=@Model.View&Page=@previousPage">Previous</a>
+                                }
                                 <a class="btn btn-outline-dark disabled">Page @Model.Page of @maxPage</a>
                             }
                             else
@@ -327,7 +379,14 @@
                             if (Model.NumberOfResults > pageResultsCount)
                             {
                                 var nextPage = Model.Page + 1;
-                                <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=@Model.View&Page=@nextPage">Next</a>
+                                if (string.IsNullOrWhiteSpace(Model?.City))
+                                {
+                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=@Model.View&Page=@nextPage">Next</a>
+                                }
+                                else
+                                {
+                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&City=@Model.City&View=@Model.View&Page=@nextPage">Next</a>
+                                }
                             }
                             else
                             {

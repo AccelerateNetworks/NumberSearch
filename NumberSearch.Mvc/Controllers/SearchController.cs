@@ -14,10 +14,12 @@ namespace NumberSearch.Mvc.Controllers
     public class SearchController : Controller
     {
         private readonly IConfiguration configuration;
+        private readonly string _postgresql;
 
         public SearchController(IConfiguration config)
         {
             configuration = config;
+            _postgresql = configuration.GetConnectionString("PostgresqlProd");
         }
 
         /// <summary>
@@ -30,7 +32,7 @@ namespace NumberSearch.Mvc.Controllers
         [HttpPost("Search/")]
         [HttpPost("Search/{Query}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public async Task<IActionResult> IndexAsync(string query, string failed, string view, int page = 1)
+        public async Task<IActionResult> IndexAsync(string query, string city, string failed, string view, int page = 1)
         {
             // Fail fast
             if (string.IsNullOrWhiteSpace(query))
@@ -82,7 +84,10 @@ namespace NumberSearch.Mvc.Controllers
                 }
             }
 
-            var count = await PhoneNumber.NumberOfResultsInQuery(cleanedQuery, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            // If there's a city provided we need to use a more specific results count query.
+            var count = (string.IsNullOrWhiteSpace(city))
+                ? await PhoneNumber.NumberOfResultsInQuery(cleanedQuery, _postgresql).ConfigureAwait(false)
+                : await PhoneNumber.NumberOfResultsInQueryWithCity(cleanedQuery, city, _postgresql).ConfigureAwait(false);
 
             // Handle out of range page values.
             page = page < 1 ? 1 : page;
@@ -93,19 +98,27 @@ namespace NumberSearch.Mvc.Controllers
             // Select a view for the data.
             if (!string.IsNullOrWhiteSpace(view) && view == "Recommended")
             {
-                results = await PhoneNumber.RecommendedPaginatedSearchAsync(cleanedQuery, page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                results = await PhoneNumber.RecommendedPaginatedSearchAsync(cleanedQuery, page, _postgresql).ConfigureAwait(false);
             }
             else if (!string.IsNullOrWhiteSpace(view) && view == "Sequential")
             {
-                results = await PhoneNumber.SequentialPaginatedSearchAsync(cleanedQuery, page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                results = await PhoneNumber.SequentialPaginatedSearchAsync(cleanedQuery, page, _postgresql).ConfigureAwait(false);
             }
             else if (!string.IsNullOrWhiteSpace(view) && view == "Location")
             {
-                results = await PhoneNumber.LocationPaginatedSearchAsync(cleanedQuery, page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                // If a city is provided then we need to filter our results down to just that city.
+                if (!string.IsNullOrWhiteSpace(city))
+                {
+                    results = await PhoneNumber.LocationByCityPaginatedSearchAsync(cleanedQuery, city, page, _postgresql).ConfigureAwait(false);
+                }
+                else
+                {
+                    results = await PhoneNumber.LocationPaginatedSearchAsync(cleanedQuery, page, _postgresql).ConfigureAwait(false);
+                }
             }
             else
             {
-                results = await PhoneNumber.RecommendedPaginatedSearchAsync(cleanedQuery, page, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                results = await PhoneNumber.RecommendedPaginatedSearchAsync(cleanedQuery, page, _postgresql).ConfigureAwait(false);
             }
 
             var cart = Cart.GetFromSession(HttpContext.Session);
@@ -121,6 +134,27 @@ namespace NumberSearch.Mvc.Controllers
                     View = !string.IsNullOrWhiteSpace(view) ? view : "Recommended",
                     Message = !string.IsNullOrWhiteSpace(failed) ? $"{failed} is not purchasable at this time." : $"Did you mean to Transfer this number to our network? {query} is not purchasable.",
                     AlertType = "alert-warning",
+                    City = city,
+                    PhoneNumbers = results,
+                    Query = query,
+                    Cart = cart
+                });
+            }
+
+            if (!string.IsNullOrWhiteSpace(view) && view == "Location")
+            {
+                var cities = await PhoneNumber.CitiesInQueryAsync(cleanedQuery, _postgresql).ConfigureAwait(false);
+
+                return View("Index", new SearchResults
+                {
+                    CleanQuery = cleanedQuery,
+                    NumberOfResults = count,
+                    Page = page,
+                    View = !string.IsNullOrWhiteSpace(view) ? view : "Location",
+                    Message = !string.IsNullOrWhiteSpace(failed) ? $"{failed} is not purchasable at this time." : string.Empty,
+                    AlertType = "alert-warning",
+                    City = city,
+                    Cities = cities,
                     PhoneNumbers = results,
                     Query = query,
                     Cart = cart
@@ -135,6 +169,7 @@ namespace NumberSearch.Mvc.Controllers
                 View = !string.IsNullOrWhiteSpace(view) ? view : "Recommended",
                 Message = !string.IsNullOrWhiteSpace(failed) ? $"{failed} is not purchasable at this time." : string.Empty,
                 PhoneNumbers = results,
+                City = city,
                 Query = query,
                 Cart = cart
             });
