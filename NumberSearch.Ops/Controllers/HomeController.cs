@@ -93,6 +93,7 @@ namespace NumberSearch.Ops.Controllers
                 var productOrders = await ProductOrder.GetAllAsync(_postgresql).ConfigureAwait(false);
                 var purchasedNumbers = await PurchasedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
                 var verifiedNumbers = await VerifiedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
+                var portedPhoneNumbers = await PortedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
                 var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
                 var services = await Service.GetAllAsync(_postgresql).ConfigureAwait(false);
                 var pairs = new List<OrderProducts>();
@@ -115,6 +116,7 @@ namespace NumberSearch.Ops.Controllers
                     Orders = pairs,
                     Products = products,
                     Services = services,
+                    PortedPhoneNumbers = portedPhoneNumbers,
                     PurchasedPhoneNumbers = purchasedNumbers,
                     VerifiedPhoneNumbers = verifiedNumbers
                 });

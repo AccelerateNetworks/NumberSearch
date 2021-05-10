@@ -195,7 +195,15 @@
                                         @{
                                             foreach (var product in ported)
                                             {
-                                                <a class="btn btn-outline-primary mt-1" href="/Home/PortRequests/@product.OrderId">@product.PortedDialedNumber</a>
+                                                var matchingPortedPhoneNumber = Model?.PortedPhoneNumbers?.Where(x => x?.PortedDialedNumber == product?.PortedDialedNumber).FirstOrDefault();
+                                                if (matchingPortedPhoneNumber is not null && matchingPortedPhoneNumber.Completed)
+                                                {
+                                                    <a class="btn btn-outline-primary mt-1" href="/Home/PortRequests/@product.OrderId">@product.PortedDialedNumber ✔️</a>
+                                                }
+                                                else
+                                                {
+                                                    <a class="btn btn-outline-primary mt-1" href="/Home/PortRequests/@product.OrderId">@product.PortedDialedNumber ❓</a>
+                                                }
                                             }
                                         }
                                     </p>
