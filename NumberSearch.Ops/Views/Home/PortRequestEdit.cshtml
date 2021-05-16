@@ -321,6 +321,9 @@
     <hr class="mb-4">
     <button type="submit" class="btn btn-warning text-light">Update</button>
     <br />
+    <br />
+    <a href="/Home/PortRequest/@Model?.PortRequest?.OrderId/Delete" class="btn btn-danger">Delete</a>
+    <br />
 </form>
 <div class="row">
     <div class="col-md-6">
@@ -398,55 +401,61 @@
         </div>
     </div>
 </div>
-<form action="/Home/PortRequests/@Model?.PortRequest?.OrderId" method="post" class="mb-5">
+<form action="/Home/PortRequests/@Model?.PortRequest?.OrderId" method="post">
     @Html.AntiForgeryToken()
     <input name="OrderId" value="@Model?.PortRequest?.OrderId" hidden />
     <div class="input-group col-md-4 mb-3">
         <input name="dialedNumber" type="text" class="form-control" id="dialedNumber" placeholder="Another Number to Port" title="Enter another dialed number that you wish to add to this port request.">
         <div class="input-group-append">
-            @{
-                if (string.IsNullOrWhiteSpace(Model?.PortRequest?.VendorSubmittedTo))
-                {
-                    <button type="submit" class="btn btn-info">Add</button>
-                }
-                else
-                {
-                    <button type="submit" class="btn btn-info" disabled>Add</button>
-                }
-            }
+            <button type="submit" class="btn btn-info">Add</button>
         </div>
     </div>
 </form>
-<form action="/Home/PortRequestsTeli/@Model?.PortRequest?.OrderId" method="post">
+<br />
+<p class="col-sm-12 col-md-9 col-lg-6">When you press the button below finely tuned machine learning (ML) models will act as Artificial Intelligence (AI) and submit it a Port Request to Teli with any Tollfree Phone Numbers in this Port Request. Any Local Phone Numbers in this order will be submitted to BulkVS in one or more separate Port Requests depending on how many underlying carriers there are for the numbers that you are Porting to our network. Safety is not guaranteed.</p>
+<br />
+<form action="/Home/PortRequestUnified/@Model?.PortRequest?.OrderId" method="post">
     @Html.AntiForgeryToken()
     <input name="OrderId" value="@Model?.PortRequest?.OrderId" hidden />
     @{
         if (unSubmitted?.Count() > 0)
         {
-            <button type="submit" class="btn btn-danger">Submit to Teli</button>
+            <button type="submit" class="btn btn-success btn-lg">Submit to Teli and BulkVS</button>
         }
         else
         {
-            <button type="submit" class="btn btn-danger" disabled>Submit to Teli</button>
+            <button type="submit" class="btn btn-outline-success btn-lg" disabled>Submit to Teli and BulkVS</button>
         }
     }
 </form>
-<form action="/Home/PortRequestsBulkVS/@Model?.PortRequest?.OrderId" method="post">
-    @Html.AntiForgeryToken()
-    <br />
+@*<form action="/Home/PortRequestsTeli/@Model?.PortRequest?.OrderId" method="post">
+        @Html.AntiForgeryToken()
+        <br />
 
-    <input name="OrderId" value="@Model?.PortRequest?.OrderId" hidden />
-    @{
-        if (unSubmitted?.Count() > 0)
-        {
-            <button type="submit" class="btn btn-danger">Submit to BulkVS</button>
+        <input name="OrderId" value="@Model?.PortRequest?.OrderId" hidden />
+        @{
+            if (unSubmitted?.Count() > 0)
+            {
+                <button type="submit" class="btn btn-danger">Submit to Teli</button>
+            }
+            else
+            {
+                <button type="submit" class="btn btn-danger" disabled>Submit to Teli</button>
+            }
         }
-        else
-        {
-            <button type="submit" class="btn btn-danger" disabled>Submit to BulkVS</button>
+    </form>
+    <form action="/Home/PortRequestsBulkVS/@Model?.PortRequest?.OrderId" method="post">
+        @Html.AntiForgeryToken()
+        <br />
+        <input name="OrderId" value="@Model?.PortRequest?.OrderId" hidden />
+        @{
+            if (unSubmitted?.Count() > 0)
+            {
+                <button type="submit" class="btn btn-danger">Submit to BulkVS</button>
+            }
+            else
+            {
+                <button type="submit" class="btn btn-danger" disabled>Submit to BulkVS</button>
+            }
         }
-    }
-</form>
-<br />
-<a href="/Home/PortRequest/@Model?.PortRequest?.OrderId/Delete" class="btn btn-danger">Delete</a>
-<br />
+    </form>*@

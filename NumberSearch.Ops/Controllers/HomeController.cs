@@ -14,6 +14,7 @@ using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Data247;
 using NumberSearch.DataAccess.InvoiceNinja;
+using NumberSearch.DataAccess.Models;
 using NumberSearch.DataAccess.TeleMesssage;
 using NumberSearch.Ops.Models;
 
@@ -1284,6 +1285,298 @@ namespace NumberSearch.Ops.Controllers
                 }
             }
         }
+
+        /// <summary>
+        /// This porting method combines both the TeliMessage and BulkVS porting services.
+        /// Tollfree numbers are handled by the TeliMessage port request.
+        /// Local numbers are handled by BulkVS.
+        /// Local numbers are broken up into separate port requests based on 
+        /// the underlying carrier so that BulkVS will accept the port request.
+        /// </summary>
+        /// <param name="OrderId"></param>
+        /// <returns></returns>
+        [Authorize]
+        [HttpPost("/Home/PortRequestUnified/{orderId}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UnifiedPortRequestAsync(string OrderId)
+        {
+            var responseMessages = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(OrderId))
+            {
+                return Redirect("/Home/PortRequests");
+            }
+            else
+            {
+                var order = await Order.GetByIdAsync(Guid.Parse(OrderId), _postgresql).ConfigureAwait(false);
+                var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                var numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                numbers = numbers.Where(x => string.IsNullOrWhiteSpace(x.ExternalPortRequestId)).ToList();
+
+                // Prevent duplicate submissions.
+                if (numbers is null || !numbers.Any())
+                {
+                    numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                    return View("PortRequestEdit", new PortRequestResult
+                    {
+                        Order = order,
+                        PortRequest = portRequest,
+                        PhoneNumbers = numbers,
+                        Message = "All of the Numbers in the Port Request have already been submitted to a vendor."
+                    });
+                }
+
+                // Handle Tollfree numbers
+                var tollfreeLookup = new Dictionary<int, int>();
+                foreach (var code in AreaCode.TollFree)
+                {
+                    tollfreeLookup.Add(code, code);
+                }
+
+                var tollfreeNumbers = new List<PortedPhoneNumber>();
+                var localNumbers = new List<PortedPhoneNumber>();
+
+                // Split the tollfree numbers out from the local numbers.
+                foreach (var number in numbers)
+                {
+                    if (tollfreeLookup.TryGetValue(number.NPA, out var _))
+                    {
+                        tollfreeNumbers.Add(number);
+                    }
+                    else
+                    {
+                        localNumbers.Add(number);
+                    }
+                }
+
+                // Submit the tollfree numbers to TeliMessage in a port request.
+                if (tollfreeNumbers.Any())
+                {
+                    try
+                    {
+                        var teliResponse = await LnpCreate.GetAsync(portRequest, numbers, _teleToken).ConfigureAwait(false);
+                        portRequest.TeliId = teliResponse.data.id;
+                        portRequest.DateSubmitted = DateTime.Now;
+                        portRequest.VendorSubmittedTo = "TeliMessage";
+                        var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
+
+                        foreach (var number in numbers)
+                        {
+                            number.ExternalPortRequestId = teliResponse.data.id;
+                            var checkUpdateId = await number.PutAsync(_postgresql).ConfigureAwait(false);
+                        }
+
+                        numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Fatal($"[PortRequest] Failed to submit port request to Teli.");
+                        Log.Error(ex.Message);
+                        Log.Error(ex.StackTrace.ToString());
+
+                        numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                        return View("PortRequestEdit", new PortRequestResult
+                        {
+                            Order = order,
+                            PortRequest = portRequest,
+                            PhoneNumbers = numbers,
+                            Message = "Failed to submit port request to Teli: " + ex.Message + " " + ex.StackTrace
+                        });
+                    }
+                }
+
+                // Submit the BulkVS numbers to TeliMessage in a port request.
+                if (localNumbers.Any())
+                {
+                    try
+                    {
+                        // Extract the street number from the address.
+                        // https://stackoverflow.com/questions/26122519/how-to-extract-address-components-from-a-string
+                        Match match = Regex.Match(portRequest.Address.Trim(), @"([^\d]*)(\d*)(.*)");
+                        string streetNumber = match.Groups[2].Value;
+
+                        var lookups = new List<LrnBulkCnam>();
+                        foreach (var item in localNumbers)
+                        {
+                            var spidCheck = await LrnBulkCnam.GetAsync(item.PortedDialedNumber, _bulkVSAPIKey).ConfigureAwait(false);
+                            lookups.Add(spidCheck);
+                        }
+
+                        var checkSameSpid = lookups.Select(x => x.spid).Distinct().ToList();
+
+                        // If there's more than one SPID for these numbers then we need to break up the list into multiple separate port requests for BulkVS.
+                        if (checkSameSpid.Count > 1)
+                        {
+                            var portRequests = new List<PortTnRequest>();
+
+                            foreach (var spid in checkSameSpid)
+                            {
+                                var localTNs = lookups.Where(x => x.spid == spid).Select(x => x.tn).ToArray();
+
+                                var bulkVSPortRequest = new PortTnRequest
+                                {
+                                    ReferenceId = string.Empty,
+                                    TNList = localTNs,
+                                    BTN = portRequest.BillingPhone,
+                                    SubscriberType = portRequest.LocationType,
+                                    AccountNumber = portRequest.ProviderAccountNumber,
+                                    Pin = portRequest.ProviderPIN,
+                                    Name = string.IsNullOrWhiteSpace(portRequest.BusinessName) ? $"Accelerate Networks" : $"{portRequest.BusinessName}",
+                                    Contact = string.IsNullOrWhiteSpace(portRequest.BusinessContact) ? $"{portRequest.ResidentialFirstName} {portRequest.ResidentialLastName}" : portRequest.BusinessContact,
+                                    StreetNumber = streetNumber,
+                                    StreetName = $"{portRequest.Address.Substring(streetNumber.Length).Trim()} {portRequest.Address2}",
+                                    City = portRequest.City,
+                                    State = "WA",
+                                    Zip = portRequest.Zip,
+                                    RDD = DateTime.Now.AddDays(3).ToString("yyyy-MM-dd"),
+                                    Time = "20:00:00",
+                                    PortoutPin = portRequest.ProviderPIN,
+                                    TrunkGroup = "SFO",
+                                    Lidb = portRequest.CallerId,
+                                    Sms = true,
+                                    Mms = true,
+                                    SignLoa = false,
+                                    Notify = _emailOrders
+                                };
+
+                                try
+                                {
+                                    var bulkResponse = await bulkVSPortRequest.PutAsync(_bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
+
+                                    if (!string.IsNullOrWhiteSpace(bulkResponse?.OrderId))
+                                    {
+                                        // Rename this to VendorOrderId, rather than TeliId.
+                                        portRequest.TeliId = bulkResponse?.OrderId;
+                                        portRequest.DateSubmitted = DateTime.Now;
+                                        var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
+
+                                        foreach (var number in localTNs)
+                                        {
+                                            var updatedNumber = numbers.Where(x => $"1{x.PortedDialedNumber}" == number).FirstOrDefault();
+                                            updatedNumber.ExternalPortRequestId = bulkResponse?.OrderId;
+                                            var checkUpdateId = await updatedNumber.PutAsync(_postgresql).ConfigureAwait(false);
+                                        }
+
+                                        numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                        responseMessages.Add($"{bulkResponse.Description} - {bulkResponse.Code}");
+                                    }
+                                    else
+                                    {
+                                        Log.Fatal($"[PortRequest] Failed to submit port request to BulkVS.");
+
+                                        numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                        return View("PortRequestEdit", new PortRequestResult
+                                        {
+                                            Order = order,
+                                            Message = $"{bulkResponse.Description} - {bulkResponse.Code}",
+                                            PortRequest = portRequest,
+                                            PhoneNumbers = numbers
+                                        });
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Log.Error($"[PortRequest] Failed to submit port request to BulkVS.");
+                                    Log.Error(ex.Message);
+                                    Log.Error(ex.StackTrace.ToString());
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // When there's just a single SPID for this port request.
+                            var TNs = lookups.Select(x => x.tn).ToArray();
+
+                            var bulkVSPortRequest = new PortTnRequest
+                            {
+                                ReferenceId = string.Empty,
+                                TNList = TNs,
+                                BTN = portRequest.BillingPhone,
+                                SubscriberType = portRequest.LocationType,
+                                AccountNumber = portRequest.ProviderAccountNumber,
+                                Pin = portRequest.ProviderPIN,
+                                Name = string.IsNullOrWhiteSpace(portRequest.BusinessName) ? $"Accelerate Networks" : $"{portRequest.BusinessName}",
+                                Contact = string.IsNullOrWhiteSpace(portRequest.BusinessContact) ? $"{portRequest.ResidentialFirstName} {portRequest.ResidentialLastName}" : portRequest.BusinessContact,
+                                StreetNumber = streetNumber,
+                                StreetName = $"{portRequest.Address.Substring(streetNumber.Length).Trim()} {portRequest.Address2}",
+                                City = portRequest.City,
+                                State = "WA",
+                                Zip = portRequest.Zip,
+                                RDD = DateTime.Now.AddDays(3).ToString("yyyy-MM-dd"),
+                                Time = "20:00:00",
+                                PortoutPin = portRequest.ProviderPIN,
+                                TrunkGroup = "SFO",
+                                Lidb = portRequest.CallerId,
+                                Sms = true,
+                                Mms = true,
+                                SignLoa = false,
+                                Notify = _emailOrders
+                            };
+
+                            var bulkResponse = await bulkVSPortRequest.PutAsync(_bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
+
+                            if (!string.IsNullOrWhiteSpace(bulkResponse?.OrderId))
+                            {
+                                // Rename this to VendorOrderId, rather than TeliId.
+                                portRequest.TeliId = bulkResponse?.OrderId;
+                                portRequest.DateSubmitted = DateTime.Now;
+                                portRequest.VendorSubmittedTo = "BulkVS";
+                                var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
+
+                                foreach (var number in numbers)
+                                {
+                                    number.ExternalPortRequestId = bulkResponse?.OrderId;
+                                    var checkUpdateId = await number.PutAsync(_postgresql).ConfigureAwait(false);
+                                }
+
+                                numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                responseMessages.Add($"{bulkResponse.Description} - {bulkResponse.Code}");
+                            }
+                            else
+                            {
+                                Log.Fatal($"[PortRequest] Failed to submit port request to BulkVS.");
+
+                                return View("PortRequestEdit", new PortRequestResult
+                                {
+                                    Order = order,
+                                    Message = $"{bulkResponse.Description} - {bulkResponse.Code}",
+                                    PortRequest = portRequest,
+                                    PhoneNumbers = numbers
+                                });
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"[PortRequest] Failed to submit port request to BulkVS.");
+                        Log.Error(ex.Message);
+                        Log.Error(ex.StackTrace.ToString());
+
+                        return View("PortRequestEdit", new PortRequestResult
+                        {
+                            Order = order,
+                            PortRequest = portRequest,
+                            PhoneNumbers = numbers,
+                            Message = "Failed to submit port request to BulkVS: " + ex.Message + " " + ex.StackTrace
+                        });
+                    }
+                }
+
+                return View("PortRequestEdit", new PortRequestResult
+                {
+                    Order = order,
+                    PortRequest = portRequest,
+                    PhoneNumbers = numbers,
+                    Message = string.Join(", ", responseMessages.ToArray())
+                });
+            }
+        }
+
 
         [Authorize]
         public async Task<IActionResult> Tests(string testName, string npa, string nxx, string dialedNumber)
