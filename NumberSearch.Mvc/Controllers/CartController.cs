@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
@@ -185,6 +186,9 @@ namespace NumberSearch.Mvc.Controllers
 
                 await HttpContext.Session.LoadAsync().ConfigureAwait(false);
                 var cart = Cart.GetFromSession(HttpContext.Session);
+
+                // This is purely so that we can isolate the state of this call when it fails out.
+                Log.Information(JsonSerializer.Serialize(cart));
 
                 if (order.OrderId != Guid.Empty)
                 {
