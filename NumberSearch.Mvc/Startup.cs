@@ -38,7 +38,12 @@ namespace NumberSearch.Mvc
             services.AddDistributedMemoryCache();
             services.AddResponseCaching();
 
-            services.AddSession();
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromDays(3);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
 
             services.AddControllersWithViews()
                 .AddRazorRuntimeCompilation();
