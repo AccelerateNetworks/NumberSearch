@@ -190,6 +190,16 @@ namespace NumberSearch.Mvc.Controllers
                 // This is purely so that we can isolate the state of this call when it fails out.
                 Log.Information(JsonSerializer.Serialize(cart));
 
+                if (cart.ProductOrders is null || !cart.ProductOrders.Any())
+                {
+                    Log.Error("[Checkout] There are no product orders in this sessions cart. How did we get here???");
+                    // Reset the session and clear the Cart.
+                    HttpContext.Session.Clear();
+
+                    return Redirect($"/Cart");
+                }
+
+
                 if (order.OrderId != Guid.Empty)
                 {
                     var orderExists = await Order.GetByIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
