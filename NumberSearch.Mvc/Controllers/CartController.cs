@@ -196,9 +196,8 @@ namespace NumberSearch.Mvc.Controllers
                     // Reset the session and clear the Cart.
                     HttpContext.Session.Clear();
 
-                    return Redirect($"/Cart");
+                    return RedirectToAction("Cart", "Checkout");
                 }
-
 
                 if (order.OrderId != Guid.Empty)
                 {
