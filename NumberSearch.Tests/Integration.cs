@@ -777,7 +777,7 @@ namespace NumberSearch.Tests
         public async Task BulkVSLrnLookupAsync()
         {
             // Arrange
-            var number = "2068588757";
+            var number = "2064083008";
 
             // Act
             var result = await LrnBulkCnam.GetAsync(number, bulkVSKey).ConfigureAwait(false);
