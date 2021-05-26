@@ -6,7 +6,7 @@
 
 <div class="container">
     <br />
-    <h1 class="text-danger">Error.</h1>
+    <h1 class="text-danger">😢 Error.</h1>
     <h2 class="text-danger">An error occurred while processing your request.</h2>
 
     @if (Model.ShowRequestId)
@@ -15,7 +15,10 @@
             <strong>Request ID:</strong> <code>@Model.RequestId</code>
         </p>
     }
-    <h1><a target="_blank" href="https://github.com/AccelerateNetworks/NumberSearch/issues/new/choose">Tell us about this issue on Github</a></h1>
+    <p>We're sorry. Please try again later or call us directly at 1-(206)-858-8757.</p>
+
+    <a class="btn btn-lg btn-outline-success mb-4" target="_blank" href="https://github.com/AccelerateNetworks/NumberSearch/issues/new/choose">Tell us about this issue on Github</a>
+
     @*<h3>Development Mode</h3>
         <p>
             Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
