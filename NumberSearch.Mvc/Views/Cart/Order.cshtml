@@ -15,6 +15,49 @@
     var productOrders = Model?.ProductOrdersToDictionary();
 
 }
+<script type="text/javascript">
+    function handleSearchQuery(textBox) {
+        var route = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest?text=';
+        var suffix = '&maxSuggestions=5&countryCode=USA&f=pjson';
+        fetch(`${route}${textBox.value}${suffix}`)
+            .then(
+                function (response) {
+                    if (response.status !== 200) {
+                        console.log('Looks like there was a problem. Status Code: ' +
+                            response.status);
+                        return;
+                    }
+
+                    // Examine the text in the response
+                    response.json().then(function (data) {
+                        console.log(data);
+
+                        var options = '';
+
+                        for (var i = 0; i < data.suggestions.length; i++) {
+                            var addressElements = data.suggestions[i].text.split(", ");
+                            options += '<option value="' + addressElements[0] + '" />';
+                        }
+
+                        var datalist = document.createElement("datalist");
+                        datalist.id = 'realaccountoptions';
+                        datalist.innerHTML = options;
+                        var textBox = document.getElementById("address");
+                        var check = document.getElementById('realaccountoptions');
+                        if (typeof (check) != 'undefined' && check != null) {
+                            check.remove();
+                        }
+                        textBox.appendChild(datalist);
+                        textBox.setAttribute('list', 'realaccountoptions');
+                        console.log(datalist);
+                    });
+                }
+            )
+            .catch(function (err) {
+                console.log('Fetch Error :-S', err);
+            });
+    }
+</script>
 
 <div class="container">
     <br />
@@ -442,9 +485,9 @@
                     </div>
                 </div>
 
-                <div class="mb-3">
+                <div class="mb-3" id="searchForm">
                     <label for="address">Address</label>
-                    <input asp-for="Order.Address" type="text" class="form-control" id="address" placeholder="1234 Main St" required>
+                    <input asp-for="Order.Address" type="text" class="form-control" id="address" placeholder="1234 Main St" onchange="handleSearchQuery(this)" autocomplete="off" oninput="handleSearchQuery(this)" required>
                     <div class="invalid-feedback">
                         Please enter your shipping address.
                     </div>
