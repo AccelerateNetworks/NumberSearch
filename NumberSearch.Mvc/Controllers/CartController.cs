@@ -209,6 +209,28 @@ namespace NumberSearch.Mvc.Controllers
                         // Prevent the background work from happening before it's queued up.
                         order.BackgroundWorkCompleted = true;
 
+                        // Format the address information
+                        Log.Information($"[Checkout] Parsing address data from {order.Address}");
+                        var addressParts = order.Address.Split(", ");
+                        if (addressParts.Length > 4)
+                        {
+                            order.Address = addressParts[0];
+                            order.City = addressParts[1];
+                            order.State = addressParts[2];
+                            order.Zip = addressParts[3];
+                            Log.Information($"[Checkout] Address: {order.Address} City: {order.City} State: {order.State} Zip: {order.Zip}");
+                        }
+                        else
+                        {
+                            Log.Error($"[Checkout] Failed automatic address formating.");
+                        }
+
+                        // Fillout the address2 information from its components.
+                        if (!string.IsNullOrWhiteSpace(order.AddressUnitNumber))
+                        {
+                            order.Address2 = $"{order.AddressUnitType} {order.AddressUnitNumber}";
+                        }
+
                         // Save to db.
                         var submittedOrder = await order.PostAsync(_postgresql).ConfigureAwait(false);
 
