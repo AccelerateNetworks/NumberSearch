@@ -223,7 +223,7 @@
                 <div class="mb-3">
                     <div class="mb-3" id="searchForm">
                         <label for="address">Service Address</label>
-                        <input asp-for="PortRequest.Address" type="text" class="form-control" id="address" placeholder="5432 5th Ave" onchange="handleSearchQuery(this)" pattern=".+[,].+" autocomplete="off" oninput="handleSearchQuery(this)" required>
+                        <input asp-for="PortRequest.Address" type="text" class="form-control" id="address" placeholder="5432 5th Ave" onchange="handleSearchQuery(this)" pattern=".+[,].+" oninput="handleSearchQuery(this)" required>
                         <small class="text-muted">
                             Enter the service address for the account with your existing provider.
                         </small>
