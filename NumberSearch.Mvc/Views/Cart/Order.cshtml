@@ -488,7 +488,7 @@
                 {
                     <div class="mb-3" id="searchForm">
                         <label for="address">Address</label>
-                        <input asp-for="Order.Address" type="text" class="form-control" id="address" placeholder="5432 5th Ave" onchange="handleSearchQuery(this)" pattern=".+[,].+" autocomplete="off" oninput="handleSearchQuery(this)">
+                        <input asp-for="Order.Address" type="text" class="form-control" id="address" readonly>
                         <small class="text-muted">
                             Enter the shipping address for this order, or the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
                         </small>
@@ -667,8 +667,9 @@
                     if (ported.Any() && Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted > DateTime.MinValue)
                     {
                         <hr class="mb-4">
-                        <input type="text" hidden name="AddPortingInfo" value="true" />
-                        <button asp-controller="Cart" asp-action="Order" asp-route-id="@Model?.Order?.OrderId" class="btn btn-primary btn-lg btn-block" type="submit" value="Submit">Add Porting Information</button>
+                        @*<input type="text" hidden name="AddPortingInfo" value="true" />
+                        <button asp-controller="Cart" asp-action="PortingInformation" asp-route-id="@Model?.Order?.OrderId" class="btn btn-primary btn-lg btn-block" type="submit" value="Submit">Add Porting Information</button>*@
+                        <a asp-controller="Cart" asp-action="PortingInformation" asp-route-id="@Model?.Order?.OrderId" class="btn btn-primary btn-lg btn-block">Add Porting Information</a>
                     }
                     else if (Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted == DateTime.MinValue)
                     {

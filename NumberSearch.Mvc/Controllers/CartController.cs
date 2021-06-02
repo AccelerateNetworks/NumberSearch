@@ -175,6 +175,39 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("Cart/PortingInformation/{Id}")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> PortingInformationForOrderByIdAsync(Guid Id)
+        {
+            if (Id != Guid.Empty)
+            {
+                var order = await Order.GetByIdAsync(Id, _postgresql).ConfigureAwait(false);
+                var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                if (portedPhoneNumbers.Any())
+                {
+                    return View("Success", new OrderWithPorts
+                    {
+                        Order = order,
+                        PortRequest = portRequest,
+                        PhoneNumbers = portedPhoneNumbers
+                    });
+                }
+                else
+                {
+                    return Redirect($"/Cart/Order/{order.OrderId}");
+
+                }
+
+            }
+            else
+            {
+                return Redirect($"/Cart/");
+            }
+        }
+
         [HttpPost("Cart/Submit")]
         [ValidateAntiForgeryToken]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
