@@ -484,18 +484,31 @@
                     </small>
                 </div>
 
-                <div class="mb-3" id="searchForm">
-                    <label for="address">Address</label>
-                    <input asp-for="Order.Address" type="text" class="form-control" id="address" placeholder="5432 5th Ave" onchange="handleSearchQuery(this)" pattern=".+[,].+" autocomplete="off" oninput="handleSearchQuery(this)" required>
-                    <small class="text-muted">
-                        Enter the shipping address for this order, or the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
-                    </small>
-                </div>
+                @if (Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted > DateTime.MinValue)
+                {
+                    <div class="mb-3" id="searchForm">
+                        <label for="address">Address</label>
+                        <input asp-for="Order.Address" type="text" class="form-control" id="address" placeholder="5432 5th Ave" onchange="handleSearchQuery(this)" pattern=".+[,].+" autocomplete="off" oninput="handleSearchQuery(this)">
+                        <small class="text-muted">
+                            Enter the shipping address for this order, or the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
+                        </small>
+                    </div>
+                }
+                else
+                {
+                    <div class="mb-3" id="searchForm">
+                        <label for="address">Address</label>
+                        <input asp-for="Order.Address" type="text" class="form-control" id="address" placeholder="5432 5th Ave" onchange="handleSearchQuery(this)" pattern=".+[,].+" autocomplete="off" oninput="handleSearchQuery(this)" required>
+                        <small class="text-muted">
+                            Enter the shipping address for this order, or the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
+                        </small>
+                    </div>
+                }
+
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <label for="unitType">Unit Type <span class="text-muted">(Optional)</span></label>
                         <select asp-for="Order.AddressUnitType" class="custom-select d-block w-100" id="unitType">
-                            <option></option>
                             @{
                                 var unitTypes = new string[] {
                                 "Apartment",

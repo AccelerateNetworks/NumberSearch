@@ -7,20 +7,14 @@
     <table class="table table-striped table-borderless table-hover" id="table">
         <thead>
             <tr>
-                <th scope="col">
-                    Date Ordered
+                <th>
+                    Order Information
                 </th>
-                <th scope="col">
+                <th>
                     Customer Information
                 </th>
                 <th>
-                    Cusomter Notes
-                </th>
-                <th scope="col">
                     Products Ordered
-                </th>
-                <th>
-                    Action
                 </th>
             </tr>
         </thead>
@@ -29,94 +23,140 @@
                 foreach (var order in Model.Orders)
                 {
                     var businessName = string.IsNullOrWhiteSpace(order.Order.BusinessName) ? "Consumer" : order.Order.BusinessName;
-                    <tr>
-                        <th scope="row" data-order="@order.Order.DateSubmitted.Ticks">
-                            <div class="btn-group" role="group" aria-label="Basic example">
-                                <a href="https://acceleratenetworks.com/cart/order/@order.Order.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                                    Order
-                                </a>
-                                @if (order?.PortRequest is null)
+                    var nextStep = "Next Step";
+                    var pillColor = "danger";
+                    // The order is completed, we're good.
+                    if (order?.Order?.Completed is true)
+                    {
+                        nextStep = "🎉 Done, Good Job";
+                        pillColor = "success";
+                    }
+                    // The order is not completed, and is stale.
+                    else if (order?.Order?.Completed is not true && order?.Order?.DateSubmitted <
+                        DateTime.Now.AddDays(-14))
+                    {
+                        nextStep = "⭕ Contact the Customer, the order is Stale";
+                        pillColor = "warning";
+                    }
+                    else if (order?.Order?.Completed is not true)
+                    {
+                        if (order?.PortRequest is null && order.ProductOrders.Where(x => x.PortedPhoneNumberId.HasValue is true).Any())
+                        {
+                            nextStep = "⭕ Get the Porting information from the Customer";
+                            pillColor = "danger";
+                        }
+                        else if (order?.PortRequest is not null)
+                        {
+                            if (order?.PortRequest?.Completed is true)
+                            {
+                                if (order?.Order?.OnsiteInstallation is true)
                                 {
-                                    <a class="btn btn-outline-info disabled">
-                                        Port
-                                    </a>
+                                    nextStep = $"⭕ Install the cusomter's hardware onsite {order?.Order?.InstallDate.GetValueOrDefault().ToShortDateString()}";
+                                    pillColor = "info";
                                 }
                                 else
                                 {
-                                    <a href="/Home/PortRequests/@order?.Order?.OrderId" class="btn btn-info">
-                                        Port
-                                    </a>
+                                    nextStep = $"⭕ Ship the hardware to the customer for self-install";
+                                    pillColor = "info";
                                 }
-                                <a href="/Home/Emails/@order?.Order?.OrderId" class="btn btn-warning text-light">
-                                    Emails
-                                </a>
-                                <a href="/Home/NumberOrder/@order?.Order?.OrderId" class="btn btn-info">
-                                    Purchased
-                                </a>
-                                <a href="https://www.google.com/maps/place/@order?.Order?.Address,+@order?.Order?.City,+@order?.Order?.State+@order?.Order?.Zip/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
-                                    Map
-                                </a>
-                            </div>
+                            }
+                            else
+                            {
+                                nextStep = "⭕ Port the Customer's Numbers to our Network";
+                                pillColor = "danger";
+                            }
+                        }
+                        else
+                        {
+                            if (order?.Order?.OnsiteInstallation is true)
+                            {
+                                nextStep = $"⭕ Install the cusomter's hardware onsite";
+                                pillColor = "info";
+                            }
+                            else
+                            {
+                                nextStep = $"⭕ Ship the hardware to the customer for self-install";
+                                pillColor = "info";
+                            }
+                        }
+                    }
+
+                    <tr>
+                        <td data-order="@order.Order.DateSubmitted.Ticks">
+                            <h3>
+                                <span class="badge badge-@pillColor">
+                                    @nextStep
+                                </span>
+                            </h3>
                             <h4 class="d-flex justify-content-between align-items-center mt-3">
                                 <span class="badge badge-info badge-pill">
                                     @order.Order.DateSubmitted
                                 </span>
                             </h4>
-                            <div class="btn-group mt-2" role="group" aria-label="Basic example">
-                                @{
-                                    if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceId))
-                                    {
-                                        <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
-                                            Upfront
-                                        </a>
-                                    }
-                                    else
-                                    {
-                                        <a class="btn btn-outline-success disabled">
-                                            Upfront
-                                        </a>
-                                    }
-                                }
-                                @{
-                                    if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceReoccuringId))
-                                    {
-                                        <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceReoccuringId/edit" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                                            Recurring
-                                        </a>
-                                    }
-                                    else
-                                    {
-                                        <a class="btn btn-outline-primary disabled">
-                                            Recurring
-                                        </a>
-                                    }
-                                }
-                                @{
-                                    if (!string.IsNullOrWhiteSpace(order.Order.BillingClientId))
-                                    {
-                                        <a href="https://billing.acceleratenetworks.com/clients/@order?.Order?.BillingClientId/edit" class="btn btn-info" target="_blank" rel="noopener noreferrer">
-                                            Client
-                                        </a>
-                                    }
-                                    else
-                                    {
-                                        <a class="btn btn-outline-info disabled">
-                                            Client
-                                        </a>
-                                    }
-                                }
-                            </div>
-                        </th>
-                        <td>
                             <strong>Business Name</strong>
                             <p>@businessName</p>
+                            <p>
+                                <div class="btn-group" role="group" aria-label="Basic example">
+                                    <a href="/Home/Order/@order?.Order?.OrderId" class="btn btn-danger">
+                                        Edit the Order
+                                    </a>
+                                    <a href="https://acceleratenetworks.com/cart/order/@order.Order.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                                        Customer's View
+                                    </a>
+                                    @if (order?.PortRequest is not null)
+                                    {
+                                        <a href="/Home/PortRequests/@order?.Order?.OrderId" class="btn btn-info">
+                                            Related Port Request
+                                        </a>
+                                    }
+                                    @if (order.ProductOrders.Where(x => !string.IsNullOrWhiteSpace(x.DialedNumber)).Any())
+                                    {
+                                        <a href="/Home/NumberOrder/@order?.Order?.OrderId" class="btn btn-info">
+                                            Related Purchased Numbers
+                                        </a>
+                                    }
+                                    <a href="/Home/Emails/@order?.Order?.OrderId" class="btn btn-warning text-light">
+                                        Related Emails
+                                    </a>
+                                </div>
+                            </p>
+                            <p>
+                                <div class="btn-group mt-2" role="group" aria-label="Basic example">
+                                    @if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceId))
+                                    {
+                                        <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
+                                            Upfront Invoice
+                                        </a>
+                                    }
+
+                                    @if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceReoccuringId))
+                                    {
+                                        <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceReoccuringId/edit" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                                            Recurring Invoice
+                                        </a>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(order.Order.BillingClientId))
+                                    {
+                                        <a href="https://billing.acceleratenetworks.com/clients/@order?.Order?.BillingClientId/edit" class="btn btn-info" target="_blank" rel="noopener noreferrer">
+                                            Billing Client
+                                        </a>
+                                    }
+                                </div>
+                            </p>
+                        </td>
+                        <td scope="row">
                             <strong>Customer Name</strong>
                             <p>
                                 @order.Order.FirstName
                                 @order.Order.LastName
+                                <br />
+                                @order.Order.Email
                             </p>
-                            <strong>Email</strong>
-                            <p>@order.Order.Email</p>
+                            <p>
+                                <a href="mailto:@order.Order.Email" class="btn btn-success" target="_blank" rel="noopener noreferrer">
+                                    Email this Client
+                                </a>
+                            </p>
                             <strong>Address</strong>
                             <p>
                                 @order.Order.Address
@@ -129,14 +169,11 @@
 
                                 @order.Order.Zip
                             </p>
-                        </td>
-                        <td>
-                            @{
-                                if (!string.IsNullOrWhiteSpace(order.Order.CustomerNotes))
-                                {
-                                    <p>@order.Order.CustomerNotes</p>
-                                }
-                            }
+                            <p>
+                                <a href="https://www.google.com/maps/place/@order?.Order?.Address,+@order?.Order?.City,+@order?.Order?.State+@order?.Order?.Zip/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+                                    View on Map
+                                </a>
+                            </p>
                         </td>
                         <td>
                             @{
@@ -247,11 +284,13 @@
                                     </ul>
                                 }
                             }
-                        </td>
-                        <td>
-                            <a href="/Home/Order/@order?.Order?.OrderId" class="btn btn-danger">
-                                Edit
-                            </a>
+                            @{
+                                if (!string.IsNullOrWhiteSpace(order.Order.CustomerNotes))
+                                {
+                                    <strong>Customer Notes</strong>
+                                    <p>@order.Order.CustomerNotes</p>
+                                }
+                            }
                         </td>
                     </tr>
                 }

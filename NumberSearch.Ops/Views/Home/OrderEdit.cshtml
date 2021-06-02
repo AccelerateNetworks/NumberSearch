@@ -2,6 +2,51 @@
 @{
     ViewData["Title"] = "Order";
 }
+
+<script type="text/javascript">
+    function handleSearchQuery(textBox) {
+        var route = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest?text=';
+        var suffix = '&maxSuggestions=5&countryCode=USA&f=pjson';
+        fetch(`${route}${textBox.value}${suffix}`)
+            .then(
+                function (response) {
+                    if (response.status !== 200) {
+                        console.log('Looks like there was a problem. Status Code: ' +
+                            response.status);
+                        return;
+                    }
+
+                    // Examine the text in the response
+                    response.json().then(function (data) {
+                        console.log(data);
+
+                        var options = '';
+
+                        for (var i = 0; i < data.suggestions.length; i++) {
+                            options += '<option value="' + data.suggestions[i].text + '" />';
+                        }
+
+                        var datalist = document.createElement("datalist");
+                        datalist.id = 'realaccountoptions';
+                        datalist.innerHTML = options;
+                        var textBox = document.getElementById("address");
+                        var check = document.getElementById('realaccountoptions');
+                        if (typeof (check) != 'undefined' && check != null) {
+                            check.remove();
+                        }
+                        textBox.appendChild(datalist);
+                        textBox.setAttribute('list', 'realaccountoptions');
+                        console.log(datalist);
+                    });
+                }
+            )
+            .catch(function (err) {
+                console.log('Fetch Error :-S', err);
+            });
+    }
+</script>
+
+
 <h1 class="display-4 p-3">🛒 Order @Model?.OrderId</h1>
 <div class="">
     <div class="btn-group" role="group" aria-label="Basic example">
@@ -110,11 +155,60 @@
             </div>
         </div>
 
-        <div class="mb-3">
+        <div class="mb-3" id="searchForm">
             <label for="address">Address</label>
-            <input asp-for="Address" type="text" class="form-control" id="address" placeholder="1234 Main St" required>
-            <div class="invalid-feedback">
-                Please enter your shipping address.
+            <input asp-for="Address" type="text" class="form-control" id="address" placeholder="5432 5th Ave" onchange="handleSearchQuery(this)" pattern=".+[,].+" autocomplete="off" oninput="handleSearchQuery(this)" required>
+            <small class="text-muted">
+                Enter the shipping address for this order, or the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
+            </small>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="unitType">Unit Type <span class="text-muted">(Optional)</span></label>
+                <select asp-for="AddressUnitType" class="custom-select d-block w-100" id="unitType">
+                    <option></option>
+                    @{
+                        var unitTypes = new string[] {
+                                "Apartment",
+                                "Basement",
+                                "Building",
+                                "Department",
+                                "Floor",
+                                "Front",
+                                "Hanger",
+                                "Lobby",
+                                "Lot",
+                                "Lower",
+                                "Office",
+                                "Penthouse",
+                                "Pier",
+                                "Rear",
+                                "Room",
+                                "Side",
+                                "Space",
+                                "Suite",
+                                "Trailer",
+                                "Unit",
+                                "Upper",
+                            };
+
+                        foreach (var unitType in unitTypes)
+                        {
+                            <option>@unitType</option>
+                        }
+                    }
+                </select>
+                <small class="text-muted">
+                    Optionally enter a unit type (ex. Apartment)
+                </small>
+            </div>
+            <div class="col-md-8 mb-3">
+                <label for="address2">Unit Number <span class="text-muted">(Optional)</span></label>
+                <input asp-for="AddressUnitNumber" type="text" class="form-control" id="address2" placeholder="307">
+                <small class="text-muted">
+                    Optionally enter a unit number (ex. 307)
+                </small>
             </div>
         </div>
 
@@ -124,86 +218,18 @@
         </div>
 
         <div class="row">
-            <div class="col-md-5 mb-3">
-                <label for="country">City</label>
-                <input asp-for="City" type="text" class="form-control" id="city" placeholder="Seattle" required>
-                <div class="invalid-feedback">
-                    Please enter your shipping city.
-                </div>
+            <div class="col-md-4 mb-3">
+                <label for="unitType">City</label>
+                <input asp-for="City" type="text" class="form-control" id="address2" readonly>
+
             </div>
             <div class="col-md-4 mb-3">
-                <label for="state">State</label>
-                <select asp-for="State" class="custom-select d-block w-100" id="state" required>
-                    <option value="">Choose...</option>
-                    @{
-                        var states = new string[] { "Alabama",
-                                                        "Alaska",
-                                                        "Arizona",
-                                                        "Arkansas",
-                                                        "California",
-                                                        "Colorado",
-                                                        "Connecticut",
-                                                        "Delaware",
-                                                        "Florida",
-                                                        "Georgia",
-                                                        "Hawaii",
-                                                        "Idaho",
-                                                        "Illinois",
-                                                        "Indiana",
-                                                        "Iowa",
-                                                        "Kansas",
-                                                        "Kentucky",
-                                                        "Louisiana",
-                                                        "Maine",
-                                                        "Maryland",
-                                                        "Massachusetts",
-                                                        "Michigan",
-                                                        "Minnesota",
-                                                        "Mississippi",
-                                                        "Missouri",
-                                                        "Montana",
-                                                        "Nebraska",
-                                                        "Nevada",
-                                                        "New Hampshire",
-                                                        "New Jersey",
-                                                        "New Mexico",
-                                                        "New York",
-                                                        "North Carolina",
-                                                        "North Dakota",
-                                                        "Ohio",
-                                                        "Oklahoma",
-                                                        "Oregon",
-                                                        "Pennsylvania",
-                                                        "Rhode Island",
-                                                        "South Carolina",
-                                                        "South Dakota",
-                                                        "Tennessee",
-                                                        "Texas",
-                                                        "Utah",
-                                                        "Vermont",
-                                                        "Virginia",
-                                                        "Washington",
-                                                        "West Virginia",
-                                                        "Wisconsin",
-                                                        "Wyoming"
-                                                        };
-
-                        foreach (var state in states)
-                        {
-                            <option>@state</option>
-                        }
-                    }
-                </select>
-                <div class="invalid-feedback">
-                    Please provide a valid state.
-                </div>
+                <label for="address2">State</label>
+                <input asp-for="State" type="text" class="form-control" id="address2" readonly>
             </div>
-            <div class="col-md-3 mb-3">
-                <label for="zip">Zip</label>
-                <input asp-for="Zip" type="text" class="form-control" id="zip" placeholder="" required>
-                <div class="invalid-feedback">
-                    Zip code required.
-                </div>
+            <div class="col-md-4 mb-3">
+                <label for="address2">Zip</label>
+                <input asp-for="Zip" type="text" class="form-control" id="address2" readonly>
             </div>
         </div>
         <h4 class="mb-3">Installation Information</h4>
