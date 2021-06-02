@@ -23,25 +23,23 @@
 
                     // Examine the text in the response
                     response.json().then(function (data) {
-                        console.log(data);
-
                         var options = '';
 
                         for (var i = 0; i < data.suggestions.length; i++) {
                             options += '<option value="' + data.suggestions[i].text + '" />';
                         }
 
-                        var datalist = document.createElement("datalist");
-                        datalist.id = 'realaccountoptions';
+                        var datalist = document.getElementById("addressOptions");
                         datalist.innerHTML = options;
                         var textBox = document.getElementById("address");
-                        var check = document.getElementById('realaccountoptions');
-                        if (typeof (check) != 'undefined' && check != null) {
-                            check.remove();
-                        }
-                        textBox.appendChild(datalist);
-                        textBox.setAttribute('list', 'realaccountoptions');
+                        //var check = document.getElementById('realaccountoptions');
+                        //if (typeof (check) != 'undefined' && check != null) {
+                        //    check.remove();
+                        //}
+                        //textBox.appendChild(datalist);
+                        //textBox.setAttribute('list', 'realaccountoptions');
                         console.log(datalist);
+                        textBox.focus();
                     });
                 }
             )
@@ -223,7 +221,9 @@
                 <div class="mb-3">
                     <div class="mb-3" id="searchForm">
                         <label for="address">Service Address</label>
-                        <input asp-for="PortRequest.Address" type="text" class="form-control" id="address" placeholder="5432 5th Ave" onchange="handleSearchQuery(this)" pattern=".+[,].+" oninput="handleSearchQuery(this)" required>
+                        <input asp-for="PortRequest.Address" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" list="addressOptions" autocomplete="off" required>
+                        <datalist id="addressOptions">
+                        </datalist>
                         <small class="text-muted">
                             Enter the service address for the account with your existing provider.
                         </small>
