@@ -18,25 +18,17 @@
 
                     // Examine the text in the response
                     response.json().then(function (data) {
-                        console.log(data);
-
                         var options = '';
 
                         for (var i = 0; i < data.suggestions.length; i++) {
                             options += '<option value="' + data.suggestions[i].text + '" />';
                         }
 
-                        var datalist = document.createElement("datalist");
-                        datalist.id = 'realaccountoptions';
+                        var datalist = document.getElementById("addressOptions");
                         datalist.innerHTML = options;
                         var textBox = document.getElementById("address");
-                        var check = document.getElementById('realaccountoptions');
-                        if (typeof (check) != 'undefined' && check != null) {
-                            check.remove();
-                        }
-                        textBox.appendChild(datalist);
-                        textBox.setAttribute('list', 'realaccountoptions');
                         console.log(datalist);
+                        textBox.focus();
                     });
                 }
             )
@@ -51,13 +43,13 @@
 <div class="">
     <div class="btn-group" role="group" aria-label="Basic example">
         <a href="https://acceleratenetworks.com/cart/order/@Model?.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-            Order
+            Customer's View
         </a>
         <a href="/Home/Emails/@Model?.OrderId" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
-            Emails
+            Related Emails
         </a>
         <a href="https://www.google.com/maps/place/@Model?.Address,+@Model?.City,+@Model?.State+@Model?.Zip/" class="btn btn-outline-secondary" target="_blank" rel="noopener noreferrer">
-            Map
+            View on Map
         </a>
     </div>
     <h4 class="d-flex justify-content-between align-items-center mt-3">
@@ -70,7 +62,7 @@
             if (!string.IsNullOrWhiteSpace(Model?.BillingInvoiceId))
             {
                 <a href="https://billing.acceleratenetworks.com/invoices/@Model?.BillingInvoiceId/edit" class="btn btn-outline-primary" target="_blank" rel="noopener noreferrer">
-                    Upfront
+                    Upfront Billing Invoice
                 </a>
             }
         }
@@ -78,7 +70,7 @@
             if (!string.IsNullOrWhiteSpace(Model?.BillingInvoiceReoccuringId))
             {
                 <a href="https://billing.acceleratenetworks.com/invoices/@Model?.BillingInvoiceReoccuringId/edit" class="btn btn-outline-success" target="_blank" rel="noopener noreferrer">
-                    Recurring
+                    Recurring Billing Invoice
                 </a>
             }
         }
@@ -86,7 +78,7 @@
             if (!string.IsNullOrWhiteSpace(Model?.BillingClientId))
             {
                 <a href="https://billing.acceleratenetworks.com/clients/@Model?.BillingClientId/edit" class="btn btn-outline-info" target="_blank" rel="noopener noreferrer">
-                    Client
+                    Billing System Client
                 </a>
             }
         }
@@ -108,7 +100,7 @@
                 <input asp-for="BackgroundWorkCompleted" type="checkbox" class="form-control">
             </div>
             <div class="col mb-3">
-                <label for="completed">Completed</label>
+                <label for="completed">Mark This Order as Completed</label>
                 <input asp-for="Completed" type="checkbox" class="form-control">
             </div>
         </div>
@@ -157,7 +149,9 @@
 
         <div class="mb-3" id="searchForm">
             <label for="address">Address</label>
-            <input asp-for="Address" type="text" class="form-control" id="address" placeholder="5432 5th Ave" onchange="handleSearchQuery(this)" pattern=".+[,].+" autocomplete="off" oninput="handleSearchQuery(this)" required>
+            <input asp-for="Address" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" list="addressOptions" autocomplete="off" required>
+            <datalist id="addressOptions">
+            </datalist>
             <small class="text-muted">
                 Enter the shipping address for this order, or the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
             </small>

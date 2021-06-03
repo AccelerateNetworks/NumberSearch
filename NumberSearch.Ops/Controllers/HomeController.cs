@@ -995,6 +995,22 @@ namespace NumberSearch.Ops.Controllers
 
                 portRequest.PortRequestId = fromDb.PortRequestId;
 
+                // Format the address information
+                Log.Information($"[Checkout] Parsing address data from {portRequest.Address}");
+                var addressParts = portRequest.Address.Split(", ");
+                if (addressParts.Length > 4)
+                {
+                    portRequest.Address = addressParts[0];
+                    portRequest.City = addressParts[1];
+                    portRequest.State = addressParts[2];
+                    portRequest.Zip = addressParts[3];
+                    Log.Information($"[Checkout] Address: {portRequest.Address} City: {portRequest.City} State: {portRequest.State} Zip: {portRequest.Zip}");
+                }
+                else
+                {
+                    Log.Error($"[Checkout] Failed automatic address formating.");
+                }
+
                 var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
 
                 portRequest = await PortRequest.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);

@@ -3,20 +3,58 @@
     ViewData["Title"] = "Port Request";
     var unSubmitted = Model?.PhoneNumbers?.Where(x => string.IsNullOrWhiteSpace(x.ExternalPortRequestId)).ToList();
 }
+
+<script type="text/javascript">
+    function handleSearchQuery(textBox) {
+        var route = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest?text=';
+        var suffix = '&maxSuggestions=5&countryCode=USA&f=pjson';
+        fetch(`${route}${textBox.value}${suffix}`)
+            .then(
+                function (response) {
+                    if (response.status !== 200) {
+                        console.log('Looks like there was a problem. Status Code: ' +
+                            response.status);
+                        return;
+                    }
+
+                    // Examine the text in the response
+                    response.json().then(function (data) {
+                        var options = '';
+
+                        for (var i = 0; i < data.suggestions.length; i++) {
+                            options += '<option value="' + data.suggestions[i].text + '" />';
+                        }
+
+                        var datalist = document.getElementById("addressOptions");
+                        datalist.innerHTML = options;
+                        var textBox = document.getElementById("address");
+                        console.log(datalist);
+                        textBox.focus();
+                    });
+                }
+            )
+            .catch(function (err) {
+                console.log('Fetch Error :-S', err);
+            });
+    }
+</script>
+
 <h1 class="display-4 p-3">🚢 Port Requests</h1>
 <div class="pb-3">
-    <a class="btn btn-outline-primary" href="/Home/PortRequests">Return to List</a>
-    <a href="https://acceleratenetworks.com/cart/order/@Model?.PortRequest?.OrderId" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
-        Order
-    </a>
+    @if (Model?.PortRequest?.OrderId is not null)
+    {
+        <a href="https://acceleratenetworks.com/cart/order/@Model?.Order?.OrderId" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+            Customer's View
+        </a>
+    }
     <a href="/Home/Emails/@Model?.PortRequest?.OrderId" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
-        Emails
+        Related Emails
     </a>
     @{
         if (Model?.PortRequest is null)
         {
             <div class="alert alert-danger mt-3" role="alert">
-                This port request has not yet been submitted by the customer.
+                This port request has not yet been submitted by the customer. <a href="https://acceleratenetworks.com/Cart/PortingInformation/{@Model?.Order?.OrderId}" target="_blank" rel="noopener noreferrer">Please make them fill out this form.</a>
             </div>
         }
     }
@@ -142,15 +180,14 @@
         </div>
     </div>
 
-    <div class="mb-3">
+    <div class="mb-3" id="searchForm">
         <label for="address">Service Address</label>
-        @{
-            var address = string.IsNullOrWhiteSpace(Model?.PortRequest?.Address) ? Model?.Order?.Address : Model?.PortRequest?.Address;
-        }
-        <input asp-for="PortRequest.Address" type="text" value="@address" class="form-control" id="address" placeholder="1234 Main St" title="The physical address of where these phone numbers are being used. This information is also on file with your current provider." required>
-        <div class="invalid-feedback">
-            Please enter your shipping address.
-        </div>
+        <input asp-for="PortRequest.Address" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" list="addressOptions" autocomplete="off" required>
+        <datalist id="addressOptions">
+        </datalist>
+        <small class="text-muted">
+            Enter the shipping address for this order, or the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
+        </small>
     </div>
 
     <div class="mb-3">
@@ -161,109 +198,26 @@
         <input asp-for="PortRequest.Address2" type="text" value="@address2" class="form-control" id="address2" title="The city of the service address listed above." placeholder="Apartment or suite">
     </div>
 
-    <div class="row">
-        <div class="col-md-5 mb-3">
-            <label for="address">Service City</label>
-            @{
-                var city = string.IsNullOrWhiteSpace(Model?.PortRequest?.City) ? Model?.Order?.City : Model?.PortRequest?.City;
-            }
-            <input asp-for="PortRequest.City" type="text" value="@city" class="form-control" id="city" placeholder="Seattle" title="The physical address of where these phone numbers are being used. This information is also on file with your current provider." required>
-            <div class="invalid-feedback">
-                Please enter a valid city.
+    @if (!string.IsNullOrWhiteSpace(Model?.PortRequest?.City))
+    {
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="unitType">City</label>
+                <input asp-for="PortRequest.City" type="text" class="form-control" id="address2" readonly>
+
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="address2">State</label>
+                <input asp-for="PortRequest.State" type="text" class="form-control" id="address2" readonly>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="address2">Zip</label>
+                <input asp-for="PortRequest.Zip" type="text" class="form-control" id="address2" readonly>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <label for="state">Service State</label>
-            <select asp-for="PortRequest.State" class="custom-select d-block w-100" id="state" title="The state of the service address listed above." required>
-                <option value="">Choose...</option>
-                @{
-                    var states = new string[] { "Alabama",
-                                                        "Alaska",
-                                                        "Arizona",
-                                                        "Arkansas",
-                                                        "California",
-                                                        "Colorado",
-                                                        "Connecticut",
-                                                        "Delaware",
-                                                        "Florida",
-                                                        "Georgia",
-                                                        "Hawaii",
-                                                        "Idaho",
-                                                        "Illinois",
-                                                        "Indiana",
-                                                        "Iowa",
-                                                        "Kansas",
-                                                        "Kentucky",
-                                                        "Louisiana",
-                                                        "Maine",
-                                                        "Maryland",
-                                                        "Massachusetts",
-                                                        "Michigan",
-                                                        "Minnesota",
-                                                        "Mississippi",
-                                                        "Missouri",
-                                                        "Montana",
-                                                        "Nebraska",
-                                                        "Nevada",
-                                                        "New Hampshire",
-                                                        "New Jersey",
-                                                        "New Mexico",
-                                                        "New York",
-                                                        "North Carolina",
-                                                        "North Dakota",
-                                                        "Ohio",
-                                                        "Oklahoma",
-                                                        "Oregon",
-                                                        "Pennsylvania",
-                                                        "Rhode Island",
-                                                        "South Carolina",
-                                                        "South Dakota",
-                                                        "Tennessee",
-                                                        "Texas",
-                                                        "Utah",
-                                                        "Vermont",
-                                                        "Virginia",
-                                                        "Washington",
-                                                        "West Virginia",
-                                                        "Wisconsin",
-                                                        "Wyoming"
-                                                        };
-
-                    var currentState = string.IsNullOrWhiteSpace(Model?.PortRequest?.State) ? Model?.Order?.State : Model?.PortRequest?.State;
-
-                    foreach (var state in states)
-                    {
-                        if (currentState == state)
-                        {
-                            <option selected>@state</option>
-                        }
-                        else
-                        {
-                            <option>@state</option>
-                        }
-                    }
-                }
-            </select>
-        </div>
-        <div class="col-md-3 mb-3">
-            <label for="zip">Service Zip</label>
-            @{
-                var zip = string.IsNullOrWhiteSpace(Model?.PortRequest?.Zip) ? Model?.Order?.Zip : Model?.PortRequest?.Zip;
-            }
-            <input asp-for="PortRequest.Zip" type="text" value="@zip" class="form-control" id="zip" placeholder="98199" title="The five digit ZIP code of the service address listed above." required>
-        </div>
-    </div>
+    }
     <div class="row">
-        @*<div class="col-md-6 mb-3">
-                <label for="wirelessNumber">Wireless Number</label>
-                <select asp-for="PortRequest.WirelessNumber" class="custom-select" id="wirelessNumber" title="Set to 'Yes' if this is a wireless or cellphone number being ported.">
-                    <option value="true" selected>Yes</option>
-                    <option value="false">No</option>
-                </select>
-                <div class="invalid-feedback">
-                    Valid first name is required.
-                </div>
-            </div>*@
+
         <div class="col-md-6">
             <label for="billingPhone">Caller ID <span class="text-muted">(15 Characters Maximum)</span></label>
             <input asp-for="PortRequest.CallerId" type="text" value="@Model?.PortRequest?.CallerId" class="form-control" id="billingPhone" title="Sets Caller ID (aka CNAM) for all numbers in this port order, 15 character limit. Only letters, numbers, and spaces are allowed." placeholder="Alexander" maxlength="15" pattern="[a-zA-Z0-9\s]+" required>
