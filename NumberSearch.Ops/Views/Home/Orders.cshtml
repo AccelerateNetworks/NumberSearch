@@ -42,7 +42,7 @@
                     {
                         if (order?.PortRequest is null && order.ProductOrders.Where(x => x.PortedPhoneNumberId.HasValue is true).Any())
                         {
-                            nextStep = "⭕ Get the Porting information from the Customer";
+                            nextStep = $"⭕ Get the Porting information from the Customer";
                             pillColor = "danger";
                         }
                         else if (order?.PortRequest is not null)
@@ -103,21 +103,27 @@
                                     <a href="https://acceleratenetworks.com/cart/order/@order.Order.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
                                         Customer's View
                                     </a>
-                                    @if (order?.PortRequest is not null)
-                                    {
-                                        <a href="/Home/PortRequests/@order?.Order?.OrderId" class="btn btn-info">
-                                            Related Port Request
-                                        </a>
-                                    }
+                                    <a href="/Home/Emails/@order?.Order?.OrderId" class="btn btn-warning text-light">
+                                        Related Emails
+                                    </a>
                                     @if (order.ProductOrders.Where(x => !string.IsNullOrWhiteSpace(x.DialedNumber)).Any())
                                     {
                                         <a href="/Home/NumberOrder/@order?.Order?.OrderId" class="btn btn-info">
                                             Related Purchased Numbers
                                         </a>
                                     }
-                                    <a href="/Home/Emails/@order?.Order?.OrderId" class="btn btn-warning text-light">
-                                        Related Emails
-                                    </a>
+                                    @if (order?.PortRequest is not null)
+                                    {
+                                        <a href="/Home/PortRequests/@order?.Order?.OrderId" class="btn btn-info">
+                                            Related Port Request
+                                        </a>
+                                    }
+                                    else if (order.ProductOrders.Where(x => x.PortedPhoneNumberId.HasValue).Any())
+                                    {
+                                        <a href="https://acceleratenetworks.com/Cart/PortingInformation/@order.Order.OrderId" class="btn btn-dark" target="_blank" rel="noopener noreferrer">
+                                            Get From Customer
+                                        </a>
+                                    }
                                 </div>
                             </p>
                             <p>
