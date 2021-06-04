@@ -39,7 +39,6 @@ namespace NumberSearch.Ingest
             var emailDan = config.GetConnectionString("EmailDan");
             var emailTom = config.GetConnectionString("EmailTom");
 
-
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
                 .WriteTo.Debug()
@@ -222,7 +221,6 @@ namespace NumberSearch.Ingest
 
                             await Task.Run(async () =>
                             {
-                                // Ingest all avalible numbers from the TeleMessage.
                                 Log.Information("[BulkVS] [PortRequests] Ingesting Port Request statuses.");
 
                                 var portRequests = await PortRequest.GetAllAsync(postgresSQL).ConfigureAwait(false);
@@ -783,10 +781,27 @@ Accelerate Networks
 
                                 foreach (var request in portRequests.Where(x => (x.VendorSubmittedTo == "TeliMessage" && x.Completed is false && x.DateSubmitted > DateTime.Now.AddYears(-3))).ToArray())
                                 {
-                                    var teliStatus = await LnpGet.GetAsync(request?.TeliId, teleToken).ConfigureAwait(false);
+                                    var teliStatus = new LnpGet();
+
+                                    try
+                                    {
+                                        teliStatus = await LnpGet.GetAsync(request?.TeliId, teleToken).ConfigureAwait(false);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Fatal("[TeleMessage] [PortRequests] Failed to retrive owned numbers.");
+                                        Log.Fatal(ex.Message);
+                                        Log.Fatal(ex.StackTrace);
+                                        continue;
+                                    }
 
                                     // All of the statuses for all of the numbers.
                                     var numberStatuses = teliStatus?.data?.numbers_data?.Select(x => x.request_status);
+
+                                    if (!numberStatuses.Any())
+                                    {
+                                        continue;
+                                    }
 
                                     var canceled = numberStatuses?.Where(x => x == "canceled");
                                     var rejected = numberStatuses?.Where(x => x == "rejected");
