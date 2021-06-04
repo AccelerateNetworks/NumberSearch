@@ -52,7 +52,7 @@
 
 <div class="container">
     <br />
-    <div class="pricing-header mx-auto mb-3 text-center">
+    <div class="pricing-header mx-auto p-2 text-center">
         @{
             if (Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted == DateTime.MinValue)
             {
@@ -663,13 +663,13 @@
                         <hr class="mb-4">
                         @*<input type="text" hidden name="AddPortingInfo" value="true" />
                             <button asp-controller="Cart" asp-action="PortingInformation" asp-route-id="@Model?.Order?.OrderId" class="btn btn-primary btn-lg btn-block" type="submit" value="Submit">Add Porting Information</button>*@
-                        <a asp-controller="Cart" asp-action="PortingInformation" asp-route-id="@Model?.Order?.OrderId" class="btn btn-primary btn-lg btn-block">Add Porting Information</a>
+                        <a asp-controller="Cart" asp-action="PortingInformation" asp-route-id="@Model?.Order?.OrderId" class="btn btn-primary btn-lg btn-block shadow">Add Porting Information</a>
                     }
                     else if (Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted == DateTime.MinValue)
                     {
                         <partial name="_LoadingPartial" />
                         <hr class="mb-4">
-                        <button class="btn btn-primary btn-lg btn-block" type="submit" value="Submit">Submit your Order</button>
+                        <button class="btn btn-primary btn-lg btn-block shadow" type="submit" value="Submit">Submit your Order</button>
                     }
                 }
                 <br />

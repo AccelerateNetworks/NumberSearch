@@ -114,7 +114,7 @@
         if (Model != null && Model?.PhoneNumbers != null && Model.PhoneNumbers.Any())
         {
             <br />
-            <div class="pricing-header mx-auto mb-3 text-center">
+            <div class="pricing-header mx-auto p-2 text-center">
                 <h1 class="display-4">Porting Information</h1>
                 <p class="col-lg-6 offset-lg-3">We need you to provide this information to bring your existing phone numbers over to our network. Without this information we can't being transitioning you from your old phone provider.</p>
             </div>
@@ -319,7 +319,7 @@
                         <input asp-for="PortRequest.PartialPortDescription" type="text" value="@Model?.PortRequest?.PartialPortDescription" class="form-control" id="partialPortDescription" title="Describe what services the old carrier should leave alone. Contact the old carrier to confirm they will leave these services intact.">
                     </div>
                 </div>
-                <div class="jumbotron">
+                <div class="jumbotron shadow">
                     <h1 class="display-4">Need help? Contact us!</h1>
                     <p class="lead">Give us a ring at 206-858-8757 (texting is welcome) or <a href="mailto:support@acceleratenetworks.com?Subject=Help%20me%20with%20?" target="_top">email us</a>.</p>
                 </div>
@@ -338,7 +338,7 @@
                 <partial name="_LoadingPartial" />
 
                 <hr class="mb-4">
-                <button class="btn btn-primary btn-lg btn-block" type="submit" value="Submit">Request A Port</button>
+                <button class="btn btn-primary btn-lg btn-block shadow" type="submit" value="Submit">Request A Port</button>
                 <br />
             </form>
         }

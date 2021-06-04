@@ -7,12 +7,11 @@
 
 <div class="container">
     <br />
-    @*<div class="pricing-header mx-auto mb-3 text-center">
-            <h1 class="display-4">Lookups</h1>
-        </div>*@
-    <br />
-    <div class="jumbotron mb-3">
+    <div class="pricing-header mx-auto p-2 text-center">
         <h1 class="display-4">Bulk Phone Numbers</h1>
+    </div>
+    <br />
+    <div class="jumbotron mb-3 shadow">
         <p> Enter a list of phone numbers and we'll hunt down any information we can find on it or check if we can port them to our network.</p>
         <form class="form-row justify-content-center">
             <div class="form-group">
@@ -32,273 +31,251 @@
     <br />
     <partial name="_LoadingPartial" />
     <br />
-    @{
-        if (Model != null && Model?.Lookups != null && Model.Lookups.Any())
-        {
-            <div class="table-responsive">
-                <table class="table table-striped table-hover table-borderless">
-                    <thead>
-                        <tr>
-                            <th>
-                                Phone Number
-                            </th>
-                            <th>
-                                Last Port Date
-                            </th>
-                            <th>
-                                Caller Name
-                            </th>
-                            <th>
-                                Local Routing #
-                            </th>
-                            <th>
-                                Carrier
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @{
-                            foreach (var number in Model.Lookups)
-                            {
-                                <tr>
-                                    <td>
-                                        <h4>@number?.tn</h4>
-                                    </td>
-                                    <td>
-                                        @number?.LastPorted
-                                    </td>
-                                    <td>
-                                        @number?.LIDBName
-                                    </td>
-                                    <td>
-                                        <h4>@number?.lrn</h4>
-                                    </td>
-                                    <td>
-                                        <p>
-                                            @number?.spid
-                                            -
-                                            @number?.lec
-                                            -
-                                            @number?.lectype
-                                        </p>
-                                    </td>
-                                </tr>
+    <div class="row">
+        @{
+            if (Model != null && Model?.Lookups != null && Model.Lookups.Any())
+            {
+                <div class="table-responsive shadow-sm mb-4">
+                    <table class="table table-striped table-hover table-borderless">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Phone Number
+                                </th>
+                                <th>
+                                    Last Port Date
+                                </th>
+                                <th>
+                                    Caller Name
+                                </th>
+                                <th>
+                                    Local Routing #
+                                </th>
+                                <th>
+                                    Carrier
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                foreach (var number in Model.Lookups)
+                                {
+                                    <tr>
+                                        <td>
+                                            <h4>@number?.tn</h4>
+                                        </td>
+                                        <td>
+                                            @number?.LastPorted
+                                        </td>
+                                        <td>
+                                            @number?.LIDBName
+                                        </td>
+                                        <td>
+                                            <h4>@number?.lrn</h4>
+                                        </td>
+                                        <td>
+                                            <p>
+                                                @number?.spid
+                                                -
+                                                @number?.lec
+                                                -
+                                                @number?.lectype
+                                            </p>
+                                        </td>
+                                    </tr>
+                                }
                             }
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-        if (Model != null && Model?.NotPortable != null && Model.NotPortable.Any())
-        {
-            <div class="alert alert-danger" role="alert">
-                These phone numbers cannot be ported to our network!
-            </div>
-            <div class="table-responsive">
-                <table class="table table-striped table-borderless table-hover">
-                    <tbody>
-                        @{
-                            foreach (var number in Model.NotPortable)
-                            {
-                                <tr class="table-danger">
-                                    <td scope="row"><h4>@number</h4></td>
-                                    <td class="d-none d-sm-table-cell"></td>
-                                    <td class="d-none d-sm-table-cell"></td>
-                                    <td></td>
-                                </tr>
+                        </tbody>
+                    </table>
+                </div>
+            }
+            if (Model != null && Model?.NotPortable != null && Model.NotPortable.Any())
+            {
+                <div class="alert alert-danger col-12" role="alert">
+                    These phone numbers cannot be ported to our network!
+                </div>
+                <div class="table-responsive shadow-sm">
+                    <table class="table table-striped table-borderless table-hover">
+                        <tbody>
+                            @{
+                                foreach (var number in Model.NotPortable)
+                                {
+                                    <tr class="table-danger">
+                                        <td scope="row"><h4>@number</h4></td>
+                                        <td class="d-none d-sm-table-cell"></td>
+                                        <td class="d-none d-sm-table-cell"></td>
+                                        <td></td>
+                                    </tr>
+                                }
                             }
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-        if (Model != null && Model?.Portable != null && Model.Portable.Any())
-        {
-            var alreadyInCart = Model?.Cart?.PortedPhoneNumbers.ToDictionary(x => x?.PortedDialedNumber, x => x);
-            <div class="alert alert-success" role="alert">
-                These phone numbers can be ported to our network and are now in your cart!
-            </div>
-            <div class="table-responsive">
-                <table class="table table-striped table-borderless table-hover">
-                    <tbody>
-                        @{
-                            foreach (var number in Model.Portable)
-                            {
-                                var location = $"{number?.City ?? "Unknown City"}, {number?.State ?? "Unknown State"}";
-                                var formattedNumber = $"({number.NPA}) {number.NXX}-{number.XXXX.ToString("0000")}";
-                                <tr>
-                                    <td scope="row"><h4>@formattedNumber</h4></td>
-                                    <td class="d-none d-sm-table-cell">@Html.Raw(number.PortedDialedNumber)</td>
-                                    <td class="d-none d-sm-table-cell">@location</td>
-                                    <td>
+                        </tbody>
+                    </table>
+                </div>
+            }
+            if (Model != null && Model?.Portable != null && Model.Portable.Any())
+            {
+                var alreadyInCart = Model?.Cart?.PortedPhoneNumbers.ToDictionary(x => x?.PortedDialedNumber, x => x);
+                <div class="alert alert-success col-12" role="alert">
+                    These phone numbers can be ported to our network and are now in your cart!
+                </div>
+                <div class="table-responsive shadow-sm mb-4">
+                    <table class="table table-striped table-borderless table-hover">
+                        <tbody>
+                            @{
+                                foreach (var number in Model.Portable)
+                                {
+                                    var location = $"{number?.City ?? "Unknown City"}, {number?.State ?? "Unknown State"}";
+                                    var formattedNumber = $"({number.NPA}) {number.NXX}-{number.XXXX.ToString("0000")}";
+                                    <tr>
+                                        <td scope="row"><h4>@formattedNumber</h4></td>
+                                        <td class="d-none d-sm-table-cell">@Html.Raw(number.PortedDialedNumber)</td>
+                                        <td class="d-none d-sm-table-cell">@location</td>
+                                        <td></td>
+                                        <td>
+                                            @{
+                                                if (alreadyInCart.TryGetValue(number.PortedDialedNumber, out var _))
+                                                {
+                                                    <button onclick="RemoveFromCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-danger">Remove</button>
+                                                }
+                                                else
+                                                {
+                                                    <button onclick="AddToCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-primary">Add to Cart</button>
+                                                }
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            Phone Number
+                                        </th>
+                                        <th>
+                                            Last Port Date
+                                        </th>
+                                        <th>
+                                            Caller Name
+                                        </th>
+                                        <th>
+                                            Local Routing #
+                                        </th>
+                                        <th>
+                                            Carrier
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <h4>@number?.LrnLookup?.tn</h4>
+                                        </td>
+                                        <td>
+                                            @number?.LrnLookup?.LastPorted
+                                        </td>
+                                        <td>
+                                            @number?.LrnLookup?.LIDBName
+                                        </td>
+                                        <td>
+                                            <h4>@number?.LrnLookup?.lrn</h4>
+                                        </td>
+                                        <td>
+                                            <p>
+                                                @number?.LrnLookup?.spid
+                                                -
+                                                @number?.LrnLookup?.lec
+                                                -
+                                                @number?.LrnLookup?.lectype
+                                            </p>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            if (Model != null && Model?.Wireless != null && Model.Wireless.Any())
+            {
+                var alreadyInCart = Model?.Cart?.PortedPhoneNumbers.ToDictionary(x => x?.PortedDialedNumber, x => x);
+                <div class="alert alert-success col-12" role="alert">
+                    These wireless phone numbers can be ported to our network and are now in your cart!
+                </div>
+                <div class="table-responsive shadow-sm pb-4">
+                    <table class="table table-striped table-borderless table-hover">
+                        <tbody>
+                            @{
+                                foreach (var number in Model.Wireless)
+                                {
+                                    var location = $"{number?.City ?? "Unknown City"}, {number?.State ?? "Unknown State"}";
+                                    var formattedNumber = $"({number.NPA}) {number.NXX}-{number.XXXX.ToString("0000")}";
+                                    <tr>
                                         @{
-                                            if (alreadyInCart.TryGetValue(number.PortedDialedNumber, out var _))
+                                            if (number.Wireless)
                                             {
-                                                <button onclick="RemoveFromCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-danger">Remove</button>
-                                            }
-                                            else
-                                            {
-                                                <button onclick="AddToCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-primary">Add to Cart</button>
+                                                <td class="d-none d-sm-table-cell">
+                                                    <h4><span class="badge badge-warning">Wireless</span></h4>
+                                                </td>
                                             }
                                         }
-                                    </td>
-                                </tr>
+                                        <td scope="row"><h4>@formattedNumber</h4></td>
+                                        <td class="d-none d-sm-table-cell">@Html.Raw(number.PortedDialedNumber)</td>
+                                        <td class="d-none d-sm-table-cell">@location</td>
+                                        <td></td>
+                                        <td>
+                                            @{
+                                                if (alreadyInCart.TryGetValue(number.PortedDialedNumber, out var _))
+                                                {
+                                                    <button onclick="RemoveFromCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-danger">Remove</button>
+                                                }
+                                                else
+                                                {
+                                                    <button onclick="AddToCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-primary">Add to Cart</button>
+                                                }
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            Phone Number
+                                        </th>
+                                        <th>
+                                            Last Port Date
+                                        </th>
+                                        <th>
+                                            Caller Name
+                                        </th>
+                                        <th>
+                                            Local Routing #
+                                        </th>
+                                        <th>
+                                            Carrier
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <h4>@number?.LrnLookup?.tn</h4>
+                                        </td>
+                                        <td>
+                                            @number?.LrnLookup?.LastPorted
+                                        </td>
+                                        <td>
+                                            @number?.LrnLookup?.LIDBName
+                                        </td>
+                                        <td>
+                                            <h4>@number?.LrnLookup?.lrn</h4>
+                                        </td>
+                                        <td>
+                                            <p>
+                                                @number?.LrnLookup?.spid
+                                                -
+                                                @number?.LrnLookup?.lec
+                                                -
+                                                @number?.LrnLookup?.lectype
+                                            </p>
+                                        </td>
+                                    </tr>
+                                }
                             }
-                        }
-                    </tbody>
-                </table>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-striped table-hover table-borderless">
-                    <thead>
-                        <tr>
-                            <th>
-                                Phone Number
-                            </th>
-                            <th>
-                                Last Port Date
-                            </th>
-                            <th>
-                                Caller Name
-                            </th>
-                            <th>
-                                Local Routing #
-                            </th>
-                            <th>
-                                Carrier
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @{
-                            foreach (var number in Model?.Portable)
-                            {
-                                <tr>
-                                    <td>
-                                        <h4>@number?.LrnLookup?.tn</h4>
-                                    </td>
-                                    <td>
-                                        @number?.LrnLookup?.LastPorted
-                                    </td>
-                                    <td>
-                                        @number?.LrnLookup?.LIDBName
-                                    </td>
-                                    <td>
-                                        <h4>@number?.LrnLookup?.lrn</h4>
-                                    </td>
-                                    <td>
-                                        <p>
-                                            @number?.LrnLookup?.spid
-                                            -
-                                            @number?.LrnLookup?.lec
-                                            -
-                                            @number?.LrnLookup?.lectype
-                                        </p>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
-            </div>
+                        </tbody>
+                    </table>
+                </div>
+            }
         }
-        if (Model != null && Model?.Wireless != null && Model.Wireless.Any())
-        {
-            var alreadyInCart = Model?.Cart?.PortedPhoneNumbers.ToDictionary(x => x?.PortedDialedNumber, x => x);
-            <div class="alert alert-success" role="alert">
-                These wireless phone numbers can be ported to our network and are now in your cart!
-            </div>
-            <div class="table-responsive">
-                <table class="table table-striped table-borderless table-hover">
-                    <tbody>
-                        @{
-                            foreach (var number in Model.Wireless)
-                            {
-                                var location = $"{number?.City ?? "Unknown City"}, {number?.State ?? "Unknown State"}";
-                                var formattedNumber = $"({number.NPA}) {number.NXX}-{number.XXXX.ToString("0000")}";
-                                <tr>
-                                    @{
-                                        if (number.Wireless)
-                                        {
-                                            <td class="d-none d-sm-table-cell">
-                                                <h4><span class="badge badge-warning">Wireless</span></h4>
-                                            </td>
-                                        }
-                                    }
-                                    <td scope="row"><h4>@formattedNumber</h4></td>
-                                    <td class="d-none d-sm-table-cell">@Html.Raw(number.PortedDialedNumber)</td>
-                                    <td class="d-none d-sm-table-cell">@location</td>
-                                    <td>
-                                        @{
-                                            if (alreadyInCart.TryGetValue(number.PortedDialedNumber, out var _))
-                                            {
-                                                <button onclick="RemoveFromCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-danger">Remove</button>
-                                            }
-                                            else
-                                            {
-                                                <button onclick="AddToCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-primary">Add to Cart</button>
-                                            }
-                                        }
-                                    </td>
-                                </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-striped table-hover table-borderless">
-                    <thead>
-                        <tr>
-                            <th>
-                                Phone Number
-                            </th>
-                            <th>
-                                Last Port Date
-                            </th>
-                            <th>
-                                Caller Name
-                            </th>
-                            <th>
-                                Local Routing #
-                            </th>
-                            <th>
-                                Carrier
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @{
-                            foreach (var number in Model?.Wireless)
-                            {
-                                <tr>
-                                    <td>
-                                        <h4>@number?.LrnLookup?.tn</h4>
-                                    </td>
-                                    <td>
-                                        @number?.LrnLookup?.LastPorted
-                                    </td>
-                                    <td>
-                                        @number?.LrnLookup?.LIDBName
-                                    </td>
-                                    <td>
-                                        <h4>@number?.LrnLookup?.lrn</h4>
-                                    </td>
-                                    <td>
-                                        <p>
-                                            @number?.LrnLookup?.spid
-                                            -
-                                            @number?.LrnLookup?.lec
-                                            -
-                                            @number?.LrnLookup?.lectype
-                                        </p>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-    }
+    </div>
 </div>
