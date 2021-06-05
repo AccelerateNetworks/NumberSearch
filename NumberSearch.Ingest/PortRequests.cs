@@ -19,20 +19,12 @@ namespace NumberSearch.Ingest
         {
             Log.Information("[BulkVS] [PortRequests] Ingesting Port Request statuses.");
 
-            var teleToken = Guid.Parse(configuration.GetConnectionString("TeleAPI"));
             var postgresSQL = configuration.GetConnectionString("PostgresqlProd");
-            var bulkVSKey = configuration.GetConnectionString("BulkVSAPIKEY");
-            var bulkVSSecret = configuration.GetConnectionString("BulkVSAPISecret");
             var bulkVSusername = configuration.GetConnectionString("BulkVSUsername");
             var bulkVSpassword = configuration.GetConnectionString("BulkVSPassword");
-            var username = configuration.GetConnectionString("PComNetUsername");
-            var password = configuration.GetConnectionString("PComNetPassword");
-            var peerlessApiKey = configuration.GetConnectionString("PeerlessAPIKey");
             var smtpUsername = configuration.GetConnectionString("SmtpUsername");
             var smtpPassword = configuration.GetConnectionString("SmtpPassword");
             var emailOrders = configuration.GetConnectionString("EmailOrders");
-            var emailDan = configuration.GetConnectionString("EmailDan");
-            var emailTom = configuration.GetConnectionString("EmailTom");
 
             var portRequests = await PortRequest.GetAllAsync(postgresSQL).ConfigureAwait(false);
             var bulkVSPortRequests = portRequests.Where(x => (x.VendorSubmittedTo == "BulkVS" && x.Completed is false && x.DateSubmitted > DateTime.Now.AddYears(-3)));
@@ -246,18 +238,9 @@ Accelerate Networks
 
             var teleToken = Guid.Parse(configuration.GetConnectionString("TeleAPI"));
             var postgresSQL = configuration.GetConnectionString("PostgresqlProd");
-            var bulkVSKey = configuration.GetConnectionString("BulkVSAPIKEY");
-            var bulkVSSecret = configuration.GetConnectionString("BulkVSAPISecret");
-            var bulkVSusername = configuration.GetConnectionString("BulkVSUsername");
-            var bulkVSpassword = configuration.GetConnectionString("BulkVSPassword");
-            var username = configuration.GetConnectionString("PComNetUsername");
-            var password = configuration.GetConnectionString("PComNetPassword");
-            var peerlessApiKey = configuration.GetConnectionString("PeerlessAPIKey");
             var smtpUsername = configuration.GetConnectionString("SmtpUsername");
             var smtpPassword = configuration.GetConnectionString("SmtpPassword");
             var emailOrders = configuration.GetConnectionString("EmailOrders");
-            var emailDan = configuration.GetConnectionString("EmailDan");
-            var emailTom = configuration.GetConnectionString("EmailTom");
 
             var portRequests = await PortRequest.GetAllAsync(postgresSQL).ConfigureAwait(false);
 
