@@ -1,5 +1,7 @@
 ﻿using FirstCom;
 
+using Microsoft.Extensions.Configuration;
+
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Models;
@@ -18,6 +20,141 @@ namespace NumberSearch.Ingest
 {
     public class Owned
     {
+        public async static Task IngestAsync(IConfiguration configuration)
+        {
+            Log.Information("[OwnedNumbers] Ingesting data from OwnedNumbers.");
+
+            var teleToken = Guid.Parse(configuration.GetConnectionString("TeleAPI"));
+            var postgresSQL = configuration.GetConnectionString("PostgresqlProd");
+            var bulkVSKey = configuration.GetConnectionString("BulkVSAPIKEY");
+            var bulkVSusername = configuration.GetConnectionString("BulkVSUsername");
+            var bulkVSpassword = configuration.GetConnectionString("BulkVSPassword");
+            var username = configuration.GetConnectionString("PComNetUsername");
+            var password = configuration.GetConnectionString("PComNetPassword");
+            var smtpUsername = configuration.GetConnectionString("SmtpUsername");
+            var smtpPassword = configuration.GetConnectionString("SmtpPassword");
+            var emailOrders = configuration.GetConnectionString("EmailOrders");
+            var emailDan = configuration.GetConnectionString("EmailDan");
+
+            var allNumbers = new List<OwnedPhoneNumber>();
+            var start = DateTime.Now;
+
+            // Ingest all owned numbers from the providers.
+            try
+            {
+                var firstComNumbers = await Owned.FirstPointComAsync(username, password).ConfigureAwait(false);
+                var teleMessageNumbers = await Owned.TeleMessageAsync(teleToken).ConfigureAwait(false);
+                var bulkVSNumbers = await TnRecord.GetOwnedAsync(bulkVSusername, bulkVSpassword).ConfigureAwait(false);
+
+                if (firstComNumbers != null)
+                {
+                    allNumbers.AddRange(firstComNumbers);
+                };
+
+                if (teleMessageNumbers != null)
+                {
+                    allNumbers.AddRange(teleMessageNumbers);
+                };
+
+                if (bulkVSNumbers != null)
+                {
+                    allNumbers.AddRange(bulkVSNumbers);
+                };
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal("[OwnedNumbers] Failed to retrive owned numbers.");
+                Log.Fatal(ex.Message);
+                Log.Fatal(ex.StackTrace);
+            }
+
+            // Update emergency info
+            var emergency = await Owned.VerifyEmergencyInformationAsync(allNumbers, teleToken, postgresSQL).ConfigureAwait(false);
+            allNumbers = emergency.ToList();
+
+            // If we ingested any owned numbers update the database.
+            var ownedNumberStats = new IngestStatistics();
+            if (allNumbers.Count > 0)
+            {
+                Log.Information($"[OwnedNumbers] Submitting {allNumbers.Count} numbers to the database.");
+                ownedNumberStats = await Owned.SubmitOwnedNumbersAsync(allNumbers, postgresSQL).ConfigureAwait(false);
+            }
+            else
+            {
+                Log.Fatal("[OwnedNumbers] No ownend numbers ingested. Skipping submission to the database.");
+                ownedNumberStats = new IngestStatistics
+                {
+                    StartDate = start,
+                    EndDate = DateTime.Now,
+                    FailedToIngest = 0,
+                    IngestedNew = 0,
+                    Lock = false,
+                    NumbersRetrived = 0,
+                    IngestedFrom = "OwnedNumbers",
+                    Priority = false,
+                    Removed = 0,
+                    Unchanged = 0,
+                    UpdatedExisting = 0
+                };
+            }
+
+            // Look for LRN changes.
+            try
+            {
+                Log.Information("[OwnedNumbers] Looking for LRN changes on owned numbers.");
+                var changedNumbers = await Owned.VerifyServiceProvidersAsync(teleToken, bulkVSKey, postgresSQL).ConfigureAwait(false);
+
+                if (changedNumbers != null && changedNumbers.Any())
+                {
+                    Log.Information($"[OwnedNumbers] Emailing out a notification that {changedNumbers.Count()} numbers LRN updates.");
+                    var checkSend = await Owned.SendPortingNotificationEmailAsync(changedNumbers, smtpUsername, smtpPassword, emailDan, emailOrders, postgresSQL).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal("[OwnedNumbers] Failed to look for LRN changes on owned numbers.");
+                Log.Fatal(ex.Message);
+            }
+
+            // Offer unassigned phone numbers we own for purchase on the website.
+            var unassignedNubmers = await Owned.OfferUnassignedNumberForSaleAsync(bulkVSKey, postgresSQL).ConfigureAwait(false);
+
+            // Match up owned numbers and their billingClients.
+            var billingClients = await Owned.MatchOwnedNumbersToBillingClientsAsync(postgresSQL).ConfigureAwait(false);
+
+            // Remove the lock from the database to prevent it from getting cluttered with blank entries.
+            var lockEntry = await IngestStatistics.GetLockAsync("OwnedNumbers", postgresSQL).ConfigureAwait(false);
+            var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
+
+            // Remove all of the old numbers from the database.
+            Log.Information("[OwnedNumbers] Marking numbers that failed to reingest as inactive in the database.");
+            // TODO: Mark old owned numbers as in active.
+
+            var combined = new IngestStatistics
+            {
+                StartDate = start,
+                EndDate = DateTime.Now,
+                FailedToIngest = ownedNumberStats.FailedToIngest,
+                IngestedFrom = ownedNumberStats.IngestedFrom,
+                IngestedNew = ownedNumberStats.IngestedNew,
+                Lock = false,
+                NumbersRetrived = ownedNumberStats.NumbersRetrived,
+                Removed = 0,
+                Unchanged = ownedNumberStats.Unchanged,
+                UpdatedExisting = ownedNumberStats.UpdatedExisting,
+                Priority = false
+            };
+
+            if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
+            {
+                Log.Information("[OwnedNumbers] Completed the ingest process.");
+            }
+            else
+            {
+                Log.Fatal("[OwnedNumbers] Failed to completed the ingest process.");
+            }
+        }
+
         public static async Task<IEnumerable<OwnedPhoneNumber>> FirstPointComAsync(string username, string password)
         {
             var numbers = new List<OwnedPhoneNumber>();

@@ -1,14 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
-using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Models;
-using NumberSearch.DataAccess.TeleMesssage;
 
 using Serilog;
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -53,8 +50,6 @@ namespace NumberSearch.Ingest
 
             Log.Information($"[Heartbeat] Ingest scheduling loop is starting. {Environment.ProcessorCount} threads detected.");
 
-            var tasks = new List<Task<IngestStatistics>>();
-
             // Priority ingest timers.
             var bulkVSPriortyTimer = new Stopwatch();
             var firstPointComPriortyTimer = new Stopwatch();
@@ -87,7 +82,7 @@ namespace NumberSearch.Ingest
                         // If the last ingest was run to recently do nothing.
                         if (lastRun != null && (lastRun.StartDate < (start - bulkVSCycle.CycleTime) || bulkVSCycle.RunNow))
                         {
-                            Log.Debug($"Last Run of {lastRun?.IngestedFrom} started at {lastRun?.StartDate} and ended at {lastRun?.EndDate}");
+                            Log.Information($"Last Run of {lastRun?.IngestedFrom} started at {lastRun?.StartDate} and ended at {lastRun?.EndDate}");
 
                             Log.Information($"[BulkVS] Cycle time is {bulkVSCycle?.CycleTime}");
                             Log.Information($"[BulkVS] Enabled is {bulkVSCycle?.Enabled}");
@@ -109,48 +104,41 @@ namespace NumberSearch.Ingest
 
                             var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
 
-                            tasks.Add(
-                                    Task.Run(async () =>
-                                    {
-                                        // Ingest all avablie phones numbers from the BulkVs API.
-                                        Log.Information("Ingesting data from BulkVS");
-                                        var BulkVSStats = await Provider.BulkVSAsync(bulkVSusername, bulkVSpassword, AreaCode.All, postgresSQL).ConfigureAwait(false);
+                            // Ingest all avablie phones numbers from the BulkVs API.
+                            Log.Information("Ingesting data from BulkVS");
+                            var BulkVSStats = await Provider.BulkVSAsync(bulkVSusername, bulkVSpassword, AreaCode.All, postgresSQL).ConfigureAwait(false);
 
-                                        // Remove the lock from the database to prevent it from getting cluttered with blank entries.
-                                        var lockEntry = await IngestStatistics.GetLockAsync("BulkVS", postgresSQL).ConfigureAwait(false);
-                                        var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
+                            // Remove the lock from the database to prevent it from getting cluttered with blank entries.
+                            var lockEntry = await IngestStatistics.GetLockAsync("BulkVS", postgresSQL).ConfigureAwait(false);
+                            var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
 
-                                        // Remove all of the old numbers from the database.
-                                        Log.Information("[BulkVS] Removing old numbers from the database.");
-                                        var bulkVSCleanUp = await PhoneNumber.DeleteOldByProvider(start, bulkVSCycle.CycleTime, "BulkVS", postgresSQL).ConfigureAwait(false);
+                            // Remove all of the old numbers from the database.
+                            Log.Information("[BulkVS] Removing old numbers from the database.");
+                            var bulkVSCleanUp = await PhoneNumber.DeleteOldByProvider(start, bulkVSCycle.CycleTime, "BulkVS", postgresSQL).ConfigureAwait(false);
 
-                                        var combined = new IngestStatistics
-                                        {
-                                            StartDate = BulkVSStats.StartDate,
-                                            EndDate = bulkVSCleanUp.EndDate,
-                                            FailedToIngest = BulkVSStats.FailedToIngest,
-                                            IngestedFrom = BulkVSStats.IngestedFrom,
-                                            IngestedNew = BulkVSStats.IngestedNew,
-                                            Lock = false,
-                                            NumbersRetrived = BulkVSStats.NumbersRetrived,
-                                            Removed = bulkVSCleanUp.Removed,
-                                            Unchanged = BulkVSStats.Unchanged,
-                                            UpdatedExisting = BulkVSStats.UpdatedExisting,
-                                            Priority = false
-                                        };
+                            var combined = new IngestStatistics
+                            {
+                                StartDate = BulkVSStats.StartDate,
+                                EndDate = bulkVSCleanUp.EndDate,
+                                FailedToIngest = BulkVSStats.FailedToIngest,
+                                IngestedFrom = BulkVSStats.IngestedFrom,
+                                IngestedNew = BulkVSStats.IngestedNew,
+                                Lock = false,
+                                NumbersRetrived = BulkVSStats.NumbersRetrived,
+                                Removed = bulkVSCleanUp.Removed,
+                                Unchanged = BulkVSStats.Unchanged,
+                                UpdatedExisting = BulkVSStats.UpdatedExisting,
+                                Priority = false
+                            };
 
-                                        if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
-                                        {
-                                            Log.Information("[BulkVS] Completed the ingest process.");
-                                        }
-                                        else
-                                        {
-                                            Log.Fatal("[BulkVS] Failed to completed the ingest process.");
-                                        }
-
-                                        return combined;
-                                    })
-                                );
+                            if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
+                            {
+                                Log.Information($"[BulkVS] Completed the ingest process {DateTime.Now}.");
+                            }
+                            else
+                            {
+                                Log.Fatal($"[BulkVS] Failed to completed the ingest process {DateTime.Now}.");
+                            }
 
                             if (bulkVSCycle.RunNow)
                             {
@@ -171,53 +159,44 @@ namespace NumberSearch.Ingest
                             // Restart the one hour timer.
                             bulkVSPriortyTimer.Restart();
 
-                            Log.Debug($"[BulkVS] Priority ingest started at {DateTime.Now}.");
+                            Log.Information($"[BulkVS] Priority ingest started at {DateTime.Now}.");
 
-                            tasks.Add(
-                                    Task.Run(async () =>
-                                    {
-                                        // Ingest priority phones numbers from the BulkVs API.
-                                        Log.Information("[BulkVS] Ingesting priority data from BulkVS.");
-                                        var BulkVSStats = await Provider.BulkVSAsync(bulkVSusername, bulkVSpassword, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
+                            // Ingest priority phones numbers from the BulkVs API.
+                            Log.Information("[BulkVS] Ingesting priority data from BulkVS.");
+                            var BulkVSStats = await Provider.BulkVSAsync(bulkVSusername, bulkVSpassword, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
 
-                                        var combined = new IngestStatistics
-                                        {
-                                            StartDate = BulkVSStats.StartDate,
-                                            EndDate = DateTime.Now,
-                                            FailedToIngest = BulkVSStats.FailedToIngest,
-                                            IngestedFrom = BulkVSStats.IngestedFrom,
-                                            IngestedNew = BulkVSStats.IngestedNew,
-                                            Lock = false,
-                                            NumbersRetrived = BulkVSStats.NumbersRetrived,
-                                            Removed = 0,
-                                            Unchanged = BulkVSStats.Unchanged,
-                                            UpdatedExisting = BulkVSStats.UpdatedExisting,
-                                            Priority = true
-                                        };
+                            var combined = new IngestStatistics
+                            {
+                                StartDate = BulkVSStats.StartDate,
+                                EndDate = DateTime.Now,
+                                FailedToIngest = BulkVSStats.FailedToIngest,
+                                IngestedFrom = BulkVSStats.IngestedFrom,
+                                IngestedNew = BulkVSStats.IngestedNew,
+                                Lock = false,
+                                NumbersRetrived = BulkVSStats.NumbersRetrived,
+                                Removed = 0,
+                                Unchanged = BulkVSStats.Unchanged,
+                                UpdatedExisting = BulkVSStats.UpdatedExisting,
+                                Priority = true
+                            };
 
-                                        // Remove stale priority numbers
-                                        foreach (var code in AreaCode.Priority)
-                                        {
-                                            var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, new TimeSpan(priortyIngestCycleTime), code, lastRun.IngestedFrom, postgresSQL).ConfigureAwait(false);
-                                            combined.Removed += removedNumbers.Removed;
-                                        }
+                            // Remove stale priority numbers
+                            foreach (var code in AreaCode.Priority)
+                            {
+                                var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, new TimeSpan(priortyIngestCycleTime), code, lastRun.IngestedFrom, postgresSQL).ConfigureAwait(false);
+                                combined.Removed += removedNumbers.Removed;
+                            }
 
-                                        if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
-                                        {
-                                            Log.Information("[BulkVS] Completed the priority ingest process.");
-                                        }
-                                        else
-                                        {
-                                            Log.Fatal("[BulkVS] Failed to completed the priority ingest process.");
-                                        }
+                            if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
+                            {
+                                Log.Information($"[BulkVS] Completed the priority ingest process {DateTime.Now}.");
+                            }
+                            else
+                            {
+                                Log.Fatal($"[BulkVS] Failed to completed the priority ingest process {DateTime.Now}.");
+                            }
 
-                                        return combined;
-                                    })
-                                );
-
-                            await Task.WhenAll(tasks).ConfigureAwait(false);
-
-                            Log.Debug($"[BulkVS] [PortRequests] Priority ingest of Port Request statuses started at {DateTime.Now}.");
+                            Log.Information($"[BulkVS] [PortRequests] Priority ingest of Port Request statuses started at {DateTime.Now}.");
 
                             // Update the statuses of all the active port requests with BulkVS.
                             await PortRequests.UpdateStatusesBulkVSAsync(config);
@@ -231,7 +210,7 @@ namespace NumberSearch.Ingest
 
                         if (lastRun != null && (lastRun.StartDate < (start - firstPointComCycle.CycleTime) || firstPointComCycle.RunNow))
                         {
-                            Log.Debug($"Last Run of {lastRun?.IngestedFrom} started at {lastRun?.StartDate} and ended at {lastRun?.EndDate}");
+                            Log.Information($"Last Run of {lastRun?.IngestedFrom} started at {lastRun?.StartDate} and ended at {lastRun?.EndDate}");
 
                             Log.Information($"[FirstPointCom] Cycle time is {firstPointComCycle?.CycleTime}");
                             Log.Information($"[FirstPointCom] Enabled is {firstPointComCycle?.Enabled}");
@@ -253,48 +232,41 @@ namespace NumberSearch.Ingest
 
                             var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
 
-                            tasks.Add(
-                                    Task.Run(async () =>
-                                    {
-                                        // Ingest all avalible numbers in the FirsPointtCom API.
-                                        Log.Information("Ingesting data from FirstPointCom");
-                                        var FirstPointComStats = await Provider.FirstPointComAsync(username, password, AreaCode.All, postgresSQL).ConfigureAwait(false);
+                            // Ingest all avalible numbers in the FirsPointtCom API.
+                            Log.Information("[FirstPointCom] Ingesting data from FirstPointCom");
+                            var FirstPointComStats = await Provider.FirstPointComAsync(username, password, AreaCode.All, postgresSQL).ConfigureAwait(false);
 
-                                        // Remove the lock from the database to prevent it from getting cluttered with blank entries.
-                                        var lockEntry = await IngestStatistics.GetLockAsync("FirstPointCom", postgresSQL).ConfigureAwait(false);
-                                        var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
+                            // Remove the lock from the database to prevent it from getting cluttered with blank entries.
+                            var lockEntry = await IngestStatistics.GetLockAsync("FirstPointCom", postgresSQL).ConfigureAwait(false);
+                            var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
 
-                                        // Remove all of the old numbers from the database.
-                                        Log.Information("Removing old FirstPointCom numbers from the database.");
-                                        var firstPointComCleanUp = await PhoneNumber.DeleteOldByProvider(start, firstPointComCycle.CycleTime, "FirstPointCom", postgresSQL).ConfigureAwait(false);
+                            // Remove all of the old numbers from the database.
+                            Log.Information("[FirstPointCom] Removing old FirstPointCom numbers from the database.");
+                            var firstPointComCleanUp = await PhoneNumber.DeleteOldByProvider(start, firstPointComCycle.CycleTime, "FirstPointCom", postgresSQL).ConfigureAwait(false);
 
-                                        var combined = new IngestStatistics
-                                        {
-                                            StartDate = FirstPointComStats.StartDate,
-                                            EndDate = firstPointComCleanUp.EndDate,
-                                            FailedToIngest = FirstPointComStats.FailedToIngest,
-                                            IngestedFrom = FirstPointComStats.IngestedFrom,
-                                            IngestedNew = FirstPointComStats.IngestedNew,
-                                            Lock = false,
-                                            NumbersRetrived = FirstPointComStats.NumbersRetrived,
-                                            Removed = firstPointComCleanUp.Removed,
-                                            Unchanged = FirstPointComStats.Unchanged,
-                                            UpdatedExisting = FirstPointComStats.UpdatedExisting,
-                                            Priority = false
-                                        };
+                            var combined = new IngestStatistics
+                            {
+                                StartDate = FirstPointComStats.StartDate,
+                                EndDate = firstPointComCleanUp.EndDate,
+                                FailedToIngest = FirstPointComStats.FailedToIngest,
+                                IngestedFrom = FirstPointComStats.IngestedFrom,
+                                IngestedNew = FirstPointComStats.IngestedNew,
+                                Lock = false,
+                                NumbersRetrived = FirstPointComStats.NumbersRetrived,
+                                Removed = firstPointComCleanUp.Removed,
+                                Unchanged = FirstPointComStats.Unchanged,
+                                UpdatedExisting = FirstPointComStats.UpdatedExisting,
+                                Priority = false
+                            };
 
-                                        if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
-                                        {
-                                            Log.Information("Completed the FirstPointCom ingest process.");
-                                        }
-                                        else
-                                        {
-                                            Log.Fatal("Failed to completed the FirstPointCom ingest process.");
-                                        }
-
-                                        return combined;
-                                    })
-                                );
+                            if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
+                            {
+                                Log.Information($"[FirstPointCom] Completed the FirstPointCom ingest process {DateTime.Now}.");
+                            }
+                            else
+                            {
+                                Log.Fatal($"[FirstPointCom] Failed to completed the FirstPointCom ingest process {DateTime.Now}.");
+                            }
 
                             if (firstPointComCycle.RunNow)
                             {
@@ -316,47 +288,41 @@ namespace NumberSearch.Ingest
 
                             Log.Debug($"[FirstPointCom] Priority ingest started at {DateTime.Now}");
 
-                            tasks.Add(
-                                    Task.Run(async () =>
-                                    {
-                                        // Ingest priority numbers in the FirsPointCom API.
-                                        Log.Information("[FirstPointCom] Ingesting priority data from FirstPointCom");
-                                        var FirstPointComStats = await Provider.FirstPointComAsync(username, password, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
 
-                                        var combined = new IngestStatistics
-                                        {
-                                            StartDate = FirstPointComStats.StartDate,
-                                            EndDate = DateTime.Now,
-                                            FailedToIngest = FirstPointComStats.FailedToIngest,
-                                            IngestedFrom = FirstPointComStats.IngestedFrom,
-                                            IngestedNew = FirstPointComStats.IngestedNew,
-                                            Lock = false,
-                                            NumbersRetrived = FirstPointComStats.NumbersRetrived,
-                                            Removed = 0,
-                                            Unchanged = FirstPointComStats.Unchanged,
-                                            UpdatedExisting = FirstPointComStats.UpdatedExisting,
-                                            Priority = true
-                                        };
+                            // Ingest priority numbers in the FirsPointCom API.
+                            Log.Information("[FirstPointCom] Ingesting priority data from FirstPointCom");
+                            var FirstPointComStats = await Provider.FirstPointComAsync(username, password, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
 
-                                        // Remove stale priority numbers
-                                        foreach (var code in AreaCode.Priority)
-                                        {
-                                            var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, new TimeSpan(priortyIngestCycleTime), code, lastRun.IngestedFrom, postgresSQL).ConfigureAwait(false);
-                                            combined.Removed += removedNumbers.Removed;
-                                        }
+                            var combined = new IngestStatistics
+                            {
+                                StartDate = FirstPointComStats.StartDate,
+                                EndDate = DateTime.Now,
+                                FailedToIngest = FirstPointComStats.FailedToIngest,
+                                IngestedFrom = FirstPointComStats.IngestedFrom,
+                                IngestedNew = FirstPointComStats.IngestedNew,
+                                Lock = false,
+                                NumbersRetrived = FirstPointComStats.NumbersRetrived,
+                                Removed = 0,
+                                Unchanged = FirstPointComStats.Unchanged,
+                                UpdatedExisting = FirstPointComStats.UpdatedExisting,
+                                Priority = true
+                            };
 
-                                        if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
-                                        {
-                                            Log.Information("[FirstPointCom] Completed the priority ingest process.");
-                                        }
-                                        else
-                                        {
-                                            Log.Fatal("[FirstPointCom] Failed to completed the priority ingest process.");
-                                        }
+                            // Remove stale priority numbers
+                            foreach (var code in AreaCode.Priority)
+                            {
+                                var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, new TimeSpan(priortyIngestCycleTime), code, lastRun.IngestedFrom, postgresSQL).ConfigureAwait(false);
+                                combined.Removed += removedNumbers.Removed;
+                            }
 
-                                        return combined;
-                                    })
-                                );
+                            if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
+                            {
+                                Log.Information($"[FirstPointCom] Completed the priority ingest process {DateTime.Now}.");
+                            }
+                            else
+                            {
+                                Log.Fatal($"[FirstPointCom] Failed to completed the priority ingest process {DateTime.Now}.");
+                            }
                         }
                     }
 
@@ -367,10 +333,10 @@ namespace NumberSearch.Ingest
 
                         if (lastRun != null && (lastRun.StartDate < (start - teleMessageCycle.CycleTime) || teleMessageCycle.RunNow))
                         {
-                            Log.Debug($"Last Run of {lastRun?.IngestedFrom} started at {lastRun?.StartDate} and ended at {lastRun?.EndDate}");
+                            Log.Information($"Last Run of {lastRun?.IngestedFrom} started at {lastRun?.StartDate} and ended at {lastRun?.EndDate}");
 
-                            Log.Information($"[TeleMessage] Cycle time is {teleMessageCycle?.CycleTime}");
-                            Log.Information($"[TeleMessage] Enabled is {teleMessageCycle?.Enabled}");
+                            Log.Information($"[TeliMessage] Cycle time is {teleMessageCycle?.CycleTime}");
+                            Log.Information($"[TeliMessage] Enabled is {teleMessageCycle?.Enabled}");
 
                             // Prevent another run from starting while this is still going.
                             var lockingStats = new IngestStatistics
@@ -389,72 +355,65 @@ namespace NumberSearch.Ingest
 
                             var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
 
-                            tasks.Add(
-                                    Task.Run(async () =>
-                                    {
-                                        // Ingest all avalible numbers from the TeleMessage.
-                                        Log.Information("Ingesting data from TeleMessage");
-                                        var teleStats = new IngestStatistics
-                                        {
-                                            StartDate = DateTime.Now,
-                                            EndDate = DateTime.Now,
-                                            FailedToIngest = 0,
-                                            IngestedFrom = "TeleMessage",
-                                            IngestedNew = 0,
-                                            Lock = false,
-                                            NumbersRetrived = 0,
-                                            Removed = 0,
-                                            Unchanged = 0,
-                                            UpdatedExisting = 0,
-                                            Priority = true
-                                        };
+                            // Ingest all avalible numbers from the TeleMessage.
+                            Log.Information("Ingesting data from TeliMessage");
+                            var teleStats = new IngestStatistics
+                            {
+                                StartDate = DateTime.Now,
+                                EndDate = DateTime.Now,
+                                FailedToIngest = 0,
+                                IngestedFrom = "TeleMessage",
+                                IngestedNew = 0,
+                                Lock = false,
+                                NumbersRetrived = 0,
+                                Removed = 0,
+                                Unchanged = 0,
+                                UpdatedExisting = 0,
+                                Priority = true
+                            };
 
-                                        try
-                                        {
-                                            teleStats = await Provider.TeleMessageAsync(teleToken, Array.Empty<int>(), postgresSQL).ConfigureAwait(false);
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            Log.Fatal("[TeleMessage] Failed to completed the priority ingest process.");
-                                            Log.Fatal($"[TeleMessage] {ex.Message} {ex.InnerException}");
-                                        }
+                            try
+                            {
+                                teleStats = await Provider.TeleMessageAsync(teleToken, Array.Empty<int>(), postgresSQL).ConfigureAwait(false);
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Fatal("[TeliMessage] Failed to completed the priority ingest process.");
+                                Log.Fatal($"[TeliMessage] {ex.Message} {ex.InnerException}");
+                            }
 
-                                        // Remove the lock from the database to prevent it from getting cluttered with blank entries.
-                                        var lockEntry = await IngestStatistics.GetLockAsync("TeleMessage", postgresSQL).ConfigureAwait(false);
-                                        var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
+                            // Remove the lock from the database to prevent it from getting cluttered with blank entries.
+                            var lockEntry = await IngestStatistics.GetLockAsync("TeleMessage", postgresSQL).ConfigureAwait(false);
+                            var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
 
-                                        // Remove all of the old numbers from the database.
-                                        // Remove Telemessage records at half the rate that we ingest them by doubling the delete cycle.
-                                        Log.Information("Removing old TeleMessage numbers from the database.");
-                                        var teleMessageCleanUp = await PhoneNumber.DeleteOldByProvider(start, teleMessageCycle.CycleTime, "TeleMessage", postgresSQL).ConfigureAwait(false);
+                            // Remove all of the old numbers from the database.
+                            // Remove Telemessage records at half the rate that we ingest them by doubling the delete cycle.
+                            Log.Information("[TeliMessage] Removing old TeleMessage numbers from the database.");
+                            var teleMessageCleanUp = await PhoneNumber.DeleteOldByProvider(start, teleMessageCycle.CycleTime, "TeleMessage", postgresSQL).ConfigureAwait(false);
 
-                                        var combined = new IngestStatistics
-                                        {
-                                            StartDate = teleStats.StartDate,
-                                            EndDate = teleMessageCleanUp.EndDate,
-                                            FailedToIngest = teleStats.FailedToIngest,
-                                            IngestedFrom = teleStats.IngestedFrom,
-                                            IngestedNew = teleStats.IngestedNew,
-                                            Lock = false,
-                                            NumbersRetrived = teleStats.NumbersRetrived,
-                                            Removed = teleMessageCleanUp.Removed,
-                                            Unchanged = teleStats.Unchanged,
-                                            UpdatedExisting = teleStats.UpdatedExisting,
-                                            Priority = false
-                                        };
+                            var combined = new IngestStatistics
+                            {
+                                StartDate = teleStats.StartDate,
+                                EndDate = teleMessageCleanUp.EndDate,
+                                FailedToIngest = teleStats.FailedToIngest,
+                                IngestedFrom = teleStats.IngestedFrom,
+                                IngestedNew = teleStats.IngestedNew,
+                                Lock = false,
+                                NumbersRetrived = teleStats.NumbersRetrived,
+                                Removed = teleMessageCleanUp.Removed,
+                                Unchanged = teleStats.Unchanged,
+                                UpdatedExisting = teleStats.UpdatedExisting,
+                                Priority = false
+                            };
 
-                                        if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
-                                        {
-                                            Log.Information("Completed the TeleMessage ingest process.");
-                                        }
-                                        else
-                                        {
-                                            Log.Fatal("Failed to completed the TeleMessage ingest process.");
-                                        }
-
-                                        return combined;
-                                    })
-                                );
+                            if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
+                            {
+                                Log.Information($"[TeliMessage] Completed the TeleMessage ingest process {DateTime.Now}.");
+                            }
+                            else
+                            {
+                                Log.Fatal($"[TeliMessage] Failed to completed the TeleMessage ingest process {DateTime.Now}.");
+                            }
 
                             if (teleMessageCycle.RunNow)
                             {
@@ -474,73 +433,64 @@ namespace NumberSearch.Ingest
                             // Restart the one hour timer.
                             teleMessagePriortyTimer.Restart();
 
-                            Log.Debug($"[TeleMessage] Priority ingest started at {DateTime.Now}.");
+                            Log.Debug($"[TeliMessage] Priority ingest started at {DateTime.Now}.");
 
-                            tasks.Add(
-                                    Task.Run(async () =>
-                                    {
-                                        // Ingest all avalible numbers from the TeleMessage.
-                                        Log.Information("[TeleMessage] Ingesting priority data from TeleMessage");
-                                        var teleStats = new IngestStatistics
-                                        {
-                                            StartDate = DateTime.Now,
-                                            EndDate = DateTime.Now,
-                                            FailedToIngest = 0,
-                                            IngestedFrom = "TeleMessage",
-                                            IngestedNew = 0,
-                                            Lock = false,
-                                            NumbersRetrived = 0,
-                                            Removed = 0,
-                                            Unchanged = 0,
-                                            UpdatedExisting = 0,
-                                            Priority = true
-                                        };
-                                        try
-                                        {
-                                            teleStats = await Provider.TeleMessageAsync(teleToken, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            Log.Fatal("[TeleMessage] Failed to completed the priority ingest process.");
-                                            Log.Fatal($"[TeleMessage] {ex.Message} {ex.InnerException}");
-                                        }
+                            // Ingest all avalible numbers from the TeleMessage.
+                            Log.Information("[TeliMessage] Ingesting priority data from TeleMessage");
+                            var teleStats = new IngestStatistics
+                            {
+                                StartDate = DateTime.Now,
+                                EndDate = DateTime.Now,
+                                FailedToIngest = 0,
+                                IngestedFrom = "TeleMessage",
+                                IngestedNew = 0,
+                                Lock = false,
+                                NumbersRetrived = 0,
+                                Removed = 0,
+                                Unchanged = 0,
+                                UpdatedExisting = 0,
+                                Priority = true
+                            };
+                            try
+                            {
+                                teleStats = await Provider.TeleMessageAsync(teleToken, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Fatal("[TeliMessage] Failed to completed the priority ingest process.");
+                                Log.Fatal($"[TeliMessage] {ex.Message} {ex.InnerException}");
+                            }
 
-                                        var combined = new IngestStatistics
-                                        {
-                                            StartDate = teleStats.StartDate,
-                                            EndDate = DateTime.Now,
-                                            FailedToIngest = teleStats.FailedToIngest,
-                                            IngestedFrom = teleStats.IngestedFrom,
-                                            IngestedNew = teleStats.IngestedNew,
-                                            Lock = false,
-                                            NumbersRetrived = teleStats.NumbersRetrived,
-                                            Removed = 0,
-                                            Unchanged = teleStats.Unchanged,
-                                            UpdatedExisting = teleStats.UpdatedExisting,
-                                            Priority = true
-                                        };
+                            var combined = new IngestStatistics
+                            {
+                                StartDate = teleStats.StartDate,
+                                EndDate = DateTime.Now,
+                                FailedToIngest = teleStats.FailedToIngest,
+                                IngestedFrom = teleStats.IngestedFrom,
+                                IngestedNew = teleStats.IngestedNew,
+                                Lock = false,
+                                NumbersRetrived = teleStats.NumbersRetrived,
+                                Removed = 0,
+                                Unchanged = teleStats.Unchanged,
+                                UpdatedExisting = teleStats.UpdatedExisting,
+                                Priority = true
+                            };
 
-                                        // Remove stale priority numbers
-                                        foreach (var code in AreaCode.Priority)
-                                        {
-                                            var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, new TimeSpan(priortyIngestCycleTime), code, lastRun.IngestedFrom, postgresSQL).ConfigureAwait(false);
-                                            combined.Removed += removedNumbers.Removed;
-                                        }
+                            // Remove stale priority numbers
+                            foreach (var code in AreaCode.Priority)
+                            {
+                                var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, new TimeSpan(priortyIngestCycleTime), code, lastRun.IngestedFrom, postgresSQL).ConfigureAwait(false);
+                                combined.Removed += removedNumbers.Removed;
+                            }
 
-                                        if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
-                                        {
-                                            Log.Information("[TeleMessage] Completed the priority ingest process.");
-                                        }
-                                        else
-                                        {
-                                            Log.Fatal("[TeleMessage] Failed to completed the priority ingest process.");
-                                        }
-
-                                        return combined;
-                                    })
-                                );
-
-                            await Task.WhenAll(tasks).ConfigureAwait(false);
+                            if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
+                            {
+                                Log.Information($"[TeliMessage] Completed the priority ingest process {DateTime.Now}.");
+                            }
+                            else
+                            {
+                                Log.Fatal($"[TeliMessage] Failed to completed the priority ingest process {DateTime.Now}.");
+                            }
 
                             // Update the statuses of all active TeliMessage port request.
                             await PortRequests.UpdateStatusesTeliMessageAsync(config);
@@ -554,7 +504,7 @@ namespace NumberSearch.Ingest
 
                         if (lastRun != null && (lastRun.StartDate < (start - peerlessCycle.CycleTime) || peerlessCycle.RunNow))
                         {
-                            Log.Debug($"Last Run of {lastRun.IngestedFrom} started at {lastRun.StartDate} and ended at {lastRun.EndDate}");
+                            Log.Information($"[Peerless] Last Run of {lastRun.IngestedFrom} started at {lastRun.StartDate} and ended at {lastRun.EndDate}");
 
                             Log.Information($"[Peerless] Cycle time is {peerlessCycle?.CycleTime}");
                             Log.Information($"[Peerless] Enabled is {peerlessCycle?.Enabled}");
@@ -576,48 +526,41 @@ namespace NumberSearch.Ingest
 
                             var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
 
-                            tasks.Add(
-                                    Task.Run(async () =>
-                                    {
-                                        // Ingest all avalible numbers from the TeleMessage.
-                                        Log.Information("Ingesting data from Peerless");
-                                        var peerlessStats = await Peerless.IngestPhoneNumbersAsync(peerlessApiKey, AreaCode.All, postgresSQL).ConfigureAwait(false);
+                            // Ingest all avalible numbers from the TeleMessage.
+                            Log.Information("[Peerless] Ingesting data from Peerless");
+                            var peerlessStats = await Peerless.IngestPhoneNumbersAsync(peerlessApiKey, AreaCode.All, postgresSQL).ConfigureAwait(false);
 
-                                        // Remove the lock from the database to prevent it from getting cluttered with blank entries.
-                                        var lockEntry = await IngestStatistics.GetLockAsync("Peerless", postgresSQL).ConfigureAwait(false);
-                                        var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
+                            // Remove the lock from the database to prevent it from getting cluttered with blank entries.
+                            var lockEntry = await IngestStatistics.GetLockAsync("Peerless", postgresSQL).ConfigureAwait(false);
+                            var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
 
-                                        // Remove all of the old numbers from the database.
-                                        Log.Information("[Peerless] Removing old Peerless numbers from the database.");
-                                        var peerlessCleanUp = await PhoneNumber.DeleteOldByProvider(start, peerlessCycle.CycleTime, "Peerless", postgresSQL).ConfigureAwait(false);
+                            // Remove all of the old numbers from the database.
+                            Log.Information("[Peerless] Removing old Peerless numbers from the database.");
+                            var peerlessCleanUp = await PhoneNumber.DeleteOldByProvider(start, peerlessCycle.CycleTime, "Peerless", postgresSQL).ConfigureAwait(false);
 
-                                        var combined = new IngestStatistics
-                                        {
-                                            StartDate = peerlessStats.StartDate,
-                                            EndDate = peerlessCleanUp.EndDate,
-                                            FailedToIngest = peerlessStats.FailedToIngest,
-                                            IngestedFrom = peerlessStats.IngestedFrom,
-                                            IngestedNew = peerlessStats.IngestedNew,
-                                            Lock = false,
-                                            NumbersRetrived = peerlessStats.NumbersRetrived,
-                                            Removed = peerlessCleanUp.Removed,
-                                            Unchanged = peerlessStats.Unchanged,
-                                            UpdatedExisting = peerlessStats.UpdatedExisting,
-                                            Priority = false
-                                        };
+                            var combined = new IngestStatistics
+                            {
+                                StartDate = peerlessStats.StartDate,
+                                EndDate = peerlessCleanUp.EndDate,
+                                FailedToIngest = peerlessStats.FailedToIngest,
+                                IngestedFrom = peerlessStats.IngestedFrom,
+                                IngestedNew = peerlessStats.IngestedNew,
+                                Lock = false,
+                                NumbersRetrived = peerlessStats.NumbersRetrived,
+                                Removed = peerlessCleanUp.Removed,
+                                Unchanged = peerlessStats.Unchanged,
+                                UpdatedExisting = peerlessStats.UpdatedExisting,
+                                Priority = false
+                            };
 
-                                        if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
-                                        {
-                                            Log.Information("Completed the Peerless ingest process.");
-                                        }
-                                        else
-                                        {
-                                            Log.Fatal("Failed to completed the Peerless ingest process.");
-                                        }
-
-                                        return combined;
-                                    })
-                                );
+                            if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
+                            {
+                                Log.Information("[Peerless] Completed the Peerless ingest process.");
+                            }
+                            else
+                            {
+                                Log.Fatal("[Peerless] Failed to completed the Peerless ingest process.");
+                            }
 
                             if (peerlessCycle.RunNow)
                             {
@@ -637,42 +580,35 @@ namespace NumberSearch.Ingest
                             // Restart the one hour timer.
                             peerlessPriortyTimer.Restart();
 
-                            Log.Debug($"[Peerless] Priority ingest started at {DateTime.Now}.");
+                            Log.Information($"[Peerless] Priority ingest started at {DateTime.Now}.");
 
-                            tasks.Add(
-                                    Task.Run(async () =>
-                                    {
-                                        // Ingest priority numbers from the TeleMessage.
-                                        Log.Information("[Peerless] Ingesting priority data from Peerless");
-                                        var peerlessStats = await Peerless.IngestPhoneNumbersAsync(peerlessApiKey, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
+                            // Ingest priority numbers from the TeleMessage.
+                            Log.Information("[Peerless] Ingesting priority data from Peerless");
+                            var peerlessStats = await Peerless.IngestPhoneNumbersAsync(peerlessApiKey, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
 
-                                        var combined = new IngestStatistics
-                                        {
-                                            StartDate = peerlessStats.StartDate,
-                                            EndDate = DateTime.Now,
-                                            FailedToIngest = peerlessStats.FailedToIngest,
-                                            IngestedFrom = peerlessStats.IngestedFrom,
-                                            IngestedNew = peerlessStats.IngestedNew,
-                                            Lock = false,
-                                            NumbersRetrived = peerlessStats.NumbersRetrived,
-                                            Removed = 0,
-                                            Unchanged = peerlessStats.Unchanged,
-                                            UpdatedExisting = peerlessStats.UpdatedExisting,
-                                            Priority = true
-                                        };
+                            var combined = new IngestStatistics
+                            {
+                                StartDate = peerlessStats.StartDate,
+                                EndDate = DateTime.Now,
+                                FailedToIngest = peerlessStats.FailedToIngest,
+                                IngestedFrom = peerlessStats.IngestedFrom,
+                                IngestedNew = peerlessStats.IngestedNew,
+                                Lock = false,
+                                NumbersRetrived = peerlessStats.NumbersRetrived,
+                                Removed = 0,
+                                Unchanged = peerlessStats.Unchanged,
+                                UpdatedExisting = peerlessStats.UpdatedExisting,
+                                Priority = true
+                            };
 
-                                        if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
-                                        {
-                                            Log.Information("[Peerless] Completed the priority ingest process.");
-                                        }
-                                        else
-                                        {
-                                            Log.Fatal("[Peerless] Failed to complete the priority ingest process.");
-                                        }
-
-                                        return combined;
-                                    })
-                                );
+                            if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
+                            {
+                                Log.Information("[Peerless] Completed the priority ingest process.");
+                            }
+                            else
+                            {
+                                Log.Fatal("[Peerless] Failed to complete the priority ingest process.");
+                            }
                         }
                     }
 
@@ -705,131 +641,7 @@ namespace NumberSearch.Ingest
 
                             var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
 
-                            tasks.Add(
-                                    Task.Run(async () =>
-                                    {
-                                        var allNumbers = new List<OwnedPhoneNumber>();
-                                        var start = DateTime.Now;
-
-                                        // Ingest all owned numbers from the providers.
-                                        try
-                                        {
-                                            Log.Information("[OwnedNumbers] Ingesting data from OwnedNumbers.");
-                                            var firstComNumbers = await Owned.FirstPointComAsync(username, password).ConfigureAwait(false);
-                                            var teleMessageNumbers = await Owned.TeleMessageAsync(teleToken).ConfigureAwait(false);
-                                            var bulkVSNumbers = await TnRecord.GetOwnedAsync(bulkVSusername, bulkVSpassword).ConfigureAwait(false);
-
-                                            if (firstComNumbers != null)
-                                            {
-                                                allNumbers.AddRange(firstComNumbers);
-                                            };
-
-                                            if (teleMessageNumbers != null)
-                                            {
-                                                allNumbers.AddRange(teleMessageNumbers);
-                                            };
-
-                                            if (bulkVSNumbers != null)
-                                            {
-                                                allNumbers.AddRange(bulkVSNumbers);
-                                            };
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            Log.Fatal("[OwnedNumbers] Failed to retrive owned numbers.");
-                                            Log.Fatal(ex.Message);
-                                            Log.Fatal(ex.StackTrace);
-                                        }
-
-                                        // Update emergency info
-                                        var emergency = await Owned.VerifyEmergencyInformationAsync(allNumbers, teleToken, postgresSQL).ConfigureAwait(false);
-                                        allNumbers = emergency.ToList();
-
-                                        // If we ingested any owned numbers update the database.
-                                        var ownedNumberStats = new IngestStatistics();
-                                        if (allNumbers.Count > 0)
-                                        {
-                                            Log.Information($"[OwnedNumbers] Submitting {allNumbers.Count} numbers to the database.");
-                                            ownedNumberStats = await Owned.SubmitOwnedNumbersAsync(allNumbers, postgresSQL).ConfigureAwait(false);
-                                        }
-                                        else
-                                        {
-                                            Log.Fatal("[OwnedNumbers] No ownend numbers ingested. Skipping submission to the database.");
-                                            ownedNumberStats = new IngestStatistics
-                                            {
-                                                StartDate = start,
-                                                EndDate = DateTime.Now,
-                                                FailedToIngest = 0,
-                                                IngestedNew = 0,
-                                                Lock = false,
-                                                NumbersRetrived = 0,
-                                                IngestedFrom = "OwnedNumbers",
-                                                Priority = false,
-                                                Removed = 0,
-                                                Unchanged = 0,
-                                                UpdatedExisting = 0
-                                            };
-                                        }
-
-                                        // Look for LRN changes.
-                                        try
-                                        {
-                                            Log.Information("[OwnedNumbers] Looking for LRN changes on owned numbers.");
-                                            var changedNumbers = await Owned.VerifyServiceProvidersAsync(teleToken, bulkVSKey, postgresSQL).ConfigureAwait(false);
-
-                                            if (changedNumbers != null && changedNumbers.Any())
-                                            {
-                                                Log.Information($"[OwnedNumbers] Emailing out a notification that {changedNumbers.Count()} numbers LRN updates.");
-                                                var checkSend = await Owned.SendPortingNotificationEmailAsync(changedNumbers, smtpUsername, smtpPassword, emailDan, emailOrders, postgresSQL).ConfigureAwait(false);
-                                            }
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            Log.Fatal("[OwnedNumbers] Failed to look for LRN changes on owned numbers.");
-                                            Log.Fatal(ex.Message);
-                                        }
-
-                                        // Offer unassigned phone numbers we own for purchase on the website.
-                                        var unassignedNubmers = await Owned.OfferUnassignedNumberForSaleAsync(bulkVSKey, postgresSQL).ConfigureAwait(false);
-
-                                        // Match up owned numbers and their billingClients.
-                                        var billingClients = await Owned.MatchOwnedNumbersToBillingClientsAsync(postgresSQL).ConfigureAwait(false);
-
-                                        // Remove the lock from the database to prevent it from getting cluttered with blank entries.
-                                        var lockEntry = await IngestStatistics.GetLockAsync("OwnedNumbers", postgresSQL).ConfigureAwait(false);
-                                        var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
-
-                                        // Remove all of the old numbers from the database.
-                                        Log.Information("[OwnedNumbers] Marking numbers that failed to reingest as inactive in the database.");
-                                        // TODO: Mark old owned numbers as in active.
-
-                                        var combined = new IngestStatistics
-                                        {
-                                            StartDate = start,
-                                            EndDate = DateTime.Now,
-                                            FailedToIngest = ownedNumberStats.FailedToIngest,
-                                            IngestedFrom = ownedNumberStats.IngestedFrom,
-                                            IngestedNew = ownedNumberStats.IngestedNew,
-                                            Lock = false,
-                                            NumbersRetrived = ownedNumberStats.NumbersRetrived,
-                                            Removed = 0,
-                                            Unchanged = ownedNumberStats.Unchanged,
-                                            UpdatedExisting = ownedNumberStats.UpdatedExisting,
-                                            Priority = false
-                                        };
-
-                                        if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
-                                        {
-                                            Log.Information("[OwnedNumbers] Completed the ingest process.");
-                                        }
-                                        else
-                                        {
-                                            Log.Fatal("[OwnedNumbers] Failed to completed the ingest process.");
-                                        }
-
-                                        return combined;
-                                    })
-                                );
+                            await Owned.IngestAsync(config);
 
                             if (ownedNumbersCycle.RunNow)
                             {
