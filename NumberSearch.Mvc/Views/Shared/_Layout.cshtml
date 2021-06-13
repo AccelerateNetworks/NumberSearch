@@ -2,25 +2,113 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] | Accelerate Networks</title>
+    <!-- SEO Meta Tags-->
+    <meta name="description" content="Accelerate Networks provides desk phones, VOIP services, and phone numbers for businesses in the Seattle area. If your business needs phones, Accelerate Networks can help.">
     <meta name="keywords" content="Phones, VOIP, Texting, Business, Phone Numbers, Desk Phones, PBX, LTE Backup, eCommerce">
-    <meta name="description" content="Accelerate Networks provides desk phones, VOIP services, and phone numbers for businesses in the Seattle area. If your business needs phones, Accelerate Networks can help." />
     @{
         if (ViewData["noindex"] != null)
         {
             <meta name="robots" content="noindex">
         }
     }
-    <title>@ViewData["Title"] | Accelerate Networks</title>
     <link rel="canonical" href="https://acceleratenetworks.com/" />
-    <link rel="icon" href="~/images/scaled/favicon-194x194.png">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
-    <link rel="stylesheet" href="~/css/site.css" />
+    <!-- Viewport-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Favicon and Touch Icons-->
+    <link rel="icon" type="image/png" href="~/images/scaled/favicon-194x194.png">
+    <!-- Page loading styles-->
+    <style>
+      .page-loading {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        -webkit-transition: all .4s .2s ease-in-out;
+        transition: all .4s .2s ease-in-out;
+        background-color: #fff;
+        opacity: 0;
+        visibility: hidden;
+        z-index: 9999;
+      }
+      .page-loading.active {
+        opacity: 1;
+        visibility: visible;
+      }
+      .page-loading-inner {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        -webkit-transform: translateY(-50%);
+        transform: translateY(-50%);
+        -webkit-transition: opacity .2s ease-in-out;
+        transition: opacity .2s ease-in-out;
+        opacity: 0;
+      }
+      .page-loading.active > .page-loading-inner {
+        opacity: 1;
+      }
+      .page-loading-inner > span {
+        display: block;
+        font-family: 'Inter', sans-serif;
+        font-size: 1rem;
+        font-weight: normal;
+        color: #737491;
+      }
+      .page-spinner {
+        display: inline-block;
+        width: 2.75rem;
+        height: 2.75rem;
+        margin-bottom: .75rem;
+        vertical-align: text-bottom;
+        border: .15em solid #766df4;
+        border-right-color: transparent;
+        border-radius: 50%;
+        -webkit-animation: spinner .75s linear infinite;
+        animation: spinner .75s linear infinite;
+      }
+      @-webkit-keyframes spinner {
+        100% {
+          -webkit-transform: rotate(360deg);
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes spinner {
+        100% {
+          -webkit-transform: rotate(360deg);
+          transform: rotate(360deg);
+        }
+      }
+
+    </style>
+    <!-- Page loading scripts-->
+    <script>
+      (function () {
+        window.onload = function () {
+          var preloader = document.querySelector('.page-loading');
+          preloader.classList.remove('active');
+          setTimeout(function () {
+            preloader.remove();
+          }, 2000);
+        };
+      })();
+
+    </script>
+    <!-- Vendor Styles-->
+    <link rel="stylesheet" media="screen" href="~/css/vendor/simplebar.min.css"/>
+    <!-- Main Theme Styles + Bootstrap-->
+    <link rel="stylesheet" media="screen" href="~/css/theme.min.css">
+
     @Html.Raw(JavaScriptSnippet.FullScript)
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF" crossorigin="anonymous"></script>
     @*MS Clarity*@
     <script type="text/javascript">
         (function (c, l, a, r, i, t, y) {
@@ -46,75 +134,109 @@
         }
     </script>
 </head>
+<!-- Body-->
 <body>
-    <div class="sticky-top">
-        <div class="progress" style="height: 0.2rem;">
-            <div class="progress-bar bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="scrollIndicator"></div>
-        </div>
-        <div class="bg-white pb-3 pt-3">
-            <div class="container">
-                <div class="row">
-                    <div class="col-xl-3 col-md-3">
-                        @*Desktop*@
-                        <a asp-controller="Home" asp-action="Index" class="navbar-brand mx-auto font-weight-normal d-none d-sm-block">
-                            <img src="~/images/scaled/accelerate.png" alt="Accelerate Networks" class="img-fluid" style="width: 10rem;">
-                        </a>
-                        @*Mobile*@
-                        <a asp-controller="Home" asp-action="Index" class="navbar-brand d-sm-none d-block mx-auto pr-5 pl-5">
-                            <img src="~/images/scaled/accelerate.png" alt="Accelerate Networks" class="img-fluid">
-                        </a>
-                    </div>
-                    @*Desktop*@
-                    <div class="col-md-9 col-sm-12 d-flex flex-wrap justify-content-around align-items-center">
-                        <a class="p-2 text-dark btn-lg" asp-controller="Services" asp-action="Index">Services</a>
-                        <a class="p-2 text-dark btn-lg" asp-controller="Hardware" asp-action="Index">Hardware</a>
-                        <a class="p-2 text-dark btn-lg" asp-controller="Search" asp-action="Index">Numbers</a>
-
-                        <div class="dropdown">
-                            <a class="p-2 text-dark dropdown-toggle btn-lg" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Support
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                <a class="dropdown-item btn-lg" asp-controller="Home" asp-action="Support">Knowledge Base</a>
-                                <a class="dropdown-item btn-lg" asp-controller="Lookup" asp-action="Index">Lookup/Port</a>
-                            </div>
-                        </div>
-                        <div class="dropdown">
-                            <a class="p-2 text-dark dropdown-toggle btn-lg" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                About
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                <a class="dropdown-item btn-lg" asp-controller="Home" asp-action="About">About</a>
-                                <a class="dropdown-item btn-lg" asp-controller="Home" asp-action="Features">Features</a>
-                                <a class="dropdown-item btn-lg" href="https://blog.acceleratenetworks.com/" target="_blank"
-                                   rel="noopener noreferrer">Blog</a>
-                            </div>
-                        </div>
-                        @await Component.InvokeAsync("HeaderCart")
-                    </div>
-                </div>
-            </div>
-        </div>
+  <!-- Page loading spinner-->
+  <div class="page-loading active">
+    <div class="page-loading-inner">
+      <div class="page-spinner"></div><span>Loading...</span>
     </div>
-    <main role="main">
-        @RenderBody()
-    </main>
-    <div class="p-3 bg-light">
-        <div class="container">
-            <footer class="footer pt-4 my-md-5 pt-md-5">
-                <div class="row">
-                    <div class="col">
-                        <h5>Proudly made in Seattle, WA</h5>
-                        <small class="d-block mb-3 text-muted">© 2020 Accelerate Networks</small>
-                    </div>
-                    <div class="col text-right">
-                        <a href="tel:12068588757">1-(206)-858-8757</a>
-                        <br><a href="mailto:support@acceleratenetworks.com">support@acceleratenetworks.com</a>
-                    </div>
-                </div>
-            </footer>
-        </div>
+  </div>
+  <main class="page-wrapper" role="main">
+    <!-- Page scroll indicator-->
+    <div class="progress sticky-top" style="height: 0.2rem">
+      <div class="progress-bar bg-primary" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="scrollIndicator"></div>
     </div>
+    <!-- Navbar (Solid background)-->
+    <header class="header navbar navbar-expand-lg navbar-light bg-light navbar-sticky" data-scroll-header data-fixed-element>
+      <div class="container px-0 px-xl-3">
+        <button class="navbar-toggler ms-n2 me-2 order-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"><span class="navbar-toggler-icon"></span></button><a class="navbar-brand flex-shrink-0 order-lg-1 ms-lg-0 pe-lg-2 me-lg-4" href="index.html"><img class="d-none d-lg-block" src="img/logo/logo-dark-an.png" alt="Accelerate Networks" width="153"><img class="d-lg-none" src="img/original/favicon-194x194.png" alt="Accelerate Networks" width="58"></a>
+        <div class="d-flex align-items-center order-lg-3 ms-lg-auto"><a class="nav-link-style fs-sm text-nowrap d-none d-lg-inline-block" href="#">Talk to an expert: <strong>(800) 123-4567</strong></a><a class="btn btn-secondary ms-grid-gutter d-none d-lg-inline-block" href="#">Get started</a></div>
+        <div class="offcanvas offcanvas-end offcanvas-collapse order-lg-2" id="offcanvasRight" tabindex="-1">
+          <div class="offcanvas-header navbar-shadow">
+            <h5 class="mt-1 mb-0">Menu</h5>
+            <button class="btn-close lead" type="button" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <!-- Menu-->
+            <ul class="navbar-nav">
+              <li class="nav-item"><a class="nav-link" href="#">Features</a></li>
+              <li class="nav-item"><a class="nav-link" href="#">Solutions</a></li>
+              <li class="nav-item"><a class="nav-link" href="#">Resources</a></li>
+              <li class="nav-item"><a class="nav-link" href="#">Pricing</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- Page content-->
+    @RenderBody()
+  </main>
+  <!-- Footer-->
+  <div class="bg-light position-relative pb-7">
+    <div class="shape shape-bottom shape-curve bg-dark">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3000 185.4">
+        <path fill="currentColor" d="M3000,0v185.4H0V0c496.4,115.6,996.4,173.4,1500,173.4S2503.6,115.6,3000,0z"></path>
+      </svg>
+    </div>
+  </div>
+  <footer class="footer bg-dark pt-5 pt-md-6">
+    <div class="container pt-3 pt-md-0">
+      <div class="row pb-3">
+        <div class="col-md-4 mt-n2 pb-3 pb-md-0 mb-4"><a class="d-block mb-3" href="index.html" style="width: 153px;"><img src="img/logo/logo-dark-an.png" alt="Accelerate Networks"></a>
+          <p class="fs-sm text-light opacity-60 pb-2 pb-sm-3">Manage calls, voicemails, business texts, and faxes—all in one place.</p><a class="btn-social bs-outline bs-facebook bs-light bs-lg me-2 mb-2" href="#"><i class="ai-facebook"></i></a><a class="btn-social bs-outline bs-twitter bs-light bs-lg me-2 mb-2" href="#"><i class="ai-linkedin"></i></a><a class="btn-social bs-outline bs-instagram bs-light bs-lg me-2 mb-2" href="#"><i class="ai-github"></i></a>
+        </div>
+        <div class="col-md-2 col-sm-4 ms-auto pb-1 mb-4">
+          <div class="widget widget-light">
+            <h4 class="widget-title">Product</h4>
+            <ul>
+              <li><a class="widget-link" href="#">Features</a></li>
+              <li><a class="widget-link" href="#">Pricing</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 pb-1 mb-4">
+          <div class="widget widget-light">
+            <h4 class="widget-title">Support</h4>
+            <ul>
+              <li><a class="widget-link" href="#">Knowledge base</a></li>
+              <li><a class="widget-link" href="#">Port your number</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 mb-4">
+          <div class="widget widget-light">
+            <h4 class="widget-title">Company</h4>
+            <ul>
+              <li><a class="widget-link" href="#">About</a></li>
+              <li><a class="widget-link" href="#">Blog</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <hr class="my-0 border-light">
+      <div class="row align-items-center mt-3 py-4">
+        <div class="col-md-6 order-md-2 text-md-end mb-3">
+          <ul class="list-inline fs-sm mb-0">
+            <li class="list-inline-item"><a class="nav-link-style nav-link-light" href="#">Privacy</a></li>
+            <li class="list-inline-item"><a class="nav-link-style nav-link-light" href="#">Support</a></li>
+            <li class="list-inline-item"><a class="nav-link-style nav-link-light" href="#">Contact</a></li>
+          </ul>
+        </div>
+        <div class="col-md-6 order-md-1 mb-3">
+          <p class="fs-sm mb-0"><span class="text-light opacity-50 me-1">© Accelerate Networks. Proudly made in Seattle.</span></p>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <!-- Back to top button--><a class="btn-scroll-top" href="#top" data-scroll data-fixed-element><span class="btn-scroll-top-tooltip text-muted fs-sm me-2">Top</span><i class="btn-scroll-top-icon ai-arrow-up"></i></a>
+  <!-- Vendor scrits: js libraries and plugins-->
+  <script src="~/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+  <script src="~/vendor/simplebar/simplebar.min.js"></script>
+  <script src="~/vendor/smooth-scroll/smooth-scroll.polyfills.min.js"></script>
+  <!-- Main theme script-->
+  <script src="~/js/theme.min.js"></script>
+  <!-- Additional scripts from Number Search-->
     @RenderSection("Scripts", required: false)
 </body>
 </html>
