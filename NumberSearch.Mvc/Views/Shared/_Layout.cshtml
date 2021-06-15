@@ -56,27 +56,27 @@
                 <div class="row">
                     <div class="col-xl-3 col-md-3">
                         @*Desktop*@
-                        <a asp-controller="Home" asp-action="Index" class="navbar-brand mx-auto font-weight-normal d-none d-sm-block">
+                        <a href="/" class="navbar-brand mx-auto font-weight-normal d-none d-sm-block">
                             <img src="~/images/scaled/accelerate.png" alt="Accelerate Networks" class="img-fluid" style="width: 10rem;">
                         </a>
                         @*Mobile*@
-                        <a asp-controller="Home" asp-action="Index" class="navbar-brand d-sm-none d-block mx-auto pr-5 pl-5">
+                        <a href="/" class="navbar-brand d-sm-none d-block mx-auto pr-5 pl-5">
                             <img src="~/images/scaled/accelerate.png" alt="Accelerate Networks" class="img-fluid">
                         </a>
                     </div>
                     @*Desktop*@
                     <div class="col-md-9 col-sm-12 d-flex flex-wrap justify-content-around align-items-center">
-                        <a class="p-2 text-dark btn-lg" asp-controller="Services" asp-action="Index">Services</a>
-                        <a class="p-2 text-dark btn-lg" asp-controller="Hardware" asp-action="Index">Hardware</a>
-                        <a class="p-2 text-dark btn-lg" asp-controller="Search" asp-action="Index">Numbers</a>
+                        <a class="p-2 text-dark btn-lg" href="/Services">Services</a>
+                        <a class="p-2 text-dark btn-lg" href="/Hardware">Hardware</a>
+                        <a class="p-2 text-dark btn-lg" href="/Search">Numbers</a>
 
                         <div class="dropdown">
                             <a class="p-2 text-dark dropdown-toggle btn-lg" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 Support
                             </a>
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                <a class="dropdown-item btn-lg" asp-controller="Home" asp-action="Support">Knowledge Base</a>
-                                <a class="dropdown-item btn-lg" asp-controller="Lookup" asp-action="Index">Lookup/Port</a>
+                                <a class="dropdown-item btn-lg" href="/Support">Knowledge Base</a>
+                                <a class="dropdown-item btn-lg" href="/Lookup">Lookup/Port</a>
                             </div>
                         </div>
                         <div class="dropdown">
@@ -84,8 +84,8 @@
                                 About
                             </a>
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                <a class="dropdown-item btn-lg" asp-controller="Home" asp-action="About">About</a>
-                                <a class="dropdown-item btn-lg" asp-controller="Home" asp-action="Features">Features</a>
+                                <a class="dropdown-item btn-lg" href="/About">About</a>
+                                <a class="dropdown-item btn-lg" href="/Features">Features</a>
                                 <a class="dropdown-item btn-lg" href="https://blog.acceleratenetworks.com/" target="_blank"
                                    rel="noopener noreferrer">Blog</a>
                             </div>
