@@ -16,8 +16,16 @@
     <None Remove="Services\**" />
   </ItemGroup>
   <ItemGroup>
+    <Content Remove="Views\Phones\DP722.cshtml" />
+    <Content Remove="Views\Phones\DP730.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
     <None Remove="NumberSearch.Mvc_2020081320200813.txt" />
     <None Remove="NumberSearch.Mvc_2020112420201124.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Views\Phones\DP722.cshtml" />
+    <None Include="Views\Phones\DP730.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="1.5.1">
