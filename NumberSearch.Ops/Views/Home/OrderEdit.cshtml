@@ -149,7 +149,7 @@
 
         <div class="mb-3" id="searchForm">
             <label for="address">Address</label>
-            <input asp-for="Address" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" list="addressOptions" autocomplete="off" required>
+            <input asp-for="UnparsedAddress" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" required>
             <datalist id="addressOptions">
             </datalist>
             <small class="text-muted">
@@ -211,21 +211,6 @@
             <input asp-for="Address2" type="text" class="form-control" id="address2" placeholder="Apartment or suite">
         </div>
 
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <label for="unitType">City</label>
-                <input asp-for="City" type="text" class="form-control" id="address2" readonly>
-
-            </div>
-            <div class="col-md-4 mb-3">
-                <label for="address2">State</label>
-                <input asp-for="State" type="text" class="form-control" id="address2" readonly>
-            </div>
-            <div class="col-md-4 mb-3">
-                <label for="address2">Zip</label>
-                <input asp-for="Zip" type="text" class="form-control" id="address2" readonly>
-            </div>
-        </div>
         <h4 class="mb-3">Installation Information</h4>
         <div class="row">
             <div class="col-md-4 mb-3">

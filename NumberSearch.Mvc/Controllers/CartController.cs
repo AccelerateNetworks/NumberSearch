@@ -244,7 +244,7 @@ namespace NumberSearch.Mvc.Controllers
 
                         // Format the address information
                         Log.Information($"[Checkout] Parsing address data from {order.Address}");
-                        var addressParts = order.Address.Split(", ");
+                        var addressParts = order.UnparsedAddress.Split(", ");
                         if (addressParts.Length > 4)
                         {
                             order.Address = addressParts[0];

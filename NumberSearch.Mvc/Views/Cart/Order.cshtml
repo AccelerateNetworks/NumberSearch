@@ -480,7 +480,7 @@
                 {
                     <div class="mb-3" id="searchForm">
                         <label for="address">Address</label>
-                        <input asp-for="Order.Address" type="text" class="form-control" id="address" readonly>
+                        <input asp-for="Order.UnparsedAddress" type="text" class="form-control" id="address" readonly>
                         <small class="text-muted">
                             Enter the shipping address for this order, or the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
                         </small>
@@ -490,7 +490,7 @@
                 {
                     <div class="mb-3" id="searchForm">
                         <label for="address">Address</label>
-                        <input asp-for="Order.Address" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" list="addressOptions" autocomplete="off" required>
+                        <input asp-for="Order.UnparsedAddress" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" list="addressOptions" autocomplete="off" required>
                         <datalist id="addressOptions">
                         </datalist>
                         <small class="text-muted">
@@ -546,24 +546,6 @@
                         </small>
                     </div>
                 </div>
-                @if (!string.IsNullOrWhiteSpace(Model?.Order?.City))
-                {
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label for="unitType">City</label>
-                            <input asp-for="Order.City" type="text" class="form-control" id="address2" readonly>
-
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="address2">State</label>
-                            <input asp-for="Order.State" type="text" class="form-control" id="address2" readonly>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="address2">Zip</label>
-                            <input asp-for="Order.Zip" type="text" class="form-control" id="address2" readonly>
-                        </div>
-                    </div>
-                }
                 <br />
                 <h4 class="mb-3">Installation Information</h4>
                 @{
