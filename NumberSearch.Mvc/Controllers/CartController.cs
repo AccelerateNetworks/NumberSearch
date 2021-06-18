@@ -691,7 +691,12 @@ Accelerate Networks
                                             first_name = order.FirstName,
                                             last_name = order.LastName
                                         }
-                                    }
+                                    },
+                                    address1 = order.Address,
+                                    address2 = order.Address2,
+                                    city = order.City,
+                                    state = order.State,
+                                    postal_code = order.Zip
                                 };
 
                                 billingClient = await newBillingClient.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
