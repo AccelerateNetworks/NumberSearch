@@ -248,6 +248,12 @@
     <Content Update="wwwroot\images\scaled\ht802-400.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Update="wwwroot\images\scaled\IMG_1505-2.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\images\scaled\IMG_1528.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="wwwroot\images\scaled\MukilteoChamber-320.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
