@@ -32,12 +32,15 @@
                     response.json().then(function (data) {
                         var options = '';
 
-                        for (var i = 0; i < data.suggestions.length; i++) {
-                            options += '<option value="' + data.suggestions[i].text + '" />';
+                        if (data.suggestions !== undefined) {
+                            for (var i = 0; i < data.suggestions.length; i++) {
+                                options += '<option value="' + data.suggestions[i].text + '" />';
+                            }
+
+                            var datalist = document.getElementById("addressOptions");
+                            datalist.innerHTML = options;
                         }
 
-                        var datalist = document.getElementById("addressOptions");
-                        datalist.innerHTML = options;
                         var textBox = document.getElementById("address");
                         console.log(datalist);
                         textBox.focus();

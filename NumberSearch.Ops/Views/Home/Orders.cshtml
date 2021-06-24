@@ -40,7 +40,12 @@
                     }
                     else if (order?.Order?.Completed is not true)
                     {
-                        if (order?.PortRequest is null && order.ProductOrders.Where(x => x.PortedPhoneNumberId.HasValue is true).Any())
+                        if (order.Order.Quote)
+                        {
+                            nextStep = $"⭕ Pending Quote Approval";
+                            pillColor = "warning";
+                        }
+                        else if (order?.PortRequest is null && order.ProductOrders.Where(x => x.PortedPhoneNumberId.HasValue is true).Any())
                         {
                             nextStep = $"⭕ Get the Porting information from the Customer";
                             pillColor = "danger";
@@ -130,16 +135,34 @@
                                 <div class="btn-group mt-2" role="group" aria-label="Basic example">
                                     @if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceId))
                                     {
-                                        <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
-                                            Upfront Invoice
-                                        </a>
+                                        if (order.Order.Quote)
+                                        {
+                                            <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
+                                                Upfront Quote
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
+                                                Upfront Invoice
+                                            </a>
+                                        }
                                     }
 
                                     @if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceReoccuringId))
                                     {
-                                        <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceReoccuringId/edit" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                                            Recurring Invoice
-                                        </a>
+                                        if (order.Order.Quote)
+                                        {
+                                            <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceReoccuringId/edit" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                                                Recurring Quote
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceReoccuringId/edit" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                                                Recurring Invoice
+                                            </a>
+                                        }
                                     }
                                     @if (!string.IsNullOrWhiteSpace(order.Order.BillingClientId))
                                     {
