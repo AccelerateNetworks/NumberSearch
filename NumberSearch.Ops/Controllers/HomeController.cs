@@ -99,7 +99,7 @@ namespace NumberSearch.Ops.Controllers
                 var services = await Service.GetAllAsync(_postgresql).ConfigureAwait(false);
                 var pairs = new List<OrderProducts>();
 
-                foreach (var order in orders)
+                foreach (var order in orders.Where(x => x.Quote is not true))
                 {
                     var orderProductOrders = productOrders.Where(x => x.OrderId == order.OrderId).ToArray();
                     var portRequest = portRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefault();
@@ -128,6 +128,45 @@ namespace NumberSearch.Ops.Controllers
 
                 return View("OrderEdit", order);
             }
+        }
+
+        [Authorize]
+        [Route("/Home/Quotes/")]
+        public async Task<IActionResult> Quotes()
+        {
+            // Show all orders
+            var orders = await Order.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var portRequests = await PortRequest.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var productOrders = await ProductOrder.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var purchasedNumbers = await PurchasedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var verifiedNumbers = await VerifiedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var portedPhoneNumbers = await PortedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var services = await Service.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var pairs = new List<OrderProducts>();
+
+            foreach (var order in orders.Where(x => x.Quote))
+            {
+                var orderProductOrders = productOrders.Where(x => x.OrderId == order.OrderId).ToArray();
+                var portRequest = portRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefault();
+
+                pairs.Add(new OrderProducts
+                {
+                    Order = order,
+                    PortRequest = portRequest,
+                    ProductOrders = orderProductOrders
+                });
+            }
+
+            return View("Quotes", new OrderResult
+            {
+                Orders = pairs,
+                Products = products,
+                Services = services,
+                PortedPhoneNumbers = portedPhoneNumbers,
+                PurchasedPhoneNumbers = purchasedNumbers,
+                VerifiedPhoneNumbers = verifiedNumbers
+            });
         }
 
         [Authorize]

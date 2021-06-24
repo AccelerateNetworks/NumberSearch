@@ -1,0 +1,329 @@
+﻿@model NumberSearch.Ops.OrderResult
+@{
+    ViewData["Title"] = "Quotes";
+}
+<h1 class="display-4 p-3">🛒 Quotes</h1>
+<div class="table-responsive">
+    <table class="table table-striped table-borderless table-hover" id="table">
+        <thead>
+            <tr>
+                <th>
+                    Order Information
+                </th>
+                <th>
+                    Customer Information
+                </th>
+                <th>
+                    Products Ordered
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                foreach (var order in Model.Orders)
+                {
+                    var businessName = string.IsNullOrWhiteSpace(order.Order.BusinessName) ? "Consumer" : order.Order.BusinessName;
+                    var nextStep = "Next Step";
+                    var pillColor = "danger";
+                    // The order is completed, we're good.
+                    if (order?.Order?.Completed is true)
+                    {
+                        nextStep = "🎉 Done, Good Job";
+                        pillColor = "success";
+                    }
+                    // The order is not completed, and is stale.
+                    else if (order?.Order?.Completed is not true && order?.Order?.DateSubmitted <
+                        DateTime.Now.AddDays(-14))
+                    {
+                        nextStep = "⭕ Contact the Customer, the order is Stale";
+                        pillColor = "warning";
+                    }
+                    else if (order?.Order?.Completed is not true)
+                    {
+                        if (order.Order.Quote)
+                        {
+                            nextStep = $"⭕ Pending Quote Approval";
+                            pillColor = "warning";
+                        }
+                        else if (order?.PortRequest is null && order.ProductOrders.Where(x => x.PortedPhoneNumberId.HasValue is true).Any())
+                        {
+                            nextStep = $"⭕ Get the Porting information from the Customer";
+                            pillColor = "danger";
+                        }
+                        else if (order?.PortRequest is not null)
+                        {
+                            if (order?.PortRequest?.Completed is true)
+                            {
+                                if (order?.Order?.OnsiteInstallation is true)
+                                {
+                                    nextStep = $"⭕ Install the cusomter's hardware onsite {order?.Order?.InstallDate.GetValueOrDefault().ToShortDateString()}";
+                                    pillColor = "info";
+                                }
+                                else
+                                {
+                                    nextStep = $"⭕ Ship the hardware to the customer for self-install";
+                                    pillColor = "info";
+                                }
+                            }
+                            else
+                            {
+                                nextStep = "⭕ Port the Customer's Numbers to our Network";
+                                pillColor = "danger";
+                            }
+                        }
+                        else
+                        {
+                            if (order?.Order?.OnsiteInstallation is true)
+                            {
+                                nextStep = $"⭕ Install the cusomter's hardware onsite";
+                                pillColor = "info";
+                            }
+                            else
+                            {
+                                nextStep = $"⭕ Ship the hardware to the customer for self-install";
+                                pillColor = "info";
+                            }
+                        }
+                    }
+
+                    <tr>
+                        <td data-order="@order.Order.DateSubmitted.Ticks">
+                            <h3>
+                                <span class="badge badge-@pillColor">
+                                    @nextStep
+                                </span>
+                            </h3>
+                            <h4 class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="badge badge-info badge-pill">
+                                    @order.Order.DateSubmitted
+                                </span>
+                            </h4>
+                            <strong>Business Name</strong>
+                            <p>@businessName</p>
+                            <p>
+                                <div class="btn-group" role="group" aria-label="Basic example">
+                                    <a href="/Home/Order/@order?.Order?.OrderId" class="btn btn-danger">
+                                        Edit the Order
+                                    </a>
+                                    <a href="https://acceleratenetworks.com/cart/order/@order.Order.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                                        Customer's View
+                                    </a>
+                                    <a href="/Home/Emails/@order?.Order?.OrderId" class="btn btn-warning text-light">
+                                        Related Emails
+                                    </a>
+                                    @if (order.ProductOrders.Where(x => !string.IsNullOrWhiteSpace(x.DialedNumber)).Any())
+                                    {
+                                        <a href="/Home/NumberOrder/@order?.Order?.OrderId" class="btn btn-info">
+                                            Related Purchased Numbers
+                                        </a>
+                                    }
+                                    @if (order?.PortRequest is not null)
+                                    {
+                                        <a href="/Home/PortRequests/@order?.Order?.OrderId" class="btn btn-info">
+                                            Related Port Request
+                                        </a>
+                                    }
+                                    else if (order.ProductOrders.Where(x => x.PortedPhoneNumberId.HasValue).Any())
+                                    {
+                                        <a href="https://acceleratenetworks.com/Cart/PortingInformation/@order.Order.OrderId" class="btn btn-dark" target="_blank" rel="noopener noreferrer">
+                                            Get From Customer
+                                        </a>
+                                    }
+                                </div>
+                            </p>
+                            <p>
+                                <div class="btn-group mt-2" role="group" aria-label="Basic example">
+                                    @if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceId))
+                                    {
+                                        if (order.Order.Quote)
+                                        {
+                                            <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
+                                                Upfront Quote
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
+                                                Upfront Invoice
+                                            </a>
+                                        }
+                                    }
+
+                                    @if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceReoccuringId))
+                                    {
+                                        if (order.Order.Quote)
+                                        {
+                                            <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceReoccuringId/edit" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                                                Recurring Quote
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceReoccuringId/edit" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                                                Recurring Invoice
+                                            </a>
+                                        }
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(order.Order.BillingClientId))
+                                    {
+                                        <a href="https://billing.acceleratenetworks.com/clients/@order?.Order?.BillingClientId/edit" class="btn btn-info" target="_blank" rel="noopener noreferrer">
+                                            Billing Client
+                                        </a>
+                                    }
+                                </div>
+                            </p>
+                        </td>
+                        <td scope="row">
+                            <strong>Customer Name</strong>
+                            <p>
+                                @order.Order.FirstName
+                                @order.Order.LastName
+                                <br />
+                                @order.Order.Email
+                            </p>
+                            <p>
+                                <a href="mailto:@order.Order.Email" class="btn btn-success" target="_blank" rel="noopener noreferrer">
+                                    Email this Client
+                                </a>
+                            </p>
+                            <strong>Address</strong>
+                            <p>
+                                @order.Order.Address
+
+                                @order.Order.Address2
+
+                                @order.Order.City
+
+                                @order.Order.State
+
+                                @order.Order.Zip
+                            </p>
+                            <p>
+                                <a href="https://www.google.com/maps/place/@order?.Order?.Address,+@order?.Order?.City,+@order?.Order?.State+@order?.Order?.Zip/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+                                    View on Map
+                                </a>
+                            </p>
+                        </td>
+                        <td>
+                            @{
+                                var purchased = new List<NumberSearch.DataAccess.ProductOrder>();
+                                var ported = new List<NumberSearch.DataAccess.ProductOrder>();
+                                var services = new List<NumberSearch.DataAccess.ProductOrder>();
+                                var products = new List<NumberSearch.DataAccess.ProductOrder>();
+                                var verified = new List<NumberSearch.DataAccess.ProductOrder>();
+                                foreach (var product in order.ProductOrders)
+                                {
+                                    if (!string.IsNullOrWhiteSpace(product.DialedNumber))
+                                    {
+                                        purchased.Add(product);
+                                    }
+                                    else if (!string.IsNullOrWhiteSpace(product.PortedDialedNumber) || product.PortedPhoneNumberId is not null)
+                                    {
+                                        ported.Add(product);
+                                    }
+                                    else if (product.VerifiedPhoneNumberId is not null)
+                                    {
+                                        verified.Add(product);
+                                    }
+                                    else if (!(product.ServiceId == Guid.Empty))
+                                    {
+                                        services.Add(product);
+                                    }
+                                    else if (!(product.ProductId == Guid.Empty))
+                                    {
+                                        products.Add(product);
+                                    }
+                                }
+                                if (purchased.Any())
+                                {
+                                    <strong>Purchased</strong>
+                                    <p>
+                                        @{
+                                            foreach (var product in purchased)
+                                            {
+                                                var matchingPurchasedPhoneNumber = Model?.PurchasedPhoneNumbers?.Where(x => x?.DialedNumber == product?.DialedNumber).FirstOrDefault();
+                                                if (matchingPurchasedPhoneNumber is null)
+                                                {
+                                                    <a class="btn btn-outline-primary mt-1" href="/Home/NumberOrders/@product.DialedNumber">@product.DialedNumber ❓</a>
+                                                }
+                                                else
+                                                {
+                                                    <a class="btn btn-outline-primary mt-1" href="/Home/NumberOrders/@product.DialedNumber">@product.DialedNumber ✔️</a>
+                                                }
+                                            }
+                                        }
+                                    </p>
+                                }
+                                if (ported.Any())
+                                {
+                                    <strong>Ported</strong>
+                                    <p>
+                                        @{
+                                            foreach (var product in ported)
+                                            {
+                                                var matchingPortedPhoneNumber = Model?.PortedPhoneNumbers?.Where(x => x?.PortedDialedNumber == product?.PortedDialedNumber).FirstOrDefault();
+                                                if (matchingPortedPhoneNumber is not null && matchingPortedPhoneNumber.Completed)
+                                                {
+                                                    <a class="btn btn-outline-primary mt-1" href="/Home/PortRequests/@product.OrderId">@product.PortedDialedNumber ✔️</a>
+                                                }
+                                                else
+                                                {
+                                                    <a class="btn btn-outline-primary mt-1" href="/Home/PortRequests/@product.OrderId">@product.PortedDialedNumber ❓</a>
+                                                }
+                                            }
+                                        }
+                                    </p>
+                                }
+                                if (verified.Any())
+                                {
+                                    <strong>Verified</strong>
+                                    <p>
+                                        @{
+                                            foreach (var product in verified)
+                                            {
+                                                <a class="btn btn-outline-primary mt-1" href="/Home/NumbersToVerify/@product.OrderId">@Model?.VerifiedPhoneNumbers.Where(x => x.VerifiedPhoneNumberId == product.VerifiedPhoneNumberId).FirstOrDefault().VerifiedDialedNumber</a>
+                                            }
+                                        }
+                                    </p>
+                                }
+                                if (services.Any())
+                                {
+                                    <strong>Services</strong>
+                                    <ul>
+                                        @{
+                                            foreach (var product in services)
+                                            {
+                                                var serviceOutput = $"<li>{product.Quantity} x {Model.Services.Where(x => x.ServiceId == product.ServiceId).FirstOrDefault().Name}</li>";
+                                                @Html.Raw(serviceOutput)
+                                            }
+                                        }
+                                    </ul>
+                                }
+                                if (products.Any())
+                                {
+                                    <strong>Products</strong>
+                                    <ul>
+                                        @{
+                                            foreach (var product in products)
+                                            {
+                                                var productOutput = $"<li>{product.Quantity} x {Model.Products.Where(x => x.ProductId == product.ProductId).FirstOrDefault().Name}</li>";
+                                                @Html.Raw(productOutput)
+                                            }
+                                        }
+                                    </ul>
+                                }
+                            }
+                            @{
+                                if (!string.IsNullOrWhiteSpace(order.Order.CustomerNotes))
+                                {
+                                    <strong>Customer Notes</strong>
+                                    <p>@order.Order.CustomerNotes</p>
+                                }
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

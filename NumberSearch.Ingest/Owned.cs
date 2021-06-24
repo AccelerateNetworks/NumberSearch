@@ -578,7 +578,12 @@ namespace NumberSearch.Ingest
                 }
                 else if (order?.Completed is not true)
                 {
-                    if (portRequest is null && productOrders.Where(x => x.PortedPhoneNumberId.HasValue is true).Any())
+                    if (order.Quote)
+                    {
+                        nextStep = $"⭕ Pending Quote Approval";
+                        pillColor = "warning";
+                    }
+                    else if (portRequest is null && productOrders.Where(x => x.PortedPhoneNumberId.HasValue is true).Any())
                     {
                         nextStep = $"⭕ Get the Porting information from the Customer";
                         pillColor = "danger";
