@@ -55,7 +55,7 @@ namespace NumberSearch.Ingest
             var firstPointComPriortyTimer = new Stopwatch();
             var teleMessagePriortyTimer = new Stopwatch();
             var peerlessPriortyTimer = new Stopwatch();
-            var ownedPhoneNumbers = new Stopwatch();
+            var orderUpdatesTimer = new Stopwatch();
             // 20 Minutes in miliseconds
             var priortyIngestCycleTime = 1200000;
 
@@ -649,6 +649,20 @@ namespace NumberSearch.Ingest
                                 var checkRunNow = ownedNumbersCycle.PutAsync(postgresSQL).ConfigureAwait(false);
                             }
                         }
+                    }
+
+                    // Update orders from the billing system.
+                    if (((orderUpdatesTimer.ElapsedMilliseconds >= priortyIngestCycleTime) || (!orderUpdatesTimer.IsRunning)))
+                    {
+                        if (!orderUpdatesTimer.IsRunning)
+                        {
+                            orderUpdatesTimer.Start();
+                        }
+
+                        // Restart the one hour timer.
+                        orderUpdatesTimer.Restart();
+
+                        await Orders.UpdateOrdersAsync(config);
                     }
 
                     Log.Information("[Heartbeat] Cycle complete.");

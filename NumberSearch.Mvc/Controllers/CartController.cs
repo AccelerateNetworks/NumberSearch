@@ -746,10 +746,19 @@ Accelerate Networks
                                     var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
                                     var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
-                                    var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
-                                    var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
-                                    order.ReoccuringInvoiceLink = reoccuringLink;
-                                    order.UpfrontInvoiceLink = oneTimeLink;
+                                    Log.Information(JsonSerializer.Serialize(invoiceLinks));
+                                    var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+
+                                    if (!string.IsNullOrWhiteSpace(reoccuringLink))
+                                    {
+                                        order.ReoccuringInvoiceLink = reoccuringLink;
+                                    }
+
+                                    if (!string.IsNullOrWhiteSpace(oneTimeLink))
+                                    {
+                                        order.UpfrontInvoiceLink = oneTimeLink;
+                                    }
 
                                     confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.invoice_number} and {createNewReoccuringInvoice.invoice_number} from Accelerate Networks";
                                     confirmationEmail.MessageBody = $@"Hi {order.FirstName},
@@ -781,8 +790,14 @@ Accelerate Networks
                                     var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
                                     var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewReoccuringInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
-                                    var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
-                                    order.ReoccuringInvoiceLink = reoccuringLink;
+                                    Log.Information(JsonSerializer.Serialize(invoiceLinks));
+
+                                    var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+
+                                    if (!string.IsNullOrWhiteSpace(reoccuringLink))
+                                    {
+                                        order.ReoccuringInvoiceLink = reoccuringLink;
+                                    }
 
                                     confirmationEmail.Subject = $"Quote {createNewReoccuringInvoice.invoice_number} from Accelerate Networks";
                                     confirmationEmail.MessageBody = $@"Hi {order.FirstName},
@@ -814,8 +829,13 @@ Accelerate Networks
                                     var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
                                     var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
-                                    var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
-                                    order.UpfrontInvoiceLink = oneTimeLink;
+                                    Log.Information(JsonSerializer.Serialize(invoiceLinks));
+                                    var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+
+                                    if (!string.IsNullOrWhiteSpace(oneTimeLink))
+                                    {
+                                        order.UpfrontInvoiceLink = oneTimeLink;
+                                    }
 
                                     confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.invoice_number} from Accelerate Networks";
                                     confirmationEmail.MessageBody = $@"Hi {order.FirstName},
@@ -853,10 +873,19 @@ Accelerate Networks
                                     var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
                                     var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
-                                    var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
-                                    var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
-                                    order.UpfrontInvoiceLink = oneTimeLink;
-                                    order.ReoccuringInvoiceLink = reoccuringLink;
+                                    Log.Information(JsonSerializer.Serialize(invoiceLinks));
+                                    var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+
+                                    if (!string.IsNullOrWhiteSpace(reoccuringLink))
+                                    {
+                                        order.ReoccuringInvoiceLink = reoccuringLink;
+                                    }
+
+                                    if (!string.IsNullOrWhiteSpace(oneTimeLink))
+                                    {
+                                        order.UpfrontInvoiceLink = oneTimeLink;
+                                    }
 
                                     confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.invoice_number} and {createNewReoccuringInvoice.invoice_number} from Accelerate Networks";
                                     confirmationEmail.MessageBody = $@"Hi {order.FirstName},
@@ -887,8 +916,13 @@ Accelerate Networks
                                     var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
                                     var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewReoccuringInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
-                                    var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
-                                    order.ReoccuringInvoiceLink = reoccuringLink;
+                                    Log.Information(JsonSerializer.Serialize(invoiceLinks));
+                                    var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+
+                                    if (!string.IsNullOrWhiteSpace(reoccuringLink))
+                                    {
+                                        order.ReoccuringInvoiceLink = reoccuringLink;
+                                    }
 
                                     confirmationEmail.Subject = $"Quote {createNewReoccuringInvoice.invoice_number} from Accelerate Networks";
                                     confirmationEmail.MessageBody = $@"Hi {order.FirstName},
@@ -919,8 +953,13 @@ Accelerate Networks
                                     var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
                                     var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
-                                    var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
-                                    order.UpfrontInvoiceLink = oneTimeLink;
+                                    Log.Information(JsonSerializer.Serialize(invoiceLinks));
+                                    var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+
+                                    if (!string.IsNullOrWhiteSpace(oneTimeLink))
+                                    {
+                                        order.UpfrontInvoiceLink = oneTimeLink;
+                                    }
 
                                     confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.invoice_number} from Accelerate Networks";
                                     confirmationEmail.MessageBody = $@"Hi {order.FirstName},
