@@ -853,6 +853,20 @@ namespace NumberSearch.Tests
             Assert.NotEmpty(results);
         }
 
+        // Disabled so as not to mess up this specific order in the vendor's system.
+        //[Fact]
+        //public async Task BulkVSRESTAddANoteAsync()
+        //{
+        //    // Arrange
+        //    var note = new PortTNNote
+        //    {
+        //        Note = "This is a test note submitted via the API."
+        //    };
+
+        //    // Act
+        //    await note.PostAsync("1638158", bulkVSUsername, bulkVSPassword);
+        //}
+
         [Fact]
         public async Task BulkVSRESTGetPortRequestsAsync()
         {

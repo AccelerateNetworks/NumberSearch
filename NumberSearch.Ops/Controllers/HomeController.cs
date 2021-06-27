@@ -1544,6 +1544,14 @@ namespace NumberSearch.Ops.Controllers
 
                                         numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
 
+                                        // Add a note to handle senarios where the requested FOC is to soon.
+                                        var note = new PortTNNote
+                                        {
+                                            Note = "If the port completion date requested is unavailable please pick the next available date and set the port to complete at 8pm that day."
+                                        };
+
+                                        await note.PostAsync(portRequest.TeliId, _bulkVSusername, _bulkVSpassword);
+
                                         responseMessages.Add($"{bulkResponse.Description} - {bulkResponse.Code}");
                                     }
                                     else
@@ -1619,6 +1627,14 @@ namespace NumberSearch.Ops.Controllers
                                 }
 
                                 numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                // Add a note to handle senarios where the requested FOC is to soon.
+                                var note = new PortTNNote
+                                {
+                                    Note = "If the port completion date requested is unavailable please pick the next available date and set the port to complete at 8pm that day."
+                                };
+
+                                await note.PostAsync(portRequest.TeliId, _bulkVSusername, _bulkVSpassword);
 
                                 responseMessages.Add($"{bulkResponse.Description} - {bulkResponse.Code}");
                             }
