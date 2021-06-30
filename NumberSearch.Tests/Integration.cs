@@ -1769,6 +1769,12 @@ namespace NumberSearch.Tests
         //    {
         //        new Service
         //        {
+        //            Name = "E911 Connectivity Fee",
+        //            Description = "E911 service is required each line or seat by the FCC.",
+        //            Price = 3
+        //        },
+        //        new Service
+        //        {
         //            Name = "Web Texting",
         //            Description = "Text from any browser.",
         //            Price = 10

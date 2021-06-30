@@ -1,5 +1,4 @@
-﻿
-using Ical.Net.CalendarComponents;
+﻿using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 
@@ -396,7 +395,6 @@ namespace NumberSearch.Mvc.Controllers
                             }
 
                             var totalPortingCost = 0;
-                            var chargeForInstallation = true;
                             var emailSubject = string.Empty;
 
                             foreach (var productOrder in cart.ProductOrders)
@@ -518,7 +516,6 @@ namespace NumberSearch.Mvc.Controllers
                                         else if (coupon.Name == "Waive Installation")
                                         {
 
-                                            chargeForInstallation = false;
                                             onetimeItems.Add(new Invoice_Items
                                             {
                                                 product_key = coupon.Name,
