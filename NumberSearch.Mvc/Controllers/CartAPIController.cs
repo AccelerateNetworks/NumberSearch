@@ -542,6 +542,56 @@ namespace NumberSearch.Mvc.Controllers
             await _httpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(_httpContext.Session);
             var checkAdd = cart.AddService(service, productOrder);
+
+            // Add required E911 fees to the order for seats and lines.
+            if (service.Name == "Concurrent Seats" || service.Name == "Standard Lines")
+            {
+                var e911Id = new Guid("1b3ae0e0-e308-4f99-88e1-b9c220bc02d5");
+                var e911fee = await Service.GetAsync(e911Id, _postgresql).ConfigureAwait(false);
+                var e911ProductOrder = cart.ProductOrders.Where(x => x.ServiceId == e911Id).FirstOrDefault();
+                // If there are already E911 fees in the cart.
+                if (e911ProductOrder is not null)
+                {
+                    // See how many total lines and seats there are.
+                    if (productOrder.Quantity != e911ProductOrder.Quantity)
+                    {
+                        var totalE911FeeItems = 0;
+
+                        var lines = cart.Services.Where(x => x.Name == "Standard Lines").FirstOrDefault();
+
+                        if (lines is not null)
+                        {
+                            var lineQuantity = cart.ProductOrders.Where(x => x.ServiceId == lines.ServiceId).FirstOrDefault();
+                            totalE911FeeItems += lineQuantity.Quantity;
+                        }
+
+                        var seats = cart.Services.Where(x => x.Name == "Concurrent Seats").FirstOrDefault();
+
+                        if (seats is not null)
+                        {
+                            var seatsQuantity = cart.ProductOrders.Where(x => x.ServiceId == seats.ServiceId).FirstOrDefault();
+                            totalE911FeeItems += seatsQuantity.Quantity;
+                        }
+
+                        e911ProductOrder = new ProductOrder
+                        {
+                            ServiceId = e911Id,
+                            Quantity = totalE911FeeItems > 0 ? totalE911FeeItems : 1
+                        };
+                        checkAdd = cart.AddService(e911fee, e911ProductOrder);
+                    }
+                }
+                else
+                {
+                    e911ProductOrder = new ProductOrder
+                    {
+                        ServiceId = e911Id,
+                        Quantity = Quantity > 0 ? Quantity : 1
+                    };
+                    checkAdd = cart.AddService(e911fee, e911ProductOrder);
+                }
+            }
+
             var checkSet = cart.SetToSession(_httpContext.Session);
 
             return Ok(serviceId.ToString());

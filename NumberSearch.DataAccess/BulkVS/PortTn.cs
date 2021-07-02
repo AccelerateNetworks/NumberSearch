@@ -115,6 +115,22 @@ namespace NumberSearch.DataAccess.BulkVS
         public string Note { get; set; }
     }
 
+    public class PortTNNote
+    {
+        public string[] Attachments { get; set; }
+        public string Note { get; set; }
+
+        public async Task PostAsync(string vendorOrderId, string username, string password)
+        {
+            string baseUrl = "https://portal.bulkvs.com/api/v1.0/";
+            string endpoint = "portTn";
+            string orderIdParameter = $"?OrderId={vendorOrderId}";
+            string route = $"{baseUrl}{endpoint}{orderIdParameter}";
+
+            await route.WithBasicAuth(username, password).PostMultipartAsync(mp => mp.AddString("Note", Note));
+        }
+    }
+
     public class PortTnRequest
     {
         public string ReferenceId { get; set; }

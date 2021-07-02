@@ -26,6 +26,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -99,7 +100,7 @@ namespace NumberSearch.Ops.Controllers
                 var services = await Service.GetAllAsync(_postgresql).ConfigureAwait(false);
                 var pairs = new List<OrderProducts>();
 
-                foreach (var order in orders)
+                foreach (var order in orders.Where(x => x.Quote is not true))
                 {
                     var orderProductOrders = productOrders.Where(x => x.OrderId == order.OrderId).ToArray();
                     var portRequest = portRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefault();
@@ -128,6 +129,45 @@ namespace NumberSearch.Ops.Controllers
 
                 return View("OrderEdit", order);
             }
+        }
+
+        [Authorize]
+        [Route("/Home/Quotes/")]
+        public async Task<IActionResult> Quotes()
+        {
+            // Show all orders
+            var orders = await Order.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var portRequests = await PortRequest.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var productOrders = await ProductOrder.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var purchasedNumbers = await PurchasedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var verifiedNumbers = await VerifiedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var portedPhoneNumbers = await PortedPhoneNumber.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var services = await Service.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var pairs = new List<OrderProducts>();
+
+            foreach (var order in orders.Where(x => x.Quote))
+            {
+                var orderProductOrders = productOrders.Where(x => x.OrderId == order.OrderId).ToArray();
+                var portRequest = portRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefault();
+
+                pairs.Add(new OrderProducts
+                {
+                    Order = order,
+                    PortRequest = portRequest,
+                    ProductOrders = orderProductOrders
+                });
+            }
+
+            return View("Quotes", new OrderResult
+            {
+                Orders = pairs,
+                Products = products,
+                Services = services,
+                PortedPhoneNumbers = portedPhoneNumbers,
+                PurchasedPhoneNumbers = purchasedNumbers,
+                VerifiedPhoneNumbers = verifiedNumbers
+            });
         }
 
         [Authorize]
@@ -1394,18 +1434,22 @@ namespace NumberSearch.Ops.Controllers
                     try
                     {
                         var teliResponse = await LnpCreate.GetAsync(portRequest, numbers, _teleToken).ConfigureAwait(false);
-                        portRequest.TeliId = teliResponse.data.id;
-                        portRequest.DateSubmitted = DateTime.Now;
-                        portRequest.VendorSubmittedTo = "TeliMessage";
-                        var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
-
-                        foreach (var number in numbers)
+                        if (teliResponse is not null && !string.IsNullOrWhiteSpace(teliResponse.data.id))
                         {
-                            number.ExternalPortRequestId = teliResponse.data.id;
-                            var checkUpdateId = await number.PutAsync(_postgresql).ConfigureAwait(false);
-                        }
+                            portRequest.TeliId = teliResponse.data.id;
+                            portRequest.DateSubmitted = DateTime.Now;
+                            portRequest.VendorSubmittedTo = "TeliMessage";
+                            var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
 
-                        numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                            foreach (var number in numbers)
+                            {
+                                number.ExternalPortRequestId = teliResponse.data.id;
+                                number.RawResponse = JsonSerializer.Serialize(teliResponse);
+                                var checkUpdateId = await number.PutAsync(_postgresql).ConfigureAwait(false);
+                            }
+
+                            numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -1483,7 +1527,7 @@ namespace NumberSearch.Ops.Controllers
                                 {
                                     var bulkResponse = await bulkVSPortRequest.PutAsync(_bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
 
-                                    if (!string.IsNullOrWhiteSpace(bulkResponse?.OrderId))
+                                    if (bulkResponse is not null && !string.IsNullOrWhiteSpace(bulkResponse?.OrderId))
                                     {
                                         // Rename this to VendorOrderId, rather than TeliId.
                                         portRequest.TeliId = bulkResponse?.OrderId;
@@ -1494,10 +1538,19 @@ namespace NumberSearch.Ops.Controllers
                                         {
                                             var updatedNumber = numbers.Where(x => $"1{x.PortedDialedNumber}" == number).FirstOrDefault();
                                             updatedNumber.ExternalPortRequestId = bulkResponse?.OrderId;
+                                            updatedNumber.RawResponse = JsonSerializer.Serialize(bulkResponse);
                                             var checkUpdateId = await updatedNumber.PutAsync(_postgresql).ConfigureAwait(false);
                                         }
 
                                         numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                        // Add a note to handle senarios where the requested FOC is to soon.
+                                        var note = new PortTNNote
+                                        {
+                                            Note = "If the port completion date requested is unavailable please pick the next available date and set the port to complete at 8pm that day."
+                                        };
+
+                                        await note.PostAsync(portRequest.TeliId, _bulkVSusername, _bulkVSpassword);
 
                                         responseMessages.Add($"{bulkResponse.Description} - {bulkResponse.Code}");
                                     }
@@ -1540,7 +1593,7 @@ namespace NumberSearch.Ops.Controllers
                                 Name = string.IsNullOrWhiteSpace(portRequest.BusinessName) ? $"Accelerate Networks" : $"{portRequest.BusinessName}",
                                 Contact = string.IsNullOrWhiteSpace(portRequest.BusinessContact) ? $"{portRequest.ResidentialFirstName} {portRequest.ResidentialLastName}" : portRequest.BusinessContact,
                                 StreetNumber = streetNumber,
-                                StreetName = $"{portRequest.Address.Substring(streetNumber.Length).Trim()} {portRequest.Address2}",
+                                StreetName = $"{portRequest.Address.Substring(streetNumber.Length).Trim()} {portRequest?.Address2}",
                                 City = portRequest.City,
                                 State = "WA",
                                 Zip = portRequest.Zip,
@@ -1556,8 +1609,9 @@ namespace NumberSearch.Ops.Controllers
                             };
 
                             var bulkResponse = await bulkVSPortRequest.PutAsync(_bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
+                            Log.Information(JsonSerializer.Serialize(bulkResponse));
 
-                            if (!string.IsNullOrWhiteSpace(bulkResponse?.OrderId))
+                            if (bulkResponse is not null && !string.IsNullOrWhiteSpace(bulkResponse?.OrderId))
                             {
                                 // Rename this to VendorOrderId, rather than TeliId.
                                 portRequest.TeliId = bulkResponse?.OrderId;
@@ -1568,10 +1622,19 @@ namespace NumberSearch.Ops.Controllers
                                 foreach (var number in numbers)
                                 {
                                     number.ExternalPortRequestId = bulkResponse?.OrderId;
+                                    number.RawResponse = JsonSerializer.Serialize(bulkResponse);
                                     var checkUpdateId = await number.PutAsync(_postgresql).ConfigureAwait(false);
                                 }
 
                                 numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                // Add a note to handle senarios where the requested FOC is to soon.
+                                var note = new PortTNNote
+                                {
+                                    Note = "If the port completion date requested is unavailable please pick the next available date and set the port to complete at 8pm that day."
+                                };
+
+                                await note.PostAsync(portRequest.TeliId, _bulkVSusername, _bulkVSpassword);
 
                                 responseMessages.Add($"{bulkResponse.Description} - {bulkResponse.Code}");
                             }

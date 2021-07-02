@@ -20,8 +20,13 @@
                     response.json().then(function (data) {
                         var options = '';
 
-                        for (var i = 0; i < data.suggestions.length; i++) {
-                            options += '<option value="' + data.suggestions[i].text + '" />';
+                        if (data.suggestions !== undefined) {
+                            for (var i = 0; i < data.suggestions.length; i++) {
+                                options += '<option value="' + data.suggestions[i].text + '" />';
+                            }
+
+                            var datalist = document.getElementById("addressOptions");
+                            datalist.innerHTML = options;
                         }
 
                         var datalist = document.getElementById("addressOptions");
@@ -98,6 +103,10 @@
             <div class="col mb-3">
                 <label for="backgroundWorkCompleted">Background Work Completed</label>
                 <input asp-for="BackgroundWorkCompleted" type="checkbox" class="form-control">
+            </div>
+            <div class="col mb-3">
+                <label for="Quote">Quote</label>
+                <input asp-for="Quote" type="checkbox" class="form-control">
             </div>
             <div class="col mb-3">
                 <label for="completed">Mark This Order as Completed</label>
@@ -247,14 +256,6 @@
             <div class="col-md-12 mb-3">
                 <label for="zip" class="text-muted">Notes</label>
                 <input asp-for="CustomerNotes" type="text" class="form-control" id="customernotes" placeholder="Add important information for our staff">
-            </div>
-            <div class="col-md-12">
-                <div class="form-check">
-                    <input asp-for="Quote" type="checkbox" class="form-check-input" id="defaultCheck1">
-                    <label class="form-check-label" for="defaultCheck1">
-                        Please send a quote
-                    </label>
-                </div>
             </div>
         </div>
         <br />

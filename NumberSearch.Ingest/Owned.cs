@@ -110,12 +110,12 @@ namespace NumberSearch.Ingest
                     var checkSend = await Owned.SendPortingNotificationEmailAsync(changedNumbers, smtpUsername, smtpPassword, emailDan, emailOrders, postgresSQL).ConfigureAwait(false);
                 }
 
-                var orderStatuses = await Owned.OrdersRequiringPortingInformationAsync(postgresSQL).ConfigureAwait(false);
+                var orderStatuses = await Orders.OrdersRequiringPortingInformationAsync(postgresSQL).ConfigureAwait(false);
 
                 if (orderStatuses != null && orderStatuses.Any())
                 {
                     Log.Information($"[OwnedNumbers] Emailing out a notification for {orderStatuses.Count()} incomplete orders.");
-                    var checkSend = await Owned.SendOrderReminderEmailAsync(orderStatuses, smtpUsername, smtpPassword, emailDan, emailOrders, postgresSQL).ConfigureAwait(false);
+                    var checkSend = await Orders.SendOrderReminderEmailAsync(orderStatuses, smtpUsername, smtpPassword, emailDan, emailOrders, postgresSQL).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -541,95 +541,6 @@ namespace NumberSearch.Ingest
             return serviceProviderChanged;
         }
 
-        public class OrderStatus
-        {
-            public Guid OrderId { get; set; }
-            public string Status { get; set; }
-            public string Customer { get; set; }
-        }
-
-        public static async Task<IEnumerable<OrderStatus>> OrdersRequiringPortingInformationAsync(string connectionString)
-        {
-
-            var orders = await Order.GetAllAsync(connectionString);
-            var portRequests = await PortRequest.GetAllAsync(connectionString);
-
-            var orderStatuses = new List<OrderStatus>();
-
-            foreach (var order in orders)
-            {
-                var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, connectionString);
-                var productOrders = await ProductOrder.GetAsync(order.OrderId, connectionString);
-                var businessName = string.IsNullOrWhiteSpace(order.BusinessName) ? "Consumer" : order.BusinessName;
-                var nextStep = "Next Step";
-                var pillColor = "danger";
-                // The order is completed, we're good.
-                if (order?.Completed is true)
-                {
-                    nextStep = "🎉 Done, Good Job";
-                    pillColor = "success";
-                }
-                // The order is not completed, and is stale.
-                else if (order?.Completed is not true && order?.DateSubmitted <
-                    DateTime.Now.AddDays(-14))
-                {
-                    nextStep = "⭕ Contact the Customer, the order is Stale";
-                    pillColor = "warning";
-                }
-                else if (order?.Completed is not true)
-                {
-                    if (portRequest is null && productOrders.Where(x => x.PortedPhoneNumberId.HasValue is true).Any())
-                    {
-                        nextStep = $"⭕ Get the Porting information from the Customer";
-                        pillColor = "danger";
-                        orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
-                    }
-                    else if (portRequest is not null)
-                    {
-                        if (portRequest?.Completed is true)
-                        {
-                            if (order?.OnsiteInstallation is true)
-                            {
-                                nextStep = $"⭕ Install the cusomter's hardware onsite {order?.InstallDate.GetValueOrDefault().ToShortDateString()}";
-                                pillColor = "info";
-                                orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
-                            }
-                            else
-                            {
-                                nextStep = $"⭕ Ship the hardware to the customer for self-install";
-                                pillColor = "info";
-                                orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
-                            }
-                        }
-                        else
-                        {
-                            nextStep = "⭕ Port the Customer's Numbers to our Network";
-                            pillColor = "danger";
-                            orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
-                        }
-                    }
-                    else
-                    {
-                        if (order?.OnsiteInstallation is true)
-                        {
-                            nextStep = $"⭕ Install the cusomter's hardware onsite";
-                            pillColor = "info";
-                            orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
-                        }
-                        else
-                        {
-                            nextStep = $"⭕ Ship the hardware to the customer for self-install";
-                            pillColor = "info";
-                            orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
-                        }
-                    }
-                }
-            }
-
-            return orderStatuses;
-        }
-
-
         public static async Task<IEnumerable<OwnedPhoneNumber>> VerifyEmergencyInformationAsync(IEnumerable<OwnedPhoneNumber> owned, Guid teleToken, string connectionString)
         {
             Log.Information($"[OwnedNumbers] Verifying Emergency Information for {owned?.Count()} Owned Phone numbers.");
@@ -719,40 +630,6 @@ namespace NumberSearch.Ingest
                 CarbonCopy = emailCC,
                 DateSent = DateTime.Now,
                 Subject = $"[Ingest] {changes.Count()} phone numbers changed Service Providers.",
-                MessageBody = output.ToString(),
-                OrderId = new Guid(),
-                Completed = true
-            };
-
-            var checkSend = await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);
-            var checkSave = await notificationEmail.PostAsync(connectionString).ConfigureAwait(false);
-
-            return checkSave && checkSend;
-        }
-
-        public static async Task<bool> SendOrderReminderEmailAsync(IEnumerable<OrderStatus> changes, string smtpUsername, string smtpPassword, string emailPrimary, string emailCC, string connectionString)
-        {
-            if ((changes is null) || !changes.Any())
-            {
-                // Successfully did nothing.
-                return true;
-            }
-
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true
-            };
-
-            var output = new StringBuilder();
-
-            output.Append(JsonSerializer.Serialize(changes, options));
-
-            var notificationEmail = new Email
-            {
-                PrimaryEmailAddress = emailPrimary,
-                CarbonCopy = emailCC,
-                DateSent = DateTime.Now,
-                Subject = $"[Ingest] {changes.Count()} active orders.",
                 MessageBody = output.ToString(),
                 OrderId = new Guid(),
                 Completed = true

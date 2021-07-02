@@ -301,6 +301,7 @@
                         <th>
                             Actions
                         </th>
+                        <th>Vendor Response</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -347,6 +348,7 @@
                                         }
                                     }
                                 </td>
+                                <td>@number?.RawResponse</td>
                             </tr>
                         }
                     }
@@ -382,34 +384,3 @@
         }
     }
 </form>
-@*<form action="/Home/PortRequestsTeli/@Model?.PortRequest?.OrderId" method="post">
-        @Html.AntiForgeryToken()
-        <br />
-
-        <input name="OrderId" value="@Model?.PortRequest?.OrderId" hidden />
-        @{
-            if (unSubmitted?.Count() > 0)
-            {
-                <button type="submit" class="btn btn-danger">Submit to Teli</button>
-            }
-            else
-            {
-                <button type="submit" class="btn btn-danger" disabled>Submit to Teli</button>
-            }
-        }
-    </form>
-    <form action="/Home/PortRequestsBulkVS/@Model?.PortRequest?.OrderId" method="post">
-        @Html.AntiForgeryToken()
-        <br />
-        <input name="OrderId" value="@Model?.PortRequest?.OrderId" hidden />
-        @{
-            if (unSubmitted?.Count() > 0)
-            {
-                <button type="submit" class="btn btn-danger">Submit to BulkVS</button>
-            }
-            else
-            {
-                <button type="submit" class="btn btn-danger" disabled>Submit to BulkVS</button>
-            }
-        }
-    </form>*@
