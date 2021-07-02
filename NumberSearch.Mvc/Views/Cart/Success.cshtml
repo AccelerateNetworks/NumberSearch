@@ -8,6 +8,7 @@
 @*https://stackoverflow.com/questions/48613992/bootstrap-4-file-input-doesnt-show-the-file-name*@
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
 <script type="text/javascript">
     function handleSearchQuery(textBox) {
         var route = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest?text=';
@@ -24,28 +25,37 @@
                     // Examine the text in the response
                     response.json().then(function (data) {
                         var options = '';
+                        var longestResult = 0;
+                        if (data.suggestions != undefined) {
+                            for (var i = 0; i < data.suggestions.length; i++) {
+                                options += `<li class='list-group-item' onclick='setAddress(this.innerHTML)'>${data.suggestions[i].text}</li>`;
+                                if (longestResult < data.suggestions[i].text.length) {
+                                    longestResult = data.suggestions[i].text.length;
+                                }
+                            }
 
-                        for (var i = 0; i < data.suggestions.length; i++) {
-                            options += '<option value="' + data.suggestions[i].text + '" />';
+                            var datalist = document.getElementById("addressOptions");
+                            datalist.innerHTML = options;
+                            datalist.hidden = false;
                         }
 
-                        var datalist = document.getElementById("addressOptions");
-                        datalist.innerHTML = options;
                         var textBox = document.getElementById("address");
-                        //var check = document.getElementById('realaccountoptions');
-                        //if (typeof (check) != 'undefined' && check != null) {
-                        //    check.remove();
-                        //}
-                        //textBox.appendChild(datalist);
-                        //textBox.setAttribute('list', 'realaccountoptions');
-                        console.log(datalist);
                         textBox.focus();
+
+                        console.log(datalist);
                     });
                 }
             )
             .catch(function (err) {
                 console.log('Fetch Error :-S', err);
             });
+    }
+
+    function setAddress(address) {
+        var textBox = document.getElementById("address");
+        textBox.value = address;
+        var datalist = document.getElementById("addressOptions");
+        datalist.hidden = true;
     }
 </script>
 
@@ -221,9 +231,9 @@
                 <div class="mb-3">
                     <div class="mb-3" id="searchForm">
                         <label for="address">Service Address</label>
-                        <input asp-for="PortRequest.Address" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" list="addressOptions" autocomplete="off" required>
-                        <datalist id="addressOptions">
-                        </datalist>
+                        <input asp-for="Order.UnparsedAddress" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" data-toggle="dropdown" required>
+                        <ul class="list-group" role="menu" aria-labelledby="menu1" id="addressOptions">
+                        </ul>
                         <small class="text-muted">
                             Enter the service address for the account with your existing provider.
                         </small>
