@@ -31,25 +31,37 @@
                     // Examine the text in the response
                     response.json().then(function (data) {
                         var options = '';
-
-                        if (data.suggestions !== undefined) {
+                        var longestResult = 0;
+                        if (data.suggestions != undefined) {
                             for (var i = 0; i < data.suggestions.length; i++) {
-                                options += '<option value="' + data.suggestions[i].text + '" />';
+                                options += `<li class='list-group-item' onclick='setAddress(this.innerHTML)'>${data.suggestions[i].text}</li>`;
+                                if (longestResult < data.suggestions[i].text.length) {
+                                    longestResult = data.suggestions[i].text.length;
+                                }
                             }
 
                             var datalist = document.getElementById("addressOptions");
                             datalist.innerHTML = options;
+                            datalist.hidden = false;
                         }
 
                         var textBox = document.getElementById("address");
-                        console.log(datalist);
                         textBox.focus();
+
+                        console.log(datalist);
                     });
                 }
             )
             .catch(function (err) {
                 console.log('Fetch Error :-S', err);
             });
+    }
+
+    function setAddress(address) {
+        var textBox = document.getElementById("address");
+        textBox.value = address;
+        var datalist = document.getElementById("addressOptions");
+        datalist.hidden = true;
     }
 </script>
 
@@ -493,9 +505,9 @@
                 {
                     <div class="mb-3" id="searchForm">
                         <label for="address">Address</label>
-                        <input asp-for="Order.UnparsedAddress" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" list="addressOptions" autocomplete="off" required>
-                        <datalist id="addressOptions">
-                        </datalist>
+                        <input asp-for="Order.UnparsedAddress" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" data-toggle="dropdown" required>
+                        <ul class="list-group" role="menu" aria-labelledby="menu1" id="addressOptions">
+                        </ul>
                         <small class="text-muted">
                             Enter the shipping address for this order, or the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
                         </small>
