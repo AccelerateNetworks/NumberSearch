@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.TeleDynamics;
 
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
@@ -28,10 +29,12 @@ namespace NumberSearch.Mvc.Controllers
         {
             var products = await Product.GetAllAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
 
+            var accessories = products.Where(x => x.Type == "Accessory").ToArray();
+
             await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            return View("Index", new HardwareResult { Cart = cart, Products = products });
+            return View("Index", new HardwareResult { Cart = cart, Phones = products.ToArray(), Accessories = accessories });
         }
 
         [HttpGet("Hardware/PartnerPriceList")]
@@ -50,7 +53,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
             }
 
-            return View("PartnerPriceList", new HardwareResult { Products = products });
+            return View("PartnerPriceList", new HardwareResult { Phones = products.ToArray() });
         }
     }
 }
