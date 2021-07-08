@@ -100,7 +100,9 @@
 
     </script>
     <!-- Vendor Styles-->
-    <link rel="stylesheet" media="screen" href="~/css/vendor/simplebar.min.css"/>
+    <link rel="stylesheet" media="screen" href="~/vendor/simplebar.min.css"/>
+    <link rel="stylesheet" media="screen" href="~/vendor/tiny-slider.css"/>
+    <link rel="stylesheet" media="screen" href="~/vendor/lightgallery.js/lightgallery.min.css"/>
     <!-- Main Theme Styles + Bootstrap-->
     <link rel="stylesheet" media="screen" href="~/css/theme.min.css">
 
@@ -150,8 +152,12 @@
     <!-- Navbar (Solid background)-->
     <header class="header navbar navbar-expand-lg navbar-light bg-light navbar-sticky" data-scroll-header data-fixed-element>
       <div class="container px-0 px-xl-3">
-        <button class="navbar-toggler ms-n2 me-2 order-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"><span class="navbar-toggler-icon"></span></button><a class="navbar-brand flex-shrink-0 order-lg-1 ms-lg-0 pe-lg-2 me-lg-4" href="index.html"><img class="d-none d-lg-block" src="img/logo/logo-dark-an.png" alt="Accelerate Networks" width="153"><img class="d-lg-none" src="img/original/favicon-194x194.png" alt="Accelerate Networks" width="58"></a>
-        <div class="d-flex align-items-center order-lg-3 ms-lg-auto"><a class="nav-link-style fs-sm text-nowrap d-none d-lg-inline-block" href="#">Talk to an expert: <strong>(800) 123-4567</strong></a><a class="btn btn-secondary ms-grid-gutter d-none d-lg-inline-block" href="#">Get started</a></div>
+        <button class="navbar-toggler ms-n2 me-2 order-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"><span class="navbar-toggler-icon"></span></button><a class="navbar-brand flex-shrink-0 order-lg-1 ms-lg-0 pe-lg-2 me-lg-4" href="index.html"><img class="d-none d-lg-block" src="img/logo/logo-dark.png" alt="Accelerate Networks" width="153"><img class="d-lg-none" src="img/original/favicon-194x194.png" alt="Accelerate Networks" width="58"></a>
+        <div class="d-flex align-items-center order-lg-3 ms-lg-auto"><a class="nav-link-style fs-sm text-nowrap me-3" href="tel:12068588757">Talk to an expert: <strong>(206) 858-8757</strong></a>
+            <div class="border-start me-2" style="height: 30px;"></div>
+            <div class="navbar-tool me-2"><a id="headerCart" class="navbar-tool-icon-box" href="/Cart"><i class="ai-shopping-cart"></i>
+            <div class="span navbar-tool-badge" id="cartCounter">3</div></a></div>
+        </div>
         <div class="offcanvas offcanvas-end offcanvas-collapse order-lg-2" id="offcanvasRight" tabindex="-1">
           <div class="offcanvas-header navbar-shadow">
             <h5 class="mt-1 mb-0">Menu</h5>
@@ -160,38 +166,39 @@
           <div class="offcanvas-body">
             <!-- Menu-->
             <ul class="navbar-nav">
-              <li class="nav-item"><a class="nav-link" href="#">Features</a></li>
-              <li class="nav-item"><a class="nav-link" href="#">Solutions</a></li>
-              <li class="nav-item"><a class="nav-link" href="#">Resources</a></li>
-              <li class="nav-item"><a class="nav-link" href="#">Pricing</a></li>
+              <li class="nav-item"><a class="nav-link" href="/Services">Services</a></li>
+              <li class="nav-item"><a class="nav-link" href="/Hardware">Hardware</a></li>
+              <li class="nav-item"><a class="nav-link" href="/Numbers">Numbers</a></li>
+              <li class="nav-item dropdown"><a class="nav-link" href="#" data-bs-toggle="dropdown">Resources</a>
+                <div class="dropdown-menu" style="min-width:400px">
+                  <div class="row">
+                    <div class="col-sm-6"><a class="dropdown-item" href="/support">Knowledge base</a><a class="dropdown-item" href="/lookup">Port your number</a></div>
+                    <div class="col-sm-6"><a class="dropdown-item" href="https://blog.acceleratenetworks.com">Blog</a><a class="dropdown-item" href="/about">About us</a></div>
+                  </div>
+                </div>
+              </li>
             </ul>
           </div>
         </div>
       </div>
     </header>
-    <!-- Page content-->
+  <!-- Page content-->
+  <main>
     @RenderBody()
   </main>
   <!-- Footer-->
-  <div class="bg-light position-relative pb-7">
-    <div class="shape shape-bottom shape-curve bg-dark">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3000 185.4">
-        <path fill="currentColor" d="M3000,0v185.4H0V0c496.4,115.6,996.4,173.4,1500,173.4S2503.6,115.6,3000,0z"></path>
-      </svg>
-    </div>
-  </div>
-  <footer class="footer bg-dark pt-5 pt-md-6">
+  <footer class="footer bg-dark pt-7 pt-md-6">
     <div class="container pt-3 pt-md-0">
       <div class="row pb-3">
-        <div class="col-md-4 mt-n2 pb-3 pb-md-0 mb-4"><a class="d-block mb-3" href="index.html" style="width: 153px;"><img src="img/logo/logo-dark-an.png" alt="Accelerate Networks"></a>
-          <p class="fs-sm text-light opacity-60 pb-2 pb-sm-3">Manage calls, voicemails, business texts, and faxes—all in one place.</p><a class="btn-social bs-outline bs-facebook bs-light bs-lg me-2 mb-2" href="#"><i class="ai-facebook"></i></a><a class="btn-social bs-outline bs-twitter bs-light bs-lg me-2 mb-2" href="#"><i class="ai-linkedin"></i></a><a class="btn-social bs-outline bs-instagram bs-light bs-lg me-2 mb-2" href="#"><i class="ai-github"></i></a>
+        <div class="col-md-4 mt-n2 pb-3 pb-md-0 mb-4"><a class="d-block mb-3" href="index.html" style="width: 153px;"><img src="img/logo/logo-dark.png" alt="Accelerate Networks"></a>
+          <p class="fs-sm text-light opacity-60 pb-2 pb-sm-3">Manage calls, voicemails, business texts, and faxes—all in one place.</p><a class="btn-social bs-outline bs-facebook bs-light bs-lg me-2 mb-2" href="https://www.facebook.com/AccelerateNets/"><i class="ai-facebook"></i></a><a class="btn-social bs-outline bs-twitter bs-light bs-lg me-2 mb-2" href="https://www.linkedin.com/company/72476822/"><i class="ai-linkedin"></i></a><a class="btn-social bs-outline bs-instagram bs-light bs-lg me-2 mb-2" href="https://github.com/AccelerateNetworks"><i class="ai-github"></i></a>
         </div>
         <div class="col-md-2 col-sm-4 ms-auto pb-1 mb-4">
           <div class="widget widget-light">
             <h4 class="widget-title">Product</h4>
             <ul>
-              <li><a class="widget-link" href="#">Features</a></li>
-              <li><a class="widget-link" href="#">Pricing</a></li>
+              <li><a class="widget-link" href="/features">Features</a></li>
+              <li><a class="widget-link" href="/pricing">Pricing</a></li>
             </ul>
           </div>
         </div>
@@ -199,8 +206,8 @@
           <div class="widget widget-light">
             <h4 class="widget-title">Support</h4>
             <ul>
-              <li><a class="widget-link" href="#">Knowledge base</a></li>
-              <li><a class="widget-link" href="#">Port your number</a></li>
+              <li><a class="widget-link" href="/support">Knowledge base</a></li>
+              <li><a class="widget-link" href="/Lookup">Port your number</a></li>
             </ul>
           </div>
         </div>
@@ -208,8 +215,8 @@
           <div class="widget widget-light">
             <h4 class="widget-title">Company</h4>
             <ul>
-              <li><a class="widget-link" href="#">About</a></li>
-              <li><a class="widget-link" href="#">Blog</a></li>
+              <li><a class="widget-link" href="/about">About</a></li>
+              <li><a class="widget-link" href="https://blog.acceleratenetworks.com/">Blog</a></li>
             </ul>
           </div>
         </div>
@@ -218,9 +225,8 @@
       <div class="row align-items-center mt-3 py-4">
         <div class="col-md-6 order-md-2 text-md-end mb-3">
           <ul class="list-inline fs-sm mb-0">
-            <li class="list-inline-item"><a class="nav-link-style nav-link-light" href="#">Privacy</a></li>
-            <li class="list-inline-item"><a class="nav-link-style nav-link-light" href="#">Support</a></li>
-            <li class="list-inline-item"><a class="nav-link-style nav-link-light" href="#">Contact</a></li>
+            <li class="list-inline-item"><a class="nav-link-style nav-link-light" href="/privacy">Privacy</a></li>
+            <li class="list-inline-item"><a class="nav-link-style nav-link-light" href="/support">Support</a></li>
           </ul>
         </div>
         <div class="col-md-6 order-md-1 mb-3">
@@ -230,10 +236,13 @@
     </div>
   </footer>
   <!-- Back to top button--><a class="btn-scroll-top" href="#top" data-scroll data-fixed-element><span class="btn-scroll-top-tooltip text-muted fs-sm me-2">Top</span><i class="btn-scroll-top-icon ai-arrow-up"></i></a>
-  <!-- Vendor scrits: js libraries and plugins-->
+  <!-- Vendor scripts: js libraries and plugins-->
   <script src="~/vendor/bootstrap/bootstrap.bundle.min.js"></script>
   <script src="~/vendor/simplebar/simplebar.min.js"></script>
   <script src="~/vendor/smooth-scroll/smooth-scroll.polyfills.min.js"></script>
+  <script src="vendor/tiny-slider/tiny-slider.js"></script>
+  <script src="~/vendor/lightgallery.js/dist/js/lightgallery.min.js"></script>
+  <script src="~/vendor/lg-video.js/lg-video.min.js"></script>
   <!-- Main theme script-->
   <script src="~/js/theme.min.js"></script>
   <!-- Additional scripts from Number Search-->
