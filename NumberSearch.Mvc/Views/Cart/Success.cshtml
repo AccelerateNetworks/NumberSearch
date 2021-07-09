@@ -8,6 +8,57 @@
 @*https://stackoverflow.com/questions/48613992/bootstrap-4-file-input-doesnt-show-the-file-name*@
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+<script type="text/javascript">
+    function handleSearchQuery(textBox) {
+        var route = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest?text=';
+        var suffix = '&maxSuggestions=5&countryCode=USA&f=pjson';
+        fetch(`${route}${textBox.value}${suffix}`)
+            .then(
+                function (response) {
+                    if (response.status !== 200) {
+                        console.log('Looks like there was a problem. Status Code: ' +
+                            response.status);
+                        return;
+                    }
+
+                    // Examine the text in the response
+                    response.json().then(function (data) {
+                        var options = '';
+                        var longestResult = 0;
+                        if (data.suggestions != undefined) {
+                            for (var i = 0; i < data.suggestions.length; i++) {
+                                options += `<li class='list-group-item' onclick='setAddress(this.innerHTML)'>${data.suggestions[i].text}</li>`;
+                                if (longestResult < data.suggestions[i].text.length) {
+                                    longestResult = data.suggestions[i].text.length;
+                                }
+                            }
+
+                            var datalist = document.getElementById("addressOptions");
+                            datalist.innerHTML = options;
+                            datalist.hidden = false;
+                        }
+
+                        var textBox = document.getElementById("address");
+                        textBox.focus();
+
+                        console.log(datalist);
+                    });
+                }
+            )
+            .catch(function (err) {
+                console.log('Fetch Error :-S', err);
+            });
+    }
+
+    function setAddress(address) {
+        var textBox = document.getElementById("address");
+        textBox.value = address;
+        var datalist = document.getElementById("addressOptions");
+        datalist.hidden = true;
+    }
+</script>
+
 <script type="text/javascript">
 
     $(document).ready(function () {
@@ -73,8 +124,9 @@
         if (Model != null && Model?.PhoneNumbers != null && Model.PhoneNumbers.Any())
         {
             <br />
-            <div class="pricing-header mx-auto mb-3 text-center">
+            <div class="pricing-header mx-auto p-2 text-center">
                 <h1 class="display-4">Porting Information</h1>
+                <p class="col-lg-6 offset-lg-3">We need you to provide this information to bring your existing phone numbers over to our network. Without this information we can't being transitioning you from your old phone provider.</p>
             </div>
             <br />
             <form asp-controller="Porting" asp-action="AddPortingInformation" method="post" enctype="multipart/form-data" class="needs-validation mb-3">
@@ -82,9 +134,7 @@
                 <input asp-for="PortRequest.OrderId" type="text" value="@Model?.Order?.OrderId" hidden />
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label for="billingPhone">Current Billing Phone Number <span data-container="body" data-toggle="popover" data-placement="top" data-content="The primary phone number on the account often acting as the account number, shown in the upper right corner of the Centurylink, Frontier & Ziply Fiber bills.">ℹ️</span></label>
-                        @*<input asp-for="PortRequest.BillingPhone" type="text" value="@Model?.PortRequest?.BillingPhone" class="form-control" id="billingPhone" placeholder="2061234567" required
-                            title="Also known as the BTN. This is the number that is normally provided on a copy of your bill or statement in the upper right corner or is the first number listed on the bill.">*@
+                        <label for="billingPhone">Current Billing Phone Number</label>
                         <select asp-for="PortRequest.BillingPhone" class="custom-select d-block w-100" id="billingPhone" title="Also known as the BTN. This is the number that is normally provided on a copy of your bill or statement in the upper right corner or is the first number listed on the bill." required>
                             @{
                                 foreach (var number in Model?.PhoneNumbers)
@@ -100,20 +150,23 @@
                                 }
                             }
                         </select>
+                        <small class="text-muted">
+                            The primary phone number on the account often acting as the account number, shown in the upper right corner of the Centurylink, Frontier & Ziply Fiber bills.
+                        </small>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label for="accountNumber">Current Account Number</label>
                         <input asp-for="PortRequest.ProviderAccountNumber" type="text" value="@Model?.PortRequest?.ProviderAccountNumber" class="form-control" id="accountNumber" placeholder="1234567891011" title="The account number is usually found on the invoice or a copy of a bill from your current provider." required>
-                        <div class="invalid-feedback">
-                            Please enter your account number.
-                        </div>
+                        <small class="text-muted">
+                            The account number for your account with your current provider.
+                        </small>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label for="pin">Account PIN or Password <span class="text-muted">(Optional)</span></label>
                         <input asp-for="PortRequest.ProviderPIN" type="text" value="@Model?.PortRequest?.ProviderPIN" class="form-control" id="pin" placeholder="1234" title="The PIN or password for the existing account.">
-                        <div class="invalid-feedback">
-                            Valid PIN is required.
-                        </div>
+                        <small class="text-muted">
+                            The PIN for your account with your current provider.
+                        </small>
                     </div>
                 </div>
                 <div class="row">
@@ -176,13 +229,14 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="address">Service Address</label>
-                    @{
-                        var address = string.IsNullOrWhiteSpace(Model?.PortRequest?.Address) ? Model?.Order?.Address : Model?.PortRequest?.Address;
-                    }
-                    <input asp-for="PortRequest.Address" type="text" value="@address" class="form-control" id="address" placeholder="1234 Main St" title="The physical address of where these phone numbers are being used. This information is also on file with your current provider." required>
-                    <div class="invalid-feedback">
-                        Please enter your shipping address.
+                    <div class="mb-3" id="searchForm">
+                        <label for="address">Service Address</label>
+                        <input asp-for="Order.UnparsedAddress" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" data-toggle="dropdown" required>
+                        <ul class="list-group" role="menu" aria-labelledby="menu1" id="addressOptions">
+                        </ul>
+                        <small class="text-muted">
+                            Enter the service address for the account with your existing provider.
+                        </small>
                     </div>
                 </div>
 
@@ -192,111 +246,31 @@
                         var address2 = string.IsNullOrWhiteSpace(Model?.PortRequest?.Address2) ? Model?.Order?.Address2 : Model?.PortRequest?.Address2;
                     }
                     <input asp-for="PortRequest.Address2" type="text" value="@address2" class="form-control" id="address2" title="The city of the service address listed above." placeholder="Apartment or suite">
+                    <small class="text-muted">
+                        The unit number for the address on the account with your old provider.
+                    </small>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-5 mb-3">
-                        <label for="address">Service City</label>
-                        @{
-                            var city = string.IsNullOrWhiteSpace(Model?.PortRequest?.City) ? Model?.Order?.City : Model?.PortRequest?.City;
-                        }
-                        <input asp-for="PortRequest.City" type="text" value="@city" class="form-control" id="city" placeholder="Seattle" title="The physical address of where these phone numbers are being used. This information is also on file with your current provider." required>
-                        <div class="invalid-feedback">
-                            Please enter a valid city.
+                @if (!string.IsNullOrWhiteSpace(Model?.PortRequest?.City))
+                {
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="unitType">City</label>
+                            <input asp-for="PortRequest.City" type="text" class="form-control" id="address2" readonly>
+
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="address2">State</label>
+                            <input asp-for="PortRequest.State" type="text" class="form-control" id="address2" readonly>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="address2">Zip</label>
+                            <input asp-for="PortRequest.Zip" type="text" class="form-control" id="address2" readonly>
                         </div>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <label for="state">Service State</label>
-                        <select asp-for="PortRequest.State" class="custom-select d-block w-100" id="state" title="The state of the service address listed above." required>
-                            <option value="">Choose...</option>
-                            @{
-                                var states = new string[] { "Alabama",
-                                                        "Alaska",
-                                                        "Arizona",
-                                                        "Arkansas",
-                                                        "California",
-                                                        "Colorado",
-                                                        "Connecticut",
-                                                        "Delaware",
-                                                        "Florida",
-                                                        "Georgia",
-                                                        "Hawaii",
-                                                        "Idaho",
-                                                        "Illinois",
-                                                        "Indiana",
-                                                        "Iowa",
-                                                        "Kansas",
-                                                        "Kentucky",
-                                                        "Louisiana",
-                                                        "Maine",
-                                                        "Maryland",
-                                                        "Massachusetts",
-                                                        "Michigan",
-                                                        "Minnesota",
-                                                        "Mississippi",
-                                                        "Missouri",
-                                                        "Montana",
-                                                        "Nebraska",
-                                                        "Nevada",
-                                                        "New Hampshire",
-                                                        "New Jersey",
-                                                        "New Mexico",
-                                                        "New York",
-                                                        "North Carolina",
-                                                        "North Dakota",
-                                                        "Ohio",
-                                                        "Oklahoma",
-                                                        "Oregon",
-                                                        "Pennsylvania",
-                                                        "Rhode Island",
-                                                        "South Carolina",
-                                                        "South Dakota",
-                                                        "Tennessee",
-                                                        "Texas",
-                                                        "Utah",
-                                                        "Vermont",
-                                                        "Virginia",
-                                                        "Washington",
-                                                        "West Virginia",
-                                                        "Wisconsin",
-                                                        "Wyoming"
-                                                        };
+                }
 
-                                var currentState = string.IsNullOrWhiteSpace(Model?.PortRequest?.State) ? Model?.Order?.State : Model?.PortRequest?.State;
-
-                                foreach (var state in states)
-                                {
-                                    if (currentState == state)
-                                    {
-                                        <option selected>@state</option>
-                                    }
-                                    else
-                                    {
-                                        <option>@state</option>
-                                    }
-                                }
-                            }
-                        </select>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label for="zip">Service Zip</label>
-                        @{
-                            var zip = string.IsNullOrWhiteSpace(Model?.PortRequest?.Zip) ? Model?.Order?.Zip : Model?.PortRequest?.Zip;
-                        }
-                        <input asp-for="PortRequest.Zip" type="text" value="@zip" class="form-control" id="zip" placeholder="98199" title="The five digit ZIP code of the service address listed above." required>
-                    </div>
-                </div>
                 <div class="row">
-                    @*<div class="col-md-6 mb-3">
-                            <label for="wirelessNumber">Wireless Number</label>
-                            <select asp-for="PortRequest.WirelessNumber" class="custom-select" id="wirelessNumber" title="Set to 'Yes' if this is a wireless or cellphone number being ported.">
-                                <option value="true" selected>Yes</option>
-                                <option value="false">No</option>
-                            </select>
-                            <div class="invalid-feedback">
-                                Valid first name is required.
-                            </div>
-                        </div>*@
                     <div class="col-md-6">
                         <label for="callerId">Caller ID <span class="text-muted">(15 Characters Maximum)</span></label>
                         <input asp-for="PortRequest.CallerId" type="text" value="@Model?.PortRequest?.CallerId" class="form-control" id="callerId" title="Sets Caller ID (aka CNAM) for all numbers in this port order, 15 character limit. Only letters, numbers, and spaces are allowed." placeholder="Alexander" maxlength="15" pattern="[a-zA-Z0-9\s]+">
@@ -311,13 +285,16 @@
                                 <label class="custom-file-label" for="inputGroupFile02">Choose file</label>
                             </div>
                         </div>
+                        <small class="text-muted">
+                            Provide a copy of a recent bill that you recieved from your current phone service provider.
+                        </small>
                     </div>
                 </div>
 
                 <div class="row">
-                    <div class="col-md-2 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label for="partialPort">
-                            Partial Port <span data-container="body" data-toggle="popover" data-placement="top" data-content="Do you want to retain any services with your old carrier?">ℹ️</span>
+                            Partial Port
                         </label>
                         <div class="form-group">
                             <div class="btn-group btn-group-toggle" data-toggle="buttons">
@@ -343,11 +320,18 @@
                                 }
                             </div>
                         </div>
+                        <small class="text-muted">
+                            Do you want to retain any services with your old carrier?
+                        </small>
                     </div>
-                    <div class="col-md-10 mb-3" id="partialDescripton">
+                    <div class="col-md-9 mb-3" id="partialDescripton">
                         <label for="partialPortDescription">Partial Port Description</label>
                         <input asp-for="PortRequest.PartialPortDescription" type="text" value="@Model?.PortRequest?.PartialPortDescription" class="form-control" id="partialPortDescription" title="Describe what services the old carrier should leave alone. Contact the old carrier to confirm they will leave these services intact.">
                     </div>
+                </div>
+                <div class="jumbotron shadow">
+                    <h1 class="display-4">Need help? Contact us!</h1>
+                    <p class="lead">Give us a ring at 206-858-8757 (texting is welcome) or <a href="mailto:support@acceleratenetworks.com?Subject=Help%20me%20with%20?" target="_top">email us</a>.</p>
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
@@ -364,7 +348,7 @@
                 <partial name="_LoadingPartial" />
 
                 <hr class="mb-4">
-                <button class="btn btn-primary btn-lg btn-block" type="submit" value="Submit">Request A Port</button>
+                <button class="btn btn-primary btn-lg btn-block shadow" type="submit" value="Submit">Request A Port</button>
                 <br />
             </form>
         }

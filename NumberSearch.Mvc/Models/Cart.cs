@@ -486,12 +486,60 @@ namespace NumberSearch.Mvc
 
         public Dictionary<string, ProductOrder> ProductOrdersToDictionary()
         {
-            return ProductOrders.ToDictionary(x => !string.IsNullOrEmpty(x.DialedNumber)
-            ? x.DialedNumber : x.PortedPhoneNumberId != null
-            ? x.PortedPhoneNumberId.ToString() : x.VerifiedPhoneNumberId != null
-            ? x.VerifiedPhoneNumberId.ToString() : x.ProductId != System.Guid.Empty
-            ? x.ProductId.ToString() : x.ServiceId != System.Guid.Empty
-            ? x.ServiceId.ToString() : x.CouponId.ToString(), x => x);
+            // This was too difficult to debug, but very fun to write!
+
+            //return ProductOrders.ToDictionary(x => !string.IsNullOrWhiteSpace(x.DialedNumber)
+            //? x.DialedNumber : x.PortedPhoneNumberId.HasValue
+            //? x.PortedPhoneNumberId.ToString() : x.VerifiedPhoneNumberId.HasValue
+            //? x.VerifiedPhoneNumberId.ToString() : x.ProductId != System.Guid.Empty
+            //? x.ProductId.ToString() : x.ServiceId != System.Guid.Empty
+            //? x.ServiceId.ToString() : x.CouponId.ToString(), x => x);
+
+            if (ProductOrders is not null && ProductOrders.Any())
+            {
+                var dict = new Dictionary<string, ProductOrder>();
+
+                foreach (var item in ProductOrders)
+                {
+                    var foreignId = string.Empty;
+
+                    if (!string.IsNullOrWhiteSpace(item.DialedNumber))
+                    {
+                        foreignId = item.DialedNumber;
+                    }
+                    else if (item.PortedPhoneNumberId.HasValue)
+                    {
+                        foreignId = item.PortedPhoneNumberId.ToString();
+                    }
+                    else if (item.VerifiedPhoneNumberId.HasValue)
+                    {
+                        foreignId = item.VerifiedPhoneNumberId.ToString();
+                    }
+                    else if (item.ProductId != System.Guid.Empty)
+                    {
+                        foreignId = item.ProductId.ToString();
+                    }
+                    else if (item.ServiceId != System.Guid.Empty)
+                    {
+                        foreignId = item.ServiceId.ToString();
+                    }
+                    else if (item.CouponId.HasValue)
+                    {
+                        foreignId = item.CouponId.ToString();
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(foreignId))
+                    {
+                        dict.Add(foreignId, item);
+                    }
+                }
+
+                return dict;
+            }
+            else
+            {
+                return new Dictionary<string, ProductOrder>();
+            }
         }
 
         public Dictionary<string, PhoneNumber> PhoneNumbersToDictionary()

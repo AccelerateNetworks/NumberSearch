@@ -60,9 +60,12 @@
             <label for="price">Vendor Part Number</label>
             <input asp-for="Product.VendorPartNumber" type="text" class="form-control" id="vendorPartNumber" placeholder="yea-sip-t54w">
         </div>
-        <div class="col mb-3 invisible">
-            <label for="image">Quantity Available</label>
-            @*<input asp-for="Product.QuantityAvailable" type="number" class="form-control" id="available" readonly>*@
+        <div class="col mb-3">
+            <label for="image">Type</label>
+            <select class="custom-select" id="inputGroupSelect01" asp-for="Product.Type" required>
+                <option value="Phone" selected>Phone</option>
+                <option value="Accessory">Accessory</option>
+            </select>
         </div>
         <div class="col mb-3 invisible">
             <label for="image">Display Priority (0 is the highest Priority)</label>

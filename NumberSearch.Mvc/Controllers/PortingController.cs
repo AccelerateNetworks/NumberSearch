@@ -391,6 +391,29 @@ namespace NumberSearch.Mvc.Controllers
                 }
             }
 
+
+            // Format the address information
+            Log.Information($"[Port Request] Parsing address data from {portRequest.Address}");
+            var addressParts = portRequest.Address.Split(", ");
+            if (addressParts.Length > 4)
+            {
+                portRequest.Address = addressParts[0];
+                portRequest.City = addressParts[1];
+                portRequest.State = addressParts[2];
+                portRequest.Zip = addressParts[3];
+                Log.Information($"[Port Request] Address: {portRequest.Address} City: {portRequest.City} State: {portRequest.State} Zip: {portRequest.Zip}");
+            }
+            else
+            {
+                Log.Error($"[Port Request] Failed automatic address formating.");
+            }
+
+            // Fillout the address2 information from its components.
+            //if (!string.IsNullOrWhiteSpace(order.AddressUnitNumber))
+            //{
+            //    portRequest.Address2 = $"{order.AddressUnitType} {order.AddressUnitNumber}";
+            //}
+
             // Save the rest of the data to the DB.
             var checkPortRequest = await portRequest.PostAsync(_postgresql).ConfigureAwait(false);
 

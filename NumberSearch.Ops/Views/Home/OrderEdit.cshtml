@@ -2,17 +2,68 @@
 @{
     ViewData["Title"] = "Order";
 }
+
+<script type="text/javascript">
+    function handleSearchQuery(textBox) {
+        var route = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest?text=';
+        var suffix = '&maxSuggestions=5&countryCode=USA&f=pjson';
+        fetch(`${route}${textBox.value}${suffix}`)
+            .then(
+                function (response) {
+                    if (response.status !== 200) {
+                        console.log('Looks like there was a problem. Status Code: ' +
+                            response.status);
+                        return;
+                    }
+
+                    // Examine the text in the response
+                    response.json().then(function (data) {
+                        var options = '';
+                        var longestResult = 0;
+                        if (data.suggestions != undefined) {
+                            for (var i = 0; i < data.suggestions.length; i++) {
+                                options += `<li class='list-group-item' onclick='setAddress(this.innerHTML)'>${data.suggestions[i].text}</li>`;
+                                if (longestResult < data.suggestions[i].text.length) {
+                                    longestResult = data.suggestions[i].text.length;
+                                }
+                            }
+
+                            var datalist = document.getElementById("addressOptions");
+                            datalist.innerHTML = options;
+                            datalist.hidden = false;
+                        }
+
+                        var textBox = document.getElementById("address");
+                        textBox.focus();
+
+                        console.log(datalist);
+                    });
+                }
+            )
+            .catch(function (err) {
+                console.log('Fetch Error :-S', err);
+            });
+    }
+
+    function setAddress(address) {
+        var textBox = document.getElementById("address");
+        textBox.value = address;
+        var datalist = document.getElementById("addressOptions");
+        datalist.hidden = true;
+    }
+</script>
+
 <h1 class="display-4 p-3">🛒 Order @Model?.OrderId</h1>
 <div class="">
     <div class="btn-group" role="group" aria-label="Basic example">
         <a href="https://acceleratenetworks.com/cart/order/@Model?.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-            Order
+            Customer's View
         </a>
         <a href="/Home/Emails/@Model?.OrderId" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
-            Emails
+            Related Emails
         </a>
         <a href="https://www.google.com/maps/place/@Model?.Address,+@Model?.City,+@Model?.State+@Model?.Zip/" class="btn btn-outline-secondary" target="_blank" rel="noopener noreferrer">
-            Map
+            View on Map
         </a>
     </div>
     <h4 class="d-flex justify-content-between align-items-center mt-3">
@@ -25,7 +76,7 @@
             if (!string.IsNullOrWhiteSpace(Model?.BillingInvoiceId))
             {
                 <a href="https://billing.acceleratenetworks.com/invoices/@Model?.BillingInvoiceId/edit" class="btn btn-outline-primary" target="_blank" rel="noopener noreferrer">
-                    Upfront
+                    Upfront Billing Invoice
                 </a>
             }
         }
@@ -33,7 +84,7 @@
             if (!string.IsNullOrWhiteSpace(Model?.BillingInvoiceReoccuringId))
             {
                 <a href="https://billing.acceleratenetworks.com/invoices/@Model?.BillingInvoiceReoccuringId/edit" class="btn btn-outline-success" target="_blank" rel="noopener noreferrer">
-                    Recurring
+                    Recurring Billing Invoice
                 </a>
             }
         }
@@ -41,7 +92,7 @@
             if (!string.IsNullOrWhiteSpace(Model?.BillingClientId))
             {
                 <a href="https://billing.acceleratenetworks.com/clients/@Model?.BillingClientId/edit" class="btn btn-outline-info" target="_blank" rel="noopener noreferrer">
-                    Client
+                    Billing System Client
                 </a>
             }
         }
@@ -63,7 +114,11 @@
                 <input asp-for="BackgroundWorkCompleted" type="checkbox" class="form-control">
             </div>
             <div class="col mb-3">
-                <label for="completed">Completed</label>
+                <label for="Quote">Quote</label>
+                <input asp-for="Quote" type="checkbox" class="form-control">
+            </div>
+            <div class="col mb-3">
+                <label for="completed">Mark This Order as Completed</label>
                 <input asp-for="Completed" type="checkbox" class="form-control">
             </div>
         </div>
@@ -110,11 +165,62 @@
             </div>
         </div>
 
-        <div class="mb-3">
+        <div class="mb-3" id="searchForm">
             <label for="address">Address</label>
-            <input asp-for="Address" type="text" class="form-control" id="address" placeholder="1234 Main St" required>
-            <div class="invalid-feedback">
-                Please enter your shipping address.
+            <input asp-for="UnparsedAddress" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" data-toggle="dropdown" required>
+            <ul class="list-group" role="menu" aria-labelledby="menu1" id="addressOptions">
+            </ul>
+            <small class="text-muted">
+                Enter the shipping address for this order, or the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
+            </small>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="unitType">Unit Type <span class="text-muted">(Optional)</span></label>
+                <select asp-for="AddressUnitType" class="custom-select d-block w-100" id="unitType">
+                    <option></option>
+                    @{
+                        var unitTypes = new string[] {
+                                "Apartment",
+                                "Basement",
+                                "Building",
+                                "Department",
+                                "Floor",
+                                "Front",
+                                "Hanger",
+                                "Lobby",
+                                "Lot",
+                                "Lower",
+                                "Office",
+                                "Penthouse",
+                                "Pier",
+                                "Rear",
+                                "Room",
+                                "Side",
+                                "Space",
+                                "Suite",
+                                "Trailer",
+                                "Unit",
+                                "Upper",
+                            };
+
+                        foreach (var unitType in unitTypes)
+                        {
+                            <option>@unitType</option>
+                        }
+                    }
+                </select>
+                <small class="text-muted">
+                    Optionally enter a unit type (ex. Apartment)
+                </small>
+            </div>
+            <div class="col-md-8 mb-3">
+                <label for="address2">Unit Number <span class="text-muted">(Optional)</span></label>
+                <input asp-for="AddressUnitNumber" type="text" class="form-control" id="address2" placeholder="307">
+                <small class="text-muted">
+                    Optionally enter a unit number (ex. 307)
+                </small>
             </div>
         </div>
 
@@ -123,89 +229,6 @@
             <input asp-for="Address2" type="text" class="form-control" id="address2" placeholder="Apartment or suite">
         </div>
 
-        <div class="row">
-            <div class="col-md-5 mb-3">
-                <label for="country">City</label>
-                <input asp-for="City" type="text" class="form-control" id="city" placeholder="Seattle" required>
-                <div class="invalid-feedback">
-                    Please enter your shipping city.
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <label for="state">State</label>
-                <select asp-for="State" class="custom-select d-block w-100" id="state" required>
-                    <option value="">Choose...</option>
-                    @{
-                        var states = new string[] { "Alabama",
-                                                        "Alaska",
-                                                        "Arizona",
-                                                        "Arkansas",
-                                                        "California",
-                                                        "Colorado",
-                                                        "Connecticut",
-                                                        "Delaware",
-                                                        "Florida",
-                                                        "Georgia",
-                                                        "Hawaii",
-                                                        "Idaho",
-                                                        "Illinois",
-                                                        "Indiana",
-                                                        "Iowa",
-                                                        "Kansas",
-                                                        "Kentucky",
-                                                        "Louisiana",
-                                                        "Maine",
-                                                        "Maryland",
-                                                        "Massachusetts",
-                                                        "Michigan",
-                                                        "Minnesota",
-                                                        "Mississippi",
-                                                        "Missouri",
-                                                        "Montana",
-                                                        "Nebraska",
-                                                        "Nevada",
-                                                        "New Hampshire",
-                                                        "New Jersey",
-                                                        "New Mexico",
-                                                        "New York",
-                                                        "North Carolina",
-                                                        "North Dakota",
-                                                        "Ohio",
-                                                        "Oklahoma",
-                                                        "Oregon",
-                                                        "Pennsylvania",
-                                                        "Rhode Island",
-                                                        "South Carolina",
-                                                        "South Dakota",
-                                                        "Tennessee",
-                                                        "Texas",
-                                                        "Utah",
-                                                        "Vermont",
-                                                        "Virginia",
-                                                        "Washington",
-                                                        "West Virginia",
-                                                        "Wisconsin",
-                                                        "Wyoming"
-                                                        };
-
-                        foreach (var state in states)
-                        {
-                            <option>@state</option>
-                        }
-                    }
-                </select>
-                <div class="invalid-feedback">
-                    Please provide a valid state.
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <label for="zip">Zip</label>
-                <input asp-for="Zip" type="text" class="form-control" id="zip" placeholder="" required>
-                <div class="invalid-feedback">
-                    Zip code required.
-                </div>
-            </div>
-        </div>
         <h4 class="mb-3">Installation Information</h4>
         <div class="row">
             <div class="col-md-4 mb-3">
@@ -242,14 +265,6 @@
             <div class="col-md-12 mb-3">
                 <label for="zip" class="text-muted">Notes</label>
                 <input asp-for="CustomerNotes" type="text" class="form-control" id="customernotes" placeholder="Add important information for our staff">
-            </div>
-            <div class="col-md-12">
-                <div class="form-check">
-                    <input asp-for="Quote" type="checkbox" class="form-check-input" id="defaultCheck1">
-                    <label class="form-check-label" for="defaultCheck1">
-                        Please send a quote
-                    </label>
-                </div>
             </div>
         </div>
         <br />

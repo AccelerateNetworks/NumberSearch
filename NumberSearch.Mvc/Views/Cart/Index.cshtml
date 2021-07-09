@@ -7,7 +7,7 @@
 
 <div class="container">
     <br />
-    <div class="pricing-header mx-auto mb-3 text-center">
+    <div class="pricing-header mx-auto p-2 text-center">
         <h1 class="display-4">Your Cart</h1>
     </div>
     <br />
@@ -26,7 +26,7 @@
         if (Model?.Cart?.PhoneNumbers.Count() > 0 || Model?.Cart?.Products.Count() > 0 || Model?.Cart?.Services.Count() > 0 || Model?.Cart?.PortedPhoneNumbers.Count() > 0 || Model?.Cart?.VerifiedPhoneNumbers.Count() > 0)
         {
             <div class="row">
-                <div class="table-responsive">
+                <div class="table-responsive shadow-sm">
                     <table class="table table-striped table-borderless table-hover">
                         <tbody>
                             @{
@@ -191,15 +191,15 @@
             {
                 <div class="row mt-3">
                     <div class="col">
-                        <p class="display-4 text-center">Forgetting anything?</p>
+                        <p class="display-4 p-2 text-center">Forgetting anything?</p>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col">
-                        <a class="btn btn-primary btn-lg btn-block" asp-controller="Services" asp-action="Index">◁ Add Services</a>
+                        <a class="btn btn-primary btn-lg btn-block shadow" asp-controller="Services" asp-action="Index">◁ Add Services</a>
                     </div>
                     <div class="col">
-                        <a class="btn btn-primary btn-lg btn-block" asp-controller="Search" asp-action="Index">Add Numbers ▷</a>
+                        <a class="btn btn-primary btn-lg btn-block shadow" asp-controller="Search" asp-action="Index">Add Numbers ▷</a>
                     </div>
                 </div>
             }
@@ -207,22 +207,22 @@
             {
                 <div class="row mt-3">
                     <div class="col">
-                        <p class="display-4 text-center">Forgetting anything?</p>
+                        <p class="display-4 p-2 text-center">Forgetting anything?</p>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col">
-                        <a class="btn btn-primary btn-lg btn-block" asp-controller="Hardware" asp-action="Index">◁ Add Hardware</a>
+                        <a class="btn btn-primary btn-lg btn-block shadow" asp-controller="Hardware" asp-action="Index">◁ Add Hardware</a>
                     </div>
                     <div class="col">
-                        <a class="btn btn-primary btn-lg btn-block" asp-controller="Search" asp-action="Index">Add Numbers ▷</a>
+                        <a class="btn btn-primary btn-lg btn-block shadow" asp-controller="Search" asp-action="Index">Add Numbers ▷</a>
                     </div>
                 </div>
             }
-            <div class="row">
+            <div class="row mb-4">
                 <div class="col">
                     <br />
-                    <a class="btn btn-success btn-lg btn-block" asp-controller="Cart" asp-action="Checkout">Complete your Order 🛒</a>
+                    <a class="btn btn-success btn-lg btn-block shadow" asp-controller="Cart" asp-action="Checkout">Complete your Order 🛒</a>
                 </div>
             </div>
             <br />

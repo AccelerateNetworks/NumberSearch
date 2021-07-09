@@ -1,5 +1,4 @@
-﻿
-using Ical.Net.CalendarComponents;
+﻿using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 
@@ -15,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
@@ -23,36 +23,16 @@ namespace NumberSearch.Mvc.Controllers
     public class CartController : Controller
     {
         private readonly IConfiguration _configuration;
-        private readonly Guid _teleToken;
         private readonly string _postgresql;
-        private readonly int _CallFlow;
-        private readonly int _ChannelGroup;
-        private readonly string _apiKey;
-        private readonly string _apiSecret;
-        private readonly string _fpcusername;
-        private readonly string _fpcpassword;
         private readonly string _invoiceNinjaToken;
         private readonly string _emailOrders;
-        private readonly string _bulkVSusername;
-        private readonly string _bulkVSpassword;
-        private readonly string _data247username;
-        private readonly string _data247password;
 
         public CartController(IConfiguration config)
         {
             _configuration = config;
-            _teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
             _postgresql = _configuration.GetConnectionString("PostgresqlProd");
-            _apiKey = config.GetConnectionString("BulkVSAPIKEY");
-            _apiSecret = config.GetConnectionString("BulkVSAPISecret");
-            _bulkVSusername = config.GetConnectionString("BulkVSUsername");
-            _bulkVSpassword = config.GetConnectionString("BulkVSPassword");
-            _fpcusername = config.GetConnectionString("PComNetUsername");
-            _fpcpassword = config.GetConnectionString("PComNetPassword");
             _invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
             _emailOrders = config.GetConnectionString("EmailOrders");
-            _data247username = config.GetConnectionString("Data247Username");
-            _data247password = config.GetConnectionString("Data247Password");
         }
 
         [HttpGet]
@@ -174,6 +154,39 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("Cart/PortingInformation/{Id}")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> PortingInformationForOrderByIdAsync(Guid Id)
+        {
+            if (Id != Guid.Empty)
+            {
+                var order = await Order.GetByIdAsync(Id, _postgresql).ConfigureAwait(false);
+                var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                if (portedPhoneNumbers.Any())
+                {
+                    return View("Success", new OrderWithPorts
+                    {
+                        Order = order,
+                        PortRequest = portRequest,
+                        PhoneNumbers = portedPhoneNumbers
+                    });
+                }
+                else
+                {
+                    return Redirect($"/Cart/Order/{order.OrderId}");
+
+                }
+
+            }
+            else
+            {
+                return Redirect($"/Cart/");
+            }
+        }
+
         [HttpPost("Cart/Submit")]
         [ValidateAntiForgeryToken]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -186,6 +199,18 @@ namespace NumberSearch.Mvc.Controllers
                 await HttpContext.Session.LoadAsync().ConfigureAwait(false);
                 var cart = Cart.GetFromSession(HttpContext.Session);
 
+                // This is purely so that we can isolate the state of this call when it fails out.
+                Log.Information(JsonSerializer.Serialize(cart));
+
+                if (cart.ProductOrders is null || !cart.ProductOrders.Any())
+                {
+                    Log.Error("[Checkout] There are no product orders in this sessions cart. How did we get here???");
+                    // Reset the session and clear the Cart.
+                    HttpContext.Session.Clear();
+
+                    return RedirectToAction("Cart", "Checkout");
+                }
+
                 if (order.OrderId != Guid.Empty)
                 {
                     var orderExists = await Order.GetByIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
@@ -195,6 +220,28 @@ namespace NumberSearch.Mvc.Controllers
                     {
                         // Prevent the background work from happening before it's queued up.
                         order.BackgroundWorkCompleted = true;
+
+                        // Format the address information
+                        Log.Information($"[Checkout] Parsing address data from {order.Address}");
+                        var addressParts = order.UnparsedAddress.Split(", ");
+                        if (addressParts.Length > 4)
+                        {
+                            order.Address = addressParts[0];
+                            order.City = addressParts[1];
+                            order.State = addressParts[2];
+                            order.Zip = addressParts[3];
+                            Log.Information($"[Checkout] Address: {order.Address} City: {order.City} State: {order.State} Zip: {order.Zip}");
+                        }
+                        else
+                        {
+                            Log.Error($"[Checkout] Failed automatic address formating.");
+                        }
+
+                        // Fillout the address2 information from its components.
+                        if (!string.IsNullOrWhiteSpace(order.AddressUnitNumber))
+                        {
+                            order.Address2 = $"{order.AddressUnitType} {order.AddressUnitNumber}";
+                        }
 
                         // Save to db.
                         var submittedOrder = await order.PostAsync(_postgresql).ConfigureAwait(false);
@@ -348,7 +395,6 @@ namespace NumberSearch.Mvc.Controllers
                             }
 
                             var totalPortingCost = 0;
-                            var chargeForInstallation = true;
                             var emailSubject = string.Empty;
 
                             foreach (var productOrder in cart.ProductOrders)
@@ -470,7 +516,6 @@ namespace NumberSearch.Mvc.Controllers
                                         else if (coupon.Name == "Waive Installation")
                                         {
 
-                                            chargeForInstallation = false;
                                             onetimeItems.Add(new Invoice_Items
                                             {
                                                 product_key = coupon.Name,
@@ -623,7 +668,12 @@ Accelerate Networks
                                             first_name = order.FirstName,
                                             last_name = order.LastName
                                         }
-                                    }
+                                    },
+                                    address1 = order.Address,
+                                    address2 = order.Address2,
+                                    city = order.City,
+                                    state = order.State,
+                                    postal_code = order.Zip
                                 };
 
                                 billingClient = await newBillingClient.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
@@ -673,10 +723,19 @@ Accelerate Networks
                                     var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
                                     var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
-                                    var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
-                                    var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
-                                    order.ReoccuringInvoiceLink = reoccuringLink;
-                                    order.UpfrontInvoiceLink = oneTimeLink;
+                                    Log.Information(JsonSerializer.Serialize(invoiceLinks));
+                                    var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+
+                                    if (!string.IsNullOrWhiteSpace(reoccuringLink))
+                                    {
+                                        order.ReoccuringInvoiceLink = reoccuringLink;
+                                    }
+
+                                    if (!string.IsNullOrWhiteSpace(oneTimeLink))
+                                    {
+                                        order.UpfrontInvoiceLink = oneTimeLink;
+                                    }
 
                                     confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.invoice_number} and {createNewReoccuringInvoice.invoice_number} from Accelerate Networks";
                                     confirmationEmail.MessageBody = $@"Hi {order.FirstName},
@@ -708,8 +767,14 @@ Accelerate Networks
                                     var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
                                     var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewReoccuringInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
-                                    var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
-                                    order.ReoccuringInvoiceLink = reoccuringLink;
+                                    Log.Information(JsonSerializer.Serialize(invoiceLinks));
+
+                                    var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+
+                                    if (!string.IsNullOrWhiteSpace(reoccuringLink))
+                                    {
+                                        order.ReoccuringInvoiceLink = reoccuringLink;
+                                    }
 
                                     confirmationEmail.Subject = $"Quote {createNewReoccuringInvoice.invoice_number} from Accelerate Networks";
                                     confirmationEmail.MessageBody = $@"Hi {order.FirstName},
@@ -741,8 +806,13 @@ Accelerate Networks
                                     var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
                                     var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
-                                    var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
-                                    order.UpfrontInvoiceLink = oneTimeLink;
+                                    Log.Information(JsonSerializer.Serialize(invoiceLinks));
+                                    var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+
+                                    if (!string.IsNullOrWhiteSpace(oneTimeLink))
+                                    {
+                                        order.UpfrontInvoiceLink = oneTimeLink;
+                                    }
 
                                     confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.invoice_number} from Accelerate Networks";
                                     confirmationEmail.MessageBody = $@"Hi {order.FirstName},
@@ -780,10 +850,19 @@ Accelerate Networks
                                     var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
                                     var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
-                                    var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
-                                    var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
-                                    order.UpfrontInvoiceLink = oneTimeLink;
-                                    order.ReoccuringInvoiceLink = reoccuringLink;
+                                    Log.Information(JsonSerializer.Serialize(invoiceLinks));
+                                    var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+
+                                    if (!string.IsNullOrWhiteSpace(reoccuringLink))
+                                    {
+                                        order.ReoccuringInvoiceLink = reoccuringLink;
+                                    }
+
+                                    if (!string.IsNullOrWhiteSpace(oneTimeLink))
+                                    {
+                                        order.UpfrontInvoiceLink = oneTimeLink;
+                                    }
 
                                     confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.invoice_number} and {createNewReoccuringInvoice.invoice_number} from Accelerate Networks";
                                     confirmationEmail.MessageBody = $@"Hi {order.FirstName},
@@ -814,8 +893,13 @@ Accelerate Networks
                                     var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
                                     var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewReoccuringInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
-                                    var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
-                                    order.ReoccuringInvoiceLink = reoccuringLink;
+                                    Log.Information(JsonSerializer.Serialize(invoiceLinks));
+                                    var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+
+                                    if (!string.IsNullOrWhiteSpace(reoccuringLink))
+                                    {
+                                        order.ReoccuringInvoiceLink = reoccuringLink;
+                                    }
 
                                     confirmationEmail.Subject = $"Quote {createNewReoccuringInvoice.invoice_number} from Accelerate Networks";
                                     confirmationEmail.MessageBody = $@"Hi {order.FirstName},
@@ -846,8 +930,13 @@ Accelerate Networks
                                     var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
                                     var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
-                                    var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
-                                    order.UpfrontInvoiceLink = oneTimeLink;
+                                    Log.Information(JsonSerializer.Serialize(invoiceLinks));
+                                    var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+
+                                    if (!string.IsNullOrWhiteSpace(oneTimeLink))
+                                    {
+                                        order.UpfrontInvoiceLink = oneTimeLink;
+                                    }
 
                                     confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.invoice_number} from Accelerate Networks";
                                     confirmationEmail.MessageBody = $@"Hi {order.FirstName},

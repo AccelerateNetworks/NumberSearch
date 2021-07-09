@@ -6,68 +6,141 @@
 
 <div class="container">
     <br />
-    <div class="pricing-header mx-auto mb-3 text-center">
+    <div class="pricing-header mx-auto p-2 text-center">
         <h1 class="display-4">Our Hardware</h1>
     </div>
     <br />
-    <div class="row row-cols-1 row-cols-md-3">
-        @{
-            var inCart = Model?.Cart?.ProductOrders;
-            var products = Model.Products.ToArray();
-            foreach (var product in products?.Where(x => x.Public is true).OrderBy(x => x.DisplayPriority))
-            {
-                var quantity = 0;
-                var quantityCount = inCart?.Where(x => x.ProductId == product.ProductId).FirstOrDefault();
-                if ((quantityCount is not null) && (quantityCount.Quantity > 0))
-                {
-                    quantity = quantityCount.Quantity;
-                }
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Phones</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Accessories</a>
+        </li>
+        @*<li class="nav-item" role="presentation">
+                <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">Contact</a>
+            </li>*@
+    </ul>
+    <br />
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+            <div class="row row-cols-1 row-cols-md-3">
+                @{
+                    var inCart = Model?.Cart?.ProductOrders;
+                    var products = Model.Phones;
+                    foreach (var product in products?.Where(x => x.Public is true).OrderBy(x => x.DisplayPriority))
+                    {
+                        var quantity = 0;
+                        var quantityCount = inCart?.Where(x => x.ProductId == product.ProductId).FirstOrDefault();
+                        if ((quantityCount is not null) && (quantityCount.Quantity > 0))
+                        {
+                            quantity = quantityCount.Quantity;
+                        }
 
-                <div class="col mb-4" id="@product.Name">
-                    <div class="card h-100 box-shadow">
-                        <img class="card-img-top" src="@product.Image" />
-                        <div class="card-body">
-                            <div class="card-title">
-                                <h4 class="display-4">
-                                    @product.Name
-                                    @{
-                                        if (!string.IsNullOrWhiteSpace(product.SupportLink))
-                                        {
-                                            <a class="btn btn-outline-info float-right" href="@product.SupportLink">Learn More</a>
-                                        }
-                                    }
-                                </h4>
-                            </div>
-                            <p class="card-text">@product.Description</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="btn-group">
-                                    <div class="input-group mb-3">
-                                        @{
-                                            if (quantity > 0)
-                                            {
-                                                <input id="@product.ProductId" type="number" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@quantity">
+                        <div class="col mb-4" id="@product.Name">
+                            <div class="card h-100 shadow">
+                                <img class="card-img-top" src="@product.Image" />
+                                <div class="card-body">
+                                    <div class="card-title">
+                                        <h4 class="display-4">
+                                            @product.Name
+                                            @{
+                                                if (!string.IsNullOrWhiteSpace(product.SupportLink))
+                                                {
+                                                    <a class="btn btn-outline-info float-right" href="@product.SupportLink">Learn More</a>
+                                                }
                                             }
-                                            else
-                                            {
-                                                <input id="@product.ProductId" type="number" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
-                                            }
-                                        }
-                                        <div class="input-group-append">
-                                            <button type="submit" class="btn btn-outline-primary" onclick="AddToCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)">Add To Cart</button>
+                                        </h4>
+                                    </div>
+                                    <p class="card-text">@product.Description</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="btn-group">
+                                            <div class="input-group mb-3">
+                                                @{
+                                                    if (quantity > 0)
+                                                    {
+                                                        <input id="@product.ProductId" type="number" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@quantity">
+                                                    }
+                                                    else
+                                                    {
+                                                        <input id="@product.ProductId" type="number" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                                    }
+                                                }
+                                                <div class="input-group-append">
+                                                    <button type="submit" class="btn btn-outline-primary" onclick="AddToCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)">Add To Cart</button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+                                    <large class="text-primary">$@product.Price</large>
                                 </div>
                             </div>
-                            <large class="text-primary">$@product.Price</large>
                         </div>
-                    </div>
-                </div>
-            }
-        }
-        <br />
+                    }
+                }
+                <br />
+            </div>
+        </div>
+        <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+            <div class="row row-cols-1 row-cols-md-3">
+                @{
+                    foreach (var product in Model.Accessories?.Where(x => x.Public is true).OrderBy(x => x.DisplayPriority))
+                    {
+                        var quantity = 0;
+                        var quantityCount = inCart?.Where(x => x.ProductId == product.ProductId).FirstOrDefault();
+                        if ((quantityCount is not null) && (quantityCount.Quantity > 0))
+                        {
+                            quantity = quantityCount.Quantity;
+                        }
+
+                        <div class="col mb-4" id="@product.Name">
+                            <div class="card h-100 shadow">
+                                <img class="card-img-top" src="@product.Image" />
+                                <div class="card-body">
+                                    <div class="card-title">
+                                        <h4 class="display-4">
+                                            @product.Name
+                                            @{
+                                                if (!string.IsNullOrWhiteSpace(product.SupportLink))
+                                                {
+                                                    <a class="btn btn-outline-info float-right" href="@product.SupportLink">Learn More</a>
+                                                }
+                                            }
+                                        </h4>
+                                    </div>
+                                    <p class="card-text">@product.Description</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="btn-group">
+                                            <div class="input-group mb-3">
+                                                @{
+                                                    if (quantity > 0)
+                                                    {
+                                                        <input id="@product.ProductId" type="number" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@quantity">
+                                                    }
+                                                    else
+                                                    {
+                                                        <input id="@product.ProductId" type="number" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                                    }
+                                                }
+                                                <div class="input-group-append">
+                                                    <button type="submit" class="btn btn-outline-primary" onclick="AddToCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)">Add To Cart</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <large class="text-primary">$@product.Price</large>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                <br />
+            </div>
+        </div>
+        @*<div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">...</div>*@
     </div>
 </div>
-<div class="mt-auto fixed-bottom bg-white p-3">
+<div class="mt-auto fixed-bottom bg-white p-3 shadow-lg">
     <div class="container">
         <div class="row">
             <div class="col">

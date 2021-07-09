@@ -777,7 +777,7 @@ namespace NumberSearch.Tests
         public async Task BulkVSLrnLookupAsync()
         {
             // Arrange
-            var number = "2068588757";
+            var number = "2064083008";
 
             // Act
             var result = await LrnBulkCnam.GetAsync(number, bulkVSKey).ConfigureAwait(false);
@@ -852,6 +852,20 @@ namespace NumberSearch.Tests
             Assert.NotNull(results);
             Assert.NotEmpty(results);
         }
+
+        // Disabled so as not to mess up this specific order in the vendor's system.
+        //[Fact]
+        //public async Task BulkVSRESTAddANoteAsync()
+        //{
+        //    // Arrange
+        //    var note = new PortTNNote
+        //    {
+        //        Note = "This is a test note submitted via the API."
+        //    };
+
+        //    // Act
+        //    await note.PostAsync("1638158", bulkVSUsername, bulkVSPassword);
+        //}
 
         [Fact]
         public async Task BulkVSRESTGetPortRequestsAsync()
@@ -1406,10 +1420,10 @@ namespace NumberSearch.Tests
                 Assert.False(string.IsNullOrWhiteSpace(result.OrderId.ToString()));
                 Assert.False(string.IsNullOrWhiteSpace(result.FirstName));
                 Assert.False(string.IsNullOrWhiteSpace(result.LastName));
-                Assert.False(string.IsNullOrWhiteSpace(result.Address));
-                Assert.False(string.IsNullOrWhiteSpace(result.City));
-                Assert.False(string.IsNullOrWhiteSpace(result.State));
-                Assert.False(string.IsNullOrWhiteSpace(result.Zip));
+                //Assert.False(string.IsNullOrWhiteSpace(result.Address));
+                //Assert.False(string.IsNullOrWhiteSpace(result.City));
+                //Assert.False(string.IsNullOrWhiteSpace(result.State));
+                //Assert.False(string.IsNullOrWhiteSpace(result.Zip));
                 Assert.False(string.IsNullOrWhiteSpace(result.Email));
                 Assert.True(result.DateSubmitted > new DateTime(2019, 1, 1));
             }
@@ -1753,6 +1767,12 @@ namespace NumberSearch.Tests
 
         //    var services = new List<Service>
         //    {
+        //        new Service
+        //        {
+        //            Name = "E911 Connectivity Fee",
+        //            Description = "E911 service is required each line or seat by the FCC.",
+        //            Price = 3
+        //        },
         //        new Service
         //        {
         //            Name = "Web Texting",

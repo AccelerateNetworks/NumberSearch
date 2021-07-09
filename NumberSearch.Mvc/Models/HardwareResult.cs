@@ -8,6 +8,8 @@ namespace NumberSearch.Mvc
     {
         public Cart Cart { get; set; }
 
-        public IEnumerable<Product> Products { get; set; }
+        public Product[] Phones { get; set; }
+
+        public Product[] Accessories { get; set; }
     }
 }
