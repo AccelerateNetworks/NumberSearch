@@ -9,7 +9,8 @@
 </video>
 <div class="container">
     <div class="jumbotron mb-3 mt-3 text-center shadow">
-        <h1 class="display-4 pb-3">Find the perfect phone number </h1>
+        <h1 class="display-4 pb-3 d-none d-sm-block">Find the perfect phone number </h1>
+        <h1 class="pb-3 d-block d-sm-none">Find the perfect phone number </h1>
         <p class="m-0">Enter a keyword or area code to search for a memorable number. </p>
         <p class="m-0">Choose an area code and create trust and credibility for your locally-run business.</pclass="m-0">
         <p>
@@ -25,7 +26,6 @@
                 </div>
                 <div class="input-group mx-auto input-group-lg pt-2">
                     <button type="submit" class="btn btn-success btn-block" onclick="displayBusyIndicator()">Search</button>
-                    @*<button class="btn btn-info btn-block" onclick="displayBusyIndicator()" asp-controller="Porting" asp-action="CheckPortability">Transfer</button>*@
                 </div>
             </div>
         </form>
@@ -34,21 +34,21 @@
     <partial name="_LoadingPartial" />
 
     <div class="row">
-        <div class="col-lg-12 pb-5 pt-5 text-center">
-            <h1 class="d-none d-sm-block">Your phone system, anywhere you are</h1>
+        <div class="col-lg-12 pb-4 pt-5 text-center">
+            <h1 class="pb-3">Your phone system, anywhere you are</h1>
             <h4 class="display-4 d-none d-sm-block">Manage calls, voicemails, business texts, and faxes—all in one place.</h4>
-            <a class="btn btn-primary btn-lg m-3 shadow" href="/Services">Start Now</a>
+            <h4 class="d-block d-sm-none">Manage calls, voicemails, business texts, and faxes—all in one place.</h4>
+            <a class="btn btn-primary btn-lg p-4 m-3 shadow" href="/Services">Start Now</a>
             <p class="text-muted">or talk to an expert at</p>
-            <h5>(206) 333-3341</h5>
+            <h4>(206) 333-3341</h4>
         </div>
     </div>
 </div>
-@*<div class="p-5" style="background-color: #3279B2">*@
-<div>
-    <div class="container">
+<div class="p-5" style="background-color: #3279B2">
+    <div class="container p-0">
         <div class="row">
-            <div class="offset-2"></div>
-            <div class="col-8">
+            <div class="offset-2 d-none d-sm-block"></div>
+            <div class="col">
                 <div class="card mb-4 shadow">
                     <div class="card-header">
                         <h4 class="my-0 font-weight-normal text-center">🤗&nbsp;Customer Obsession</h4>
@@ -66,7 +66,7 @@
                     </div>
                 </div>
             </div>
-            <div class="offset-2"></div>
+            <div class="offset-2 d-none d-sm-block"></div>
         </div>
         <div class="row">
             <div class="col">
@@ -80,8 +80,8 @@
             </div>
         </div>
         <div class="row">
-            <div class="offset-2"></div>
-            <div class="col-8">
+            <div class="offset-2 d-none d-sm-block"></div>
+            <div class="col">
                 <div class="card mb-4 shadow">
                     <div class="card-header">
                         <h4 class="my-0 font-weight-normal text-center">✔️&nbsp;Proven Success</h4>
@@ -96,7 +96,7 @@
                     </div>
                 </div>
             </div>
-            <div class="offset-2"></div>
+            <div class="offset-2 d-none d-sm-block"></div>
         </div>
         <div class="row">
             <div class="col">
@@ -111,11 +111,11 @@
         </div>
     </div>
 </div>
-
 <div class="container">
     <div class="row">
         <div class="col-12">
-            <h1 class="display-4 pb-5 text-center">What People Say About Accelerate Networks</h1>
+            <h1 class="display-4 pb-5 pt-5 text-center d-none d-sm-block">What People Say About Accelerate Networks</h1>
+            <h1 class="pb-5 pt-5 text-center d-block d-sm-none">What People Say About Accelerate Networks</h1>
             <div class="card-deck">
                 <div class="card shadow">
                     <div class="card-body">
