@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
+using NumberSearch.Mvc.Models;
 
 using System;
 using System.Collections.Generic;
@@ -11,11 +13,28 @@ namespace NumberSearch.Mvc.Controllers
 {
     public class NewClientController : Controller
     {
-        [HttpGet("Cart/Order/{orderId}")]
-        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
-        public IActionResult Index(Guid orderId)
+        private readonly IConfiguration _configuration;
+        private readonly string _postgresql;
+
+        public NewClientController(IConfiguration config)
         {
-            return View();
+            _configuration = config;
+            _postgresql = _configuration.GetConnectionString("PostgresqlProd");
+        }
+
+        [HttpGet("Cart/Order/{orderId}/NewClient")]
+        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
+        public async Task<IActionResult> IndexAsync(Guid orderId)
+        {
+            var order = await Order.GetByIdAsync(orderId, _postgresql);
+
+            var form = new NewClientResult
+            {
+                Order = order,
+                NewClient = new NewClient()
+            };
+
+            return View("Index", form);
         }
 
 

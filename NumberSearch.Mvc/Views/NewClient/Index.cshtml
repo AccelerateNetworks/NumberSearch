@@ -1,281 +1,63 @@
-﻿@model NumberSearch.Mvc.Models.LookupResults;
+﻿@model NumberSearch.Mvc.Models.NewClientResult;
 
 @{
-    ViewData["Title"] = "Bulk";
+    ViewData["Title"] = "New Client";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="container">
     <br />
     <div class="pricing-header mx-auto p-2 text-center">
-        <h1 class="display-4">Bulk Phone Numbers</h1>
+        <h1 class="display-4">New Client Setup</h1>
     </div>
     <br />
-    <div class="jumbotron mb-3 shadow">
-        <p> Enter a list of phone numbers and we'll hunt down any information we can find on it or check if we can port them to our network.</p>
-        <form class="form-row justify-content-center">
-            <div class="form-group">
-                <div class="input-group mx-auto input-group-lg">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text">+1</span>
-                    </div>
-                    <textarea class="form-control" aria-label="With textarea" type="text" name="dialedNumber" placeholder="Enter Phone Numbers">@Model?.DialedNumber</textarea>
-                </div>
-                <div class="input-group mx-auto input-group-lg pt-2">
-                    <button type="submit" class="btn btn-success btn-block" onclick="displayBusyIndicator()" asp-controller="Lookup" asp-action="Index">Investigate</button>
-                    <button type="submit" class="btn btn-info btn-block" onclick="displayBusyIndicator()" asp-controller="Lookup" asp-action="BulkPort">Transfer</button>
-                </div>
-            </div>
-        </form>
-    </div>
-    <br />
-    <partial name="_LoadingPartial" />
-    <br />
+
     <div class="row">
-        @{
-            if (Model != null && Model?.Lookups != null && Model.Lookups.Any())
-            {
-                <div class="table-responsive shadow-sm mb-4">
-                    <table class="table table-striped table-hover table-borderless">
-                        <thead>
+        <div class="col">
+            <p>Who will be using each phone? Does anyone need an extension without a phone (eg: Voicemail to email or Mobile/PC app only)? What is each user’s email address? Do you have any extensions currently?</p>
+            <div class="table-responsive">
+                <table class="table table-borderless table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>
+                                Extension #
+                            </th>
+                            <th>
+                                Name/Location
+                            </th>
+                            <th>
+                                Email (Optional)
+                            </th>
+                            <th>
+                                Model of Phone
+                            </th>
+                            <th>
+                                Outbound Caller ID
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @*@foreach (var number in Model?.NewClient?.ExtensionRegistrations)
+                        {
                             <tr>
-                                <th>
-                                    Phone Number
-                                </th>
-                                <th>
-                                    Last Port Date
-                                </th>
-                                <th>
-                                    Caller Name
-                                </th>
-                                <th>
-                                    Local Routing #
-                                </th>
-                                <th>
-                                    Carrier
-                                </th>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @{
-                                foreach (var number in Model.Lookups)
-                                {
-                                    <tr>
-                                        <td>
-                                            <h4>@number?.tn</h4>
-                                        </td>
-                                        <td>
-                                            @number?.LastPorted
-                                        </td>
-                                        <td>
-                                            @number?.LIDBName
-                                        </td>
-                                        <td>
-                                            <h4>@number?.lrn</h4>
-                                        </td>
-                                        <td>
-                                            <p>
-                                                @number?.spid
-                                                -
-                                                @number?.lec
-                                                -
-                                                @number?.lectype
-                                            </p>
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-                    </table>
+                        }*@
+                    </tbody>
+                </table>
+            </div>
+            <p>When someone calls, should they ring certain phones or be greeted with a menu?</p>
+            <div class="input-group">
+                <input type="checkbox" asp-for="NewClient.PhoneMenu" class="form-control" />
+                <div class="input-group-prepend">
+                    <span class="input-group-text">With textarea</span>
                 </div>
-            }
-            if (Model != null && Model?.NotPortable != null && Model.NotPortable.Any())
-            {
-                <div class="alert alert-danger col-12" role="alert">
-                    These phone numbers cannot be ported to our network!
-                </div>
-                <div class="table-responsive shadow-sm">
-                    <table class="table table-striped table-borderless table-hover">
-                        <tbody>
-                            @{
-                                foreach (var number in Model.NotPortable)
-                                {
-                                    <tr class="table-danger">
-                                        <td scope="row"><h4>@number</h4></td>
-                                        <td class="d-none d-sm-table-cell"></td>
-                                        <td class="d-none d-sm-table-cell"></td>
-                                        <td></td>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            if (Model != null && Model?.Portable != null && Model.Portable.Any())
-            {
-                var alreadyInCart = Model?.Cart?.PortedPhoneNumbers.ToDictionary(x => x?.PortedDialedNumber, x => x);
-                <div class="alert alert-success col-12" role="alert">
-                    These phone numbers can be ported to our network and are now in your cart!
-                </div>
-                <div class="table-responsive shadow-sm mb-4">
-                    <table class="table table-striped table-borderless table-hover">
-                        <tbody>
-                            @{
-                                foreach (var number in Model.Portable)
-                                {
-                                    var location = $"{number?.City ?? "Unknown City"}, {number?.State ?? "Unknown State"}";
-                                    var formattedNumber = $"({number.NPA}) {number.NXX}-{number.XXXX.ToString("0000")}";
-                                    <tr>
-                                        <td scope="row"><h4>@formattedNumber</h4></td>
-                                        <td class="d-none d-sm-table-cell">@Html.Raw(number.PortedDialedNumber)</td>
-                                        <td class="d-none d-sm-table-cell">@location</td>
-                                        <td></td>
-                                        <td>
-                                            @{
-                                                if (alreadyInCart.TryGetValue(number.PortedDialedNumber, out var _))
-                                                {
-                                                    <button onclick="RemoveFromCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-danger">Remove</button>
-                                                }
-                                                else
-                                                {
-                                                    <button onclick="AddToCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-primary">Add to Cart</button>
-                                                }
-                                            }
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>
-                                            Phone Number
-                                        </th>
-                                        <th>
-                                            Last Port Date
-                                        </th>
-                                        <th>
-                                            Caller Name
-                                        </th>
-                                        <th>
-                                            Local Routing #
-                                        </th>
-                                        <th>
-                                            Carrier
-                                        </th>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <h4>@number?.LrnLookup?.tn</h4>
-                                        </td>
-                                        <td>
-                                            @number?.LrnLookup?.LastPorted
-                                        </td>
-                                        <td>
-                                            @number?.LrnLookup?.LIDBName
-                                        </td>
-                                        <td>
-                                            <h4>@number?.LrnLookup?.lrn</h4>
-                                        </td>
-                                        <td>
-                                            <p>
-                                                @number?.LrnLookup?.spid
-                                                -
-                                                @number?.LrnLookup?.lec
-                                                -
-                                                @number?.LrnLookup?.lectype
-                                            </p>
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            if (Model != null && Model?.Wireless != null && Model.Wireless.Any())
-            {
-                var alreadyInCart = Model?.Cart?.PortedPhoneNumbers.ToDictionary(x => x?.PortedDialedNumber, x => x);
-                <div class="alert alert-success col-12" role="alert">
-                    These wireless phone numbers can be ported to our network and are now in your cart!
-                </div>
-                <div class="table-responsive shadow-sm pb-4">
-                    <table class="table table-striped table-borderless table-hover">
-                        <tbody>
-                            @{
-                                foreach (var number in Model.Wireless)
-                                {
-                                    var location = $"{number?.City ?? "Unknown City"}, {number?.State ?? "Unknown State"}";
-                                    var formattedNumber = $"({number.NPA}) {number.NXX}-{number.XXXX.ToString("0000")}";
-                                    <tr>
-                                        @{
-                                            if (number.Wireless)
-                                            {
-                                                <td class="d-none d-sm-table-cell">
-                                                    <h4><span class="badge badge-warning">Wireless</span></h4>
-                                                </td>
-                                            }
-                                        }
-                                        <td scope="row"><h4>@formattedNumber</h4></td>
-                                        <td class="d-none d-sm-table-cell">@Html.Raw(number.PortedDialedNumber)</td>
-                                        <td class="d-none d-sm-table-cell">@location</td>
-                                        <td></td>
-                                        <td>
-                                            @{
-                                                if (alreadyInCart.TryGetValue(number.PortedDialedNumber, out var _))
-                                                {
-                                                    <button onclick="RemoveFromCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-danger">Remove</button>
-                                                }
-                                                else
-                                                {
-                                                    <button onclick="AddToCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-primary">Add to Cart</button>
-                                                }
-                                            }
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>
-                                            Phone Number
-                                        </th>
-                                        <th>
-                                            Last Port Date
-                                        </th>
-                                        <th>
-                                            Caller Name
-                                        </th>
-                                        <th>
-                                            Local Routing #
-                                        </th>
-                                        <th>
-                                            Carrier
-                                        </th>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <h4>@number?.LrnLookup?.tn</h4>
-                                        </td>
-                                        <td>
-                                            @number?.LrnLookup?.LastPorted
-                                        </td>
-                                        <td>
-                                            @number?.LrnLookup?.LIDBName
-                                        </td>
-                                        <td>
-                                            <h4>@number?.LrnLookup?.lrn</h4>
-                                        </td>
-                                        <td>
-                                            <p>
-                                                @number?.LrnLookup?.spid
-                                                -
-                                                @number?.LrnLookup?.lec
-                                                -
-                                                @number?.LrnLookup?.lectype
-                                            </p>
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-        }
+                <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.PhonesToRingOrMenuDescription"></textarea>
+            </div>
+        </div>
     </div>
 </div>
