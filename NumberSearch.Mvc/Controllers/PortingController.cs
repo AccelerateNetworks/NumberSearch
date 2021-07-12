@@ -35,7 +35,7 @@ namespace NumberSearch.Mvc.Controllers
         {
             configuration = config;
             _postgresql = configuration.GetConnectionString("PostgresqlProd");
-            _teleToken = Guid.Parse(configuration.GetConnectionString("TeleAPI"));
+            var checkTeli = Guid.TryParse(configuration.GetConnectionString("TeleAPI"), out _teleToken);
             _data247username = config.GetConnectionString("Data247Username");
             _data247password = config.GetConnectionString("Data247Password");
             _bulkVSAPIKey = config.GetConnectionString("BulkVSAPIKEY");

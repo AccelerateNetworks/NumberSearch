@@ -46,7 +46,7 @@ namespace NumberSearch.Mvc
             _taskQueue = taskQueue;
             _cancellationToken = applicationLifetime.ApplicationStopping;
             _configuration = configuration;
-            _teleToken = Guid.Parse(configuration.GetConnectionString("TeleAPI"));
+            var checkTeli = Guid.TryParse(configuration.GetConnectionString("TeleAPI"), out _teleToken);
             _postgresql = _configuration.GetConnectionString("PostgresqlProd");
             _ = int.TryParse(_configuration.GetConnectionString("CallFlow"), out _CallFlow);
             _ = int.TryParse(_configuration.GetConnectionString("ChannelGroup"), out _ChannelGroup);
