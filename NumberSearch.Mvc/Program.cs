@@ -14,13 +14,11 @@ namespace NumberSearch.Mvc
     {
         public static int Main(string[] args)
         {
-
             Log.Logger = new LoggerConfiguration()
-                            .MinimumLevel.Debug()
-                            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                            .Enrich.FromLogContext()
-                            .WriteTo.Async(a => a.Console())
-                            .CreateLogger();
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .CreateLogger();
 
             try
             {
@@ -52,11 +50,10 @@ namespace NumberSearch.Mvc
                 .UseSerilog((hostingContext, services, loggerConfiguration) => loggerConfiguration
                     .ReadFrom.Configuration(hostingContext.Configuration)
                     .Enrich.FromLogContext()
-                    .WriteTo.Async(a => a.Console())
-                    .WriteTo.Async(a => a.File($"NumberSearch.Mvc_{DateTime.Now:yyyyMMdd}.txt",
+                    .WriteTo.File($"NumberSearch.Mvc_{DateTime.Now:yyyyMMdd}.txt",
                     rollingInterval: RollingInterval.Day,
-                    rollOnFileSizeLimit: true))
-                    .WriteTo.Async(a => a.Debug()))
+                    rollOnFileSizeLimit: true)
+                    .WriteTo.Debug())
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
