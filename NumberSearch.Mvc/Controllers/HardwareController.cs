@@ -39,7 +39,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [HttpGet("Hardware/PartnerPriceList")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
-        public async Task<IActionResult> PartnerPriceList()
+        public async Task<IActionResult> PartnerPriceListAsync()
         {
 
             var products = await Product.GetAllAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
