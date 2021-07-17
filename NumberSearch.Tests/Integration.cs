@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
+using NumberSearch.DataAccess.Call48;
 using NumberSearch.DataAccess.Data247;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.LCGuide;
@@ -39,6 +40,8 @@ namespace NumberSearch.Tests
         private readonly string _data247password;
         private readonly string _teleDynamicsUsername;
         private readonly string _teleDynamicsPassword;
+        private readonly string _call48Username;
+        private readonly string _call48Password;
 
         public Integration(ITestOutputHelper output)
         {
@@ -67,6 +70,8 @@ namespace NumberSearch.Tests
             _data247password = config.GetConnectionString("Data247Password");
             _teleDynamicsUsername = config.GetConnectionString("TeleDynamicsUsername");
             _teleDynamicsPassword = config.GetConnectionString("TeleDynamicsPassword");
+            _call48Username = config.GetConnectionString("Call48Username");
+            _call48Password = config.GetConnectionString("Call48Password");
         }
 
         [Fact]
@@ -882,6 +887,18 @@ namespace NumberSearch.Tests
             var result = await PortTn.GetAsync(results.FirstOrDefault().OrderId, bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
 
             Assert.NotNull(result);
+            output.WriteLine(JsonSerializer.Serialize(result));
+        }
+
+        [Fact]
+        public async Task Call48LoginTestAsync()
+        {
+            // Act
+            var result = await Login.LoginAsync(_call48Username, _call48Password);
+
+            Assert.NotNull(result);
+            Assert.NotNull(result.data.token);
+            Assert.True(result.code == 200);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
