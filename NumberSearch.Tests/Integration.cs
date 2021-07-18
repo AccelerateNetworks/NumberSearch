@@ -903,6 +903,32 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task Call48LocalNumberLookupTestAsync()
+        {
+            // Act
+            var result = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
+
+            var results = await Search.GetLocalNumbersAsync(string.Empty, "WA", "206", "984", result.data.token).ConfigureAwait(false);
+
+            Assert.NotEmpty(results.data.result);
+            output.WriteLine(results.data.result.Length.ToString());
+            foreach (var number in results.data.result)
+            {
+                Assert.False(string.IsNullOrWhiteSpace(number.did));
+                Assert.False(string.IsNullOrWhiteSpace(number.number));
+                Assert.False(string.IsNullOrWhiteSpace(number.npa));
+                Assert.False(string.IsNullOrWhiteSpace(number.nxx));
+                Assert.False(string.IsNullOrWhiteSpace(number.xxxx));
+                Assert.True(number.type == "local");
+                Assert.True(number.state == "WA");
+                Assert.False(string.IsNullOrWhiteSpace(number.ratecenter));
+                Assert.False(string.IsNullOrWhiteSpace(number.locData));
+                output.WriteLine(JsonSerializer.Serialize(number));
+            }
+
+        }
+
+        [Fact]
         public async Task TeleNumberDetailsTestAsync()
         {
             // Arrange
