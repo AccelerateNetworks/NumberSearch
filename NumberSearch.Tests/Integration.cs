@@ -1,4 +1,3 @@
-using FirstCom;
 
 using Microsoft.Extensions.Configuration;
 
@@ -14,7 +13,6 @@ using NumberSearch.DataAccess.TeleMesssage;
 using ServiceReference;
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -83,7 +81,7 @@ namespace NumberSearch.Tests
             // Assert        
             Assert.NotNull(result);
             Assert.NotEmpty(result.data);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+            output.WriteLine(JsonSerializer.Serialize(result));
         }
 
         [Fact]
@@ -95,7 +93,7 @@ namespace NumberSearch.Tests
             // Assert        
             Assert.NotNull(result);
             Assert.NotEmpty(result.data);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+            output.WriteLine(JsonSerializer.Serialize(result));
         }
 
         [Fact]
@@ -107,7 +105,7 @@ namespace NumberSearch.Tests
             // Assert        
             Assert.NotNull(result);
             Assert.Equal(1661, result.id);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+            output.WriteLine(JsonSerializer.Serialize(result));
         }
 
         [Fact]
@@ -119,7 +117,7 @@ namespace NumberSearch.Tests
             // Assert        
             Assert.NotNull(result);
             Assert.NotEmpty(result.data);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+            output.WriteLine(JsonSerializer.Serialize(result));
         }
 
         // There no way to clean up these new entries after we create them, so we don't want to do it all the time.
@@ -150,7 +148,7 @@ namespace NumberSearch.Tests
             // Assert        
             Assert.NotNull(result);
             Assert.NotEmpty(result.data);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+            output.WriteLine(JsonSerializer.Serialize(result));
         }
 
         [Fact]
@@ -163,7 +161,7 @@ namespace NumberSearch.Tests
             Assert.NotNull(result);
             Assert.False(string.IsNullOrWhiteSpace(result.invoices.LastOrDefault().invitations.FirstOrDefault().link));
             output.WriteLine(result.invoices.LastOrDefault().invitations.FirstOrDefault().link);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+            output.WriteLine(JsonSerializer.Serialize(result));
         }
 
         //[Fact]
@@ -176,7 +174,7 @@ namespace NumberSearch.Tests
         //    // Assert        
         //    Assert.NotNull(client);
         //    Assert.NotEmpty(clients.data);
-        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(client));
+        //    output.WriteLine(JsonSerializer.Serialize(client));
 
         //    var testInvoice = new Invoice_Items[] {
         //        new Invoice_Items {
@@ -199,7 +197,7 @@ namespace NumberSearch.Tests
         //    // Assert        
         //    Assert.NotNull(result);
         //    Assert.Equal(result.invoice_items.FirstOrDefault().notes, testCreate.invoice_items.FirstOrDefault().notes);
-        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+        //    output.WriteLine(JsonSerializer.Serialize(result));
 
         //    var checkSend = await result.SendInvoiceAsync(invoiceNinjaToken).ConfigureAwait(false);
 
@@ -215,7 +213,7 @@ namespace NumberSearch.Tests
             // Assert        
             Assert.NotNull(result);
             Assert.Equal(96, result.id);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+            output.WriteLine(JsonSerializer.Serialize(result));
         }
 
         // Diabled to prevent the deployment pipeline from churning the billing system on every commit.
@@ -240,7 +238,7 @@ namespace NumberSearch.Tests
         //    Assert.NotNull(result);
         //    Assert.Equal(testCreate.name, result.name);
         //    Assert.Equal(testCreate.contacts.FirstOrDefault().email, result.contacts.FirstOrDefault().email);
-        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+        //    output.WriteLine(JsonSerializer.Serialize(result));
 
         //    var checkDelete = await result.DeleteAsync(invoiceNinjaToken).ConfigureAwait(false);
 
@@ -270,7 +268,7 @@ namespace NumberSearch.Tests
         //    Assert.NotNull(testClient);
         //    Assert.Equal(testCreateClient.name, testClient.name);
         //    Assert.Equal(testCreateClient.contacts.FirstOrDefault().email, testClient.contacts.FirstOrDefault().email);
-        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(testClient));
+        //    output.WriteLine(JsonSerializer.Serialize(testClient));
 
 
         //    var testInvoice = new Invoice_Items[] {
@@ -294,7 +292,7 @@ namespace NumberSearch.Tests
         //    // Assert        
         //    Assert.NotNull(result);
         //    Assert.Equal(result.invoice_items.FirstOrDefault().notes, testCreate.invoice_items.FirstOrDefault().notes);
-        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+        //    output.WriteLine(JsonSerializer.Serialize(result));
 
         //    result.invoice_items.FirstOrDefault().notes = "Updated";
 
@@ -303,7 +301,7 @@ namespace NumberSearch.Tests
         //    // Assert        
         //    Assert.NotNull(updateTest);
         //    Assert.Equal(result.invoice_items.FirstOrDefault().notes, updateTest.invoice_items.FirstOrDefault().notes);
-        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(updateTest));
+        //    output.WriteLine(JsonSerializer.Serialize(updateTest));
 
         //    var deleteTest = await updateTest.DeleteAsync(invoiceNinjaToken).ConfigureAwait(false);
 
@@ -337,7 +335,7 @@ namespace NumberSearch.Tests
         //    Assert.NotNull(result);
         //    Assert.Equal(testCreate.name, result.name);
         //    Assert.Equal(testCreate.contacts.FirstOrDefault().email, result.contacts.FirstOrDefault().email);
-        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+        //    output.WriteLine(JsonSerializer.Serialize(result));
 
         //    result.contacts.FirstOrDefault().first_name = "IntegrationTest";
 
@@ -347,7 +345,7 @@ namespace NumberSearch.Tests
         //    Assert.Equal(updateResult.name, result.name);
         //    Assert.Equal(updateResult.id, result.id);
         //    Assert.Equal(updateResult.contacts.FirstOrDefault().email, result.contacts.FirstOrDefault().email);
-        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+        //    output.WriteLine(JsonSerializer.Serialize(result));
 
         //    var checkDelete = await updateResult.DeleteAsync(invoiceNinjaToken).ConfigureAwait(false);
 
@@ -364,7 +362,7 @@ namespace NumberSearch.Tests
             // Assert        
             Assert.NotNull(result);
             Assert.NotEmpty(result.data);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+            output.WriteLine(JsonSerializer.Serialize(result));
         }
 
         [Fact]
@@ -381,7 +379,7 @@ namespace NumberSearch.Tests
             Assert.False(string.IsNullOrWhiteSpace(result.status));
             Assert.True(result.code == 200);
             Assert.False(string.IsNullOrWhiteSpace(result.data.lrn));
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+            output.WriteLine(JsonSerializer.Serialize(result));
         }
 
         [Fact]
@@ -395,7 +393,7 @@ namespace NumberSearch.Tests
 
             // Assert        
             Assert.NotNull(result);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+            output.WriteLine(JsonSerializer.Serialize(result));
         }
 
         [Fact]
@@ -410,7 +408,7 @@ namespace NumberSearch.Tests
 
             // Assert        
             Assert.NotNull(result);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+            output.WriteLine(JsonSerializer.Serialize(result));
         }
 
         [Fact]
@@ -443,7 +441,7 @@ namespace NumberSearch.Tests
             {
                 Assert.False(string.IsNullOrWhiteSpace(result));
             }
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+            output.WriteLine(JsonSerializer.Serialize(results));
         }
 
         [Fact]
@@ -462,7 +460,7 @@ namespace NumberSearch.Tests
             {
                 Assert.False(string.IsNullOrWhiteSpace(result.number));
             }
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+            output.WriteLine(JsonSerializer.Serialize(results));
         }
 
         [Fact]
@@ -479,7 +477,7 @@ namespace NumberSearch.Tests
             {
                 Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
             }
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+            output.WriteLine(JsonSerializer.Serialize(results));
         }
 
         [Fact]
@@ -495,7 +493,7 @@ namespace NumberSearch.Tests
             Assert.False(string.IsNullOrWhiteSpace(results.status));
             Assert.True(results.code == 200);
             Assert.True(results.CnamEnabled());
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+            output.WriteLine(JsonSerializer.Serialize(results));
         }
 
         [Fact]
@@ -509,12 +507,12 @@ namespace NumberSearch.Tests
             // Assert
             Assert.NotNull(results);
             Assert.False(string.IsNullOrWhiteSpace(results.status));
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+            output.WriteLine(JsonSerializer.Serialize(results));
 
             results = await EmergencyInfo.GetAsync("9365820436", token);
             Assert.NotNull(results);
             Assert.False(string.IsNullOrWhiteSpace(results.status));
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+            output.WriteLine(JsonSerializer.Serialize(results));
         }
 
         [Fact]
@@ -532,7 +530,7 @@ namespace NumberSearch.Tests
                 Assert.NotNull(results);
                 Assert.False(string.IsNullOrWhiteSpace(results.status));
                 Assert.True(results.code == 200);
-                output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+                output.WriteLine(JsonSerializer.Serialize(results));
             }
         }
 
@@ -790,7 +788,7 @@ namespace NumberSearch.Tests
             // Assert
             Assert.NotNull(result);
             Assert.True(!string.IsNullOrWhiteSpace(result.spid));
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+            output.WriteLine(JsonSerializer.Serialize(result));
         }
 
         [Fact]
@@ -1282,7 +1280,7 @@ namespace NumberSearch.Tests
             var results = await VerifiedPhoneNumber.GetAllAsync(postgresql).ConfigureAwait(false);
             Assert.NotNull(results);
             Assert.NotEmpty(results);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+            output.WriteLine(JsonSerializer.Serialize(results));
 
             results = await VerifiedPhoneNumber.GetByOrderIdAsync(results.FirstOrDefault().OrderId ?? Guid.Empty, postgresql).ConfigureAwait(false);
             Assert.NotNull(results);
@@ -1344,13 +1342,13 @@ namespace NumberSearch.Tests
             var results = await PortedPhoneNumber.GetAllAsync(postgresql).ConfigureAwait(false);
             Assert.NotNull(results);
             Assert.NotEmpty(results);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results.LastOrDefault()));
+            output.WriteLine(JsonSerializer.Serialize(results.LastOrDefault()));
 
             var order = results.LastOrDefault();
             results = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId ?? Guid.Empty, postgresql).ConfigureAwait(false);
             Assert.NotNull(results);
             Assert.NotEmpty(results);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+            output.WriteLine(JsonSerializer.Serialize(results));
 
             //results = await PortedPhoneNumber.GetByPortRequestIdAsync(order.PortRequestId ?? Guid.Empty, postgresql).ConfigureAwait(false);
             //Assert.NotNull(results);
@@ -1360,11 +1358,11 @@ namespace NumberSearch.Tests
             results = await PortedPhoneNumber.GetByDialedNumberAsync(order.PortedDialedNumber, postgresql).ConfigureAwait(false);
             Assert.NotNull(results);
             Assert.NotEmpty(results);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+            output.WriteLine(JsonSerializer.Serialize(results));
 
             var result = await PortedPhoneNumber.GetByIdAsync(order.PortedPhoneNumberId, postgresql).ConfigureAwait(false);
             Assert.NotNull(result);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+            output.WriteLine(JsonSerializer.Serialize(result));
         }
 
         [Fact]
@@ -1416,7 +1414,7 @@ namespace NumberSearch.Tests
             var results = await PortRequest.GetAllAsync(postgresql).ConfigureAwait(false);
             Assert.NotNull(results);
             Assert.NotEmpty(results);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
+            output.WriteLine(JsonSerializer.Serialize(results));
         }
 
         [Fact]
@@ -1426,7 +1424,7 @@ namespace NumberSearch.Tests
             Assert.NotNull(results);
             Assert.NotEmpty(results);
             var order = await PortRequest.GetByOrderIdAsync(results.FirstOrDefault().OrderId, postgresql).ConfigureAwait(false);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(order));
+            output.WriteLine(JsonSerializer.Serialize(order));
         }
 
         [Fact]
@@ -1563,7 +1561,7 @@ namespace NumberSearch.Tests
 
             Assert.NotNull(result);
             Assert.True(result.rate1 > 0.0M);
-            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+            output.WriteLine(JsonSerializer.Serialize(result));
         }
 
         [Fact]
