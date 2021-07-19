@@ -954,6 +954,31 @@ namespace NumberSearch.Tests
 
         }
 
+        // Disabled so as not to purchase a bunch of numbers by accident.
+        //[Fact]
+        //public async Task Call48PurchaseLocalNumberTestAsync()
+        //{
+        //    // Act
+        //    var cred = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
+
+        //    var results = await Search.GetAsync("WA", 206, cred.data.token).ConfigureAwait(false);
+
+        //    Assert.NotEmpty(results);
+        //    output.WriteLine(results.Count().ToString());
+        //    var number = results.FirstOrDefault();
+
+        //    var checkExist = await Search.GetLocalNumbersAsync(string.Empty, number.State, number.NPA.ToString(), number.NXX.ToString(), cred.data.token).ConfigureAwait(false);
+
+        //    var numberToPurchase = checkExist.data.result.Where(x => x.did.Replace("-", string.Empty) == number.DialedNumber).FirstOrDefault();
+        //    output.WriteLine(JsonSerializer.Serialize(numberToPurchase));
+
+        //    var purchaseOrder = await Purchase.PurchasePhoneNumberAsync(checkExist.data.loc, numberToPurchase, cred.data.token).ConfigureAwait(false);
+        //    output.WriteLine(JsonSerializer.Serialize(purchaseOrder));
+
+        //    Assert.NotNull(purchaseOrder);
+        //    Assert.True(purchaseOrder.code == 200);
+        //}
+
         [Fact]
         public async Task TeleNumberDetailsTestAsync()
         {

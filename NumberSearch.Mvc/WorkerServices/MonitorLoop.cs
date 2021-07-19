@@ -6,14 +6,12 @@ using Microsoft.Extensions.Logging;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
+using NumberSearch.DataAccess.Call48;
 using NumberSearch.DataAccess.TeleMesssage;
 
 using Serilog;
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -25,19 +23,18 @@ namespace NumberSearch.Mvc
     {
         private readonly IBackgroundTaskQueue _taskQueue;
         private readonly CancellationToken _cancellationToken;
-        private readonly IConfiguration _configuration;
         private readonly Guid _teleToken;
         private readonly string _postgresql;
         private readonly int _CallFlow;
         private readonly int _ChannelGroup;
-        private readonly string _apiKey;
-        private readonly string _apiSecret;
         private readonly string _fpcusername;
         private readonly string _fpcpassword;
         private readonly string _bulkVSusername;
         private readonly string _bulkVSpassword;
         private readonly string _emailUsername;
         private readonly string _emailPassword;
+        private readonly string _call48Username;
+        private readonly string _call48Password;
 
         public MonitorLoop(IBackgroundTaskQueue taskQueue,
             ILogger<MonitorLoop> logger,
@@ -45,19 +42,18 @@ namespace NumberSearch.Mvc
         {
             _taskQueue = taskQueue;
             _cancellationToken = applicationLifetime.ApplicationStopping;
-            _configuration = configuration;
             var checkTeli = Guid.TryParse(configuration.GetConnectionString("TeleAPI"), out _teleToken);
-            _postgresql = _configuration.GetConnectionString("PostgresqlProd");
-            _ = int.TryParse(_configuration.GetConnectionString("CallFlow"), out _CallFlow);
-            _ = int.TryParse(_configuration.GetConnectionString("ChannelGroup"), out _ChannelGroup);
-            _apiKey = configuration.GetConnectionString("BulkVSAPIKEY");
-            _apiSecret = configuration.GetConnectionString("BulkVSAPISecret");
+            _postgresql = configuration.GetConnectionString("PostgresqlProd");
+            _ = int.TryParse(configuration.GetConnectionString("CallFlow"), out _CallFlow);
+            _ = int.TryParse(configuration.GetConnectionString("ChannelGroup"), out _ChannelGroup);
             _fpcusername = configuration.GetConnectionString("PComNetUsername");
             _fpcpassword = configuration.GetConnectionString("PComNetPassword");
             _bulkVSusername = configuration.GetConnectionString("BulkVSUsername");
             _bulkVSpassword = configuration.GetConnectionString("BulkVSPassword");
-            _emailUsername = _configuration.GetConnectionString("SmtpUsername");
-            _emailPassword = _configuration.GetConnectionString("SmtpPassword");
+            _call48Username = configuration.GetConnectionString("Call48Username");
+            _call48Password = configuration.GetConnectionString("Call48Password");
+            _emailUsername = configuration.GetConnectionString("SmtpUsername");
+            _emailPassword = configuration.GetConnectionString("SmtpPassword");
         }
 
         public void StartMonitorLoop()
@@ -158,6 +154,27 @@ namespace NumberSearch.Mvc
                                                         {
                                                             Log.Fatal($"[Background Worker] Failed to set TeleMessage label for {nto.DialedNumber} to {order?.BusinessName} {order?.FirstName} {order?.LastName}.");
                                                         }
+                                                    }
+                                                    else if (nto.IngestedFrom == "Call48")
+                                                    {
+                                                        // Find the number.
+                                                        var credentials = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
+                                                        var results = await Search.GetLocalNumbersAsync(string.Empty, nto.State, nto.NPA.ToString(), nto.NXX.ToString(), credentials.data.token).ConfigureAwait(false);
+                                                        // Sometimes Call48 includes dashes in their numbers for no reason.
+                                                        var matchingNumber = results.data.result.Where(x => x.did.Replace("-", string.Empty) == nto.DialedNumber).FirstOrDefault();
+
+                                                        // Buy it and save the reciept.
+                                                        var executeOrder = await Purchase.PurchasePhoneNumberAsync(results.data.loc, matchingNumber, credentials.data.token).ConfigureAwait(false);
+
+                                                        nto.Purchased = true;
+                                                        productOrder.DateOrdered = DateTime.Now;
+                                                        productOrder.OrderResponse = JsonSerializer.Serialize(executeOrder);
+                                                        productOrder.Completed = executeOrder.code == 200;
+
+                                                        var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
+                                                        var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
+
+                                                        Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from Call48.");
                                                     }
                                                     else if (nto.IngestedFrom == "FirstPointCom")
                                                     {

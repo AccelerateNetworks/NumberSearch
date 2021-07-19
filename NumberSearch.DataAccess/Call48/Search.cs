@@ -14,17 +14,17 @@ namespace NumberSearch.DataAccess.Call48
     {
         public int code { get; set; }
         public string message { get; set; }
-        public Data data { get; set; }
+        public SearchData data { get; set; }
 
-        public class Data
+        public class SearchData
         {
-            public Result[] result { get; set; }
+            public SearchResult[] result { get; set; }
             public string loc { get; set; }
             public string setup { get; set; }
             public string monthly { get; set; }
         }
 
-        public class Result
+        public class SearchResult
         {
             public string did { get; set; }
             public string number { get; set; }
