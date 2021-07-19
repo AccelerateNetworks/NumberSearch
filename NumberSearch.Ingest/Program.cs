@@ -30,6 +30,8 @@ namespace NumberSearch.Ingest
             var username = config.GetConnectionString("PComNetUsername");
             var password = config.GetConnectionString("PComNetPassword");
             var peerlessApiKey = config.GetConnectionString("PeerlessAPIKey");
+            var call48Username = config.GetConnectionString("Call48Username");
+            var call48Password = config.GetConnectionString("Call48Password");
             var smtpUsername = config.GetConnectionString("SmtpUsername");
             var smtpPassword = config.GetConnectionString("SmtpPassword");
             var emailOrders = config.GetConnectionString("EmailOrders");
@@ -54,6 +56,7 @@ namespace NumberSearch.Ingest
             var bulkVSPriortyTimer = new Stopwatch();
             var firstPointComPriortyTimer = new Stopwatch();
             var teleMessagePriortyTimer = new Stopwatch();
+            var call48PriortyTimer = new Stopwatch();
             var peerlessPriortyTimer = new Stopwatch();
             var orderUpdatesTimer = new Stopwatch();
             // 20 Minutes in miliseconds
@@ -72,6 +75,7 @@ namespace NumberSearch.Ingest
                     var firstPointComCycle = cycles.Where(x => x.IngestedFrom == "FirstPointCom").FirstOrDefault();
                     var teleMessageCycle = cycles.Where(x => x.IngestedFrom == "TeleMessage").FirstOrDefault();
                     var peerlessCycle = cycles.Where(x => x.IngestedFrom == "Peerless").FirstOrDefault();
+                    var call48Cycle = cycles.Where(x => x.IngestedFrom == "Call48").FirstOrDefault();
                     var ownedNumbersCycle = cycles.Where(x => x.IngestedFrom == "OwnedNumbers").FirstOrDefault();
 
                     // Ingest phone numbers from BulkVS.
@@ -496,6 +500,130 @@ namespace NumberSearch.Ingest
                             await PortRequests.UpdateStatusesTeliMessageAsync(config);
                         }
                     }
+
+                    // Ingest phone numbers from Call48.
+                    if (call48Cycle != null && (call48Cycle.Enabled || call48Cycle.RunNow))
+                    {
+                        var lastRun = await IngestStatistics.GetLastIngestAsync("Call48", postgresSQL).ConfigureAwait(false);
+
+                        // If the last ingest was run to recently do nothing.
+                        if (lastRun != null && (lastRun.StartDate < (start - call48Cycle.CycleTime) || call48Cycle.RunNow))
+                        {
+                            Log.Information($"Last Run of {lastRun?.IngestedFrom} started at {lastRun?.StartDate} and ended at {lastRun?.EndDate}");
+
+                            Log.Information($"[Call48] Cycle time is {call48Cycle?.CycleTime}");
+                            Log.Information($"[Call48] Enabled is {call48Cycle?.Enabled}");
+
+                            // Prevent another run from starting while this is still going.
+                            var lockingStats = new IngestStatistics
+                            {
+                                IngestedFrom = "Call48",
+                                StartDate = DateTime.Now,
+                                EndDate = DateTime.Now,
+                                IngestedNew = 0,
+                                FailedToIngest = 0,
+                                NumbersRetrived = 0,
+                                Removed = 0,
+                                Unchanged = 0,
+                                UpdatedExisting = 0,
+                                Lock = true
+                            };
+
+                            var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
+
+                            // Ingest all avablie phones numbers from the BulkVs API.
+                            Log.Information("Ingesting data from Call48");
+                            var call48Stats = await Provider.Call48Async(call48Username, call48Password, AreaCode.States, postgresSQL).ConfigureAwait(false);
+
+                            // Remove the lock from the database to prevent it from getting cluttered with blank entries.
+                            var lockEntry = await IngestStatistics.GetLockAsync("Call48", postgresSQL).ConfigureAwait(false);
+                            var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
+
+                            // Remove all of the old numbers from the database.
+                            Log.Information("[Call48] Removing old numbers from the database.");
+                            var call48CleanUp = await PhoneNumber.DeleteOldByProvider(start, call48Cycle.CycleTime, "Call48", postgresSQL).ConfigureAwait(false);
+
+                            var combined = new IngestStatistics
+                            {
+                                StartDate = call48Stats.StartDate,
+                                EndDate = call48CleanUp.EndDate,
+                                FailedToIngest = call48Stats.FailedToIngest,
+                                IngestedFrom = call48Stats.IngestedFrom,
+                                IngestedNew = call48Stats.IngestedNew,
+                                Lock = false,
+                                NumbersRetrived = call48Stats.NumbersRetrived,
+                                Removed = call48CleanUp.Removed,
+                                Unchanged = call48Stats.Unchanged,
+                                UpdatedExisting = call48Stats.UpdatedExisting,
+                                Priority = false
+                            };
+
+                            if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
+                            {
+                                Log.Information($"[Call48] Completed the ingest process {DateTime.Now}.");
+                            }
+                            else
+                            {
+                                Log.Fatal($"[Call48] Failed to completed the ingest process {DateTime.Now}.");
+                            }
+
+                            if (call48Cycle.RunNow)
+                            {
+                                call48Cycle.RunNow = false;
+                                var checkRunNow = call48Cycle.PutAsync(postgresSQL).ConfigureAwait(false);
+                            }
+                        }
+
+                        // Priority ingest.
+                        if (lastRun != null && ((call48PriortyTimer.ElapsedMilliseconds >= priortyIngestCycleTime) || (!call48PriortyTimer.IsRunning)))
+                        {
+                            if (!call48PriortyTimer.IsRunning)
+                            {
+                                call48PriortyTimer.Start();
+                            }
+
+                            // Restart the 20 minute timer.
+                            call48PriortyTimer.Restart();
+
+                            Log.Information($"[Call48] Priority ingest started at {DateTime.Now}.");
+
+                            // Ingest priority phones numbers from the Call48 API.
+                            Log.Information("[Call48] Ingesting priority data from Call48.");
+                            var call48Stats = await Provider.Call48Async(call48Username, call48Password, AreaCode.States.Where(x => x.State == "Oregon" || x.State == "Washington").ToArray(), postgresSQL).ConfigureAwait(false);
+
+                            var combined = new IngestStatistics
+                            {
+                                StartDate = call48Stats.StartDate,
+                                EndDate = DateTime.Now,
+                                FailedToIngest = call48Stats.FailedToIngest,
+                                IngestedFrom = call48Stats.IngestedFrom,
+                                IngestedNew = call48Stats.IngestedNew,
+                                Lock = false,
+                                NumbersRetrived = call48Stats.NumbersRetrived,
+                                Removed = 0,
+                                Unchanged = call48Stats.Unchanged,
+                                UpdatedExisting = call48Stats.UpdatedExisting,
+                                Priority = true
+                            };
+
+                            // Remove stale priority numbers
+                            foreach (var code in AreaCode.Priority)
+                            {
+                                var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, new TimeSpan(priortyIngestCycleTime), code, lastRun.IngestedFrom, postgresSQL).ConfigureAwait(false);
+                                combined.Removed += removedNumbers.Removed;
+                            }
+
+                            if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
+                            {
+                                Log.Information($"[Call48] Completed the priority ingest process {DateTime.Now}.");
+                            }
+                            else
+                            {
+                                Log.Fatal($"[Call48] Failed to completed the priority ingest process {DateTime.Now}.");
+                            }
+                        }
+                    }
+
 
                     // Ingest phone numbers from Peerless.
                     if (peerlessCycle != null && (peerlessCycle.Enabled || peerlessCycle.RunNow))

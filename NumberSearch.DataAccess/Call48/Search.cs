@@ -1,6 +1,11 @@
 ﻿using Flurl.Http;
 
+using Serilog;
+
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.Call48
@@ -68,8 +73,72 @@ namespace NumberSearch.DataAccess.Call48
             }
             catch (FlurlHttpException ex)
             {
-                throw;
+                //var error = await ex.GetResponseJsonAsync();
+                Log.Error($"[Ingest] [Call48] Failed to get numbers for {state} and NPA {npa}.");
+                //Log.Error(JsonSerializer.Serialize(error));
+                return null;
             }
+        }
+
+        /// <summary>
+        /// Get phone number by state short code and area code from Call48.
+        /// </summary>
+        /// <param name="stateShort"></param>
+        /// <param name="inNpa"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<PhoneNumber>> GetAsync(string stateShort, int inNpa, string token)
+        {
+            var results = await GetLocalNumbersAsync(string.Empty, stateShort, inNpa.ToString(), string.Empty, token).ConfigureAwait(false);
+
+            var output = new List<PhoneNumber>();
+
+            // Bail out early if something is wrong.
+            if (results == null || !results.data.result.Any())
+            {
+                return output;
+            }
+
+            foreach (var item in results?.data?.result)
+            {
+                if (item.did.Contains("-"))
+                {
+                    item.did = item.did.Replace("-", string.Empty);
+                    //Log.Information($"[Ingest] [Call48] Removed dashes from {item.did}.");
+                }
+
+                // If the number has at least 10 chars then it could be a valid phone number.
+                // If the number starts with a 1 then it's a US number, we want to ignore internation numbers.
+                if (item.did.Length == 10 || item.did.Length == 11)
+                {
+                    item.did = item.did.Substring(item.did.Length - 10);
+                }
+                else
+                {
+                    Log.Warning($"[Ingest] [Call48] Failed to parse {item.did}. Passed neither the 10 or 11 char checks.");
+                    continue;
+                }
+
+                bool checkNpa = int.TryParse(item.npa, out int npa);
+                bool checkNxx = int.TryParse(item.nxx, out int nxx);
+                bool checkXxxx = int.TryParse(item.xxxx, out int xxxx);
+
+                if (checkNpa && checkNxx && checkXxxx)
+                {
+                    output.Add(new PhoneNumber
+                    {
+                        NPA = npa,
+                        NXX = nxx,
+                        XXXX = xxxx,
+                        DialedNumber = item.did,
+                        City = string.IsNullOrWhiteSpace(item.ratecenter) ? "Unknown City" : item.ratecenter,
+                        State = string.IsNullOrWhiteSpace(item.state) ? "Unknown State" : item.state,
+                        DateIngested = DateTime.Now,
+                        IngestedFrom = "Call48"
+                    });
+                }
+            }
+            return output;
         }
     }
 }

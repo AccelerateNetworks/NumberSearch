@@ -929,6 +929,32 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task Call48GetNumbersTestAsync()
+        {
+            // Act
+            var cred = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
+
+            var results = await Search.GetAsync("WA", 206, cred.data.token).ConfigureAwait(false);
+
+            Assert.NotEmpty(results);
+            output.WriteLine(results.Count().ToString());
+            foreach (var result in results)
+            {
+                Assert.True(result.NPA > 99);
+                Assert.True(result.NXX > 99);
+                // XXXX can be 0001 which as an int is 1.
+                Assert.True(result.XXXX > 0);
+                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+                // Reenabled these after June 2020 starts.
+                //Assert.False(string.IsNullOrWhiteSpace(result.City));
+                //Assert.False(string.IsNullOrWhiteSpace(result.State));
+                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+                output.WriteLine(JsonSerializer.Serialize(result));
+            }
+
+        }
+
+        [Fact]
         public async Task TeleNumberDetailsTestAsync()
         {
             // Arrange
