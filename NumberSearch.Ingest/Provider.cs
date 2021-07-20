@@ -105,25 +105,44 @@ namespace NumberSearch.Ingest
 
             var credentials = await Login.LoginAsync(username, password).ConfigureAwait(false);
 
-            var statesAndRatecenters = await Ratecenter.GetAllRatecentersAsync(states, credentials.data.token).ConfigureAwait(false);
-
-            foreach (var state in statesAndRatecenters)
+            foreach (var state in states)
             {
-                Log.Information($"[Call48] Ingesting numbers for {state.ShortState}.");
+                Log.Information($"[Call48] Ingesting numbers for {state.StateShort}.");
 
-                foreach (var ratecenter in state.Ratecenters)
+                foreach (var code in state.AreaCodes)
                 {
                     try
                     {
-                        numbers.AddRange(await Search.GetAsync(state.ShortState, ratecenter, credentials.data.token).ConfigureAwait(false));
+                        numbers.AddRange(await Search.GetAsync(state.StateShort, code, credentials.data.token).ConfigureAwait(false));
                         Log.Information($"[Call48] Found {numbers.Count} Phone Numbers");
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"[Call48] Ratecenter {ratecenter}, {state.ShortState} failed @ {DateTime.Now}: {ex.Message}");
+                        Log.Error($"[Call48] Area code {code} failed @ {DateTime.Now}: {ex.Message}");
                     }
                 }
             }
+
+            // This is the ratecenters method, which is disabled because the Call48 API is drastically slower when we use it.
+            //var statesAndRatecenters = await Ratecenter.GetAllRatecentersAsync(states, credentials.data.token).ConfigureAwait(false);
+
+            //foreach (var state in statesAndRatecenters)
+            //{
+            //    Log.Information($"[Call48] Ingesting numbers for {state.ShortState}.");
+
+            //    foreach (var ratecenter in state.Ratecenters)
+            //    {
+            //        try
+            //        {
+            //            numbers.AddRange(await Search.GetAsync(state.ShortState, ratecenter, credentials.data.token).ConfigureAwait(false));
+            //            Log.Information($"[Call48] Found {numbers.Count} Phone Numbers");
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            Log.Error($"[Call48] Ratecenter {ratecenter}, {state.ShortState} failed @ {DateTime.Now}: {ex.Message}");
+            //        }
+            //    }
+            //}
 
             var locations = await Services.AssignRatecenterAndRegionAsync(numbers).ConfigureAwait(false);
             numbers = locations.ToList();
