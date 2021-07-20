@@ -51,7 +51,7 @@ namespace NumberSearch.DataAccess.Call48
         /// <param name="limit"></param>
         /// <param name="token"> An auth token from the Login endpoint. </param>
         /// <returns></returns>
-        public static async Task<Search> GetLocalNumbersAsync(string ratecenter, string state, string npa, string nxx, string token)
+        public static async Task<Search> GetLocalNumbersAsync(string state, string ratecenter, string npa, string nxx, string token)
         {
             string baseUrl = "https://apicontrol.call48.com/api/v4/";
             string endPointName = $"search";
@@ -89,7 +89,7 @@ namespace NumberSearch.DataAccess.Call48
         /// <returns></returns>
         public static async Task<IEnumerable<PhoneNumber>> GetAsync(string stateShort, int inNpa, string token)
         {
-            var results = await GetLocalNumbersAsync(string.Empty, stateShort, inNpa.ToString(), string.Empty, token).ConfigureAwait(false);
+            var results = await GetLocalNumbersAsync(stateShort, string.Empty, inNpa.ToString(), string.Empty, token).ConfigureAwait(false);
 
             var output = new List<PhoneNumber>();
 
@@ -140,5 +140,60 @@ namespace NumberSearch.DataAccess.Call48
             }
             return output;
         }
+
+        public static async Task<IEnumerable<PhoneNumber>> GetAsync(string stateShort, string ratecenter, string token)
+        {
+            var results = await GetLocalNumbersAsync(stateShort, ratecenter, string.Empty, string.Empty, token).ConfigureAwait(false);
+
+            var output = new List<PhoneNumber>();
+
+            // Bail out early if something is wrong.
+            if (results == null || !results.data.result.Any())
+            {
+                return output;
+            }
+
+            foreach (var item in results?.data?.result)
+            {
+                if (item.did.Contains("-"))
+                {
+                    item.did = item.did.Replace("-", string.Empty);
+                    //Log.Information($"[Ingest] [Call48] Removed dashes from {item.did}.");
+                }
+
+                // If the number has at least 10 chars then it could be a valid phone number.
+                // If the number starts with a 1 then it's a US number, we want to ignore internation numbers.
+                if (item.did.Length == 10 || item.did.Length == 11)
+                {
+                    item.did = item.did.Substring(item.did.Length - 10);
+                }
+                else
+                {
+                    Log.Warning($"[Ingest] [Call48] Failed to parse {item.did}. Passed neither the 10 or 11 char checks.");
+                    continue;
+                }
+
+                bool checkNpa = int.TryParse(item.npa, out int npa);
+                bool checkNxx = int.TryParse(item.nxx, out int nxx);
+                bool checkXxxx = int.TryParse(item.xxxx, out int xxxx);
+
+                if (checkNpa && checkNxx && checkXxxx)
+                {
+                    output.Add(new PhoneNumber
+                    {
+                        NPA = npa,
+                        NXX = nxx,
+                        XXXX = xxxx,
+                        DialedNumber = item.did,
+                        City = string.IsNullOrWhiteSpace(item.ratecenter) ? "Unknown City" : item.ratecenter,
+                        State = string.IsNullOrWhiteSpace(item.state) ? "Unknown State" : item.state,
+                        DateIngested = DateTime.Now,
+                        IngestedFrom = "Call48"
+                    });
+                }
+            }
+            return output;
+        }
+
     }
 }

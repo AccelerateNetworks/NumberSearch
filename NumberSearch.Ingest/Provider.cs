@@ -105,20 +105,22 @@ namespace NumberSearch.Ingest
 
             var credentials = await Login.LoginAsync(username, password).ConfigureAwait(false);
 
-            foreach (var state in states)
-            {
-                Log.Information($"[Call48] Ingesting numbers for {state.State}.");
+            var statesAndRatecenters = await Ratecenter.GetAllRatecentersAsync(states, credentials.data.token).ConfigureAwait(false);
 
-                foreach (var code in state.AreaCodes)
+            foreach (var state in statesAndRatecenters)
+            {
+                Log.Information($"[Call48] Ingesting numbers for {state.ShortState}.");
+
+                foreach (var ratecenter in state.Ratecenters)
                 {
                     try
                     {
-                        numbers.AddRange(await Search.GetAsync(state.StateShort, code, credentials.data.token).ConfigureAwait(false));
+                        numbers.AddRange(await Search.GetAsync(state.ShortState, ratecenter, credentials.data.token).ConfigureAwait(false));
                         Log.Information($"[Call48] Found {numbers.Count} Phone Numbers");
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"[Call48] Area code {code} failed @ {DateTime.Now}: {ex.Message}");
+                        Log.Error($"[Call48] Ratecenter {ratecenter}, {state.ShortState} failed @ {DateTime.Now}: {ex.Message}");
                     }
                 }
             }

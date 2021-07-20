@@ -7,6 +7,7 @@ using NumberSearch.DataAccess.Call48;
 using NumberSearch.DataAccess.Data247;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.LCGuide;
+using NumberSearch.DataAccess.Models;
 using NumberSearch.DataAccess.TeleDynamics;
 using NumberSearch.DataAccess.TeleMesssage;
 
@@ -906,7 +907,7 @@ namespace NumberSearch.Tests
             // Act
             var result = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
 
-            var results = await Search.GetLocalNumbersAsync(string.Empty, "WA", "206", "984", result.data.token).ConfigureAwait(false);
+            var results = await Search.GetLocalNumbersAsync("WA", string.Empty, "206", "984", result.data.token).ConfigureAwait(false);
 
             Assert.NotEmpty(results.data.result);
             output.WriteLine(results.data.result.Length.ToString());
@@ -947,6 +948,23 @@ namespace NumberSearch.Tests
                 //Assert.False(string.IsNullOrWhiteSpace(result.City));
                 //Assert.False(string.IsNullOrWhiteSpace(result.State));
                 Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+                output.WriteLine(JsonSerializer.Serialize(result));
+            }
+        }
+
+        [Fact]
+        public async Task Call48GetRatecentersTestAsync()
+        {
+            // Act
+            var cred = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
+
+            var results = await Ratecenter.GetAllRatecentersAsync(AreaCode.States, cred.data.token).ConfigureAwait(false);
+
+            Assert.NotEmpty(results);
+            output.WriteLine(results.Count().ToString());
+            foreach (var result in results)
+            {
+                Assert.NotEmpty(result.Ratecenters);
                 output.WriteLine(JsonSerializer.Serialize(result));
             }
 
