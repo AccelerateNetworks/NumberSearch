@@ -100,8 +100,8 @@
 
     </script>
     <!-- Vendor Styles-->
-    <link rel="stylesheet" media="screen" href="~/vendor/simplebar.min.css"/>
-    <link rel="stylesheet" media="screen" href="~/vendor/tiny-slider.css"/>
+    <link rel="stylesheet" media="screen" href="~/vendor/simplebar/simplebar.min.css"/>
+    <link rel="stylesheet" media="screen" href="~/vendor/tiny-slider/tiny-slider.css"/>
     <link rel="stylesheet" media="screen" href="~/vendor/lightgallery.js/lightgallery.min.css"/>
     <!-- Main Theme Styles + Bootstrap-->
     <link rel="stylesheet" media="screen" href="~/css/theme.min.css">
@@ -152,11 +152,15 @@
     <!-- Navbar (Solid background)-->
     <header class="header navbar navbar-expand-lg navbar-light bg-light navbar-sticky" data-scroll-header data-fixed-element>
       <div class="container px-0 px-xl-3">
-        <button class="navbar-toggler ms-n2 me-2 order-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"><span class="navbar-toggler-icon"></span></button><a class="navbar-brand flex-shrink-0 order-lg-1 ms-lg-0 pe-lg-2 me-lg-4" href="index.html"><img class="d-none d-lg-block" src="img/logo/logo-dark.png" alt="Accelerate Networks" width="153"><img class="d-lg-none" src="img/original/favicon-194x194.png" alt="Accelerate Networks" width="58"></a>
+        <button class="navbar-toggler ms-n2 me-2 order-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"><span class="navbar-toggler-icon"></span></button><a class="navbar-brand flex-shrink-0 order-lg-1 ms-lg-0 pe-lg-2 me-lg-4" href="/"><img class="d-none d-lg-block" src="/images/scaled/accelerate.png" alt="Accelerate Networks" width="153"><img class="d-lg-none" src="img/original/favicon-194x194.png" alt="Accelerate Networks" width="58"></a>
         <div class="d-flex align-items-center order-lg-3 ms-lg-auto"><a class="nav-link-style fs-sm text-nowrap me-3" href="tel:12068588757">Talk to an expert: <strong>(206) 858-8757</strong></a>
             <div class="border-start me-2" style="height: 30px;"></div>
-            <div class="navbar-tool me-2"><a id="headerCart" class="navbar-tool-icon-box" href="/Cart"><i class="ai-shopping-cart"></i>
-            <div class="span navbar-tool-badge" id="cartCounter">3</div></a></div>
+            <div class="navbar-tool me-2">
+              <a id="headerCart" class="navbar-tool-icon-box" href="/Cart">
+                <i class="ai-shopping-cart"></i>
+                <span class="d-none navbar-tool-badge" id="cartCounter"></span>
+              </a>
+            </div>
         </div>
         <div class="offcanvas offcanvas-end offcanvas-collapse order-lg-2" id="offcanvasRight" tabindex="-1">
           <div class="offcanvas-header navbar-shadow">
@@ -190,7 +194,7 @@
   <footer class="footer bg-dark pt-7 pt-md-6">
     <div class="container pt-3 pt-md-0">
       <div class="row pb-3">
-        <div class="col-md-4 mt-n2 pb-3 pb-md-0 mb-4"><a class="d-block mb-3" href="index.html" style="width: 153px;"><img src="img/logo/logo-dark.png" alt="Accelerate Networks"></a>
+        <div class="col-md-4 mt-n2 pb-3 pb-md-0 mb-4"><a class="d-block mb-3" href="/" style="width: 153px;"><img src="/images/scaled/logo/logo-dark.png" alt="Accelerate Networks"></a>
           <p class="fs-sm text-light opacity-60 pb-2 pb-sm-3">Manage calls, voicemails, business texts, and faxes—all in one place.</p><a class="btn-social bs-outline bs-facebook bs-light bs-lg me-2 mb-2" href="https://www.facebook.com/AccelerateNets/"><i class="ai-facebook"></i></a><a class="btn-social bs-outline bs-twitter bs-light bs-lg me-2 mb-2" href="https://www.linkedin.com/company/72476822/"><i class="ai-linkedin"></i></a><a class="btn-social bs-outline bs-instagram bs-light bs-lg me-2 mb-2" href="https://github.com/AccelerateNetworks"><i class="ai-github"></i></a>
         </div>
         <div class="col-md-2 col-sm-4 ms-auto pb-1 mb-4">
@@ -240,8 +244,8 @@
   <script src="~/vendor/bootstrap/bootstrap.bundle.min.js"></script>
   <script src="~/vendor/simplebar/simplebar.min.js"></script>
   <script src="~/vendor/smooth-scroll/smooth-scroll.polyfills.min.js"></script>
-  <script src="vendor/tiny-slider/tiny-slider.js"></script>
-  <script src="~/vendor/lightgallery.js/dist/js/lightgallery.min.js"></script>
+  <script src="~/vendor/tiny-slider/tiny-slider.js"></script>
+  <script src="~/vendor/lightgallery.js/lightgallery.min.js"></script>
   <script src="~/vendor/lg-video.js/lg-video.min.js"></script>
   <!-- Main theme script-->
   <script src="~/js/theme.min.js"></script>
