@@ -34,7 +34,7 @@ namespace NumberSearch.Mvc.Controllers
             await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            return View("Index", new HardwareResult { Cart = cart, Phones = products.ToArray(), Accessories = accessories });
+            return View("Index", new HardwareResult { Cart = cart, Phones = products.Where(x => x.Type != "Accessory").ToArray(), Accessories = accessories });
         }
 
         [HttpGet("Hardware/PartnerPriceList")]
