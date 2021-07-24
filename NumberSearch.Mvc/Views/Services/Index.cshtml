@@ -1,174 +1,97 @@
 ﻿@model Cart
 
 @{
-    ViewData["Title"] = "Services";
+    ViewData["Title"] = "Pricing";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container">
-    <br />
-    <div class="pricing-header mx-auto p-2 text-center">
-        <h1 class="display-4">Phone Service</h1>
+<!-- Pricing Hero-->
+<section class="bg-gradient text-light pt-5 pb-7">
+  <div class="container py-5 py-md-6 py-lg-7 mb-7 text-center">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-md-11">
+        <h1 class="display-3 text-light">Simple, fair pricing</h1>
+        <p class="lead text-white">Every business has different needs, so we give you flexibility in how you pay. Choose the option that works best for your needs.</p>
+      </div>
     </div>
-    <br />
-    <div class="card-deck mb-3 text-center">
-        <div class="card mb-4 shadow">
-            <div class="card-header">
-                <h4 class="my-0 font-weight-normal">Lines</h4>
-            </div>
-            <div class="card-body">
-                <h1 class="card-title pricing-card-title">$35 <small class="text-muted">/ mo</small></h1>
-                <ul class="list-unstyled mt-3 mb-4">
-                    <li>Unlimited Calling</li>
-                    <li>HD Voice</li>
-                    <li>Music on Hold</li>
-                    <li>Call Menus and more</li>
-                    <li>Permits 1 Concurrent call</li>
-                    <li>Have as many phones as you want!</li>
-                </ul>
-                <div class="btn-group">
-                    <div class="input-group input-group-lg">
-                        @{
-                            var lines = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("16e2c639-445b-4ae6-9925-07300318206b")).FirstOrDefault();
-                            if (lines is not null && lines.Quantity > 0)
-                            {
-                                <input id="lines" type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@lines?.Quantity">
-                            }
-                            else
-                            {
-                                <input id="lines" type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
-                            }
-                        }
-                        <div class="input-group-append">
-                            <button onclick="AddToCart('Service','16e2c639-445b-4ae6-9925-07300318206b', $('#lines').val(), this)" class="btn btn-outline-primary">Start talking today</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="card mb-4 shadow">
-            <div class="card-header">
-                <h4 class="my-0 font-weight-normal">Seats</h4>
-            </div>
-            <div class="card-body">
-                <h1 class="card-title pricing-card-title">$20 <small class="text-muted">/ mo</small></h1>
-                <ul class="list-unstyled mt-3 mb-4">
-                    <li>Unlimited Calling</li>
-                    <li>HD Voice</li>
-                    <li>Music on Hold</li>
-                    <li>Call Menus and more</li>
-                    <li>Supports 1 Concurrent call per Seat</li>
-                    <li>Buy 1 Seat for every phone you order!</li>
-                </ul>
-                <div class="btn-group">
-                    <div class="input-group input-group-lg">
-                        @{
-                            var seats = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("48eb4627-8692-4a3b-8be1-be64bbeea534")).FirstOrDefault();
-                            if (seats is not null && seats.Quantity > 0)
-                            {
-                                <input id="seats" type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@seats?.Quantity">
-                            }
-                            else
-                            {
-                                <input id="seats" type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
-                            }
-                        }
-                        <div class="input-group-append">
-                            <button onclick="AddToCart('Service', '48eb4627-8692-4a3b-8be1-be64bbeea534', $('#seats').val(), this)" class="btn btn-outline-primary">Start talking today</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="input-group mx-auto input-group-lg pt-2">
-            <div class="col">
-                <a class="btn btn-success btn-block shadow-lg" href="/Search">Add a new Phone Number</a>
-            </div>
-            <div class="col">
-                <a class="btn btn-info btn-block shadow-lg" href="/Search">Transfer an existing Phone Number</a>
-            </div>
-        </div>
-    </div>
-    <div class="pricing-header mx-auto mt-5 mb-3 text-center">
-        <h1 class="display-4">Business Tools</h1>
-    </div>
-    <br />
-    <div class="card-deck mb-3 text-center">
-        <div class="card mb-4 shadow">
-            <div class="card-header">
-                <h4 class="my-0 font-weight-normal">Web Texting</h4>
-            </div>
-            <div class="card-body">
-                <h1 class="card-title pricing-card-title">$10 <small class="text-muted">/ mo</small></h1>
-                <ul class="list-unstyled mt-3 mb-4">
-                    <li>Text from any browser</li>
-                    <li>SMS and MMS Supported</li>
-                    <li>Never miss a customer</li>
-                    <li>Communicate seamlessly</li>
-                </ul>
-                <button class="btn btn-lg btn-primary" onclick="AddToCart('Service','86a8576f-15e4-4547-8705-7c98dbe5e58d', 1, this)">Start texting today</button>
-            </div>
-        </div>
-        <div class="card mb-4 shadow">
-            <div class="card-header">
-                <h4 class="my-0 font-weight-normal">LTE Backup</h4>
-            </div>
-            <div class="card-body">
-                <h1 class="card-title pricing-card-title">$30 <small class="text-muted">/ mo</small></h1>
-                <ul class="list-unstyled mt-3 mb-4">
-                    <li>Always stay online!</li>
-                    <li>No Overages</li>
-                    <li>No Worries</li>
-                    <li>Unlimited Use (128Kbps or 512Kbps)</li>
-                </ul>
-                <button class="btn btn-lg btn-primary" onclick="AddToCart('Service', 'c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c', 1, this)">Protect your business</button>
-            </div>
-        </div>
-    </div>
-    <div class="card-deck mb-3 text-center">
-        <div class="card mb-4 shadow">
-            <div class="card-header">
-                <h4 class="my-0 font-weight-normal">Toll Free Number</h4>
-            </div>
-            <div class="card-body">
-                <h1 class="card-title pricing-card-title">$10 <small class="text-muted">/ mo</small></h1>
-                <ul class="list-unstyled mt-3 mb-4">
-                    <li>SMS & MMS support</li>
-                    <li>Search Custom Numbers</li>
-                    <li>Not local or regional</li>
-                    <li>Free for clients to call</li>
-                </ul>
-                <button class="btn btn-lg btn-primary" onclick="AddToCart('Service', '07a7ef6b-eb30-4a81-bc86-be193ef03aa0', 1, this)">Impress your clients</button>
-            </div>
-        </div>
-        <div class="card mb-4 shadow">
-            <div class="card-header">
-                <h4 class="my-0 font-weight-normal">Fax Server</h4>
-            </div>
-            <div class="card-body">
-                <h1 class="card-title pricing-card-title">$10 <small class="text-muted">/ mo</small></h1>
-                <ul class="list-unstyled mt-3 mb-4">
-                    <li>Includes an Extra Phone Number</li>
-                    <li>Faxes forwarded to your email!</li>
-                    <li>Send faxes from the Web</li>
-                    <li>Caller ID on incoming Faxes</li>
-                </ul>
-                <button class="btn btn-lg btn-primary" onclick="AddToCart('Service', '1133e9ab-50f1-4eb6-a756-6b705dcbd6e5', 1, this)">Send a Fax</button>
-            </div>
-        </div>
-    </div>
-    @*<a type="button" class="btn btn-success btn-lg btn-block" asp-controller="Hardware" asp-action="Index">Add Hardware ⮞</a>
-        <br />*@
-</div>
-<div class="mt-auto fixed-bottom bg-white p-3 shadow">
-    <div class="container">
+  </div>
+</section>
+<!-- Pricing-->
+<section class="mt-md-n14 pb-7">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-md-11">
         <div class="row">
-            @*<div class="col">
-                <a type="button" class="btn btn-primary btn-lg btn-block" asp-controller="Search" asp-action="Index">Add Numbers ⮜</a>
-            </div>*@
-            <div class="col">
-                <a type="button" class="btn btn-success btn-lg btn-block" asp-controller="Hardware" asp-action="Index">Add Hardware ▷</a>
+          <div class="col-sm-6 mb-grid-gutter">
+            <div class="card card border-0 shadow w-100">
+              <div class="card-img-top bg-light text-center pt-5 px-grid-gutter">
+                <div class="d-flex justify-content-center">
+                  <h3 class="text-body">Seats</h3>
+                </div>
+                <p class="text-body mb-0">Get multiple people talking with a single phone number for your business</p>
+              </div>
+              <div class="card-body px-grid-gutter py-grid-gutter">
+                <div class="d-flex align-items-end py-2 px-4 mb-4"><span class="h2 fw-normal text-muted mb-1 me-2">$</span><span class="price display-2 fw-normal text-primary px-1 me-2">20</span><span class="h3 fs-lg fw-medium text-muted mb-2">per<br>month</span></div>
+                <ul class="list-unstyled py-2 mb-4">
+                  <li class="d-flex align-items-center mb-3"><i class="ai-check fs-xl text-primary me-2"></i><span>1 concurrent call per seat</span></li>
+                  <li class="d-flex align-items-center mb-3"><i class="ai-check fs-xl text-primary me-2"></i><span>Add as many seats as you need</span></li>
+                  <li class="d-flex align-items-center mb-3"><i class="ai-check fs-xl text-primary me-2"></i><span>Keep everyone talking</span></li>
+                </ul>
+                <div class="btn-group">
+                  <div class="input-group mb-3">
+                    @{
+                        var seats = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("48eb4627-8692-4a3b-8be1-be64bbeea534")).FirstOrDefault();
+                        if (seats is not null && seats.Quantity > 0)
+                        {
+                            <input id="seats" type="number" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@seats?.Quantity" min="0" oninput="validity.valid||(value='1');">
+                        }
+                        else
+                        {
+                            <input id="seats" type="number" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" min="0" oninput="validity.valid||(value='1');">
+                        }
+                      }
+                    <button class="btn btn-outline-brand-secondary" onclick="AddToCart('Service', '48eb4627-8692-4a3b-8be1-be64bbeea534', $('#seats').val(), this)">Start talking today</button>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
+          <div class="col-sm-6 mb-grid-gutter">
+            <div class="card border-0 shadow w-100">
+              <div class="card-img-top bg-light text-center pt-5 px-grid-gutter">
+                <div class="d-flex justify-content-center">
+                  <h3 class="text-body">Lines</h3>
+                </div>
+                <p class="text-body mb-0">Provide multiple phones throughout your space to answer calls wherever you are</p>
+              </div>
+              <div class="card-body px-grid-gutter py-grid-gutter">
+                <div class="d-flex align-items-end py-2 px-4 mb-4"><span class="h2 fw-normal text-muted mb-1 me-2">$</span><span class="price display-2 fw-normal text-primary px-1 me-2">35</span><span class="h3 fs-lg fw-medium text-muted mb-2">per<br>month</span></div>
+                <ul class="list-unstyled py-2 mb-4">
+                  <li class="d-flex align-items-center mb-3"><i class="ai-check fs-xl text-primary me-2"></i><span>1 concurrent call per line</span></li>
+                  <li class="d-flex align-items-center mb-3"><i class="ai-check fs-xl text-primary me-2"></i><span>Add as many phones as you need</span></li>
+                  <li class="d-flex align-items-center mb-3"><i class="ai-x fs-xl text-muted me-2"></i><span>No additional users</span></li>
+                </ul>
+                <div class="btn-group">
+                  <div class="input-group mb-3">
+                    @{
+                          var lines = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("16e2c639-445b-4ae6-9925-07300318206b")).FirstOrDefault();
+                          if (lines is not null && lines.Quantity > 0)
+                          {
+                              <input id="lines" type="number" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@lines?.Quantity" min="0" oninput="validity.valid||(value='1');">
+                          }
+                          else
+                          {
+                              <input id="lines" type="number" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" min="0" oninput="validity.valid||(value='1');">
+                          }
+                      }
+                    <button class="btn btn-outline-brand-secondary" onclick="AddToCart('Service','16e2c639-445b-4ae6-9925-07300318206b', $('#lines').val(), this)">Start talking today</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
-</div>
+  </div>
+</section>
