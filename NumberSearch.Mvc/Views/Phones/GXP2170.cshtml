@@ -3,6 +3,47 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<!-- Page scroll indicator-->
+<div class="progress sticky-top" style="height: 0.2rem">
+  <div class="progress-bar bg-primary" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="scrollIndicator"></div>
+</div>
+<!-- Navbar (Solid background)-->
+<header class="header navbar navbar-expand-lg navbar-light bg-light navbar-shadow navbar-sticky" data-scroll-header data-fixed-element>
+  <div class="container px-0 px-xl-3">
+    <button class="navbar-toggler ms-n2 me-2 order-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"><span class="navbar-toggler-icon"></span></button><a class="navbar-brand flex-shrink-0 order-lg-1 ms-lg-0 pe-lg-2 me-lg-4" href="/"><img class="d-none d-lg-block" src="/images/scaled/accelerate.png" alt="Accelerate Networks" width="153"><img class="d-lg-none" src="img/original/favicon-194x194.png" alt="Accelerate Networks" width="58"></a>
+    <div class="d-flex align-items-center order-lg-3 ms-lg-auto"><a class="nav-link-style fs-sm text-nowrap me-3" href="tel:12068588757">Talk to an expert: <strong>(206) 858-8757</strong></a>
+        <div class="border-start me-2" style="height: 30px;"></div>
+        <div class="navbar-tool me-2">
+          <a id="headerCart" class="navbar-tool-icon-box" href="/Cart">
+            <i class="ai-shopping-cart"></i>
+            <span class="d-none navbar-tool-badge" id="cartCounter"></span>
+          </a>
+        </div>
+    </div>
+    <div class="offcanvas offcanvas-end offcanvas-collapse order-lg-2" id="offcanvasRight" tabindex="-1">
+      <div class="offcanvas-header navbar-shadow">
+        <h5 class="mt-1 mb-0">Menu</h5>
+        <button class="btn-close lead" type="button" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <!-- Menu-->
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="/Features">Features</a></li>
+          <li class="nav-item"><a class="nav-link" href="/Pricing">Pricing</a></li>
+          <li class="nav-item dropdown"><a class="nav-link" href="#" data-bs-toggle="dropdown">Resources</a>
+            <div class="dropdown-menu" style="min-width:400px">
+              <div class="row">
+                <div class="col-sm-6"><a class="dropdown-item" href="/support">Knowledge base</a><a class="dropdown-item" href="/lookup">Port your number</a></div>
+                <div class="col-sm-6"><a class="dropdown-item" href="https://blog.acceleratenetworks.com">Blog</a><a class="dropdown-item" href="/about">About us</a></div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</header>
+
 <div class="container">
     <br />
     <div class="pricing-header mx-auto p-2 text-center">
@@ -88,7 +129,7 @@
                         <h4 class="my-0 font-weight-normal text-center" id="initialsetup">Initial Setup on a Grandstream GXP2170</h4>
                     </div>
                     <div class="card-img">
-                        <div class="embed-responsive embed-responsive-16by9">
+                        <div class="ratio ratio-16x9">
                             <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/qbTh-eddc8s" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                     </div>
@@ -114,7 +155,7 @@
                         <h4 class="my-0 font-weight-normal text-center" id="bluetooth">Connect to a Bluetooth device</h4>
                     </div>
                     <div class="card-img">
-                        <div class="embed-responsive embed-responsive-16by9">
+                        <div class="ratio ratio-16x9">
                             <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/2xZGWBxULNE" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                     </div>
@@ -141,7 +182,7 @@
                         <h4 class="my-0 font-weight-normal text-center" id="changeringtone">Change Your Ringtone</h4>
                     </div>
                     <div class="card-img">
-                        <div class="embed-responsive embed-responsive-16by9">
+                        <div class="ratio ratio-16x9">
                             <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/J-jjz7hM8E8" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                     </div>
@@ -167,7 +208,7 @@
                         <h4 class="my-0 font-weight-normal text-center" id="voicemailgreeting">Create a Voicemail Greeting?</h4>
                     </div>
                     <div class="card-img">
-                        <div class="embed-responsive embed-responsive-16by9">
+                        <div class="ratio ratio-16x9">
                             <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/hB2VfAYuLic" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                     </div>
@@ -196,7 +237,7 @@
                         <h4 class="my-0 font-weight-normal text-center" id="usespeeddial">Use Speed Dial</h4>
                     </div>
                     <div class="card-img">
-                        <div class="embed-responsive embed-responsive-16by9">
+                        <div class="ratio ratio-16x9">
                             <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/4f8yXpzirrM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                     </div>
@@ -216,7 +257,7 @@
                         <h4 class="my-0 font-weight-normal text-center" id="callhold">Put a Call on Hold</h4>
                     </div>
                     <div class="card-img">
-                        <div class="embed-responsive embed-responsive-16by9">
+                        <div class="ratio ratio-16x9">
                             <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/1DyiVq82t_M" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                     </div>
@@ -238,7 +279,7 @@
                         <h4 class="my-0 font-weight-normal text-center" id="conferencecall">Start a Conference Call</h4>
                     </div>
                     <div class="card-img">
-                        <div class="embed-responsive embed-responsive-16by9">
+                        <div class="ratio ratio-16x9">
                             <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/ZhK6HsMVu9g" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                     </div>
@@ -263,7 +304,7 @@
                         <h4 class="my-0 font-weight-normal text-center" id="blindtransfer">Perform a blind Call Transfer</h4>
                     </div>
                     <div class="card-img">
-                        <div class="embed-responsive embed-responsive-16by9">
+                        <div class="ratio ratio-16x9">
                             <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/8eFc_HLloPY" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                     </div>
@@ -286,7 +327,7 @@
                         <h4 class="my-0 font-weight-normal text-center" id="singletransfer">Transfer a Call with a single press</h4>
                     </div>
                     <div class="card-img">
-                        <div class="embed-responsive embed-responsive-16by9">
+                        <div class="ratio ratio-16x9">
                             <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/sVaGBJGaO3E" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                     </div>
@@ -307,7 +348,7 @@
                         <h4 class="my-0 font-weight-normal text-center" id="attendedtransfer">Perform an Attended Transfer</h4>
                     </div>
                     <div class="card-img">
-                        <div class="embed-responsive embed-responsive-16by9">
+                        <div class="ratio ratio-16x9">
                             <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/nYNUCjE5hdU" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                     </div>
@@ -331,7 +372,7 @@
                         <h4 class="my-0 font-weight-normal text-center" id="voicemail">Check your Voicemail</h4>
                     </div>
                     <div class="card-img">
-                        <div class="embed-responsive embed-responsive-16by9">
+                        <div class="ratio ratio-16x9">
                             <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/Apb5aVpkBjU" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                     </div>
@@ -356,7 +397,7 @@
                         <h4 class="my-0 font-weight-normal text-center" id="callpark">Use Call Park</h4>
                     </div>
                     <div class="card-img">
-                        <div class="embed-responsive embed-responsive-16by9">
+                        <div class="ratio ratio-16x9">
                             <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/134_3Bo4Ids" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                     </div>
