@@ -3,288 +3,329 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<!-- Page scroll indicator-->
+<div class="progress sticky-top" style="height: 0.2rem">
+  <div class="progress-bar bg-primary" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="scrollIndicator"></div>
+</div>
+<!-- Navbar (Solid background)-->
+<header class="header navbar navbar-expand-lg navbar-light bg-light navbar-shadow navbar-sticky" data-scroll-header data-fixed-element>
+  <div class="container px-0 px-xl-3">
+    <button class="navbar-toggler ms-n2 me-2 order-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"><span class="navbar-toggler-icon"></span></button><a class="navbar-brand flex-shrink-0 order-lg-1 ms-lg-0 pe-lg-2 me-lg-4" href="/"><img class="d-none d-lg-block" src="/images/scaled/accelerate.png" alt="Accelerate Networks" width="153"><img class="d-lg-none" src="/images/scaled/favicon-194x194.png" alt="Accelerate Networks" width="58"></a>
+    <div class="d-flex align-items-center order-lg-3 ms-lg-auto"><a class="nav-link-style fs-sm text-nowrap me-3" href="tel:12068588757">Talk to an expert: <strong>(206) 858-8757</strong></a>
+        <div class="border-start me-2" style="height: 30px;"></div>
+        <div class="navbar-tool me-2">
+          <a id="headerCart" class="navbar-tool-icon-box" href="/Cart">
+            <i class="ai-shopping-cart"></i>
+            <span class="d-none navbar-tool-badge" id="cartCounter"></span>
+          </a>
+        </div>
+    </div>
+    <div class="offcanvas offcanvas-end offcanvas-collapse order-lg-2" id="offcanvasRight" tabindex="-1">
+      <div class="offcanvas-header navbar-shadow">
+        <h5 class="mt-1 mb-0">Menu</h5>
+        <button class="btn-close lead" type="button" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <!-- Menu-->
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="/Features">Features</a></li>
+          <li class="nav-item"><a class="nav-link" href="/Pricing">Pricing</a></li>
+          <li class="nav-item dropdown"><a class="nav-link" href="#" data-bs-toggle="dropdown">Resources</a>
+            <div class="dropdown-menu" style="min-width:400px">
+              <div class="row">
+                <div class="col-sm-6"><a class="dropdown-item" href="/support">Knowledge base</a><a class="dropdown-item" href="/lookup">Port your number</a></div>
+                <div class="col-sm-6"><a class="dropdown-item" href="https://blog.acceleratenetworks.com">Blog</a><a class="dropdown-item" href="/about">About us</a></div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</header>
+
 <!-- Hero-->
 
-  <section class="bg-secondary">
-    <div class="row g-0">
-      <div class="col-md-6 py-7 position-relative bg-size-cover order-md-2 overflow-hidden" style="background-image: url(./images/scaled/pages/index/stock-photo-pleasant-woman-talking-on-phone-and-putting-down-information-708759802.jpg);">
-        <div class="shape shape-left bg-secondary d-none d-md-block">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 264.8 670">
-            <path fill="currentColor" d="M264.8,669.8v0.2H0V0h7.5C5.7,23.7,4.8,47.8,4.8,72.1C4.8,332,110.3,557.6,264.8,669.8z"></path>
-          </svg>
-        </div>
-      </div>
-      <div class="col-md-6 px-3 ps-xl-0 pe-lg-5 pe-xl-7 py-2 py-lg-4 order-md-1">
-        <div class="ms-md-auto me-sm-7 py-5 my-sm-0 py-md-6 py-lg-7" style="max-width: 400px;">
-          <h1 class="mb-grid-gutter pb-1">Your phone system, anywhere you are</h1>
-          <p class="lead">Manage calls, voicemails, business texts, and faxes—all in one place.</p>
-          <div class="pt-2"><a class="btn btn-primary me-4" href="/services">Start now</a></div>
-        </div>
+<section class="bg-secondary">
+  <div class="row g-0">
+    <div class="col-md-6 py-7 position-relative bg-size-cover order-md-2 overflow-hidden" style="background-image: url(./images/scaled/pages/index/stock-photo-pleasant-woman-talking-on-phone-and-putting-down-information-708759802.jpg);">
+      <div class="shape shape-left bg-secondary d-none d-md-block">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 264.8 670">
+          <path fill="currentColor" d="M264.8,669.8v0.2H0V0h7.5C5.7,23.7,4.8,47.8,4.8,72.1C4.8,332,110.3,557.6,264.8,669.8z"></path>
+        </svg>
       </div>
     </div>
-  </section>
-
-  <!-- Value Proposition-->
-
-  <section class="container py-5 py-md-6 py-lg-7">
-    <div class="row align-items-center mt-3 mt-md-0">
-      <div class="col-lg-4 col-md-5 order-md-2 text-center text-md-start mb-5 mb-md-0">
-        <h2 class="mb-3">Get back to business faster</h2>
-        <p class="text-muted mb-4 pb-2">Accelerate Networks provides a seamless and reliable experience to stay connected with your customers across calls, texts, and faxes.</p>
+    <div class="col-md-6 px-3 ps-xl-0 pe-lg-5 pe-xl-7 py-2 py-lg-4 order-md-1">
+      <div class="ms-md-auto me-sm-7 py-5 my-sm-0 py-md-6 py-lg-7" style="max-width: 400px;">
+        <h1 class="mb-grid-gutter pb-1">Your phone system, anywhere you are</h1>
+        <p class="lead">Manage calls, voicemails, business texts, and faxes—all in one place.</p>
+        <div class="pt-2"><a class="btn btn-primary me-4" href="/pricing">Start now</a></div>
       </div>
-      <div class="col-lg-8 col-md-7 order-md-1 bg-position-start-bottom bg-repeat-0" style="background-image: url(./images/svg/bg-shape.svg);">
-        <div class="mx-auto mx-md-0 ms-xl-7" style="max-width: 600px;">
-          <div class="row align-items-center">
-            <div class="col-sm-6">
-              <div class="bg-light shadow-lg rounded-3 p-4 mb-grid-gutter text-center text-sm-start"><img class="d-inline-block mb-4 mt-2" src="./images/svg/01.svg" alt="Icon" width="100">
-                <h3 class="h5 mb-2">Streamline communications</h3>
-                <p class="fs-sm">Save time and improve efficiency with a unified inbox for your calls, texts, and faxes.</p>
-              </div>
-            </div>
-            <div class="col-sm-6">
-              <div class="bg-light shadow-lg rounded-3 p-4 mb-grid-gutter text-center text-sm-start"><img class="d-inline-block mb-4 mt-2" src="./images/svg/02.svg" alt="Icon" width="100">
-                <h3 class="h5 mb-2">Enjoy unmatched support</h3>
-                <p class="fs-sm">Stop waiting on hold and access local, friendly, and responsive service when you need it most.</p>
-              </div>
+    </div>
+  </div>
+</section>
+
+<!-- Value Proposition-->
+
+<section class="container py-5 py-md-6 py-lg-7">
+  <div class="row align-items-center mt-3 mt-md-0">
+    <div class="col-lg-4 col-md-5 order-md-2 text-center text-md-start mb-5 mb-md-0">
+      <h2 class="mb-3">Get back to business faster</h2>
+      <p class="text-muted mb-4 pb-2">Accelerate Networks provides a seamless and reliable experience to stay connected with your customers across calls, texts, and faxes.</p>
+    </div>
+    <div class="col-lg-8 col-md-7 order-md-1 bg-position-start-bottom bg-repeat-0" style="background-image: url(./images/svg/bg-shape.svg);">
+      <div class="mx-auto mx-md-0 ms-xl-7" style="max-width: 600px;">
+        <div class="row align-items-center">
+          <div class="col-sm-6">
+            <div class="bg-light shadow-lg rounded-3 p-4 mb-grid-gutter text-center text-sm-start"><img class="d-inline-block mb-4 mt-2" src="./images/svg/01.svg" alt="Icon" width="100">
+              <h3 class="h5 mb-2">Streamline communications</h3>
+              <p class="fs-sm">Save time and improve efficiency with a unified inbox for your calls, texts, and faxes.</p>
             </div>
           </div>
-        </div>
-        <div class="mx-auto mx-md-0" style="max-width: 600px;">
-          <div class="row align-items-center">
-            <div class="col-sm-6">
-              <div class="bg-light shadow-lg rounded-3 p-4 mb-grid-gutter text-center text-sm-start"><img class="d-inline-block mb-4 mt-2" src="./images/svg/03.svg" alt="Icon" width="100">
-                <h3 class="h5 mb-2">Save money</h3>
-                <p class="fs-sm">Keep costs low so you can spend money on what matters for your company.</p>
-              </div>
-            </div>
-            <div class="col-sm-6">
-              <div class="bg-light shadow-lg rounded-3 p-4 mb-grid-gutter text-center text-sm-start"><img class="d-inline-block mb-4 mt-2" src="./images/svg/04.svg" alt="Icon" width="100">
-                <h3 class="h5 mb-2">Work from anywhere</h3>
-                <p class="fs-sm">Easily switch between your office phone, desktop, and mobile device to make and receive calls.</p>
-              </div>
+          <div class="col-sm-6">
+            <div class="bg-light shadow-lg rounded-3 p-4 mb-grid-gutter text-center text-sm-start"><img class="d-inline-block mb-4 mt-2" src="./images/svg/02.svg" alt="Icon" width="100">
+              <h3 class="h5 mb-2">Enjoy unmatched support</h3>
+              <p class="fs-sm">Stop waiting on hold and access local, friendly, and responsive service when you need it most.</p>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- Features-->
-
-  <section class="bg-gradient text-light">
-    <div class="container py-5 py-md-6 py-lg-7">
-      <h2 class="mb-2 text-light">Easily manage your business communications</h2>
-      <p class="lead text-light mb-4 pb-2">All the features you need to manage your business wherever you are—at work, from home, or on the road.</p>
-      <div class="row text-center text-sm-start pt-4">
-        <div class="col-sm-4">
-          <h3 class="h4 text-light">Ring any device</h3>
-          <p class="fs-sm">Receive calls on your desk phone and mobile phone so you can answer anywhere.</p>
-        </div>
-        <div class="col-sm-4">
-          <h3 class="h4 text-light">Check voicemails at a glance</h3>
-          <p class="fs-sm">Respond to missed calls with automatic voicemail transcriptions sent straight to your email.</p>
-        </div>
-        <div class="col-sm-4">
-          <h3 class="h4 text-light">Respond quickly with business texts</h3>
-          <p class="fs-sm">Keep the conversation going over text messages—without giving out your personal number.</p>
-        </div>
-        <div class="col-sm-4">
-          <h3 class="h4 text-light">Take calls on your schedule</h3>
-          <p class="fs-sm">Configure business hours to direct calls to voicemail or a destination of your choice when the day is over.</p>
-        </div>
-        <div class="col-sm-4">
-          <h3 class="h4 text-light">Create custom greetings</h3>
-          <p class="fs-sm">Easily setup greetings, marketing messages, or hold music to create a custom experience.</p>
-        </div>
-        <div class="col-sm-4">
-          <h3 class="h4 text-light">Get faxes in your email inbox</h3>
-          <p class="fs-sm">Centralize your communications by sending faxes directly to your email inbox.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Number Search-->
-
-  <section class="bg-faded-primary">
-    <div class="container py-5 py-md-6 py-lg-7">
-      <div class="row align-items-center gx-5">
-        <div class="col-sm-6">
-          <h2 class="mb-3">Find the perfect phone number</h2>
-          <ul class="list-unstyled fs-sm">
-            <li class="d-flex align-items-center"><i class="ai-check-circle fs-lg me-2 text-success"></i><span>Create trust and credibility with a local area code</span></li>
-            <li class="d-flex align-items-center"><i class="ai-check-circle fs-lg me-2 text-success"></i><span>Build a national presence with a toll-free number</span></li>
-            <li class="d-flex align-items-center"><i class="ai-check-circle fs-lg me-2 text-success"></i><span>Enhance your marketing with a memorable vanity number</span></li>
-          </ul>
-        </div>
-        <div class="col-sm-6">
-          <form action="/Search">
-            <div class="input-group flex-nowrap mb-3"><span class="input-group-text">+1</span>
-              <input class="form-control form-control-lg" type="text" name="Query">
-            </div>
-            <button class="btn btn-primary d-block w-100" type="submit" onclick="displayBusyIndicator()">Search</button>
-            @*<button class="btn btn-info btn-block" onclick="displayBusyIndicator()" asp-controller="Porting" asp-action="CheckPortability">Transfer</button>*@
-          </form>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Accelerate Networks Difference-->
-
-  <section class="bg-light">
-    <div class="container py-5 py-md-6 py-lg-7">
-      <h2 class="text-center pt-2 pb-4">Find out how easy having a phone system can be</h2>
-      <div class="row mb-4">
-        <!-- Service-->
-        <div class="col-sm-6">
-          <div class="card card-hover">
-            <div class="card-body"><i class="h2 text-success ai-check-square"></i>
-              <h5 class="card-title">Seamless transition</h5>
-              <p class="card-text fs-sm">We handle all the details, from configuring your phone system to transfering numbers. You won't experience any hassle, downtime, or business interruptions.</p>
+      <div class="mx-auto mx-md-0" style="max-width: 600px;">
+        <div class="row align-items-center">
+          <div class="col-sm-6">
+            <div class="bg-light shadow-lg rounded-3 p-4 mb-grid-gutter text-center text-sm-start"><img class="d-inline-block mb-4 mt-2" src="./images/svg/03.svg" alt="Icon" width="100">
+              <h3 class="h5 mb-2">Save money</h3>
+              <p class="fs-sm">Keep costs low so you can spend money on what matters for your company.</p>
             </div>
           </div>
-        </div>
-
-        <!-- Support-->
-
-        <div class="col-sm-6">
-          <div class="card card-hover">
-            <div class="card-body"><i class="h2 text-info ai-phone-call"></i>
-              <h5 class="card-title">Stellar support</h5>
-              <p class="card-text fs-sm">Receive the most responsive support available with our 100% in-house team. Get the help you need, when you need it.</p>
+          <div class="col-sm-6">
+            <div class="bg-light shadow-lg rounded-3 p-4 mb-grid-gutter text-center text-sm-start"><img class="d-inline-block mb-4 mt-2" src="./images/svg/04.svg" alt="Icon" width="100">
+              <h3 class="h5 mb-2">Work from anywhere</h3>
+              <p class="fs-sm">Easily switch between your office phone, desktop, and mobile device to make and receive calls.</p>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features-->
+
+<section class="bg-gradient text-light">
+  <div class="container py-5 py-md-6 py-lg-7">
+    <h2 class="mb-2 text-light">Easily manage your business communications</h2>
+    <p class="lead text-light mb-4 pb-2">All the features you need to manage your business wherever you are—at work, from home, or on the road.</p>
+    <div class="row text-center text-sm-start pt-4">
+      <div class="col-sm-4">
+        <h3 class="h4 text-light">Ring any device</h3>
+        <p class="fs-sm">Receive calls on your desk phone and mobile phone so you can answer anywhere.</p>
+      </div>
+      <div class="col-sm-4">
+        <h3 class="h4 text-light">Check voicemails at a glance</h3>
+        <p class="fs-sm">Respond to missed calls with automatic voicemail transcriptions sent straight to your email.</p>
+      </div>
+      <div class="col-sm-4">
+        <h3 class="h4 text-light">Respond quickly with business texts</h3>
+        <p class="fs-sm">Keep the conversation going over text messages—without giving out your personal number.</p>
+      </div>
+      <div class="col-sm-4">
+        <h3 class="h4 text-light">Take calls on your schedule</h3>
+        <p class="fs-sm">Configure business hours to direct calls to voicemail or a destination of your choice when the day is over.</p>
+      </div>
+      <div class="col-sm-4">
+        <h3 class="h4 text-light">Create custom greetings</h3>
+        <p class="fs-sm">Easily setup greetings, marketing messages, or hold music to create a custom experience.</p>
+      </div>
+      <div class="col-sm-4">
+        <h3 class="h4 text-light">Get faxes in your email inbox</h3>
+        <p class="fs-sm">Centralize your communications by sending faxes directly to your email inbox.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Number Search-->
+
+<section class="bg-faded-primary">
+  <div class="container py-5 py-md-6 py-lg-7">
+    <div class="row align-items-center gx-5">
+      <div class="col-sm-6">
+        <h2 class="mb-3">Find the perfect phone number</h2>
+        <ul class="list-unstyled fs-sm">
+          <li class="d-flex align-items-center"><i class="ai-check-circle fs-lg me-2 text-success"></i><span>Create trust and credibility with a local area code</span></li>
+          <li class="d-flex align-items-center"><i class="ai-check-circle fs-lg me-2 text-success"></i><span>Build a national presence with a toll-free number</span></li>
+          <li class="d-flex align-items-center"><i class="ai-check-circle fs-lg me-2 text-success"></i><span>Enhance your marketing with a memorable vanity number</span></li>
+        </ul>
+      </div>
+      <div class="col-sm-6">
+        <form action="/Search">
+          <div class="input-group flex-nowrap mb-3"><span class="input-group-text">+1</span>
+            <input class="form-control form-control-lg" type="text" name="Query">
+          </div>
+          <button class="btn btn-primary d-block w-100" type="submit" onclick="displayBusyIndicator()">Search</button>
+          @*<button class="btn btn-info btn-block" onclick="displayBusyIndicator()" asp-controller="Porting" asp-action="CheckPortability">Transfer</button>*@
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Accelerate Networks Difference-->
+
+<section class="bg-light">
+  <div class="container py-5 py-md-6 py-lg-7">
+    <h2 class="text-center pt-2 pb-4">Find out how easy having a phone system can be</h2>
+    <div class="row mb-4">
+      <!-- Service-->
+      <div class="col-sm-6">
+        <div class="card card-hover">
+          <div class="card-body"><i class="h2 text-success ai-check-square"></i>
+            <h5 class="card-title">Seamless transition</h5>
+            <p class="card-text fs-sm">We handle all the details, from configuring your phone system to transfering numbers. You won't experience any hassle, downtime, or business interruptions.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Support-->
+
+      <div class="col-sm-6">
+        <div class="card card-hover">
+          <div class="card-body"><i class="h2 text-info ai-phone-call"></i>
+            <h5 class="card-title">Stellar support</h5>
+            <p class="card-text fs-sm">Receive the most responsive support available with our 100% in-house team. Get the help you need, when you need it.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+
+      <!-- Hardware-->
+
+      <div class="col-sm-6">
+        <div class="card card-hover">
+          <div class="card-body"><i class="h2 text-warning ai-filter-alt"></i>
+            <h5 class="card-title">Flexible solutions</h5>
+            <p class="card-text fs-sm">Our competitors require you to rent hardware from them. We offer flexible solutions, whether you purchase your hardware up front, pay over time, or rent.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing-->
+
+      <div class="col-sm-6">
+        <div class="card card-hover">
+          <div class="card-body"><i class="h2 text-danger ai-dollar-sign"></i>
+            <h5 class="card-title">Honest pricing</h5>
+            <p class="card-text fs-sm">Avoid hidden fees and unexpected price hikes that can add 15-20% to your contract with our honest and transparent pricing.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials-->
+
+<section class="bg-faded-primary">
+      <div class="container py-5 py-md-6 py-lg-7">
+        <h2 class="text-center pt-2 pb-4">What People Say About Accelerate Networks</h2>
+        <div class="row py-4">
+
+          <!-- Review Card-->
+
+          <div class="col py-2"><a class="card h-100 border-0 shadow mx-1 card-hover" href="https://goo.gl/maps/oEJeoCmGUmALEwQk8">
+              <div class="card-body meta-link">
+                <blockquote class="blockquote fs-sm">
+                  <p class="mb-0">Accelerate Networks has not only cut our office phone bill in half but has provided stellar service from the start. Great staff and very responsive to any and all questions or requests. We didn't have to lift a finger or experience any downtime when we switched to Accelerate Networks a year ago.</p>
+                </blockquote>
+                <div class="py-3 star-rating mt-n1"><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i>
+                </div>
+              </div>
+              <footer class="fs-sm px-4 pb-4">
+                <div class="d-flex align-items-center border-top mb-n2 pt-3">
+                  <div class="text-heading fw-medium ps-2 ms-1 mt-n1">Edmonds Chamber of Commerce</div>
+                </div>
+              </footer></a></div>
+
+          <!-- Review Card-->
+
+          <div class="col py-2"><a class="card h-100 border-0 shadow mx-1 card-hover" href="https://goo.gl/maps/Cv8px3PrZAfCKyRc8">
+              <div class="card-body meta-link">
+                <blockquote class="blockquote fs-sm">
+                  <p class="mb-0">As a small business owner I swear by the level of service, the consistency and dedication Accelerate Networks provides. As a small business owner who has struggled to hold on this year I can attest that no vendor has ever done more for me. Seriously. This team goes above and beyond. Highly recommend.</p>
+                </blockquote>
+                <div class="py-3 star-rating mt-n1"><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i>
+                </div>
+              </div>
+              <footer class="fs-sm px-4 pb-4">
+                <div class="d-flex align-items-center border-top mb-n2 pt-3">
+                  <div class="text-heading fw-medium ps-2 ms-1 mt-n1">Expedia Cruises of Bellevue</div>
+                </div>
+              </footer></a></div>
+
+          <!-- Review Card-->
+
+          <div class="col py-2"><a class="card h-100 border-0 shadow mx-1 card-hover" href="https://goo.gl/maps/XZZk1WVnbYdk9QXQ7">
+              <div class="card-body meta-link">
+                <blockquote class="blockquote fs-sm">
+                  <p class="mb-0">Accelerate Networks has excellent products, but more importantly, they have the BEST customer service. They really care about their clients and show this with prompt attention to all questions and then quickly working to resolve any issues. They are an extremely customer focused company and I highly recommend doing business with them.</p>
+                </blockquote>
+                <div class="py-3 star-rating mt-n1"><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i>
+                </div>
+              </div>
+              <footer class="fs-sm px-4 pb-4">
+                <div class="d-flex align-items-center border-top mb-n2 pt-3">
+                  <div class="text-heading fw-medium ps-2 ms-1 mt-n1">Angela Figgins</div>
+                </div>
+              </footer></a></div>
+        </div>
+        <div class="text-center"><a class="btn btn-outline-primary" href="https://g.page/acceleratenetworks">Read reviews on Google</a></div>
+      </div>
+    </section>
+
+<!-- Pricing-->
+
+<section class="bg-light">
+  <div class="container py-5 py-md-6 py-lg-7">
+    <h2 class="text-center pt-2 pb-4 mb-4">Affordable pricing for any business</h2>
+    <div class="pricing-wrap">
       <div class="row">
-
-        <!-- Hardware-->
-
-        <div class="col-sm-6">
-          <div class="card card-hover">
-            <div class="card-body"><i class="h2 text-warning ai-filter-alt"></i>
-              <h5 class="card-title">Flexible solutions</h5>
-              <p class="card-text fs-sm">Our competitors require you to rent hardware from them. We offer flexible solutions, whether you purchase your hardware up front, pay over time, or rent.</p>
+        <div class="col-lg-4 col-sm-6 mb-grid-gutter offset-2">
+          <div class="card card-active border-0 shadow w-100">
+            <div class="card-img-top bg-primary text-center py-5 px-grid-gutter">
+              <h3 class="text-light">Seats</h3>
+              <p class="text-light mb-0">Get multiple people talking with a single phone number for your business</p>
+            </div>
+            <div class="card-body px-grid-gutter py-grid-gutter">
+              <div class="d-flex align-items-end py-2 px-4 mb-4"><span class="h2 fw-normal text-muted mb-1 me-2">$</span><span class="price display-2 fw-normal text-primary px-1 me-2">20</span><span class="h3 fs-lg fw-medium text-muted mb-2">per<br>month</span></div>
+              <ul class="list-unstyled py-2 mb-4">
+                <li class="d-flex align-items-center mb-3"><i class="ai-check fs-xl text-primary me-2"></i><span>1 concurrent call per seat</span></li>
+                <li class="d-flex align-items-center mb-3"><i class="ai-check fs-xl text-primary me-2"></i><span>Add as many seats as you need</span></li>
+                <li class="d-flex align-items-center mb-3"><i class="ai-check fs-xl text-primary me-2"></i><span>Keep everyone talking</span></li>
+              </ul>
+              <div class="text-center mb-2"><a class="btn btn-brand-secondary" href="/Services">Get started</a></div>
             </div>
           </div>
         </div>
-
-        <!-- Pricing-->
-
-        <div class="col-sm-6">
-          <div class="card card-hover">
-            <div class="card-body"><i class="h2 text-danger ai-dollar-sign"></i>
-              <h5 class="card-title">Honest pricing</h5>
-              <p class="card-text fs-sm">Avoid hidden fees and unexpected price hikes that can add 15-20% to your contract with our honest and transparent pricing.</p>
+        <div class="col-lg-4 col-sm-6 mb-grid-gutter">
+          <div class="card border-0 shadow w-100">
+            <div class="card-img-top bg-secondary text-center py-5 px-grid-gutter">
+              <h3 class="text-body">Lines</h3>
+              <p class="text-body mb-0">Provide multiple phones throughout your space to answer calls wherever you are</p>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Testimonials-->
-
-  <section class="bg-faded-primary">
-        <div class="container py-5 py-md-6 py-lg-7">
-          <h2 class="text-center pt-2 pb-4">What People Say About Accelerate Networks</h2>
-          <div class="row py-4">
-
-            <!-- Review Card-->
-
-            <div class="col py-2"><a class="card h-100 border-0 shadow mx-1 card-hover" href="https://goo.gl/maps/oEJeoCmGUmALEwQk8">
-                <div class="card-body meta-link">
-                  <blockquote class="blockquote fs-sm">
-                    <p class="mb-0">Accelerate Networks has not only cut our office phone bill in half but has provided stellar service from the start. Great staff and very responsive to any and all questions or requests. We didn't have to lift a finger or experience any downtime when we switched to Accelerate Networks a year ago.</p>
-                  </blockquote>
-                  <div class="py-3 star-rating mt-n1"><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i>
-                  </div>
-                </div>
-                <footer class="fs-sm px-4 pb-4">
-                  <div class="d-flex align-items-center border-top mb-n2 pt-3">
-                    <div class="text-heading fw-medium ps-2 ms-1 mt-n1">Edmonds Chamber of Commerce</div>
-                  </div>
-                </footer></a></div>
-
-            <!-- Review Card-->
-
-            <div class="col py-2"><a class="card h-100 border-0 shadow mx-1 card-hover" href="https://goo.gl/maps/Cv8px3PrZAfCKyRc8">
-                <div class="card-body meta-link">
-                  <blockquote class="blockquote fs-sm">
-                    <p class="mb-0">As a small business owner I swear by the level of service, the consistency and dedication Accelerate Networks provides. As a small business owner who has struggled to hold on this year I can attest that no vendor has ever done more for me. Seriously. This team goes above and beyond. Highly recommend.</p>
-                  </blockquote>
-                  <div class="py-3 star-rating mt-n1"><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i>
-                  </div>
-                </div>
-                <footer class="fs-sm px-4 pb-4">
-                  <div class="d-flex align-items-center border-top mb-n2 pt-3">
-                    <div class="text-heading fw-medium ps-2 ms-1 mt-n1">Expedia Cruises of Bellevue</div>
-                  </div>
-                </footer></a></div>
-
-            <!-- Review Card-->
-
-            <div class="col py-2"><a class="card h-100 border-0 shadow mx-1 card-hover" href="https://goo.gl/maps/XZZk1WVnbYdk9QXQ7">
-                <div class="card-body meta-link">
-                  <blockquote class="blockquote fs-sm">
-                    <p class="mb-0">Accelerate Networks has excellent products, but more importantly, they have the BEST customer service. They really care about their clients and show this with prompt attention to all questions and then quickly working to resolve any issues. They are an extremely customer focused company and I highly recommend doing business with them.</p>
-                  </blockquote>
-                  <div class="py-3 star-rating mt-n1"><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i><i class="sr-star ai-star-filled active"></i>
-                  </div>
-                </div>
-                <footer class="fs-sm px-4 pb-4">
-                  <div class="d-flex align-items-center border-top mb-n2 pt-3">
-                    <div class="text-heading fw-medium ps-2 ms-1 mt-n1">Angela Figgins</div>
-                  </div>
-                </footer></a></div>
-          </div>
-          <div class="text-center"><a class="btn btn-outline-primary" href="https://g.page/acceleratenetworks">Read reviews on Google</a></div>
-        </div>
-      </section>
-
-  <!-- Pricing-->
-
-  <section class="bg-light">
-    <div class="container py-5 py-md-6 py-lg-7">
-      <h2 class="text-center pt-2 pb-4 mb-4">Affordable pricing for any business</h2>
-      <div class="pricing-wrap">
-        <div class="row">
-          <div class="col-lg-4 col-sm-6 mb-grid-gutter offset-2">
-            <div class="card card-active border-0 shadow w-100">
-              <div class="card-img-top bg-primary text-center py-5 px-grid-gutter">
-                <h3 class="text-light">Seats</h3>
-                <p class="text-light mb-0">Get multiple people talking with a single phone number for your business</p>
-              </div>
-              <div class="card-body px-grid-gutter py-grid-gutter">
-                <div class="d-flex align-items-end py-2 px-4 mb-4"><span class="h2 fw-normal text-muted mb-1 me-2">$</span><span class="price display-2 fw-normal text-primary px-1 me-2">20</span><span class="h3 fs-lg fw-medium text-muted mb-2">per<br>month</span></div>
-                <ul class="list-unstyled py-2 mb-4">
-                  <li class="d-flex align-items-center mb-3"><i class="ai-check fs-xl text-primary me-2"></i><span>1 concurrent call per seat</span></li>
-                  <li class="d-flex align-items-center mb-3"><i class="ai-check fs-xl text-primary me-2"></i><span>Add as many seats as you need</span></li>
-                  <li class="d-flex align-items-center mb-3"><i class="ai-check fs-xl text-primary me-2"></i><span>Keep everyone talking</span></li>
-                </ul>
-                <div class="text-center mb-2"><a class="btn btn-brand-secondary" href="/Services">Get started</a></div>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-4 col-sm-6 mb-grid-gutter">
-            <div class="card border-0 shadow w-100">
-              <div class="card-img-top bg-secondary text-center py-5 px-grid-gutter">
-                <h3 class="text-body">Lines</h3>
-                <p class="text-body mb-0">Provide multiple phones throughout your space to answer calls wherever you are</p>
-              </div>
-              <div class="card-body px-grid-gutter py-grid-gutter">
-                <div class="d-flex align-items-end py-2 px-4 mb-4"><span class="h2 fw-normal text-muted mb-1 me-2">$</span><span class="price display-2 fw-normal text-primary px-1 me-2">35</span><span class="h3 fs-lg fw-medium text-muted mb-2">per<br>month</span></div>
-                <ul class="list-unstyled py-2 mb-4">
-                  <li class="d-flex align-items-center mb-3"><i class="ai-check fs-xl text-primary me-2"></i><span>1 concurrent call per line</span></li>
-                  <li class="d-flex align-items-center mb-3"><i class="ai-check fs-xl text-primary me-2"></i><span>Add as many phones as you need</span></li>
-                  <li class="d-flex align-items-center mb-3"><i class="ai-x fs-xl text-muted me-2"></i><span>No additional users</span></li>
-                </ul>
-                <div class="text-center mb-2"><a class="btn btn-outline-brand-secondary" href="/services">Get started</a></div>
-              </div>
+            <div class="card-body px-grid-gutter py-grid-gutter">
+              <div class="d-flex align-items-end py-2 px-4 mb-4"><span class="h2 fw-normal text-muted mb-1 me-2">$</span><span class="price display-2 fw-normal text-primary px-1 me-2">35</span><span class="h3 fs-lg fw-medium text-muted mb-2">per<br>month</span></div>
+              <ul class="list-unstyled py-2 mb-4">
+                <li class="d-flex align-items-center mb-3"><i class="ai-check fs-xl text-primary me-2"></i><span>1 concurrent call per line</span></li>
+                <li class="d-flex align-items-center mb-3"><i class="ai-check fs-xl text-primary me-2"></i><span>Add as many phones as you need</span></li>
+                <li class="d-flex align-items-center mb-3"><i class="ai-x fs-xl text-muted me-2"></i><span>No additional users</span></li>
+              </ul>
+              <div class="text-center mb-2"><a class="btn btn-outline-brand-secondary" href="/services">Get started</a></div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
