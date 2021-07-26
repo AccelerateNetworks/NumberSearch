@@ -55,7 +55,7 @@ namespace NumberSearch.Mvc.Controllers
             var cart = Cart.GetFromSession(HttpContext.Session);
 
             // Clean up the query.
-            Query = Query?.Trim();
+            Query = Query?.Trim().ToLowerInvariant();
 
             if (Query is null || Query.Length == 0)
             {
