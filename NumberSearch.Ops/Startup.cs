@@ -44,6 +44,9 @@ namespace NumberSearch.Ops
                     Configuration.GetConnectionString("PostgresqlProd")));
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+            services.AddDbContext<NumberSearch.Ops.EFModels.numberSearchContext>(options =>
+    options.UseNpgsql(
+        Configuration.GetConnectionString("PostgresqlProd")));
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddControllersWithViews();
             services.AddRazorPages().AddRazorRuntimeCompilation();
@@ -113,7 +116,7 @@ namespace NumberSearch.Ops
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Orders}/{id?}");
+                    pattern: "{controller}/{action}/{id?}");
                 endpoints.MapRazorPages();
             });
         }
