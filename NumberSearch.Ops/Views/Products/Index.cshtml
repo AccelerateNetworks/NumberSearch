@@ -1,0 +1,72 @@
+﻿@model IEnumerable<NumberSearch.Ops.EFModels.Product>
+@{
+    ViewData["Title"] = "Hardware";
+}
+
+<div class="d-flex justify-content-between align-items-center">
+    <h1 class="display-4 p-3">🎁 Hardware</h1>
+    <a asp-action="Create" class="btn btn-lg btn-success">Create New</a>
+</div>
+<div class="table-responsive">
+    <table class="table table-striped table-borderless table-hover" id="table">
+        <thead>
+            <tr>
+                <th scope="col">
+                    Name
+                </th>
+                <th scope="col">
+                    Price
+                </th>
+                <th scope="col">
+                    Description
+                </th>
+                <th scope="col">
+                    Instock
+                </th>
+                <th>
+                    Public
+                </th>
+                <th>
+                    Quantity Avalible
+                </th>
+                <th scope="col">
+                    Actions
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                foreach (var product in Model?.OrderByDescending(x => x?.Name))
+                {
+                    <tr>
+                        <td>
+                            @product?.Name
+                        </td>
+                        <td>
+                            @product?.Price
+                        </td>
+                        <td>
+                            @product?.Description
+                        </td>
+                        <td>
+                            @product?.QuantityAvailable
+                        </td>
+                        <td>
+                            @product?.Public
+                        </td>
+                        <td>
+                            @product?.QuantityAvailable
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group" aria-label="Basic example">
+                                <a asp-action="Edit" asp-route-id="@product.ProductId" class="btn btn-warning">Edit</a>
+                                <a asp-action="Details" asp-route-id="@product.ProductId" class="btn btn-primary">Details</a>
+                                <a asp-action="Delete" asp-route-id="@product.ProductId" class="btn btn-danger">Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

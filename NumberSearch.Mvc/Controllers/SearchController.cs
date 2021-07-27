@@ -41,7 +41,7 @@ namespace NumberSearch.Mvc.Controllers
             }
 
             // Clean up the query.
-            query = query?.Trim();
+            query = query?.Trim().ToLowerInvariant();
 
             // Parse the query.
             var converted = new List<char>();
@@ -175,6 +175,11 @@ namespace NumberSearch.Mvc.Controllers
             });
         }
 
+        /// <summary>
+        /// Converts a letter in a string to numbers on a dialpad.
+        /// </summary>
+        /// <param name="letter"> A lowercase char. </param>
+        /// <returns> The dialpad equivalent. </returns>
         public static char LetterToKeypadDigit(char letter)
         {
             // Map the chars to their keypad numerical values.

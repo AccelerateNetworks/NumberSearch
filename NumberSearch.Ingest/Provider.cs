@@ -2,6 +2,7 @@
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
+using NumberSearch.DataAccess.Call48;
 using NumberSearch.DataAccess.TeleMesssage;
 
 using Serilog;
@@ -12,6 +13,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
+using static NumberSearch.DataAccess.Models.AreaCode;
 
 namespace NumberSearch.Ingest
 {
@@ -82,6 +85,76 @@ namespace NumberSearch.Ingest
             stats.StartDate = start;
             stats.EndDate = end;
             stats.IngestedFrom = "BulkVS";
+
+            return stats;
+        }
+
+        /// <summary>
+        /// Ingest phone numbers from the Call48 API.
+        /// </summary>
+        /// <param name="username"> The username for the API. </param>
+        /// <param name="password"> The password for the API. </param>
+        /// <param name="states"> A list of states to ingest. </param>
+        /// <param name="connectionString"> The connection string for the database. </param>
+        /// <returns></returns>
+        public static async Task<IngestStatistics> Call48Async(string username, string password, AreaCodesByState[] states, string connectionString)
+        {
+            var start = DateTime.Now;
+
+            var numbers = new List<PhoneNumber>();
+
+            var credentials = await Login.LoginAsync(username, password).ConfigureAwait(false);
+
+            foreach (var state in states)
+            {
+                Log.Information($"[Call48] Ingesting numbers for {state.StateShort}.");
+
+                foreach (var code in state.AreaCodes)
+                {
+                    try
+                    {
+                        numbers.AddRange(await Search.GetAsync(state.StateShort, code, credentials.data.token).ConfigureAwait(false));
+                        Log.Information($"[Call48] Found {numbers.Count} Phone Numbers");
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"[Call48] Area code {code} failed @ {DateTime.Now}: {ex.Message}");
+                    }
+                }
+            }
+
+            // This is the ratecenters method, which is disabled because the Call48 API is drastically slower when we use it.
+            //var statesAndRatecenters = await Ratecenter.GetAllRatecentersAsync(states, credentials.data.token).ConfigureAwait(false);
+
+            //foreach (var state in statesAndRatecenters)
+            //{
+            //    Log.Information($"[Call48] Ingesting numbers for {state.ShortState}.");
+
+            //    foreach (var ratecenter in state.Ratecenters)
+            //    {
+            //        try
+            //        {
+            //            numbers.AddRange(await Search.GetAsync(state.ShortState, ratecenter, credentials.data.token).ConfigureAwait(false));
+            //            Log.Information($"[Call48] Found {numbers.Count} Phone Numbers");
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            Log.Error($"[Call48] Ratecenter {ratecenter}, {state.ShortState} failed @ {DateTime.Now}: {ex.Message}");
+            //        }
+            //    }
+            //}
+
+            var locations = await Services.AssignRatecenterAndRegionAsync(numbers).ConfigureAwait(false);
+            numbers = locations.ToList();
+
+            var typedNumbers = Services.AssignNumberTypes(numbers).ToArray();
+
+            var stats = await Services.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
+
+            var end = DateTime.Now;
+            stats.StartDate = start;
+            stats.EndDate = end;
+            stats.IngestedFrom = "Call48";
 
             return stats;
         }

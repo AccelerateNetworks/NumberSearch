@@ -1,0 +1,63 @@
+﻿@model NumberSearch.Mvc.Models.NewClientResult;
+
+@{
+    ViewData["Title"] = "New Client";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <br />
+    <div class="pricing-header mx-auto p-2 text-center">
+        <h1 class="display-4">New Client Setup</h1>
+    </div>
+    <br />
+
+    <div class="row">
+        <div class="col">
+            <p>Who will be using each phone? Does anyone need an extension without a phone (eg: Voicemail to email or Mobile/PC app only)? What is each user’s email address? Do you have any extensions currently?</p>
+            <div class="table-responsive">
+                <table class="table table-borderless table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>
+                                Extension #
+                            </th>
+                            <th>
+                                Name/Location
+                            </th>
+                            <th>
+                                Email (Optional)
+                            </th>
+                            <th>
+                                Model of Phone
+                            </th>
+                            <th>
+                                Outbound Caller ID
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @*@foreach (var number in Model?.NewClient?.ExtensionRegistrations)
+                        {
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        }*@
+                    </tbody>
+                </table>
+            </div>
+            <p>When someone calls, should they ring certain phones or be greeted with a menu?</p>
+            <div class="input-group">
+                <input type="checkbox" asp-for="NewClient.PhoneMenu" class="form-control" />
+                <div class="input-group-prepend">
+                    <span class="input-group-text">With textarea</span>
+                </div>
+                <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.PhonesToRingOrMenuDescription"></textarea>
+            </div>
+        </div>
+    </div>
+</div>

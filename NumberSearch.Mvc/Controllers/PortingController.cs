@@ -3,8 +3,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
-using MimeKit;
-
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Data247;
@@ -57,7 +55,7 @@ namespace NumberSearch.Mvc.Controllers
             var cart = Cart.GetFromSession(HttpContext.Session);
 
             // Clean up the query.
-            Query = Query?.Trim();
+            Query = Query?.Trim().ToLowerInvariant();
 
             if (Query is null || Query.Length == 0)
             {

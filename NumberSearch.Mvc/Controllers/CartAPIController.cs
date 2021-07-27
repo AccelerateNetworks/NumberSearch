@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
+using NumberSearch.DataAccess.Call48;
 using NumberSearch.DataAccess.TeleMesssage;
 
 using Serilog;
@@ -145,6 +146,8 @@ namespace NumberSearch.Mvc.Controllers
         private readonly string _bulkVSpassword;
         private readonly string _data247username;
         private readonly string _data247password;
+        private readonly string _call48Username;
+        private readonly string _call48Password;
         private HttpContext _httpContext;
 
         public CartServices(IConfiguration config, HttpContext httpContext)
@@ -162,6 +165,8 @@ namespace NumberSearch.Mvc.Controllers
             _emailOrders = config.GetConnectionString("EmailOrders");
             _data247username = config.GetConnectionString("Data247Username");
             _data247password = config.GetConnectionString("Data247Password");
+            _call48Username = config.GetConnectionString("Call48Username");
+            _call48Password = config.GetConnectionString("Call48Password");
             _httpContext = httpContext;
         }
 
@@ -235,6 +240,28 @@ namespace NumberSearch.Mvc.Controllers
                 else
                 {
                     Log.Warning($"[FirstPointCom] Failed to find {phoneNumber.DialedNumber} in {results.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
+
+                    // Remove numbers that are unpurchasable.
+                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+
+                    // Sadly its gone. And the user needs to pick a different number.
+                    return BadRequest($"{dialedPhoneNumber} is no longer available.");
+                }
+            }
+            else if (phoneNumber.IngestedFrom == "Call48")
+            {
+                // Verify that Call48 has the number.
+                var credentials = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
+                var results = await Search.GetLocalNumbersAsync(phoneNumber.State, string.Empty, phoneNumber.NPA.ToString(), phoneNumber.NXX.ToString(), credentials.data.token).ConfigureAwait(false);
+                var matchingNumber = results.data.result.Where(x => x.did.Replace("-", string.Empty) == phoneNumber.DialedNumber).FirstOrDefault();
+                if (matchingNumber != null && matchingNumber?.did.Replace("-", string.Empty) == phoneNumber.DialedNumber)
+                {
+                    purchasable = true;
+                    Log.Information($"[Call48] Found {phoneNumber.DialedNumber} in {results?.data?.result?.Length} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
+                }
+                else
+                {
+                    Log.Warning($"[Call48] Failed to find {phoneNumber.DialedNumber} in {results?.data?.result?.Length} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
 
                     // Remove numbers that are unpurchasable.
                     var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);

@@ -1,0 +1,81 @@
+﻿@model NumberSearch.Ops.EFModels.Product
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1 class="display-4 p-3">🎁 Edit Product</h1>
+
+@Html.AntiForgeryToken()
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="ProductId" />
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Price" class="control-label"></label>
+                <input asp-for="Price" type="number" class="form-control" />
+                <span asp-validation-for="Price" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <input asp-for="Description" class="form-control" />
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Image" class="control-label"></label>
+                <input asp-for="Image" class="form-control" />
+                <span asp-validation-for="Image" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="Public" /> @Html.DisplayNameFor(model => model.Public)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="QuantityAvailable" class="control-label"></label>
+                <input asp-for="QuantityAvailable" class="form-control" readonly />
+                <span asp-validation-for="QuantityAvailable" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="SupportLink" class="control-label"></label>
+                <input asp-for="SupportLink" class="form-control" />
+                <span asp-validation-for="SupportLink" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DisplayPriority" class="control-label"></label>
+                <input asp-for="DisplayPriority" type="number" class="form-control" />
+                <span asp-validation-for="DisplayPriority" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="VendorPartNumber" class="control-label"></label>
+                <input asp-for="VendorPartNumber" class="form-control" />
+                <span asp-validation-for="VendorPartNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Type" class="control-label"></label>
+                <select class="custom-select" id="inputGroupSelect01" asp-for="Type" required>
+                    <option value="Phone" selected>Phone</option>
+                    <option value="Accessory">Accessory</option>
+                </select>
+                <span asp-validation-for="Type" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index" class="btn btn-outline-primary">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

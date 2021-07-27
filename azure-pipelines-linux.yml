@@ -35,6 +35,8 @@ variables:
   ConnectionStrings.AzureStorageAccount: $(AzureStorageAccount)
   ConnectionStrings.TeleDynamicsUsername: $(TeleDynamicsUsername)
   ConnectionStrings.TeleDynamicsPassword: $(TeleDynamicsPassword)
+  ConnectionStrings.Call48Username: $(Call48Username)
+  ConnectionStrings.Call48Password: $(Call48Password)
   ApplicationInsights.InstrumentationKey: $(AIInstrumentationKey)
   ApplicationInsights.ConnectionString: $(AIConnectionString)
 

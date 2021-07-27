@@ -743,7 +743,7 @@ namespace NumberSearch.Ops.Controllers
                         {
                             if (retryCount > 10)
                             {
-                                throw ex;
+                                throw;
                             }
 
                             retryCount++;

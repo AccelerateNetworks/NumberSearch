@@ -268,130 +268,34 @@ namespace NumberSearch.Mvc.Controllers
 
                                 var cost = nto.NumberType == "Executive" ? 200 : nto.NumberType == "Premium" ? 40 : nto.NumberType == "Standard" ? 20 : 20;
 
-                                if (nto.IngestedFrom == "BulkVS")
+                                var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                var purchsedNumber = new PurchasedPhoneNumber
                                 {
-                                    var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
-                                    var purchsedNumber = new PurchasedPhoneNumber
-                                    {
-                                        Completed = false,
-                                        DateIngested = numberToBePurchased.DateIngested,
-                                        DateOrdered = DateTime.Now,
-                                        NPA = numberToBePurchased.NPA,
-                                        NXX = numberToBePurchased.NXX,
-                                        XXXX = numberToBePurchased.XXXX,
-                                        DialedNumber = numberToBePurchased.DialedNumber,
-                                        IngestedFrom = numberToBePurchased.IngestedFrom,
-                                        NumberType = numberToBePurchased.NumberType,
-                                        OrderId = order.OrderId,
-                                        OrderResponse = string.Empty,
-                                        PIN = pin.ToString()
-                                    };
+                                    Completed = false,
+                                    DateIngested = numberToBePurchased.DateIngested,
+                                    DateOrdered = DateTime.Now,
+                                    NPA = numberToBePurchased.NPA,
+                                    NXX = numberToBePurchased.NXX,
+                                    XXXX = numberToBePurchased.XXXX,
+                                    DialedNumber = numberToBePurchased.DialedNumber,
+                                    IngestedFrom = numberToBePurchased.IngestedFrom,
+                                    NumberType = numberToBePurchased.NumberType,
+                                    OrderId = order.OrderId,
+                                    OrderResponse = string.Empty,
+                                    PIN = pin.ToString()
+                                };
 
-                                    var checkPurchaseOrder = await purchsedNumber.PostAsync(_postgresql).ConfigureAwait(false);
+                                var checkPurchaseOrder = await purchsedNumber.PostAsync(_postgresql).ConfigureAwait(false);
 
-                                    totalCost += cost;
+                                totalCost += cost;
 
-                                    onetimeItems.Add(new Invoice_Items
-                                    {
-                                        product_key = nto.DialedNumber,
-                                        notes = $"{nto.NumberType} Phone Number",
-                                        cost = cost,
-                                        qty = 1
-                                    });
-                                }
-                                else if (nto.IngestedFrom == "TeleMessage")
+                                onetimeItems.Add(new Invoice_Items
                                 {
-                                    var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
-
-                                    var purchsedNumber = new PurchasedPhoneNumber
-                                    {
-                                        Completed = false,
-                                        DateIngested = numberToBePurchased.DateIngested,
-                                        DateOrdered = DateTime.Now,
-                                        NPA = numberToBePurchased.NPA,
-                                        NXX = numberToBePurchased.NXX,
-                                        XXXX = numberToBePurchased.XXXX,
-                                        DialedNumber = numberToBePurchased.DialedNumber,
-                                        IngestedFrom = numberToBePurchased.IngestedFrom,
-                                        NumberType = numberToBePurchased.NumberType,
-                                        OrderId = order.OrderId,
-                                        OrderResponse = string.Empty
-                                    };
-
-                                    var checkPurchaseOrder = await purchsedNumber.PostAsync(_postgresql).ConfigureAwait(false);
-
-                                    totalCost += cost;
-
-                                    onetimeItems.Add(new Invoice_Items
-                                    {
-                                        product_key = nto.DialedNumber,
-                                        notes = $"{nto.NumberType} Phone Number",
-                                        cost = cost,
-                                        qty = 1
-                                    });
-                                }
-                                else if (nto.IngestedFrom == "FirstPointCom")
-                                {
-                                    var checkSubmitted = productOrder.PostAsync(_postgresql).ConfigureAwait(false);
-
-                                    var purchsedNumber = new PurchasedPhoneNumber
-                                    {
-                                        Completed = false,
-                                        DateIngested = numberToBePurchased.DateIngested,
-                                        DateOrdered = DateTime.Now,
-                                        NPA = numberToBePurchased.NPA,
-                                        NXX = numberToBePurchased.NXX,
-                                        XXXX = numberToBePurchased.XXXX,
-                                        DialedNumber = numberToBePurchased.DialedNumber,
-                                        IngestedFrom = numberToBePurchased.IngestedFrom,
-                                        NumberType = numberToBePurchased.NumberType,
-                                        OrderId = order.OrderId,
-                                        OrderResponse = string.Empty
-                                    };
-
-                                    var checkPurchaseOrder = await purchsedNumber.PostAsync(_postgresql).ConfigureAwait(false);
-
-                                    totalCost += cost;
-
-                                    onetimeItems.Add(new Invoice_Items
-                                    {
-                                        product_key = nto.DialedNumber,
-                                        notes = $"{nto.NumberType} Phone Number",
-                                        cost = cost,
-                                        qty = 1
-                                    });
-                                }
-                                else if (nto.IngestedFrom == "OwnedNumber")
-                                {
-                                    var checkSubmitted = productOrder.PostAsync(_postgresql).ConfigureAwait(false);
-
-                                    var purchsedNumber = new PurchasedPhoneNumber
-                                    {
-                                        Completed = false,
-                                        DateIngested = numberToBePurchased.DateIngested,
-                                        DateOrdered = DateTime.Now,
-                                        NPA = numberToBePurchased.NPA,
-                                        NXX = numberToBePurchased.NXX,
-                                        XXXX = numberToBePurchased.XXXX,
-                                        DialedNumber = numberToBePurchased.DialedNumber,
-                                        IngestedFrom = numberToBePurchased.IngestedFrom,
-                                        NumberType = numberToBePurchased.NumberType,
-                                        OrderId = order.OrderId,
-                                        OrderResponse = string.Empty
-                                    };
-
-                                    var checkPurchaseOrder = await purchsedNumber.PostAsync(_postgresql).ConfigureAwait(false);
-
-                                    totalCost += cost;
-
-                                    onetimeItems.Add(new Invoice_Items
-                                    {
-                                        product_key = nto.DialedNumber,
-                                        notes = $"{nto.NumberType} Phone Number",
-                                        cost = cost,
-                                        qty = 1
-                                    });
-                                }
+                                    product_key = nto.DialedNumber,
+                                    notes = $"{nto.NumberType} Phone Number",
+                                    cost = cost,
+                                    qty = 1
+                                });
                             }
 
                             var totalPortingCost = 0;
