@@ -252,7 +252,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 // Verify that Call48 has the number.
                 var credentials = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
-                var results = await Search.GetLocalNumbersAsync(string.Empty, phoneNumber.State, phoneNumber.NPA.ToString(), phoneNumber.NXX.ToString(), credentials.data.token).ConfigureAwait(false);
+                var results = await Search.GetLocalNumbersAsync(phoneNumber.State, string.Empty, phoneNumber.NPA.ToString(), phoneNumber.NXX.ToString(), credentials.data.token).ConfigureAwait(false);
                 var matchingNumber = results.data.result.Where(x => x.did.Replace("-", string.Empty) == phoneNumber.DialedNumber).FirstOrDefault();
                 if (matchingNumber != null && matchingNumber?.did.Replace("-", string.Empty) == phoneNumber.DialedNumber)
                 {
