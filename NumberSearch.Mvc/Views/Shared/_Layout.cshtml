@@ -12,7 +12,6 @@
             <meta name="robots" content="noindex">
         }
     }
-    <link rel="canonical" href="https://acceleratenetworks.com/" />
     <!-- Viewport-->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Favicon and Touch Icons-->
@@ -86,6 +85,7 @@
       }
 
     </style>
+
     <!-- Page loading scripts-->
     <script>
       (function () {
@@ -99,18 +99,17 @@
       })();
 
     </script>
+
     <!-- Vendor Styles-->
     <link rel="stylesheet" media="screen" href="~/vendor/simplebar/simplebar.min.css"/>
     <link rel="stylesheet" media="screen" href="~/vendor/tiny-slider/tiny-slider.css"/>
     <link rel="stylesheet" media="screen" href="~/vendor/lightgallery.js/lightgallery.min.css"/>
+
     <!-- Main Theme Styles + Bootstrap-->
-    <link rel="stylesheet" media="screen" href="~/css/theme.min.css">
+    <link rel="stylesheet" media="screen" href="~/css/theme.min.css?v=5">
 
     @Html.Raw(JavaScriptSnippet.FullScript)
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
     @*MS Clarity*@
     <script type="text/javascript">
         (function (c, l, a, r, i, t, y) {
@@ -144,7 +143,7 @@
       <div class="page-spinner"></div><span>Loading...</span>
     </div>
   </div>
-  <main class="page-wrapper" role="main">
+  <main class="page-wrapper">
   <!-- Page content-->
     @RenderBody()
   </main>
@@ -197,17 +196,25 @@
       </div>
     </div>
   </footer>
+
   <!-- Back to top button--><a class="btn-scroll-top" href="#top" data-scroll data-fixed-element><span class="btn-scroll-top-tooltip text-muted fs-sm me-2">Top</span><i class="btn-scroll-top-icon ai-arrow-up"></i></a>
+
   <!-- Vendor scripts: js libraries and plugins-->
-  <script src="~/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+  <script src="~/vendor/bootstrap/bootstrap.bundle.min.js?v=5"></script>
   <script src="~/vendor/simplebar/simplebar.min.js"></script>
   <script src="~/vendor/smooth-scroll/smooth-scroll.polyfills.min.js"></script>
   <script src="~/vendor/tiny-slider/tiny-slider.js"></script>
   <script src="~/vendor/lightgallery.js/lightgallery.min.js"></script>
   <script src="~/vendor/lg-video.js/lg-video.min.js"></script>
+
+  <!-- Original scripts-->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+  <script src="~/js/site.js" asp-append-version="true"></script>
+
   <!-- Main theme script-->
-  <script src="~/js/theme.min.js"></script>
+  <script src="~/js/theme.min.js?v=5"></script>
+
   <!-- Additional scripts from Number Search-->
     @RenderSection("Scripts", required: false)
-</body>
+  </body>
 </html>
