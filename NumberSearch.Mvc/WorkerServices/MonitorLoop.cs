@@ -159,7 +159,7 @@ namespace NumberSearch.Mvc
                                                     {
                                                         // Find the number.
                                                         var credentials = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
-                                                        var results = await Search.GetLocalNumbersAsync(string.Empty, nto.State, nto.NPA.ToString(), nto.NXX.ToString(), credentials.data.token).ConfigureAwait(false);
+                                                        var results = await Search.GetLocalNumbersAsync(nto.State, string.Empty, nto.NPA.ToString(), nto.NXX.ToString(), credentials.data.token).ConfigureAwait(false);
                                                         // Sometimes Call48 includes dashes in their numbers for no reason.
                                                         var matchingNumber = results.data.result.Where(x => x.did.Replace("-", string.Empty) == nto.DialedNumber).FirstOrDefault();
 
