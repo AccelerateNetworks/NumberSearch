@@ -42,13 +42,10 @@ namespace NumberSearch.Mvc
         {
             _taskQueue = taskQueue;
             _cancellationToken = applicationLifetime.ApplicationStopping;
-            _configuration = configuration;
             var checkTeli = Guid.TryParse(configuration.GetConnectionString("TeleAPI"), out _teleToken);
-            _postgresql = _configuration.GetConnectionString("PostgresqlProd");
-            _ = int.TryParse(_configuration.GetConnectionString("CallFlow"), out _CallFlow);
-            _ = int.TryParse(_configuration.GetConnectionString("ChannelGroup"), out _ChannelGroup);
-            _apiKey = configuration.GetConnectionString("BulkVSAPIKEY");
-            _apiSecret = configuration.GetConnectionString("BulkVSAPISecret");
+            _postgresql = configuration.GetConnectionString("PostgresqlProd");
+            _ = int.TryParse(configuration.GetConnectionString("CallFlow"), out _CallFlow);
+            _ = int.TryParse(configuration.GetConnectionString("ChannelGroup"), out _ChannelGroup);
             _fpcusername = configuration.GetConnectionString("PComNetUsername");
             _fpcpassword = configuration.GetConnectionString("PComNetPassword");
             _bulkVSusername = configuration.GetConnectionString("BulkVSUsername");
