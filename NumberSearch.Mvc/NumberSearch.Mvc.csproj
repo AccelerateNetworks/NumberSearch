@@ -228,7 +228,13 @@
     <Content Update="wwwroot\images\scaled\GRP2615-right.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Update="wwwroot\images\scaled\GS-DP752-400.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="wwwroot\images\scaled\GS-GRP-HAND26xx-400.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\images\scaled\GS-GRP2624-400.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Update="wwwroot\images\scaled\GS-GXP-HAND21xx-400.jpg">
