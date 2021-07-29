@@ -52,33 +52,40 @@
         </div>
     </div>
 </section>
-<div class="container">
-    <div class="jumbotron mb-3 mt-3 text-center shadow">
-        <h1 class="display-4 pb-3 d-none d-sm-block">Find the perfect phone number </h1>
-        <h1 class="pb-3 d-block d-sm-none">Find the perfect phone number </h1>
-        <p class="m-0">Enter a keyword or area code to search for a memorable number. </p>
-        <p class="m-0">Choose an area code and create trust and credibility for your locally-run business.</pclass="m-0">
-        <p>
-            Build a national presence with a toll-free number.
-        </p>
-        <form class="form-row justify-content-center" action="/Search">
-            <div class="form-group">
-                <div class="input-group mx-auto input-group-lg">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text">+1</span>
-                    </div>
-                    <input type="text" name="Query" class="form-control">
-                </div>
-                <div class="input-group mx-auto input-group-lg pt-2">
-                    <button type="submit" class="btn btn-success btn-block" onclick="displayBusyIndicator()">Search</button>
-                </div>
+<div class="p-5 bg-light">
+    <div class="container">
+        <h1 class="display-4 pb-3 d-none d-sm-block text-center">Find the perfect phone number </h1>
+        <div class="row align-items-center">
+            <div class="col-sm-6">
+                <ul>
+                    <li>Enter a keyword or area code to search for a memorable number. </li>
+                    <li>Choose an area code and create trust and credibility for your locally-run business.</li>
+                    <li>Build a national presence with a toll-free number.</li>
+                </ul>
             </div>
-        </form>
+            <div class="col-sm-6">
+                <div class="mb-3 mt-3">
+                    <form class="form-row justify-content-center" action="/Search">
+                        <div class="form-group">
+                            <div class="input-group mx-auto input-group-lg">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">+1</span>
+                                </div>
+                                <input type="text" name="Query" class="form-control">
+                            </div>
+                            <div class="input-group mx-auto input-group-lg pt-2">
+                                <button type="submit" class="btn btn-success btn-block" onclick="displayBusyIndicator()">Search</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+        <partial name="_LoadingPartial" />
     </div>
-
-    <partial name="_LoadingPartial" />
-
 </div>
+
 <div class="p-5" style="background-color: #3279B2">
     <div class="container p-0">
         <div class="row">
