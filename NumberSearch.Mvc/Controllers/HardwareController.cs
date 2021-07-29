@@ -53,7 +53,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
             }
 
-            return View("PartnerPriceList", new HardwareResult { Phones = products.ToArray() });
+            return View("PartnerPriceList", new HardwareResult { Phones = products.OrderByDescending(x => x.VendorPartNumber).ToArray() });
         }
     }
 }
