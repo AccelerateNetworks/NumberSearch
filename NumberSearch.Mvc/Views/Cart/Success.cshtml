@@ -231,7 +231,7 @@
                 <div class="mb-3">
                     <div class="mb-3" id="searchForm">
                         <label for="address">Service Address</label>
-                        <input asp-for="Order.UnparsedAddress" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" data-toggle="dropdown" required>
+                        <input asp-for="PortRequest.Address" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" data-toggle="dropdown" required>
                         <ul class="list-group" role="menu" aria-labelledby="menu1" id="addressOptions">
                         </ul>
                         <small class="text-muted">
