@@ -46,12 +46,16 @@ body {
 }
 
 /* Custom list element icon */
-/*#checkmark-list > ul {
+.checkmark-list > ul {
     list-style: none;
     padding: 0px;
 }
 
-    #checkmark-list > ul li:before {
+.checkmark-list > ul > li > a {
+    color: white;
+}
+
+    /*#checkmark-list > ul li:before {
         list-style-type: none;
         content: '️✔️';
         margin-left: -20px;
@@ -59,12 +63,12 @@ body {
     }*/
 
 
+
+
 /* Responsive: Portrait tablets and up */
 @media screen and (min-width: 48em) {
     /* Remove the padding we set earlier */
-    .header,
-    .marketing,
-    .footer {
+    .header, .marketing, .footer {
         padding-right: 0;
         padding-left: 0;
     }

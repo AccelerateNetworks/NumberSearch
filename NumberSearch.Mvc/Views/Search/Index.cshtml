@@ -31,30 +31,38 @@
         <h1 class="display-4">Number Search</h1>
     </div>
     <br />
-    <div class="jumbotron pb-3 shadow">
-        @*<h1 class="display-4 pb-3">Number Search</h1>*@
-        <p class="m-0">To search by area code, enter the area code and press search.</p>
-        <p class="mt-0">To bring your number with you, enter the 10 digit number and press transfer.</p>
-        <p class="pb-3">For advanced search, use * to pad your search, for example ***word to search for a number containing word, but exclude the area code.</p>
-        <form class="form-row justify-content-center" action="/Search">
-            <div class="form-group">
-                <div class="input-group mx-auto input-group-lg">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text">+1</span>
-                    </div>
-                    <input type="text" name="Query" class="form-control" placeholder="Enter a Phone Number" value="@searchText">
-                </div>
-                <div class="input-group mx-auto input-group-lg pt-2">
-                    <button type="submit" class="btn btn-success btn-block" onclick="displayBusyIndicator()">Search</button>
-                    <button class="btn btn-info btn-block" onclick="displayBusyIndicator()" asp-controller="Porting" asp-action="CheckPortability">Transfer</button>
-                </div>
+</div>
+<div class="bg-light pt-5 pb-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <p>🌎 To search by area code, enter the area code and press search.</p>
+                <p>💼 To bring your number with you, enter the 10 digit number and press transfer.</p>
+                <p>🛠️ For advanced search, use * to pad your search, for example ***word to search for a number containing word, but exclude the area code.</p>
             </div>
-        </form>
+            <div class="offset-xl-2 offset-lg-1"></div>
+            <div class="col">
+                <form class="justify-content-center" action="/Search">
+                    <div class="form-group">
+                        <div class="input-group mx-auto input-group-lg">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">+1</span>
+                            </div>
+                            <input type="text" name="Query" class="form-control" placeholder="Enter a Phone Number" value="@searchText">
+                        </div>
+                        <div class="input-group mx-auto input-group-lg pt-2">
+                            <button type="submit" class="btn btn-success btn-block" onclick="displayBusyIndicator()">Search</button>
+                            <button class="btn btn-info btn-block" onclick="displayBusyIndicator()" asp-controller="Porting" asp-action="CheckPortability">Transfer</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-
+</div>
+<div class="container">
     <partial name="_LoadingPartial" />
-    <div class="row">
-
+    <div class="row pt-5 pb-5">
         @{
             if (!string.IsNullOrWhiteSpace(Model?.Message))
             {

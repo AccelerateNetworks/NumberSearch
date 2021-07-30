@@ -97,22 +97,73 @@
     <main role="main">
         @RenderBody()
     </main>
-    <div class="p-3 bg-light">
+    <footer class="footer bg-dark pt-5 pb-3">
         <div class="container">
-            <footer class="footer pt-4 my-md-5 pt-md-5">
-                <div class="row">
-                    <div class="col">
-                        <h5>Proudly made in Seattle, WA</h5>
-                        <small class="d-block mb-3 text-muted">© 2020 Accelerate Networks</small>
+            <div class="row">
+                <div class="col-md-4 pb-3 mb-4">
+                    <div class="row">
+                        <div class="col-6">
+                            <a class="d-block mb-3" href="/" width="100%"><img src="/images/scaled/accelerate.png" alt="Accelerate Networks" width="100%"></a>
+                        </div>
                     </div>
-                    <div class="col text-right">
-                        <a href="tel:12068588757">1-(206)-858-8757</a>
-                        <br><a href="mailto:support@acceleratenetworks.com">support@acceleratenetworks.com</a>
+                    <div class="row">
+                        <div class="col">
+                            <p class="text-light pb-2 pb-sm-3">Manage calls, voicemails, business texts, and faxes—all in one place.</p><a class="btn-social bs-outline bs-facebook bs-light bs-lg me-2 mb-2" href="https://www.facebook.com/AccelerateNets/"><i class="ai-facebook"></i></a><a class="btn-social bs-outline bs-twitter bs-light bs-lg me-2 mb-2" href="https://www.linkedin.com/company/72476822/"><i class="ai-linkedin"></i></a><a class="btn-social bs-outline bs-instagram bs-light bs-lg me-2 mb-2" href="https://github.com/AccelerateNetworks"><i class="ai-github"></i></a>
+                        </div>
                     </div>
                 </div>
-            </footer>
+                <div class="col-md-8">
+                    <div class="row">
+                        <div class="offset-lg-3"></div>
+                        <div class="col">
+                            <div class="text-light checkmark-list">
+                                <h4>Product</h4>
+                                <br />
+                                <ul>
+                                    <li><a href="/features">Features</a></li>
+                                    <li><a href="/Services">Services</a></li>
+                                    <li><a href="/Hardware">Hardware</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="text-light checkmark-list">
+                                <h4>Support</h4>
+                                <br />
+                                <ul>
+                                    <li><a href="/support">Knowledge Base</a></li>
+                                    <li><a href="tel:206-858-8757">(206) 858-8757</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="text-light checkmark-list">
+                                <h4>Company</h4>
+                                <br />
+                                <ul>
+                                    <li><a href="/about">About</a></li>
+                                    <li><a href="https://blog.acceleratenetworks.com/">Blog</a></li>
+                                    <li><a href="tel:12063333341">(206) 333-3341</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-0 border-light">
+            <div class="row align-items-center mt-3 py-4">
+                <div class="col-md-6">
+                    <p class="mb-0"><span class="text-light">© Accelerate Networks. Proudly made in Seattle.</span></p>
+                </div>
+                <div class="col-md-6 text-right checkmark-list">
+                    <ul class="list-inline mb-0">
+                        <li class="list-inline-item"><a class="nav-link-style nav-link-light" href="/privacy">Privacy</a></li>
+                        <li class="list-inline-item"><a class="nav-link-style nav-link-light" href="/support">Support</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
-    </div>
+    </footer>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

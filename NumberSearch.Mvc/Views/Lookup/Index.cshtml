@@ -11,27 +11,36 @@
         <h1 class="display-4">Bulk Phone Numbers</h1>
     </div>
     <br />
-    <div class="jumbotron mb-3 shadow">
-        <p> Enter a list of phone numbers and we'll hunt down any information we can find on it or check if we can port them to our network.</p>
-        <form class="form-row justify-content-center">
-            <div class="form-group">
-                <div class="input-group mx-auto input-group-lg">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text">+1</span>
-                    </div>
-                    <textarea class="form-control" aria-label="With textarea" type="text" name="dialedNumber" placeholder="Enter Phone Numbers">@Model?.DialedNumber</textarea>
-                </div>
-                <div class="input-group mx-auto input-group-lg pt-2">
-                    <button type="submit" class="btn btn-success btn-block" onclick="displayBusyIndicator()" asp-controller="Lookup" asp-action="Index">Investigate</button>
-                    <button type="submit" class="btn btn-info btn-block" onclick="displayBusyIndicator()" asp-controller="Lookup" asp-action="BulkPort">Transfer</button>
-                </div>
+</div>
+<div class="bg-light pt-5 pb-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <p>🚀 Enter a list of phone numbers and we'll hunt down any information we can find on it or check if we can port them to our network.</p>
             </div>
-        </form>
+            <div class="offset-xl-2 offset-lg-1"></div>
+            <div class="col">
+                <form class="justify-content-center">
+                    <div class="form-group">
+                        <div class="input-group input-group-lg">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">+1</span>
+                            </div>
+                            <textarea class="form-control" aria-label="With textarea" type="text" name="dialedNumber" placeholder="Enter Phone Numbers">@Model?.DialedNumber</textarea>
+                        </div>
+                        <div class="input-group mx-auto input-group-lg pt-2">
+                            <button type="submit" class="btn btn-success btn-block" onclick="displayBusyIndicator()" asp-controller="Lookup" asp-action="Index">Investigate</button>
+                            <button type="submit" class="btn btn-info btn-block" onclick="displayBusyIndicator()" asp-controller="Lookup" asp-action="BulkPort">Transfer</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <br />
+</div>
+<div class="container">
     <partial name="_LoadingPartial" />
-    <br />
-    <div class="row">
+    <div class="row pt-5 pb-5">
         @{
             if (Model != null && Model?.Lookups != null && Model.Lookups.Any())
             {
