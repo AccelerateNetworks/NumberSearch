@@ -5,172 +5,182 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container">
-    <br />
-    <div class="pricing-header mx-auto p-2 text-center">
-        <h1 class="display-4">Phone Service</h1>
-    </div>
-    <br />
-    <ul class="nav nav-tabs" id="myTab" role="tablist">
-        <li class="nav-item" role="presentation">
-            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Phone Service</a>
-        </li>
-        <li class="nav-item" role="presentation">
-            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Business Tools</a>
-        </li>
-    </ul>
-    <div class="tab-content" id="myTabContent">
-        <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
-            <br />
-            <div class="card-deck mb-3 text-center">
-                <div class="card mb-4 shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">Lines</h4>
-                    </div>
-                    <div class="card-body">
-                        <h1 class="card-title pricing-card-title">$35 <small class="text-muted">/ mo</small></h1>
-                        <ul class="list-unstyled mt-3 mb-4">
-                            <li>Unlimited Calling</li>
-                            <li>HD Voice</li>
-                            <li>Music on Hold</li>
-                            <li>Call Menus and more</li>
-                            <li>Permits 1 Concurrent call</li>
-                            <li>Have as many phones as you want!</li>
-                        </ul>
-                        <div class="btn-group">
-                            <div class="input-group input-group-lg">
-                                @{
-                                    var lines = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("16e2c639-445b-4ae6-9925-07300318206b")).FirstOrDefault();
-                                    if (lines is not null && lines.Quantity > 0)
-                                    {
-                                        <input id="lines" type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@lines?.Quantity">
-                                    }
-                                    else
-                                    {
-                                        <input id="lines" type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
-                                    }
-                                }
-                                <div class="input-group-append">
-                                    <button onclick="AddToCart('Service','16e2c639-445b-4ae6-9925-07300318206b', $('#lines').val(), this)" class="btn btn-outline-primary">Start talking today</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card mb-4 shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">Seats</h4>
-                    </div>
-                    <div class="card-body">
-                        <h1 class="card-title pricing-card-title">$20 <small class="text-muted">/ mo</small></h1>
-                        <ul class="list-unstyled mt-3 mb-4">
-                            <li>Unlimited Calling</li>
-                            <li>HD Voice</li>
-                            <li>Music on Hold</li>
-                            <li>Call Menus and more</li>
-                            <li>Supports 1 Concurrent call per Seat</li>
-                            <li>Buy 1 Seat for every phone you order!</li>
-                        </ul>
-                        <div class="btn-group">
-                            <div class="input-group input-group-lg">
-                                @{
-                                    var seats = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("48eb4627-8692-4a3b-8be1-be64bbeea534")).FirstOrDefault();
-                                    if (seats is not null && seats.Quantity > 0)
-                                    {
-                                        <input id="seats" type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@seats?.Quantity">
-                                    }
-                                    else
-                                    {
-                                        <input id="seats" type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
-                                    }
-                                }
-                                <div class="input-group-append">
-                                    <button onclick="AddToCart('Service', '48eb4627-8692-4a3b-8be1-be64bbeea534', $('#seats').val(), this)" class="btn btn-outline-primary">Start talking today</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="input-group mx-auto input-group-lg pt-2">
-                    <div class="col">
-                        <a class="btn btn-success btn-block shadow-lg" href="/Search">Add a new Phone Number</a>
-                    </div>
-                    <div class="col">
-                        <a class="btn btn-info btn-block shadow-lg" href="/Search">Transfer an existing Phone Number</a>
-                    </div>
-                </div>
+<!-- Pricing Hero-->
+<section class="text-light p-5" style="background-color: #3279B2">
+    <div class="container py-5 py-md-6 py-lg-7 mb-7 text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-md-11">
+                <h1 class="display-3 text-light">Simple, fair pricing</h1>
+                <p class="lead text-white">Every business has different needs, so we give you flexibility in how you pay. Choose the option that works best for your needs.</p>
             </div>
-
         </div>
-        <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-            <br />
-            <div class="card-deck mb-3 text-center">
-                <div class="card mb-4 shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">Web Texting</h4>
+    </div>
+</section>
+<div class="p-5">
+    <div class="container">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Phone Service</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Additional Services</a>
+            </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                <br />
+                <div class="card-deck mb-3 text-center">
+                    <div class="card mb-4 shadow rounded-3">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal">Lines</h4>
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title pricing-card-title">$35 <small class="text-muted">/ mo</small></h1>
+                            <ul class="list-unstyled mt-3 mb-4">
+                                <li>Unlimited Calling</li>
+                                <li>HD Voice</li>
+                                <li>Music on Hold</li>
+                                <li>Call Menus and more</li>
+                                <li>Permits 1 Concurrent call</li>
+                                <li>Have as many phones as you want!</li>
+                            </ul>
+                            <div class="btn-group">
+                                <div class="input-group input-group-lg">
+                                    @{
+                                        var lines = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("16e2c639-445b-4ae6-9925-07300318206b")).FirstOrDefault();
+                                        if (lines is not null && lines.Quantity > 0)
+                                        {
+                                            <input id="lines" type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@lines?.Quantity">
+                                        }
+                                        else
+                                        {
+                                            <input id="lines" type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                        }
+                                    }
+                                    <div class="input-group-append">
+                                        <button onclick="AddToCart('Service','16e2c639-445b-4ae6-9925-07300318206b', $('#lines').val(), this)" class="btn btn-outline-primary">Start talking today</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h1 class="card-title pricing-card-title">$10 <small class="text-muted">/ mo</small></h1>
-                        <ul class="list-unstyled mt-3 mb-4">
-                            <li>Text from any browser</li>
-                            <li>SMS and MMS Supported</li>
-                            <li>Never miss a customer</li>
-                            <li>Communicate seamlessly</li>
-                        </ul>
-                        <button class="btn btn-lg btn-primary" onclick="AddToCart('Service','86a8576f-15e4-4547-8705-7c98dbe5e58d', 1, this)">Start texting today</button>
+                    <div class="card mb-4 shadow rounded-3">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal">Seats</h4>
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title pricing-card-title">$20 <small class="text-muted">/ mo</small></h1>
+                            <ul class="list-unstyled mt-3 mb-4">
+                                <li>Unlimited Calling</li>
+                                <li>HD Voice</li>
+                                <li>Music on Hold</li>
+                                <li>Call Menus and more</li>
+                                <li>Supports 1 Concurrent call per Seat</li>
+                                <li>Buy 1 Seat for every phone you order!</li>
+                            </ul>
+                            <div class="btn-group">
+                                <div class="input-group input-group-lg">
+                                    @{
+                                        var seats = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("48eb4627-8692-4a3b-8be1-be64bbeea534")).FirstOrDefault();
+                                        if (seats is not null && seats.Quantity > 0)
+                                        {
+                                            <input id="seats" type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@seats?.Quantity">
+                                        }
+                                        else
+                                        {
+                                            <input id="seats" type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                        }
+                                    }
+                                    <div class="input-group-append">
+                                        <button onclick="AddToCart('Service', '48eb4627-8692-4a3b-8be1-be64bbeea534', $('#seats').val(), this)" class="btn btn-outline-primary">Start talking today</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="card mb-4 shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">LTE Backup</h4>
-                    </div>
-                    <div class="card-body">
-                        <h1 class="card-title pricing-card-title">$30 <small class="text-muted">/ mo</small></h1>
-                        <ul class="list-unstyled mt-3 mb-4">
-                            <li>Always stay online!</li>
-                            <li>No Overages</li>
-                            <li>No Worries</li>
-                            <li>Unlimited Use (128Kbps or 512Kbps)</li>
-                        </ul>
-                        <button class="btn btn-lg btn-primary" onclick="AddToCart('Service', 'c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c', 1, this)">Protect your business</button>
+                <div class="row pb-5">
+                    <div class="input-group mx-auto input-group-lg">
+                        <div class="col">
+                            <a class="btn btn-success btn-block shadow-lg" href="/Search">Add a new Phone Number</a>
+                        </div>
+                        <div class="col">
+                            <a class="btn btn-info btn-block shadow-lg" href="/Search">Transfer an existing Phone Number</a>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="card-deck mb-3 text-center">
-                <div class="card mb-4 shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">Toll Free Number</h4>
+            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                <br />
+                <div class="card-deck mb-3 text-center">
+                    <div class="card mb-4 shadow rounded-3">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal">Web Texting</h4>
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title pricing-card-title">$10 <small class="text-muted">/ mo</small></h1>
+                            <ul class="list-unstyled mt-3 mb-4">
+                                <li>Text from any browser</li>
+                                <li>SMS and MMS Supported</li>
+                                <li>Never miss a customer</li>
+                                <li>Communicate seamlessly</li>
+                            </ul>
+                            <button class="btn btn-lg btn-primary" onclick="AddToCart('Service','86a8576f-15e4-4547-8705-7c98dbe5e58d', 1, this)">Start texting today</button>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h1 class="card-title pricing-card-title">$10 <small class="text-muted">/ mo</small></h1>
-                        <ul class="list-unstyled mt-3 mb-4">
-                            <li>SMS & MMS support</li>
-                            <li>Search Custom Numbers</li>
-                            <li>Not local or regional</li>
-                            <li>Free for clients to call</li>
-                        </ul>
-                        <button class="btn btn-lg btn-primary" onclick="AddToCart('Service', '07a7ef6b-eb30-4a81-bc86-be193ef03aa0', 1, this)">Impress your clients</button>
+                    <div class="card mb-4 shadow rounded-3">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal">LTE Backup</h4>
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title pricing-card-title">$30 <small class="text-muted">/ mo</small></h1>
+                            <ul class="list-unstyled mt-3 mb-4">
+                                <li>Always stay online!</li>
+                                <li>No Overages</li>
+                                <li>No Worries</li>
+                                <li>Unlimited Use (128Kbps or 512Kbps)</li>
+                            </ul>
+                            <button class="btn btn-lg btn-primary" onclick="AddToCart('Service', 'c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c', 1, this)">Protect your business</button>
+                        </div>
                     </div>
                 </div>
-                <div class="card mb-4 shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">Fax Server</h4>
+                <div class="card-deck mb-3 text-center">
+                    <div class="card mb-4 shadow rounded-3">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal">Toll Free Number</h4>
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title pricing-card-title">$10 <small class="text-muted">/ mo</small></h1>
+                            <ul class="list-unstyled mt-3 mb-4">
+                                <li>SMS & MMS support</li>
+                                <li>Search Custom Numbers</li>
+                                <li>Not local or regional</li>
+                                <li>Free for clients to call</li>
+                            </ul>
+                            <button class="btn btn-lg btn-primary" onclick="AddToCart('Service', '07a7ef6b-eb30-4a81-bc86-be193ef03aa0', 1, this)">Impress your clients</button>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h1 class="card-title pricing-card-title">$10 <small class="text-muted">/ mo</small></h1>
-                        <ul class="list-unstyled mt-3 mb-4">
-                            <li>Includes an Extra Phone Number</li>
-                            <li>Faxes forwarded to your email!</li>
-                            <li>Send faxes from the Web</li>
-                            <li>Caller ID on incoming Faxes</li>
-                        </ul>
-                        <button class="btn btn-lg btn-primary" onclick="AddToCart('Service', '1133e9ab-50f1-4eb6-a756-6b705dcbd6e5', 1, this)">Send a Fax</button>
+                    <div class="card mb-4 shadow rounded-3">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal">Fax Server</h4>
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title pricing-card-title">$10 <small class="text-muted">/ mo</small></h1>
+                            <ul class="list-unstyled mt-3 mb-4">
+                                <li>Includes an Extra Phone Number</li>
+                                <li>Faxes forwarded to your email!</li>
+                                <li>Send faxes from the Web</li>
+                                <li>Caller ID on incoming Faxes</li>
+                            </ul>
+                            <button class="btn btn-lg btn-primary" onclick="AddToCart('Service', '1133e9ab-50f1-4eb6-a756-6b705dcbd6e5', 1, this)">Send a Fax</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 <div class="mt-auto fixed-bottom bg-white p-3 shadow">
     <div class="container">
         <div class="row">
