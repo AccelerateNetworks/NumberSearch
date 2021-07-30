@@ -3,17 +3,15 @@
 @{
     if (Model?.Count is not null && Model?.Count > 0)
     {
-        <div class="col">
+        <div class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6 p-2">
             <a id="headerCart" class="btn btn-outline-success btn-lg" asp-controller="Cart" asp-action="Index">Cart&nbsp;<span id="cartCounter" class="badge badge-success badge-pill">@Model?.Count</span></a>
         </div>
     }
     else
     {
-        <div class="col">
-            <div class="col text-center">
-                <p class="m-0 small d-none d-xl-block">Talk to an expert at</p>
-                <a href="tel:12063333341" class="btn btn-sm btn-primary">(206) 333-3341</a>
-            </div>
+        <div class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6 text-center p-2">
+            <p class="m-0 small d-none d-xl-block">Talk to an expert at</p>
+            <a href="tel:12063333341" class="btn btn-sm btn-primary">(206) 333-3341</a>
         </div>
     }
 }

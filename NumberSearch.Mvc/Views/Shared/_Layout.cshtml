@@ -53,27 +53,27 @@
         </div>
         <div class="bg-white pb-3 pt-3 shadow-sm">
             <div class="container">
-                <div class="row d-flex justify-content-between text-center align-items-center">
-                    <div class="col-xl-3 col-lg-3 col-md-4 col-sm-4 col-4">
+                <div class="row d-flex justify-content-around text-center align-items-center">
+                    <div class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6">
                         @*Desktop*@
                         <a href="/" class="navbar-brand mx-auto font-weight-normal d-none d-sm-block">
                             <img src="~/images/scaled/accelerate.png" alt="Accelerate Networks" class="img-fluid" style="width: 10rem;">
                         </a>
                         @*Mobile*@
-                        <a href="/" class="navbar-brand d-sm-none w-100 mx-auto d-block pl-1">
-                            <img src="~/images/scaled/accelerate.png" alt="Accelerate Networks" class="img-fluid">
+                        <a href="/" class="navbar-brand d-sm-none w-100 mx-auto d-block">
+                            <img src="~/images/scaled/accelerate.png" alt="Accelerate Networks" class="img-fluid ml-3">
                         </a>
                     </div>
-                    <div class="col">
+                    <div class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6">
                         <a class="text-dark btn-lg" href="/Services">Services</a>
                     </div>
-                    <div class="col">
+                    <div class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6 p-2">
                         <a class="text-dark btn-lg" href="/Hardware">Hardware</a>
                     </div>
-                    <div class="col">
+                    <div class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6 p-2">
                         <a class="text-dark btn-lg" href="/Search">Numbers</a>
                     </div>
-                    <div class="col">
+                    <div class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6 p-2">
                         <div class="dropdown">
                             <a class="text-dark dropdown-toggle btn-lg" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 Resources
@@ -92,7 +92,6 @@
                 </div>
             </div>
         </div>
-    </div>
     </div>
     <main role="main">
         @RenderBody()
