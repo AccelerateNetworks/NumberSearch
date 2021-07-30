@@ -41,8 +41,12 @@ body {
     border-bottom: .05rem solid #e5e5e5;
 }
 
+.rounded-3 {
+    border-radius: 1rem;
+}
+
 /* Custom list element icon */
-#checkmark-list > ul {
+/*#checkmark-list > ul {
     list-style: none;
     padding: 0px;
 }
@@ -52,7 +56,7 @@ body {
         content: '️✔️';
         margin-left: -20px;
         margin-right: 10px;
-    }
+    }*/
 
 
 /* Responsive: Portrait tablets and up */
