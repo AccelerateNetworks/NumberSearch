@@ -933,7 +933,7 @@ namespace NumberSearch.Tests
             // Act
             var cred = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
 
-            var results = await Search.GetAsync("WA", 206, cred.data.token).ConfigureAwait(false);
+            var results = await Search.GetAsync("WA", 425, cred.data.token).ConfigureAwait(false);
 
             Assert.NotEmpty(results);
             output.WriteLine(results.Count().ToString());
