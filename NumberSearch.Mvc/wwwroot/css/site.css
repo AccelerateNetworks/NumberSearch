@@ -41,6 +41,19 @@ body {
     border-bottom: .05rem solid #e5e5e5;
 }
 
+/* Custom list element icon */
+#checkmark-list > ul {
+    list-style: none;
+    padding: 0px;
+}
+
+    #checkmark-list > ul li:before {
+        list-style-type: none;
+        content: '️✔️';
+        margin-left: -20px;
+        margin-right: 10px;
+    }
+
 
 /* Responsive: Portrait tablets and up */
 @media screen and (min-width: 48em) {
