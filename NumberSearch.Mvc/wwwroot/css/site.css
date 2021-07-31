@@ -51,19 +51,9 @@ body {
     padding: 0px;
 }
 
-.checkmark-list > ul > li > a {
-    color: white;
-}
-
-    /*#checkmark-list > ul li:before {
-        list-style-type: none;
-        content: '️✔️';
-        margin-left: -20px;
-        margin-right: 10px;
-    }*/
-
-
-
+    .checkmark-list > ul > li > a {
+        color: white;
+    }
 
 /* Responsive: Portrait tablets and up */
 @media screen and (min-width: 48em) {
