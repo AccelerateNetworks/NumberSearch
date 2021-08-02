@@ -198,6 +198,9 @@
     <Content Update="wwwroot\images\scaled\DSC08288-2.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Update="wwwroot\images\scaled\DSC08518-2.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="wwwroot\images\scaled\edmondscoc.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
