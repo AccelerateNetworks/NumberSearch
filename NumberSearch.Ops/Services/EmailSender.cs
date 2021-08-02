@@ -27,16 +27,20 @@ namespace NumberSearch.Ops.Services
                 Subject = subject
             };
 
-            outboundMessage.Body = new TextPart(TextFormat.Plain)
+            var builder = new BodyBuilder
             {
-                Text = htmlMessage
+                HtmlBody = @$"<!DOCTYPE html><html><head><title></title></head><body><p>{htmlMessage}<p></body></html>"
             };
 
             var ordersInbox = MailboxAddress.Parse(_configuration.GetConnectionString("SmtpUsername"));
             var recipient = MailboxAddress.Parse(email);
 
+
+            outboundMessage.From.Add(ordersInbox);
             outboundMessage.Cc.Add(ordersInbox);
             outboundMessage.To.Add(recipient);
+
+            outboundMessage.Body = builder.ToMessageBody();
 
             using var smtp = new MailKit.Net.Smtp.SmtpClient();
             smtp.MessageSent += (sender, args) => { };

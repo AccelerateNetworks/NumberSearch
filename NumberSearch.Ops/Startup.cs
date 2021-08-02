@@ -43,6 +43,7 @@ namespace NumberSearch.Ops
                 options.UseNpgsql(
                     Configuration.GetConnectionString("PostgresqlProd")));
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddDbContext<NumberSearch.Ops.EFModels.numberSearchContext>(options =>
     options.UseNpgsql(
