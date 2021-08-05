@@ -14,6 +14,7 @@ using NumberSearch.DataAccess.TeleMesssage;
 using ServiceReference;
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -1918,6 +1919,18 @@ namespace NumberSearch.Tests
         //            Name = "Concurrent Seats",
         //            Description = "Supports 1 concurrent call per Seat",
         //            Price = 20
+        //        },
+        //        new Service
+        //        {
+        //            Name = "LTE Internet",
+        //            Description = "Cellular internet",
+        //            Price = 70
+        //        },
+        //        new Service
+        //        {
+        //            Name = "5G Internet",
+        //            Description = "The latest in cellular internet",
+        //            Price = 80
         //        }
         //    };
 
