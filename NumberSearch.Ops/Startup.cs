@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using NumberSearch.Ops.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace NumberSearch.Ops
 {
@@ -42,15 +43,10 @@ namespace NumberSearch.Ops
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(
                     Configuration.GetConnectionString("PostgresqlProd")));
+
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
-            services.AddDbContext<NumberSearch.Ops.EFModels.numberSearchContext>(options =>
-    options.UseNpgsql(
-        Configuration.GetConnectionString("PostgresqlProd")));
-            services.AddTransient<IEmailSender, EmailSender>();
-            services.AddControllersWithViews();
-            services.AddRazorPages().AddRazorRuntimeCompilation();
 
             services.Configure<IdentityOptions>(options =>
             {
@@ -84,10 +80,22 @@ namespace NumberSearch.Ops
                 options.SlidingExpiration = true;
             });
 
-            services.AddAuthentication().AddMicrosoftAccount(microsoftOptions =>
+            services.AddDbContext<NumberSearch.Ops.EFModels.numberSearchContext>(options =>
+options.UseNpgsql(
+Configuration.GetConnectionString("PostgresqlProd")));
+
+            services.AddTransient<IEmailSender, EmailSender>();
+
+            services.AddControllersWithViews();
+
+            services.AddRazorPages()
+                .AddRazorRuntimeCompilation();
+
+            services.AddAuthorization(options =>
             {
-                microsoftOptions.ClientId = Configuration.GetConnectionString("MicrosoftClientId");
-                microsoftOptions.ClientSecret = Configuration.GetConnectionString("MicrosoftClientSecret");
+                options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
             });
         }
 

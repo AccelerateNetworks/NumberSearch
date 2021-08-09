@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -15,10 +16,13 @@ namespace NumberSearch.Ops.Controllers
     public class OrdersController : Controller
     {
         private readonly numberSearchContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public OrdersController(numberSearchContext context)
+        public OrdersController(numberSearchContext context,
+            UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Orders
@@ -26,7 +30,26 @@ namespace NumberSearch.Ops.Controllers
         [HttpGet("Orders")]
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Orders.Where(x => x.Quote != true).ToListAsync());
+            // Show only the relevant Orders to a Sales rep.
+            if (User.IsInRole("Sales"))
+            {
+                var user = await _userManager.FindByNameAsync(User.Identity.Name);
+
+                if (user is not null)
+                {
+                    return View(
+                        await _context.Orders
+                        .Where(x => (x.Quote != true)
+                        && (x.SalesEmail == user.Email)
+                    ).ToListAsync());
+                }
+
+                return View(await _context.Orders.Where(x => x.Quote != true).ToListAsync());
+            }
+            else
+            {
+                return View(await _context.Orders.Where(x => x.Quote != true).ToListAsync());
+            }
         }
 
         [Authorize]

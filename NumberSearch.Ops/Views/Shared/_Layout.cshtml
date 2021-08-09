@@ -23,90 +23,102 @@
             <nav class="col-md-3 col-lg-2 d-none d-md-block bg-white sidebar">
                 <div class="sidebar-sticky">
                     <ul class="nav flex-column">
-                        <h4 class="sidebar-heading d-flex justify-content-between align-items-center pt-3 mb-1 text-muted">
-                            <span>Orders</span>
-                        </h4>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" href="/Home/Order">
-                                🛒   Orders
+                            <a class="nav-link text-dark" href="/Identity/Account/Login">
+                                🗺️   Apps
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="/Home/Quotes">
-                                ✨   Quotes
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="/Home/TaxRates">
-                                ⚖️   Tax Rates
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="/Home/Emails/">
-                                📧    Sent Emails
-                            </a>
-                        </li>
-                        <h4 class="sidebar-heading d-flex justify-content-between align-items-center mt-1 mb-1 text-muted">
-                            <span>Phone Numbers</span>
-                        </h4>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="/Numbers/">
-                                ☎️   Available Numbers
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="/Home/NumberOrders/">
-                                🧾   Purchased Numbers
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="/Home/NumbersToVerify/">
-                                🛎️   Numbers To Verify
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="/Home/PortRequests/">
-                                🚢   Port Requests
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="/Home/OwnedNumbers/">
-                                🏢   Owned Numbers
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="/Home/EmergencyInformation">
-                                🚨   Emergency Information
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="/Products">
-                                🎁 Hardware
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="/ProductShipments">
-                                📦 Shipments
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="/Home/Coupons">
-                                ✨ Coupons
-                            </a>
-                        </li>
-                        <h4 class="sidebar-heading d-flex justify-content-between align-items-center mt-1 mb-1 text-muted">
-                            <span>Tools</span>
-                        </h4>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="/Home/Ingests/">
-                                💨   Ingest Configuration
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="/Home/Tests/">
-                                🤔   Tests
-                            </a>
-                        </li>
+                        @if (User.IsInRole("Support") || User.IsInRole("Sales"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" " href="/Home/Order">
+                                    🛒   Orders
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Home/Quotes">
+                                    ✨   Quotes
+                                </a>
+                            </li>
+                        }
+                        @if (User.IsInRole("Support"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Home/TaxRates">
+                                    ⚖️   Tax Rates
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Home/Emails/">
+                                    📧    Sent Emails
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Numbers/">
+                                    ☎️   Available Numbers
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Home/NumberOrders/">
+                                    🧾   Purchased Numbers
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Home/NumbersToVerify/">
+                                    🛎️   Numbers To Verify
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Home/PortRequests/">
+                                    🚢   Port Requests
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Home/OwnedNumbers/">
+                                    🏢   Owned Numbers
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Home/EmergencyInformation">
+                                    🚨   Emergency Information
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Products">
+                                    🎁 Hardware
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/ProductShipments">
+                                    📦 Shipments
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Home/Coupons">
+                                    ✨ Coupons
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Home/Ingests/">
+                                    💨   Ingest Configuration
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Home/Tests/">
+                                    🤔   Tests
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Users">
+                                    🧑‍🤝‍🧑   Users
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Roles">
+                                    👔   Roles
+                                </a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </nav>

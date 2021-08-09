@@ -6,6 +6,7 @@ using CsvHelper;
 using FirstCom;
 
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -49,8 +50,11 @@ namespace NumberSearch.Ops.Controllers
         private readonly string _bulkVSpassword;
         private readonly string _emailOrders;
         private readonly string _azureStorage;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public HomeController(ILogger<HomeController> logger, IConfiguration config)
+        public HomeController(ILogger<HomeController> logger,
+            IConfiguration config,
+            UserManager<IdentityUser> userManager)
         {
             _logger = logger;
             _configuration = config;
@@ -67,6 +71,7 @@ namespace NumberSearch.Ops.Controllers
             _data247password = config.GetConnectionString("Data247Password");
             _emailOrders = config.GetConnectionString("EmailOrders");
             _azureStorage = config.GetConnectionString("AzureStorageAccount");
+            _userManager = userManager;
         }
 
         [Authorize]
@@ -100,7 +105,26 @@ namespace NumberSearch.Ops.Controllers
                 var services = await Service.GetAllAsync(_postgresql).ConfigureAwait(false);
                 var pairs = new List<OrderProducts>();
 
-                foreach (var order in orders.Where(x => x.Quote is not true))
+                // Show only the relevant Orders to a Sales rep.
+                if (User.IsInRole("Sales"))
+                {
+                    var user = await _userManager.FindByNameAsync(User.Identity.Name);
+
+                    if (user is not null)
+                    {
+                        orders = orders.Where(x => (x.Quote is not true) && (x.SalesEmail == user.Email));
+                    }
+                    else
+                    {
+                        orders = orders.Where(x => x.Quote is not true);
+                    }
+                }
+                else
+                {
+                    orders = orders.Where(x => x.Quote is not true);
+                }
+
+                foreach (var order in orders)
                 {
                     var orderProductOrders = productOrders.Where(x => x.OrderId == order.OrderId).ToArray();
                     var portRequest = portRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefault();
@@ -146,7 +170,26 @@ namespace NumberSearch.Ops.Controllers
             var services = await Service.GetAllAsync(_postgresql).ConfigureAwait(false);
             var pairs = new List<OrderProducts>();
 
-            foreach (var order in orders.Where(x => x.Quote))
+            // Show only the relevant Orders to a Sales rep.
+            if (User.IsInRole("Sales"))
+            {
+                var user = await _userManager.FindByNameAsync(User.Identity.Name);
+
+                if (user is not null)
+                {
+                    orders = orders.Where(x => (x.Quote) && (x.SalesEmail == user.Email));
+                }
+                else
+                {
+                    orders = orders.Where(x => x.Quote);
+                }
+            }
+            else
+            {
+                orders = orders.Where(x => x.Quote);
+            }
+
+            foreach (var order in orders)
             {
                 var orderProductOrders = productOrders.Where(x => x.OrderId == order.OrderId).ToArray();
                 var portRequest = portRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefault();

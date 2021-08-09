@@ -1,0 +1,55 @@
+﻿@model IEnumerable<NumberSearch.Ops.Controllers.UsersController.UserRolesViewModel>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1 class="display-4 p-3">🧑‍🤝‍🧑   Users</h1>
+<div class="table-responsive">
+    <table class="table table-striped table-borderless table-hover">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.User.UserName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.User.Email)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.User.EmailConfirmed)
+                </th>
+                <th>Roles</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.OrderBy(x => x.User.Email))
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.User.UserName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.User.Email)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.User.EmailConfirmed)
+                    </td>
+                    <td>
+                        @{
+                            string joined = string.Join(", ", item.Roles);
+                        }
+                        @joined
+                    </td>
+                    <td>
+                        <div class="btn-group">
+                            <a class="btn btn-danger" asp-controller="Users" asp-action="Delete" asp-route-id="@item.User.Id">Delete</a>
+                            <a class="btn btn-primary" asp-controller="Users" asp-action="Manage" asp-route-userId="@item.User.Id">Manage Roles</a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

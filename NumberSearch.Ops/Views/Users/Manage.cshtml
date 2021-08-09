@@ -1,0 +1,29 @@
+﻿@model List<NumberSearch.Ops.Controllers.UsersController.ManageUserRolesViewModel>
+@{
+    ViewData["Title"] = "Manage";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<h1 class="display-4 p-3">🧑‍🤝‍🧑   Manage Roles</h1>
+<div class="alert alert-danger" role="alert">
+    Add/Remove Roles for User / @ViewBag.UserName
+</div>
+<div class="col">
+    <div class="row">
+        <form method="post">
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <div class="form-check m-1">
+                    <input type="hidden" asp-for="@Model[i].RoleId" />
+                    <input type="hidden" asp-for="@Model[i].RoleName" />
+                    <input asp-for="@Model[i].Selected" class="form-check-input" />
+                    <label class="form-check-label" asp-for="@Model[i].Selected">
+                        @Model[i].RoleName
+                    </label>
+                </div>
+            }
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <input type="submit" value="Update" class="btn btn-danger"
+                   style="width:auto" />
+        </form>
+    </div>
+</div>

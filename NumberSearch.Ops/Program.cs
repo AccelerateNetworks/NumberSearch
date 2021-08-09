@@ -15,19 +15,19 @@ namespace NumberSearch.Ops
 {
     public class Program
     {
-        public static int Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
             Log.Logger = new LoggerConfiguration()
                             .MinimumLevel.Debug()
                             .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                             .Enrich.FromLogContext()
-                            .WriteTo.Async(a => a.Console())
+                            .WriteTo.Console()
                             .CreateLogger();
 
             try
             {
                 Log.Information("Starting web host");
-                CreateHostBuilder(args).Build().Run();
+                await CreateHostBuilder(args).Build().RunAsync();
                 return 0;
             }
             catch (Exception ex)
