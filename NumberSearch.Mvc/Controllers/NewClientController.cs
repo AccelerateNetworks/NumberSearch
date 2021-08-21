@@ -41,7 +41,7 @@ namespace NumberSearch.Mvc.Controllers
         [HttpPost("Cart/Order/{orderId}/NewClient")]
         [ValidateAntiForgeryToken]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult SubmitNewClientAsync(Guid orderId, NewClient newClient)
+        public IActionResult SubmitNewClient(Guid orderId, NewClient newClient)
         {
             return View();
         }

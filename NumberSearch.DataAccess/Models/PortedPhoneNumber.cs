@@ -31,6 +31,7 @@ namespace NumberSearch.DataAccess
         public string RawResponse { get; set; }
         // Only used by the porting process to get helpful information on the ported phone number.
         public LrnBulkCnam LrnLookup { get; set; }
+        public bool Portable { get; set; }
 
         /// <summary>
         /// Get a list of all phone numbers in the database.

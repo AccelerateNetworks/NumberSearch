@@ -36,7 +36,6 @@ namespace NumberSearch.Mvc.Controllers
             _data247password = config.GetConnectionString("Data247Password");
         }
 
-
         [HttpGet]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> IndexAsync(string dialedNumber)
@@ -153,108 +152,13 @@ namespace NumberSearch.Mvc.Controllers
 
                 var cart = Cart.GetFromSession(HttpContext.Session);
 
-                var portableNumbers = new List<PortedPhoneNumber>();
-                var notPortable = new List<string>();
-                var wirelessPortable = new List<PortedPhoneNumber>();
+                var results = await Task.WhenAll(parsedNumbers.Select(x => VerifyPortablityAsync(x)));
 
-                foreach (var number in parsedNumbers)
-                {
-                    bool checkNpa = int.TryParse(number.Substring(0, 3), out int npa);
-                    bool checkNxx = int.TryParse(number.Substring(3, 3), out int nxx);
-                    bool checkXxxx = int.TryParse(number.Substring(6, 4), out int xxxx);
+                var portableNumbers = results.Where(x => x.Portable).ToArray();
+                var notPortable = results.Where(x => x.Portable is false).Select(x => x.PortedDialedNumber).ToArray();
 
-                    if (checkNpa && checkNxx && checkXxxx)
-                    {
-                        try
-                        {
-                            var portable = await LnpCheck.IsPortable(number, _teleToken).ConfigureAwait(false);
-
-                            // Lookup the number.
-                            var checkNumber = await LrnBulkCnam.GetAsync(number, _bulkVSKey).ConfigureAwait(false);
-
-                            // Determine if the number is a wireless number.
-                            bool wireless = false;
-
-                            switch (checkNumber.lectype)
-                            {
-                                case "WIRELESS":
-                                    wireless = true;
-                                    break;
-                                case "PCS":
-                                    wireless = true;
-                                    break;
-                                case "P RESELLER":
-                                    wireless = true;
-                                    break;
-                                case "Wireless":
-                                    wireless = true;
-                                    break;
-                                case "W RESELLER":
-                                    wireless = true;
-                                    break;
-                                default:
-                                    break;
-                            }
-
-                            var numberName = new LIDBLookup();
-                            try
-                            {
-                                numberName = await LIDBLookup.GetAsync(number, _data247username, _data247password).ConfigureAwait(false);
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.Error($"[Lookups] Failed to get LIBDName from Data 24/7 for number {number}.");
-                                Log.Error(ex.Message);
-                                Log.Error(ex.InnerException.ToString());
-                            }
-
-                            checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.response?.results?.FirstOrDefault()?.name) ? string.Empty : numberName?.response?.results?.FirstOrDefault()?.name;
-
-                            if (portable)
-                            {
-                                Log.Information($"[Portability] {number} is Portable.");
-
-                                var portableNumber = new PortedPhoneNumber
-                                {
-                                    PortedDialedNumber = number,
-                                    NPA = npa,
-                                    NXX = nxx,
-                                    XXXX = xxxx,
-                                    City = "Unknown City",
-                                    State = "Unknown State",
-                                    DateIngested = DateTime.Now,
-                                    IngestedFrom = "UserInput",
-                                    Wireless = wireless,
-                                    LrnLookup = checkNumber
-                                };
-
-                                // Separate wireless numbers out from the rest.
-                                if (portableNumber.Wireless)
-                                {
-                                    wirelessPortable.Add(portableNumber);
-                                }
-                                else
-                                {
-                                    portableNumbers.Add(portableNumber);
-                                }
-                            }
-                            else
-                            {
-                                Log.Information($"[Portability] {number} is not Portable.");
-
-                                notPortable.Add(number);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Information($"[Portability] {number} is not Portable.");
-                            Log.Fatal($"[Portability] {ex.Message}");
-                            Log.Fatal($"[Portability] {ex.InnerException}");
-
-                            notPortable.Add(number);
-                        }
-                    }
-                }
+                // Separate wireless numbers out from the rest.
+                var wirelessPortable = results.Where(x => x.Wireless && x.Portable).ToArray();
 
                 // Only non-wireless numbers.
                 if (!wirelessPortable.Any() && portableNumbers.Any())
@@ -293,6 +197,117 @@ namespace NumberSearch.Mvc.Controllers
             else
             {
                 return View("Index");
+            }
+        }
+
+        public async Task<PortedPhoneNumber> VerifyPortablityAsync(string number)
+        {
+            bool checkNpa = int.TryParse(number.Substring(0, 3), out int npa);
+            bool checkNxx = int.TryParse(number.Substring(3, 3), out int nxx);
+            bool checkXxxx = int.TryParse(number.Substring(6, 4), out int xxxx);
+
+            if (checkNpa && checkNxx && checkXxxx)
+            {
+                try
+                {
+                    // Start this task but not awaiting it, because we don't need it's value until later.
+                    var portable = LnpCheck.IsPortable(number, _teleToken).ConfigureAwait(false);
+
+                    // Lookup the number.
+                    var checkNumber = await LrnBulkCnam.GetAsync(number, _bulkVSKey).ConfigureAwait(false);
+
+                    // Determine if the number is a wireless number.
+                    bool wireless = false;
+
+                    switch (checkNumber.lectype)
+                    {
+                        case "WIRELESS":
+                            wireless = true;
+                            break;
+                        case "PCS":
+                            wireless = true;
+                            break;
+                        case "P RESELLER":
+                            wireless = true;
+                            break;
+                        case "Wireless":
+                            wireless = true;
+                            break;
+                        case "W RESELLER":
+                            wireless = true;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    var numberName = new LIDBLookup();
+                    try
+                    {
+                        numberName = await LIDBLookup.GetAsync(number, _data247username, _data247password).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"[Lookups] Failed to get LIBDName from Data 24/7 for number {number}.");
+                        Log.Error(ex.Message);
+                        Log.Error(ex.InnerException.ToString());
+                    }
+
+                    checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.response?.results?.FirstOrDefault()?.name) ? string.Empty : numberName?.response?.results?.FirstOrDefault()?.name;
+
+                    if (await portable)
+                    {
+                        Log.Information($"[Portability] {number} is Portable.");
+
+                        var portableNumber = new PortedPhoneNumber
+                        {
+                            PortedDialedNumber = number,
+                            NPA = npa,
+                            NXX = nxx,
+                            XXXX = xxxx,
+                            City = "Unknown City",
+                            State = "Unknown State",
+                            DateIngested = DateTime.Now,
+                            IngestedFrom = "UserInput",
+                            Wireless = wireless,
+                            LrnLookup = checkNumber,
+                            Portable = true
+                        };
+
+                        return portableNumber;
+                    }
+                    else
+                    {
+                        Log.Information($"[Portability] {number} is not Portable.");
+
+                        return new PortedPhoneNumber
+                        {
+                            PortedDialedNumber = number,
+                            Portable = false
+                        };
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Information($"[Portability] {number} is not Portable.");
+                    Log.Fatal($"[Portability] {ex.Message}");
+                    Log.Fatal($"[Portability] {ex.InnerException}");
+
+                    return new PortedPhoneNumber
+                    {
+                        PortedDialedNumber = number,
+                        Portable = false
+                    };
+                }
+            }
+            else
+            {
+                Log.Information($"[Portability] {number} is not Portable. Failed NPA, NXX, XXXX parsing.");
+
+                return new PortedPhoneNumber
+                {
+                    PortedDialedNumber = number,
+                    Portable = false
+                };
             }
         }
     }
