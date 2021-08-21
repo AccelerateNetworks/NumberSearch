@@ -74,31 +74,7 @@ namespace NumberSearch.Mvc.Controllers
                     }
                 }
 
-                var results = new List<LrnBulkCnam>();
-
-                foreach (var number in parsedNumbers)
-                {
-                    var checkNumber = await LrnBulkCnam.GetAsync(number, _bulkVSKey).ConfigureAwait(false);
-
-                    //checkNumber.data.spid = bulkResult.spid;
-                    //checkNumber.data.spid_name = bulkResult.lec;
-                    //checkNumber.data.port_date = bulkResult.activation;
-
-                    var numberName = new LIDBLookup();
-                    try
-                    {
-                        numberName = await LIDBLookup.GetAsync(number, _data247username, _data247password).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error($"[Lookups] Failed to get LIBDName from Data 24/7 for number {number}.");
-                        Log.Error(ex.Message);
-                        Log.Error(ex.InnerException.ToString());
-                    }
-
-                    checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.response?.results?.FirstOrDefault()?.name) ? string.Empty : numberName?.response?.results?.FirstOrDefault()?.name;
-                    results.Add(checkNumber);
-                }
+                var results = await Task.WhenAll(parsedNumbers.Select(x => InvestigateAsync(x)));
 
                 return View("Index", new LookupResults
                 {
@@ -309,6 +285,30 @@ namespace NumberSearch.Mvc.Controllers
                     Portable = false
                 };
             }
+        }
+
+        public async Task<LrnBulkCnam> InvestigateAsync(string number)
+        {
+            var checkNumber = await LrnBulkCnam.GetAsync(number, _bulkVSKey).ConfigureAwait(false);
+
+            //checkNumber.data.spid = bulkResult.spid;
+            //checkNumber.data.spid_name = bulkResult.lec;
+            //checkNumber.data.port_date = bulkResult.activation;
+
+            var numberName = new LIDBLookup();
+            try
+            {
+                numberName = await LIDBLookup.GetAsync(number, _data247username, _data247password).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"[Lookups] Failed to get LIBDName from Data 24/7 for number {number}.");
+                Log.Error(ex.Message);
+                Log.Error(ex.InnerException.ToString());
+            }
+
+            checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.response?.results?.FirstOrDefault()?.name) ? string.Empty : numberName?.response?.results?.FirstOrDefault()?.name;
+            return checkNumber;
         }
     }
 }
