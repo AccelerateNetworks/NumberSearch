@@ -31,8 +31,8 @@
                             <textarea class="form-control" aria-label="With textarea" type="text" name="dialedNumber" placeholder="Enter Phone Numbers">@Model?.DialedNumber</textarea>
                         </div>
                         <div class="input-group mx-auto input-group-lg pt-2">
-                            <button type="submit" class="btn btn-lg btn-success btn-block" onclick="displayBusyIndicator()" asp-controller="Lookup" asp-action="Index">Investigate</button>
-                            <button type="submit" class="btn btn-lg btn-info btn-block" onclick="displayBusyIndicator()" asp-controller="Lookup" asp-action="BulkPort">Transfer</button>
+                            @*<button type="submit" class="btn btn-lg btn-success btn-block" onclick="displayBusyIndicator()" asp-controller="Lookup" asp-action="Index">Investigate</button>*@
+                            <button type="submit" class="btn btn-lg btn-success btn-block" onclick="displayBusyIndicator()" asp-controller="Lookup" asp-action="BulkPort">Search</button>
                         </div>
                     </div>
                 </form>
