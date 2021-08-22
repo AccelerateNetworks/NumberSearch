@@ -216,19 +216,8 @@ namespace NumberSearch.Mvc.Controllers
                             break;
                     }
 
-                    var numberName = new LIDBLookup();
-                    try
-                    {
-                        numberName = await LIDBLookup.GetAsync(number, _data247username, _data247password).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error($"[Lookups] Failed to get LIBDName from Data 24/7 for number {number}.");
-                        Log.Error(ex.Message);
-                        Log.Error(ex.InnerException.ToString());
-                    }
-
-                    checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.response?.results?.FirstOrDefault()?.name) ? string.Empty : numberName?.response?.results?.FirstOrDefault()?.name;
+                    var numberName = await CnamBulkVs.GetAsync(number, _bulkVSKey);
+                    checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName?.name;
 
                     if (await portable)
                     {
@@ -291,23 +280,9 @@ namespace NumberSearch.Mvc.Controllers
         {
             var checkNumber = await LrnBulkCnam.GetAsync(number, _bulkVSKey).ConfigureAwait(false);
 
-            //checkNumber.data.spid = bulkResult.spid;
-            //checkNumber.data.spid_name = bulkResult.lec;
-            //checkNumber.data.port_date = bulkResult.activation;
+            var numberName = await CnamBulkVs.GetAsync(number, _bulkVSKey);
+            checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName?.name;
 
-            var numberName = new LIDBLookup();
-            try
-            {
-                numberName = await LIDBLookup.GetAsync(number, _data247username, _data247password).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"[Lookups] Failed to get LIBDName from Data 24/7 for number {number}.");
-                Log.Error(ex.Message);
-                Log.Error(ex.InnerException.ToString());
-            }
-
-            checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.response?.results?.FirstOrDefault()?.name) ? string.Empty : numberName?.response?.results?.FirstOrDefault()?.name;
             return checkNumber;
         }
     }

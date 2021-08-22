@@ -137,17 +137,8 @@ namespace NumberSearch.Mvc.Controllers
                                 break;
                         }
 
-                        try
-                        {
-                            var numberName = await LIDBLookup.GetAsync(dialedPhoneNumber, _data247username, _data247password).ConfigureAwait(false);
-                            checkNumber.LIDBName = numberName?.response?.results?.FirstOrDefault()?.name;
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Error($"[Lookups] Failed to get LIBDName from Data 24/7 for number {dialedPhoneNumber}.");
-                            Log.Error(ex.Message);
-                            Log.Error(ex.InnerException.ToString());
-                        }
+                        var numberName = await CnamBulkVs.GetAsync(dialedPhoneNumber, _bulkVSAPIKey);
+                        checkNumber.LIDBName = numberName?.name;
 
                         if (portable)
                         {
