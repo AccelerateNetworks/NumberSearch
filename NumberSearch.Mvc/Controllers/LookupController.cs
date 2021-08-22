@@ -130,7 +130,7 @@ namespace NumberSearch.Mvc.Controllers
 
                 var results = await Task.WhenAll(parsedNumbers.Select(x => VerifyPortablityAsync(x)));
 
-                var portableNumbers = results.Where(x => x.Portable).ToArray();
+                var portableNumbers = results.Where(x => x.Portable && x.Wireless is false).ToArray();
                 var notPortable = results.Where(x => x.Portable is false).Select(x => x.PortedDialedNumber).ToArray();
 
                 // Separate wireless numbers out from the rest.
