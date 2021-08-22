@@ -384,19 +384,20 @@ namespace NumberSearch.Tests
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
-        [Fact]
-        public async Task LIDBLookupAsync()
-        {
-            // Arrange
-            string phoneNumber = "14257808879";
+        // We are no longer using data 24/7 for cnam lookups.
+        //[Fact]
+        //public async Task LIDBLookupAsync()
+        //{
+        //    // Arrange
+        //    string phoneNumber = "14257808879";
 
-            // Act
-            var result = await LIDBLookup.GetAsync(phoneNumber, _data247username, _data247password).ConfigureAwait(false);
+        //    // Act
+        //    var result = await LIDBLookup.GetAsync(phoneNumber, _data247username, _data247password).ConfigureAwait(false);
 
-            // Assert        
-            Assert.NotNull(result);
-            output.WriteLine(JsonSerializer.Serialize(result));
-        }
+        //    // Assert        
+        //    Assert.NotNull(result);
+        //    output.WriteLine(JsonSerializer.Serialize(result));
+        //}
 
         [Fact]
         public async Task RateCenterLookupAsync()
@@ -777,6 +778,21 @@ namespace NumberSearch.Tests
             output.WriteLine(JsonSerializer.Serialize(results));
         }
 
+
+        [Fact]
+        public async Task BulkVSCnameLookupAsync()
+        {
+            // Arrange
+            var number = "2064083008";
+
+            // Act
+            var result = await CnamBulkVs.GetAsync(number, bulkVSKey).ConfigureAwait(false);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(!string.IsNullOrWhiteSpace(result.name));
+            output.WriteLine(JsonSerializer.Serialize(result));
+        }
 
         [Fact]
         public async Task BulkVSLrnLookupAsync()
