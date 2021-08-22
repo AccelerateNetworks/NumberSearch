@@ -44,6 +44,23 @@
     <partial name="_LoadingPartial" />
     <div class="pt-5 pb-5">
         @{
+            var count = 0;
+            count += Model?.NotPortable is not null ? Model.NotPortable.Count() : 0;
+            count += Model?.Portable is not null ? Model.Portable.Count() : 0;
+            count += Model?.Wireless is not null ? Model.Wireless.Count() : 0;
+            count += Model?.Lookups is not null ? Model.Lookups.Count() : 0;
+            if (Model is not null && count > 0)
+            {
+                <div class="row">
+                    <div class="col-12">
+                        <div class="alert alert-info" role="alert">
+                            Processed @count Phone Numbers.
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        @{
             if (Model != null && Model?.Lookups != null && Model.Lookups.Any())
             {
                 <div class="table-responsive shadow-sm mb-4">
