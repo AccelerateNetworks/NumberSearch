@@ -42,6 +42,7 @@ namespace NumberSearch.Tests
         private readonly string _teleDynamicsPassword;
         private readonly string _call48Username;
         private readonly string _call48Password;
+        private readonly IConfiguration configuration;
 
         public Integration(ITestOutputHelper output)
         {
@@ -51,6 +52,8 @@ namespace NumberSearch.Tests
                 .AddJsonFile("appsettings.json")
                 .AddUserSecrets("328593cf-cbb9-48e9-8938-e38a44c8291d")
                 .Build();
+
+            configuration = config;
 
             pComNetCredentials = new Credentials
             {
@@ -381,6 +384,38 @@ namespace NumberSearch.Tests
             Assert.False(string.IsNullOrWhiteSpace(result.status));
             Assert.True(result.code == 200);
             Assert.False(string.IsNullOrWhiteSpace(result.data.lrn));
+            output.WriteLine(JsonSerializer.Serialize(result));
+        }
+
+        [Fact]
+        public async Task LookupPageWithBadNumbersAsync()
+        {
+            // Arrange
+            string phoneNumber1 = "2065552121";
+            string phoneNumber2 = "5253747761";
+            string phoneNumber3 = "8886409088";
+
+            // Act
+            var lookup = new NumberSearch.Mvc.Controllers.LookupController(configuration);
+            var result = await lookup.VerifyPortablityAsync(phoneNumber1);
+
+            // Assert        
+            Assert.NotNull(result);
+            Assert.False(result.Portable);
+            output.WriteLine(JsonSerializer.Serialize(result));
+
+            result = await lookup.VerifyPortablityAsync(phoneNumber2);
+
+            // Assert        
+            Assert.NotNull(result);
+            Assert.False(result.Portable);
+            output.WriteLine(JsonSerializer.Serialize(result));
+
+            result = await lookup.VerifyPortablityAsync(phoneNumber3);
+
+            // Assert        
+            Assert.NotNull(result);
+            Assert.False(result.Portable);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 

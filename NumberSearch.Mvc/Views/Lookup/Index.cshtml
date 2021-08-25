@@ -5,13 +5,16 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container">
-    <br />
-    <div class="pricing-header mx-auto p-2 text-center">
-        <h1 class="display-4">Bulk Phone Numbers</h1>
+<section class="text-light p-5" style="background-color: #3279B2">
+    <div class="container py-5 py-md-6 py-lg-7 mb-7 text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-md-11">
+                <h1 class="display-3 text-light">Keep your Numbers</h1>
+                <p class="lead text-white">Phone numbers are part of your brand. Bring your current numbers with you.</p>
+            </div>
+        </div>
     </div>
-    <br />
-</div>
+</section>
 <div class="bg-light pt-5 pb-5">
     <div class="container">
         <div class="row">
@@ -28,7 +31,7 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text">+1</span>
                             </div>
-                            <textarea class="form-control" aria-label="With textarea" type="text" name="dialedNumber" placeholder="Enter Phone Numbers">@Model?.DialedNumber</textarea>
+                            <textarea class="form-control" aria-label="With textarea" type="text" name="dialedNumber" placeholder="Enter Phone Numbers" style="height:8rem;">@Model?.DialedNumber</textarea>
                         </div>
                         <div class="input-group mx-auto input-group-lg pt-2">
                             @*<button type="submit" class="btn btn-lg btn-success btn-block" onclick="displayBusyIndicator()" asp-controller="Lookup" asp-action="Index">Investigate</button>*@

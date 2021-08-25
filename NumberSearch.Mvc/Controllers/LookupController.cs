@@ -23,8 +23,6 @@ namespace NumberSearch.Mvc.Controllers
         private readonly Guid _teleToken;
         private readonly string _postgresql;
         private readonly string _bulkVSKey;
-        private readonly string _data247username;
-        private readonly string _data247password;
 
         public LookupController(IConfiguration config)
         {
@@ -32,8 +30,6 @@ namespace NumberSearch.Mvc.Controllers
             _teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
             _postgresql = _configuration.GetConnectionString("PostgresqlProd");
             _bulkVSKey = config.GetConnectionString("BulkVSAPIKEY");
-            _data247username = config.GetConnectionString("Data247Username");
-            _data247password = config.GetConnectionString("Data247Password");
         }
 
         [HttpGet]
@@ -186,8 +182,19 @@ namespace NumberSearch.Mvc.Controllers
             {
                 try
                 {
-                    // Start this task but not awaiting it, because we don't need it's value until later.
-                    var portable = LnpCheck.IsPortable(number, _teleToken).ConfigureAwait(false);
+                    var portable = await LnpCheck.IsPortable(number, _teleToken).ConfigureAwait(false);
+
+                    // Fail fast
+                    if (portable is not true)
+                    {
+                        Log.Information($"[Portability] {number} is not Portable.");
+
+                        return new PortedPhoneNumber
+                        {
+                            PortedDialedNumber = number,
+                            Portable = false
+                        };
+                    }
 
                     // Lookup the number.
                     var checkNumber = await LrnBulkCnam.GetAsync(number, _bulkVSKey).ConfigureAwait(false);
@@ -219,37 +226,24 @@ namespace NumberSearch.Mvc.Controllers
                     var numberName = await CnamBulkVs.GetAsync(number, _bulkVSKey);
                     checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName?.name;
 
-                    if (await portable)
+                    Log.Information($"[Portability] {number} is Portable.");
+
+                    var portableNumber = new PortedPhoneNumber
                     {
-                        Log.Information($"[Portability] {number} is Portable.");
+                        PortedDialedNumber = number,
+                        NPA = npa,
+                        NXX = nxx,
+                        XXXX = xxxx,
+                        City = "Unknown City",
+                        State = "Unknown State",
+                        DateIngested = DateTime.Now,
+                        IngestedFrom = "UserInput",
+                        Wireless = wireless,
+                        LrnLookup = checkNumber,
+                        Portable = true
+                    };
 
-                        var portableNumber = new PortedPhoneNumber
-                        {
-                            PortedDialedNumber = number,
-                            NPA = npa,
-                            NXX = nxx,
-                            XXXX = xxxx,
-                            City = "Unknown City",
-                            State = "Unknown State",
-                            DateIngested = DateTime.Now,
-                            IngestedFrom = "UserInput",
-                            Wireless = wireless,
-                            LrnLookup = checkNumber,
-                            Portable = true
-                        };
-
-                        return portableNumber;
-                    }
-                    else
-                    {
-                        Log.Information($"[Portability] {number} is not Portable.");
-
-                        return new PortedPhoneNumber
-                        {
-                            PortedDialedNumber = number,
-                            Portable = false
-                        };
-                    }
+                    return portableNumber;
                 }
                 catch (Exception ex)
                 {
