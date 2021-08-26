@@ -393,7 +393,7 @@ namespace NumberSearch.Tests
             // Arrange
             string phoneNumber1 = "2065552121";
             string phoneNumber2 = "5253747761";
-            string phoneNumber3 = "8886409088";
+            //string phoneNumber3 = "8886409088";
 
             // Act
             var lookup = new NumberSearch.Mvc.Controllers.LookupController(configuration);
@@ -411,12 +411,12 @@ namespace NumberSearch.Tests
             Assert.False(result.Portable);
             output.WriteLine(JsonSerializer.Serialize(result));
 
-            result = await lookup.VerifyPortablityAsync(phoneNumber3);
+            //result = await lookup.VerifyPortablityAsync(phoneNumber3);
 
-            // Assert        
-            Assert.NotNull(result);
-            Assert.False(result.Portable);
-            output.WriteLine(JsonSerializer.Serialize(result));
+            //// Assert        
+            //Assert.NotNull(result);
+            //Assert.False(result.Portable);
+            //output.WriteLine(JsonSerializer.Serialize(result));
         }
 
         // We are no longer using data 24/7 for cnam lookups.
