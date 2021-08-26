@@ -25,19 +25,22 @@
     }
 }
 
-<div class="container">
-    <br />
-    <div class="pricing-header mx-auto p-2 text-center">
-        <h1 class="display-4">Number Search</h1>
+<section class="text-light p-5" style="background-color: #3279B2">
+    <div class="container py-5 py-md-6 py-lg-7 mb-7 text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-md-11">
+                <h1 class="display-3 text-light">Find the perfect Number</h1>
+                <p class="lead text-white">Phone numbers are part of your brand. Find the perfect one or bring your current number with you.</p>
+            </div>
+        </div>
     </div>
-    <br />
-</div>
+</section>
 <div class="bg-light pt-5 pb-5">
     <div class="container">
         <div class="row">
             <div class="col-md-6">
                 <p>🌎 To search by area code, enter the area code and press search.</p>
-                <p>💼 To bring your number with you, enter the 10 digit number and press transfer.</p>
+                <p>💼 To bring your number with you, enter the 10 digit number and press search.</p>
                 <p>🛠️ For advanced search, use * to pad your search, for example ***word to search for a number containing word, but exclude the area code.</p>
             </div>
             <div class="offset-xl-2 offset-lg-1"></div>
@@ -52,7 +55,7 @@
                         </div>
                         <div class="input-group mx-auto input-group-lg pt-2">
                             <button type="submit" class="btn btn-lg btn-success btn-block" onclick="displayBusyIndicator()">Search</button>
-                            <button class="btn btn-lg btn-info btn-block" onclick="displayBusyIndicator()" asp-controller="Porting" asp-action="CheckPortability">Transfer</button>
+                            @*<button class="btn btn-lg btn-info btn-block" onclick="displayBusyIndicator()" asp-controller="Porting" asp-action="CheckPortability">Transfer</button>*@
                         </div>
                     </div>
                 </form>

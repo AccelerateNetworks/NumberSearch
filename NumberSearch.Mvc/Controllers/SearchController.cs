@@ -2,7 +2,9 @@
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Models;
+using NumberSearch.DataAccess.TeleMesssage;
 
 using System.Collections.Generic;
 using System.Linq;
@@ -126,19 +128,31 @@ namespace NumberSearch.Mvc.Controllers
             // The query is a complete phone number and we have no results, perhaps they mean to port it?
             if (cleanedQuery.Length == 10 && !results.Any())
             {
-                return View("Index", new SearchResults
+                var lookup = new LookupController(configuration);
+
+                var port = await lookup.VerifyPortablityAsync(cleanedQuery);
+
+                if (port.Portable)
                 {
-                    CleanQuery = cleanedQuery,
-                    NumberOfResults = count,
-                    Page = page,
-                    View = !string.IsNullOrWhiteSpace(view) ? view : "Recommended",
-                    Message = !string.IsNullOrWhiteSpace(failed) ? $"{failed} is not purchasable at this time." : $"Did you mean to Transfer this number to our network? {query} is not purchasable.",
-                    AlertType = "alert-warning",
-                    City = city,
-                    PhoneNumbers = results,
-                    Query = query,
-                    Cart = cart
-                });
+                    return View("Porting", new PortingResults
+                    {
+                        PortedPhoneNumber = port,
+                        Cart = cart,
+                        Query = query,
+                        Message = port.Wireless ? "This wireless phone number can be ported to our network!" : "This phone number can be ported to our network!"
+                    });
+                }
+                else
+                {
+
+                    return View("Porting", new PortingResults
+                    {
+                        PortedPhoneNumber = port,
+                        Cart = cart,
+                        Query = query,
+                        Message = port.Wireless ? "This wireless phone number can likely be ported to our network!" : "This phone number can likely be ported to our network!"
+                    });
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(view) && view == "Location")

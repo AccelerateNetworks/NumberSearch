@@ -1,0 +1,139 @@
+﻿@model NumberSearch.Mvc.PortingResults;
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var alreadyInCart = Model?.Cart?.PortedPhoneNumbers.ToDictionary(x => x?.PortedDialedNumber, x => x);
+
+    var searchText = string.Empty;
+    if (Model?.Query != null)
+    {
+        searchText = Model.Query;
+    }
+}
+
+<div class="container">
+    <br />
+    <div class="pricing-header mx-auto p-2 text-center">
+        <h1 class="display-4">Port a Number</h1>
+    </div>
+    <br />
+    <div class="jumbotron pb-3 shadow">
+        <h1 class="display-4">Bring your Phone Number with you!</h1>
+        <p>Type your existing phone number in below to add it to your order and bring it with you as you join our Network.</p>
+        <form class="form-row justify-content-center" asp-controller="Porting" asp-action="CheckPortability">
+            <div class="form-group">
+                <div class="input-group mx-auto input-group-lg">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">+1</span>
+                    </div>
+                    <input type="text" name="Query" class="form-control" placeholder="Existing Phone Number" value="@searchText">
+                </div>
+                <div class="input-group mx-auto input-group-lg pt-2">
+                    <button class="btn btn-info btn-block" onclick="displayBusyIndicator()" asp-controller="Search" asp-action="Index">Search</button>
+                    <button type="submit" class="btn btn-success btn-block" onclick="displayBusyIndicator()">Transfer</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <partial name="_LoadingPartial" />
+
+    <div class="row">
+
+        @{
+            if (Model != null && !string.IsNullOrWhiteSpace(Model?.PortedPhoneNumber?.PortedDialedNumber))
+            {
+                var alertType = Model?.AlertType ?? "alert-success";
+                <div class="alert @alertType col-12" role="alert">
+                    @{
+                        var message = Model?.Message ?? "This phone number can be ported to our network!";
+                    }
+                    @message
+                </div>
+                <div class="table-responsive shadow-sm mt-3 mb-5">
+                    <table class="table table-striped table-borderless table-hover">
+                        <tbody>
+                            @{
+                                var location = $"{Model.PortedPhoneNumber?.City ?? "Unknown City"}, {Model.PortedPhoneNumber?.State ?? "Unknown State"}";
+                                var formattedNumber = $"({Model.PortedPhoneNumber.NPA}) {Model.PortedPhoneNumber.NXX}-{Model.PortedPhoneNumber.XXXX.ToString("0000")}";
+                                var number = Model.PortedPhoneNumber.PortedDialedNumber;
+                                <tr>
+                                    <td scope="row"><h4>@formattedNumber</h4></td>
+                                    <td class="d-none d-sm-table-cell">@Html.Raw(number)</td>
+                                    <td class="d-none d-sm-table-cell">@location</td>
+                                    <td></td>
+                                    <td>
+                                        @{
+                                            if (alreadyInCart.TryGetValue(Model.PortedPhoneNumber.PortedDialedNumber, out var _))
+                                            {
+                                                <button onclick="RemoveFromCart('PortedPhoneNumber', '@Model.PortedPhoneNumber.PortedDialedNumber', 1, this)" class="btn btn-outline-danger">Remove</button>
+                                            }
+                                            else
+                                            {
+                                                <button onclick="AddToCart('PortedPhoneNumber', '@Model.PortedPhoneNumber.PortedDialedNumber', 1, this)" class="btn btn-outline-primary">Add to Cart</button>
+                                            }
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                            @if (Model?.PortedPhoneNumber?.LrnLookup != null)
+                            {
+                                <tr>
+                                    <th>
+                                        Phone Number
+                                    </th>
+                                    <th>
+                                        Last Port Date
+                                    </th>
+                                    <th>
+                                        Caller Name
+                                    </th>
+                                    <th>
+                                        Local Routing #
+                                    </th>
+                                    <th>
+                                        Carrier
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <h4>@Model?.PortedPhoneNumber?.LrnLookup?.tn</h4>
+                                    </td>
+                                    <td>
+                                        @Model?.PortedPhoneNumber?.LrnLookup?.LastPorted
+                                    </td>
+                                    <td>
+                                        @Model?.PortedPhoneNumber?.LrnLookup?.LIDBName
+                                    </td>
+                                    <td>
+                                        <h4>@Model?.PortedPhoneNumber?.LrnLookup?.lrn</h4>
+                                    </td>
+                                    <td>
+                                        <p>
+                                            @Model?.PortedPhoneNumber?.LrnLookup?.spid
+                                            -
+                                            @Model?.PortedPhoneNumber?.LrnLookup?.lec
+                                            -
+                                            @Model?.PortedPhoneNumber?.LrnLookup?.lectype
+                                        </p>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else if (Model?.Cart != null && string.IsNullOrWhiteSpace(Model?.PortedPhoneNumber?.PortedDialedNumber))
+            {
+                var alertType = Model?.AlertType ?? "alert-danger";
+                <div class="alert @alertType col-12" role="alert">
+                    @{
+                        var message = Model?.Message ?? "The phone number entered isn't portable to our network. Please try another number or contact us directly for more information.";
+                    }
+                    @message
+                </div>
+            }
+        }
+    </div>
+</div>
