@@ -6,13 +6,13 @@
         <div id="cartButton" class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6 p-2">
             <a id="headerCart" class="btn btn-lg btn-outline-success" asp-controller="Cart" asp-action="Index">🛒&nbsp;<span id="cartCounter" class="badge badge-success badge-pill">@Model?.Count</span></a>
         </div>
-        <div id="contactButton" class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6 text-center p-2" hidden>
+        <div id="contactButton" class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6 text-center p-2 d-none">
             <a href="tel:12063333341" class="btn btn-lg btn-outline-dark">(206) 333-3341</a>
         </div>
     }
     else
     {
-        <div id="cartButton" class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6 p-2" hidden>
+        <div id="cartButton" class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6 p-2 d-none">
             <a id="headerCart" class="btn btn-lg btn-outline-success" asp-controller="Cart" asp-action="Index">🛒&nbsp;<span id="cartCounter" class="badge badge-success badge-pill">@Model?.Count</span></a>
         </div>
         <div id="contactButton" class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6 text-center p-2">

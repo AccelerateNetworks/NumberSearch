@@ -11,7 +11,7 @@ namespace NumberSearch.Mvc.Controllers
     public class ServicesController : Controller
     {
         [HttpGet]
-        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> IndexAsync()
         {
             await HttpContext.Session.LoadAsync().ConfigureAwait(false);

@@ -26,8 +26,9 @@ var cartCounter = 0;
 
 function AddToCart(type, id, quantity, element) {
     var removeButton = `<button onclick="RemoveFromCart('${type}', '${id}', ${quantity}, this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>`;
-    var checkoutCart = `<a id="headerCart" class="btn btn-outline-success btn-lg" href="/Cart">Checkout&nbsp;<span id="cartCounter" class="badge badge-success badge-pill">0</span></a>`;
     var cart = $('#headerCart');
+    var cartButton = $('#cartButton');
+    var contactButton = $('#contactButton');
     let spinner = $(element).find('span');
     spinner.removeClass('d-none');
     var request = new XMLHttpRequest();
@@ -40,7 +41,8 @@ function AddToCart(type, id, quantity, element) {
             $(element).replaceWith(removeButton);
             cartCounter = parseInt($('#cartCounter').text());
             cartCounter++;
-            $(cart).replaceWith(checkoutCart);
+            $(contactButton).addClass('d-none');
+            $(cartButton).removeClass('d-none');
             $('#cartCounter').text(cartCounter).removeClass('d-none');
             if (type == 'Coupon') {
                 location.reload();
