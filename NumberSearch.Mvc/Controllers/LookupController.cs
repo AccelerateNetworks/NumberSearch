@@ -138,30 +138,32 @@ namespace NumberSearch.Mvc.Controllers
                 // Separate wireless numbers out from the rest.
                 var wirelessPortable = results.Where(x => x.Wireless && x.Portable).ToArray();
 
-                // Only non-wireless numbers.
-                if (!wirelessPortable.Any() && portableNumbers.Any())
+                // Add all the numbers to the cart.
+                foreach (var portableNumber in portableNumbers)
                 {
-                    foreach (var portableNumber in portableNumbers)
+                    var portedNumber = cart.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == portableNumber.PortedDialedNumber).FirstOrDefault();
+
+                    if (portedNumber is null)
                     {
-                        var productOrder = new ProductOrder { PortedDialedNumber = portableNumber.PortedDialedNumber, Quantity = 1 };
+                        var productOrder = new ProductOrder { PortedDialedNumber = portableNumber.PortedDialedNumber, PortedPhoneNumberId = portableNumber.PortedPhoneNumberId, Quantity = 1 };
 
                         var checkAdd = cart.AddPortedPhoneNumber(portableNumber, productOrder);
                     }
-
-                    var checkSet = cart.SetToSession(HttpContext.Session);
                 }
-                // Only wireless numbers.
-                else if (wirelessPortable.Any() && !portableNumbers.Any())
+
+                foreach (var wirelessNumber in wirelessPortable)
                 {
-                    foreach (var portableNumber in wirelessPortable)
+                    var portedNumber = cart.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == wirelessNumber.PortedDialedNumber).FirstOrDefault();
+
+                    if (portedNumber is null)
                     {
-                        var productOrder = new ProductOrder { PortedDialedNumber = portableNumber.PortedDialedNumber, Quantity = 1 };
+                        var productOrder = new ProductOrder { PortedDialedNumber = wirelessNumber.PortedDialedNumber, PortedPhoneNumberId = wirelessNumber.PortedPhoneNumberId, Quantity = 1 };
 
-                        var checkAdd = cart.AddPortedPhoneNumber(portableNumber, productOrder);
+                        var checkAdd = cart.AddPortedPhoneNumber(wirelessNumber, productOrder);
                     }
-
-                    var checkSet = cart.SetToSession(HttpContext.Session);
                 }
+
+                var checkSet = cart.SetToSession(HttpContext.Session);
 
                 return View("Index", new LookupResults
                 {
@@ -236,6 +238,7 @@ namespace NumberSearch.Mvc.Controllers
 
                     var portableNumber = new PortedPhoneNumber
                     {
+                        PortedPhoneNumberId = Guid.NewGuid(),
                         PortedDialedNumber = number,
                         NPA = npa,
                         NXX = nxx,

@@ -31,7 +31,7 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text">+1</span>
                             </div>
-                            <textarea class="form-control" aria-label="With textarea" type="text" name="dialedNumber" placeholder="Enter Phone Numbers" style="height:8rem;">@Model?.DialedNumber</textarea>
+                            <textarea class="form-control" aria-label="With textarea" type="text" name="dialedNumber" placeholder="350 Numbers Maximum" style="height:8rem;">@Model?.DialedNumber</textarea>
                         </div>
                         <div class="input-group mx-auto input-group-lg pt-2">
                             @*<button type="submit" class="btn btn-lg btn-success btn-block" onclick="displayBusyIndicator()" asp-controller="Lookup" asp-action="Index">Investigate</button>*@
@@ -212,7 +212,7 @@
                                 {
                                     <tr>
                                         <td>
-                                            <h4>@number?.LrnLookup?.tn.Substring(1)</h4>
+                                            <h4>@number?.LrnLookup?.tn?.Substring(1)</h4>
                                         </td>
                                         <td>
                                             @number?.LrnLookup?.LastPorted
