@@ -691,15 +691,25 @@ namespace NumberSearch.Tests
 
             // Assert
             Assert.NotNull(results);
-            Assert.False(string.IsNullOrWhiteSpace(results));
-            output.WriteLine(results);
+            Assert.False(results.data.Count() == 0);
 
             results = await LnpCheck.GetRawAsync("8662214141", token);
 
             // Assert
             Assert.NotNull(results);
-            Assert.False(string.IsNullOrWhiteSpace(results));
-            output.WriteLine(results);
+            Assert.False(results.data.Count() == 0);
+        }
+
+        [Fact]
+        public async Task TeliBulkPortabilityAsync()
+        {
+            // Arrange
+            var results = await LnpCheck.GetRawInBulkAsync(new[] { "8662214141", "2067696361" }, token);
+
+            // Assert
+            Assert.NotNull(results);
+            //Assert.False(string.IsNullOrWhiteSpace(results));
+            //output.WriteLine(results);
         }
 
         [Fact]
@@ -709,12 +719,12 @@ namespace NumberSearch.Tests
             string query = "1";
 
             // Act
-            var result = await LnpCheck.IsPortable(query, token);
+            var result = await LnpCheck.IsPortableAsync(query, token);
 
             // Assert
             Assert.False(result);
 
-            result = await LnpCheck.IsPortable("8662214141", token);
+            result = await LnpCheck.IsPortableAsync("8662214141", token);
 
             // Assert
             Assert.True(result);

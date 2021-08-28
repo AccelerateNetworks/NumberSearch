@@ -953,7 +953,7 @@ namespace NumberSearch.Ops.Controllers
                     {
                         try
                         {
-                            var portable = await LnpCheck.IsPortable(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
+                            var portable = await LnpCheck.IsPortableAsync(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
 
                             // Lookup the number.
                             var checkNumber = await LrnBulkCnam.GetAsync(dialedPhoneNumber, _bulkVSAPIKey).ConfigureAwait(false);
@@ -1781,7 +1781,7 @@ namespace NumberSearch.Ops.Controllers
 
                 return View("Tests", new TestResults
                 {
-                    PortabilityResponse = checkNumber
+                    PortabilityResponse = checkNumber.data.Values.FirstOrDefault().status
                 });
             }
 

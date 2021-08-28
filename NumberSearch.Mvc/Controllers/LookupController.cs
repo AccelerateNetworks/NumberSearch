@@ -130,7 +130,7 @@ namespace NumberSearch.Mvc.Controllers
 
                 var cart = Cart.GetFromSession(HttpContext.Session);
 
-                var results = await Task.WhenAll(parsedNumbers.Select(x => VerifyPortablityAsync(x)));
+                var results = await VerifyPortablityInBulkAsync(parsedNumbers.ToArray());
 
                 var portableNumbers = results.Where(x => x.Portable && x.Wireless is false).ToArray();
                 var notPortable = results.Where(x => x.Portable is false).Select(x => x.PortedDialedNumber).ToArray();
@@ -182,15 +182,15 @@ namespace NumberSearch.Mvc.Controllers
 
         public async Task<PortedPhoneNumber> VerifyPortablityAsync(string number)
         {
-            bool checkNpa = int.TryParse(number.Substring(0, 3), out int npa);
-            bool checkNxx = int.TryParse(number.Substring(3, 3), out int nxx);
-            bool checkXxxx = int.TryParse(number.Substring(6, 4), out int xxxx);
+            bool checkNpa = int.TryParse(number.AsSpan(0, 3), out int npa);
+            bool checkNxx = int.TryParse(number.AsSpan(3, 3), out int nxx);
+            bool checkXxxx = int.TryParse(number.AsSpan(6, 4), out int xxxx);
 
             if (checkNpa && checkNxx && checkXxxx)
             {
                 try
                 {
-                    var portable = await LnpCheck.IsPortable(number, _teleToken).ConfigureAwait(false);
+                    var portable = await LnpCheck.IsPortableAsync(number, _teleToken).ConfigureAwait(false);
 
                     // Fail fast
                     if (portable is not true)
@@ -274,6 +274,110 @@ namespace NumberSearch.Mvc.Controllers
                 return new PortedPhoneNumber
                 {
                     PortedDialedNumber = number,
+                    Portable = false
+                };
+            }
+        }
+
+        public async Task<PortedPhoneNumber[]> VerifyPortablityInBulkAsync(string[] numbers)
+        {
+            var numbersAndPortability = await LnpCheck.IsBulkPortableAsync(numbers, _teleToken).ConfigureAwait(false);
+
+            return await Task.WhenAll(numbersAndPortability.Select(x => VerifyCnamLibdAsync(x.dialedNumber, x.Portable)));
+        }
+
+        public async Task<PortedPhoneNumber> VerifyCnamLibdAsync(string dialedNumber, bool portable)
+        {
+            bool checkNpa = int.TryParse(dialedNumber.AsSpan(0, 3), out int npa);
+            bool checkNxx = int.TryParse(dialedNumber.AsSpan(3, 3), out int nxx);
+            bool checkXxxx = int.TryParse(dialedNumber.AsSpan(6, 4), out int xxxx);
+
+            if (checkNpa && checkNxx && checkXxxx)
+            {
+                try
+                {
+                    // Fail fast
+                    if (portable is not true)
+                    {
+                        Log.Information($"[Portability] {dialedNumber} is not Portable.");
+
+                        return new PortedPhoneNumber
+                        {
+                            PortedDialedNumber = dialedNumber,
+                            Portable = false
+                        };
+                    }
+
+                    // Lookup the number.
+                    var checkNumber = await LrnBulkCnam.GetAsync(dialedNumber, _bulkVSKey).ConfigureAwait(false);
+
+                    // Determine if the number is a wireless number.
+                    bool wireless = false;
+
+                    switch (checkNumber.lectype)
+                    {
+                        case "WIRELESS":
+                            wireless = true;
+                            break;
+                        case "PCS":
+                            wireless = true;
+                            break;
+                        case "P RESELLER":
+                            wireless = true;
+                            break;
+                        case "Wireless":
+                            wireless = true;
+                            break;
+                        case "W RESELLER":
+                            wireless = true;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    var numberName = await CnamBulkVs.GetAsync(dialedNumber, _bulkVSKey);
+                    checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName?.name;
+
+                    Log.Information($"[Portability] {dialedNumber} is Portable.");
+
+                    var portableNumber = new PortedPhoneNumber
+                    {
+                        PortedPhoneNumberId = Guid.NewGuid(),
+                        PortedDialedNumber = dialedNumber,
+                        NPA = npa,
+                        NXX = nxx,
+                        XXXX = xxxx,
+                        City = checkNumber.city,
+                        State = checkNumber.province,
+                        DateIngested = DateTime.Now,
+                        IngestedFrom = "UserInput",
+                        Wireless = wireless,
+                        LrnLookup = checkNumber,
+                        Portable = true
+                    };
+
+                    return portableNumber;
+                }
+                catch (Exception ex)
+                {
+                    Log.Information($"[Portability] {dialedNumber} is not Portable.");
+                    Log.Fatal($"[Portability] {ex.Message}");
+                    Log.Fatal($"[Portability] {ex.InnerException}");
+
+                    return new PortedPhoneNumber
+                    {
+                        PortedDialedNumber = dialedNumber,
+                        Portable = false
+                    };
+                }
+            }
+            else
+            {
+                Log.Information($"[Portability] {dialedNumber} is not Portable. Failed NPA, NXX, XXXX parsing.");
+
+                return new PortedPhoneNumber
+                {
+                    PortedDialedNumber = dialedNumber,
                     Portable = false
                 };
             }

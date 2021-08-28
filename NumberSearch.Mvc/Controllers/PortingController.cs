@@ -110,7 +110,7 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     try
                     {
-                        var portable = await LnpCheck.IsPortable(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
+                        var portable = await LnpCheck.IsPortableAsync(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
 
                         // Determine if the number is a wireless number.
                         var checkNumber = await LrnBulkCnam.GetAsync(dialedPhoneNumber, _bulkVSAPIKey).ConfigureAwait(false);
@@ -258,7 +258,7 @@ namespace NumberSearch.Mvc.Controllers
 
                 if (checkNpa && checkNxx && checkXxxx)
                 {
-                    var portable = await LnpCheck.IsPortable(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
+                    var portable = await LnpCheck.IsPortableAsync(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
 
                     if (portable)
                     {
