@@ -5,8 +5,9 @@
 
 $(document).ready();
 
-function displayBusyIndicator() {
-    document.getElementById("loading").style.display = "block";
+function displayBusyIndicator(element) {
+    let spinner = '<span class="spinner-border" role="status" aria-hidden="true"></span>';
+    $(element).html(spinner);
 }
 
 $(window).on('beforeunload', function () {

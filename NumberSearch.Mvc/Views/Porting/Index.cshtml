@@ -30,14 +30,14 @@
                     <input type="text" name="Query" class="form-control" placeholder="Existing Phone Number" value="@searchText">
                 </div>
                 <div class="input-group mx-auto input-group-lg pt-2">
-                    <button class="btn btn-info btn-block" onclick="displayBusyIndicator()" asp-controller="Search" asp-action="Index">Search</button>
-                    <button type="submit" class="btn btn-success btn-block" onclick="displayBusyIndicator()">Transfer</button>
+                    <button class="btn btn-info btn-block" onclick="displayBusyIndicator(this)" asp-controller="Search" asp-action="Index">Search</button>
+                    <button type="submit" class="btn btn-success btn-block" onclick="displayBusyIndicator(this)">Transfer</button>
                 </div>
             </div>
         </form>
     </div>
 
-    <partial name="_LoadingPartial" />
+
 
     <div class="row">
 

@@ -30,13 +30,13 @@
                     <input type="text" name="Query" class="form-control" placeholder="Enter a Phone Number" value="@Model?.VerifiedPhoneNumber?.VerifiedDialedNumber">
                 </div>
                 <div class="input-group mx-auto input-group-lg pt-2">
-                    <button type="submit" class="btn btn-success btn-block" onclick="displayBusyIndicator()">Verify</button>
+                    <button type="submit" class="btn btn-success btn-block" onclick="displayBusyIndicator(this)">Verify</button>
                 </div>
             </div>
         </form>
     </div>
 
-    <partial name="_LoadingPartial" />
+
 
     @{
         if (Model != null && !string.IsNullOrWhiteSpace(Model?.VerifiedPhoneNumber?.VerifiedDialedNumber))

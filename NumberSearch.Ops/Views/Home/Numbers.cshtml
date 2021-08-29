@@ -21,7 +21,7 @@
                     <span class="input-group-text">+1</span>
                 </div>
                 <input type="text" name="Query" class="form-control" placeholder="Enter a Phone Number" value="@searchText">
-                <button type="submit" class="btn btn-success pr-4 pl-4" onclick="displayBusyIndicator()">Search</button>
+                <button type="submit" class="btn btn-success pr-4 pl-4" onclick="displayBusyIndicator(this)">Search</button>
             </div>
         </div>
     </form>
@@ -115,7 +115,7 @@
                     if (Model.Page > 1)
                     {
                         var previousPage = Model.Page - 1;
-                        <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Numbers?Query=@Model.Query&Page=@previousPage">Previous</a>
+                        <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Numbers?Query=@Model.Query&Page=@previousPage">Previous</a>
                         <a class="btn btn-outline-dark disabled">Page @Model.Page of @maxPage</a>
                     }
                     else
@@ -127,7 +127,7 @@
                     if (Model.NumberOfResults > pageResultsCount)
                     {
                         var nextPage = Model.Page + 1;
-                        <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Numbers?Query=@Model.Query&Page=@nextPage">Next</a>
+                        <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Numbers?Query=@Model.Query&Page=@nextPage">Next</a>
                     }
                     else
                     {

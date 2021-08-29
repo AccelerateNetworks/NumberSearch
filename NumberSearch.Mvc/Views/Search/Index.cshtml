@@ -54,8 +54,9 @@
                             <input type="text" name="Query" class="form-control" placeholder="Enter a Phone Number" value="@searchText">
                         </div>
                         <div class="input-group mx-auto input-group-lg pt-2">
-                            <button type="submit" class="btn btn-lg btn-success btn-block" onclick="displayBusyIndicator()">Search</button>
-                            @*<button class="btn btn-lg btn-info btn-block" onclick="displayBusyIndicator()" asp-controller="Porting" asp-action="CheckPortability">Transfer</button>*@
+                            <button type="submit" class="btn btn-lg btn-success btn-block" onclick="displayBusyIndicator(this)">
+                                Search
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -64,8 +65,7 @@
     </div>
 </div>
 <div class="container">
-    <partial name="_LoadingPartial" />
-    <div class="row pt-5 pb-5">
+    <div class="row pt-3 pb-3">
         @{
             if (!string.IsNullOrWhiteSpace(Model?.Message))
             {
@@ -104,9 +104,9 @@
                         @{
                             if (Model?.View == "Sequential")
                             {
-                                <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Recommended&Page=@Model.Page">Recommended</a>
-                                <a class="btn btn-outline-secondary active" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Sequential&Page=@Model.Page">Sequential</a>
-                                <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Location&Page=@Model.Page">Location</a>
+                                <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&View=Recommended&Page=@Model.Page">Recommended</a>
+                                <a class="btn btn-outline-secondary active" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&View=Sequential&Page=@Model.Page">Sequential</a>
+                                <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&View=Location&Page=@Model.Page">Location</a>
                                 <script type="text/javascript">
                                     // Handles issue #124 on Github
                                     // https://github.com/AccelerateNetworks/NumberSearch/issues/124
@@ -146,22 +146,22 @@
                             {
                                 if (string.IsNullOrWhiteSpace(Model?.City))
                                 {
-                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Recommended&Page=@Model.Page">Recommended</a>
-                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Sequential&Page=@Model.Page">Sequential</a>
-                                    <a class="btn btn-outline-secondary active" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Location&Page=@Model.Page">Location</a>
+                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&View=Recommended&Page=@Model.Page">Recommended</a>
+                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&View=Sequential&Page=@Model.Page">Sequential</a>
+                                    <a class="btn btn-outline-secondary active" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&View=Location&Page=@Model.Page">Location</a>
                                 }
                                 else
                                 {
-                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&City=@Model.City&View=Recommended&Page=@Model.Page">Recommended</a>
-                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&City=@Model.City&View=Sequential&Page=@Model.Page">Sequential</a>
-                                    <a class="btn btn-outline-secondary active" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&City=@Model.City&View=Location&Page=@Model.Page">Location</a>
+                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&City=@Model.City&View=Recommended&Page=@Model.Page">Recommended</a>
+                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&City=@Model.City&View=Sequential&Page=@Model.Page">Sequential</a>
+                                    <a class="btn btn-outline-secondary active" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&City=@Model.City&View=Location&Page=@Model.Page">Location</a>
                                 }
                             }
                             else
                             {
-                                <a class="btn btn-outline-secondary active" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Recommended&Page=@Model.Page">Recommended</a>
-                                <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Sequential&Page=@Model.Page">Sequential</a>
-                                <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Location&Page=@Model.Page">Location</a>
+                                <a class="btn btn-outline-secondary active" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&View=Recommended&Page=@Model.Page">Recommended</a>
+                                <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&View=Sequential&Page=@Model.Page">Sequential</a>
+                                <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&View=Location&Page=@Model.Page">Location</a>
                             }
                         }
                     </div>
@@ -176,11 +176,11 @@
                                 var previousPage = Model.Page - 1;
                                 if (string.IsNullOrWhiteSpace(Model?.City))
                                 {
-                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=@Model.View&Page=@previousPage">Previous</a>
+                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&View=@Model.View&Page=@previousPage">Previous</a>
                                 }
                                 else
                                 {
-                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&City=@Model?.City&View=@Model.View&Page=@previousPage">Previous</a>
+                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&City=@Model?.City&View=@Model.View&Page=@previousPage">Previous</a>
                                 }
                                 <a class="btn btn-outline-dark disabled">Page @Model.Page of @maxPage</a>
                             }
@@ -194,11 +194,11 @@
                                 var nextPage = Model.Page + 1;
                                 if (string.IsNullOrWhiteSpace(Model?.City))
                                 {
-                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=@Model.View&Page=@nextPage">Next</a>
+                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&View=@Model.View&Page=@nextPage">Next</a>
                                 }
                                 else
                                 {
-                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&City=@Model.City&View=@Model.View&Page=@nextPage">Next</a>
+                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&City=@Model.City&View=@Model.View&Page=@nextPage">Next</a>
                                 }
                             }
                             else
@@ -218,13 +218,13 @@
                                 if (city == Model?.City)
                                 {
                                     <div class="btn-group">
-                                        <a class="btn btn-outline-info active mb-1" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&City=@city&View=Location&Page=@Model.Page">@city</a>
-                                        <a class="btn btn-outline-danger mb-1" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=Location&Page=@Model.Page">Remove</a>
+                                        <a class="btn btn-outline-info active mb-1" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&City=@city&View=Location&Page=@Model.Page">@city</a>
+                                        <a class="btn btn-outline-danger mb-1" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&View=Location&Page=@Model.Page">Remove</a>
                                     </div>
                                 }
                                 else
                                 {
-                                    <a class="btn btn-outline-info mb-1" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&City=@city&View=Location&Page=@Model.Page">@city</a>
+                                    <a class="btn btn-outline-info mb-1" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&City=@city&View=Location&Page=@Model.Page">@city</a>
                                 }
                             }
                         }
@@ -377,11 +377,11 @@
                                 var previousPage = Model.Page - 1;
                                 if (string.IsNullOrWhiteSpace(Model?.City))
                                 {
-                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=@Model.View&Page=@previousPage">Previous</a>
+                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&View=@Model.View&Page=@previousPage">Previous</a>
                                 }
                                 else
                                 {
-                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&City=@Model?.City&View=@Model.View&Page=@previousPage">Previous</a>
+                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&City=@Model?.City&View=@Model.View&Page=@previousPage">Previous</a>
                                 }
                                 <a class="btn btn-outline-dark disabled">Page @Model.Page of @maxPage</a>
                             }
@@ -395,11 +395,11 @@
                                 var nextPage = Model.Page + 1;
                                 if (string.IsNullOrWhiteSpace(Model?.City))
                                 {
-                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&View=@Model.View&Page=@nextPage">Next</a>
+                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&View=@Model.View&Page=@nextPage">Next</a>
                                 }
                                 else
                                 {
-                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator()" href="/Search?Query=@Model.Query&City=@Model.City&View=@Model.View&Page=@nextPage">Next</a>
+                                    <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&City=@Model.City&View=@Model.View&Page=@nextPage">Next</a>
                                 }
                             }
                             else

@@ -31,11 +31,10 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text">+1</span>
                             </div>
-                            <textarea class="form-control" aria-label="With textarea" type="text" name="dialedNumber" placeholder="350 Numbers Maximum" style="height:8rem;">@Model?.DialedNumber</textarea>
+                            <textarea class="form-control" aria-label="With textarea" type="text" name="dialedNumber" placeholder="200 Numbers per Search" style="height:8rem;">@Model?.DialedNumber</textarea>
                         </div>
                         <div class="input-group mx-auto input-group-lg pt-2">
-                            @*<button type="submit" class="btn btn-lg btn-success btn-block" onclick="displayBusyIndicator()" asp-controller="Lookup" asp-action="Index">Investigate</button>*@
-                            <button type="submit" class="btn btn-lg btn-success btn-block" onclick="displayBusyIndicator()" asp-controller="Lookup" asp-action="BulkPort">Search</button>
+                            <button type="submit" class="btn btn-lg btn-success btn-block" onclick="displayBusyIndicator(this)" asp-controller="Lookup" asp-action="BulkPort">Search</button>
                         </div>
                     </div>
                 </form>
@@ -44,8 +43,8 @@
     </div>
 </div>
 <div class="container">
-    <partial name="_LoadingPartial" />
-    <div class="pt-5 pb-5">
+
+    <div class="pb-3">
         @{
             if (Model != null && Model?.Lookups != null && Model.Lookups.Any())
             {
@@ -236,11 +235,17 @@
                                             @{
                                                 if (alreadyInCart.TryGetValue(number.PortedDialedNumber, out var _))
                                                 {
-                                                    <button onclick="RemoveFromCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-danger">Remove</button>
+                                                    <button onclick="RemoveFromCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-danger">
+                                                        <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                        Remove
+                                                    </button>
                                                 }
                                                 else
                                                 {
-                                                    <button onclick="AddToCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-primary">Add to Cart</button>
+                                                    <button onclick="AddToCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-primary">
+                                                        <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                        Add to Cart
+                                                    </button>
                                                 }
                                             }
                                         </td>
@@ -328,11 +333,17 @@
                                             @{
                                                 if (alreadyInCart.TryGetValue(number.PortedDialedNumber, out var _))
                                                 {
-                                                    <button onclick="RemoveFromCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-danger">Remove</button>
+                                                    <button onclick="RemoveFromCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-danger">
+                                                        <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                        Remove
+                                                    </button>
                                                 }
                                                 else
                                                 {
-                                                    <button onclick="AddToCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-primary">Add to Cart</button>
+                                                    <button onclick="AddToCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-primary">
+                                                        <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                        Add to Cart
+                                                    </button>
                                                 }
                                             }
                                         </td>
