@@ -37,15 +37,30 @@ namespace NumberSearch.Mvc.Controllers
 
         [HttpGet]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public async Task<IActionResult> IndexAsync()
+        public async Task<IActionResult> IndexAsync(bool? emptyCart)
         {
             await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            return View("Index", new CartResult
+            if (emptyCart.HasValue && emptyCart.Value)
             {
-                Cart = cart
-            });
+                // Replace the existing cart with a new, empty cart to empty it.
+                cart = new Cart();
+                var checkSet = cart.SetToSession(HttpContext.Session);
+                cart = Cart.GetFromSession(HttpContext.Session);
+
+                return View("Index", new CartResult
+                {
+                    Cart = cart
+                });
+            }
+            else
+            {
+                return View("Index", new CartResult
+                {
+                    Cart = cart
+                });
+            }
         }
 
         [HttpGet]
