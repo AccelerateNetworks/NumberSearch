@@ -855,6 +855,28 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task NumberLookupPostAsync()
+        {
+            // Arrange
+            var number = "2064083008";
+
+            // Act
+            var result = await LrnBulkCnam.GetAsync(number, bulkVSKey).ConfigureAwait(false);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(!string.IsNullOrWhiteSpace(result.spid));
+            output.WriteLine(JsonSerializer.Serialize(result));
+
+            result.LIDBName = "IntegrationTest";
+
+            var lookup = new PhoneNumberLookup(result);
+            var checkPost = await lookup.PostAsync(postgresql);
+
+            Assert.True(checkPost);
+        }
+
+        [Fact]
         public async Task BulkVSRESTGetAllOwnedNumbersAsync()
         {
             // Arrange
