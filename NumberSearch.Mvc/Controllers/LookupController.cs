@@ -338,6 +338,10 @@ namespace NumberSearch.Mvc.Controllers
                     var numberName = await CnamBulkVs.GetAsync(dialedNumber, _bulkVSKey);
                     checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName?.name;
 
+                    // Log the lookup to the db.
+                    var lookup = new PhoneNumberLookup(checkNumber);
+                    var checkLog = await lookup.PostAsync(_postgresql).ConfigureAwait(false);
+
                     Log.Information($"[Portability] {dialedNumber} is Portable.");
 
                     var portableNumber = new PortedPhoneNumber
@@ -389,6 +393,10 @@ namespace NumberSearch.Mvc.Controllers
 
             var numberName = await CnamBulkVs.GetAsync(number, _bulkVSKey);
             checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName?.name;
+
+            // Log the lookup to the db.
+            var lookup = new PhoneNumberLookup(checkNumber);
+            var checkLog = await lookup.PostAsync(_postgresql).ConfigureAwait(false);
 
             return checkNumber;
         }
