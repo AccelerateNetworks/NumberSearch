@@ -253,8 +253,8 @@ namespace NumberSearch.Mvc.Controllers
                 // Verify that Call48 has the number.
                 var credentials = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
                 var results = await Search.GetLocalNumbersAsync(phoneNumber.State, string.Empty, phoneNumber.NPA.ToString(), phoneNumber.NXX.ToString(), credentials.data.token).ConfigureAwait(false);
-                var matchingNumber = results.data.result.Where(x => x.did.Replace("-", string.Empty) == phoneNumber.DialedNumber).FirstOrDefault();
-                if (matchingNumber != null && matchingNumber?.did.Replace("-", string.Empty) == phoneNumber.DialedNumber)
+                var matchingNumber = results.data.result.Where(x => x.did_number.Replace("-", string.Empty) == phoneNumber.DialedNumber).FirstOrDefault();
+                if (matchingNumber != null && matchingNumber?.did_number.Replace("-", string.Empty) == phoneNumber.DialedNumber)
                 {
                     purchasable = true;
                     Log.Information($"[Call48] Found {phoneNumber.DialedNumber} in {results?.data?.result?.Length} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");

@@ -987,56 +987,54 @@ namespace NumberSearch.Tests
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
-        //[Fact]
-        //public async Task Call48LocalNumberLookupTestAsync()
-        //{
-        //    // Act
-        //    var result = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
+        [Fact]
+        public async Task Call48LocalNumberLookupTestAsync()
+        {
+            // Act
+            var result = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
 
-        //    var results = await Search.GetLocalNumbersAsync("WA", string.Empty, "425", string.Empty, result.data.token).ConfigureAwait(false);
+            var results = await Search.GetLocalNumbersAsync("WA", string.Empty, "425", string.Empty, result.data.token).ConfigureAwait(false);
 
-        //    Assert.NotEmpty(results.data.result);
-        //    output.WriteLine(results.data.result.Length.ToString());
-        //    foreach (var number in results.data.result)
-        //    {
-        //        Assert.False(string.IsNullOrWhiteSpace(number.did));
-        //        Assert.False(string.IsNullOrWhiteSpace(number.number));
-        //        Assert.False(string.IsNullOrWhiteSpace(number.npa));
-        //        Assert.False(string.IsNullOrWhiteSpace(number.nxx));
-        //        Assert.False(string.IsNullOrWhiteSpace(number.xxxx));
-        //        Assert.True(number.type == "local");
-        //        Assert.True(number.state == "WA");
-        //        Assert.False(string.IsNullOrWhiteSpace(number.ratecenter));
-        //        Assert.False(string.IsNullOrWhiteSpace(number.locData));
-        //        output.WriteLine(JsonSerializer.Serialize(number));
-        //    }
+            Assert.NotEmpty(results.data.result);
+            output.WriteLine(results.data.result.Length.ToString());
+            foreach (var number in results.data.result)
+            {
+                Assert.False(string.IsNullOrWhiteSpace(number.did_number));
+                Assert.False(string.IsNullOrWhiteSpace(number.number));
+                Assert.False(string.IsNullOrWhiteSpace(number.npa));
+                Assert.False(string.IsNullOrWhiteSpace(number.nxx));
+                Assert.False(string.IsNullOrWhiteSpace(number.xxxx));
+                Assert.True(number.state == "WA");
+                Assert.False(string.IsNullOrWhiteSpace(number.ratecenter));
+                output.WriteLine(JsonSerializer.Serialize(number));
+            }
 
-        //}
+        }
 
-        //[Fact]
-        //public async Task Call48GetNumbersTestAsync()
-        //{
-        //    // Act
-        //    var cred = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
+        [Fact]
+        public async Task Call48GetNumbersTestAsync()
+        {
+            // Act
+            var cred = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
 
-        //    var results = await Search.GetAsync("WA", 425, cred.data.token).ConfigureAwait(false);
+            var results = await Search.GetAsync("WA", 425, cred.data.token).ConfigureAwait(false);
 
-        //    Assert.NotEmpty(results);
-        //    output.WriteLine(results.Count().ToString());
-        //    foreach (var result in results)
-        //    {
-        //        Assert.True(result.NPA > 99);
-        //        Assert.True(result.NXX > 99);
-        //        // XXXX can be 0001 which as an int is 1.
-        //        Assert.True(result.XXXX > 0);
-        //        Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-        //        // Reenabled these after June 2020 starts.
-        //        //Assert.False(string.IsNullOrWhiteSpace(result.City));
-        //        //Assert.False(string.IsNullOrWhiteSpace(result.State));
-        //        Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
-        //        output.WriteLine(JsonSerializer.Serialize(result));
-        //    }
-        //}
+            Assert.NotEmpty(results);
+            output.WriteLine(results.Count().ToString());
+            foreach (var result in results)
+            {
+                Assert.True(result.NPA > 99);
+                Assert.True(result.NXX > 99);
+                // XXXX can be 0001 which as an int is 1.
+                Assert.True(result.XXXX > 0);
+                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+                // Reenabled these after June 2020 starts.
+                //Assert.False(string.IsNullOrWhiteSpace(result.City));
+                //Assert.False(string.IsNullOrWhiteSpace(result.State));
+                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+                output.WriteLine(JsonSerializer.Serialize(result));
+            }
+        }
 
         [Fact]
         public async Task Call48GetRatecentersTestAsync()

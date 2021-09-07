@@ -29,7 +29,7 @@ namespace NumberSearch.DataAccess.Call48
                 npa = number.npa,
                 nxx = number.nxx,
                 xxxx = number.xxxx,
-                type = number.type,
+                type = "local",
                 state = number.state,
                 ratecenter = number.ratecenter,
                 locData = number.locData,

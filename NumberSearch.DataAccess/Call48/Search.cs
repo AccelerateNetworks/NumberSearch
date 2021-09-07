@@ -15,6 +15,7 @@ namespace NumberSearch.DataAccess.Call48
         public int code { get; set; }
         public string message { get; set; }
         public SearchData data { get; set; }
+        public string error { get; set; }
 
         public class SearchData
         {
@@ -22,24 +23,29 @@ namespace NumberSearch.DataAccess.Call48
             public string loc { get; set; }
             public string setup { get; set; }
             public string monthly { get; set; }
+            public string uqid { get; set; }
+            public string ttl { get; set; }
         }
 
         public class SearchResult
         {
-            public string did { get; set; }
+            public int did_id { get; set; }
+            public string did_number { get; set; }
+            public int did { get; set; }
             public string number { get; set; }
             public string npa { get; set; }
             public string nxx { get; set; }
             public string xxxx { get; set; }
-            public bool fax { get; set; }
-            public int tier { get; set; }
-            public string type { get; set; }
-            public string state { get; set; }
+            public int did_id_type { get; set; }
+            public int state_id { get; set; }
+            public string rate_center_id { get; set; }
+            public int did_status_id { get; set; }
             public string ratecenter { get; set; }
+            public string state { get; set; }
+            public string monthly { get; set; }
+            public string setup { get; set; }
             public string locData { get; set; }
         }
-
-
 
         /// <summary>
         /// Get local numbers.
@@ -101,21 +107,21 @@ namespace NumberSearch.DataAccess.Call48
 
             foreach (var item in results?.data?.result)
             {
-                if (item.did.Contains("-"))
+                if (item.did_number.Contains("-"))
                 {
-                    item.did = item.did.Replace("-", string.Empty);
+                    item.did_number = item.did_number.Replace("-", string.Empty);
                     //Log.Information($"[Ingest] [Call48] Removed dashes from {item.did}.");
                 }
 
                 // If the number has at least 10 chars then it could be a valid phone number.
                 // If the number starts with a 1 then it's a US number, we want to ignore internation numbers.
-                if (item.did.Length == 10 || item.did.Length == 11)
+                if (item.did_number.Length == 10 || item.did_number.Length == 11)
                 {
-                    item.did = item.did.Substring(item.did.Length - 10);
+                    item.did_number = item.did_number.Substring(item.did_number.Length - 10);
                 }
                 else
                 {
-                    Log.Warning($"[Ingest] [Call48] Failed to parse {item.did}. Passed neither the 10 or 11 char checks.");
+                    Log.Warning($"[Ingest] [Call48] Failed to parse {item.did_number}. Passed neither the 10 or 11 char checks.");
                     continue;
                 }
 
@@ -130,7 +136,7 @@ namespace NumberSearch.DataAccess.Call48
                         NPA = npa,
                         NXX = nxx,
                         XXXX = xxxx,
-                        DialedNumber = item.did,
+                        DialedNumber = item.did_number,
                         City = string.IsNullOrWhiteSpace(item.ratecenter) ? "Unknown City" : item.ratecenter,
                         State = string.IsNullOrWhiteSpace(item.state) ? "Unknown State" : item.state,
                         DateIngested = DateTime.Now,
@@ -155,21 +161,21 @@ namespace NumberSearch.DataAccess.Call48
 
             foreach (var item in results?.data?.result)
             {
-                if (item.did.Contains("-"))
+                if (item.did_number.Contains("-"))
                 {
-                    item.did = item.did.Replace("-", string.Empty);
+                    item.did_number = item.did_number.Replace("-", string.Empty);
                     //Log.Information($"[Ingest] [Call48] Removed dashes from {item.did}.");
                 }
 
                 // If the number has at least 10 chars then it could be a valid phone number.
                 // If the number starts with a 1 then it's a US number, we want to ignore internation numbers.
-                if (item.did.Length == 10 || item.did.Length == 11)
+                if (item.did_number.Length == 10 || item.did_number.Length == 11)
                 {
-                    item.did = item.did.Substring(item.did.Length - 10);
+                    item.did_number = item.did_number.Substring(item.did_number.Length - 10);
                 }
                 else
                 {
-                    Log.Warning($"[Ingest] [Call48] Failed to parse {item.did}. Passed neither the 10 or 11 char checks.");
+                    Log.Warning($"[Ingest] [Call48] Failed to parse {item.did_number}. Passed neither the 10 or 11 char checks.");
                     continue;
                 }
 
@@ -184,7 +190,7 @@ namespace NumberSearch.DataAccess.Call48
                         NPA = npa,
                         NXX = nxx,
                         XXXX = xxxx,
-                        DialedNumber = item.did,
+                        DialedNumber = item.did_number,
                         City = string.IsNullOrWhiteSpace(item.ratecenter) ? "Unknown City" : item.ratecenter,
                         State = string.IsNullOrWhiteSpace(item.state) ? "Unknown State" : item.state,
                         DateIngested = DateTime.Now,

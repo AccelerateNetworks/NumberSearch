@@ -161,7 +161,7 @@ namespace NumberSearch.Mvc
                                                         var credentials = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
                                                         var results = await Search.GetLocalNumbersAsync(nto.State, string.Empty, nto.NPA.ToString(), nto.NXX.ToString(), credentials.data.token).ConfigureAwait(false);
                                                         // Sometimes Call48 includes dashes in their numbers for no reason.
-                                                        var matchingNumber = results.data.result.Where(x => x.did.Replace("-", string.Empty) == nto.DialedNumber).FirstOrDefault();
+                                                        var matchingNumber = results.data.result.Where(x => x.did_number.Replace("-", string.Empty) == nto.DialedNumber).FirstOrDefault();
 
                                                         // Buy it and save the reciept.
                                                         var executeOrder = await Purchase.PurchasePhoneNumberAsync(results.data.loc, matchingNumber, credentials.data.token).ConfigureAwait(false);
