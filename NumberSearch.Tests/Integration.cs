@@ -969,7 +969,7 @@ namespace NumberSearch.Tests
             Assert.NotNull(results);
             Assert.NotEmpty(results);
 
-            var result = await PortTn.GetAsync(results.FirstOrDefault().OrderId, bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+            var result = await PortTn.GetAsync("1642300", bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
 
             Assert.NotNull(result);
             output.WriteLine(JsonSerializer.Serialize(result));
@@ -1460,6 +1460,11 @@ namespace NumberSearch.Tests
             //output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
 
             results = await PortedPhoneNumber.GetByDialedNumberAsync(order.PortedDialedNumber, postgresql).ConfigureAwait(false);
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            output.WriteLine(JsonSerializer.Serialize(results));
+
+            results = await PortedPhoneNumber.GetByExternalIdAsync(order.ExternalPortRequestId, postgresql).ConfigureAwait(false);
             Assert.NotNull(results);
             Assert.NotEmpty(results);
             output.WriteLine(JsonSerializer.Serialize(results));

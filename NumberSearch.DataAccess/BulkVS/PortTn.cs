@@ -79,6 +79,8 @@ namespace NumberSearch.DataAccess.BulkVS
     public class EndUserInfo
     {
         public string Name { get; set; }
+        [JsonPropertyName("Authorized Contact")]
+        [JsonProperty("Authorized Contact")]
         public string Contact { get; set; }
         public string Address { get; set; }
         public string City { get; set; }

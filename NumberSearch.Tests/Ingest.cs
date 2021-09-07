@@ -28,6 +28,7 @@ namespace NumberSearch.Tests
         private readonly string postgresql;
         private readonly string peerlessAPIKey;
         private readonly string invoiceNinjaToken;
+        private readonly IConfiguration configuration;
 
         public FunctionalIngest(ITestOutputHelper output)
         {
@@ -37,6 +38,8 @@ namespace NumberSearch.Tests
                 .AddJsonFile("appsettings.json")
                 .AddUserSecrets("328593cf-cbb9-48e9-8938-e38a44c8291d")
                 .Build();
+
+            configuration = config;
 
             pComNetCredentials = new Credentials
             {
@@ -130,6 +133,13 @@ namespace NumberSearch.Tests
         //    // Assert
         //    Assert.NotNull(results);
         //    output.WriteLine(results.Count().ToString());
+        //}
+
+        //[Fact]
+        //public async Task UpdateBulkVSPortRequestStatusesAsync()
+        //{
+        //    // Update the statuses of all the active port requests with BulkVS.
+        //    await PortRequests.UpdateStatusesBulkVSAsync(configuration);
         //}
     }
 }

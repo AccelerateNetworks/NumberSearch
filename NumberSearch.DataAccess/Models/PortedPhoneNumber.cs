@@ -89,6 +89,25 @@ namespace NumberSearch.DataAccess
         }
 
         /// <summary>
+        /// Get a list of phone numbers with the same external port request id.
+        /// </summary>
+        /// <param name="externalPortRequestId"></param>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<PortedPhoneNumber>> GetByExternalIdAsync(string externalPortRequestId, string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\", \"Wireless\", \"RequestStatus\", \"DateFirmOrderCommitment\", \"PortedPhoneNumberId\", \"ExternalPortRequestId\", \"Completed\", \"RawResponse\" " +
+                "FROM public.\"PortedPhoneNumbers\" " +
+                "WHERE \"ExternalPortRequestId\" = @externalPortRequestId", new { externalPortRequestId })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        /// <summary>
         /// Find a single phone number based on the complete number.
         /// </summary>
         /// <param name="dialedNumber"></param>
