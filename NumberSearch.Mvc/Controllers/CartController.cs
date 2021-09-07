@@ -239,12 +239,21 @@ namespace NumberSearch.Mvc.Controllers
                         // Format the address information
                         Log.Information($"[Checkout] Parsing address data from {order.Address}");
                         var addressParts = order.UnparsedAddress.Split(", ");
-                        if (addressParts.Length > 4)
+                        if (addressParts.Length == 5)
                         {
                             order.Address = addressParts[0];
                             order.City = addressParts[1];
                             order.State = addressParts[2];
                             order.Zip = addressParts[3];
+                            Log.Information($"[Checkout] Address: {order.Address} City: {order.City} State: {order.State} Zip: {order.Zip}");
+                        }
+                        else if (addressParts.Length == 6)
+                        {
+                            order.Address = addressParts[0];
+                            //order.UnitTypeAndNumber = addressParts[1];
+                            order.City = addressParts[2];
+                            order.State = addressParts[3];
+                            order.Zip = addressParts[4];
                             Log.Information($"[Checkout] Address: {order.Address} City: {order.City} State: {order.State} Zip: {order.Zip}");
                         }
                         else
@@ -617,7 +626,9 @@ Accelerate Networks
                                 id = billingClient.id,
                                 invoice_items = reoccuringItems.ToArray(),
                                 tax_name1 = billingTaxRate.name,
-                                tax_rate1 = billingTaxRate.rate
+                                tax_rate1 = billingTaxRate.rate,
+                                is_recurring = true,
+                                frequency_id = 4
                             };
 
                             // If they want just a Quote, create a quote in the billing system, not an invoice.

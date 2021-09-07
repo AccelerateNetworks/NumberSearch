@@ -132,7 +132,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             var result = await url
                 .WithHeader(tokenHeader, token)
                 .WithHeader(contentHeader, contentHeaderValue)
-                .PostJsonAsync(new { client_id = id, tax_name1, tax_rate1, invoice_type_id, is_quote, invoice_items })
+                .PostJsonAsync(new { client_id = id, tax_name1, tax_rate1, invoice_type_id, is_quote, invoice_items, is_recurring, frequency_id })
                 .ReceiveJson<InvoiceSingle>()
                 .ConfigureAwait(false);
 

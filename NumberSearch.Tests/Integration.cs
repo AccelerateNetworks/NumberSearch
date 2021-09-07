@@ -288,7 +288,9 @@ namespace NumberSearch.Tests
         //    var testCreate = new InvoiceDatum
         //    {
         //        id = testClient.id,
-        //        invoice_items = testInvoice
+        //        invoice_items = testInvoice,
+        //        is_recurring = true,
+        //        frequency_id = 4
         //    };
 
         //    // Act
