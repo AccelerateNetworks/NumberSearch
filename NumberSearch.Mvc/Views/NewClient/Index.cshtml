@@ -5,7 +5,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container">
+<div class="container pb-5">
     <br />
     <div class="pricing-header mx-auto p-2 text-center">
         <h1 class="display-4">New Client Setup</h1>
@@ -13,51 +13,204 @@
     <br />
 
     <div class="row">
-        <div class="col">
-            <p>Who will be using each phone? Does anyone need an extension without a phone (eg: Voicemail to email or Mobile/PC app only)? What is each user’s email address? Do you have any extensions currently?</p>
-            <div class="table-responsive">
-                <table class="table table-borderless table-hover table-striped">
-                    <thead>
-                        <tr>
-                            <th>
-                                Extension #
-                            </th>
-                            <th>
-                                Name/Location
-                            </th>
-                            <th>
-                                Email (Optional)
-                            </th>
-                            <th>
-                                Model of Phone
-                            </th>
-                            <th>
-                                Outbound Caller ID
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @*@foreach (var number in Model?.NewClient?.ExtensionRegistrations)
-                        {
+        <form method="post">
+            <div class="col">
+                <p>Who will be using each phone? Does anyone need an extension without a phone (eg: Voicemail to email or Mobile/PC app only)? What is each user’s email address? Do you have any extensions currently?</p>
+                <div class="table-responsive">
+                    <table class="table table-borderless table-hover table-striped">
+                        <thead>
                             <tr>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
+                                <th>
+                                    Extension #
+                                </th>
+                                <th>
+                                    Name/Location
+                                </th>
+                                <th>
+                                    Email (Optional)
+                                </th>
+                                <th>
+                                    Model of Phone
+                                </th>
+                                <th>
+                                    Outbound Caller ID
+                                </th>
                             </tr>
-                        }*@
-                    </tbody>
-                </table>
-            </div>
-            <p>When someone calls, should they ring certain phones or be greeted with a menu?</p>
-            <div class="input-group">
-                <input type="checkbox" asp-for="NewClient.PhoneMenu" class="form-control" />
-                <div class="input-group-prepend">
-                    <span class="input-group-text">With textarea</span>
+                        </thead>
+                        <tbody>
+                            @if (Model?.NewClient?.ExtensionRegistrations is not null)
+                            {
+                                foreach (var number in Model?.NewClient?.ExtensionRegistrations)
+                                {
+                                    <tr>
+                                        <td>@number?.ExtensionNumber</td>
+                                        <td>@number?.NameOrLocation</td>
+                                        <td>@number?.Email</td>
+                                        <td>@number?.ModelOfPhone</td>
+                                        <td>@number?.OutboundCallerId</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
                 </div>
-                <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.PhonesToRingOrMenuDescription"></textarea>
+                <p>When someone calls, should they ring certain phones or be greeted with a menu?</p>
+                <div class="input-group">
+                    <input type="checkbox" asp-for="NewClient.PhoneMenu" class="form-control" />
+                    <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.PhonesToRingOrMenuDescription"></textarea>
+                </div>
+                <p>What are your business hours? Do you want calls to route directly to voicemail or a menu after business hours or during lunch? </p>
+                <div class="input-group">
+                    <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.BusinessHours"></textarea>
+                </div>
+                <p>Confirm whose voicemail box should receive calls outside of business hours.</p>
+                <div class="input-group">
+                    <input type="text" class="form-control" asp-for="NewClient.AfterHoursVoicemail" aria-label="Username" aria-describedby="basic-addon1">
+                </div>
+                <p>What does each of these phone numbers do for your business? We can prefix a word to the Caller Name for inbound calls to enable you to differentiate callers easily! Eg: Main #, Fax, Back #</p>
+                <div class="table-responsive">
+                    <table class="table table-borderless table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Phone Number
+                                </th>
+                                <th>
+                                    Description
+                                </th>
+                                <th>
+                                    Prefix (if desired)
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model?.NewClient?.NumberDescriptions is not null)
+                            {
+                                foreach (var number in Model?.NewClient?.NumberDescriptions)
+                                {
+                                    <tr>
+                                        <td>@number?.PhoneNumber</td>
+                                        <td>@number?.Description</td>
+                                        <td>@number?.Prefix</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <p>Do you use any texting service, overhead paging speakers, intercom, or have any speed dial keys you would like us to configure?</p>
+                <div class="input-group">
+                    <input type="checkbox" asp-for="NewClient.TextingService" class="form-control" />
+                    <input type="text" class="form-control" asp-for="NewClient.TextingServiceName" aria-label="TextingServiceName" aria-describedby="basic-addon1">
+                </div>
+                <p>What speakers and amplifier are in use, we recommend using a Snom PA1 paging adapter with most speaker systems.</p>
+                <div class="input-group">
+                    <input type="checkbox" asp-for="NewClient.OverheadPaging" class="form-control" />
+                    <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.OverheadPagingDescription"></textarea>
+                </div>
+                <p>
+                    Who do you intercom? Can they talk back to you or is it one way audio?
+                    List any intercom keys that should be configured below:
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-borderless table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Extension making the call to Intercom
+                                </th>
+                                <th>
+                                    Extension receiving the Intercom
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model?.NewClient?.IntercomRegistrations is not null)
+                            {
+                                foreach (var number in Model?.NewClient?.IntercomRegistrations)
+                                {
+                                    <tr>
+                                        <td>@number?.ExtensionSendingIntercom</td>
+                                        <td>@number?.ExtensionRecievingIntercom</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <p>
+                    Do you want any speed dial keys configured to enable easy calling or transferring of calls?
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-borderless table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Phone Number/Extension Number
+                                </th>
+                                <th>
+                                    Label/Name
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model?.NewClient?.SpeedDialKeys is not null)
+                            {
+                                foreach (var number in Model?.NewClient?.SpeedDialKeys)
+                                {
+                                    <tr>
+                                        <td>@number?.NumberOrExtension</td>
+                                        <td>@number?.LabelOrName</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <p>Is there any custom hold music you would prefer to use? By default we play Claire De Lune and a few other classical songs as your music on hold.</p>
+                <div class="input-group">
+                    <input type="checkbox" asp-for="NewClient.CustomHoldMusic" class="form-control" />
+                    <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.HoldMusicDescription"></textarea>
+                </div>
+                <p>When a phone is offline, should calls be forwarded anywhere special? By default they will reach your voicemail or after hours menu.</p>
+                <div class="input-group">
+                    <input type="text" class="form-control" asp-for="NewClient.PhoneOfflineInstructions" aria-label="Offline" aria-describedby="basic-addon1">
+                </div>
+                <p>
+                    We can also have your cellphone ring at the same time as your office phone if you enter your cellphone # under Follow Me below!
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-borderless table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Extension Number
+                                </th>
+                                <th>
+                                    Cell # for Follow Me
+                                </th>
+                                <th>
+                                    Forward to # when unreachable
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model?.NewClient?.FollowMeRegistrations is not null)
+                            {
+                                foreach (var number in Model?.NewClient?.FollowMeRegistrations)
+                                {
+                                    <tr>
+                                        <td>@number?.ExtensionOrNumber</td>
+                                        <td>@number?.CellPhoneNumber</td>
+                                        <td>@number?.UnreachablePhoneNumber</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+            <button type="submit" class="btn btn-primary btn-block"> Submit </button>
+        </form>
     </div>
 </div>
