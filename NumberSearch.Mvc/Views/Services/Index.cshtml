@@ -60,7 +60,7 @@
                                     <div class="input-group-append">
                                         <button onclick="AddToCart('Service','16e2c639-445b-4ae6-9925-07300318206b', $('#lines').val(), this)" class="btn btn-outline-primary">
                                             <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                            Start talking today
+                                            Add to Cart
                                         </button>
                                     </div>
                                 </div>
@@ -97,7 +97,7 @@
                                     <div class="input-group-append">
                                         <button onclick="AddToCart('Service', '48eb4627-8692-4a3b-8be1-be64bbeea534', $('#seats').val(), this)" class="btn btn-outline-primary">
                                             <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                            Start talking today
+                                            Add to Cart
                                         </button>
                                     </div>
                                 </div>
@@ -133,7 +133,7 @@
                             </ul>
                             <button class="btn btn-lg btn-primary" onclick="AddToCart('Service','86a8576f-15e4-4547-8705-7c98dbe5e58d', 1, this)">
                                 <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                Start texting today
+                                Add to Cart
                             </button>
                         </div>
                     </div>
@@ -151,7 +151,7 @@
                             </ul>
                             <button class="btn btn-lg btn-primary" onclick="AddToCart('Service', 'c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c', 1, this)">
                                 <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                Protect your business
+                                Add to Cart
                             </button>
                         </div>
                     </div>
@@ -169,10 +169,27 @@
                                 <li>Not local or regional</li>
                                 <li>Free for clients to call</li>
                             </ul>
-                            <button class="btn btn-lg btn-primary" onclick="AddToCart('Service', '07a7ef6b-eb30-4a81-bc86-be193ef03aa0', 1, this)">
-                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                Impress your clients
-                            </button>
+                            <div class="btn-group">
+                                <div class="input-group input-group-lg">
+                                    @{
+                                        var tollfree = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("07a7ef6b-eb30-4a81-bc86-be193ef03aa0")).FirstOrDefault();
+                                        if (tollfree is not null && tollfree.Quantity > 0)
+                                        {
+                                            <input id="tollfree" type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@tollfree?.Quantity">
+                                        }
+                                        else
+                                        {
+                                            <input id="tollfree" type="number" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                        }
+                                    }
+                                    <div class="input-group-append">
+                                        <button onclick="AddToCart('Service','07a7ef6b-eb30-4a81-bc86-be193ef03aa0', $('#tollfree').val(), this)" class="btn btn-outline-primary">
+                                            <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                            Add to Cart
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="card mb-4 shadow rounded-3">
@@ -189,7 +206,7 @@
                             </ul>
                             <button class="btn btn-lg btn-primary" onclick="AddToCart('Service', '1133e9ab-50f1-4eb6-a756-6b705dcbd6e5', 1, this)">
                                 <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                Send a Fax
+                                Add to Cart
                             </button>
                         </div>
                     </div>
@@ -209,7 +226,7 @@
                             </ul>
                             <button class="btn btn-lg btn-primary" onclick="AddToCart('Service', 'e2737eaa-b5b2-44f4-aa12-9bf517d99a7b', 1, this)">
                                 <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                Get connected
+                                Add to Cart
                             </button>
                         </div>
                     </div>
@@ -227,7 +244,7 @@
                             </ul>
                             <button class="btn btn-lg btn-primary" onclick="AddToCart('Service', 'aa8f21df-6562-4c9c-a75b-ca747ade1f2d', 1, this)">
                                 <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                Stay on the cutting edge
+                                Add to Cart
                             </button>
                         </div>
                     </div>
