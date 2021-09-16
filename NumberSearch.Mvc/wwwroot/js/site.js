@@ -26,7 +26,10 @@ $('input[type="file"]').change(function (e) {
 var cartCounter = 0;
 
 function AddToCart(type, id, quantity, element) {
-    quantity = (typeof quantity === 'undefined') ? quantity : 1;
+    // Default to 1 unit if the "Add to Cart" button is pressed.
+    if (quantity.length === 0) {
+        quantity = 1;
+    }
     var removeButton = `<button onclick="RemoveFromCart('${type}', '${id}', ${quantity}, this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>`;
     var cart = $('#headerCart');
     var cartButton = $('#cartButton');

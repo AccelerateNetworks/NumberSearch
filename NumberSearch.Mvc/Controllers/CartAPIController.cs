@@ -570,8 +570,11 @@ namespace NumberSearch.Mvc.Controllers
             var cart = Cart.GetFromSession(_httpContext.Session);
             var checkAdd = cart.AddService(service, productOrder);
 
+            var stdSeat = new Guid("16e2c639-445b-4ae6-9925-07300318206b");
+            var concurrentSeat = new Guid("48eb4627-8692-4a3b-8be1-be64bbeea534");
+
             // Add required E911 fees to the order for seats and lines.
-            if (service.Name == "Concurrent Seats" || service.Name == "Standard Lines")
+            if (service.ServiceId == concurrentSeat || service.ServiceId == stdSeat)
             {
                 var e911Id = new Guid("1b3ae0e0-e308-4f99-88e1-b9c220bc02d5");
                 var e911fee = await Service.GetAsync(e911Id, _postgresql).ConfigureAwait(false);
@@ -584,7 +587,7 @@ namespace NumberSearch.Mvc.Controllers
                     {
                         var totalE911FeeItems = 0;
 
-                        var lines = cart.Services.Where(x => x.Name == "Standard Lines").FirstOrDefault();
+                        var lines = cart.Services.Where(x => x.ServiceId == stdSeat).FirstOrDefault();
 
                         if (lines is not null)
                         {
@@ -592,7 +595,7 @@ namespace NumberSearch.Mvc.Controllers
                             totalE911FeeItems += lineQuantity.Quantity;
                         }
 
-                        var seats = cart.Services.Where(x => x.Name == "Concurrent Seats").FirstOrDefault();
+                        var seats = cart.Services.Where(x => x.ServiceId == concurrentSeat).FirstOrDefault();
 
                         if (seats is not null)
                         {
