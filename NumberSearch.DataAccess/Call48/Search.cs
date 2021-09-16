@@ -67,7 +67,8 @@ namespace NumberSearch.DataAccess.Call48
             string npaParameter = string.IsNullOrWhiteSpace(npa) ? string.Empty : $"&npa={npa}";
             string nxxParameter = string.IsNullOrWhiteSpace(nxx) ? string.Empty : $"&nxx={nxx}";
             // Limit values above 5000 return an error from the API.
-            string limitParameter = $"&limit=5000";
+            // A maximum of 50 records are return via the API no matter what limit value you set.
+            string limitParameter = $"&limit=50";
 
             string route = $"{baseUrl}{endPointName}{typeParameter}{stateParameter}{ratecenterParameter}{npaParameter}{nxxParameter}{limitParameter}";
 
