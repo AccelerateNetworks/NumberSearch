@@ -72,12 +72,39 @@ namespace NumberSearch.Mvc.Controllers
         }
 
 
-        [HttpPost("Cart/Order/{orderId}/NewClient")]
+        [HttpPost("Cart/Order/{orderId}/NewClient/")]
         [ValidateAntiForgeryToken]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult SubmitNewClient(Guid orderId, NewClient newClient)
+        public async Task<IActionResult> SubmitNewClientAsync(Guid orderId, NewClient newClient)
         {
-            return View("Index", new NewClientResult { NewClient = newClient, Order = new Order { OrderId = orderId } });
+            var order = await Order.GetByIdAsync(orderId, _postgresql).ConfigureAwait(false);
+
+            if (order is not null && newClient.NewClientId != Guid.Empty)
+            {
+                var checkNewClient = await NewClient.GetAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
+
+                // If it exist update it, if not then create it.
+                if (checkNewClient?.NewClientId == newClient?.NewClientId)
+                {
+                    var checkUpdate = await newClient.PutAsync(_postgresql).ConfigureAwait(false);
+
+                    if (checkUpdate)
+                    {
+                        newClient = await NewClient.GetAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
+                    }
+                }
+                else
+                {
+                    var checkCreate = await newClient.PostAsync(_postgresql).ConfigureAwait(false);
+
+                    if (checkCreate)
+                    {
+                        newClient = await NewClient.GetAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
+                    }
+                }
+            }
+
+            return View("Index", new NewClientResult { NewClient = newClient, Order = order });
         }
     }
 }

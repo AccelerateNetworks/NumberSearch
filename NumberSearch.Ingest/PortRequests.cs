@@ -83,76 +83,78 @@ namespace NumberSearch.Ingest
                 var rejected = numberStatuses?.Where(x => x == "EXCEPTION");
                 var completed = numberStatuses?.Where(x => x == "COMPLETE");
 
-                var portRequest = await PortRequest.GetByOrderIdAsync(portedNumbers.FirstOrDefault().OrderId ?? Guid.Empty, postgresSQL).ConfigureAwait(false);
-
-                if (portRequest is not null && portRequest.OrderId == portedNumbers.FirstOrDefault().OrderId)
+                if (portedNumbers.FirstOrDefault() is not null)
                 {
-                    // If all the numbers have been ported.
-                    if ((completed != null) && (completed.Any()) && (completed.Count() == numberStatuses.Count()))
-                    {
-                        portRequest.RequestStatus = "COMPLETE";
-                        portRequest.DateCompleted = DateTime.Now;
-                        portRequest.DateUpdated = DateTime.Now;
-                        portRequest.Completed = true;
-                        portRequest.VendorSubmittedTo = "BulkVS";
-                    }
-                    // If the porting of a number has been canceled.
-                    else if ((canceled != null) && (canceled.Any()))
-                    {
-                        portRequest.RequestStatus = "CANCELLED";
-                        portRequest.DateCompleted = DateTime.Now;
-                        portRequest.DateUpdated = DateTime.Now;
-                        portRequest.Completed = false;
-                        portRequest.VendorSubmittedTo = "BulkVS";
-                    }
-                    // If a request to port a number has been rejected.
-                    else if ((rejected != null) && (rejected.Any()))
-                    {
-                        portRequest.RequestStatus = "EXCEPTION";
-                        portRequest.DateCompleted = DateTime.Now;
-                        portRequest.DateUpdated = DateTime.Now;
-                        portRequest.Completed = false;
-                        portRequest.VendorSubmittedTo = "BulkVS";
-                    }
-                    // If the none of the port request completion criteria have been met.
-                    else
-                    {
-                        portRequest.RequestStatus = numberStatuses?.FirstOrDefault();
-                        portRequest.DateUpdated = DateTime.Now;
-                        portRequest.Completed = false;
-                        portRequest.VendorSubmittedTo = "BulkVS";
-                    }
+                    var portRequest = await PortRequest.GetByOrderIdAsync(portedNumbers.FirstOrDefault().OrderId ?? Guid.Empty, postgresSQL).ConfigureAwait(false);
 
-                    // Update the request in the database.
-                    var checkUpdate = await portRequest.PutAsync(postgresSQL).ConfigureAwait(false);
-                    Log.Information($"[BulkVS] [PortRequests] Updated BulkVS Port Request {portRequest?.TeliId} - {portRequest?.RequestStatus} - {portRequest?.DateCompleted?.ToShortDateString()}");
-
-                    // Get the original order and the numbers associated with the outstanding Port Request.
-                    var originalOrder = await Order.GetByIdAsync(portRequest.OrderId, postgresSQL).ConfigureAwait(false);
-
-                    var notificationEmail = new Email
+                    if (portRequest is not null && portRequest.OrderId == portedNumbers.FirstOrDefault().OrderId)
                     {
-                        PrimaryEmailAddress = originalOrder?.Email,
-                        SalesEmailAddress = string.IsNullOrWhiteSpace(originalOrder?.SalesEmail) ? string.Empty : originalOrder.SalesEmail,
-                        CarbonCopy = emailOrders,
-                        OrderId = originalOrder.OrderId
-                    };
-
-                    string formattedNumbers = string.Empty;
-
-                    // If the port has just completed send out a notification email.
-                    if (portCompleted)
-                    {
-                        // If the ported number haven't already been formatted for inclusion in the email do it now.
-                        foreach (var ported in portedNumbers)
+                        // If all the numbers have been ported.
+                        if ((completed != null) && (completed.Any()) && (completed.Count() == numberStatuses.Count()))
                         {
-                            formattedNumbers += $"<br />{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
+                            portRequest.RequestStatus = "COMPLETE";
+                            portRequest.DateCompleted = DateTime.Now;
+                            portRequest.DateUpdated = DateTime.Now;
+                            portRequest.Completed = true;
+                            portRequest.VendorSubmittedTo = "BulkVS";
+                        }
+                        // If the porting of a number has been canceled.
+                        else if ((canceled != null) && (canceled.Any()))
+                        {
+                            portRequest.RequestStatus = "CANCELLED";
+                            portRequest.DateCompleted = DateTime.Now;
+                            portRequest.DateUpdated = DateTime.Now;
+                            portRequest.Completed = false;
+                            portRequest.VendorSubmittedTo = "BulkVS";
+                        }
+                        // If a request to port a number has been rejected.
+                        else if ((rejected != null) && (rejected.Any()))
+                        {
+                            portRequest.RequestStatus = "EXCEPTION";
+                            portRequest.DateCompleted = DateTime.Now;
+                            portRequest.DateUpdated = DateTime.Now;
+                            portRequest.Completed = false;
+                            portRequest.VendorSubmittedTo = "BulkVS";
+                        }
+                        // If the none of the port request completion criteria have been met.
+                        else
+                        {
+                            portRequest.RequestStatus = numberStatuses?.FirstOrDefault();
+                            portRequest.DateUpdated = DateTime.Now;
+                            portRequest.Completed = false;
+                            portRequest.VendorSubmittedTo = "BulkVS";
                         }
 
-                        // Port date set or updated.
-                        notificationEmail.Subject = $"Your phone number has switched to Accelerate Networks successfully!";
-                        notificationEmail.SalesEmailAddress = string.IsNullOrWhiteSpace(originalOrder.SalesEmail) ? string.Empty : originalOrder.SalesEmail;
-                        notificationEmail.MessageBody = $@"Hi {originalOrder.FirstName},
+                        // Update the request in the database.
+                        var checkUpdate = await portRequest.PutAsync(postgresSQL).ConfigureAwait(false);
+                        Log.Information($"[BulkVS] [PortRequests] Updated BulkVS Port Request {portRequest?.TeliId} - {portRequest?.RequestStatus} - {portRequest?.DateCompleted?.ToShortDateString()}");
+
+                        // Get the original order and the numbers associated with the outstanding Port Request.
+                        var originalOrder = await Order.GetByIdAsync(portRequest.OrderId, postgresSQL).ConfigureAwait(false);
+
+                        var notificationEmail = new Email
+                        {
+                            PrimaryEmailAddress = originalOrder?.Email,
+                            SalesEmailAddress = string.IsNullOrWhiteSpace(originalOrder?.SalesEmail) ? string.Empty : originalOrder.SalesEmail,
+                            CarbonCopy = emailOrders,
+                            OrderId = originalOrder.OrderId
+                        };
+
+                        string formattedNumbers = string.Empty;
+
+                        // If the port has just completed send out a notification email.
+                        if (portCompleted)
+                        {
+                            // If the ported number haven't already been formatted for inclusion in the email do it now.
+                            foreach (var ported in portedNumbers)
+                            {
+                                formattedNumbers += $"<br />{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
+                            }
+
+                            // Port date set or updated.
+                            notificationEmail.Subject = $"Your phone number has switched to Accelerate Networks successfully!";
+                            notificationEmail.SalesEmailAddress = string.IsNullOrWhiteSpace(originalOrder.SalesEmail) ? string.Empty : originalOrder.SalesEmail;
+                            notificationEmail.MessageBody = $@"Hi {originalOrder.FirstName},
 <br />
 <br />                                                                            
 Great news, your old provider has released your phone numbers to Accelerate Networks!
@@ -174,30 +176,30 @@ Accelerate Networks
 <br />                                                                            
 206-858-8757 (call or text)";
 
-                        var checkSend = await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);
-                        var checkSave = await notificationEmail.PostAsync(postgresSQL).ConfigureAwait(false);
+                            var checkSend = await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);
+                            var checkSave = await notificationEmail.PostAsync(postgresSQL).ConfigureAwait(false);
 
-                        if (checkSend && checkSave)
-                        {
-                            Log.Information($"Sucessfully sent out the port completed email for Order {originalOrder.OrderId}.");
+                            if (checkSend && checkSave)
+                            {
+                                Log.Information($"Sucessfully sent out the port completed email for Order {originalOrder.OrderId}.");
+                            }
+                            else
+                            {
+                                Log.Fatal($"Failed to sent out the port completed email for Order {originalOrder.OrderId}.");
+                            }
                         }
-                        else
+                        else if (focChanged)
                         {
-                            Log.Fatal($"Failed to sent out the port completed email for Order {originalOrder.OrderId}.");
-                        }
-                    }
-                    else if (focChanged)
-                    {
-                        foreach (var ported in portedNumbers)
-                        {
-                            formattedNumbers += $"<br />{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
-                        }
+                            foreach (var ported in portedNumbers)
+                            {
+                                formattedNumbers += $"<br />{ported?.PortedDialedNumber} - {ported?.DateFirmOrderCommitment?.ToShortDateString()}";
+                            }
 
-                        // Port date set or updated.
-                        var hasFOCdate = portedNumbers?.Where(x => x.DateFirmOrderCommitment != null).FirstOrDefault();
-                        notificationEmail.Subject = $"Port completion date set for {hasFOCdate?.DateFirmOrderCommitment}";
-                        notificationEmail.SalesEmailAddress = string.IsNullOrWhiteSpace(originalOrder.SalesEmail) ? string.Empty : originalOrder.SalesEmail;
-                        notificationEmail.MessageBody = $@"Hi {originalOrder.FirstName},
+                            // Port date set or updated.
+                            var hasFOCdate = portedNumbers?.Where(x => x.DateFirmOrderCommitment != null).FirstOrDefault();
+                            notificationEmail.Subject = $"Port completion date set for {hasFOCdate?.DateFirmOrderCommitment}";
+                            notificationEmail.SalesEmailAddress = string.IsNullOrWhiteSpace(originalOrder.SalesEmail) ? string.Empty : originalOrder.SalesEmail;
+                            notificationEmail.MessageBody = $@"Hi {originalOrder.FirstName},
 <br />
 <br />                                                                            
 Good news, your old provider is going to release your phone numbers to Accelerate Networks on {hasFOCdate?.DateFirmOrderCommitment?.ToShortDateString()}!
@@ -216,16 +218,17 @@ Accelerate Networks
 <br />                                                                            
 206-858-8757 (call or text)";
 
-                        var checkSend = await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);
-                        var checkSave = await notificationEmail.PostAsync(postgresSQL).ConfigureAwait(false);
+                            var checkSend = await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);
+                            var checkSave = await notificationEmail.PostAsync(postgresSQL).ConfigureAwait(false);
 
-                        if (checkSend && checkSave)
-                        {
-                            Log.Information($"Sucessfully sent out the port date set email for Order {originalOrder.OrderId}.");
-                        }
-                        else
-                        {
-                            Log.Fatal($"Failed to sent out the port date set email for Order {originalOrder.OrderId}.");
+                            if (checkSend && checkSave)
+                            {
+                                Log.Information($"Sucessfully sent out the port date set email for Order {originalOrder.OrderId}.");
+                            }
+                            else
+                            {
+                                Log.Fatal($"Failed to sent out the port date set email for Order {originalOrder.OrderId}.");
+                            }
                         }
                     }
                 }

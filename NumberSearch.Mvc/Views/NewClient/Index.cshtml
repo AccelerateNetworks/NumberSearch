@@ -14,6 +14,9 @@
 
     <div class="row">
         <form method="post">
+            <input type="text" class="form-control" asp-for="NewClient.NewClientId" hidden>
+            <input type="text" class="form-control" asp-for="NewClient.OrderId" hidden>
+            <input type="text" class="form-control" asp-for="NewClient.BillingClientId" hidden>
             <div class="col">
                 <p>Who will be using each phone? Does anyone need an extension without a phone (eg: Voicemail to email or Mobile/PC app only)? What is each user’s email address? Do you have any extensions currently?</p>
                 <div class="table-responsive">
