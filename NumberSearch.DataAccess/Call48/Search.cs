@@ -31,7 +31,7 @@ namespace NumberSearch.DataAccess.Call48
         {
             public int did_id { get; set; }
             public string did_number { get; set; }
-            public int did { get; set; }
+            public string did { get; set; }
             public string number { get; set; }
             public string npa { get; set; }
             public string nxx { get; set; }
