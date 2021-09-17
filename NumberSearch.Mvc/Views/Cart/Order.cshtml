@@ -18,7 +18,7 @@
 <script type="text/javascript">
     function handleSearchQuery(textBox) {
         var route = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest?text=';
-        var suffix = '&maxSuggestions=5&countryCode=USA&f=pjson';
+        var suffix = '&maxSuggestions=5&countryCode=USA,CAN&f=pjson';
         fetch(`${route}${textBox.value}${suffix}`)
             .then(
                 function (response) {
