@@ -39,7 +39,7 @@ namespace NumberSearch.DataAccess.BulkVS
             {
                 Log.Warning($"[Porting] [BulkVS] {ex.Message} for BulkVS orderId {orderId}.");
 
-                return new PortTn();
+                return null;
             }
         }
 

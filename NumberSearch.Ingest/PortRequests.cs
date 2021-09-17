@@ -40,7 +40,7 @@ namespace NumberSearch.Ingest
                 foreach (var number in portedNumbers)
                 {
                     // If the request has been assigned and external port request id than it has been submitted to the vendor.
-                    if (!string.IsNullOrWhiteSpace(number.ExternalPortRequestId))
+                    if (!string.IsNullOrWhiteSpace(number.ExternalPortRequestId) && bulkStatus is not null)
                     {
                         var matchingNumber = bulkStatus.TNList.Where(x => x.TN == $"1{number.PortedDialedNumber}").FirstOrDefault();
 
