@@ -55,7 +55,7 @@ namespace NumberSearch.Mvc.Controllers
                     OverheadPagingDescription = "Big loud sounds come from the front desk and go to the loading dock.",
                     PhoneOfflineInstructions = "Forward the call to the front desk.",
                     FollowMeRegistrations = new FollowMeRegistration[] {
-                        new FollowMeRegistration { ExtensionOrNumber = "1", CellPhoneNumber = "2068588757", UnreachablePhoneNumber = "Front Desk" }
+                        new FollowMeRegistration { NumberOrExtension = "1", CellPhoneNumber = "2068588757", UnreachablePhoneNumber = "Front Desk" }
                     },
                     NumberDescriptions = new NumberDescription[] {
                         new NumberDescription { PhoneNumber = "2068589310", Description = "Ring to 103 Jessica" },
