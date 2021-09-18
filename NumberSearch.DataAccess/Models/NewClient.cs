@@ -3,6 +3,7 @@
 using Npgsql;
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess
@@ -95,16 +96,16 @@ namespace NumberSearch.DataAccess
         public string OutboundCallerId { get; set; }
         public DateTime DateUpdated { get; set; }
 
-        public static async Task<NewClient> GetByNewClientAsync(Guid newClientId, string connectionString)
+        public static async Task<ExtensionRegistration[]> GetByNewClientAsync(Guid newClientId, string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QuerySingleOrDefaultAsync<NewClient>("SELECT \"ExtensionRegistrationId\", \"NewClientId\", \"ExtensionNumber\", \"NameOrLocation\", \"Email\", \"ModelOfPhone\", \"OutboundCallerId\", \"DateUpdated\" FROM public.\"ExtensionRegistrations\" " +
+                .QueryAsync<ExtensionRegistration>("SELECT \"ExtensionRegistrationId\", \"NewClientId\", \"ExtensionNumber\", \"NameOrLocation\", \"Email\", \"ModelOfPhone\", \"OutboundCallerId\", \"DateUpdated\" FROM public.\"ExtensionRegistrations\" " +
                 "WHERE \"NewClientId\" = @newClientId", new { newClientId })
                 .ConfigureAwait(false);
 
-            return result;
+            return result.ToArray();
         }
 
         public async Task<bool> PostAsync(string connectionString)
@@ -156,16 +157,16 @@ namespace NumberSearch.DataAccess
         public string Prefix { get; set; }
         public DateTime DateUpdated { get; set; }
 
-        public static async Task<NewClient> GetByNewClientAsync(Guid newClientId, string connectionString)
+        public static async Task<NumberDescription[]> GetByNewClientAsync(Guid newClientId, string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QuerySingleOrDefaultAsync<NewClient>("SELECT \"NumberDescriptionId\", \"NewClientId\", \"PhoneNumber\", \"Description\", \"Prefix\", \"DateUpdated\" FROM public.\"NumberDescriptions\" " +
+                .QueryAsync<NumberDescription>("SELECT \"NumberDescriptionId\", \"NewClientId\", \"PhoneNumber\", \"Description\", \"Prefix\", \"DateUpdated\" FROM public.\"NumberDescriptions\" " +
                 "WHERE \"NewClientId\" = @newClientId", new { newClientId })
                 .ConfigureAwait(false);
 
-            return result;
+            return result.ToArray();
         }
 
         public async Task<bool> PostAsync(string connectionString)
@@ -216,16 +217,16 @@ namespace NumberSearch.DataAccess
         public int ExtensionRecievingIntercom { get; set; }
         public DateTime DateUpdated { get; set; }
 
-        public static async Task<NewClient> GetByNewClientAsync(Guid newClientId, string connectionString)
+        public static async Task<IntercomRegistration[]> GetByNewClientAsync(Guid newClientId, string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QuerySingleOrDefaultAsync<NewClient>("SELECT \"IntercomRegistrationId\", \"NewClientId\", \"ExtensionSendingIntercom\", \"ExtensionRecievingIntercom\", \"DateUpdated\" FROM public.\"IntercomRegistrations\" " +
+                .QueryAsync<IntercomRegistration>("SELECT \"IntercomRegistrationId\", \"NewClientId\", \"ExtensionSendingIntercom\", \"ExtensionRecievingIntercom\", \"DateUpdated\" FROM public.\"IntercomRegistrations\" " +
                 "WHERE \"NewClientId\" = @newClientId", new { newClientId })
                 .ConfigureAwait(false);
 
-            return result;
+            return result.ToArray();
         }
 
         public async Task<bool> PostAsync(string connectionString)
@@ -276,16 +277,16 @@ namespace NumberSearch.DataAccess
         public string LabelOrName { get; set; }
         public DateTime DateUpdated { get; set; }
 
-        public static async Task<NewClient> GetByNewClientAsync(Guid newClientId, string connectionString)
+        public static async Task<SpeedDialKey[]> GetByNewClientAsync(Guid newClientId, string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QuerySingleOrDefaultAsync<NewClient>("SELECT \"SpeedDialKeyId\", \"NewClientId\", \"NumberOrExtension\", \"LabelOrName\", \"DateUpdated\" FROM public.\"SpeedDialKeys\" " +
+                .QueryAsync<SpeedDialKey>("SELECT \"SpeedDialKeyId\", \"NewClientId\", \"NumberOrExtension\", \"LabelOrName\", \"DateUpdated\" FROM public.\"SpeedDialKeys\" " +
                 "WHERE \"NewClientId\" = @newClientId", new { newClientId })
                 .ConfigureAwait(false);
 
-            return result;
+            return result.ToArray();
         }
 
         public async Task<bool> PostAsync(string connectionString)
@@ -337,16 +338,16 @@ namespace NumberSearch.DataAccess
         public string UnreachablePhoneNumber { get; set; }
         public DateTime DateUpdated { get; set; }
 
-        public static async Task<NewClient> GetByNewClientAsync(Guid newClientId, string connectionString)
+        public static async Task<FollowMeRegistration[]> GetByNewClientAsync(Guid newClientId, string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QuerySingleOrDefaultAsync<NewClient>("SELECT \"FollowMeRegistrationId\", \"NewClientId\", \"NumberOrExtension\", \"CellPhoneNumber\", \"UnreachablePhoneNumber\", \"DateUpdated\" FROM public.\"FollowMeRegistrations\" " +
+                .QueryAsync<FollowMeRegistration>("SELECT \"FollowMeRegistrationId\", \"NewClientId\", \"NumberOrExtension\", \"CellPhoneNumber\", \"UnreachablePhoneNumber\", \"DateUpdated\" FROM public.\"FollowMeRegistrations\" " +
                 "WHERE \"NewClientId\" = @newClientId", new { newClientId })
                 .ConfigureAwait(false);
 
-            return result;
+            return result.ToArray();
         }
 
         public async Task<bool> PostAsync(string connectionString)
