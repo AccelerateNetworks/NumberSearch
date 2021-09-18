@@ -3,8 +3,6 @@
 using Npgsql;
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess
@@ -95,6 +93,58 @@ namespace NumberSearch.DataAccess
         public string Email { get; set; }
         public string ModelOfPhone { get; set; }
         public string OutboundCallerId { get; set; }
+        public DateTime DateUpdated { get; set; }
+
+        public static async Task<NewClient> GetByNewClientAsync(Guid newClientId, string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QuerySingleOrDefaultAsync<NewClient>("SELECT \"ExtensionRegistrationId\", \"NewClientId\", \"ExtensionNumber\", \"NameOrLocation\", \"Email\", \"ModelOfPhone\", \"OutboundCallerId\", \"DateUpdated\" FROM public.\"ExtensionRegistrations\" " +
+                "WHERE \"NewClientId\" = @newClientId", new { newClientId })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        public async Task<bool> PostAsync(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("INSERT INTO public.\"ExtensionRegistrations\" ( \"ExtensionRegistrationId\", \"NewClientId\", \"ExtensionNumber\", \"NameOrLocation\", \"Email\", \"ModelOfPhone\", \"OutboundCallerId\", \"DateUpdated\" ) " +
+                "VALUES ( @ExtensionRegistrationId, @NewClientId, @ExtensionNumber, @NameOrLocation, @Email, @ModelOfPhone, @OutboundCallerId, @DateUpdated )",
+                new { ExtensionRegistrationId, NewClientId, ExtensionNumber, NameOrLocation, Email, ModelOfPhone, OutboundCallerId, DateUpdated })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteAsync(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("DELETE FROM public.\"ExtensionRegistrations\" WHERE \"ExtensionRegistrationId\" = @ExtensionRegistrationId",
+                new { ExtensionRegistrationId })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 
     public class NumberDescription
@@ -104,6 +154,58 @@ namespace NumberSearch.DataAccess
         public string PhoneNumber { get; set; }
         public string Description { get; set; }
         public string Prefix { get; set; }
+        public DateTime DateUpdated { get; set; }
+
+        public static async Task<NewClient> GetByNewClientAsync(Guid newClientId, string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QuerySingleOrDefaultAsync<NewClient>("SELECT \"NumberDescriptionId\", \"NewClientId\", \"PhoneNumber\", \"Description\", \"Prefix\", \"DateUpdated\" FROM public.\"NumberDescriptions\" " +
+                "WHERE \"NewClientId\" = @newClientId", new { newClientId })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        public async Task<bool> PostAsync(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("INSERT INTO public.\"NumberDescriptions\" ( \"NumberDescriptionId\", \"NewClientId\", \"PhoneNumber\", \"Description\", \"Prefix\", \"DateUpdated\" ) " +
+                "VALUES ( @NumberDescriptionId, @NewClientId, @PhoneNumber, @Description, @Prefix, @DateUpdated)",
+                new { NumberDescriptionId, NewClientId, PhoneNumber, Description, Prefix, DateUpdated })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteAsync(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("DELETE FROM public.\"NumberDescriptions\" WHERE \"NumberDescriptionId\" = @NumberDescriptionId",
+                new { NumberDescriptionId })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 
     public class IntercomRegistration
@@ -112,6 +214,58 @@ namespace NumberSearch.DataAccess
         public Guid NewClientId { get; set; }
         public int ExtensionSendingIntercom { get; set; }
         public int ExtensionRecievingIntercom { get; set; }
+        public DateTime DateUpdated { get; set; }
+
+        public static async Task<NewClient> GetByNewClientAsync(Guid newClientId, string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QuerySingleOrDefaultAsync<NewClient>("SELECT \"IntercomRegistrationId\", \"NewClientId\", \"ExtensionSendingIntercom\", \"ExtensionRecievingIntercom\", \"DateUpdated\" FROM public.\"IntercomRegistrations\" " +
+                "WHERE \"NewClientId\" = @newClientId", new { newClientId })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        public async Task<bool> PostAsync(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("INSERT INTO public.\"IntercomRegistrations\" ( \"IntercomRegistrationId\", \"NewClientId\", \"ExtensionSendingIntercom\", \"ExtensionRecievingIntercom\", \"DateUpdated\" ) " +
+                "VALUES ( @IntercomRegistrationId, @NewClientId, @ExtensionSendingIntercom, @ExtensionRecievingIntercom, @DateUpdated )",
+                new { IntercomRegistrationId, NewClientId, ExtensionSendingIntercom, ExtensionRecievingIntercom, DateUpdated })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteAsync(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("DELETE FROM public.\"IntercomRegistrations\" WHERE \"IntercomRegistrationId\" = @IntercomRegistrationId",
+                new { IntercomRegistrationId })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 
     public class SpeedDialKey
@@ -120,14 +274,118 @@ namespace NumberSearch.DataAccess
         public Guid NewClientId { get; set; }
         public string NumberOrExtension { get; set; }
         public string LabelOrName { get; set; }
+        public DateTime DateUpdated { get; set; }
+
+        public static async Task<NewClient> GetByNewClientAsync(Guid newClientId, string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QuerySingleOrDefaultAsync<NewClient>("SELECT \"SpeedDialKeyId\", \"NewClientId\", \"NumberOrExtension\", \"LabelOrName\", \"DateUpdated\" FROM public.\"SpeedDialKeys\" " +
+                "WHERE \"NewClientId\" = @newClientId", new { newClientId })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        public async Task<bool> PostAsync(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("INSERT INTO public.\"SpeedDialKeys\" ( \"SpeedDialKeyId\", \"NewClientId\", \"NumberOrExtension\", \"LabelOrName\", \"DateUpdated\" ) " +
+                "VALUES ( @SpeedDialKeyId, @NewClientId, @NumberOrExtension, @LabelOrName, @DateUpdated )",
+                new { SpeedDialKeyId, NewClientId, NumberOrExtension, LabelOrName, DateUpdated })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteAsync(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("DELETE FROM public.\"SpeedDialKeys\" WHERE \"SpeedDialKeyId\" = @SpeedDialKeyId",
+                new { SpeedDialKeyId })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 
     public class FollowMeRegistration
     {
         public Guid FollowMeRegistrationId { get; set; }
         public Guid NewClientId { get; set; }
-        public string ExtensionOrNumber { get; set; }
+        public string NumberOrExtension { get; set; }
         public string CellPhoneNumber { get; set; }
         public string UnreachablePhoneNumber { get; set; }
+        public DateTime DateUpdated { get; set; }
+
+        public static async Task<NewClient> GetByNewClientAsync(Guid newClientId, string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QuerySingleOrDefaultAsync<NewClient>("SELECT \"FollowMeRegistrationId\", \"NewClientId\", \"NumberOrExtension\", \"CellPhoneNumber\", \"UnreachablePhoneNumber\", \"DateUpdated\" FROM public.\"FollowMeRegistrations\" " +
+                "WHERE \"NewClientId\" = @newClientId", new { newClientId })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        public async Task<bool> PostAsync(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("INSERT INTO public.\"FollowMeRegistrations\" ( \"FollowMeRegistrationId\", \"NewClientId\", \"NumberOrExtension\", \"CellPhoneNumber\", \"UnreachablePhoneNumber\", \"DateUpdated\" ) " +
+                "VALUES ( @FollowMeRegistrationId, @NewClientId, @NumberOrExtension, @CellPhoneNumber, @UnreachablePhoneNumber, @DateUpdated )",
+                new { FollowMeRegistrationId, NewClientId, NumberOrExtension, CellPhoneNumber, UnreachablePhoneNumber, DateUpdated })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteAsync(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("DELETE FROM public.\"FollowMeRegistrations\" WHERE \"FollowMeRegistrationId\" = @FollowMeRegistrationId",
+                new { FollowMeRegistrationId })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }
