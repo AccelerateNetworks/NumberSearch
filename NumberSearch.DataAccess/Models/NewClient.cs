@@ -44,6 +44,18 @@ namespace NumberSearch.DataAccess
             return result;
         }
 
+        public static async Task<NewClient> GetByOrderIdAsync(Guid orderId, string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QuerySingleOrDefaultAsync<NewClient>("SELECT \"NewClientId\", \"OrderId\", \"BillingClientId\", \"PhoneMenu\", \"PhonesToRingOrMenuDescription\", \"BusinessHours\", \"AfterHoursVoicemail\", \"TextingService\", \"TextingServiceName\", \"OverheadPaging\", \"OverheadPagingDescription\", \"Intercom\", \"CustomHoldMusic\", \"HoldMusicDescription\", \"PhoneOfflineInstructions\", \"DateUpdated\" FROM public.\"NewClients\" " +
+                "WHERE \"OrderId\" = @orderId", new { orderId })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
         public async Task<bool> PostAsync(string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);

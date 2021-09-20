@@ -91,3 +91,59 @@ function moveScrollIndicator() {
     var scrolled = (winScroll / height) * 100;
     document.getElementById("scrollIndicator").style.width = scrolled + "%";
 }
+
+function AddExtensionRegistration(newClientId, ext, nameOrLocation, email, model, callerId, element) {
+    var request = new XMLHttpRequest();
+    var route = `/Add/NewClient/${newClientId}/ExtensionRegistration`;
+    request.open('POST', route, true);
+    request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    request.onload = function () {
+        if (this.response != null) {
+            console.log(`Added ${ext} to the NewClient.`)
+            var table = document.getElementById('regextstable');
+            var row = table.insertRow(0);
+            row.id = ext;
+            var extCell = row.insertCell(0);
+            extCell.innerHTML = ext;
+            var nameCell = row.insertCell(1);
+            nameCell.innerHTML = nameOrLocation;
+            var emailCell = row.insertCell(2);
+            emailCell.innerHTML = email;
+            var modelCell = row.insertCell(3);
+            modelCell.innerHTML = model;
+            var callerIdCell = row.insertCell(4);
+            callerIdCell.innerHTML = callerId;
+            var removeButton = `<button type='button' onclick='RemoveExtensionRegistration("${newClientId}", ${this.response}, this)' class="btn btn-outline-danger"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>Remove</button>`;
+            var removeCell = row.insertCell(5);
+            removeCell.innerHTML = removeButton;
+        } else {
+            console.log(`Failed to add ${ext} to cart.`)
+        }
+    };
+    request.send(JSON.stringify({
+        "extensionRegistrationId": `${newClientId}`,
+        "newClientId": `${newClientId}`,
+        "extensionNumber": `${ext}`,
+        "nameOrLocation": `${nameOrLocation}`,
+        "email": `${email}`,
+        "modelOfPhone": `${model}`,
+        "outboundCallerId": `${callerId}`,
+        "dateUpdated": "2021-09-19T08:10:00.521Z"
+    }));
+}
+
+function RemoveExtensionRegistration(newClientId, extRegId, element) {
+    var request = new XMLHttpRequest();
+    var route = `/Remove/NewClient/${newClientId}/ExtensionRegistration/${extRegId}`;
+    request.open('GET', route, true);
+    request.onload = function () {
+        if (this.response != null) {
+            console.log(`Removed ${extRegId} from NewClient ${newClientId}.`)
+            var row = element.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+        } else {
+            console.log(`Failed to remove ${extRegId} from NewClient ${newClientId}.`)
+        }
+    };
+    request.send();
+}

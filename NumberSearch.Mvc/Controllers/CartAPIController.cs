@@ -18,18 +18,91 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
 {
-    [Route("Cart")]
     [ApiController]
     public class CartAPIController : ControllerBase
     {
         private readonly IConfiguration _configuration;
+        private readonly string _postgresql;
 
         public CartAPIController(IConfiguration config)
         {
             _configuration = config;
+            _postgresql = _configuration.GetConnectionString("PostgresqlProd");
         }
 
-        [HttpGet("Add/{type}/{id}/{quantity}")]
+        [HttpPost("Add/NewClient/{id}/ExtensionRegistration")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> AddNewClientExtensionRegistrationAsync([FromRoute] Guid id, [FromBody] ExtensionRegistration registration)
+        {
+            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+
+            if (newClient is not null && newClient.NewClientId != Guid.Empty)
+            {
+                var extregs = await ExtensionRegistration.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+
+                var existing = extregs?.Where(x => x.ExtensionRegistrationId == registration.ExtensionRegistrationId).FirstOrDefault();
+
+                if (existing is null)
+                {
+                    registration.ExtensionRegistrationId = Guid.NewGuid();
+                    registration.DateUpdated = DateTime.Now;
+                    registration.NewClientId = id;
+
+                    var checkSubmit = await registration.PostAsync(_postgresql).ConfigureAwait(false);
+
+                    if (checkSubmit)
+                    {
+                        return Ok(registration.ExtensionRegistrationId);
+                    }
+                    else
+                    {
+                        return BadRequest($"Failed to save the extension Registration to the database.");
+                    }
+                }
+                else
+                {
+                    return BadRequest("An extension Registration with this Id already exists in the database.");
+                }
+            }
+
+            return BadRequest("Couldn't find a NewClient with this id.");
+        }
+
+        [HttpGet("Remove/NewClient/{id}/ExtensionRegistration/{extRegId}")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> RemoveNewClientExtensionRegistrationAsync([FromRoute] Guid id, [FromRoute] Guid extRegId)
+        {
+            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+
+            if (newClient is not null && newClient.NewClientId != Guid.Empty)
+            {
+                var extregs = await ExtensionRegistration.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+
+                var existing = extregs?.Where(x => x.ExtensionRegistrationId == extRegId).FirstOrDefault();
+
+                if (existing is null)
+                {
+                    return BadRequest($"An extension Registration with and Id of {extRegId} does not exist in the database.");
+                }
+                else
+                {
+                    var checkDelete = await existing.DeleteAsync(_postgresql).ConfigureAwait(false);
+
+                    if (checkDelete)
+                    {
+                        return Ok($"Deleted extension Registration {extRegId} from the database.");
+                    }
+                    else
+                    {
+                        return BadRequest($"Failed to delete extension Registration {extRegId} from the database.");
+                    }
+                }
+            }
+
+            return BadRequest("Couldn't find a NewClient with this id.");
+        }
+
+        [HttpGet("Cart/Add/{type}/{id}/{quantity}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddToCartAsync([FromRoute] string type, [FromRoute] string id, [FromRoute] int quantity = 1)
         {
@@ -75,7 +148,7 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
-        [HttpGet("Remove/{type}/{id}/{quantity}")]
+        [HttpGet("Cart/Remove/{type}/{id}/{quantity}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> RemoveFromCartAsync([FromRoute] string type, [FromRoute] string id, [FromRoute] int quantity = 1)
         {

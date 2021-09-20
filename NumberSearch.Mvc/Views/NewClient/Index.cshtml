@@ -14,9 +14,9 @@
 
     <div class="row">
         <form method="post">
-            <input type="text" class="form-control" asp-for="NewClient.NewClientId" hidden>
-            <input type="text" class="form-control" asp-for="NewClient.OrderId" hidden>
-            <input type="text" class="form-control" asp-for="NewClient.BillingClientId" hidden>
+            <input type="text" class="form-control" asp-for="NewClient.NewClientId" id="newClientId" hidden>
+            <input type="text" class="form-control" asp-for="NewClient.OrderId" id="orderId" hidden>
+            <input type="text" class="form-control" asp-for="NewClient.BillingClientId" id="billingId" hidden>
             <div class="col">
                 <p>Who will be using each phone? Does anyone need an extension without a phone (eg: Voicemail to email or Mobile/PC app only)? What is each user’s email address? Do you have any extensions currently?</p>
                 <div class="table-responsive">
@@ -38,26 +38,56 @@
                                 <th>
                                     Outbound Caller ID
                                 </th>
+                                <th>
+
+                                </th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="regextstable">
                             @if (Model?.NewClient?.ExtensionRegistrations is not null)
                             {
                                 foreach (var number in Model?.NewClient?.ExtensionRegistrations)
                                 {
-                                    <tr>
+                                    <tr id='@number.ExtensionRegistrationId'>
                                         <td>@number?.ExtensionNumber</td>
                                         <td>@number?.NameOrLocation</td>
                                         <td>@number?.Email</td>
                                         <td>@number?.ModelOfPhone</td>
                                         <td>@number?.OutboundCallerId</td>
+                                        <td>
+                                            <button type="button" onclick='RemoveExtensionRegistration("@Model?.NewClient?.NewClientId", "@number.ExtensionRegistrationId", this)' class="btn btn-outline-danger">
+                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                Remove
+                                            </button>
+                                        </td>
                                     </tr>
                                 }
                             }
                         </tbody>
                     </table>
                 </div>
-                <p>When someone calls, should they ring certain phones or be greeted with a menu?</p>
+                <div class="card p-2">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="ext" placeholder="Extension Number">
+                        <input type="text" class="form-control" id="nameOrLocation" placeholder="Name or Location">
+                        <input type="text" class="form-control" id="email" placeholder="Email">
+                        <input type="text" class="form-control" id="model" placeholder="Model of Phone">
+                        <input type="text" class="form-control" id="callerId" placeholder="Outbound Caller Id">
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-secondary"
+                                    onclick="AddExtensionRegistration(document.getElementById('newClientId').value,
+                                                document.getElementById('ext').value,
+                                                document.getElementById('nameOrLocation').value,
+                                                document.getElementById('email').value,
+                                                document.getElementById('model').value,
+                                                document.getElementById('callerId').value,
+                                                this);">
+                                Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-3">When someone calls, should they ring certain phones or be greeted with a menu?</p>
                 <div class="input-group">
                     <input type="checkbox" asp-for="NewClient.PhoneMenu" class="form-control" />
                     <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.PhonesToRingOrMenuDescription"></textarea>
