@@ -66,7 +66,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="card p-2">
+                <div class="card p-2 bg-light">
                     <div class="input-group">
                         <input type="text" class="form-control" id="ext" placeholder="Extension Number">
                         <input type="text" class="form-control" id="nameOrLocation" placeholder="Name or Location">
@@ -74,7 +74,7 @@
                         <input type="text" class="form-control" id="model" placeholder="Model of Phone">
                         <input type="text" class="form-control" id="callerId" placeholder="Outbound Caller Id">
                         <div class="input-group-append">
-                            <button type="button" class="btn btn-secondary"
+                            <button type="button" class="btn btn-primary"
                                     onclick="AddExtensionRegistration(document.getElementById('newClientId').value,
                                                 document.getElementById('ext').value,
                                                 document.getElementById('nameOrLocation').value,
@@ -114,9 +114,12 @@
                                 <th>
                                     Prefix (if desired)
                                 </th>
+                                <th>
+
+                                </th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="numdestable">
                             @if (Model?.NewClient?.NumberDescriptions is not null)
                             {
                                 foreach (var number in Model?.NewClient?.NumberDescriptions)
@@ -125,13 +128,36 @@
                                         <td>@number?.PhoneNumber</td>
                                         <td>@number?.Description</td>
                                         <td>@number?.Prefix</td>
+                                        <td>
+                                            <button type="button" onclick='RemoveNumberDescription("@Model?.NewClient?.NewClientId", "@number.NumberDescriptionId", this)' class="btn btn-outline-danger">
+                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                Remove
+                                            </button>
+                                        </td>
                                     </tr>
                                 }
                             }
                         </tbody>
                     </table>
                 </div>
-                <p>Do you use any texting service, overhead paging speakers, intercom, or have any speed dial keys you would like us to configure?</p>
+                <div class="card p-2 bg-light">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="phoneNumber" placeholder="Phone Number">
+                        <input type="text" class="form-control" id="description" placeholder="Description">
+                        <input type="text" class="form-control" id="prefix" placeholder="Prefix">
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-primary"
+                                    onclick="AddNumberDescription(document.getElementById('newClientId').value,
+                                                document.getElementById('phoneNumber').value,
+                                                document.getElementById('description').value,
+                                                document.getElementById('prefix').value,
+                                                this);">
+                                Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-3">Do you use any texting service, overhead paging speakers, intercom, or have any speed dial keys you would like us to configure?</p>
                 <div class="input-group">
                     <input type="checkbox" asp-for="NewClient.TextingService" class="form-control" />
                     <input type="text" class="form-control" asp-for="NewClient.TextingServiceName" aria-label="TextingServiceName" aria-describedby="basic-addon1">
@@ -155,9 +181,12 @@
                                 <th>
                                     Extension receiving the Intercom
                                 </th>
+                                <th>
+
+                                </th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="intercomtable">
                             @if (Model?.NewClient?.IntercomRegistrations is not null)
                             {
                                 foreach (var number in Model?.NewClient?.IntercomRegistrations)
@@ -165,13 +194,34 @@
                                     <tr>
                                         <td>@number?.ExtensionSendingIntercom</td>
                                         <td>@number?.ExtensionRecievingIntercom</td>
+                                        <td>
+                                            <button type="button" onclick='RemoveIntercomRegistration("@Model?.NewClient?.NewClientId", "@number.IntercomRegistrationId", this)' class="btn btn-outline-danger">
+                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                Remove
+                                            </button>
+                                        </td>
                                     </tr>
                                 }
                             }
                         </tbody>
                     </table>
                 </div>
-                <p>
+                <div class="card p-2 bg-light">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="outgoing" placeholder="Extension making the call to Intercom">
+                        <input type="text" class="form-control" id="incoming" placeholder="Extension receiving the Intercom">
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-primary"
+                                    onclick="AddIntercomRegistration(document.getElementById('newClientId').value,
+                                                document.getElementById('outgoing').value,
+                                                document.getElementById('incoming').value,
+                                                this);">
+                                Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-3">
                     Do you want any speed dial keys configured to enable easy calling or transferring of calls?
                 </p>
                 <div class="table-responsive">
@@ -184,9 +234,12 @@
                                 <th>
                                     Label/Name
                                 </th>
+                                <th>
+
+                                </th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="speeddialtable">
                             @if (Model?.NewClient?.SpeedDialKeys is not null)
                             {
                                 foreach (var number in Model?.NewClient?.SpeedDialKeys)
@@ -194,13 +247,34 @@
                                     <tr>
                                         <td>@number?.NumberOrExtension</td>
                                         <td>@number?.LabelOrName</td>
+                                        <td>
+                                            <button type="button" onclick='RemoveSpeedDialKey("@Model?.NewClient?.NewClientId", "@number.SpeedDialKeyId", this)' class="btn btn-outline-danger">
+                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                Remove
+                                            </button>
+                                        </td>
                                     </tr>
                                 }
                             }
                         </tbody>
                     </table>
                 </div>
-                <p>Is there any custom hold music you would prefer to use? By default we play Claire De Lune and a few other classical songs as your music on hold.</p>
+                <div class="card p-2 bg-light">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="numberOrExt" placeholder="Phone Number/Extension Number">
+                        <input type="text" class="form-control" id="labelOrName" placeholder="Label/Name">
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-primary"
+                                    onclick="AddSpeedDialKey(document.getElementById('newClientId').value,
+                                                document.getElementById('numberOrExt').value,
+                                                document.getElementById('labelOrName').value,
+                                                this);">
+                                Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-3">Is there any custom hold music you would prefer to use? By default we play Claire De Lune and a few other classical songs as your music on hold.</p>
                 <div class="input-group">
                     <input type="checkbox" asp-for="NewClient.CustomHoldMusic" class="form-control" />
                     <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.HoldMusicDescription"></textarea>
@@ -225,9 +299,12 @@
                                 <th>
                                     Forward to # when unreachable
                                 </th>
+                                <th>
+
+                                </th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="followMeTable">
                             @if (Model?.NewClient?.FollowMeRegistrations is not null)
                             {
                                 foreach (var number in Model?.NewClient?.FollowMeRegistrations)
@@ -236,14 +313,37 @@
                                         <td>@number?.NumberOrExtension</td>
                                         <td>@number?.CellPhoneNumber</td>
                                         <td>@number?.UnreachablePhoneNumber</td>
+                                        <td>
+                                            <button type="button" onclick='RemoveFollowMeRegistration("@Model?.NewClient?.NewClientId", "@number.FollowMeRegistrationId", this)' class="btn btn-outline-danger">
+                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                Remove
+                                            </button>
+                                        </td>
                                     </tr>
                                 }
                             }
                         </tbody>
                     </table>
                 </div>
+                <div class="card p-2 bg-light">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="extNum" placeholder="Extension Number">
+                        <input type="text" class="form-control" id="cellPhone" placeholder="Cell # for Follow Me">
+                        <input type="text" class="form-control" id="forwardTo" placeholder="Forward to # when unreachable">
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-primary"
+                                    onclick="AddFollowMeRegistration(document.getElementById('newClientId').value,
+                                                document.getElementById('extNum').value,
+                                                document.getElementById('cellPhone').value,
+                                                document.getElementById('forwardTo').value,
+                                                this);">
+                                Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-block"> Submit </button>
+            <button type="submit" class="btn btn-primary btn-block mt-3"> Submit </button>
         </form>
     </div>
 </div>

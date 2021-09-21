@@ -102,6 +102,294 @@ namespace NumberSearch.Mvc.Controllers
             return BadRequest("Couldn't find a NewClient with this id.");
         }
 
+        [HttpPost("Add/NewClient/{id}/NumberDescription")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> AddNewClientNumberDescriptionAsync([FromRoute] Guid id, [FromBody] NumberDescription description)
+        {
+            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+
+            if (newClient is not null && newClient.NewClientId != Guid.Empty)
+            {
+                var extregs = await NumberDescription.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+
+                var existing = extregs?.Where(x => x.NumberDescriptionId == description.NumberDescriptionId).FirstOrDefault();
+
+                if (existing is null)
+                {
+                    description.NumberDescriptionId = Guid.NewGuid();
+                    description.DateUpdated = DateTime.Now;
+                    description.NewClientId = id;
+
+                    var checkSubmit = await description.PostAsync(_postgresql).ConfigureAwait(false);
+
+                    if (checkSubmit)
+                    {
+                        return Ok(description.NumberDescriptionId);
+                    }
+                    else
+                    {
+                        return BadRequest($"Failed to save the number Description to the database.");
+                    }
+                }
+                else
+                {
+                    return BadRequest("A number description with this Id already exists in the database.");
+                }
+            }
+
+            return BadRequest("Couldn't find a NewClient with this id.");
+        }
+
+        [HttpGet("Remove/NewClient/{id}/NumberDescription/{numDesId}")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> RemoveNewClientNumberDescriptionAsync([FromRoute] Guid id, [FromRoute] Guid numDesId)
+        {
+            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+
+            if (newClient is not null && newClient.NewClientId != Guid.Empty)
+            {
+                var extregs = await NumberDescription.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+
+                var existing = extregs?.Where(x => x.NumberDescriptionId == numDesId).FirstOrDefault();
+
+                if (existing is null)
+                {
+                    return BadRequest($"A number description with and Id of {numDesId} does not exist in the database.");
+                }
+                else
+                {
+                    var checkDelete = await existing.DeleteAsync(_postgresql).ConfigureAwait(false);
+
+                    if (checkDelete)
+                    {
+                        return Ok($"Deleted number description {numDesId} from the database.");
+                    }
+                    else
+                    {
+                        return BadRequest($"Failed to delete number description {numDesId} from the database.");
+                    }
+                }
+            }
+
+            return BadRequest("Couldn't find a NewClient with this id.");
+        }
+
+        [HttpPost("Add/NewClient/{id}/IntercomRegistration")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> AddNewClientIntercomRegistrationAsync([FromRoute] Guid id, [FromBody] IntercomRegistration description)
+        {
+            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+
+            if (newClient is not null && newClient.NewClientId != Guid.Empty)
+            {
+                var extregs = await IntercomRegistration.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+
+                var existing = extregs?.Where(x => x.IntercomRegistrationId == description.IntercomRegistrationId).FirstOrDefault();
+
+                if (existing is null)
+                {
+                    description.IntercomRegistrationId = Guid.NewGuid();
+                    description.DateUpdated = DateTime.Now;
+                    description.NewClientId = id;
+
+                    var checkSubmit = await description.PostAsync(_postgresql).ConfigureAwait(false);
+
+                    if (checkSubmit)
+                    {
+                        return Ok(description.IntercomRegistrationId);
+                    }
+                    else
+                    {
+                        return BadRequest($"Failed to save the Intercom Registration to the database.");
+                    }
+                }
+                else
+                {
+                    return BadRequest("An Intercom Registration with this Id already exists in the database.");
+                }
+            }
+
+            return BadRequest("Couldn't find a NewClient with this id.");
+        }
+
+        [HttpGet("Remove/NewClient/{id}/IntercomRegistration/{numDesId}")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> RemoveNewClientIntercomRegistrationAsync([FromRoute] Guid id, [FromRoute] Guid numDesId)
+        {
+            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+
+            if (newClient is not null && newClient.NewClientId != Guid.Empty)
+            {
+                var extregs = await IntercomRegistration.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+
+                var existing = extregs?.Where(x => x.IntercomRegistrationId == numDesId).FirstOrDefault();
+
+                if (existing is null)
+                {
+                    return BadRequest($"An Intercom Registration with and Id of {numDesId} does not exist in the database.");
+                }
+                else
+                {
+                    var checkDelete = await existing.DeleteAsync(_postgresql).ConfigureAwait(false);
+
+                    if (checkDelete)
+                    {
+                        return Ok($"Deleted Intercom Registration {numDesId} from the database.");
+                    }
+                    else
+                    {
+                        return BadRequest($"Failed to delete Intercom Registration {numDesId} from the database.");
+                    }
+                }
+            }
+
+            return BadRequest("Couldn't find a NewClient with this id.");
+        }
+
+        [HttpPost("Add/NewClient/{id}/SpeedDialKey")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> AddNewClientSpeedDialKeyAsync([FromRoute] Guid id, [FromBody] SpeedDialKey description)
+        {
+            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+
+            if (newClient is not null && newClient.NewClientId != Guid.Empty)
+            {
+                var extregs = await SpeedDialKey.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+
+                var existing = extregs?.Where(x => x.SpeedDialKeyId == description.SpeedDialKeyId).FirstOrDefault();
+
+                if (existing is null)
+                {
+                    description.SpeedDialKeyId = Guid.NewGuid();
+                    description.DateUpdated = DateTime.Now;
+                    description.NewClientId = id;
+
+                    var checkSubmit = await description.PostAsync(_postgresql).ConfigureAwait(false);
+
+                    if (checkSubmit)
+                    {
+                        return Ok(description.SpeedDialKeyId);
+                    }
+                    else
+                    {
+                        return BadRequest($"Failed to save the Speed Dial Key to the database.");
+                    }
+                }
+                else
+                {
+                    return BadRequest("An Speed Dial Key with this Id already exists in the database.");
+                }
+            }
+
+            return BadRequest("Couldn't find a NewClient with this id.");
+        }
+
+        [HttpGet("Remove/NewClient/{id}/SpeedDialKey/{numDesId}")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> RemoveNewClientSpeedDialKeyAsync([FromRoute] Guid id, [FromRoute] Guid numDesId)
+        {
+            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+
+            if (newClient is not null && newClient.NewClientId != Guid.Empty)
+            {
+                var extregs = await SpeedDialKey.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+
+                var existing = extregs?.Where(x => x.SpeedDialKeyId == numDesId).FirstOrDefault();
+
+                if (existing is null)
+                {
+                    return BadRequest($"An Speed Dial Key with and Id of {numDesId} does not exist in the database.");
+                }
+                else
+                {
+                    var checkDelete = await existing.DeleteAsync(_postgresql).ConfigureAwait(false);
+
+                    if (checkDelete)
+                    {
+                        return Ok($"Deleted Speed Dial Key {numDesId} from the database.");
+                    }
+                    else
+                    {
+                        return BadRequest($"Failed to delete Speed Dial Key {numDesId} from the database.");
+                    }
+                }
+            }
+
+            return BadRequest("Couldn't find a NewClient with this id.");
+        }
+
+        [HttpPost("Add/NewClient/{id}/FollowMeRegistration")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> AddNewClientFollowMeRegistrationAsync([FromRoute] Guid id, [FromBody] FollowMeRegistration description)
+        {
+            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+
+            if (newClient is not null && newClient.NewClientId != Guid.Empty)
+            {
+                var extregs = await FollowMeRegistration.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+
+                var existing = extregs?.Where(x => x.FollowMeRegistrationId == description.FollowMeRegistrationId).FirstOrDefault();
+
+                if (existing is null)
+                {
+                    description.FollowMeRegistrationId = Guid.NewGuid();
+                    description.DateUpdated = DateTime.Now;
+                    description.NewClientId = id;
+
+                    var checkSubmit = await description.PostAsync(_postgresql).ConfigureAwait(false);
+
+                    if (checkSubmit)
+                    {
+                        return Ok(description.FollowMeRegistrationId);
+                    }
+                    else
+                    {
+                        return BadRequest($"Failed to save the Follow Me Registration to the database.");
+                    }
+                }
+                else
+                {
+                    return BadRequest("An Follow Me Registration with this Id already exists in the database.");
+                }
+            }
+
+            return BadRequest("Couldn't find a NewClient with this id.");
+        }
+
+        [HttpGet("Remove/NewClient/{id}/FollowMeRegistration/{numDesId}")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> RemoveNewClientFollowMeRegistrationAsync([FromRoute] Guid id, [FromRoute] Guid numDesId)
+        {
+            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+
+            if (newClient is not null && newClient.NewClientId != Guid.Empty)
+            {
+                var extregs = await FollowMeRegistration.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+
+                var existing = extregs?.Where(x => x.FollowMeRegistrationId == numDesId).FirstOrDefault();
+
+                if (existing is null)
+                {
+                    return BadRequest($"An Follow Me Registration with and Id of {numDesId} does not exist in the database.");
+                }
+                else
+                {
+                    var checkDelete = await existing.DeleteAsync(_postgresql).ConfigureAwait(false);
+
+                    if (checkDelete)
+                    {
+                        return Ok($"Deleted Follow Me Registration {numDesId} from the database.");
+                    }
+                    else
+                    {
+                        return BadRequest($"Failed to delete Follow Me Registration {numDesId} from the database.");
+                    }
+                }
+            }
+
+            return BadRequest("Couldn't find a NewClient with this id.");
+        }
+
         [HttpGet("Cart/Add/{type}/{id}/{quantity}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddToCartAsync([FromRoute] string type, [FromRoute] string id, [FromRoute] int quantity = 1)

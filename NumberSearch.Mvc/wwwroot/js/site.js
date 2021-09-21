@@ -102,7 +102,6 @@ function AddExtensionRegistration(newClientId, ext, nameOrLocation, email, model
             console.log(`Added ${ext} to the NewClient.`)
             var table = document.getElementById('regextstable');
             var row = table.insertRow(0);
-            row.id = ext;
             var extCell = row.insertCell(0);
             extCell.innerHTML = ext;
             var nameCell = row.insertCell(1);
@@ -135,6 +134,196 @@ function AddExtensionRegistration(newClientId, ext, nameOrLocation, email, model
 function RemoveExtensionRegistration(newClientId, extRegId, element) {
     var request = new XMLHttpRequest();
     var route = `/Remove/NewClient/${newClientId}/ExtensionRegistration/${extRegId}`;
+    request.open('GET', route, true);
+    request.onload = function () {
+        if (this.response != null) {
+            console.log(`Removed ${extRegId} from NewClient ${newClientId}.`)
+            var row = element.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+        } else {
+            console.log(`Failed to remove ${extRegId} from NewClient ${newClientId}.`)
+        }
+    };
+    request.send();
+}
+
+function AddNumberDescription(newClientId, phoneNumber, description, prefix, element) {
+    var request = new XMLHttpRequest();
+    var route = `/Add/NewClient/${newClientId}/NumberDescription`;
+    request.open('POST', route, true);
+    request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    request.onload = function () {
+        if (this.response != null) {
+            console.log(`Added ${phoneNumber} to the NewClient.`)
+            var table = document.getElementById('numdestable');
+            var row = table.insertRow(0);
+            var phoneNumberCell = row.insertCell(0);
+            phoneNumberCell.innerHTML = phoneNumber;
+            var descriptionCell = row.insertCell(1);
+            descriptionCell.innerHTML = description;
+            var prefixCell = row.insertCell(2);
+            prefixCell.innerHTML = prefix;
+            var removeButton = `<button type='button' onclick='RemoveNumberDescription("${newClientId}", ${this.response}, this)' class="btn btn-outline-danger"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>Remove</button>`;
+            var removeCell = row.insertCell(3);
+            removeCell.innerHTML = removeButton;
+        } else {
+            console.log(`Failed to add ${phoneNumber} to cart.`)
+        }
+    };
+    request.send(JSON.stringify({
+        "numberDescriptionId": `${newClientId}`,
+        "newClientId": `${newClientId}`,
+        "phoneNumber": `${phoneNumber}`,
+        "description": `${description}`,
+        "prefix": `${prefix}`,
+        "dateUpdated": "2021-09-21T01:23:45.125Z"
+    }));
+}
+
+function RemoveNumberDescription(newClientId, extRegId, element) {
+    var request = new XMLHttpRequest();
+    var route = `/Remove/NewClient/${newClientId}/NumberDescription/${extRegId}`;
+    request.open('GET', route, true);
+    request.onload = function () {
+        if (this.response != null) {
+            console.log(`Removed ${extRegId} from NewClient ${newClientId}.`)
+            var row = element.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+        } else {
+            console.log(`Failed to remove ${extRegId} from NewClient ${newClientId}.`)
+        }
+    };
+    request.send();
+}
+
+function AddIntercomRegistration(newClientId, outgoing, incoming, element) {
+    var request = new XMLHttpRequest();
+    var route = `/Add/NewClient/${newClientId}/IntercomRegistration`;
+    request.open('POST', route, true);
+    request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    request.onload = function () {
+        if (this.response != null) {
+            console.log(`Added ${phoneNumber} to the NewClient.`)
+            var table = document.getElementById('intercomtable');
+            var row = table.insertRow(0);
+            var outgoingCell = row.insertCell(0);
+            outgoingCell.innerHTML = outgoing;
+            var incomingCell = row.insertCell(1);
+            incomingCell.innerHTML = incoming;
+            var removeButton = `<button type='button' onclick='RemoveIntercomRegistration("${newClientId}", ${this.response}, this)' class="btn btn-outline-danger"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>Remove</button>`;
+            var removeCell = row.insertCell(2);
+            removeCell.innerHTML = removeButton;
+        } else {
+            console.log(`Failed to add ${phoneNumber} to cart.`)
+        }
+    };
+    request.send(JSON.stringify({
+        "intercomRegistrationId": `${newClientId}`,
+        "newClientId": `${newClientId}`,
+        "extensionSendingIntercom": `${outgoing}`,
+        "extensionRecievingIntercom": `${incoming}`,
+        "dateUpdated": "2021-09-21T01:42:35.743Z"
+    }));
+}
+
+function RemoveIntercomRegistration(newClientId, extRegId, element) {
+    var request = new XMLHttpRequest();
+    var route = `/Remove/NewClient/${newClientId}/IntercomRegistration/${extRegId}`;
+    request.open('GET', route, true);
+    request.onload = function () {
+        if (this.response != null) {
+            console.log(`Removed ${extRegId} from NewClient ${newClientId}.`)
+            var row = element.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+        } else {
+            console.log(`Failed to remove ${extRegId} from NewClient ${newClientId}.`)
+        }
+    };
+    request.send();
+}
+
+function AddSpeedDialKey(newClientId, numberOrExt, labelOrName, element) {
+    var request = new XMLHttpRequest();
+    var route = `/Add/NewClient/${newClientId}/SpeedDialKey`;
+    request.open('POST', route, true);
+    request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    request.onload = function () {
+        if (this.response != null) {
+            console.log(`Added ${phoneNumber} to the NewClient.`)
+            var table = document.getElementById('speeddialtable');
+            var row = table.insertRow(0);
+            var numberOrExtCell = row.insertCell(0);
+            numberOrExtCell.innerHTML = numberOrExt;
+            var incomingCell = row.insertCell(1);
+            incomingCell.innerHTML = labelOrName;
+            var removeButton = `<button type='button' onclick='RemoveSpeedDialKey("${newClientId}", ${this.response}, this)' class="btn btn-outline-danger"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>Remove</button>`;
+            var removeCell = row.insertCell(2);
+            removeCell.innerHTML = removeButton;
+        } else {
+            console.log(`Failed to add ${phoneNumber} to cart.`)
+        }
+    };
+    request.send(JSON.stringify({
+        "speedDialKeyId": `${newClientId}`,
+        "newClientId": `${newClientId}`,
+        "numberOrExtension": `${numberOrExt}`,
+        "labelOrName": `${labelOrName}`,
+        "dateUpdated": "2021-09-21T02:57:39.917Z"
+    }));
+}
+
+function RemoveSpeedDialKey(newClientId, extRegId, element) {
+    var request = new XMLHttpRequest();
+    var route = `/Remove/NewClient/${newClientId}/SpeedDialKey/${extRegId}`;
+    request.open('GET', route, true);
+    request.onload = function () {
+        if (this.response != null) {
+            console.log(`Removed ${extRegId} from NewClient ${newClientId}.`)
+            var row = element.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+        } else {
+            console.log(`Failed to remove ${extRegId} from NewClient ${newClientId}.`)
+        }
+    };
+    request.send();
+}
+
+function AddFollowMeRegistration(newClientId, extNum, cellPhone, forwardTo, element) {
+    var request = new XMLHttpRequest();
+    var route = `/Add/NewClient/${newClientId}/FollowMeRegistration`;
+    request.open('POST', route, true);
+    request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    request.onload = function () {
+        if (this.response != null) {
+            console.log(`Added ${phoneNumber} to the NewClient.`)
+            var table = document.getElementById('followMeTable');
+            var row = table.insertRow(0);
+            var extNumCell = row.insertCell(0);
+            extNumCell.innerHTML = extNum;
+            var cellPhoneCell = row.insertCell(1);
+            cellPhoneCell.innerHTML = cellPhone;
+            var forwardToCell = row.insertCell(2);
+            forwardToCell.innerHTML = forwardTo;
+            var removeButton = `<button type='button' onclick='RemoveFollowMeRegistration("${newClientId}", ${this.response}, this)' class="btn btn-outline-danger"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>Remove</button>`;
+            var removeCell = row.insertCell(3);
+            removeCell.innerHTML = removeButton;
+        } else {
+            console.log(`Failed to add ${phoneNumber} to cart.`)
+        }
+    };
+    request.send(JSON.stringify({
+        "followMeRegistrationId": `${newClientId}`,
+        "newClientId": `${newClientId}`,
+        "numberOrExtension": `${extNum}`,
+        "cellPhoneNumber": `${cellPhone}`,
+        "unreachablePhoneNumber": `${forwardTo}`,
+        "dateUpdated": "2021-09-21T03:19:38.314Z"
+    }));
+}
+
+function RemoveFollowMeRegistration(newClientId, extRegId, element) {
+    var request = new XMLHttpRequest();
+    var route = `/Remove/NewClient/${newClientId}/FollowMeRegistration/${extRegId}`;
     request.open('GET', route, true);
     request.onload = function () {
         if (this.response != null) {
