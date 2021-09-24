@@ -28,7 +28,13 @@ namespace NumberSearch.Mvc.Controllers
         public async Task<IActionResult> IndexAsync(Guid orderId)
         {
             var order = await Order.GetByIdAsync(orderId, _postgresql);
+            var productOrders = await ProductOrder.GetAsync(orderId, _postgresql).ConfigureAwait(false);
+            var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
             var newClient = await NewClient.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+            var phoneNumbers = productOrders.Where(x => !string.IsNullOrWhiteSpace(x.DialedNumber))?.Select(x => x.DialedNumber)?.ToArray();
+            var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(orderId, _postgresql).ConfigureAwait(false);
+            var portedStrippedNumbers = portedNumbers?.Select(x => x.PortedDialedNumber).ToArray();
+            var allNumbers = phoneNumbers?.Concat(portedStrippedNumbers)?.ToArray();
 
             if (newClient is null)
             {
@@ -51,7 +57,10 @@ namespace NumberSearch.Mvc.Controllers
             var form = new NewClientResult
             {
                 Order = order,
-                NewClient = newClient
+                NewClient = newClient,
+                ProductOrders = productOrders.ToArray(),
+                Products = products.ToArray(),
+                PhoneNumbers = allNumbers,
                 //NewClient = new NewClient
                 //{
                 //    TextingService = true,

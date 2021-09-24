@@ -3,15 +3,24 @@
 @{
     ViewData["Title"] = "New Client";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var orderedPhones = Model?.ProductOrders?.Where(x => x.ProductId != Guid.Empty).ToArray();
 }
 
-<div class="container pb-5">
-    <br />
-    <div class="pricing-header mx-auto p-2 text-center">
-        <h1 class="display-4">New Client Setup</h1>
+<section class="text-light p-5" style="background-color: #3279B2">
+    <div class="container py-5 py-md-6 py-lg-7 mb-7 text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-md-11">
+                <h1 class="display-3 text-light">Tell us what you need</h1>
+                <p class="lead text-white">Help us get you all setup as our newest client.</p>
+            </div>
+        </div>
     </div>
-    <br />
-
+</section>
+<div class="container">
+    <div class="alert alert-secondary mt-3" role="alert">
+        Please call <a href="tel:206-858-8757" class="h5">(206) 858-8757</a> for immedate help filling out this form. You can also email us at <a href="mailto:support@acceleratenetworks.com">support@acceleratenetworks.com</a>.
+    </div>
     <div class="row">
         <form method="post">
             <input type="text" class="form-control" asp-for="NewClient.NewClientId" id="newClientId" hidden>
@@ -68,11 +77,36 @@
                 </div>
                 <div class="card p-2 bg-light">
                     <div class="input-group">
-                        <input type="text" class="form-control" id="ext" placeholder="Extension Number">
+                        <input type="text" class="form-control" id="ext" placeholder="Extension Number" pattern="[0-9]{2,14}">
                         <input type="text" class="form-control" id="nameOrLocation" placeholder="Name or Location">
                         <input type="text" class="form-control" id="email" placeholder="Email">
-                        <input type="text" class="form-control" id="model" placeholder="Model of Phone">
-                        <input type="text" class="form-control" id="callerId" placeholder="Outbound Caller Id">
+                        <input type="text" class="form-control" id="model" list="model-list" placeholder="Model of Phone">
+                        <datalist id="model-list">
+                            @{
+                                foreach (var item in orderedPhones)
+                                {
+                                    var productName = Model?.Products?.Where(x => x.ProductId == item.ProductId).FirstOrDefault()?.Name;
+                                    <option value="@productName"></option>
+                                }
+
+                                if (orderedPhones is null || orderedPhones.Length < 1)
+                                {
+                                    foreach (var product in Model?.Products)
+                                    {
+                                        <option value="@product.Name"></option>
+                                    }
+                                }
+                            }
+                        </datalist>
+                        <input type="text" class="form-control" id="callerId" list="callerId-list" placeholder="Outbound Caller Id">
+                        <datalist id="callerId-list">
+                            @{
+                                foreach (var number in Model?.PhoneNumbers)
+                                {
+                                    <option value="@number"></option>
+                                }
+                            }
+                        </datalist>
                         <div class="input-group-append">
                             <button type="button" class="btn btn-primary"
                                     onclick="AddExtensionRegistration(document.getElementById('newClientId').value,
@@ -87,7 +121,7 @@
                         </div>
                     </div>
                 </div>
-                <p class="mt-3">When someone calls, should they ring certain phones or be greeted with a menu?</p>
+                <p class="mt-3">When someone calls, should they ring certain phones or be greeted with a menu? ( Check the box for yes. )</p>
                 <div class="input-group">
                     <input type="checkbox" asp-for="NewClient.PhoneMenu" class="form-control" />
                     <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.PhonesToRingOrMenuDescription"></textarea>
@@ -343,7 +377,12 @@
                     </div>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-block mt-3"> Submit </button>
+            <div class="col">
+                <button type="submit" class="btn btn-success btn-lg btn-block mt-3"> Submit </button>
+            </div>
         </form>
+    </div>
+    <div class="alert alert-secondary mt-3" role="alert">
+        Please call <a href="tel:206-858-8757" class="h5">(206) 858-8757</a> for immedate help filling out this form. You can also email us at <a href="mailto:support@acceleratenetworks.com">support@acceleratenetworks.com</a>.
     </div>
 </div>

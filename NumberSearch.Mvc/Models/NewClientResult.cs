@@ -11,5 +11,8 @@ namespace NumberSearch.Mvc.Models
     {
         public NewClient NewClient { get; set; }
         public Order Order { get; set; }
+        public ProductOrder[] ProductOrders { get; set; }
+        public Product[] Products { get; set; }
+        public string[] PhoneNumbers { get; set; }
     }
 }
