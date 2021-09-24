@@ -176,7 +176,15 @@
                 </div>
                 <div class="card p-2 bg-light">
                     <div class="input-group">
-                        <input type="text" class="form-control" id="phoneNumber" placeholder="Phone Number">
+                        <input type="text" class="form-control" id="phoneNumber" list="phoneNumber-list" placeholder="Phone Number">
+                        <datalist id="phoneNumber-list">
+                            @{
+                                foreach (var number in Model?.PhoneNumbers)
+                                {
+                                    <option value="@number"></option>
+                                }
+                            }
+                        </datalist>
                         <input type="text" class="form-control" id="description" placeholder="Description">
                         <input type="text" class="form-control" id="prefix" placeholder="Prefix">
                         <div class="input-group-append">
