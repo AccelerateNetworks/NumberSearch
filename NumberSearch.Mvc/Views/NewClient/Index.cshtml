@@ -86,14 +86,14 @@
                                 foreach (var item in orderedPhones)
                                 {
                                     var productName = Model?.Products?.Where(x => x.ProductId == item.ProductId).FirstOrDefault()?.Name;
-                                    <option value="@productName"></option>
+                                    <option value="@productName">@productName</option>
                                 }
 
                                 if (orderedPhones is null || orderedPhones.Length < 1)
                                 {
                                     foreach (var product in Model?.Products)
                                     {
-                                        <option value="@product.Name"></option>
+                                        <option value="@product.Name">@product.Name</option>
                                     }
                                 }
                             }
@@ -103,7 +103,7 @@
                             @{
                                 foreach (var number in Model?.PhoneNumbers)
                                 {
-                                    <option value="@number"></option>
+                                    <option value="@number">@number</option>
                                 }
                             }
                         </datalist>
@@ -181,7 +181,7 @@
                             @{
                                 foreach (var number in Model?.PhoneNumbers)
                                 {
-                                    <option value="@number"></option>
+                                    <option value="@number">@number</option>
                                 }
                             }
                         </datalist>
