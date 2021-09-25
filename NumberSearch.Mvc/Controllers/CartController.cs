@@ -1136,6 +1136,9 @@ Accelerate Networks
                             }
                             else
                             {
+                                confirmationEmail.Completed = false;
+                                confirmationEmail.DoNotSend = true;
+                                var checkSave = await confirmationEmail.PostAsync(_postgresql).ConfigureAwait(false);
                                 Log.Information($"Skipped sending out the confirmation emails for {order.OrderId} due to customer notes.");
                             }
 

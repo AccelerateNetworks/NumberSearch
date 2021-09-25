@@ -50,6 +50,8 @@ namespace NumberSearch.Ops.Controllers
         private readonly string _bulkVSpassword;
         private readonly string _emailOrders;
         private readonly string _azureStorage;
+        private readonly string _emailUsername;
+        private readonly string _emailPassword;
         private readonly UserManager<IdentityUser> _userManager;
 
         public HomeController(ILogger<HomeController> logger,
@@ -71,6 +73,9 @@ namespace NumberSearch.Ops.Controllers
             _data247password = config.GetConnectionString("Data247Password");
             _emailOrders = config.GetConnectionString("EmailOrders");
             _azureStorage = config.GetConnectionString("AzureStorageAccount");
+            _emailUsername = config.GetConnectionString("SmtpUsername");
+            _emailPassword = config.GetConnectionString("SmtpPassword");
+
             _userManager = userManager;
         }
 
@@ -1823,12 +1828,34 @@ namespace NumberSearch.Ops.Controllers
         }
 
         [Authorize]
-        [HttpGet("/Home/Emails/{orderId}/Resend")]
-        public async Task<IActionResult> ResendEmails(Guid orderId)
+        [HttpGet("/Home/Emails/{orderId}/Resend/{emailId}")]
+        public async Task<IActionResult> ResendEmails(Guid orderId, Guid emailId)
         {
-            var order = await Order.GetByIdAsync(orderId, _postgresql).ConfigureAwait(false);
-            order.BackgroundWorkCompleted = false;
-            var checkUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
+            var email = await Email.GetAsync(emailId, _postgresql).ConfigureAwait(false);
+
+            email.DoNotSend = false;
+            email.Completed = false;
+            var tryUnblock = await email.PutAsync(_postgresql);
+
+            if (tryUnblock)
+            {
+                var order = await Order.GetByIdAsync(orderId, _postgresql).ConfigureAwait(false);
+                if (order is not null)
+                {
+                    order.BackgroundWorkCompleted = false;
+                    var checkUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
+                }
+                else
+                {
+                    var checkSending = await email.SendEmailAsync(_emailUsername, _emailPassword).ConfigureAwait(false);
+
+                    if(checkSending)
+                    {
+                        email.Completed = true;
+                        tryUnblock = await email.PutAsync(_postgresql);
+                    }
+                }
+            }
 
             var emails = await Email.GetAllAsync(_postgresql).ConfigureAwait(false);
 

@@ -60,14 +60,7 @@
                         </td>
                         <td>
                             @{
-                                if (!email.Completed)
-                                {
-                                    <a href="/Home/Emails/@email.OrderId/Resend" class="btn btn-danger">Force Send</a>
-                                }
-                                else
-                                {
-                                    <a class="btn btn-danger disabled">Force Send</a>
-                                }
+                                <a href="/Home/Emails/@email.OrderId/Resend/@email.EmailId" class="btn btn-danger">Force Send</a>
                             }
                         </td>
                     </tr>

@@ -1567,7 +1567,8 @@ namespace NumberSearch.Tests
                 CarbonCopy = "Test",
                 Completed = false,
                 MessageBody = "This is an integration test.",
-                OrderId = Guid.NewGuid()
+                OrderId = Guid.NewGuid(),
+
             };
 
             var checkSubmit = await email.PostAsync(postgresql).ConfigureAwait(false);

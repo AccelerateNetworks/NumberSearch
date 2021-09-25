@@ -232,7 +232,7 @@ namespace NumberSearch.Mvc
 
                                 foreach (var message in emails)
                                 {
-                                    if (message.Completed)
+                                    if (message.Completed || message.DoNotSend)
                                     {
                                         continue;
                                     }
@@ -253,6 +253,7 @@ namespace NumberSearch.Mvc
 
                                     // Mark it as sent.
                                     message.DateSent = DateTime.Now;
+                                    message.DoNotSend = false;
                                     message.Completed = checkSend;
 
                                     // Update the database with the email's new status.
