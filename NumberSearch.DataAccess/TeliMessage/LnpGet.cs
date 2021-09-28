@@ -2,9 +2,12 @@
 
 using NumberSearch.DataAccess.TeleMessage;
 
+using Serilog;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.TeleMesssage
@@ -71,6 +74,8 @@ namespace NumberSearch.DataAccess.TeleMesssage
             catch (FlurlHttpException)
             {
                 var result = await url.GetJsonAsync<TeliError>().ConfigureAwait(false);
+
+                Log.Fatal($"[TeliMessage] {JsonSerializer.Serialize(result)}");
 
                 return new LnpGet
                 {

@@ -6,6 +6,23 @@
 
     var orderedPhones = Model?.ProductOrders?.Where(x => x.ProductId != Guid.Empty).ToArray();
 }
+<script type="text/javascript">
+    const ext = document.getElementById('ext');
+    ext.addEventListener('input', function (event) {
+      // Each time the user types something, we check if the
+      // form fields are valid.
+
+      if (email.validity.valid) {
+        // In case there is an error message visible, if the field
+        // is valid, we remove the error message.
+        emailError.textContent = ''; // Reset the content of the message
+        emailError.className = 'error'; // Reset the visual state of the message
+      } else {
+        // If there is still an error, show the correct error
+        showError();
+      }
+    });
+</script>
 
 <section class="text-light p-5" style="background-color: #3279B2">
     <div class="container py-5 py-md-6 py-lg-7 mb-7 text-center">
@@ -77,8 +94,8 @@
                 </div>
                 <div class="card p-2 bg-light">
                     <div class="input-group">
-                        <input type="text" class="form-control" id="ext" placeholder="Extension Number" pattern="[0-9]{2,14}">
-                        <input type="text" class="form-control" id="nameOrLocation" placeholder="Name or Location">
+                        <input type="text" class="form-control" id="ext" placeholder="Extension Number" pattern="[0-9]{2,14}" maxlength="14">
+                        <input type="text" class="form-control" id="nameOrLocation" placeholder="Name or Location" maxlength="10">
                         <input type="text" class="form-control" id="email" placeholder="Email">
                         <input type="text" class="form-control" id="model" list="model-list" placeholder="Model of Phone">
                         <datalist id="model-list">
@@ -250,8 +267,8 @@
                 </div>
                 <div class="card p-2 bg-light">
                     <div class="input-group">
-                        <input type="text" class="form-control" id="outgoing" placeholder="Extension making the call to Intercom">
-                        <input type="text" class="form-control" id="incoming" placeholder="Extension receiving the Intercom">
+                        <input type="text" class="form-control" id="outgoing" placeholder="Extension making the call to Intercom" maxlength="14">
+                        <input type="text" class="form-control" id="incoming" placeholder="Extension receiving the Intercom" maxlength="14">
                         <div class="input-group-append">
                             <button type="button" class="btn btn-primary"
                                     onclick="AddIntercomRegistration(document.getElementById('newClientId').value,
@@ -303,7 +320,7 @@
                 </div>
                 <div class="card p-2 bg-light">
                     <div class="input-group">
-                        <input type="text" class="form-control" id="numberOrExt" placeholder="Phone Number/Extension Number">
+                        <input type="text" class="form-control" id="numberOrExt" placeholder="Phone Number/Extension Number" maxlength="14">
                         <input type="text" class="form-control" id="labelOrName" placeholder="Label/Name">
                         <div class="input-group-append">
                             <button type="button" class="btn btn-primary"
@@ -369,9 +386,9 @@
                 </div>
                 <div class="card p-2 bg-light">
                     <div class="input-group">
-                        <input type="text" class="form-control" id="extNum" placeholder="Extension Number">
-                        <input type="text" class="form-control" id="cellPhone" placeholder="Cell # for Follow Me">
-                        <input type="text" class="form-control" id="forwardTo" placeholder="Forward to # when unreachable">
+                        <input type="text" class="form-control" id="extNum" placeholder="Extension Number" maxlength="14">
+                        <input type="text" class="form-control" id="cellPhone" placeholder="Cell # for Follow Me" maxlength="10">
+                        <input type="text" class="form-control" id="forwardTo" placeholder="Forward to # when unreachable" maxlength="10">
                         <div class="input-group-append">
                             <button type="button" class="btn btn-primary"
                                     onclick="AddFollowMeRegistration(document.getElementById('newClientId').value,

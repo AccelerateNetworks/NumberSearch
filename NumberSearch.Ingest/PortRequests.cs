@@ -249,7 +249,7 @@ Accelerate Networks
 
             var portRequests = await PortRequest.GetAllAsync(postgresSQL).ConfigureAwait(false);
 
-            foreach (var request in portRequests.Where(x => (x.VendorSubmittedTo == "TeliMessage" && x.Completed is false && x.DateSubmitted > DateTime.Now.AddYears(-3))).ToArray())
+            foreach (var request in portRequests?.Where(x => (x.VendorSubmittedTo == "TeliMessage" && x.Completed is false && x.DateSubmitted > DateTime.Now.AddYears(-3))).ToArray())
             {
                 var teliStatus = await LnpGet.GetAsync(request?.TeliId, teleToken).ConfigureAwait(false);
 
@@ -257,14 +257,14 @@ Accelerate Networks
                 if (teliStatus is not null && teliStatus?.code is 200)
                 {
                     // All of the statuses for all of the numbers.
-                    var numberStatuses = teliStatus?.data?.numbers_data?.Select(x => x.request_status);
+                    var numberStatuses = teliStatus?.data?.numbers_data?.Select(x => x?.request_status);
 
                     var canceled = numberStatuses?.Where(x => x == "canceled");
                     var rejected = numberStatuses?.Where(x => x == "rejected");
                     var completed = numberStatuses?.Where(x => x == "completed");
 
                     // If all the numbers have been ported.
-                    if ((completed != null) && (completed.Any()) && (completed.Count() == numberStatuses.Count()))
+                    if ((completed is not null) && (completed.Any()) && (completed?.Count() == numberStatuses?.Count()))
                     {
                         request.RequestStatus = "completed";
                         request.DateCompleted = DateTime.Now;
@@ -272,7 +272,7 @@ Accelerate Networks
                         request.Completed = true;
                     }
                     // If the porting of a number has been canceled.
-                    else if ((canceled != null) && (canceled.Any()))
+                    else if ((canceled is not null) && (canceled.Any()))
                     {
                         request.RequestStatus = "canceled";
                         request.DateCompleted = DateTime.Now;
@@ -280,7 +280,7 @@ Accelerate Networks
                         request.Completed = false;
                     }
                     // If a request to port a number has been rejected.
-                    else if ((rejected != null) && (rejected.Any()))
+                    else if ((rejected is not null) && (rejected.Any()))
                     {
                         request.RequestStatus = "rejected";
                         request.DateCompleted = DateTime.Now;

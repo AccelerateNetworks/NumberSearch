@@ -155,8 +155,49 @@ namespace NumberSearch.Ops.Controllers
             else
             {
                 var order = await Order.GetByIdAsync(orderId ?? new Guid(), _postgresql).ConfigureAwait(false);
+                var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
 
-                return View("OrderEdit", order);
+                // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
+                // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
+                var products = new List<Product>();
+                var services = new List<Service>();
+                var coupons = new List<Coupon>();
+                foreach (var item in productOrders)
+                {
+                    if (item?.ProductId != Guid.Empty)
+                    {
+                        var product = await Product.GetByIdAsync(item.ProductId, _postgresql).ConfigureAwait(false);
+                        products.Add(product);
+                    }
+                    else if (item?.ServiceId != Guid.Empty)
+                    {
+                        var service = await Service.GetAsync(item.ServiceId, _postgresql).ConfigureAwait(false);
+                        services.Add(service);
+                    }
+                    else if (item?.CouponId is not null)
+                    {
+                        var coupon = await Coupon.GetByIdAsync(item.CouponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                        coupons.Add(coupon);
+                    }
+                }
+
+                var cart = new Cart
+                {
+                    Order = order,
+                    PhoneNumbers = new List<PhoneNumber>(),
+                    ProductOrders = productOrders,
+                    Products = products,
+                    Services = services,
+                    Coupons = coupons,
+                    PortedPhoneNumbers = portedPhoneNumbers,
+                    VerifiedPhoneNumbers = verifiedPhoneNumbers,
+                    PurchasedPhoneNumbers = purchasedPhoneNumbers
+                };
+
+                return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart });
             }
         }
 
@@ -1849,7 +1890,7 @@ namespace NumberSearch.Ops.Controllers
                 {
                     var checkSending = await email.SendEmailAsync(_emailUsername, _emailPassword).ConfigureAwait(false);
 
-                    if(checkSending)
+                    if (checkSending)
                     {
                         email.Completed = true;
                         tryUnblock = await email.PutAsync(_postgresql);
