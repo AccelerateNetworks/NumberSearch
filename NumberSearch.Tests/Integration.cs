@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Call48;
-using NumberSearch.DataAccess.Data247;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.LCGuide;
 using NumberSearch.DataAccess.Models;
@@ -14,7 +13,6 @@ using NumberSearch.DataAccess.TeleMesssage;
 using ServiceReference;
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -1224,6 +1222,15 @@ namespace NumberSearch.Tests
             var results = await PhoneNumber.DeleteOld(DateTime.Now.AddDays(-3), conn).ConfigureAwait(false);
             Assert.NotNull(results);
             output.WriteLine($"{results.Removed} Numbers Removed.");
+        }
+
+        [Fact]
+        public async Task DeleteLogsAsync()
+        {
+            var conn = postgresql;
+            var results = await Logs.DeleteOld(DateTime.Now, conn).ConfigureAwait(false);
+            Assert.NotNull(results);
+            output.WriteLine($"{results.Removed} log entries removed.");
         }
 
         [Fact]
