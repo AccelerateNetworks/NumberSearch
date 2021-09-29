@@ -30,16 +30,7 @@ namespace NumberSearch.DataAccess.Call48
 
             string route = $"{baseUrl}{endPointName}";
 
-            try
-            {
-                var result = await route.PostJsonAsync(new { user_name = username, password }).ReceiveJson<Login>().ConfigureAwait(false);
-
-                return result;
-            }
-            catch (FlurlHttpException ex)
-            {
-                throw;
-            }
+            return await route.PostJsonAsync(new { user_name = username, password }).ReceiveJson<Login>().ConfigureAwait(false);
         }
     }
 }

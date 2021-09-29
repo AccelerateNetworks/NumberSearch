@@ -7,6 +7,7 @@ namespace NumberSearch.Ops.EFModels
 {
     public partial class ProductOrder
     {
+        public Guid ProductOrderId { get; set; }
         public Guid OrderId { get; set; }
         public Guid? ProductId { get; set; }
         public Guid? ServiceId { get; set; }

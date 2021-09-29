@@ -1,4 +1,5 @@
 ﻿using System;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
@@ -405,7 +406,7 @@ namespace NumberSearch.Ops.EFModels
 
             modelBuilder.Entity<ProductOrder>(entity =>
             {
-                entity.HasNoKey();
+                entity.Property(e => e.ProductOrderId).HasDefaultValueSql("uuid_generate_v4()");
 
                 entity.Property(e => e.DialedNumber).HasMaxLength(10);
 

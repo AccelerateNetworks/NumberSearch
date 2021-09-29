@@ -103,24 +103,32 @@ namespace NumberSearch.Ingest
 
             var numbers = new List<PhoneNumber>();
 
-            var credentials = await Login.LoginAsync(username, password).ConfigureAwait(false);
-
-            foreach (var state in states)
+            try
             {
-                Log.Information($"[Call48] Ingesting numbers for {state.StateShort}.");
+                var credentials = await Login.LoginAsync(username, password).ConfigureAwait(false);
 
-                foreach (var code in state.AreaCodes)
+                foreach (var state in states)
                 {
-                    try
+                    Log.Information($"[Call48] Ingesting numbers for {state.StateShort}.");
+
+                    foreach (var code in state.AreaCodes)
                     {
-                        numbers.AddRange(await Search.GetAsync(state.StateShort, code, credentials.data.token).ConfigureAwait(false));
-                        Log.Information($"[Call48] Found {numbers.Count} Phone Numbers");
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error($"[Call48] Area code {code} failed @ {DateTime.Now}: {ex.Message}");
+                        try
+                        {
+                            numbers.AddRange(await Search.GetAsync(state.StateShort, code, credentials.data.token).ConfigureAwait(false));
+                            Log.Information($"[Call48] Found {numbers.Count} Phone Numbers");
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error($"[Call48] Area code {code} failed @ {DateTime.Now}: {ex.Message}");
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal($"[Call48] Failed to login to Call48.");
+                Log.Fatal($"[Call48] {ex.Message}");
             }
 
             // This is the ratecenters method, which is disabled because the Call48 API is drastically slower when we use it.

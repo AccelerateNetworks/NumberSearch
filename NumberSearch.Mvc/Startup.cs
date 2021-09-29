@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 
 using System;
+using System.Globalization;
 
 namespace NumberSearch.Mvc
 {
@@ -79,7 +80,18 @@ namespace NumberSearch.Mvc
             app.UseSerilogRequestLogging();
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
+
+            // Set cache headers on static files.
+            // Disable to prevent caching.
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                OnPrepareResponse = ctx =>
+                {
+                    // Cache static files for 30 days
+                    ctx.Context.Response.Headers.Append("Cache-Control", "public, max-age=86400");
+                    ctx.Context.Response.Headers.Append("Expires", DateTime.UtcNow.AddDays(1).ToString("R", CultureInfo.InvariantCulture));
+                }
+            });
 
             app.UseSecurityHeaders();
 
