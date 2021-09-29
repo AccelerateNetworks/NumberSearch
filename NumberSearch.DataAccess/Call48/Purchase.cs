@@ -33,7 +33,9 @@ namespace NumberSearch.DataAccess.Call48
                 state = number.state,
                 ratecenter = number.ratecenter,
                 locData = number.locData,
-                loc = loc
+                loc = loc,
+                fwd_trunk_grpid = 78,
+                fwd_preconfigured = true
             };
 
             var request = new PurchaseRequest
@@ -83,6 +85,8 @@ namespace NumberSearch.DataAccess.Call48
             public string ratecenter { get; set; }
             public string locData { get; set; }
             public string loc { get; set; }
+            public int fwd_trunk_grpid { get; set; }
+            public bool fwd_preconfigured { get; set; }
         }
     }
 }
