@@ -277,8 +277,13 @@
 
     @{
         var productOrders = Model?.Cart?.ProductOrdersToDictionary();
-        if (Model?.Cart?.PhoneNumbers.Count() > 0 || Model?.Cart?.Products.Count() > 0 || Model?.Cart?.Services.Count() > 0 || Model?.Cart?.PortedPhoneNumbers.Count() > 0 || Model?.Cart?.VerifiedPhoneNumbers.Count() > 0)
+        if (Model?.Cart?.PhoneNumbers.Count() > 0 || Model?.Cart?.Products.Count() > 0 || Model?.Cart?.Services.Count() > 0 || Model?.Cart?.PortedPhoneNumbers.Count() > 0 || Model?.Cart?.VerifiedPhoneNumbers.Count() > 0 || Model?.Cart?.PurchasedPhoneNumbers.Count() > 0)
         {
+            <br />
+            <a href="/Order/{@Model?.Order?.OrderId}/ProductOrders" class="btn btn-outline-primary">
+                Product Orders
+            </a>
+            <br />
             <div class="row">
                 <div class="table-responsive shadow-sm">
                     <table class="table table-striped table-borderless table-hover">
@@ -319,7 +324,50 @@
                                             }
                                         }
                                         <td>
-                                            <a href="/Home/Orders/@Model?.Order?.OrderId/ProductOrders/@productOrder?.DialedNumber" class="btn btn-outline-danger">
+                                            <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-danger">
+                                                Edit
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                                foreach (var item in Model?.Cart?.PurchasedPhoneNumbers)
+                                {
+                                    var productOrder = productOrders[item?.DialedNumber.ToString()];
+                                    var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
+                                    var number = item.DialedNumber;
+                                    <tr>
+                                        <td scope="row"><h4>@formattedNumber</h4></td>
+                                        <td>1</td>
+                                        @{
+                                            if (item.NumberType == "Executive")
+                                            {
+                                                <td>$200</td>
+                                            }
+                                            else if (item.NumberType == "Premium")
+                                            {
+                                                <td>$40</td>
+                                            }
+                                            else
+                                            {
+                                                <td>$20</td>
+                                            }
+                                        }
+                                        @{
+                                            if (item.NumberType == "Executive")
+                                            {
+                                                <td>$200</td>
+                                            }
+                                            else if (item.NumberType == "Premium")
+                                            {
+                                                <td>$40</td>
+                                            }
+                                            else
+                                            {
+                                                <td>$20</td>
+                                            }
+                                        }
+                                        <td>
+                                            <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-danger">
                                                 Edit
                                             </a>
                                         </td>
@@ -333,6 +381,7 @@
                                 {
                                     var calculatedCost = 20;
 
+                                    var productOrder = productOrders[item?.PortedPhoneNumberId.ToString()];
 
                                     var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
                                     var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
@@ -343,10 +392,9 @@
                                         <td>@location</td>
                                         <td>$@calculatedCost</td>
                                         <td>
-                                            <button onclick="RemoveFromCart('PortedPhoneNumber','@item.PortedDialedNumber', 1, this)" class="btn btn-outline-danger">
-                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                Remove
-                                            </button>
+                                            <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-danger">
+                                                Edit
+                                            </a>
                                         </td>
                                     </tr>
                                 }
@@ -354,6 +402,7 @@
                             @{
                                 foreach (var item in Model?.Cart?.VerifiedPhoneNumbers)
                                 {
+                                    var productOrder = productOrders[item?.VerifiedPhoneNumberId.ToString()];
                                     var location = $"{item?.City ?? "Unknown City"}, {item?.Province ?? "Unknown State"}";
                                     var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
                                     var number = item.VerifiedDialedNumber;
@@ -363,10 +412,9 @@
                                         <td>@location</td>
                                         <td>$10</td>
                                         <td>
-                                            <button onclick="RemoveFromCart('VerifiedPhoneNumber', '@item.VerifiedDialedNumber', 1, this)" class="btn btn-outline-danger">
-                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                Remove
-                                            </button>
+                                            <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-danger">
+                                                Edit
+                                            </a>
                                         </td>
                                     </tr>
                                 }
@@ -391,10 +439,9 @@
                                         <td>at $@item.Price each</td>
                                         <td>$@localTotal</td>
                                         <td>
-                                            <button onclick="RemoveFromCart('Product', '@item.ProductId', 1, this)" class="btn btn-outline-danger">
-                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                Remove
-                                            </button>
+                                            <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-danger">
+                                                Edit
+                                            </a>
                                         </td>
                                     </tr>
                                 }
@@ -419,10 +466,9 @@
                                         <td>at $@item.Price per</td>
                                         <td>$@localTotal</td>
                                         <td>
-                                            <button onclick="RemoveFromCart('Service', '@item.ServiceId', 1, this)" class="btn btn-outline-danger">
-                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                Remove
-                                            </button>
+                                            <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-danger">
+                                                Edit
+                                            </a>
                                         </td>
                                     </tr>
                                 }
@@ -437,10 +483,9 @@
                                         <td></td>
                                         <td></td>
                                         <td>
-                                            <button onclick="RemoveFromCart('Coupon', '@item.CouponId', 1, this)" class="btn btn-outline-danger">
-                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                Remove
-                                            </button>
+                                            <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-danger">
+                                                Edit
+                                            </a>
                                         </td>
                                     </tr>
                                 }

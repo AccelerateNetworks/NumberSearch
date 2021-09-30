@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 using NumberSearch.Ops.EFModels;
+using NumberSearch.Ops.Models;
 
 namespace NumberSearch.Ops.Controllers
 {
@@ -30,6 +31,17 @@ namespace NumberSearch.Ops.Controllers
         public async Task<IActionResult> Index()
         {
             return View(await _context.ProductOrders.ToListAsync());
+        }
+
+        [Authorize]
+        [HttpGet("Order/{orderId}/ProductOrders")]
+        public async Task<IActionResult> ProductOrdersByOrder(Guid orderId)
+        {
+            var products = await _context.Products.ToArrayAsync();
+            var services = await _context.Services.ToArrayAsync();
+            var coupons = await _context.Coupons.ToArrayAsync();
+            var productOrders = await _context.ProductOrders.Where(x => x.OrderId == orderId).ToListAsync();
+            return View("Index", new ProductOrderResult { ProductOrders = productOrders, Coupons = coupons, Products = products, Services = services });
         }
 
         // GET: ProductOrders/Details/5

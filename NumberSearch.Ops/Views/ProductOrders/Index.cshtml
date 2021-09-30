@@ -1,90 +1,96 @@
-﻿@model IEnumerable<NumberSearch.Ops.EFModels.ProductOrder>
-
+﻿@model NumberSearch.Ops.Models.ProductOrderResult
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Product Orders";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Index</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.OrderId)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ProductId)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ServiceId)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DialedNumber)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PortedDialedNumber)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Quantity)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreateDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PortedPhoneNumberId)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.VerifiedPhoneNumberId)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CouponId)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.OrderId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ProductId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ServiceId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DialedNumber)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PortedDialedNumber)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Quantity)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreateDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PortedPhoneNumberId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.VerifiedPhoneNumberId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CouponId)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.ProductOrderId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.ProductOrderId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.ProductOrderId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<div class="d-flex justify-content-between align-items-center">
+    <h1 class="display-4 p-3">🎁 Product Orders</h1>
+    <a asp-action="Create" class="btn btn-lg btn-success">Create New</a>
+</div>
+<div class="table-responsive">
+    <table class="table table-striped table-borderless table-hover" id="table">
+        <thead>
+            <tr>
+                <th scope="col">
+                    Name
+                </th>
+                <th>
+                    Order
+                </th>
+                <th>
+                    Created Date
+                </th>
+                <th>
+                    Quantity
+                </th>
+                <th scope="col">
+                    Actions
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                foreach (var item in Model?.ProductOrders)
+                {
+                    <tr>
+                        <td>
+                            @{
+                                if (!string.IsNullOrWhiteSpace(item.DialedNumber))
+                                {
+                                    var foreignId = $"Purchased Number {item.DialedNumber}";
+                                    @foreignId
+                                }
+                                else if (item.PortedPhoneNumberId.HasValue)
+                                {
+                                    var foreignId = $"Ported Number {item.PortedPhoneNumberId.ToString()}";
+                                    @foreignId
+                                }
+                                else if (item.VerifiedPhoneNumberId.HasValue)
+                                {
+                                    var foreignId = $"Verified Number {item.VerifiedPhoneNumberId.ToString()}";
+                                    @foreignId
+                                }
+                                else if (item.ProductId != System.Guid.Empty)
+                                {
+                                    var foreignId = $"Product Id {item.ProductId.ToString()}";
+                                    var product = Model?.Products?.Where(x => x.ProductId == item.ProductId).FirstOrDefault();
+                                    <a href="/Products/Edit/@product?.ProductId" class="btn btn-primary">@product.Name</a>
+                                }
+                                else if (item.ServiceId != System.Guid.Empty)
+                                {
+                                    var foreignId = $"Service Id {item.ServiceId.ToString()}";
+                                    var service = Model?.Services?.Where(x => x.ServiceId == item.ServiceId).FirstOrDefault();
+                                    foreignId = $"{service.Name}";
+                                    @foreignId
+                                }
+                                else if (item.CouponId.HasValue)
+                                {
+                                    var foreignId = $"Coupon Id {item.CouponId.ToString()}";
+                                    var coupon = Model?.Coupons?.Where(x => x.CouponId == item.CouponId).FirstOrDefault();
+                                    <a href="/Home/Coupons/@coupon?.CouponId" class="btn btn-primary">@coupon.Name</a>
+                                }
+                            }
+                        </td>
+                        <td>
+                            <a href="/Home/Order/@item?.OrderId" class="btn btn-primary">Order</a>
+                        </td>
+                        <td>
+                            @item?.CreateDate
+                        </td>
+                        <td>
+                            @item?.Quantity
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group" aria-label="Basic example">
+                                <a asp-action="Edit" asp-route-id="@item.ProductOrderId" class="btn btn-warning">Edit</a>
+                                <a asp-action="Details" asp-route-id="@item.ProductOrderId" class="btn btn-primary">Details</a>
+                                <a asp-action="Delete" asp-route-id="@item.ProductOrderId" class="btn btn-danger">Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

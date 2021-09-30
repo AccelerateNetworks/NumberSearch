@@ -34,6 +34,7 @@ namespace NumberSearch.DataAccess.Call48
                 ratecenter = number.ratecenter,
                 locData = number.locData,
                 loc = loc,
+                // This is the id for the SFO trunk group.
                 fwd_trunk_grpid = 78,
                 fwd_preconfigured = true
             };
