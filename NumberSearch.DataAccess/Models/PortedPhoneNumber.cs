@@ -181,9 +181,9 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"PortedPhoneNumbers\"(\"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\", \"Wireless\", \"RequestStatus\", \"DateFirmOrderCommitment\", \"ExternalPortRequestId\", \"Completed\", \"RawResponse\") " +
-                "VALUES(@PortedDialedNumber, @NPA, @NXX, @XXXX, @City, @State, @IngestedFrom, @DateIngested, @PortRequestId, @OrderId, @Wireless, @RequestStatus, @DateFirmOrderCommitment, @ExternalPortRequestId, @Completed, @RawResponse)",
-                new { PortedDialedNumber, NPA, NXX, XXXX, City, State, IngestedFrom, DateIngested = DateTime.Now, PortRequestId, OrderId, Wireless, RequestStatus, DateFirmOrderCommitment, ExternalPortRequestId, Completed, RawResponse })
+                .ExecuteAsync("INSERT INTO public.\"PortedPhoneNumbers\"(\"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\", \"Wireless\", \"RequestStatus\", \"DateFirmOrderCommitment\", \"PortedPhoneNumberId\", \"ExternalPortRequestId\", \"Completed\", \"RawResponse\") " +
+                "VALUES(@PortedDialedNumber, @NPA, @NXX, @XXXX, @City, @State, @IngestedFrom, @DateIngested, @PortRequestId, @OrderId, @Wireless, @RequestStatus, @DateFirmOrderCommitment, @PortedPhoneNumberId, @ExternalPortRequestId, @Completed, @RawResponse)",
+                new { PortedDialedNumber, NPA, NXX, XXXX, City, State, IngestedFrom, DateIngested = DateTime.Now, PortRequestId, OrderId, Wireless, RequestStatus, DateFirmOrderCommitment, PortedPhoneNumberId, ExternalPortRequestId, Completed, RawResponse })
                 .ConfigureAwait(false);
 
             if (result == 1)

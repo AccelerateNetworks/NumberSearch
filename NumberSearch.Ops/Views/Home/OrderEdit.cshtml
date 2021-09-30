@@ -381,7 +381,7 @@
                                 {
                                     var calculatedCost = 20;
 
-                                    var productOrder = productOrders[item?.PortedPhoneNumberId.ToString()];
+                                    var productOrder = Model?.Cart.ProductOrders.Where(x => x.PortedDialedNumber == item.PortedDialedNumber).FirstOrDefault();
 
                                     var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
                                     var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
