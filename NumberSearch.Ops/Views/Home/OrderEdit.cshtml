@@ -103,11 +103,11 @@
         <div class="row">
             <div class="col mb-3">
                 <label for="firstName">Order Id</label>
-                <input value="@Model?.Order?.OrderId" type="text" class="form-control" placeholder="" readonly>
+                <input asp-for="Order.OrderId" type="text" class="form-control" placeholder="" readonly>
             </div>
             <div class="col mb-3">
                 <label for="lastName">Submitted On</label>
-                <input value="@Model?.Order?.DateSubmitted" type="text" class="form-control" placeholder="" readonly>
+                <input asp-for="Order.DateSubmitted" type="text" class="form-control" placeholder="" readonly>
             </div>
             <div class="col mb-3">
                 <label for="backgroundWorkCompleted">Background Work Completed</label>
