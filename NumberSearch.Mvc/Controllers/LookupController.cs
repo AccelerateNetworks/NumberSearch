@@ -145,7 +145,7 @@ namespace NumberSearch.Mvc.Controllers
 
                     if (portedNumber is null)
                     {
-                        var productOrder = new ProductOrder { PortedDialedNumber = portableNumber.PortedDialedNumber, PortedPhoneNumberId = portableNumber.PortedPhoneNumberId, Quantity = 1 };
+                        var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), PortedDialedNumber = portableNumber.PortedDialedNumber, PortedPhoneNumberId = portableNumber.PortedPhoneNumberId, Quantity = 1 };
 
                         var checkAdd = cart.AddPortedPhoneNumber(portableNumber, productOrder);
                     }
@@ -157,7 +157,7 @@ namespace NumberSearch.Mvc.Controllers
 
                     if (portedNumber is null)
                     {
-                        var productOrder = new ProductOrder { PortedDialedNumber = wirelessNumber.PortedDialedNumber, PortedPhoneNumberId = wirelessNumber.PortedPhoneNumberId, Quantity = 1 };
+                        var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), PortedDialedNumber = wirelessNumber.PortedDialedNumber, PortedPhoneNumberId = wirelessNumber.PortedPhoneNumberId, Quantity = 1 };
 
                         var checkAdd = cart.AddPortedPhoneNumber(wirelessNumber, productOrder);
                     }
