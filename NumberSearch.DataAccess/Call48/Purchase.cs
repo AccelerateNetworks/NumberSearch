@@ -57,7 +57,7 @@ namespace NumberSearch.DataAccess.Call48
             catch (FlurlHttpException ex)
             {
                 var error = await ex.GetResponseJsonAsync<PurchaseResult>();
-                Log.Error($"[Ingest] [Call48] Failed to purchase {number.did}.");
+                Log.Error($"[Ingest] [Call48] Failed to purchase {number.number}.");
                 return error;
             }
         }

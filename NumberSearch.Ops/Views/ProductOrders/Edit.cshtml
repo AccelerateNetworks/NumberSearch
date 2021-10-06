@@ -5,10 +5,10 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Edit</h1>
 
-<h4>ProductOrder</h4>
-<hr />
+<h1 class="display-4 p-3">🎁 Edit Product Order</h1>
+
+@Html.AntiForgeryToken()
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Edit">
@@ -72,9 +72,11 @@
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a href="/Order/@Model?.OrderId/ProductOrders" class="btn btn-outline-primary">Back to List</a>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}
 }

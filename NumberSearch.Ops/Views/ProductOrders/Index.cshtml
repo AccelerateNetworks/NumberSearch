@@ -6,7 +6,7 @@
 
 <div class="d-flex justify-content-between align-items-center">
     <h1 class="display-4 p-3">🎁 Product Orders</h1>
-    <a asp-action="Create" class="btn btn-lg btn-success">Create New</a>
+    <a asp-action="Create" asp-route-orderId="@Model?.ProductOrders.FirstOrDefault()?.OrderId" class="btn btn-lg btn-success">Create New</a>
 </div>
 <div class="table-responsive">
     <table class="table table-striped table-borderless table-hover" id="table">

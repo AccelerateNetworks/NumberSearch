@@ -539,7 +539,7 @@ namespace NumberSearch.Mvc.Controllers
             }
 
             var phoneNumber = await PhoneNumber.GetAsync(dialedPhoneNumber, _postgresql).ConfigureAwait(false);
-            var productOrder = new ProductOrder { DialedNumber = phoneNumber.DialedNumber, Quantity = 1 };
+            var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), DialedNumber = phoneNumber.DialedNumber, Quantity = 1 };
 
             var purchasable = false;
 
@@ -770,7 +770,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
             }
 
-            var productOrder = new ProductOrder { PortedDialedNumber = portedPhoneNumber?.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber.PortedPhoneNumberId, Quantity = 1 };
+            var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), PortedDialedNumber = portedPhoneNumber?.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber.PortedPhoneNumberId, Quantity = 1 };
 
             var checkAdd = cart.AddPortedPhoneNumber(portedPhoneNumber, productOrder);
             var checkSet = cart.SetToSession(_httpContext.Session);
@@ -859,7 +859,7 @@ namespace NumberSearch.Mvc.Controllers
                             DateToExpire = DateTime.Now.AddYears(1)
                         };
 
-                        var productOrder = new ProductOrder { VerifiedPhoneNumberId = verifiedPhoneNumber.VerifiedPhoneNumberId, Quantity = 1 };
+                        var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), VerifiedPhoneNumberId = verifiedPhoneNumber.VerifiedPhoneNumberId, Quantity = 1 };
 
                         await _httpContext.Session.LoadAsync().ConfigureAwait(false);
                         var cart = Cart.GetFromSession(_httpContext.Session);
@@ -901,6 +901,7 @@ namespace NumberSearch.Mvc.Controllers
             var product = await Product.GetByIdAsync(productId, _postgresql).ConfigureAwait(false);
             var productOrder = new ProductOrder
             {
+                ProductOrderId = Guid.NewGuid(),
                 ProductId = product.ProductId,
                 Quantity = Quantity > 0 ? Quantity : 1
             };
@@ -923,6 +924,7 @@ namespace NumberSearch.Mvc.Controllers
             var service = await Service.GetAsync(serviceId, _postgresql).ConfigureAwait(false);
             var productOrder = new ProductOrder
             {
+                ProductOrderId = Guid.NewGuid(),
                 ServiceId = service.ServiceId,
                 Quantity = Quantity > 0 ? Quantity : 1
             };
@@ -966,6 +968,7 @@ namespace NumberSearch.Mvc.Controllers
 
                         e911ProductOrder = new ProductOrder
                         {
+                            ProductOrderId = Guid.NewGuid(),
                             ServiceId = e911Id,
                             Quantity = totalE911FeeItems > 0 ? totalE911FeeItems : 1
                         };
@@ -976,6 +979,7 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     e911ProductOrder = new ProductOrder
                     {
+                        ProductOrderId = Guid.NewGuid(),
                         ServiceId = e911Id,
                         Quantity = Quantity > 0 ? Quantity : 1
                     };
@@ -1009,6 +1013,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 var productOrder = new ProductOrder
                 {
+                    ProductOrderId = Guid.NewGuid(),
                     CouponId = coupon.CouponId,
                     Quantity = Quantity > 0 ? Quantity : 1
                 };

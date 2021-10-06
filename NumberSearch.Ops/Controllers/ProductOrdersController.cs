@@ -67,9 +67,14 @@ namespace NumberSearch.Ops.Controllers
         // GET: ProductOrders/Create
         [Authorize]
         [HttpGet("ProductOrders/Create")]
-        public IActionResult Create()
+        public IActionResult Create(Guid? orderId)
         {
-            return View();
+            if (orderId == null || orderId == Guid.Empty)
+            {
+                return NotFound();
+            }
+
+            return View(new ProductOrder { OrderId = orderId ?? Guid.NewGuid() });
         }
 
         // POST: ProductOrders/Create
