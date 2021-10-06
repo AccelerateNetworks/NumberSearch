@@ -1714,6 +1714,7 @@ namespace NumberSearch.Tests
 
             var itemToOrder = new ProductOrder
             {
+                ProductOrderId = Guid.NewGuid(),
                 OrderId = Guid.NewGuid(),
                 ProductId = Guid.NewGuid(),
                 Quantity = 1
@@ -1739,6 +1740,7 @@ namespace NumberSearch.Tests
 
             var itemToOrder = new ProductOrder
             {
+                ProductOrderId = Guid.NewGuid(),
                 OrderId = Guid.NewGuid(),
                 DialedNumber = "8605530426",
                 Quantity = 1
@@ -1829,6 +1831,7 @@ namespace NumberSearch.Tests
             // Create the order.
             var itemToOrder = new ProductOrder
             {
+                ProductOrderId = Guid.NewGuid(),
                 OrderId = Guid.NewGuid(),
                 ProductId = Guid.NewGuid(),
                 Quantity = 1
