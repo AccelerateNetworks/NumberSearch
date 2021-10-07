@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 using NumberSearch.Ops.EFModels;
 using NumberSearch.Ops.Models;
@@ -18,11 +19,15 @@ namespace NumberSearch.Ops.Controllers
     {
         private readonly numberSearchContext _context;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IConfiguration _configuration;
+        private readonly string _postgresql;
 
-        public ProductOrdersController(numberSearchContext context, UserManager<IdentityUser> userManager)
+        public ProductOrdersController(numberSearchContext context, UserManager<IdentityUser> userManager, IConfiguration config)
         {
             _context = context;
             _userManager = userManager;
+            _configuration = config;
+            _postgresql = _configuration.GetConnectionString("PostgresqlProd");
         }
 
         // GET: ProductOrders
@@ -67,14 +72,19 @@ namespace NumberSearch.Ops.Controllers
         // GET: ProductOrders/Create
         [Authorize]
         [HttpGet("ProductOrders/Create")]
-        public IActionResult Create(Guid? orderId)
+        public async Task<IActionResult> CreateAsync(Guid? orderId)
         {
             if (orderId == null || orderId == Guid.Empty)
             {
                 return NotFound();
             }
 
-            return View(new ProductOrder { OrderId = orderId ?? Guid.NewGuid() });
+            var products = await _context.Products.ToArrayAsync();
+            var services = await _context.Services.ToArrayAsync();
+            var coupons = await _context.Coupons.ToArrayAsync();
+            var productOrders = await _context.ProductOrders.Where(x => x.OrderId == orderId).ToListAsync();
+
+            return View("Create", new ProductOrderResult { ProductOrder = new ProductOrder { OrderId = orderId ?? Guid.NewGuid(), CreateDate = DateTime.Now, Quantity = 1 }, ProductOrders = productOrders, Products = products, Services = services, Coupons = coupons });
         }
 
         // POST: ProductOrders/Create
@@ -85,14 +95,88 @@ namespace NumberSearch.Ops.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ProductOrderId,OrderId,ProductId,ServiceId,DialedNumber,PortedDialedNumber,Quantity,CreateDate,PortedPhoneNumberId,VerifiedPhoneNumberId,CouponId")] ProductOrder productOrder)
         {
-            if (ModelState.IsValid)
+            if (productOrder.ProductOrderId != Guid.Empty && productOrder.OrderId != Guid.Empty && productOrder.CreateDate > DateTime.MinValue)
             {
-                productOrder.ProductOrderId = Guid.NewGuid();
-                _context.Add(productOrder);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                if (!string.IsNullOrWhiteSpace(productOrder.DialedNumber))
+                {
+                    var checkNumber = DataAccess.PhoneNumber.TryParse(productOrder.DialedNumber, out var number);
+
+                    if (checkNumber)
+                    {
+                        var purchased = new DataAccess.PurchasedPhoneNumber
+                        {
+                            DialedNumber = number.DialedNumber,
+                            Completed = true,
+                            DateIngested = DateTime.Now,
+                            DateOrdered = DateTime.Now,
+                            IngestedFrom = "Ops",
+                            NPA = number.NPA,
+                            NXX = number.NXX,
+                            XXXX = number.XXXX,
+                            NumberType = "Standard",
+                            OrderId = productOrder.OrderId,
+                            OrderResponse = string.Empty,
+                            PIN = string.Empty,
+                            PurchasedPhoneNumberId = Guid.NewGuid()
+                        };
+
+                        var checkPurchased = await purchased.PostAsync(_postgresql);
+
+                        productOrder.DialedNumber = number.DialedNumber;
+                        productOrder.Quantity = 1;
+                        _context.Add(productOrder);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+                else if (!string.IsNullOrWhiteSpace(productOrder.PortedDialedNumber))
+                {
+                    var checkNumber = DataAccess.PhoneNumber.TryParse(productOrder.PortedDialedNumber, out var number);
+
+                    if (checkNumber)
+                    {
+                        var homeController = new HomeController(_configuration, _userManager);
+
+                        var port = await homeController.VerifyPortablityAsync(number.DialedNumber);
+
+                        if (port.Portable)
+                        {
+                            var portRequest = await DataAccess.PortRequest.GetByOrderIdAsync(productOrder.OrderId, _postgresql);
+
+                            if (portRequest is not null)
+                            {
+                                port.PortRequestId = portRequest.PortRequestId;
+                            }
+
+                            port.OrderId = productOrder.OrderId;
+                            var checkSave = await port.PostAsync(_postgresql).ConfigureAwait(false);
+                        }
+
+                        productOrder.PortedDialedNumber = number.DialedNumber;
+                        productOrder.PortedPhoneNumberId = port.PortedPhoneNumberId;
+                        productOrder.Quantity = 1;
+                        _context.Add(productOrder);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
+                var products = await _context.Products.ToArrayAsync();
+                var services = await _context.Services.ToArrayAsync();
+                var coupons = await _context.Coupons.ToArrayAsync();
+                var productOrders = await _context.ProductOrders.Where(x => x.OrderId == productOrder.OrderId).ToListAsync();
+                productOrder = await _context.ProductOrders
+                    .FirstOrDefaultAsync(m => m.ProductOrderId == productOrder.ProductOrderId);
+
+                return View("Index", new ProductOrderResult { ProductOrder = productOrder, ProductOrders = productOrders, Coupons = coupons, Products = products, Services = services });
             }
-            return View(productOrder);
+            else
+            {
+                var products = await _context.Products.ToArrayAsync();
+                var services = await _context.Services.ToArrayAsync();
+                var coupons = await _context.Coupons.ToArrayAsync();
+                var productOrders = await _context.ProductOrders.Where(x => x.OrderId == productOrder.OrderId).ToListAsync();
+
+                return View("Create", new ProductOrderResult { ProductOrder = new ProductOrder { OrderId = productOrder.OrderId, CreateDate = DateTime.Now }, ProductOrders = productOrders, Products = products, Services = services, Coupons = coupons });
+            }
         }
 
         // GET: ProductOrders/Edit/5

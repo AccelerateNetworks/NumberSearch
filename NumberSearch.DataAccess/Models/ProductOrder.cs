@@ -110,5 +110,34 @@ namespace NumberSearch.DataAccess
                 return false;
             }
         }
+
+        /// <summary>
+        /// Delete a specific product order using its Id.
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        public async Task<bool> DeleteByIdAsync(string connectionString)
+        {
+            if (ProductOrderId == Guid.Empty)
+            {
+                return false;
+            }
+
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("DELETE FROM public.\"ProductOrders\" WHERE \"ProductOrderId\" = @ProductOrderId",
+                new { ProductOrderId })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }

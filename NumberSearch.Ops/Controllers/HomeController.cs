@@ -54,11 +54,10 @@ namespace NumberSearch.Ops.Controllers
         private readonly string _emailPassword;
         private readonly UserManager<IdentityUser> _userManager;
 
-        public HomeController(ILogger<HomeController> logger,
+        public HomeController(
             IConfiguration config,
             UserManager<IdentityUser> userManager)
         {
-            _logger = logger;
             _configuration = config;
             _postgresql = _configuration.GetConnectionString("PostgresqlProd");
             _username = config.GetConnectionString("PComNetUsername");
@@ -90,6 +89,106 @@ namespace NumberSearch.Ops.Controllers
         {
             return View();
         }
+
+        public async Task<PortedPhoneNumber> VerifyPortablityAsync(string number)
+        {
+            bool checkNpa = int.TryParse(number.AsSpan(0, 3), out int npa);
+            bool checkNxx = int.TryParse(number.AsSpan(3, 3), out int nxx);
+            bool checkXxxx = int.TryParse(number.AsSpan(6, 4), out int xxxx);
+
+            if (checkNpa && checkNxx && checkXxxx)
+            {
+                try
+                {
+                    var portable = await LnpCheck.IsPortableAsync(number, _teleToken).ConfigureAwait(false);
+
+                    // Fail fast
+                    if (portable is not true)
+                    {
+                        Log.Information($"[Portability] {number} is not Portable.");
+
+                        return new PortedPhoneNumber
+                        {
+                            PortedDialedNumber = number,
+                            Portable = false
+                        };
+                    }
+
+                    // Lookup the number.
+                    var checkNumber = await LrnBulkCnam.GetAsync(number, _bulkVSAPIKey).ConfigureAwait(false);
+
+                    // Determine if the number is a wireless number.
+                    bool wireless = false;
+
+                    switch (checkNumber.lectype)
+                    {
+                        case "WIRELESS":
+                            wireless = true;
+                            break;
+                        case "PCS":
+                            wireless = true;
+                            break;
+                        case "P RESELLER":
+                            wireless = true;
+                            break;
+                        case "Wireless":
+                            wireless = true;
+                            break;
+                        case "W RESELLER":
+                            wireless = true;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    var numberName = await CnamBulkVs.GetAsync(number, _bulkVSAPIKey);
+                    checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName?.name;
+
+                    Log.Information($"[Portability] {number} is Portable.");
+
+                    var portableNumber = new PortedPhoneNumber
+                    {
+                        PortedPhoneNumberId = Guid.NewGuid(),
+                        PortedDialedNumber = number,
+                        NPA = npa,
+                        NXX = nxx,
+                        XXXX = xxxx,
+                        City = checkNumber.city,
+                        State = checkNumber.province,
+                        DateIngested = DateTime.Now,
+                        IngestedFrom = "UserInput",
+                        Wireless = wireless,
+                        LrnLookup = checkNumber,
+                        Portable = true
+                    };
+
+                    return portableNumber;
+                }
+                catch (Exception ex)
+                {
+                    Log.Information($"[Portability] {number} is not Portable.");
+                    Log.Fatal($"[Portability] {ex.Message}");
+                    Log.Fatal($"[Portability] {ex.InnerException}");
+
+                    return new PortedPhoneNumber
+                    {
+                        PortedDialedNumber = number,
+                        Portable = false
+                    };
+                }
+            }
+            else
+            {
+                Log.Information($"[Portability] {number} is not Portable. Failed NPA, NXX, XXXX parsing.");
+
+                return new PortedPhoneNumber
+                {
+                    PortedDialedNumber = number,
+                    Portable = false
+                };
+            }
+        }
+
 
         [Authorize]
         [Route("/")]
@@ -967,6 +1066,14 @@ namespace NumberSearch.Ops.Controllers
                     {
                         numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
                     }
+
+                    var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                    var productOrder = productOrders.Where(x => x.PortedPhoneNumberId == numberToRemove.PortedPhoneNumberId).FirstOrDefault();
+
+                    if (productOrder is not null)
+                    {
+                        var checkDeleteProductOrder = await productOrder.DeleteByIdAsync(_postgresql).ConfigureAwait(false);
+                    }
                 }
 
                 return View("PortRequestEdit", new PortRequestResult
@@ -1032,120 +1139,33 @@ namespace NumberSearch.Ops.Controllers
 
                 if (Query != null && Query?.Length == 10)
                 {
-                    var dialedPhoneNumber = Query;
+                    var port = await VerifyPortablityAsync(Query);
 
-                    bool checkNpa = int.TryParse(dialedPhoneNumber.Substring(0, 3), out int npa);
-                    bool checkNxx = int.TryParse(dialedPhoneNumber.Substring(3, 3), out int nxx);
-                    bool checkXxxx = int.TryParse(dialedPhoneNumber.Substring(6, 4), out int xxxx);
-
-                    if (checkNpa && checkNxx && checkXxxx)
+                    if (port.Portable)
                     {
-                        try
+                        Log.Information($"[Portability] {port.PortedDialedNumber} is Portable.");
+
+                        port.OrderId = order.OrderId;
+                        port.PortRequestId = portRequest.PortRequestId;
+
+                        var checkSave = await port.PostAsync(_postgresql).ConfigureAwait(false);
+
+                        if (checkSave)
                         {
-                            var portable = await LnpCheck.IsPortableAsync(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
-
-                            // Lookup the number.
-                            var checkNumber = await LrnBulkCnam.GetAsync(dialedPhoneNumber, _bulkVSAPIKey).ConfigureAwait(false);
-
-                            bool wireless = false;
-
-                            switch (checkNumber.lectype)
-                            {
-                                case "WIRELESS":
-                                    wireless = true;
-                                    break;
-                                case "PCS":
-                                    wireless = true;
-                                    break;
-                                case "P RESELLER":
-                                    wireless = true;
-                                    break;
-                                case "Wireless":
-                                    wireless = true;
-                                    break;
-                                case "W RESELLER":
-                                    wireless = true;
-                                    break;
-                                default:
-                                    break;
-                            }
-
-                            var numberName = new LIDBLookup();
-                            try
-                            {
-                                numberName = await LIDBLookup.GetAsync(dialedPhoneNumber, _data247username, _data247password).ConfigureAwait(false);
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.Error($"[Lookups] Failed to get LIBDName from Data 24/7 for number {dialedPhoneNumber}.");
-                                Log.Error(ex.Message);
-                                Log.Error(ex.InnerException.ToString());
-                            }
-
-                            checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.response?.results?.FirstOrDefault()?.name) ? string.Empty : numberName?.response?.results?.FirstOrDefault()?.name;
-
-                            if (portable)
-                            {
-                                Log.Information($"[Portability] {dialedPhoneNumber} is Portable.");
-
-                                var port = new PortedPhoneNumber
-                                {
-                                    PortedDialedNumber = dialedPhoneNumber,
-                                    NPA = npa,
-                                    NXX = nxx,
-                                    XXXX = xxxx,
-                                    City = "Unknown City",
-                                    State = "Unknown State",
-                                    DateIngested = DateTime.Now,
-                                    IngestedFrom = "UserInput",
-                                    Wireless = wireless,
-                                    LrnLookup = checkNumber,
-                                    OrderId = order.OrderId,
-                                    PortRequestId = portRequest.PortRequestId,
-                                };
-
-                                var checkSave = await port.PostAsync(_postgresql).ConfigureAwait(false);
-
-                                if (checkSave)
-                                {
-                                    numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
-                                }
-                            }
-                            else
-                            {
-                                var port = new PortedPhoneNumber
-                                {
-                                    PortedDialedNumber = dialedPhoneNumber,
-                                    NPA = npa,
-                                    NXX = nxx,
-                                    XXXX = xxxx,
-                                    City = "Unknown City",
-                                    State = "Unknown State",
-                                    DateIngested = DateTime.Now,
-                                    IngestedFrom = "UserInput",
-                                    Wireless = wireless,
-                                    LrnLookup = checkNumber,
-                                    OrderId = order.OrderId,
-                                    PortRequestId = portRequest.PortRequestId,
-                                };
-                            }
+                            numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
                         }
-                        catch (Exception ex)
+
+                        var productOrder = new ProductOrder
                         {
-                            Log.Fatal($"[Portability] {ex.Message}");
+                            PortedDialedNumber = port.PortedDialedNumber,
+                            PortedPhoneNumberId = port.PortedPhoneNumberId,
+                            Quantity = 1,
+                            CreateDate = DateTime.Now,
+                            OrderId = order.OrderId,
+                            ProductOrderId = Guid.NewGuid()
+                        };
 
-                            var port = new PortedPhoneNumber
-                            {
-                                PortedDialedNumber = dialedPhoneNumber,
-                                NPA = npa,
-                                NXX = nxx,
-                                XXXX = xxxx,
-                                City = "Unknown City",
-                                State = "Unknown State",
-                                DateIngested = DateTime.Now,
-                                IngestedFrom = "UserInput"
-                            };
-                        }
+                        var checkProductOrder = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
                     }
                 }
 
