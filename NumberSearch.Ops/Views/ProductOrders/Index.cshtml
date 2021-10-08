@@ -51,24 +51,24 @@
                                     var foreignId = $"Verified Number {item.VerifiedPhoneNumberId.ToString()}";
                                     @foreignId
                                 }
-                                else if (item.ProductId != System.Guid.Empty)
+                                else if (item.ProductId.HasValue)
                                 {
                                     var foreignId = $"Product Id {item.ProductId.ToString()}";
                                     var product = Model?.Products?.Where(x => x.ProductId == item.ProductId).FirstOrDefault();
-                                    <a href="/Products/Edit/@product?.ProductId" class="btn btn-primary">@product.Name</a>
+                                    <a href="/Products/Edit/@product?.ProductId" class="btn btn-primary">@product?.Name</a>
                                 }
-                                else if (item.ServiceId != System.Guid.Empty)
+                                else if (item.ServiceId.HasValue)
                                 {
                                     var foreignId = $"Service Id {item.ServiceId.ToString()}";
                                     var service = Model?.Services?.Where(x => x.ServiceId == item.ServiceId).FirstOrDefault();
-                                    foreignId = $"{service.Name}";
+                                    foreignId = $"{service?.Name}";
                                     @foreignId
                                 }
                                 else if (item.CouponId.HasValue)
                                 {
                                     var foreignId = $"Coupon Id {item.CouponId.ToString()}";
                                     var coupon = Model?.Coupons?.Where(x => x.CouponId == item.CouponId).FirstOrDefault();
-                                    <a href="/Home/Coupons/@coupon?.CouponId" class="btn btn-primary">@coupon.Name</a>
+                                    <a href="/Home/Coupons/@coupon?.CouponId" class="btn btn-primary">@coupon?.Name</a>
                                 }
                             }
                         </td>

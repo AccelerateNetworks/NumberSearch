@@ -84,7 +84,19 @@ namespace NumberSearch.Ops.Controllers
             var coupons = await _context.Coupons.ToArrayAsync();
             var productOrders = await _context.ProductOrders.Where(x => x.OrderId == orderId).ToListAsync();
 
-            return View("Create", new ProductOrderResult { ProductOrder = new ProductOrder { OrderId = orderId ?? Guid.NewGuid(), CreateDate = DateTime.Now, Quantity = 1 }, ProductOrders = productOrders, Products = products, Services = services, Coupons = coupons });
+            return View("Create", new ProductOrderResult
+            {
+                ProductOrder = new ProductOrder
+                {
+                    OrderId = orderId ?? Guid.NewGuid(),
+                    CreateDate = DateTime.Now,
+                    Quantity = 1
+                },
+                ProductOrders = productOrders,
+                Products = products,
+                Services = services,
+                Coupons = coupons
+            });
         }
 
         // POST: ProductOrders/Create
@@ -103,29 +115,35 @@ namespace NumberSearch.Ops.Controllers
 
                     if (checkNumber)
                     {
-                        var purchased = new DataAccess.PurchasedPhoneNumber
+                        var checkExists = await _context.ProductOrders.Where(x => x.OrderId == productOrder.OrderId && x.DialedNumber == number.DialedNumber).FirstOrDefaultAsync();
+
+                        if (checkExists is null)
                         {
-                            DialedNumber = number.DialedNumber,
-                            Completed = true,
-                            DateIngested = DateTime.Now,
-                            DateOrdered = DateTime.Now,
-                            IngestedFrom = "Ops",
-                            NPA = number.NPA,
-                            NXX = number.NXX,
-                            XXXX = number.XXXX,
-                            NumberType = "Standard",
-                            OrderId = productOrder.OrderId,
-                            OrderResponse = string.Empty,
-                            PIN = string.Empty,
-                            PurchasedPhoneNumberId = Guid.NewGuid()
-                        };
+                            var purchased = new DataAccess.PurchasedPhoneNumber
+                            {
+                                DialedNumber = number.DialedNumber,
+                                Completed = true,
+                                DateIngested = DateTime.Now,
+                                DateOrdered = DateTime.Now,
+                                IngestedFrom = "Ops",
+                                NPA = number.NPA,
+                                NXX = number.NXX,
+                                XXXX = number.XXXX,
+                                NumberType = "Standard",
+                                OrderId = productOrder.OrderId,
+                                OrderResponse = string.Empty,
+                                PIN = string.Empty,
+                                PurchasedPhoneNumberId = Guid.NewGuid()
+                            };
 
-                        var checkPurchased = await purchased.PostAsync(_postgresql);
+                            var checkPurchased = await purchased.PostAsync(_postgresql);
 
-                        productOrder.DialedNumber = number.DialedNumber;
-                        productOrder.Quantity = 1;
-                        _context.Add(productOrder);
-                        await _context.SaveChangesAsync();
+                            productOrder.DialedNumber = number.DialedNumber;
+                            productOrder.Quantity = 1;
+
+                            _context.Add(productOrder);
+                            await _context.SaveChangesAsync();
+                        }
                     }
                 }
                 else if (!string.IsNullOrWhiteSpace(productOrder.PortedDialedNumber))
@@ -134,26 +152,61 @@ namespace NumberSearch.Ops.Controllers
 
                     if (checkNumber)
                     {
-                        var homeController = new HomeController(_configuration, _userManager);
+                        var checkExists = await _context.ProductOrders.Where(x => x.OrderId == productOrder.OrderId && x.PortedDialedNumber == number.DialedNumber).FirstOrDefaultAsync();
 
-                        var port = await homeController.VerifyPortablityAsync(number.DialedNumber);
-
-                        if (port.Portable)
+                        if (checkExists is null)
                         {
-                            var portRequest = await DataAccess.PortRequest.GetByOrderIdAsync(productOrder.OrderId, _postgresql);
+                            var homeController = new HomeController(_configuration, _userManager);
 
-                            if (portRequest is not null)
+                            var port = await homeController.VerifyPortablityAsync(number.DialedNumber);
+
+                            if (port.Portable)
                             {
-                                port.PortRequestId = portRequest.PortRequestId;
+                                var portRequest = await DataAccess.PortRequest.GetByOrderIdAsync(productOrder.OrderId, _postgresql);
+
+                                if (portRequest is not null)
+                                {
+                                    port.PortRequestId = portRequest.PortRequestId;
+                                }
+
+                                port.OrderId = productOrder.OrderId;
+                                var checkSave = await port.PostAsync(_postgresql).ConfigureAwait(false);
                             }
 
-                            port.OrderId = productOrder.OrderId;
-                            var checkSave = await port.PostAsync(_postgresql).ConfigureAwait(false);
+                            productOrder.PortedDialedNumber = number.DialedNumber;
+                            productOrder.PortedPhoneNumberId = port.PortedPhoneNumberId;
+                            productOrder.Quantity = 1;
+                            _context.Add(productOrder);
+                            await _context.SaveChangesAsync();
                         }
+                    }
+                }
+                else if (productOrder.ServiceId.HasValue)
+                {
+                    var checkService = await _context.ProductOrders.Where(x => x.OrderId == productOrder.OrderId && x.ServiceId == productOrder.ServiceId).FirstOrDefaultAsync();
 
-                        productOrder.PortedDialedNumber = number.DialedNumber;
-                        productOrder.PortedPhoneNumberId = port.PortedPhoneNumberId;
-                        productOrder.Quantity = 1;
+                    if (checkService is null)
+                    {
+                        _context.Add(productOrder);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+                else if (productOrder.ProductId.HasValue)
+                {
+                    var checkProduct = await _context.ProductOrders.Where(x => x.OrderId == productOrder.OrderId && x.ProductId == productOrder.ProductId).FirstOrDefaultAsync();
+
+                    if (checkProduct is null)
+                    {
+                        _context.Add(productOrder);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+                else if (productOrder.CouponId.HasValue)
+                {
+                    var checkCoupon = await _context.ProductOrders.Where(x => x.OrderId == productOrder.OrderId && x.CouponId == productOrder.CouponId).FirstOrDefaultAsync();
+
+                    if (checkCoupon is null)
+                    {
                         _context.Add(productOrder);
                         await _context.SaveChangesAsync();
                     }
@@ -163,10 +216,7 @@ namespace NumberSearch.Ops.Controllers
                 var services = await _context.Services.ToArrayAsync();
                 var coupons = await _context.Coupons.ToArrayAsync();
                 var productOrders = await _context.ProductOrders.Where(x => x.OrderId == productOrder.OrderId).ToListAsync();
-                productOrder = await _context.ProductOrders
-                    .FirstOrDefaultAsync(m => m.ProductOrderId == productOrder.ProductOrderId);
-
-                return View("Index", new ProductOrderResult { ProductOrder = productOrder, ProductOrders = productOrders, Coupons = coupons, Products = products, Services = services });
+                return View("Index", new ProductOrderResult { ProductOrders = productOrders, Coupons = coupons, Products = products, Services = services });
             }
             else
             {
