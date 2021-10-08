@@ -32,13 +32,6 @@ namespace NumberSearch.Ops.Controllers
 
         // GET: ProductOrders
         [Authorize]
-        [HttpGet("ProductOrders")]
-        public async Task<IActionResult> Index()
-        {
-            return View(await _context.ProductOrders.ToListAsync());
-        }
-
-        [Authorize]
         [HttpGet("Order/{orderId}/ProductOrders")]
         public async Task<IActionResult> ProductOrdersByOrder(Guid orderId)
         {
@@ -312,7 +305,12 @@ namespace NumberSearch.Ops.Controllers
             var productOrder = await _context.ProductOrders.FindAsync(id);
             _context.ProductOrders.Remove(productOrder);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            var products = await _context.Products.ToArrayAsync();
+            var services = await _context.Services.ToArrayAsync();
+            var coupons = await _context.Coupons.ToArrayAsync();
+            var productOrders = await _context.ProductOrders.Where(x => x.OrderId == productOrder.OrderId).ToListAsync();
+            return View("Index", new ProductOrderResult { ProductOrders = productOrders, Coupons = coupons, Products = products, Services = services });
         }
 
         private bool ProductOrderExists(Guid id)

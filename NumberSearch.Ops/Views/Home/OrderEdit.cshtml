@@ -268,7 +268,7 @@
             </div>
         </div>
         <br />
-        <button type="submit" class="btn btn-danger">Update</button>
+        <button type="submit" class="btn btn-success">Update</button>
         <br />
     </form>
     <br />
@@ -280,8 +280,8 @@
         if (Model?.Cart?.PhoneNumbers.Count() > 0 || Model?.Cart?.Products.Count() > 0 || Model?.Cart?.Services.Count() > 0 || Model?.Cart?.PortedPhoneNumbers.Count() > 0 || Model?.Cart?.VerifiedPhoneNumbers.Count() > 0 || Model?.Cart?.PurchasedPhoneNumbers.Count() > 0)
         {
             <br />
-            <a href="/Order/{@Model?.Order?.OrderId}/ProductOrders" class="btn btn-outline-primary">
-                Product Orders
+            <a href="/ProductOrders/Create?orderId=@Model?.Order?.OrderId" class="btn btn-outline-primary">
+                Add Item
             </a>
             <br />
             <div class="row">

@@ -39,16 +39,16 @@
                                 if (!string.IsNullOrWhiteSpace(item.DialedNumber))
                                 {
                                     var foreignId = $"Purchased Number {item.DialedNumber}";
-                                    @foreignId
+                                    <a href="/Home/NumberOrders/@item.DialedNumber" class="btn btn-primary">@item.DialedNumber</a>
                                 }
                                 else if (item.PortedPhoneNumberId.HasValue)
                                 {
-                                    var foreignId = $"Ported Number {item.PortedPhoneNumberId.ToString()}";
+                                    var foreignId = $"Ported Number {item.PortedDialedNumber}";
                                     @foreignId
                                 }
                                 else if (item.VerifiedPhoneNumberId.HasValue)
                                 {
-                                    var foreignId = $"Verified Number {item.VerifiedPhoneNumberId.ToString()}";
+                                    var foreignId = $"Verified Number {item.VerifiedPhoneNumberId}";
                                     @foreignId
                                 }
                                 else if (item.ProductId.HasValue)
