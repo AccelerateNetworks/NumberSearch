@@ -17,10 +17,8 @@ namespace NumberSearch.DataAccess.Peerless
             string baseUrl = "https://api.peerlessnetwork.io/mag/v1/";
             string endpoint = "did/find";
             string npaParameter = $"?npa={npa}";
-            string limitParameter = $"&limit=100";
-            string consecutiveParameter = $"&consecutive=10";
             string apiKeyParameter = $"&api_key={apiKey}";
-            string route = $"{baseUrl}{endpoint}{npaParameter}{limitParameter}{consecutiveParameter}{apiKeyParameter}";
+            string route = $"{baseUrl}{endpoint}{npaParameter}{apiKeyParameter}";
             return await route.GetJsonAsync<IEnumerable<DidFind>>().ConfigureAwait(false);
         }
 
