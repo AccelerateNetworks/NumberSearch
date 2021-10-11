@@ -102,6 +102,11 @@ namespace NumberSearch.Mvc.Controllers
                     });
                 }
 
+                if (order.MergedOrderId is not null)
+                {
+                    return Redirect($"/Cart/Order/{order?.MergedOrderId}");
+                }
+
                 var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
                 var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
                 var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);

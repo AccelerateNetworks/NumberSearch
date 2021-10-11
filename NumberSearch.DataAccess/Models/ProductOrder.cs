@@ -82,6 +82,27 @@ namespace NumberSearch.DataAccess
             }
         }
 
+        public async Task<bool> PutAsync(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("UPDATE public.\"ProductOrders\" " +
+                "SET \"OrderId\" = @OrderId, \"ProductId\" = @ProductId, \"ServiceId\" = @ServiceId, \"DialedNumber\" = @DialedNumber, \"PortedDialedNumber\" = @PortedDialedNumber, \"Quantity\" = @Quantity, \"CreateDate\" = @CreateDate, \"PortedPhoneNumberId\" = @PortedPhoneNumberId, \"VerifiedPhoneNumberId\" = @VerifiedPhoneNumberId, \"CouponId\" = @CouponId " +
+                "WHERE \"ProductOrderId\" = @ProductOrderId",
+                new { OrderId, ProductId, ServiceId, DialedNumber, PortedDialedNumber, Quantity, CreateDate, PortedPhoneNumberId, VerifiedPhoneNumberId, CouponId, ProductOrderId })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// Delete all of the product orders related to a specific order from the database.
         /// </summary>

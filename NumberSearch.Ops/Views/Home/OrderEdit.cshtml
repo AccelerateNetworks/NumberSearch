@@ -70,6 +70,12 @@
         <span class="badge badge-info badge-pill">
             @Model.Order.DateSubmitted
         </span>
+        @if (Model?.Order?.MergedOrderId is not null)
+        {
+            <span class="badge badge-warning badge-pill">
+                Merged into <a href="/Home/Order/{@Model?.Order?.MergedOrderId}">@Model?.Order?.MergedOrderId</a>
+            </span>
+        }
     </h4>
     <div class="btn-group mt-2 mb-3" role="group" aria-label="Basic example">
         @{
@@ -274,7 +280,23 @@
     <br />
     <a href="/Home/Order/@Model.Order.OrderId/Delete" class="btn btn-danger">Delete</a>
     <br />
+    <form action="/Home/Order/@Model?.Order?.OrderId/Merge" method="post">
+        <div class="row mt-3">
+            <div class="col">
+                <label for="address">Current Order Id</label>
+                <input value="@Model?.Order?.OrderId" type="text" class="form-control" readonly>
+            </div>
+            <div class="col">
+                <label for="address">Id of the Order To Merge</label>
+                <input name="mergeId" type="text" class="form-control" />
+            </div>
+            <div class="col">
+                <label for="address">Cannot be undone</label>
 
+                <button type="submit" class="btn btn-outline-danger btn-block">Merge</button>
+            </div>
+        </div>
+    </form>
     @{
         var productOrders = Model?.Cart?.ProductOrdersToDictionary();
         if (Model?.Cart?.PhoneNumbers.Count() > 0 || Model?.Cart?.Products.Count() > 0 || Model?.Cart?.Services.Count() > 0 || Model?.Cart?.PortedPhoneNumbers.Count() > 0 || Model?.Cart?.VerifiedPhoneNumbers.Count() > 0 || Model?.Cart?.PurchasedPhoneNumbers.Count() > 0)
@@ -500,9 +522,11 @@
         }
         else
         {
-            <div class="row">
-                <div class="alert alert-warning col" role="alert">
-                    There are no items in your cart!
+            <div class="row mt-3">
+                <div class="col">
+                    <div class="alert alert-warning col" role="alert">
+                        There are no items in your cart!
+                    </div>
                 </div>
             </div>
             <br />

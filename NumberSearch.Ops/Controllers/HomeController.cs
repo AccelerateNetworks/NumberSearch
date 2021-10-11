@@ -228,6 +228,9 @@ namespace NumberSearch.Ops.Controllers
                     orders = orders.Where(x => x.Quote is not true);
                 }
 
+                // Hide merged orders
+                //orders = orders.Where(x => x.MergedOrderId is null);
+
                 foreach (var order in orders)
                 {
                     var orderProductOrders = productOrders.Where(x => x.OrderId == order.OrderId).ToArray();
@@ -468,6 +471,64 @@ namespace NumberSearch.Ops.Controllers
                 return Redirect("/Home/Order");
             }
         }
+
+        [Authorize]
+        [Route("/Home/Order/{orderId}/Merge")]
+        public async Task<IActionResult> OrderDelete(Guid orderId, Guid mergeId)
+        {
+            if (orderId == Guid.Empty || mergeId == Guid.Empty)
+            {
+                return Redirect("/Home/Order");
+            }
+            else
+            {
+                var parent = await Order.GetByIdAsync(orderId, _postgresql).ConfigureAwait(false);
+                var child = await Order.GetByIdAsync(mergeId, _postgresql).ConfigureAwait(false);
+
+                if (parent is not null && child is not null)
+                {
+                    var productOrders = await ProductOrder.GetAsync(child.OrderId, _postgresql).ConfigureAwait(false);
+                    var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(child.OrderId, _postgresql).ConfigureAwait(false);
+                    var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(child.OrderId, _postgresql).ConfigureAwait(false);
+                    var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(child.OrderId, _postgresql).ConfigureAwait(false);
+
+                    foreach (var item in productOrders)
+                    {
+                        item.OrderId = parent.OrderId;
+                        var checkUpdate = await item.PutAsync(_postgresql).ConfigureAwait(false);
+                    }
+
+                    foreach (var item in purchasedPhoneNumbers)
+                    {
+                        item.OrderId = parent.OrderId;
+                        var checkUpdate = await item.PutAsync(_postgresql).ConfigureAwait(false);
+                    }
+
+                    foreach (var item in verifiedPhoneNumbers)
+                    {
+                        item.OrderId = parent.OrderId;
+                        var checkUpdate = await item.PutAsync(_postgresql).ConfigureAwait(false);
+                    }
+
+                    foreach (var item in portedPhoneNumbers)
+                    {
+                        item.OrderId = parent.OrderId;
+                        var checkUpdate = await item.PutAsync(_postgresql).ConfigureAwait(false);
+                    }
+
+                    // Redirect requests for the child order to the parent order it was merged into.
+                    child.MergedOrderId = parent.OrderId;
+                    var checkMerge = await child.PutAsync(_postgresql).ConfigureAwait(false);
+
+                    return Redirect($"/Home/Order/{orderId}");
+                }
+                else
+                {
+                    return Redirect($"/Home/Order/{orderId}");
+                }
+            }
+        }
+
 
         [Authorize]
         [Route("/Home/NumberOrders")]

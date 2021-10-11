@@ -37,13 +37,14 @@ namespace NumberSearch.DataAccess
         public string AddressUnitType { get; set; }
         public string AddressUnitNumber { get; set; }
         public string UnparsedAddress { get; set; }
+        public Guid? MergedOrderId { get; set; }
 
         public static async Task<Order> GetByIdAsync(Guid orderId, string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryFirstOrDefaultAsync<Order>("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\", \"BusinessName\", \"CustomerNotes\", \"BillingClientId\", \"BillingInvoiceId\", \"Quote\", \"BillingInvoiceReoccuringId\", \"SalesEmail\", \"BackgroundWorkCompleted\", \"Completed\", \"InstallDate\", \"UpfrontInvoiceLink\", \"ReoccuringInvoiceLink\", \"OnsiteInstallation\", \"AddressUnitType\", \"AddressUnitNumber\", \"UnparsedAddress\" FROM public.\"Orders\" " +
+                .QueryFirstOrDefaultAsync<Order>("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\", \"BusinessName\", \"CustomerNotes\", \"BillingClientId\", \"BillingInvoiceId\", \"Quote\", \"BillingInvoiceReoccuringId\", \"SalesEmail\", \"BackgroundWorkCompleted\", \"Completed\", \"InstallDate\", \"UpfrontInvoiceLink\", \"ReoccuringInvoiceLink\", \"OnsiteInstallation\", \"AddressUnitType\", \"AddressUnitNumber\", \"UnparsedAddress\", \"MergedOrderId\" FROM public.\"Orders\" " +
                 "WHERE \"OrderId\" = @orderId " +
                 "ORDER BY \"DateSubmitted\" DESC",
                 new { orderId })
@@ -57,7 +58,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<Order>("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\", \"BusinessName\", \"CustomerNotes\", \"BillingClientId\", \"BillingInvoiceId\", \"Quote\", \"BillingInvoiceReoccuringId\", \"SalesEmail\", \"BackgroundWorkCompleted\", \"Completed\", \"InstallDate\", \"UpfrontInvoiceLink\", \"ReoccuringInvoiceLink\", \"OnsiteInstallation\", \"AddressUnitType\", \"AddressUnitNumber\", \"UnparsedAddress\" FROM public.\"Orders\" " +
+                .QueryAsync<Order>("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\", \"BusinessName\", \"CustomerNotes\", \"BillingClientId\", \"BillingInvoiceId\", \"Quote\", \"BillingInvoiceReoccuringId\", \"SalesEmail\", \"BackgroundWorkCompleted\", \"Completed\", \"InstallDate\", \"UpfrontInvoiceLink\", \"ReoccuringInvoiceLink\", \"OnsiteInstallation\", \"AddressUnitType\", \"AddressUnitNumber\", \"UnparsedAddress\", \"MergedOrderId\" FROM public.\"Orders\" " +
                 "WHERE \"Email\" = @email " +
                 "ORDER BY \"DateSubmitted\" DESC",
                 new { email })
@@ -72,7 +73,7 @@ namespace NumberSearch.DataAccess
 
             var result = await connection
                 .QueryAsync<Order>
-                ("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\", \"BusinessName\", \"CustomerNotes\", \"BillingClientId\", \"BillingInvoiceId\", \"Quote\", \"BillingInvoiceReoccuringId\", \"SalesEmail\", \"BackgroundWorkCompleted\", \"Completed\", \"InstallDate\", \"UpfrontInvoiceLink\", \"ReoccuringInvoiceLink\", \"OnsiteInstallation\", \"AddressUnitType\", \"AddressUnitNumber\", \"UnparsedAddress\" " +
+                ("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\", \"BusinessName\", \"CustomerNotes\", \"BillingClientId\", \"BillingInvoiceId\", \"Quote\", \"BillingInvoiceReoccuringId\", \"SalesEmail\", \"BackgroundWorkCompleted\", \"Completed\", \"InstallDate\", \"UpfrontInvoiceLink\", \"ReoccuringInvoiceLink\", \"OnsiteInstallation\", \"AddressUnitType\", \"AddressUnitNumber\", \"UnparsedAddress\", \"MergedOrderId\" " +
                 "FROM public.\"Orders\" " +
                 "ORDER BY \"DateSubmitted\" DESC")
                 .ConfigureAwait(false);
@@ -86,7 +87,7 @@ namespace NumberSearch.DataAccess
 
             var result = await connection
                 .QueryAsync<Order>
-                ("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\", \"BusinessName\", \"CustomerNotes\", \"BillingClientId\", \"BillingInvoiceId\", \"Quote\", \"BillingInvoiceReoccuringId\", \"SalesEmail\", \"BackgroundWorkCompleted\", \"Completed\", \"InstallDate\", \"UpfrontInvoiceLink\", \"ReoccuringInvoiceLink\", \"OnsiteInstallation\", \"AddressUnitType\", \"AddressUnitNumber\", \"UnparsedAddress\" " +
+                ("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\", \"BusinessName\", \"CustomerNotes\", \"BillingClientId\", \"BillingInvoiceId\", \"Quote\", \"BillingInvoiceReoccuringId\", \"SalesEmail\", \"BackgroundWorkCompleted\", \"Completed\", \"InstallDate\", \"UpfrontInvoiceLink\", \"ReoccuringInvoiceLink\", \"OnsiteInstallation\", \"AddressUnitType\", \"AddressUnitNumber\", \"UnparsedAddress\", \"MergedOrderId\" " +
                 "FROM public.\"Orders\" " +
                 "WHERE \"BackgroundWorkCompleted\" = false " +
                 "ORDER BY \"DateSubmitted\" DESC")
@@ -100,9 +101,9 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"Orders\"(\"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\", \"BusinessName\", \"CustomerNotes\", \"BillingClientId\", \"BillingInvoiceId\", \"Quote\", \"BillingInvoiceReoccuringId\", \"SalesEmail\", \"BackgroundWorkCompleted\", \"Completed\", \"InstallDate\", \"UpfrontInvoiceLink\", \"ReoccuringInvoiceLink\", \"OnsiteInstallation\", \"AddressUnitType\", \"AddressUnitNumber\", \"UnparsedAddress\") " +
-                "VALUES(@OrderID, @FirstName, @LastName, @Email, @Address, @Address2, @City, @State, @Zip, @DateSubmitted, @BusinessName, @CustomerNotes, @BillingClientId, @BillingInvoiceId, @Quote, @BillingInvoiceReoccuringId, @SalesEmail, @BackgroundWorkCompleted, @Completed, @InstallDate, @UpfrontInvoiceLink, @ReoccuringInvoiceLink, @OnsiteInstallation, @AddressUnitType, @AddressUnitNumber, @UnparsedAddress)",
-                new { OrderId, FirstName, LastName, Email, Address, Address2, City, State, Zip, DateSubmitted, BusinessName, CustomerNotes, BillingClientId, BillingInvoiceId, Quote, BillingInvoiceReoccuringId, SalesEmail, BackgroundWorkCompleted, Completed, InstallDate, UpfrontInvoiceLink, ReoccuringInvoiceLink, OnsiteInstallation, AddressUnitType, AddressUnitNumber, UnparsedAddress })
+                .ExecuteAsync("INSERT INTO public.\"Orders\"(\"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\", \"BusinessName\", \"CustomerNotes\", \"BillingClientId\", \"BillingInvoiceId\", \"Quote\", \"BillingInvoiceReoccuringId\", \"SalesEmail\", \"BackgroundWorkCompleted\", \"Completed\", \"InstallDate\", \"UpfrontInvoiceLink\", \"ReoccuringInvoiceLink\", \"OnsiteInstallation\", \"AddressUnitType\", \"AddressUnitNumber\", \"UnparsedAddress\", \"MergedOrderId\" ) " +
+                "VALUES(@OrderID, @FirstName, @LastName, @Email, @Address, @Address2, @City, @State, @Zip, @DateSubmitted, @BusinessName, @CustomerNotes, @BillingClientId, @BillingInvoiceId, @Quote, @BillingInvoiceReoccuringId, @SalesEmail, @BackgroundWorkCompleted, @Completed, @InstallDate, @UpfrontInvoiceLink, @ReoccuringInvoiceLink, @OnsiteInstallation, @AddressUnitType, @AddressUnitNumber, @UnparsedAddress, @MergedOrderId)",
+                new { OrderId, FirstName, LastName, Email, Address, Address2, City, State, Zip, DateSubmitted, BusinessName, CustomerNotes, BillingClientId, BillingInvoiceId, Quote, BillingInvoiceReoccuringId, SalesEmail, BackgroundWorkCompleted, Completed, InstallDate, UpfrontInvoiceLink, ReoccuringInvoiceLink, OnsiteInstallation, AddressUnitType, AddressUnitNumber, UnparsedAddress, MergedOrderId })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -121,9 +122,9 @@ namespace NumberSearch.DataAccess
 
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"Orders\" " +
-                "SET \"FirstName\" = @FirstName, \"LastName\" = @LastName, \"Email\" = @Email, \"Address\" = @Address, \"Address2\" = @Address2, \"City\" = @City, \"State\" = @State, \"Zip\" = @Zip, \"DateSubmitted\" = @DateSubmitted, \"BusinessName\" = @BusinessName, \"CustomerNotes\" = @CustomerNotes, \"BillingClientId\" = @BillingClientId, \"BillingInvoiceId\" = @BillingInvoiceId, \"Quote\" = @Quote, \"BillingInvoiceReoccuringId\" = @BillingInvoiceReoccuringId, \"SalesEmail\" = @SalesEmail, \"BackgroundWorkCompleted\" = @BackgroundWorkCompleted, \"Completed\" = @Completed, \"InstallDate\" = @InstallDate, \"UpfrontInvoiceLink\" = @UpfrontInvoiceLink, \"ReoccuringInvoiceLink\" = @ReoccuringInvoiceLink, \"OnsiteInstallation\" = @OnsiteInstallation, \"AddressUnitType\" = @AddressUnitType, \"AddressUnitNumber\" = @AddressUnitNumber, \"UnparsedAddress\" = @UnparsedAddress " +
+                "SET \"FirstName\" = @FirstName, \"LastName\" = @LastName, \"Email\" = @Email, \"Address\" = @Address, \"Address2\" = @Address2, \"City\" = @City, \"State\" = @State, \"Zip\" = @Zip, \"DateSubmitted\" = @DateSubmitted, \"BusinessName\" = @BusinessName, \"CustomerNotes\" = @CustomerNotes, \"BillingClientId\" = @BillingClientId, \"BillingInvoiceId\" = @BillingInvoiceId, \"Quote\" = @Quote, \"BillingInvoiceReoccuringId\" = @BillingInvoiceReoccuringId, \"SalesEmail\" = @SalesEmail, \"BackgroundWorkCompleted\" = @BackgroundWorkCompleted, \"Completed\" = @Completed, \"InstallDate\" = @InstallDate, \"UpfrontInvoiceLink\" = @UpfrontInvoiceLink, \"ReoccuringInvoiceLink\" = @ReoccuringInvoiceLink, \"OnsiteInstallation\" = @OnsiteInstallation, \"AddressUnitType\" = @AddressUnitType, \"AddressUnitNumber\" = @AddressUnitNumber, \"UnparsedAddress\" = @UnparsedAddress, \"MergedOrderId\" = @MergedOrderId " +
                 "WHERE \"OrderId\" = @OrderId",
-                new { FirstName, LastName, Email, Address, Address2, City, State, Zip, DateSubmitted, BusinessName, CustomerNotes, BillingClientId, BillingInvoiceId, Quote, BillingInvoiceReoccuringId, SalesEmail, BackgroundWorkCompleted, OrderId, Completed, InstallDate, UpfrontInvoiceLink, ReoccuringInvoiceLink, OnsiteInstallation, @AddressUnitType, @AddressUnitNumber, UnparsedAddress })
+                new { FirstName, LastName, Email, Address, Address2, City, State, Zip, DateSubmitted, BusinessName, CustomerNotes, BillingClientId, BillingInvoiceId, Quote, BillingInvoiceReoccuringId, SalesEmail, BackgroundWorkCompleted, OrderId, Completed, InstallDate, UpfrontInvoiceLink, ReoccuringInvoiceLink, OnsiteInstallation, @AddressUnitType, @AddressUnitNumber, UnparsedAddress, MergedOrderId })
                 .ConfigureAwait(false);
 
             if (result == 1)
