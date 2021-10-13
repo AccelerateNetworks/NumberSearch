@@ -205,11 +205,7 @@ namespace NumberSearch.Ops.Controllers
                     }
                 }
 
-                var products = await _context.Products.ToArrayAsync();
-                var services = await _context.Services.ToArrayAsync();
-                var coupons = await _context.Coupons.ToArrayAsync();
-                var productOrders = await _context.ProductOrders.Where(x => x.OrderId == productOrder.OrderId).ToListAsync();
-                return View("Index", new ProductOrderResult { ProductOrders = productOrders, Coupons = coupons, Products = products, Services = services });
+                return Redirect($"/Home/Order/{productOrder.OrderId}");
             }
             else
             {
@@ -271,9 +267,9 @@ namespace NumberSearch.Ops.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return Redirect($"/Home/Order/{productOrder.OrderId}");
             }
-            return View(productOrder);
+            return Redirect($"/Home/Order/{productOrder.OrderId}");
         }
 
         // GET: ProductOrders/Delete/5
@@ -306,11 +302,28 @@ namespace NumberSearch.Ops.Controllers
             _context.ProductOrders.Remove(productOrder);
             await _context.SaveChangesAsync();
 
-            var products = await _context.Products.ToArrayAsync();
-            var services = await _context.Services.ToArrayAsync();
-            var coupons = await _context.Coupons.ToArrayAsync();
-            var productOrders = await _context.ProductOrders.Where(x => x.OrderId == productOrder.OrderId).ToListAsync();
-            return View("Index", new ProductOrderResult { ProductOrders = productOrders, Coupons = coupons, Products = products, Services = services });
+            // Delete the child items as well as the parent product order.
+            if (!string.IsNullOrWhiteSpace(productOrder.DialedNumber))
+            {
+                var purchasedNumber = await DataAccess.PurchasedPhoneNumber.GetByDialedNumberAndOrderIdAsync(productOrder.DialedNumber, productOrder.OrderId, _postgresql);
+
+                if (purchasedNumber is not null)
+                {
+                    var checkDelete = purchasedNumber.DeleteAsync(_postgresql);
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(productOrder.PortedDialedNumber))
+            {
+                var portedNumbers = await DataAccess.PortedPhoneNumber.GetByOrderIdAsync(productOrder.OrderId, _postgresql);
+                var portedNumber = portedNumbers.Where(x => x.PortedDialedNumber == productOrder.PortedDialedNumber).FirstOrDefault();
+
+                if (portedNumber is not null)
+                {
+                    var checkDelete = await portedNumber.DeleteAsync(_postgresql);
+                }
+            }
+
+            return Redirect($"/Home/Order/{productOrder.OrderId}");
         }
 
         private bool ProductOrderExists(Guid id)

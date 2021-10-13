@@ -588,6 +588,30 @@ namespace NumberSearch.Ops.Controllers
                     var reoccuringItems = new List<Invoice_Items>();
                     var totalCost = 0;
 
+
+                    // Delete the old invoices in the billing system.
+                    if (!string.IsNullOrWhiteSpace(order.BillingInvoiceId))
+                    {
+                        var checkParse = int.TryParse(order.BillingInvoiceId, out var oneTimeId);
+
+                        if (checkParse)
+                        {
+                            var existingOneTimeInvoice = await Invoice.GetByIdAsync(oneTimeId, _invoiceNinjaToken);
+                            var checkDelete = await existingOneTimeInvoice.DeleteAsync(_invoiceNinjaToken);
+                        }
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(order.BillingInvoiceReoccuringId))
+                    {
+                        var checkParse = int.TryParse(order.BillingInvoiceReoccuringId, out var reoccuringId);
+
+                        if (checkParse)
+                        {
+                            var existingOneTimeInvoice = await Invoice.GetByIdAsync(reoccuringId, _invoiceNinjaToken);
+                            var checkDelete = await existingOneTimeInvoice.DeleteAsync(_invoiceNinjaToken);
+                        }
+                    }
+
                     foreach (var nto in cart.PurchasedPhoneNumbers)
                     {
                         var cost = nto.NumberType == "Executive" ? 200 : nto.NumberType == "Premium" ? 40 : nto.NumberType == "Standard" ? 20 : 20;

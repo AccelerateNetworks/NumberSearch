@@ -352,54 +352,67 @@
                                             }
                                         }
                                         <td>
-                                            <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-danger">
-                                                Edit
-                                            </a>
+                                            <div class="btn-group">
+                                                <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-warning">
+                                                    Edit
+                                                </a>
+                                                <a href="/ProductOrders/Delete/@productOrder.ProductOrderId" class="btn btn-outline-danger">
+                                                    Delete
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 }
                                 foreach (var item in Model?.Cart?.PurchasedPhoneNumbers)
                                 {
-                                    var productOrder = productOrders[item?.DialedNumber.ToString()];
-                                    var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
-                                    var number = item.DialedNumber;
-                                    <tr>
-                                        <td scope="row"><h4>@formattedNumber</h4></td>
-                                        <td>1</td>
-                                        @{
-                                            if (item.NumberType == "Executive")
-                                            {
-                                                <td>$200</td>
+                                    var checkFind = productOrders.TryGetValue(item?.DialedNumber.ToString(), out var productOrder);
+                                    if (checkFind)
+                                    {
+                                        var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
+                                        var number = item.DialedNumber;
+                                        <tr>
+                                            <td scope="row"><h4>@formattedNumber</h4></td>
+                                            <td>1</td>
+                                            @{
+                                                if (item.NumberType == "Executive")
+                                                {
+                                                    <td>$200</td>
+                                                }
+                                                else if (item.NumberType == "Premium")
+                                                {
+                                                    <td>$40</td>
+                                                }
+                                                else
+                                                {
+                                                    <td>$20</td>
+                                                }
                                             }
-                                            else if (item.NumberType == "Premium")
-                                            {
-                                                <td>$40</td>
+                                            @{
+                                                if (item.NumberType == "Executive")
+                                                {
+                                                    <td>$200</td>
+                                                }
+                                                else if (item.NumberType == "Premium")
+                                                {
+                                                    <td>$40</td>
+                                                }
+                                                else
+                                                {
+                                                    <td>$20</td>
+                                                }
                                             }
-                                            else
-                                            {
-                                                <td>$20</td>
-                                            }
-                                        }
-                                        @{
-                                            if (item.NumberType == "Executive")
-                                            {
-                                                <td>$200</td>
-                                            }
-                                            else if (item.NumberType == "Premium")
-                                            {
-                                                <td>$40</td>
-                                            }
-                                            else
-                                            {
-                                                <td>$20</td>
-                                            }
-                                        }
-                                        <td>
-                                            <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-danger">
-                                                Edit
-                                            </a>
-                                        </td>
-                                    </tr>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-warning">
+                                                        Edit
+                                                    </a>
+                                                    <a href="/ProductOrders/Delete/@productOrder.ProductOrderId" class="btn btn-outline-danger">
+                                                        Delete
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
                                 }
                             }
                             @{
@@ -420,9 +433,14 @@
                                         <td>@location</td>
                                         <td>$@calculatedCost</td>
                                         <td>
-                                            <a href="/ProductOrders/Edit/@productOrder?.ProductOrderId" class="btn btn-outline-danger">
-                                                Edit
-                                            </a>
+                                            <div class="btn-group">
+                                                <a href="/ProductOrders/Edit/@productOrder?.ProductOrderId" class="btn btn-outline-warning">
+                                                    Edit
+                                                </a>
+                                                <a href="/ProductOrders/Delete/@productOrder?.ProductOrderId" class="btn btn-outline-danger">
+                                                    Delete
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 }
@@ -440,9 +458,14 @@
                                         <td>@location</td>
                                         <td>$10</td>
                                         <td>
-                                            <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-danger">
-                                                Edit
-                                            </a>
+                                            <div class="btn-group">
+                                                <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-warning">
+                                                    Edit
+                                                </a>
+                                                <a href="/ProductOrders/Delete/@productOrder.ProductOrderId" class="btn btn-outline-danger">
+                                                    Delete
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 }
@@ -467,9 +490,14 @@
                                         <td>at $@item.Price each</td>
                                         <td>$@localTotal</td>
                                         <td>
-                                            <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-danger">
-                                                Edit
-                                            </a>
+                                            <div class="btn-group">
+                                                <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-warning">
+                                                    Edit
+                                                </a>
+                                                <a href="/ProductOrders/Delete/@productOrder.ProductOrderId" class="btn btn-outline-danger">
+                                                    Delete
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 }
@@ -494,9 +522,14 @@
                                         <td>at $@item.Price per</td>
                                         <td>$@localTotal</td>
                                         <td>
-                                            <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-danger">
-                                                Edit
-                                            </a>
+                                            <div class="btn-group">
+                                                <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-warning">
+                                                    Edit
+                                                </a>
+                                                <a href="/ProductOrders/Delete/@productOrder.ProductOrderId" class="btn btn-outline-danger">
+                                                    Delete
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 }
@@ -511,9 +544,14 @@
                                         <td></td>
                                         <td></td>
                                         <td>
-                                            <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-danger">
-                                                Edit
-                                            </a>
+                                            <div class="btn-group">
+                                                <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-warning">
+                                                    Edit
+                                                </a>
+                                                <a href="/ProductOrders/Delete/@productOrder.ProductOrderId" class="btn btn-outline-danger">
+                                                    Delete
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 }

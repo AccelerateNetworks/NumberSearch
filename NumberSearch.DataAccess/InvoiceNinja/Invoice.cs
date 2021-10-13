@@ -169,12 +169,12 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             string contentHeader = "Content-Type";
             string contentHeaderValue = "application/json";
             string clientIdParameter = $"/{id}";
-            string url = $"{baseUrl}{endpoint}{clientIdParameter}";
+            string url = $"{baseUrl}{endpoint}{clientIdParameter}?action=delete";
 
             var result = await url
                 .WithHeader(tokenHeader, token)
                 .WithHeader(contentHeader, contentHeaderValue)
-                .DeleteAsync()
+                .PutAsync()
                 .ReceiveJson<InvoiceSingle>()
                 .ConfigureAwait(false);
 

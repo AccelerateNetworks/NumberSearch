@@ -173,10 +173,13 @@ namespace NumberSearch.DataAccess
         public async Task<bool> PostAsync(string connectionString)
         {
             // If anything is null bail out.
-            if (NPA < 100 || NXX < 100 || XXXX < 1 || PortedDialedNumber == null || City == null || State == null || IngestedFrom == null)
+            if (NPA < 100 || NXX < 100 || XXXX < 1 || PortedDialedNumber == null || IngestedFrom == null)
             {
                 return false;
             }
+
+            City = string.IsNullOrWhiteSpace(City) ? "Unknown" : City;
+            State = string.IsNullOrWhiteSpace(State) ? "Unknown" : State;
 
             using var connection = new NpgsqlConnection(connectionString);
 
