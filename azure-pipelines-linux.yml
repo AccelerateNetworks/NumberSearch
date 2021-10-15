@@ -43,32 +43,32 @@ variables:
 steps:
 - task: UseDotNet@2
   inputs:
-    version: '5.0.x'
+    version: '6.0.x'
 
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
 
 - task: FileTransform@2
   inputs:
-    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Tests/bin/Release/net5.0/'
+    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Tests/bin/Release/net6.0/'
     jsonTargetFiles: 'appsettings.json'
     xmlTransformationRules: '' # disabled
 
 - task: FileTransform@2
   inputs:
-    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Mvc/bin/Release/net5.0/'
+    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Mvc/bin/Release/net6.0/'
     jsonTargetFiles: 'appsettings.json'
     xmlTransformationRules: '' # disabled
 
 - task: FileTransform@2
   inputs:
-    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ingest/bin/Release/net5.0/'
+    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ingest/bin/Release/net6.0/'
     jsonTargetFiles: 'appsettings.json'
     xmlTransformationRules: '' # disabled
 
 - task: FileTransform@2
   inputs:
-    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ops/bin/Release/net5.0/'
+    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ops/bin/Release/net6.0/'
     jsonTargetFiles: 'appsettings.json'
     xmlTransformationRules: '' # disabled
 
@@ -81,17 +81,17 @@ steps:
 - task: PublishPipelineArtifact@1
   inputs:
     artifactName: 'Mvc'
-    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Mvc/bin/Release/net5.0/'
+    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Mvc/bin/Release/net6.0/'
     publishLocation: 'pipeline'
 
 - task: PublishPipelineArtifact@1
   inputs:
     artifactName: 'Ingest'
-    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ingest/bin/Release/net5.0/'
+    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ingest/bin/Release/net6.0/'
     publishLocation: 'pipeline'
 
 - task: PublishPipelineArtifact@1
   inputs:
     artifactName: 'Ops'
-    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ops/bin/Release/net5.0/'
+    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ops/bin/Release/net6.0/'
     publishLocation: 'pipeline'
