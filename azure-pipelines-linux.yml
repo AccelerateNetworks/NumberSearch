@@ -43,7 +43,8 @@ variables:
 steps:
 - task: UseDotNet@2
   inputs:
-    version: '6.0.x'
+    version: 6.x
+    includePreviewVersions: true
 
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
