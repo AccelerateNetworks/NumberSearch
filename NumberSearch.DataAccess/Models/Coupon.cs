@@ -35,24 +35,10 @@ namespace NumberSearch.DataAccess
         }
 
         /// <summary>
-        /// Get a list of coupons with the same name value.
+        /// Get all of the coupons.
         /// </summary>
-        /// <param name="Name"></param>
         /// <param name="connectionString"></param>
         /// <returns></returns>
-        public static async Task<IEnumerable<Coupon>> GetByNameAsync(string name, string connectionString)
-        {
-            using var connection = new NpgsqlConnection(connectionString);
-
-            var result = await connection
-                .QueryAsync<Coupon>("SELECT \"CouponId\", \"Name\", \"Description\", \"Public\" FROM public.\"Coupons\" " +
-                "WHERE \"Name\" = @name",
-                new { name })
-                .ConfigureAwait(false);
-
-            return result;
-        }
-
         public static async Task<IEnumerable<Coupon>> GetAllAsync(string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);
@@ -74,9 +60,9 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"Coupons\"(\"Name\", \"Description\", \"Public\") " +
-                "VALUES(@Name, @Description, @Public)",
-                new { Name, Description, Public })
+                .ExecuteAsync("INSERT INTO public.\"Coupons\"(\"CouponId\", \"Name\", \"Description\", \"Public\") " +
+                "VALUES(@CouponId, @Name, @Description, @Public)",
+                new { CouponId, Name, Description, Public })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -101,7 +87,7 @@ namespace NumberSearch.DataAccess
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"Coupons\" SET \"Name\" = @Name, \"Description\" = @Description, \"Public\" = @Public " +
                 "WHERE \"CouponId\" = @CouponId",
-                new { Name, Description, Public })
+                new { Name, Description, Public, CouponId })
                 .ConfigureAwait(false);
 
             if (result == 1)

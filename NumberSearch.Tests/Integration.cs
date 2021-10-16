@@ -1524,6 +1524,30 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task GetPostPutDeleteCouponsAsync()
+        {
+            var results = await Coupon.GetAllAsync(postgresql).ConfigureAwait(false);
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            var result = await Coupon.GetByIdAsync(results.FirstOrDefault().CouponId, postgresql).ConfigureAwait(false);
+            Assert.NotNull(result);
+            Assert.True(results?.FirstOrDefault()?.CouponId == result?.CouponId);
+            result.CouponId = Guid.NewGuid();
+            result.Name = "Test";
+            result.Description = "Test";
+            result.Public = false;
+            var checkCreate = await result.PostAsync(postgresql).ConfigureAwait(false);
+            Assert.True(checkCreate);
+            result = await Coupon.GetByIdAsync(result.CouponId, postgresql).ConfigureAwait(false);
+            Assert.NotNull(result);
+            result.Name = "Test2";
+            var checkUpdate = await result.PutAsync(postgresql).ConfigureAwait(false);
+            Assert.True(checkUpdate);
+            var checkDelete = await result.DeleteAsync(postgresql).ConfigureAwait(false);
+            Assert.True(checkDelete);
+        }
+
+        [Fact]
         public async Task GetAllSentEmailsAsync()
         {
             var results = await Email.GetAllAsync(postgresql).ConfigureAwait(false);
@@ -1768,12 +1792,28 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
-        public async Task PostEmergencyInfoAsync()
+        public async Task GetEmergencyInfoAsync()
+        {
+            var conn = postgresql;
+
+            var results = await EmergencyInformation.GetAllAsync(conn).ConfigureAwait(false);
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+
+            var result = await EmergencyInformation.GetByDialedNumberAsync(results.FirstOrDefault().DialedNumber, conn).ConfigureAwait(false);
+            Assert.NotNull(result);
+            Assert.NotEmpty(results);
+            Assert.Equal(results.FirstOrDefault().DialedNumber, result.FirstOrDefault().DialedNumber);
+        }
+
+        [Fact]
+        public async Task PostPutDeleteEmergencyInfoAsync()
         {
             var conn = postgresql;
 
             var info = new EmergencyInformation
             {
+                EmergencyInformationId = Guid.NewGuid(),
                 Address = "123 Sesemy Street",
                 AlertGroup = "123",
                 City = "Seattle",
@@ -1795,12 +1835,13 @@ namespace NumberSearch.Tests
             Assert.True(result);
 
             // Clean up.
-            var fromDbResults = await EmergencyInformation.GetAllAsync(conn).ConfigureAwait(false);
-            Assert.NotNull(fromDbResults);
-            Assert.NotEmpty(fromDbResults);
-            var fromDb = fromDbResults.Where(x => x.TeliId == info.TeliId).FirstOrDefault();
-
-            var checkDelete = await fromDb.DeleteAsync(conn).ConfigureAwait(false);
+            var fromDbResult = await EmergencyInformation.GetByIdAsync(info.EmergencyInformationId, conn).ConfigureAwait(false);
+            Assert.NotNull(fromDbResult);
+            Assert.True(info.IngestedFrom == fromDbResult.IngestedFrom);
+            fromDbResult.Note = "This is an integration test.2";
+            var checkUpdate = await fromDbResult.PutAsync(conn).ConfigureAwait(false);
+            Assert.True(checkUpdate);
+            var checkDelete = await fromDbResult.DeleteAsync(conn).ConfigureAwait(false);
             Assert.True(checkDelete);
         }
 

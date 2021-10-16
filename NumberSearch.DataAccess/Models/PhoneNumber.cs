@@ -2,6 +2,8 @@
 
 using Npgsql;
 
+using NumberSearch.DataAccess.Models;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -68,7 +70,9 @@ namespace NumberSearch.DataAccess
             bool checkNxx = int.TryParse(cleanedQuery.Substring(3, 3), out int nxx);
             bool checkXxxx = int.TryParse(cleanedQuery.Substring(6, 4), out int xxxx);
 
-            if (checkNpa && checkNxx && checkXxxx && checkTenDigit)
+            var checkValid = AreaCode.ValidPhoneNumber(npa, nxx, xxxx);
+
+            if (checkNpa && checkNxx && checkXxxx && checkTenDigit && checkValid)
             {
                 number = new PhoneNumber
                 {

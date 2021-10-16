@@ -19,6 +19,9 @@
             206,360,425,503,509,541,564
         };
 
+        /// <summary>
+        /// NANPA Tollfree AreaCodes https://nationalnanpa.com/enas/nonGeoNpaServiceReport.do
+        /// </summary>
         public static readonly int[] TollFree = new int[]
         {
             800, 833, 844, 855, 866, 877, 888
@@ -31,6 +34,9 @@
             public int[] AreaCodes { get; set; }
         }
 
+        /// <summary>
+        /// NANPA AreaCodes by Location https://nationalnanpa.com/enas/geoAreaCodeNumberReport.do
+        /// </summary>
         public static readonly AreaCodesByState[] States = new AreaCodesByState[]
         {
             new AreaCodesByState
@@ -484,5 +490,92 @@
                 }
             }
         };
+
+        /// <summary>
+        /// NPA's use the format of "NXX" where "N" is any digit between 2 and 9 and "X" is any digit from 0 to 9.
+        /// https://www.nationalnanpa.com/about_us/abt_nanp.html
+        /// </summary>
+        /// <param name="nxx"></param>
+        /// <returns></returns>
+        public static bool ValidNPA(int npa)
+        {
+            if (npa >= 200 && npa <= 999)
+            {
+                foreach (var code in All)
+                {
+                    if (code == npa)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// NXX's use the format of "NXX" where "N" is any digit between 2 and 9 and "X" is any digit from 0 to 9.
+        /// https://www.nationalnanpa.com/about_us/abt_nanp.html
+        /// </summary>
+        /// <param name="nxx"></param>
+        /// <returns></returns>
+        public static bool ValidNXX(int nxx)
+        {
+            if (nxx >= 200 && nxx <= 999)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// XXXX's use the format of "XXXX" where "X" is any digit between 0 and 9.
+        /// </summary>
+        /// <param name="xxxx"></param>
+        /// <returns></returns>
+        public static bool ValidXXXX(int xxxx)
+        {
+            if (xxxx >= 0 && xxxx <= 9999)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Validate a phone number using its componet NPA, NXX, and XXXX parts.
+        /// </summary>
+        /// <param name="npa"></param>
+        /// <param name="nxx"></param>
+        /// <param name="xxxx"></param>
+        /// <returns></returns>
+        public static bool ValidPhoneNumber(int npa, int nxx, int xxxx)
+        {
+            return ValidNPA(npa) && ValidNXX(nxx) && ValidXXXX(xxxx);
+        }
+
+        /// <summary>
+        /// Validate a string-ly typed 10 digit phone number.
+        /// </summary>
+        /// <param name="dialedNumber"></param>
+        /// <returns></returns>
+        public static bool ValidPhoneNumber(string dialedNumber)
+        {
+            if (dialedNumber.Length == 10)
+            {
+                bool checkNpa = int.TryParse(dialedNumber.Substring(0, 3), out int npa);
+                bool checkNxx = int.TryParse(dialedNumber.Substring(3, 3), out int nxx);
+                bool checkXxxx = int.TryParse(dialedNumber.Substring(6, 4), out int xxxx);
+
+                if (checkNpa && checkNxx && checkXxxx)
+                {
+                    return ValidPhoneNumber(npa, nxx, xxxx);
+                }
+            }
+
+            return false;
+        }
     }
 }

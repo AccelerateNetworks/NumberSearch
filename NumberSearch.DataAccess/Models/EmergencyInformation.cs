@@ -31,22 +31,28 @@ namespace NumberSearch.DataAccess
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            var result = await connection
+            return await connection
                 .QueryAsync<EmergencyInformation>("SELECT \"EmergencyInformationId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"TeliId\", \"FullName\", \"Address\", \"City\", \"State\", \"Zip\", \"UnitType\", \"UnitNumber\", \"CreatedDate\", \"ModifyDate\", \"AlertGroup\", \"Note\" FROM public.\"EmergencyInformation\"")
                 .ConfigureAwait(false);
+        }
 
-            return result;
+        public static async Task<EmergencyInformation> GetByIdAsync(Guid emergencyinformationId, string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            return await connection
+                .QueryFirstOrDefaultAsync<EmergencyInformation>("SELECT \"EmergencyInformationId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"TeliId\", \"FullName\", \"Address\", \"City\", \"State\", \"Zip\", \"UnitType\", \"UnitNumber\", \"CreatedDate\", \"ModifyDate\", \"AlertGroup\", \"Note\" FROM public.\"EmergencyInformation\" " +
+                "WHERE \"EmergencyInformationId\" = @emergencyinformationId", new { emergencyinformationId })
+                .ConfigureAwait(false);
         }
 
         public static async Task<IEnumerable<EmergencyInformation>> GetByDialedNumberAsync(string dialedNumber, string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);
 
-            var result = await connection
+            return await connection
                 .QueryAsync<EmergencyInformation>("SELECT \"EmergencyInformationId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"TeliId\", \"FullName\", \"Address\", \"City\", \"State\", \"Zip\", \"UnitType\", \"UnitNumber\", \"CreatedDate\", \"ModifyDate\", \"AlertGroup\", \"Note\" FROM public.\"EmergencyInformation\" WHERE \"DialedNumber\" = @dialedNumber", new { dialedNumber })
                 .ConfigureAwait(false);
-
-            return result;
         }
 
         public async Task<bool> PostAsync(string connectionString)
@@ -54,9 +60,9 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"EmergencyInformation\" (\"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"TeliId\", \"FullName\", \"Address\", \"City\", \"State\", \"Zip\", \"UnitType\", \"UnitNumber\", \"CreatedDate\", \"ModifyDate\", \"AlertGroup\", \"Note\") " +
-                "VALUES ( @DialedNumber, @IngestedFrom, @DateIngested, @TeliId, @FullName, @Address, @City, @State, @Zip, @UnitType, @UnitNumber, @CreatedDate, @ModifyDate, @AlertGroup, @Note )",
-                new { DialedNumber, IngestedFrom, DateIngested, TeliId, FullName, Address, City, State, Zip, UnitType, UnitNumber, CreatedDate, ModifyDate, AlertGroup, Note })
+                .ExecuteAsync("INSERT INTO public.\"EmergencyInformation\" (\"EmergencyInformationId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"TeliId\", \"FullName\", \"Address\", \"City\", \"State\", \"Zip\", \"UnitType\", \"UnitNumber\", \"CreatedDate\", \"ModifyDate\", \"AlertGroup\", \"Note\") " +
+                "VALUES ( @EmergencyInformationId, @DialedNumber, @IngestedFrom, @DateIngested, @TeliId, @FullName, @Address, @City, @State, @Zip, @UnitType, @UnitNumber, @CreatedDate, @ModifyDate, @AlertGroup, @Note )",
+                new { EmergencyInformationId, DialedNumber, IngestedFrom, DateIngested, TeliId, FullName, Address, City, State, Zip, UnitType, UnitNumber, CreatedDate, ModifyDate, AlertGroup, Note })
                 .ConfigureAwait(false);
 
             if (result == 1)
