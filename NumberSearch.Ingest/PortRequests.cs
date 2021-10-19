@@ -2,7 +2,7 @@
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
-using NumberSearch.DataAccess.TeleMesssage;
+using NumberSearch.DataAccess.TeliMesssage;
 
 using Serilog;
 

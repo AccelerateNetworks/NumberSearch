@@ -15,9 +15,10 @@ namespace NumberSearch.DataAccess
     public enum IngestProvider
     {
         BulkVS,
-        TeleMessage,
+        TeliMessage,
         FirstPointCom,
         Peerless,
+        Call48,
         IntegrationTest
     }
 
@@ -33,64 +34,6 @@ namespace NumberSearch.DataAccess
         public DateTime DateIngested { get; set; }
         public string NumberType { get; set; }
         public bool Purchased { get; set; }
-
-        public static bool TryParse(string input, out PhoneNumber number)
-        {
-            // Clean up the query.
-            input = input?.Trim().ToLowerInvariant();
-
-            // Parse the query.
-            var converted = new List<char>();
-            foreach (var letter in input)
-            {
-                // Allow digits.
-                if (char.IsDigit(letter))
-                {
-                    converted.Add(letter);
-                }
-                // Convert letters to digits.
-                else if (char.IsLetter(letter))
-                {
-                    converted.Add(LetterToKeypadDigit(letter));
-                }
-                // Drop everything else.
-            }
-
-            // Drop leading 1's to improve the copy/paste experiance.
-            if (converted[0] == '1' && converted.Count >= 10)
-            {
-                converted.Remove('1');
-            }
-
-            var cleanedQuery = new string(converted.ToArray());
-
-            var checkTenDigit = cleanedQuery.Length == 10;
-
-            bool checkNpa = int.TryParse(cleanedQuery.Substring(0, 3), out int npa);
-            bool checkNxx = int.TryParse(cleanedQuery.Substring(3, 3), out int nxx);
-            bool checkXxxx = int.TryParse(cleanedQuery.Substring(6, 4), out int xxxx);
-
-            var checkValid = AreaCode.ValidPhoneNumber(npa, nxx, xxxx);
-
-            if (checkNpa && checkNxx && checkXxxx && checkTenDigit && checkValid)
-            {
-                number = new PhoneNumber
-                {
-                    DialedNumber = cleanedQuery,
-                    NPA = npa,
-                    NXX = nxx,
-                    XXXX = xxxx,
-                    DateIngested = DateTime.Now
-                };
-
-                return true;
-            }
-            else
-            {
-                number = null;
-                return false;
-            }
-        }
 
         /// <summary>
         /// Get a list of all phone numbers in the database.
@@ -548,31 +491,6 @@ namespace NumberSearch.DataAccess
             {
                 return false;
             }
-        }
-
-        /// <summary>
-        /// Converts a letter in a string to numbers on a dialpad.
-        /// </summary>
-        /// <param name="letter"> A lowercase char. </param>
-        /// <returns> The dialpad equivalent. </returns>
-        public static char LetterToKeypadDigit(char letter)
-        {
-            // Map the chars to their keypad numerical values.
-            return letter switch
-            {
-                '+' => '0',
-                // The digit 1 isn't mapped to any chars on a phone keypad.
-                'a' or 'b' or 'c' => '2',
-                'd' or 'e' or 'f' => '3',
-                'g' or 'h' or 'i' => '4',
-                'j' or 'k' or 'l' => '5',
-                'm' or 'n' or 'o' => '6',
-                'p' or 'q' or 'r' or 's' => '7',
-                't' or 'u' or 'v' => '8',
-                'w' or 'x' or 'y' or 'z' => '9',
-                // If the char isn't mapped to anything, respect it's existence by mapping it to a wildcard.
-                _ => '*',
-            };
         }
     }
 }

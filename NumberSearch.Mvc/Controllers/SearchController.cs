@@ -2,9 +2,6 @@
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
-using NumberSearch.DataAccess.BulkVS;
-using NumberSearch.DataAccess.Models;
-using NumberSearch.DataAccess.TeleMesssage;
 
 using System.Collections.Generic;
 using System.Linq;
@@ -80,7 +77,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 var checkConvert = int.TryParse(cleanedQuery, out var code);
 
-                if (checkConvert && AreaCode.All.Contains(code))
+                if (checkConvert && PhoneNumbersNA.AreaCode.All.Contains(code))
                 {
                     cleanedQuery += "*******";
                 }

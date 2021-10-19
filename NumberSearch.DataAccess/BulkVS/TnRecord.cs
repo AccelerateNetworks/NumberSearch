@@ -70,8 +70,8 @@ namespace NumberSearch.DataAccess.BulkVS
             catch (FlurlHttpException ex)
             {
                 Log.Warning($"[Ingest] [OwnedNumbers] [BulkVS] No results found.");
-
-                return new List<TnRecord>() { };
+                Log.Warning(await ex.GetResponseStringAsync());
+                return null;
             }
         }
 
@@ -89,51 +89,26 @@ namespace NumberSearch.DataAccess.BulkVS
 
             foreach (var item in results?.ToArray())
             {
-                if (item.TN.Length == 10)
-                {
-                    bool checkNpa = int.TryParse(item.TN.Substring(0, 3), out int npa);
-                    bool checkNxx = int.TryParse(item.TN.Substring(3, 3), out int nxx);
-                    bool checkXxxx = int.TryParse(item.TN.Substring(6, 4), out int xxxx);
 
-                    if (checkNpa && checkNxx && checkXxxx)
-                    {
-                        output.Add(new PhoneNumber
-                        {
-                            NPA = npa,
-                            NXX = nxx,
-                            XXXX = xxxx,
-                            DialedNumber = item.TN,
-                            City = string.IsNullOrWhiteSpace(item.TNDetails.RateCenter) ? "Unknown City" : item.TNDetails.RateCenter,
-                            State = string.IsNullOrWhiteSpace(item.TNDetails.State) ? "Unknown State" : item.TNDetails.State,
-                            DateIngested = DateTime.Now,
-                            IngestedFrom = "BulkVS"
-                        });
-                    }
-                }
-                else if (item.TN.Length == 11)
-                {
-                    bool checkNpa = int.TryParse(item.TN.Substring(1, 3), out int npa);
-                    bool checkNxx = int.TryParse(item.TN.Substring(4, 3), out int nxx);
-                    bool checkXxxx = int.TryParse(item.TN.Substring(7, 4), out int xxxx);
+                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.TN, out var phoneNumber);
 
-                    if (checkNpa && checkNxx && checkXxxx)
+                if (checkParse)
+                {
+                    output.Add(new PhoneNumber
                     {
-                        output.Add(new PhoneNumber
-                        {
-                            NPA = npa,
-                            NXX = nxx,
-                            XXXX = xxxx,
-                            DialedNumber = item.TN,
-                            City = string.IsNullOrWhiteSpace(item.TNDetails.RateCenter) ? "Unknown City" : item.TNDetails.RateCenter,
-                            State = string.IsNullOrWhiteSpace(item.TNDetails.State) ? "Unknown State" : item.TNDetails.State,
-                            DateIngested = DateTime.Now,
-                            IngestedFrom = "BulkVS"
-                        });
-                    }
+                        NPA = phoneNumber.NPA,
+                        NXX = phoneNumber.NXX,
+                        XXXX = phoneNumber.XXXX,
+                        DialedNumber = phoneNumber.DialedNumber,
+                        City = string.IsNullOrWhiteSpace(item.TNDetails.RateCenter) ? "Unknown City" : item.TNDetails.RateCenter,
+                        State = string.IsNullOrWhiteSpace(item.TNDetails.State) ? "Unknown State" : item.TNDetails.State,
+                        DateIngested = DateTime.Now,
+                        IngestedFrom = "BulkVS"
+                    });
                 }
                 else
                 {
-                    Log.Warning($"[Ingest] [BulkVS] Failed to parse {item.TN}. Passed neither the 10 or 11 char checks.");
+                    Log.Warning($"[Ingest] [BulkVS] Failed to parse {item.TN}");
                 }
             }
             return output;
@@ -153,43 +128,22 @@ namespace NumberSearch.DataAccess.BulkVS
 
             foreach (var item in results?.ToArray())
             {
-                if (item.TN.Length == 10)
-                {
-                    bool checkNpa = int.TryParse(item.TN.Substring(0, 3), out int npa);
-                    bool checkNxx = int.TryParse(item.TN.Substring(3, 3), out int nxx);
-                    bool checkXxxx = int.TryParse(item.TN.Substring(6, 4), out int xxxx);
 
-                    if (checkNpa && checkNxx && checkXxxx)
-                    {
-                        output.Add(new OwnedPhoneNumber
-                        {
-                            DialedNumber = item.TN,
-                            IngestedFrom = "BulkVS",
-                            Active = true,
-                            DateIngested = DateTime.Now
-                        });
-                    }
-                }
-                else if (item.TN.Length == 11)
-                {
-                    bool checkNpa = int.TryParse(item.TN.Substring(1, 3), out int npa);
-                    bool checkNxx = int.TryParse(item.TN.Substring(4, 3), out int nxx);
-                    bool checkXxxx = int.TryParse(item.TN.Substring(7, 4), out int xxxx);
+                var checkParsed = PhoneNumbersNA.PhoneNumber.TryParse(item.TN, out var phoneNumber);
 
-                    if (checkNpa && checkNxx && checkXxxx)
+                if (checkParsed)
+                {
+                    output.Add(new OwnedPhoneNumber
                     {
-                        output.Add(new OwnedPhoneNumber
-                        {
-                            DialedNumber = item.TN.Substring(1),
-                            IngestedFrom = "BulkVS",
-                            Active = true,
-                            DateIngested = DateTime.Now
-                        });
-                    }
+                        DialedNumber = phoneNumber.DialedNumber,
+                        IngestedFrom = "BulkVS",
+                        Active = true,
+                        DateIngested = DateTime.Now
+                    });
                 }
                 else
                 {
-                    Log.Warning($"[Ingest] [BulkVS] Failed to parse {item.TN}. Passed neither the 10 or 11 char checks.");
+                    Log.Warning($"[Ingest] [BulkVS] Failed to parse {item.TN}");
                 }
             }
             return output;

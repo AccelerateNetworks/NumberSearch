@@ -40,8 +40,8 @@ namespace NumberSearch.DataAccess.BulkVS
             catch (FlurlHttpException ex)
             {
                 Log.Warning($"[Portability] [BulkVS] No results found for number {dialedNumber}.");
-
-                return new ValidatePortability() { };
+                Log.Warning(await ex.GetResponseStringAsync());
+                return null;
             }
         }
     }

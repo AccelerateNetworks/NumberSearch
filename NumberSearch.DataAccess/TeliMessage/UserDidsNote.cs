@@ -1,10 +1,9 @@
 ﻿using Flurl.Http;
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace NumberSearch.DataAccess.TeleMesssage
+namespace NumberSearch.DataAccess.TeliMesssage
 {
     public class UserDidsNote
     {

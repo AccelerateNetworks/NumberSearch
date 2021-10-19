@@ -9,7 +9,7 @@ using NumberSearch.DataAccess.LCGuide;
 using NumberSearch.DataAccess.Models;
 using NumberSearch.DataAccess.Peerless;
 using NumberSearch.DataAccess.TeleDynamics;
-using NumberSearch.DataAccess.TeleMesssage;
+using NumberSearch.DataAccess.TeliMesssage;
 
 using ServiceReference;
 
@@ -465,7 +465,7 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
-        public async Task TeleNPAsTestAsync()
+        public async Task TeliNPAsTestAsync()
         {
             // Arrange
 
@@ -484,7 +484,7 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
-        public async Task TeleGetAllOwnedNumbersAsync()
+        public async Task TeliGetAllOwnedNumbersAsync()
         {
             // Arrange
 
@@ -503,7 +503,7 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
-        public async Task TeleGetAllTollfreeAsync()
+        public async Task TeliGetAllTollfreeAsync()
         {
             // Arrange
 
@@ -673,13 +673,13 @@ namespace NumberSearch.Tests
 
             // Assert
             Assert.NotNull(results);
-            Assert.False(results.data.Count() == 0);
+            Assert.False(results.data.Count == 0);
 
             results = await LnpCheck.GetRawAsync("8662214141", token);
 
             // Assert
             Assert.NotNull(results);
-            Assert.False(results.data.Count() == 0);
+            Assert.False(results.data.Count == 0);
         }
 
         [Fact]
@@ -713,54 +713,49 @@ namespace NumberSearch.Tests
         }
 
 
-        //[Fact]
-        //public async Task PComNetDIDInventorySearchAsyncTestAsync()
-        //{
-        //    var DIDSearch = new DIDOrderQuery
-        //    {
-        //        DID = "12062670472",
-        //        NPA = "206",
-        //        NXX = "267",
-        //        RateCenter = "SEATTLE"
-        //    };
-        //    var ReturnAmount = 100;
+        [Fact]
+        public async Task PComNetDIDInventorySearchAsyncTestAsync()
+        {
+            var DIDSearch = new DIDOrderQuery
+            {
+                DID = "12062670472",
+                NPA = "206",
+                NXX = "267",
+                RateCenter = "SEATTLE"
+            };
+            var ReturnAmount = 100;
 
-        //    var client = new DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
+            var client = new DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
 
-        //    var result = await client.DIDInventorySearchAsync(pComNetCredentials, DIDSearch, ReturnAmount);
+            var result = await client.DIDInventorySearchAsync(pComNetCredentials, DIDSearch, ReturnAmount);
 
-        //    Assert.NotNull(result);
-        //    Assert.NotEmpty(result.DIDOrder);
+            Assert.NotNull(result);
+            output.WriteLine(JsonSerializer.Serialize(result));
+        }
 
-        //    foreach (var x in result.DIDOrder)
-        //    {
-        //        output.WriteLine(x.DID);
-        //    }
-        //}
+        [Fact]
+        public async Task FirstComGetPhoneNumbersTestAsync()
+        {
+            var results = await FirstCom.NpaNxxFirstPointCom.GetAsync("206", string.Empty, string.Empty, pComNetCredentials.Username, pComNetCredentials.Password);
 
-        //[Fact]
-        //public async Task FirstComGetPhoneNumbersTestAsync()
-        //{
-        //    var results = await NpaNxxFirstPointCom.GetAsync("206", string.Empty, string.Empty, pComNetCredentials.Username, pComNetCredentials.Password);
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            int count = 0;
 
-        //    Assert.NotNull(results);
-        //    Assert.NotEmpty(results);
-        //    int count = 0;
-
-        //    foreach (var result in results.ToArray())
-        //    {
-        //        output.WriteLine(result.DialedNumber);
-        //        Assert.True(result.NPA > 99);
-        //        Assert.True(result.NXX > 99);
-        //        Assert.True(result.XXXX > 1);
-        //        Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-        //        Assert.False(string.IsNullOrWhiteSpace(result.City));
-        //        Assert.False(string.IsNullOrWhiteSpace(result.State));
-        //        Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
-        //        count++;
-        //    }
-        //    output.WriteLine($"{count} Results Reviewed");
-        //}
+            foreach (var result in results.ToArray())
+            {
+                output.WriteLine(result.DialedNumber);
+                Assert.True(result.NPA > 99);
+                Assert.True(result.NXX > 99);
+                Assert.True(result.XXXX > 1);
+                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+                Assert.False(string.IsNullOrWhiteSpace(result.City));
+                Assert.False(string.IsNullOrWhiteSpace(result.State));
+                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+                count++;
+            }
+            output.WriteLine($"{count} Results Reviewed");
+        }
 
         [Fact]
         public async Task BulkVSRESTNpaNxxGetAsyncTestAsync()
@@ -955,84 +950,84 @@ namespace NumberSearch.Tests
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
-        //[Fact]
-        //public async Task Call48LoginTestAsync()
-        //{
-        //    // Act
-        //    var result = await Login.LoginAsync(_call48Username, _call48Password);
+        [Fact]
+        public async Task Call48LoginTestAsync()
+        {
+            // Act
+            var result = await Login.LoginAsync(_call48Username, _call48Password);
 
-        //    Assert.NotNull(result);
-        //    Assert.NotNull(result.data.token);
-        //    Assert.True(result.code == 200);
-        //    output.WriteLine(JsonSerializer.Serialize(result));
-        //}
+            Assert.NotNull(result);
+            Assert.NotNull(result.data.token);
+            Assert.True(result.code == 200);
+            output.WriteLine(JsonSerializer.Serialize(result));
+        }
 
-        //[Fact]
-        //public async Task Call48LocalNumberLookupTestAsync()
-        //{
-        //    // Act
-        //    var result = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
+        [Fact]
+        public async Task Call48LocalNumberLookupTestAsync()
+        {
+            // Act
+            var result = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
 
-        //    var results = await Search.GetLocalNumbersAsync("WA", string.Empty, "425", string.Empty, result.data.token).ConfigureAwait(false);
+            var results = await Search.GetLocalNumbersAsync("WA", string.Empty, "425", string.Empty, result.data.token).ConfigureAwait(false);
 
-        //    Assert.NotEmpty(results.data.result);
-        //    output.WriteLine(results.data.result.Length.ToString());
-        //    foreach (var number in results.data.result)
-        //    {
-        //        Assert.False(string.IsNullOrWhiteSpace(number.did_number));
-        //        Assert.False(string.IsNullOrWhiteSpace(number.number));
-        //        Assert.False(string.IsNullOrWhiteSpace(number.npa));
-        //        Assert.False(string.IsNullOrWhiteSpace(number.nxx));
-        //        Assert.False(string.IsNullOrWhiteSpace(number.xxxx));
-        //        Assert.True(number.state == "WA");
-        //        Assert.False(string.IsNullOrWhiteSpace(number.ratecenter));
-        //        output.WriteLine(JsonSerializer.Serialize(number));
-        //    }
+            Assert.NotEmpty(results.data.result);
+            output.WriteLine(results.data.result.Length.ToString());
+            foreach (var number in results.data.result)
+            {
+                Assert.False(string.IsNullOrWhiteSpace(number.did_number));
+                Assert.False(string.IsNullOrWhiteSpace(number.number));
+                Assert.False(string.IsNullOrWhiteSpace(number.npa));
+                Assert.False(string.IsNullOrWhiteSpace(number.nxx));
+                Assert.False(string.IsNullOrWhiteSpace(number.xxxx));
+                Assert.True(number.state == "WA");
+                Assert.False(string.IsNullOrWhiteSpace(number.ratecenter));
+                output.WriteLine(JsonSerializer.Serialize(number));
+            }
 
-        //}
+        }
 
-        //[Fact]
-        //public async Task Call48GetNumbersTestAsync()
-        //{
-        //    // Act
-        //    var cred = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
+        [Fact]
+        public async Task Call48GetNumbersTestAsync()
+        {
+            // Act
+            var cred = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
 
-        //    var results = await Search.GetAsync("WA", 425, cred.data.token).ConfigureAwait(false);
+            var results = await Search.GetAsync("WA", 425, cred.data.token).ConfigureAwait(false);
 
-        //    Assert.NotEmpty(results);
-        //    output.WriteLine(results.Count().ToString());
-        //    foreach (var result in results)
-        //    {
-        //        Assert.True(result.NPA > 99);
-        //        Assert.True(result.NXX > 99);
-        //        // XXXX can be 0001 which as an int is 1.
-        //        Assert.True(result.XXXX > 0);
-        //        Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-        //        // Reenabled these after June 2020 starts.
-        //        //Assert.False(string.IsNullOrWhiteSpace(result.City));
-        //        //Assert.False(string.IsNullOrWhiteSpace(result.State));
-        //        Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
-        //        output.WriteLine(JsonSerializer.Serialize(result));
-        //    }
-        //}
+            Assert.NotEmpty(results);
+            output.WriteLine(results.Count().ToString());
+            foreach (var result in results)
+            {
+                Assert.True(result.NPA > 99);
+                Assert.True(result.NXX > 99);
+                // XXXX can be 0001 which as an int is 1.
+                Assert.True(result.XXXX > 0);
+                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+                // Reenabled these after June 2020 starts.
+                //Assert.False(string.IsNullOrWhiteSpace(result.City));
+                //Assert.False(string.IsNullOrWhiteSpace(result.State));
+                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+                output.WriteLine(JsonSerializer.Serialize(result));
+            }
+        }
 
-        //[Fact]
-        //public async Task Call48GetRatecentersTestAsync()
-        //{
-        //    // Act
-        //    var cred = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
+        [Fact]
+        public async Task Call48GetRatecentersTestAsync()
+        {
+            // Act
+            var cred = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
 
-        //    var results = await Ratecenter.GetAllRatecentersAsync(AreaCode.States, cred.data.token).ConfigureAwait(false);
+            var results = await Ratecenter.GetAllRatecentersAsync(PhoneNumbersNA.AreaCode.States, cred.data.token).ConfigureAwait(false);
 
-        //    Assert.NotEmpty(results);
-        //    output.WriteLine(results.Count().ToString());
-        //    foreach (var result in results)
-        //    {
-        //        Assert.NotEmpty(result.Ratecenters);
-        //        output.WriteLine(JsonSerializer.Serialize(result));
-        //    }
+            Assert.NotEmpty(results);
+            output.WriteLine(results.Length.ToString());
+            foreach (var result in results)
+            {
+                Assert.NotEmpty(result.Ratecenters);
+                output.WriteLine(JsonSerializer.Serialize(result));
+            }
 
-        //}
+        }
 
         // Disabled so as not to purchase a bunch of numbers by accident.
         //[Fact]

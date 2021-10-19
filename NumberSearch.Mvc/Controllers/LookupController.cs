@@ -3,9 +3,10 @@ using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
-using NumberSearch.DataAccess.Data247;
-using NumberSearch.DataAccess.TeleMesssage;
+using NumberSearch.DataAccess.TeliMesssage;
 using NumberSearch.Mvc.Models;
+
+using PhoneNumbersNA;
 
 using Serilog;
 
@@ -91,42 +92,7 @@ namespace NumberSearch.Mvc.Controllers
             // Add portable numbers to cart in bulk
             if (!string.IsNullOrWhiteSpace(dialedNumber))
             {
-                var numberCanidates = dialedNumber.Trim()
-                    .Replace(") ", "", StringComparison.CurrentCultureIgnoreCase)
-                    .Replace("(", "", StringComparison.CurrentCultureIgnoreCase)
-                    .Replace(" ", "", StringComparison.CurrentCultureIgnoreCase)
-                    .Replace(",", " ", StringComparison.CurrentCultureIgnoreCase)
-                    .Replace("\r\n", " ", StringComparison.CurrentCultureIgnoreCase)
-                    .Split(" ");
-
-                var parsedNumbers = new List<string>();
-
-                foreach (var query in numberCanidates)
-                {
-                    // Parse the query.
-                    var converted = new List<char>();
-                    foreach (var letter in query)
-                    {
-                        // Allow digits.
-                        if (char.IsDigit(letter))
-                        {
-                            converted.Add(letter);
-                        }
-                        // Drop everything else.
-                    }
-
-                    // Drop leading 1's to improve the copy/paste experiance.
-                    if (converted.Count >= 10 && converted[0] == '1')
-                    {
-                        converted.Remove('1');
-                    }
-
-                    // Only if its a perfect number do we want to query for it.
-                    if (converted.Count == 10)
-                    {
-                        parsedNumbers.Add(new string(converted.ToArray()));
-                    }
-                }
+                var parsedNumbers = dialedNumber.ExtractDialedNumbers();
 
                 var cart = Cart.GetFromSession(HttpContext.Session);
 
@@ -182,30 +148,28 @@ namespace NumberSearch.Mvc.Controllers
 
         public async Task<PortedPhoneNumber> VerifyPortablityAsync(string number)
         {
-            bool checkNpa = int.TryParse(number.AsSpan(0, 3), out int npa);
-            bool checkNxx = int.TryParse(number.AsSpan(3, 3), out int nxx);
-            bool checkXxxx = int.TryParse(number.AsSpan(6, 4), out int xxxx);
+            var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number, out var phoneNumber);
 
-            if (checkNpa && checkNxx && checkXxxx)
+            if (checkParse)
             {
                 try
                 {
-                    var portable = await LnpCheck.IsPortableAsync(number, _teleToken).ConfigureAwait(false);
+                    var portable = await LnpCheck.IsPortableAsync(phoneNumber.DialedNumber, _teleToken).ConfigureAwait(false);
 
                     // Fail fast
                     if (portable is not true)
                     {
-                        Log.Information($"[Portability] {number} is not Portable.");
+                        Log.Information($"[Portability] {phoneNumber.DialedNumber} is not Portable.");
 
                         return new PortedPhoneNumber
                         {
-                            PortedDialedNumber = number,
+                            PortedDialedNumber = phoneNumber.DialedNumber,
                             Portable = false
                         };
                     }
 
                     // Lookup the number.
-                    var checkNumber = await LrnBulkCnam.GetAsync(number, _bulkVSKey).ConfigureAwait(false);
+                    var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber, _bulkVSKey).ConfigureAwait(false);
 
                     // Determine if the number is a wireless number.
                     bool wireless = false;
@@ -231,7 +195,7 @@ namespace NumberSearch.Mvc.Controllers
                             break;
                     }
 
-                    var numberName = await CnamBulkVs.GetAsync(number, _bulkVSKey);
+                    var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber, _bulkVSKey);
                     checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName?.name;
 
                     Log.Information($"[Portability] {number} is Portable.");
@@ -239,10 +203,10 @@ namespace NumberSearch.Mvc.Controllers
                     var portableNumber = new PortedPhoneNumber
                     {
                         PortedPhoneNumberId = Guid.NewGuid(),
-                        PortedDialedNumber = number,
-                        NPA = npa,
-                        NXX = nxx,
-                        XXXX = xxxx,
+                        PortedDialedNumber = phoneNumber.DialedNumber,
+                        NPA = phoneNumber.NPA,
+                        NXX = phoneNumber.NXX,
+                        XXXX = phoneNumber.XXXX,
                         City = checkNumber.city,
                         State = checkNumber.province,
                         DateIngested = DateTime.Now,
@@ -256,24 +220,24 @@ namespace NumberSearch.Mvc.Controllers
                 }
                 catch (Exception ex)
                 {
-                    Log.Information($"[Portability] {number} is not Portable.");
+                    Log.Information($"[Portability] {phoneNumber.DialedNumber} is not Portable.");
                     Log.Fatal($"[Portability] {ex.Message}");
                     Log.Fatal($"[Portability] {ex.InnerException}");
 
                     return new PortedPhoneNumber
                     {
-                        PortedDialedNumber = number,
+                        PortedDialedNumber = phoneNumber.DialedNumber,
                         Portable = false
                     };
                 }
             }
             else
             {
-                Log.Information($"[Portability] {number} is not Portable. Failed NPA, NXX, XXXX parsing.");
+                Log.Information($"[Portability] {phoneNumber.DialedNumber} is not Portable. Failed NPA, NXX, XXXX parsing.");
 
                 return new PortedPhoneNumber
                 {
-                    PortedDialedNumber = number,
+                    PortedDialedNumber = phoneNumber.DialedNumber,
                     Portable = false
                 };
             }
@@ -288,28 +252,26 @@ namespace NumberSearch.Mvc.Controllers
 
         public async Task<PortedPhoneNumber> VerifyCnamLibdAsync(string dialedNumber, bool portable)
         {
-            bool checkNpa = int.TryParse(dialedNumber.AsSpan(0, 3), out int npa);
-            bool checkNxx = int.TryParse(dialedNumber.AsSpan(3, 3), out int nxx);
-            bool checkXxxx = int.TryParse(dialedNumber.AsSpan(6, 4), out int xxxx);
+            var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
 
-            if (checkNpa && checkNxx && checkXxxx)
+            if (checkParse)
             {
                 try
                 {
                     // Fail fast
                     if (portable is not true)
                     {
-                        Log.Information($"[Portability] {dialedNumber} is not Portable.");
+                        Log.Information($"[Portability] {phoneNumber.DialedNumber} is not Portable.");
 
                         return new PortedPhoneNumber
                         {
-                            PortedDialedNumber = dialedNumber,
+                            PortedDialedNumber = phoneNumber.DialedNumber,
                             Portable = false
                         };
                     }
 
                     // Lookup the number.
-                    var checkNumber = await LrnBulkCnam.GetAsync(dialedNumber, _bulkVSKey).ConfigureAwait(false);
+                    var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber, _bulkVSKey).ConfigureAwait(false);
 
                     // Determine if the number is a wireless number.
                     bool wireless = false;
@@ -335,22 +297,22 @@ namespace NumberSearch.Mvc.Controllers
                             break;
                     }
 
-                    var numberName = await CnamBulkVs.GetAsync(dialedNumber, _bulkVSKey);
+                    var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber, _bulkVSKey);
                     checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName?.name;
 
                     // Log the lookup to the db.
                     var lookup = new PhoneNumberLookup(checkNumber);
                     var checkLog = await lookup.PostAsync(_postgresql).ConfigureAwait(false);
 
-                    Log.Information($"[Portability] {dialedNumber} is Portable.");
+                    Log.Information($"[Portability] {phoneNumber.DialedNumber} is Portable.");
 
                     var portableNumber = new PortedPhoneNumber
                     {
                         PortedPhoneNumberId = Guid.NewGuid(),
-                        PortedDialedNumber = dialedNumber,
-                        NPA = npa,
-                        NXX = nxx,
-                        XXXX = xxxx,
+                        PortedDialedNumber = phoneNumber.DialedNumber,
+                        NPA = phoneNumber.NPA,
+                        NXX = phoneNumber.NXX,
+                        XXXX = phoneNumber.XXXX,
                         City = checkNumber.city,
                         State = checkNumber.province,
                         DateIngested = DateTime.Now,

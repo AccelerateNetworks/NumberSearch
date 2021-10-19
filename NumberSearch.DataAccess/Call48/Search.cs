@@ -5,7 +5,6 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.Call48
@@ -80,9 +79,8 @@ namespace NumberSearch.DataAccess.Call48
             }
             catch (FlurlHttpException ex)
             {
-                //var error = await ex.GetResponseJsonAsync();
                 Log.Error($"[Ingest] [Call48] Failed to get numbers for {state} and NPA {npa}.");
-                //Log.Error(JsonSerializer.Serialize(error));
+                Log.Error(await ex.GetResponseStringAsync());
                 return null;
             }
         }
@@ -96,7 +94,7 @@ namespace NumberSearch.DataAccess.Call48
         /// <returns></returns>
         public static async Task<IEnumerable<PhoneNumber>> GetAsync(string stateShort, int inNpa, string token)
         {
-            var results = await GetLocalNumbersAsync(stateShort, string.Empty, inNpa.ToString(), string.Empty, token).ConfigureAwait(false);
+            var results = await GetLocalNumbersAsync(stateShort, string.Empty, inNpa.ToString("000"), string.Empty, token).ConfigureAwait(false);
 
             var output = new List<PhoneNumber>();
 
@@ -108,41 +106,25 @@ namespace NumberSearch.DataAccess.Call48
 
             foreach (var item in results?.data?.result)
             {
-                if (item.did_number.Contains("-"))
-                {
-                    item.did_number = item.did_number.Replace("-", string.Empty);
-                    //Log.Information($"[Ingest] [Call48] Removed dashes from {item.did}.");
-                }
+                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.did_number, out var phoneNumber);
 
-                // If the number has at least 10 chars then it could be a valid phone number.
-                // If the number starts with a 1 then it's a US number, we want to ignore internation numbers.
-                if (item.did_number.Length == 10 || item.did_number.Length == 11)
-                {
-                    item.did_number = item.did_number.Substring(item.did_number.Length - 10);
-                }
-                else
-                {
-                    Log.Warning($"[Ingest] [Call48] Failed to parse {item.did_number}. Passed neither the 10 or 11 char checks.");
-                    continue;
-                }
-
-                bool checkNpa = int.TryParse(item.npa, out int npa);
-                bool checkNxx = int.TryParse(item.nxx, out int nxx);
-                bool checkXxxx = int.TryParse(item.xxxx, out int xxxx);
-
-                if (checkNpa && checkNxx && checkXxxx)
+                if (checkParse)
                 {
                     output.Add(new PhoneNumber
                     {
-                        NPA = npa,
-                        NXX = nxx,
-                        XXXX = xxxx,
-                        DialedNumber = item.did_number,
+                        NPA = phoneNumber.NPA,
+                        NXX = phoneNumber.NXX,
+                        XXXX = phoneNumber.XXXX,
+                        DialedNumber = phoneNumber.DialedNumber,
                         City = string.IsNullOrWhiteSpace(item.ratecenter) ? "Unknown City" : item.ratecenter,
                         State = string.IsNullOrWhiteSpace(item.state) ? "Unknown State" : item.state,
                         DateIngested = DateTime.Now,
                         IngestedFrom = "Call48"
                     });
+                }
+                else
+                {
+                    Log.Warning($"[Ingest] [Call48] Failed to parse {item.did_number}");
                 }
             }
             return output;
@@ -162,45 +144,28 @@ namespace NumberSearch.DataAccess.Call48
 
             foreach (var item in results?.data?.result)
             {
-                if (item.did_number.Contains("-"))
-                {
-                    item.did_number = item.did_number.Replace("-", string.Empty);
-                    //Log.Information($"[Ingest] [Call48] Removed dashes from {item.did}.");
-                }
+                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.did_number, out var phoneNumber);
 
-                // If the number has at least 10 chars then it could be a valid phone number.
-                // If the number starts with a 1 then it's a US number, we want to ignore internation numbers.
-                if (item.did_number.Length == 10 || item.did_number.Length == 11)
-                {
-                    item.did_number = item.did_number.Substring(item.did_number.Length - 10);
-                }
-                else
-                {
-                    Log.Warning($"[Ingest] [Call48] Failed to parse {item.did_number}. Passed neither the 10 or 11 char checks.");
-                    continue;
-                }
-
-                bool checkNpa = int.TryParse(item.npa, out int npa);
-                bool checkNxx = int.TryParse(item.nxx, out int nxx);
-                bool checkXxxx = int.TryParse(item.xxxx, out int xxxx);
-
-                if (checkNpa && checkNxx && checkXxxx)
+                if (checkParse)
                 {
                     output.Add(new PhoneNumber
                     {
-                        NPA = npa,
-                        NXX = nxx,
-                        XXXX = xxxx,
-                        DialedNumber = item.did_number,
+                        NPA = phoneNumber.NPA,
+                        NXX = phoneNumber.NXX,
+                        XXXX = phoneNumber.XXXX,
+                        DialedNumber = phoneNumber.DialedNumber,
                         City = string.IsNullOrWhiteSpace(item.ratecenter) ? "Unknown City" : item.ratecenter,
                         State = string.IsNullOrWhiteSpace(item.state) ? "Unknown State" : item.state,
                         DateIngested = DateTime.Now,
                         IngestedFrom = "Call48"
                     });
                 }
+                else
+                {
+                    Log.Warning($"[Ingest] [Call48] Failed to parse {item.did_number}");
+                }
             }
             return output;
         }
-
     }
 }

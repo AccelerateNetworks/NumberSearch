@@ -1,8 +1,6 @@
 ﻿using Flurl.Http;
 
-using NumberSearch.DataAccess.TeleMessage;
-
-using Org.BouncyCastle.Ocsp;
+using NumberSearch.DataAccess.TeliMessage;
 
 using System;
 using System.Threading.Tasks;

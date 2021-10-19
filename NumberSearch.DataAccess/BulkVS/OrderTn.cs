@@ -39,14 +39,14 @@ namespace NumberSearch.DataAccess.BulkVS
             catch (FlurlHttpException ex)
             {
                 Log.Warning($"[Ingest] [BulkVS] No results found for area code {npa}.");
-
-                return new List<OrderTn>() { };
+                Log.Warning(await ex.GetResponseStringAsync());
+                return null;
             }
         }
 
         public static async Task<IEnumerable<PhoneNumber>> GetAsync(int inNpa, string username, string password)
         {
-            var results = await GetRawAsync(inNpa.ToString(), string.Empty, username, password).ConfigureAwait(false);
+            var results = await GetRawAsync(inNpa.ToString("000"), string.Empty, username, password).ConfigureAwait(false);
 
             var output = new List<PhoneNumber>();
 
@@ -58,35 +58,25 @@ namespace NumberSearch.DataAccess.BulkVS
 
             foreach (var item in results?.ToArray())
             {
-                // If the number has at least 10 chars then it could be a valid phone number.
-                // If the number starts with a 1 then it's a US number, we want to ignore internation numbers.
-                if (item.TN.Length == 10 || item.TN.Length == 11)
-                {
-                    item.TN = item.TN.Substring(item.TN.Length - 10);
-                }
-                else
-                {
-                    Log.Warning($"[Ingest] [BulkVS] Failed to parse {item.TN}. Passed neither the 10 or 11 char checks.");
-                    continue;
-                }
+                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.TN, out var phoneNumber);
 
-                bool checkNpa = int.TryParse(item.TN.Substring(0, 3), out int npa);
-                bool checkNxx = int.TryParse(item.TN.Substring(3, 3), out int nxx);
-                bool checkXxxx = int.TryParse(item.TN.Substring(6, 4), out int xxxx);
-
-                if (checkNpa && checkNxx && checkXxxx)
+                if (checkParse)
                 {
                     output.Add(new PhoneNumber
                     {
-                        NPA = npa,
-                        NXX = nxx,
-                        XXXX = xxxx,
-                        DialedNumber = item.TN,
+                        NPA = phoneNumber.NPA,
+                        NXX = phoneNumber.NXX,
+                        XXXX = phoneNumber.XXXX,
+                        DialedNumber = phoneNumber.DialedNumber,
                         City = string.IsNullOrWhiteSpace(item.RateCenter) ? "Unknown City" : item.RateCenter,
                         State = string.IsNullOrWhiteSpace(item.State) ? "Unknown State" : item.State,
                         DateIngested = DateTime.Now,
                         IngestedFrom = "BulkVS"
                     });
+                }
+                else
+                {
+                    Log.Warning($"[Ingest] [BulkVS] Failed to parse {item.TN}.");
                 }
             }
             return output;
@@ -94,7 +84,7 @@ namespace NumberSearch.DataAccess.BulkVS
 
         public static async Task<IEnumerable<PhoneNumber>> GetAsync(int inNpa, int inNxx, string username, string password)
         {
-            var results = await GetRawAsync(inNpa.ToString(), inNxx.ToString(), username, password).ConfigureAwait(false);
+            var results = await GetRawAsync(inNpa.ToString("000"), inNxx.ToString("000"), username, password).ConfigureAwait(false);
 
             var output = new List<PhoneNumber>();
 
@@ -106,51 +96,25 @@ namespace NumberSearch.DataAccess.BulkVS
 
             foreach (var item in results?.ToArray())
             {
-                if (item.TN.Length == 10)
-                {
-                    bool checkNpa = int.TryParse(item.TN.Substring(0, 3), out int npa);
-                    bool checkNxx = int.TryParse(item.TN.Substring(3, 3), out int nxx);
-                    bool checkXxxx = int.TryParse(item.TN.Substring(6, 4), out int xxxx);
+                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.TN, out var phoneNumber);
 
-                    if (checkNpa && checkNxx && checkXxxx)
-                    {
-                        output.Add(new PhoneNumber
-                        {
-                            NPA = npa,
-                            NXX = nxx,
-                            XXXX = xxxx,
-                            DialedNumber = item.TN,
-                            City = string.IsNullOrWhiteSpace(item.RateCenter) ? "Unknown City" : item.RateCenter,
-                            State = string.IsNullOrWhiteSpace(item.State) ? "Unknown State" : item.State,
-                            DateIngested = DateTime.Now,
-                            IngestedFrom = "BulkVS"
-                        });
-                    }
-                }
-                else if (item.TN.Length == 11)
+                if (checkParse)
                 {
-                    bool checkNpa = int.TryParse(item.TN.Substring(1, 3), out int npa);
-                    bool checkNxx = int.TryParse(item.TN.Substring(4, 3), out int nxx);
-                    bool checkXxxx = int.TryParse(item.TN.Substring(7, 4), out int xxxx);
-
-                    if (checkNpa && checkNxx && checkXxxx)
+                    output.Add(new PhoneNumber
                     {
-                        output.Add(new PhoneNumber
-                        {
-                            NPA = npa,
-                            NXX = nxx,
-                            XXXX = xxxx,
-                            DialedNumber = item.TN,
-                            City = string.IsNullOrWhiteSpace(item.RateCenter) ? "Unknown City" : item.RateCenter,
-                            State = string.IsNullOrWhiteSpace(item.State) ? "Unknown State" : item.State,
-                            DateIngested = DateTime.Now,
-                            IngestedFrom = "BulkVS"
-                        });
-                    }
+                        NPA = phoneNumber.NPA,
+                        NXX = phoneNumber.NXX,
+                        XXXX = phoneNumber.XXXX,
+                        DialedNumber = phoneNumber.DialedNumber,
+                        City = string.IsNullOrWhiteSpace(item.RateCenter) ? "Unknown City" : item.RateCenter,
+                        State = string.IsNullOrWhiteSpace(item.State) ? "Unknown State" : item.State,
+                        DateIngested = DateTime.Now,
+                        IngestedFrom = "BulkVS"
+                    });
                 }
                 else
                 {
-                    Log.Warning($"[Ingest] [BulkVS] Failed to parse {item.TN}. Passed neither the 10 or 11 char checks.");
+                    Log.Warning($"[Ingest] [BulkVS] Failed to parse {item.TN}");
                 }
             }
             return output;
@@ -187,8 +151,8 @@ namespace NumberSearch.DataAccess.BulkVS
             }
             catch (FlurlHttpException ex)
             {
-                Log.Warning($"[Ingest] [BulkVS] Failed to order {TN}.");
-
+                Log.Error($"[Ingest] [BulkVS] Failed to order {TN}.");
+                Log.Error(await ex.GetResponseStringAsync());
                 var error = await ex.GetResponseJsonAsync<OrderTnFailed>();
 
                 return new OrderTnResponseBody

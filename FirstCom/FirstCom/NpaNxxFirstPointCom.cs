@@ -37,27 +37,32 @@ namespace FirstCom
 
             foreach (var item in result.DIDOrder)
             {
-                bool checkNpa = int.TryParse(item.NPA, out int outNpa);
-                bool checkNxx = int.TryParse(item.NXX, out int outNxx);
-                bool checkXxxx = int.TryParse(item.DID.Substring(7), out int outXxxx);
-
-                if (checkNpa && outNpa < 1000 && checkNxx && outNxx < 1000 && checkXxxx && outXxxx < 10000 && item.DID.Length == 11)
+                if (item.DID.StartsWith('1'))
                 {
-                    list.Add(new PhoneNumber
+                    var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.DID[1..], out var phoneNumber);
+
+                    if (checkParse)
                     {
-                        NPA = outNpa,
-                        NXX = outNxx,
-                        XXXX = outXxxx,
-                        DialedNumber = item.DID.Substring(1),
-                        City = "Unknown City",
-                        State = "Unknown State",
-                        DateIngested = DateTime.Now,
-                        IngestedFrom = "FirstPointCom"
-                    });
+                        list.Add(new PhoneNumber
+                        {
+                            NPA = phoneNumber.NPA,
+                            NXX = phoneNumber.NXX,
+                            XXXX = phoneNumber.XXXX,
+                            DialedNumber = phoneNumber.DialedNumber,
+                            City = "Unknown City",
+                            State = "Unknown State",
+                            DateIngested = DateTime.Now,
+                            IngestedFrom = "FirstPointCom"
+                        });
+                    }
+                    else
+                    {
+                        Log.Error($"[FirstCom] This number failed to parse {item.DID}");
+                    }
                 }
                 else
                 {
-                    Log.Error($"This failed the 11 char check {item.DID.Length}");
+                    Log.Error($"[FirstCom] This number did not start with a 1: {item.DID}");
                 }
             }
 

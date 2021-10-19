@@ -3,7 +3,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace NumberSearch.DataAccess.TeleMesssage
+namespace NumberSearch.DataAccess.TeliMesssage
 {
     public class DidsNxxs
     {

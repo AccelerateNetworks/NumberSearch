@@ -5,7 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using static NumberSearch.DataAccess.Models.AreaCode;
+using PhoneNumbersNA;
+using Serilog;
 
 namespace NumberSearch.DataAccess.Call48
 {
@@ -47,11 +48,13 @@ namespace NumberSearch.DataAccess.Call48
             }
             catch (FlurlHttpException ex)
             {
-                throw;
+                Log.Warning("[Call48] Failed to get ratecenters.");
+                Log.Warning(await ex.GetResponseStringAsync());
+                return null;
             }
         }
 
-        public static async Task<StateRatecenter[]> GetAllRatecentersAsync(AreaCodesByState[] states, string token)
+        public static async Task<StateRatecenter[]> GetAllRatecentersAsync(AreaCode.AreaCodesByState[] states, string token)
         {
             var ratecenters = new List<StateRatecenter>();
             foreach (var state in states)

@@ -1,5 +1,5 @@
 ﻿using NumberSearch.DataAccess;
-using NumberSearch.DataAccess.TeleMesssage;
+using NumberSearch.DataAccess.TeliMesssage;
 
 using Serilog;
 
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Ingest
 {
-    public class TeleMessage
+    public class TeliMessage
     {
         /// <summary>
         /// Gets a list of valid area codes.
@@ -23,7 +23,7 @@ namespace NumberSearch.Ingest
 
             if (!(results.status == "Success") && !(results.code == 200))
             {
-                return new int[] { };
+                return Array.Empty<int>();
             }
 
             var valid = new List<int>();
@@ -34,7 +34,7 @@ namespace NumberSearch.Ingest
                 {
                     var check = int.TryParse(npa, out int outNpa);
 
-                    if (check && outNpa > 99)
+                    if (check && PhoneNumbersNA.AreaCode.ValidNPA(outNpa))
                     {
                         valid.Add(outNpa);
                     }

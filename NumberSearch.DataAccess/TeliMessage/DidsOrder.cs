@@ -3,7 +3,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace NumberSearch.DataAccess.TeleMesssage
+namespace NumberSearch.DataAccess.TeliMesssage
 {
     /// <summary>
     /// Models https://apidocs.teleapi.net/api/order-phone-numbers/order-single-number
@@ -12,7 +12,7 @@ namespace NumberSearch.DataAccess.TeleMesssage
     {
         public int code { get; set; }
         public string status { get; set; }
-        public TeleOrderResponse data { get; set; }
+        public TeliOrderResponse data { get; set; }
 
         /// <summary>
         /// Submit an order to purchase an available phone number.
@@ -35,7 +35,7 @@ namespace NumberSearch.DataAccess.TeleMesssage
         }
     }
 
-    public class TeleOrderResponse
+    public class TeliOrderResponse
     {
         public string id { get; set; }
         public string user_id { get; set; }

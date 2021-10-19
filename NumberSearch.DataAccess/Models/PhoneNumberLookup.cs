@@ -57,7 +57,7 @@ namespace NumberSearch.DataAccess
         /// </summary>
         /// <param name="connectionString"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<PhoneNumberLookup>> GetAllAsync(string connectionString)
+        public static async Task<IEnumerable<PhoneNumberLookup>> GetAllAsync(string connectionString)
         {
             using var connection = new NpgsqlConnection(connectionString);
 

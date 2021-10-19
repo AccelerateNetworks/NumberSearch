@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace NumberSearch.DataAccess.TeleMesssage
+namespace NumberSearch.DataAccess.TeliMesssage
 {
     public class DidsList
     {
@@ -13,10 +13,10 @@ namespace NumberSearch.DataAccess.TeleMesssage
         public string status { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Mirrors the external API")]
-        public TeleResults data { get; set; }
+        public TeliResults data { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Mirrors the external API")]
-        public class TeleResults
+        public class TeliResults
         {
             public IEnumerable<Did> dids { get; set; }
             public int count { get; set; }
@@ -88,18 +88,16 @@ namespace NumberSearch.DataAccess.TeleMesssage
 
             foreach (var item in results?.data?.dids?.ToArray())
             {
-                bool checkNpa = int.TryParse(item.npa, out int npa);
-                bool checkNxx = int.TryParse(item.nxx, out int nxx);
-                bool checkXxxx = int.TryParse(item.xxxx, out int xxxx);
+                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.number, out var phoneNumber);
 
-                if (checkNpa && checkNxx && checkXxxx)
+                if (checkParse)
                 {
                     list.Add(new PhoneNumber
                     {
-                        NPA = npa,
-                        NXX = nxx,
-                        XXXX = xxxx,
-                        DialedNumber = item.number,
+                        NPA = phoneNumber.NPA,
+                        NXX = phoneNumber.NXX,
+                        XXXX = phoneNumber.XXXX,
+                        DialedNumber = phoneNumber.DialedNumber,
                         City = !string.IsNullOrWhiteSpace(item.ratecenter) ? item.ratecenter : "Unknown City",
                         State = !string.IsNullOrWhiteSpace(item.state) ? item.state : "Unknown State",
                         DateIngested = DateTime.Now,
@@ -126,18 +124,16 @@ namespace NumberSearch.DataAccess.TeleMesssage
 
             foreach (var item in results?.data?.dids?.ToArray())
             {
-                bool checkNpa = int.TryParse(item.npa, out int npa);
-                bool checkNxx = int.TryParse(item.nxx, out int nxx);
-                bool checkXxxx = int.TryParse(item.xxxx, out int xxxx);
+                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.number, out var phoneNumber);
 
-                if (checkNpa && checkNxx && checkXxxx)
+                if (checkParse)
                 {
                     list.Add(new PhoneNumber
                     {
-                        NPA = npa,
-                        NXX = nxx,
-                        XXXX = xxxx,
-                        DialedNumber = item.number,
+                        NPA = phoneNumber.NPA,
+                        NXX = phoneNumber.NXX,
+                        XXXX = phoneNumber.XXXX,
+                        DialedNumber = phoneNumber.DialedNumber,
                         City = !string.IsNullOrWhiteSpace(item.ratecenter) ? item.ratecenter : "Unknown City",
                         State = !string.IsNullOrWhiteSpace(item.state) ? item.state : "Unknown State",
                         DateIngested = DateTime.Now,
@@ -163,18 +159,16 @@ namespace NumberSearch.DataAccess.TeleMesssage
 
             foreach (var item in results?.data?.dids?.ToArray())
             {
-                bool checkNpa = int.TryParse(item.npa, out int npa);
-                bool checkNxx = int.TryParse(item.nxx, out int nxx);
-                bool checkXxxx = int.TryParse(item.xxxx, out int xxxx);
+                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.number, out var phoneNumber);
 
-                if (checkNpa && checkNxx && checkXxxx)
+                if (checkParse)
                 {
                     list.Add(new PhoneNumber
                     {
-                        NPA = npa,
-                        NXX = nxx,
-                        XXXX = xxxx,
-                        DialedNumber = item.number,
+                        NPA = phoneNumber.NPA,
+                        NXX = phoneNumber.NXX,
+                        XXXX = phoneNumber.XXXX,
+                        DialedNumber = phoneNumber.DialedNumber,
                         City = "Tollfree",
                         State = string.Empty,
                         DateIngested = DateTime.Now,

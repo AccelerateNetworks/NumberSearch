@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Models;
-using NumberSearch.DataAccess.TeleMesssage;
+using NumberSearch.DataAccess.TeliMesssage;
 
 using Serilog;
 
@@ -167,7 +167,7 @@ namespace NumberSearch.Ingest
         {
             var numbers = new List<OwnedPhoneNumber>();
 
-            var areaCodes = AreaCode.All;
+            var areaCodes = PhoneNumbersNA.AreaCode.All;
 
             foreach (var npa in areaCodes)
             {
@@ -490,7 +490,7 @@ namespace NumberSearch.Ingest
         public static async Task<IEnumerable<ServiceProviderChanged>> VerifyServiceProvidersAsync(Guid teleToken, string bulkApiKey, string connectionString)
         {
             var owned = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
-            var tollFree = AreaCode.TollFree;
+            var tollFree = PhoneNumbersNA.AreaCode.TollFree;
 
             var serviceProviderChanged = new List<ServiceProviderChanged>();
 

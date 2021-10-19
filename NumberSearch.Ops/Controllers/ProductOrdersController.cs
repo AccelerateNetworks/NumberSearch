@@ -104,7 +104,7 @@ namespace NumberSearch.Ops.Controllers
             {
                 if (!string.IsNullOrWhiteSpace(productOrder.DialedNumber))
                 {
-                    var checkNumber = DataAccess.PhoneNumber.TryParse(productOrder.DialedNumber, out var number);
+                    var checkNumber = PhoneNumbersNA.PhoneNumber.TryParse(productOrder.DialedNumber, out var number);
 
                     if (checkNumber)
                     {
@@ -141,7 +141,7 @@ namespace NumberSearch.Ops.Controllers
                 }
                 else if (!string.IsNullOrWhiteSpace(productOrder.PortedDialedNumber))
                 {
-                    var checkNumber = DataAccess.PhoneNumber.TryParse(productOrder.PortedDialedNumber, out var number);
+                    var checkNumber = PhoneNumbersNA.PhoneNumber.TryParse(productOrder.PortedDialedNumber, out var number);
 
                     if (checkNumber)
                     {

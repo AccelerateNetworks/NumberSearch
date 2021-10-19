@@ -128,7 +128,7 @@ namespace NumberSearch.Ingest
 
                             // Ingest all avablie phones numbers from the BulkVs API.
                             Log.Information("Ingesting data from BulkVS");
-                            var BulkVSStats = await Provider.BulkVSAsync(bulkVSusername, bulkVSpassword, AreaCode.All, postgresSQL).ConfigureAwait(false);
+                            var BulkVSStats = await Provider.BulkVSAsync(bulkVSusername, bulkVSpassword, PhoneNumbersNA.AreaCode.All, postgresSQL).ConfigureAwait(false);
 
                             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
                             var lockEntry = await IngestStatistics.GetLockAsync("BulkVS", postgresSQL).ConfigureAwait(false);
@@ -256,7 +256,7 @@ namespace NumberSearch.Ingest
 
                             // Ingest all avalible numbers in the FirsPointtCom API.
                             Log.Information("[FirstPointCom] Ingesting data from FirstPointCom");
-                            var FirstPointComStats = await Provider.FirstPointComAsync(username, password, AreaCode.All, postgresSQL).ConfigureAwait(false);
+                            var FirstPointComStats = await Provider.FirstPointComAsync(username, password, PhoneNumbersNA.AreaCode.All, postgresSQL).ConfigureAwait(false);
 
                             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
                             var lockEntry = await IngestStatistics.GetLockAsync("FirstPointCom", postgresSQL).ConfigureAwait(false);
@@ -396,7 +396,7 @@ namespace NumberSearch.Ingest
 
                             try
                             {
-                                teleStats = await Provider.TeleMessageAsync(teleToken, Array.Empty<int>(), postgresSQL).ConfigureAwait(false);
+                                teleStats = await Provider.TeliMessageAsync(teleToken, Array.Empty<int>(), postgresSQL).ConfigureAwait(false);
                             }
                             catch (Exception ex)
                             {
@@ -475,7 +475,7 @@ namespace NumberSearch.Ingest
                             };
                             try
                             {
-                                teleStats = await Provider.TeleMessageAsync(teleToken, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
+                                teleStats = await Provider.TeliMessageAsync(teleToken, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
                             }
                             catch (Exception ex)
                             {
@@ -608,7 +608,7 @@ namespace NumberSearch.Ingest
 
                             // Ingest priority phones numbers from the Call48 API.
                             Log.Information("[Call48] Ingesting priority data from Call48.");
-                            var call48Stats = await Provider.Call48Async(call48Username, call48Password, AreaCode.States.Where(x => x.State == "Oregon" || x.State == "Washington").ToArray(), postgresSQL).ConfigureAwait(false);
+                            var call48Stats = await Provider.Call48Async(call48Username, call48Password, PhoneNumbersNA.AreaCode.States.Where(x => x.State == "Oregon" || x.State == "Washington").ToArray(), postgresSQL).ConfigureAwait(false);
 
                             var combined = new IngestStatistics
                             {
@@ -675,7 +675,7 @@ namespace NumberSearch.Ingest
 
                             // Ingest all avalible numbers from the TeleMessage.
                             Log.Information("[Peerless] Ingesting data from Peerless");
-                            var peerlessStats = await Peerless.IngestPhoneNumbersAsync(peerlessApiKey, AreaCode.All, postgresSQL).ConfigureAwait(false);
+                            var peerlessStats = await Peerless.IngestPhoneNumbersAsync(peerlessApiKey, PhoneNumbersNA.AreaCode.All, postgresSQL).ConfigureAwait(false);
 
                             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
                             var lockEntry = await IngestStatistics.GetLockAsync("Peerless", postgresSQL).ConfigureAwait(false);

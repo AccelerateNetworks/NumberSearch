@@ -2,11 +2,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace NumberSearch.DataAccess.TeleMesssage
+namespace NumberSearch.DataAccess.TeliMesssage
 {
     // TODO: This is a mess. We need to clean this up and correctly model the API interface.
     public class LnpCheck

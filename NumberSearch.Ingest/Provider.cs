@@ -3,7 +3,7 @@
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Call48;
-using NumberSearch.DataAccess.TeleMesssage;
+using NumberSearch.DataAccess.TeliMesssage;
 
 using Serilog;
 
@@ -13,8 +13,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
-using static NumberSearch.DataAccess.Models.AreaCode;
 
 namespace NumberSearch.Ingest
 {
@@ -97,7 +95,7 @@ namespace NumberSearch.Ingest
         /// <param name="states"> A list of states to ingest. </param>
         /// <param name="connectionString"> The connection string for the database. </param>
         /// <returns></returns>
-        public static async Task<IngestStatistics> Call48Async(string username, string password, AreaCodesByState[] states, string connectionString)
+        public static async Task<IngestStatistics> Call48Async(string username, string password, PhoneNumbersNA.AreaCode.AreaCodesByState[] states, string connectionString)
         {
             var start = DateTime.Now;
 
@@ -173,33 +171,33 @@ namespace NumberSearch.Ingest
         /// <param name="token"> The teleMesssage token. </param>
         /// <param name="connectionString"> The connection string for the database. </param>
         /// <returns></returns>
-        public static async Task<IngestStatistics> TeleMessageAsync(Guid token, int[] areaCodes, string connectionString)
+        public static async Task<IngestStatistics> TeliMessageAsync(Guid token, int[] areaCodes, string connectionString)
         {
             var readyToSubmit = new List<PhoneNumber>();
 
             var start = DateTime.Now;
 
             // Pass this provider a blank array if you want it to figure out what NPAs are available. 
-            var npas = areaCodes.Length > 0 ? areaCodes : new int[] { };
+            var npas = areaCodes.Length > 0 ? areaCodes : Array.Empty<int>();
 
             // Capture the NPAs.
             try
             {
                 if (npas.Length > 0)
                 {
-                    Log.Information($"[TeleMessage] Found {npas.Length} NPAs");
+                    Log.Information($"[TeliMessage] Found {npas.Length} NPAs");
                 }
                 else
                 {
-                    npas = await TeleMessage.GetValidNPAsAsync(token).ConfigureAwait(false);
+                    npas = await TeliMessage.GetValidNPAsAsync(token).ConfigureAwait(false);
 
-                    Log.Information($"[TeleMessage] Found {npas.Length} NPAs");
+                    Log.Information($"[TeliMessage] Found {npas.Length} NPAs");
                 }
             }
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}");
-                Log.Error($"[TeleMessage] No NPAs Retrived.");
+                Log.Error($"[TeliMessage] No NPAs Retrived.");
             }
 
             // Capture the numbers using their NPA's.
@@ -207,15 +205,15 @@ namespace NumberSearch.Ingest
             {
                 try
                 {
-                    var localNumbers = await TeleMessage.GetXXXXsByNPAAsync(npa, token).ConfigureAwait(false);
+                    var localNumbers = await TeliMessage.GetXXXXsByNPAAsync(npa, token).ConfigureAwait(false);
                     readyToSubmit.AddRange(localNumbers);
 
-                    Log.Information($"[TeleMessage] Found {localNumbers.Length} Phone Numbers for the {npa} Area Code.");
+                    Log.Information($"[TeliMessage] Found {localNumbers.Length} Phone Numbers for the {npa} Area Code.");
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"[TeleMessage] {ex.Message} {ex.InnerException}");
-                    Log.Information($"[TeleMessage] Found 0 Phone Numbers for the {npa} Area Code.");
+                    Log.Error($"[TeliMessage] {ex.Message} {ex.InnerException}");
+                    Log.Information($"[TeliMessage] Found 0 Phone Numbers for the {npa} Area Code.");
                 }
             }
 
@@ -224,15 +222,15 @@ namespace NumberSearch.Ingest
             {
                 var tollfree = await DidsList.GetAllTollfreeAsync(token).ConfigureAwait(false);
                 readyToSubmit.AddRange(tollfree);
-                Log.Information($"[TeleMessage] Found {tollfree.Count()} Tollfree Phone Numbers.");
+                Log.Information($"[TeliMessage] Found {tollfree.Count()} Tollfree Phone Numbers.");
             }
             catch (Exception ex)
             {
-                Log.Error($"[TeleMessage] {ex.Message} {ex.InnerException}");
-                Log.Information($"[TeleMessage] Found 0 Tollfree Phone Numbers.");
+                Log.Error($"[TeliMessage] {ex.Message} {ex.InnerException}");
+                Log.Information($"[TeliMessage] Found 0 Tollfree Phone Numbers.");
             }
 
-            Log.Information($"[TeleMessage] Found {readyToSubmit.Count} Phone Numbers");
+            Log.Information($"[TeliMessage] Found {readyToSubmit.Count} Phone Numbers");
 
             var locations = await Services.AssignRatecenterAndRegionAsync(readyToSubmit).ConfigureAwait(false);
             readyToSubmit = locations.ToList();
@@ -244,7 +242,7 @@ namespace NumberSearch.Ingest
             var end = DateTime.Now;
             stats.StartDate = start;
             stats.EndDate = end;
-            stats.IngestedFrom = "TeleMessage";
+            stats.IngestedFrom = "TeliMessage";
 
             return stats;
         }
@@ -255,48 +253,48 @@ namespace NumberSearch.Ingest
         /// <param name="token"> The teleMesssage token. </param>
         /// <param name="connectionString"> The connection string for the database. </param>
         /// <returns></returns>
-        public static async Task<IngestStatistics> TeleMessageConcurrentAsync(Guid token, int[] areaCodes, string connectionString)
+        public static async Task<IngestStatistics> TeliMessageConcurrentAsync(Guid token, int[] areaCodes, string connectionString)
         {
             var readyToSubmit = new ConcurrentDictionary<string, PhoneNumber>();
 
             var start = DateTime.Now;
 
             // Pass this provider a blank array if you want it to figure out what NPAs are available. 
-            var npas = areaCodes.Length > 0 ? areaCodes : new int[] { };
+            var npas = areaCodes.Length > 0 ? areaCodes : Array.Empty<int>();
 
             try
             {
                 if (npas.Length > 0)
                 {
-                    Log.Information($"[TeleMessage] Found {npas.Length} NPAs");
+                    Log.Information($"[TeliMessage] Found {npas.Length} NPAs");
                 }
                 else
                 {
-                    npas = await TeleMessage.GetValidNPAsAsync(token).ConfigureAwait(false);
+                    npas = await TeliMessage.GetValidNPAsAsync(token).ConfigureAwait(false);
 
-                    Log.Information($"[TeleMessage] Found {npas.Length} NPAs");
+                    Log.Information($"[TeliMessage] Found {npas.Length} NPAs");
                 }
             }
             catch (Exception ex)
             {
                 Log.Error($"{ex.Message}");
-                Log.Error($"[TeleMessage] No NPAs Retrived.");
+                Log.Error($"[TeliMessage] No NPAs Retrived.");
             }
 
             foreach (var npa in npas)
             {
-                var nxxs = new int[] { };
+                var nxxs = Array.Empty<int>();
 
                 try
                 {
-                    nxxs = await TeleMessage.GetValidNXXsAsync(npa, token).ConfigureAwait(false);
+                    nxxs = await TeliMessage.GetValidNXXsAsync(npa, token).ConfigureAwait(false);
 
-                    Log.Information($"[TeleMessage] Found {nxxs.Length} NXXs for NPA {npa}");
+                    Log.Information($"[TeliMessage] Found {nxxs.Length} NXXs for NPA {npa}");
                 }
                 catch (Exception ex)
                 {
                     Log.Error($"{ex.Message}");
-                    Log.Error($"[TeleMessage] No NXXs Retrived for NPA {npa}.");
+                    Log.Error($"[TeliMessage] No NXXs Retrived for NPA {npa}.");
                 }
 
                 if (nxxs.Length > 1)
@@ -314,14 +312,14 @@ namespace NumberSearch.Ingest
                         {
                             try
                             {
-                                var localNumbers = await TeleMessage.GetValidXXXXsAsync(npa, nxx, token).ConfigureAwait(false);
+                                var localNumbers = await TeliMessage.GetValidXXXXsAsync(npa, nxx, token).ConfigureAwait(false);
                                 foreach (var num in localNumbers)
                                 {
                                     // TODO: Maybe do something with this check varible?
                                     var check = readyToSubmit.TryAdd(num.DialedNumber, num);
                                 }
 
-                                Log.Information($"[TeleMessage] Found {localNumbers.Length} Phone Numbers for {npa}-{nxx}-xxxx");
+                                Log.Information($"[TeliMessage] Found {localNumbers.Length} Phone Numbers for {npa}-{nxx}-xxxx");
 
                                 return localNumbers.Length;
                             }
@@ -339,7 +337,7 @@ namespace NumberSearch.Ingest
                     {
                         count += xxxx;
                     }
-                    Log.Information($"[TeleMessage] Found {count} Phone Numbers");
+                    Log.Information($"[TeliMessage] Found {count} Phone Numbers");
                 }
             }
 

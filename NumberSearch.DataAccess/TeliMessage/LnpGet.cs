@@ -1,16 +1,14 @@
 ﻿using Flurl.Http;
 
-using NumberSearch.DataAccess.TeleMessage;
+using NumberSearch.DataAccess.TeliMessage;
 
 using Serilog;
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace NumberSearch.DataAccess.TeleMesssage
+namespace NumberSearch.DataAccess.TeliMesssage
 {
     public class LnpGet
     {

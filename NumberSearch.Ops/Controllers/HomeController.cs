@@ -16,7 +16,7 @@ using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Data247;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.Models;
-using NumberSearch.DataAccess.TeleMesssage;
+using NumberSearch.DataAccess.TeliMesssage;
 using NumberSearch.Ops.Models;
 
 using Serilog;
@@ -2226,7 +2226,7 @@ namespace NumberSearch.Ops.Controllers
 
                 // Handle Tollfree numbers
                 var tollfreeLookup = new Dictionary<int, int>();
-                foreach (var code in AreaCode.TollFree)
+                foreach (var code in PhoneNumbersNA.AreaCode.TollFree)
                 {
                     tollfreeLookup.Add(code, code);
                 }

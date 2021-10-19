@@ -1,4 +1,4 @@
-﻿namespace NumberSearch.DataAccess.TeleMessage
+﻿namespace NumberSearch.DataAccess.TeliMessage
 {
     public class TeliError
     {

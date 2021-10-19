@@ -1,5 +1,7 @@
 ﻿using Flurl.Http;
 
+using Serilog;
+
 using System;
 using System.Threading.Tasks;
 
@@ -55,7 +57,8 @@ namespace NumberSearch.DataAccess.BulkVS
             }
             catch (FlurlHttpException ex)
             {
-                return new LrnBulkCnam();
+                Log.Warning(await ex.GetResponseStringAsync());
+                return null;
             }
         }
     }

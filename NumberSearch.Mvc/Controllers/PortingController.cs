@@ -6,13 +6,11 @@ using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
-using NumberSearch.DataAccess.Data247;
-using NumberSearch.DataAccess.TeleMesssage;
+using NumberSearch.DataAccess.TeliMesssage;
 
 using Serilog;
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,8 +23,6 @@ namespace NumberSearch.Mvc.Controllers
         private readonly IConfiguration configuration;
         private readonly string _postgresql;
         private readonly Guid _teleToken;
-        private readonly string _data247username;
-        private readonly string _data247password;
         private readonly string _bulkVSAPIKey;
         private readonly string _azureStorage;
 
@@ -35,8 +31,6 @@ namespace NumberSearch.Mvc.Controllers
             configuration = config;
             _postgresql = configuration.GetConnectionString("PostgresqlProd");
             var checkTeli = Guid.TryParse(configuration.GetConnectionString("TeleAPI"), out _teleToken);
-            _data247username = config.GetConnectionString("Data247Username");
-            _data247password = config.GetConnectionString("Data247Password");
             _bulkVSAPIKey = config.GetConnectionString("BulkVSAPIKEY");
             _azureStorage = config.GetConnectionString("AzureStorageAccount");
         }
@@ -68,146 +62,59 @@ namespace NumberSearch.Mvc.Controllers
                 });
             }
 
-            // Parse the query.
-            var converted = new List<char>();
-            foreach (var letter in Query)
+            var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(Query, out var phoneNumber);
+
+            if (checkParse)
             {
-                // Allow digits.
-                if (char.IsDigit(letter))
+                try
                 {
-                    converted.Add(letter);
-                }
-                // Allow stars.
-                else if (letter == '*')
-                {
-                    converted.Add(letter);
-                }
-                // Convert letters to digits.
-                else if (char.IsLetter(letter))
-                {
-                    converted.Add(SearchController.LetterToKeypadDigit(letter));
-                }
-                // Drop everything else.
-            }
+                    var portable = await LnpCheck.IsPortableAsync(phoneNumber.DialedNumber, _teleToken).ConfigureAwait(false);
 
-            // Drop leading 1's to improve the copy/paste experiance.
-            if (converted[0] == '1' && converted.Count >= 10)
-            {
-                converted.Remove('1');
-            }
+                    // Determine if the number is a wireless number.
+                    var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber, _bulkVSAPIKey).ConfigureAwait(false);
 
-            Query = new string(converted.ToArray());
+                    bool wireless = false;
 
-            if (Query != null && Query?.Length == 10)
-            {
-                var dialedPhoneNumber = Query;
-
-                bool checkNpa = int.TryParse(dialedPhoneNumber.Substring(0, 3), out int npa);
-                bool checkNxx = int.TryParse(dialedPhoneNumber.Substring(3, 3), out int nxx);
-                bool checkXxxx = int.TryParse(dialedPhoneNumber.Substring(6, 4), out int xxxx);
-
-                if (checkNpa && checkNxx && checkXxxx)
-                {
-                    try
+                    switch (checkNumber.lectype)
                     {
-                        var portable = await LnpCheck.IsPortableAsync(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
-
-                        // Determine if the number is a wireless number.
-                        var checkNumber = await LrnBulkCnam.GetAsync(dialedPhoneNumber, _bulkVSAPIKey).ConfigureAwait(false);
-
-                        bool wireless = false;
-
-                        switch (checkNumber.lectype)
-                        {
-                            case "WIRELESS":
-                                wireless = true;
-                                break;
-                            case "PCS":
-                                wireless = true;
-                                break;
-                            case "P RESELLER":
-                                wireless = true;
-                                break;
-                            case "Wireless":
-                                wireless = true;
-                                break;
-                            case "W RESELLER":
-                                wireless = true;
-                                break;
-                            default:
-                                break;
-                        }
-
-                        var numberName = await CnamBulkVs.GetAsync(dialedPhoneNumber, _bulkVSAPIKey);
-                        checkNumber.LIDBName = numberName?.name;
-
-                        if (portable)
-                        {
-                            Log.Information($"[Portability] {dialedPhoneNumber} is Portable.");
-
-                            var port = new PortedPhoneNumber
-                            {
-                                PortedDialedNumber = dialedPhoneNumber,
-                                NPA = npa,
-                                NXX = nxx,
-                                XXXX = xxxx,
-                                City = checkNumber?.city,
-                                State = checkNumber?.province,
-                                DateIngested = DateTime.Now,
-                                IngestedFrom = "UserInput",
-                                Wireless = wireless,
-                                LrnLookup = checkNumber
-                            };
-
-                            return View("Index", new PortingResults
-                            {
-                                PortedPhoneNumber = port,
-                                Cart = cart,
-                                Query = Query,
-                                Message = wireless ? "This wireless phone number can be ported to our network!" : "This phone number can be ported to our network!"
-                            });
-                        }
-                        else
-                        {
-                            Log.Information($"[Portability] {dialedPhoneNumber} is not Portable.");
-
-                            var port = new PortedPhoneNumber
-                            {
-                                PortedDialedNumber = dialedPhoneNumber,
-                                NPA = npa,
-                                NXX = nxx,
-                                XXXX = xxxx,
-                                City = checkNumber?.city,
-                                State = checkNumber?.province,
-                                DateIngested = DateTime.Now,
-                                IngestedFrom = "UserInput",
-                                Wireless = wireless,
-                                LrnLookup = checkNumber
-                            };
-
-                            return View("Index", new PortingResults
-                            {
-                                PortedPhoneNumber = port,
-                                Cart = cart,
-                                Query = Query,
-                                Message = wireless ? "This wireless phone number can likely be ported to our network!" : "This phone number can likely be ported to our network!"
-                            });
-                        }
+                        case "WIRELESS":
+                            wireless = true;
+                            break;
+                        case "PCS":
+                            wireless = true;
+                            break;
+                        case "P RESELLER":
+                            wireless = true;
+                            break;
+                        case "Wireless":
+                            wireless = true;
+                            break;
+                        case "W RESELLER":
+                            wireless = true;
+                            break;
+                        default:
+                            break;
                     }
-                    catch (Exception ex)
+
+                    var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber, _bulkVSAPIKey);
+                    checkNumber.LIDBName = numberName?.name;
+
+                    if (portable)
                     {
-                        Log.Fatal($"[Portability] {ex.Message}");
+                        Log.Information($"[Portability] {phoneNumber.DialedNumber} is Portable.");
 
                         var port = new PortedPhoneNumber
                         {
-                            PortedDialedNumber = dialedPhoneNumber,
-                            NPA = npa,
-                            NXX = nxx,
-                            XXXX = xxxx,
-                            City = "Unknown City",
-                            State = "Unknown State",
+                            PortedDialedNumber = phoneNumber.DialedNumber,
+                            NPA = phoneNumber.NPA,
+                            NXX = phoneNumber.NXX,
+                            XXXX = phoneNumber.XXXX,
+                            City = checkNumber?.city,
+                            State = checkNumber?.province,
                             DateIngested = DateTime.Now,
-                            IngestedFrom = "UserInput"
+                            IngestedFrom = "UserInput",
+                            Wireless = wireless,
+                            LrnLookup = checkNumber
                         };
 
                         return View("Index", new PortingResults
@@ -215,17 +122,58 @@ namespace NumberSearch.Mvc.Controllers
                             PortedPhoneNumber = port,
                             Cart = cart,
                             Query = Query,
-                            Message = "This phone number can likely be ported to our network!"
+                            Message = wireless ? "This wireless phone number can be ported to our network!" : "This phone number can be ported to our network!"
+                        });
+                    }
+                    else
+                    {
+                        Log.Information($"[Portability] {phoneNumber.DialedNumber} is not Portable.");
+
+                        var port = new PortedPhoneNumber
+                        {
+                            PortedDialedNumber = phoneNumber.DialedNumber,
+                            NPA = phoneNumber.NPA,
+                            NXX = phoneNumber.NXX,
+                            XXXX = phoneNumber.XXXX,
+                            City = checkNumber?.city,
+                            State = checkNumber?.province,
+                            DateIngested = DateTime.Now,
+                            IngestedFrom = "UserInput",
+                            Wireless = wireless,
+                            LrnLookup = checkNumber
+                        };
+
+                        return View("Index", new PortingResults
+                        {
+                            PortedPhoneNumber = port,
+                            Cart = cart,
+                            Query = Query,
+                            Message = wireless ? "This wireless phone number can likely be ported to our network!" : "This phone number can likely be ported to our network!"
                         });
                     }
                 }
-                else
+                catch (Exception ex)
                 {
+                    Log.Fatal($"[Portability] {ex.Message}");
+
+                    var port = new PortedPhoneNumber
+                    {
+                        PortedDialedNumber = phoneNumber.DialedNumber,
+                        NPA = phoneNumber.NPA,
+                        NXX = phoneNumber.NXX,
+                        XXXX = phoneNumber.XXXX,
+                        City = "Unknown City",
+                        State = "Unknown State",
+                        DateIngested = DateTime.Now,
+                        IngestedFrom = "UserInput"
+                    };
+
                     return View("Index", new PortingResults
                     {
-                        PortedPhoneNumber = new PortedPhoneNumber { },
+                        PortedPhoneNumber = port,
+                        Cart = cart,
                         Query = Query,
-                        Cart = cart
+                        Message = "This phone number can likely be ported to our network!"
                     });
                 }
             }
@@ -240,6 +188,7 @@ namespace NumberSearch.Mvc.Controllers
                     Cart = cart
                 });
             }
+
         }
 
         [HttpPost]
@@ -248,48 +197,32 @@ namespace NumberSearch.Mvc.Controllers
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            if (Query != null && Query?.Length == 10)
+            var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(Query, out var phoneNumber);
+
+            if (checkParse)
             {
-                var dialedPhoneNumber = Query;
+                var portable = await LnpCheck.IsPortableAsync(phoneNumber.DialedNumber, _teleToken).ConfigureAwait(false);
 
-                bool checkNpa = int.TryParse(dialedPhoneNumber.Substring(0, 3), out int npa);
-                bool checkNxx = int.TryParse(dialedPhoneNumber.Substring(3, 3), out int nxx);
-                bool checkXxxx = int.TryParse(dialedPhoneNumber.Substring(6, 4), out int xxxx);
-
-                if (checkNpa && checkNxx && checkXxxx)
+                if (portable)
                 {
-                    var portable = await LnpCheck.IsPortableAsync(dialedPhoneNumber, _teleToken).ConfigureAwait(false);
-
-                    if (portable)
+                    var port = new PortedPhoneNumber
                     {
-                        var port = new PortedPhoneNumber
-                        {
-                            PortedDialedNumber = dialedPhoneNumber,
-                            NPA = npa,
-                            NXX = nxx,
-                            XXXX = xxxx,
-                            City = "Unknown City",
-                            State = "Unknown State",
-                            DateIngested = DateTime.Now,
-                            IngestedFrom = "UserInput"
-                        };
+                        PortedDialedNumber = phoneNumber.DialedNumber,
+                        NPA = phoneNumber.NPA,
+                        NXX = phoneNumber.NXX,
+                        XXXX = phoneNumber.XXXX,
+                        City = "Unknown City",
+                        State = "Unknown State",
+                        DateIngested = DateTime.Now,
+                        IngestedFrom = "UserInput"
+                    };
 
-                        return View("Index", new PortingResults
-                        {
-                            PortedPhoneNumber = port,
-                            Query = Query,
-                            Cart = cart
-                        });
-                    }
-                    else
+                    return View("Index", new PortingResults
                     {
-                        return View("Index", new PortingResults
-                        {
-                            PortedPhoneNumber = new PortedPhoneNumber { },
-                            Query = Query,
-                            Cart = cart
-                        });
-                    }
+                        PortedPhoneNumber = port,
+                        Query = Query,
+                        Cart = cart
+                    });
                 }
                 else
                 {

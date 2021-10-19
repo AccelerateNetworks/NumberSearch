@@ -3,7 +3,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace NumberSearch.DataAccess.TeleMesssage
+namespace NumberSearch.DataAccess.TeliMesssage
 {
 
     public class UserDidsGet
@@ -12,9 +12,9 @@ namespace NumberSearch.DataAccess.TeleMesssage
         public string status { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "<Pending>")]
-        public TeleNumberDetailsData data { get; set; }
+        public TeliNumberDetailsData data { get; set; }
 
-        public class TeleNumberDetailsData
+        public class TeliNumberDetailsData
         {
             public string id { get; set; }
             public string user_id { get; set; }
