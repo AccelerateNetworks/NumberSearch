@@ -5,6 +5,8 @@ using CsvHelper;
 
 using FirstCom;
 
+using Flurl.Http;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -596,8 +598,16 @@ namespace NumberSearch.Ops.Controllers
 
                         if (checkParse)
                         {
-                            var existingOneTimeInvoice = await Invoice.GetByIdAsync(oneTimeId, _invoiceNinjaToken);
-                            var checkDelete = await existingOneTimeInvoice.DeleteAsync(_invoiceNinjaToken);
+                            try
+                            {
+                                var existingOneTimeInvoice = await Invoice.GetByIdAsync(oneTimeId, _invoiceNinjaToken);
+                                var checkDelete = await existingOneTimeInvoice.DeleteAsync(_invoiceNinjaToken);
+                            }
+                            catch (FlurlHttpException ex)
+                            {
+                                Log.Error($"[Regenerate Invoices] Failed to delete Invoice Id: {oneTimeId} for OrderId: {order.OrderId}");
+                                Log.Error(await ex.GetResponseStringAsync());
+                            }
                         }
                     }
 
@@ -607,8 +617,16 @@ namespace NumberSearch.Ops.Controllers
 
                         if (checkParse)
                         {
-                            var existingOneTimeInvoice = await Invoice.GetByIdAsync(reoccuringId, _invoiceNinjaToken);
-                            var checkDelete = await existingOneTimeInvoice.DeleteAsync(_invoiceNinjaToken);
+                            try
+                            {
+                                var existingReoccuringInvoice = await Invoice.GetByIdAsync(reoccuringId, _invoiceNinjaToken);
+                                var checkDelete = await existingReoccuringInvoice.DeleteAsync(_invoiceNinjaToken);
+                            }
+                            catch (FlurlHttpException ex)
+                            {
+                                Log.Error($"[Regenerate Invoices] Failed to delete Invoice Id: {reoccuringId} for OrderId: {order.OrderId}");
+                                Log.Error(await ex.GetResponseStringAsync());
+                            }
                         }
                     }
 
