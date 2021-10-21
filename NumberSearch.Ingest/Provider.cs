@@ -46,6 +46,27 @@ namespace NumberSearch.Ingest
             return stats;
         }
 
+        public static async Task<IngestStatistics> PeerlessAsync(int[] areaCodes, string peerlessAPIKey, string connectionString)
+        {
+            var start = DateTime.Now;
+
+            var numbers = await Peerless.GetValidNumbersByNPAAsync(areaCodes, peerlessAPIKey).ConfigureAwait(false);
+
+            var locations = await Services.AssignRatecenterAndRegionAsync(numbers).ConfigureAwait(false);
+            numbers = locations.ToArray();
+
+            var typedNumbers = Services.AssignNumberTypes(numbers).ToArray();
+
+            var stats = await Services.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
+
+            var end = DateTime.Now;
+            stats.StartDate = start;
+            stats.EndDate = end;
+            stats.IngestedFrom = "Peerless";
+
+            return stats;
+        }
+
         /// <summary>
         /// Ingest phone numbers from the BulkVS API.
         /// </summary>

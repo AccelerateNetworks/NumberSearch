@@ -58,19 +58,15 @@
 {
     if (string.IsNullOrWhiteSpace(Model?.AlertType))
     {
-        <div class="row">
-            <div class="alert alert-danger col-12" role="alert">
-                @Model?.Message
-            </div>
+        <div class="alert alert-danger col-12" role="alert">
+            @Model?.Message
         </div>
     }
     else
     {
         var alertType = Model?.AlertType ?? "alert-danger";
-        <div class="row">
-            <div class="alert @alertType col-12" role="alert">
-                @Model?.Message
-            </div>
+        <div class="alert @alertType col-12" role="alert">
+            @Model?.Message
         </div>
     }
 }

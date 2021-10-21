@@ -675,7 +675,7 @@ namespace NumberSearch.Ingest
 
                             // Ingest all avalible numbers from the TeleMessage.
                             Log.Information("[Peerless] Ingesting data from Peerless");
-                            var peerlessStats = await Peerless.IngestPhoneNumbersAsync(peerlessApiKey, PhoneNumbersNA.AreaCode.All, postgresSQL).ConfigureAwait(false);
+                            var peerlessStats = await Provider.PeerlessAsync(PhoneNumbersNA.AreaCode.All, peerlessApiKey, postgresSQL).ConfigureAwait(false);
 
                             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
                             var lockEntry = await IngestStatistics.GetLockAsync("Peerless", postgresSQL).ConfigureAwait(false);
@@ -731,7 +731,7 @@ namespace NumberSearch.Ingest
 
                             // Ingest priority numbers from the TeleMessage.
                             Log.Information("[Peerless] Ingesting priority data from Peerless");
-                            var peerlessStats = await Peerless.IngestPhoneNumbersAsync(peerlessApiKey, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
+                            var peerlessStats = await Provider.PeerlessAsync(AreaCode.Priority, peerlessApiKey, postgresSQL).ConfigureAwait(false);
 
                             var combined = new IngestStatistics
                             {

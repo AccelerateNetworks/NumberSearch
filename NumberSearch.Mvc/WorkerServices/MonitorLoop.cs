@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Call48;
+using NumberSearch.DataAccess.Peerless;
 using NumberSearch.DataAccess.TeliMesssage;
 
 using Serilog;
@@ -35,6 +36,7 @@ namespace NumberSearch.Mvc
         private readonly string _emailPassword;
         private readonly string _call48Username;
         private readonly string _call48Password;
+        private readonly string _peerlessApiKey;
 
         public MonitorLoop(IBackgroundTaskQueue taskQueue,
             ILogger<MonitorLoop> logger,
@@ -42,7 +44,7 @@ namespace NumberSearch.Mvc
         {
             _taskQueue = taskQueue;
             _cancellationToken = applicationLifetime.ApplicationStopping;
-            var checkTeli = Guid.TryParse(configuration.GetConnectionString("TeleAPI"), out _teleToken);
+            _ = Guid.TryParse(configuration.GetConnectionString("TeleAPI"), out _teleToken);
             _postgresql = configuration.GetConnectionString("PostgresqlProd");
             _ = int.TryParse(configuration.GetConnectionString("CallFlow"), out _CallFlow);
             _ = int.TryParse(configuration.GetConnectionString("ChannelGroup"), out _ChannelGroup);
@@ -54,6 +56,7 @@ namespace NumberSearch.Mvc
             _call48Password = configuration.GetConnectionString("Call48Password");
             _emailUsername = configuration.GetConnectionString("SmtpUsername");
             _emailPassword = configuration.GetConnectionString("SmtpPassword");
+            _peerlessApiKey = configuration.GetConnectionString("PeerlessAPIKey");
         }
 
         public void StartMonitorLoop()
@@ -175,6 +178,50 @@ namespace NumberSearch.Mvc
                                                         var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
 
                                                         Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from Call48.");
+                                                    }
+                                                    else if (nto.IngestedFrom == "Peerless")
+                                                    {
+                                                        // Find the number.
+                                                        var numbers = await DidFind.GetByDialedNumberAsync(nto.NPA.ToString("000"), nto.NXX.ToString("000"), nto.XXXX.ToString("0000"), _peerlessApiKey);
+                                                        // Sometimes Call48 includes dashes in their numbers for no reason.
+                                                        var matchingNumber = numbers.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
+
+                                                        if (matchingNumber is not null)
+                                                        {
+                                                            // Buy it and save the reciept.
+                                                            var purchaseOrder = new DidOrderRequest
+                                                            {
+                                                                customer_name = "Accelerate Networks",
+                                                                order_numbers = new OrderNumbers[]
+                                                                {
+                                                                    new OrderNumbers
+                                                                    {
+                                                                        did = matchingNumber.DialedNumber,
+                                                                        connection_type = "trunk",
+                                                                        trunk_name = "sfo",
+                                                                        cnam_delivery = false,
+                                                                        cnam_storage = false,
+                                                                        e911 = false
+                                                                    }
+                                                                }
+                                                            };
+
+                                                            var checkPurchase = await purchaseOrder.PostAsync(_peerlessApiKey).ConfigureAwait(false);
+
+                                                            nto.Purchased = true;
+                                                            productOrder.DateOrdered = DateTime.Now;
+                                                            productOrder.OrderResponse = JsonSerializer.Serialize(checkPurchase);
+                                                            productOrder.Completed = checkPurchase.code == "200";
+
+                                                            var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
+                                                            var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
+
+                                                            Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from Peerless.");
+                                                        }
+                                                        else
+                                                        {
+                                                            Log.Information($"[Background Worker] Unable to purchased number {nto.DialedNumber} from Peerless. Number could not be found.");
+                                                        }
                                                     }
                                                     else if (nto.IngestedFrom == "FirstPointCom")
                                                     {

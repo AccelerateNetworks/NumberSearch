@@ -600,7 +600,7 @@ namespace NumberSearch.Tests
             string npa = "425";
 
             // Act
-            var results = await DidFind.GetAsync(npa, peerlessAPIKey).ConfigureAwait(false);
+            var results = await DidFind.GetByNPAAsync(npa, peerlessAPIKey).ConfigureAwait(false);
 
             // Assert
             Assert.NotNull(results);
