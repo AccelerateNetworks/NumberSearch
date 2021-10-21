@@ -54,6 +54,26 @@
 </script>
 
 <h1 class="display-4 p-3">🛒 Order @Model?.Order?.OrderId</h1>
+@if (!string.IsNullOrWhiteSpace(Model?.Message))
+{
+    if (string.IsNullOrWhiteSpace(Model?.AlertType))
+    {
+        <div class="row">
+            <div class="alert alert-danger col-12" role="alert">
+                @Model?.Message
+            </div>
+        </div>
+    }
+    else
+    {
+        var alertType = Model?.AlertType ?? "alert-danger";
+        <div class="row">
+            <div class="alert @alertType col-12" role="alert">
+                @Model?.Message
+            </div>
+        </div>
+    }
+}
 <div class="row">
     <div class="col">
         <a href="https://acceleratenetworks.com/cart/order/@Model?.Order?.OrderId" class="btn btn-primary btn-block" target="_blank" rel="noopener noreferrer">
