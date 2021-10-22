@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Call48;
+using NumberSearch.DataAccess.Peerless;
 using NumberSearch.DataAccess.TeliMesssage;
 
 using Serilog;
@@ -509,6 +510,7 @@ namespace NumberSearch.Mvc.Controllers
         private readonly string _data247password;
         private readonly string _call48Username;
         private readonly string _call48Password;
+        private readonly string _peerlessApiKey;
         private HttpContext _httpContext;
 
         public CartServices(IConfiguration config, HttpContext httpContext)
@@ -528,6 +530,7 @@ namespace NumberSearch.Mvc.Controllers
             _data247password = config.GetConnectionString("Data247Password");
             _call48Username = config.GetConnectionString("Call48Username");
             _call48Password = config.GetConnectionString("Call48Password");
+            _peerlessApiKey = config.GetConnectionString("PeerlessAPIKey");
             _httpContext = httpContext;
         }
 
@@ -631,6 +634,28 @@ namespace NumberSearch.Mvc.Controllers
                     return BadRequest($"{dialedPhoneNumber} is no longer available.");
                 }
             }
+            else if (phoneNumber.IngestedFrom == "Peerless")
+            {
+                // Verify that Peerless has the number.
+                var numbers = await DidFind.GetByDialedNumberAsync(phoneNumber.NPA.ToString("000"), phoneNumber.NXX.ToString("000"), phoneNumber.XXXX.ToString("0000"), _peerlessApiKey);
+                // Sometimes Call48 includes dashes in their numbers for no reason.
+                var matchingNumber = numbers.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
+                if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
+                {
+                    purchasable = true;
+                    Log.Information($"[Peerless] Found {phoneNumber.DialedNumber} in {numbers.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}, {phoneNumber.XXXX}.");
+                }
+                else
+                {
+                    Log.Warning($"[Peerless] Failed to find {phoneNumber.DialedNumber} in {numbers.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}, {phoneNumber.XXXX}.");
+
+                    // Remove numbers that are unpurchasable.
+                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+
+                    // Sadly its gone. And the user needs to pick a different number.
+                    return BadRequest($"{dialedPhoneNumber} is no longer available.");
+                }
+            }
             else if (phoneNumber.IngestedFrom == "OwnedNumber")
             {
                 // Verify that we still have the number.
@@ -692,14 +717,12 @@ namespace NumberSearch.Mvc.Controllers
 
             var portedPhoneNumber = new PortedPhoneNumber();
 
-            if (!string.IsNullOrWhiteSpace(dialedPhoneNumber) && dialedPhoneNumber.Length == 10)
-            {
-                bool checkNpa = int.TryParse(dialedPhoneNumber.Substring(0, 3), out int npa);
-                bool checkNxx = int.TryParse(dialedPhoneNumber.Substring(3, 3), out int nxx);
-                bool checkXxxx = int.TryParse(dialedPhoneNumber.Substring(6, 4), out int xxxx);
+            var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedPhoneNumber, out var phoneNumber);
 
+            if (checkParse)
+            {
                 // Determine if the number is a wireless number.
-                var lrnLookup = await LrnBulkCnam.GetAsync(dialedPhoneNumber, _apiKey).ConfigureAwait(false);
+                var lrnLookup = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber, _apiKey).ConfigureAwait(false);
 
                 bool wireless = false;
 
@@ -724,28 +747,26 @@ namespace NumberSearch.Mvc.Controllers
                         break;
                 }
 
-                Log.Information($"[AddToCart] {dialedPhoneNumber} has an OCN Type of {lrnLookup.lectype}.");
+                Log.Information($"[AddToCart] {phoneNumber.DialedNumber} has an OCN Type of {lrnLookup.lectype}.");
 
-                if (checkNpa && checkNxx && checkXxxx)
+                portedPhoneNumber = new PortedPhoneNumber
                 {
-                    portedPhoneNumber = new PortedPhoneNumber
-                    {
-                        PortedPhoneNumberId = Guid.NewGuid(),
-                        PortedDialedNumber = dialedPhoneNumber,
-                        NPA = npa,
-                        NXX = nxx,
-                        XXXX = xxxx,
-                        City = lrnLookup?.city,
-                        State = lrnLookup?.province,
-                        DateIngested = DateTime.Now,
-                        IngestedFrom = "UserInput",
-                        Wireless = wireless
-                    };
-                }
-                else
-                {
-                    return BadRequest($"Failed to add {dialedPhoneNumber} to your cart.");
-                }
+                    PortedPhoneNumberId = Guid.NewGuid(),
+                    PortedDialedNumber = phoneNumber.DialedNumber,
+                    NPA = phoneNumber.NPA,
+                    NXX = phoneNumber.NXX,
+                    XXXX = phoneNumber.XXXX,
+                    City = lrnLookup?.city,
+                    State = lrnLookup?.province,
+                    DateIngested = DateTime.Now,
+                    IngestedFrom = "UserInput",
+                    Wireless = wireless
+                };
+
+            }
+            else
+            {
+                return BadRequest($"Failed to add {dialedPhoneNumber} to your cart.");
             }
 
             await _httpContext.Session.LoadAsync().ConfigureAwait(false);
@@ -792,95 +813,86 @@ namespace NumberSearch.Mvc.Controllers
                 return BadRequest(ModelState);
             }
 
-            if (!string.IsNullOrWhiteSpace(dialedPhoneNumber) && dialedPhoneNumber.Length == 10)
+            var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedPhoneNumber, out var phoneNumber);
+
+            if (checkParse)
             {
-                bool checkNpa = int.TryParse(dialedPhoneNumber.Substring(0, 3), out int npa);
-                bool checkNxx = int.TryParse(dialedPhoneNumber.Substring(3, 3), out int nxx);
-                bool checkXxxx = int.TryParse(dialedPhoneNumber.Substring(6, 4), out int xxxx);
-
-                if (checkNpa && checkNxx && checkXxxx)
+                try
                 {
-                    try
+                    // Determine if the number is a wireless number.
+                    var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber, _apiKey).ConfigureAwait(false);
+
+                    bool wireless = false;
+
+                    switch (checkNumber.lectype)
                     {
-                        // Determine if the number is a wireless number.
-                        var checkNumber = await LrnBulkCnam.GetAsync(dialedPhoneNumber, _apiKey).ConfigureAwait(false);
-
-                        bool wireless = false;
-
-                        switch (checkNumber.lectype)
-                        {
-                            case "WIRELESS":
-                                wireless = true;
-                                break;
-                            case "PCS":
-                                wireless = true;
-                                break;
-                            case "P RESELLER":
-                                wireless = true;
-                                break;
-                            case "Wireless":
-                                wireless = true;
-                                break;
-                            case "W RESELLER":
-                                wireless = true;
-                                break;
-                            default:
-                                break;
-                        }
-
-                        var checkLong = long.TryParse(checkNumber.activation, out var timeInSeconds);
-
-                        var verifiedPhoneNumber = new VerifiedPhoneNumber
-                        {
-                            VerifiedPhoneNumberId = Guid.NewGuid(),
-                            VerifiedDialedNumber = checkNumber.tn.Substring(1),
-                            NPA = npa,
-                            NXX = nxx,
-                            XXXX = xxxx,
-                            IngestedFrom = "BulkVS",
-                            DateIngested = DateTime.Now,
-                            OrderId = Guid.Empty,
-                            Wireless = wireless,
-                            NumberType = "Standard",
-                            LocalRoutingNumber = checkNumber.lrn,
-                            OperatingCompanyNumber = checkNumber.ocn,
-                            City = checkNumber.city,
-                            LocalAccessTransportArea = checkNumber.lata,
-                            RateCenter = checkNumber.ratecenter,
-                            Province = checkNumber.province,
-                            Jurisdiction = checkNumber.jurisdiction,
-                            Local = checkNumber.local,
-                            LocalExchangeCarrier = checkNumber.lec,
-                            LocalExchangeCarrierType = checkNumber.lectype,
-                            ServiceProfileIdentifier = checkNumber.spid,
-                            Activation = checkNumber.activation,
-                            LIDBName = checkNumber.LIDBName,
-                            LastPorted = checkLong ? new DateTime(1970, 1, 1).AddSeconds(timeInSeconds) : DateTime.Now,
-                            DateToExpire = DateTime.Now.AddYears(1)
-                        };
-
-                        var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), VerifiedPhoneNumberId = verifiedPhoneNumber.VerifiedPhoneNumberId, Quantity = 1 };
-
-                        await _httpContext.Session.LoadAsync().ConfigureAwait(false);
-                        var cart = Cart.GetFromSession(_httpContext.Session);
-                        var checkAdd = cart.AddVerifiedPhoneNumber(verifiedPhoneNumber, productOrder);
-                        var checkSet = cart.SetToSession(_httpContext.Session);
-
-                        if (checkAdd && checkSet)
-                        {
-                            return Ok(dialedPhoneNumber);
-                        }
-                        else
-                        {
-                            return BadRequest($"Failed to verify phone number {dialedPhoneNumber}. :(");
-                        }
+                        case "WIRELESS":
+                            wireless = true;
+                            break;
+                        case "PCS":
+                            wireless = true;
+                            break;
+                        case "P RESELLER":
+                            wireless = true;
+                            break;
+                        case "Wireless":
+                            wireless = true;
+                            break;
+                        case "W RESELLER":
+                            wireless = true;
+                            break;
+                        default:
+                            break;
                     }
-                    catch
+
+                    var checkLong = long.TryParse(checkNumber.activation, out var timeInSeconds);
+
+                    var verifiedPhoneNumber = new VerifiedPhoneNumber
+                    {
+                        VerifiedPhoneNumberId = Guid.NewGuid(),
+                        VerifiedDialedNumber = phoneNumber.DialedNumber,
+                        NPA = phoneNumber.NPA,
+                        NXX = phoneNumber.NXX,
+                        XXXX = phoneNumber.XXXX,
+                        IngestedFrom = "BulkVS",
+                        DateIngested = DateTime.Now,
+                        OrderId = Guid.Empty,
+                        Wireless = wireless,
+                        NumberType = "Standard",
+                        LocalRoutingNumber = checkNumber.lrn,
+                        OperatingCompanyNumber = checkNumber.ocn,
+                        City = checkNumber.city,
+                        LocalAccessTransportArea = checkNumber.lata,
+                        RateCenter = checkNumber.ratecenter,
+                        Province = checkNumber.province,
+                        Jurisdiction = checkNumber.jurisdiction,
+                        Local = checkNumber.local,
+                        LocalExchangeCarrier = checkNumber.lec,
+                        LocalExchangeCarrierType = checkNumber.lectype,
+                        ServiceProfileIdentifier = checkNumber.spid,
+                        Activation = checkNumber.activation,
+                        LIDBName = checkNumber.LIDBName,
+                        LastPorted = checkLong ? new DateTime(1970, 1, 1).AddSeconds(timeInSeconds) : DateTime.Now,
+                        DateToExpire = DateTime.Now.AddYears(1)
+                    };
+
+                    var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), VerifiedPhoneNumberId = verifiedPhoneNumber.VerifiedPhoneNumberId, Quantity = 1 };
+
+                    await _httpContext.Session.LoadAsync().ConfigureAwait(false);
+                    var cart = Cart.GetFromSession(_httpContext.Session);
+                    var checkAdd = cart.AddVerifiedPhoneNumber(verifiedPhoneNumber, productOrder);
+                    var checkSet = cart.SetToSession(_httpContext.Session);
+
+                    if (checkAdd && checkSet)
+                    {
+                        return Ok(dialedPhoneNumber);
+                    }
+                    else
                     {
                         return BadRequest($"Failed to verify phone number {dialedPhoneNumber}. :(");
                     }
                 }
-                else
+                catch
                 {
                     return BadRequest($"Failed to verify phone number {dialedPhoneNumber}. :(");
                 }
@@ -911,7 +923,14 @@ namespace NumberSearch.Mvc.Controllers
             var checkAdd = cart.AddProduct(product, productOrder);
             var checkSet = cart.SetToSession(_httpContext.Session);
 
-            return Ok(productId.ToString());
+            if (checkAdd && checkSet)
+            {
+                return Ok(productId.ToString());
+            }
+            else
+            {
+                return BadRequest($"Failed to purchase product {productId}.");
+            }
         }
 
         public async Task<IActionResult> BuyServiceAsync(Guid serviceId, int Quantity)
