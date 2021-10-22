@@ -263,7 +263,7 @@ namespace NumberSearch.Ingest
             var end = DateTime.Now;
             stats.StartDate = start;
             stats.EndDate = end;
-            stats.IngestedFrom = "TeliMessage";
+            stats.IngestedFrom = "TeleMessage";
 
             return stats;
         }

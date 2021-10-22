@@ -1,5 +1,6 @@
 ﻿using Flurl.Http;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -41,7 +42,7 @@ namespace NumberSearch.DataAccess.Peerless
             var list = new List<PhoneNumber>();
 
             // Bail out early if something is wrong.
-            if (results == null || results.Count() == 0)
+            if (results == null || !results.Any())
             {
                 return list;
             }
@@ -60,6 +61,7 @@ namespace NumberSearch.DataAccess.Peerless
                         DialedNumber = phoneNumber.DialedNumber,
                         City = "Unknown City",
                         State = "Unknown State",
+                        DateIngested = DateTime.Now,
                         IngestedFrom = "Peerless"
                     });
                 }
@@ -74,7 +76,7 @@ namespace NumberSearch.DataAccess.Peerless
             var list = new List<PhoneNumber>();
 
             // Bail out early if something is wrong.
-            if (results == null || results.Count() == 0)
+            if (results == null || !results.Any())
             {
                 return list;
             }
@@ -93,6 +95,7 @@ namespace NumberSearch.DataAccess.Peerless
                         DialedNumber = phoneNumber.DialedNumber,
                         City = "Unknown City",
                         State = "Unknown State",
+                        DateIngested = DateTime.Now,
                         IngestedFrom = "Peerless"
                     });
                 }
