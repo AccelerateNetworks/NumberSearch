@@ -169,7 +169,7 @@ namespace NumberSearch.Mvc
                                                         var matchingNumber = results.data.result.Where(x => x.did_number.Replace("-", string.Empty) == nto.DialedNumber).FirstOrDefault();
 
                                                         // Buy it and save the reciept.
-                                                        var executeOrder = await Purchase.PurchasePhoneNumberAsync(results.data.loc, matchingNumber, credentials.data.token).ConfigureAwait(false);
+                                                        var executeOrder = await Purchase.PurchasePhoneNumberAsync(matchingNumber, credentials.data.token).ConfigureAwait(false);
 
                                                         nto.Purchased = true;
                                                         productOrder.DateOrdered = DateTime.Now;
@@ -193,17 +193,21 @@ namespace NumberSearch.Mvc
                                                             // Buy it and save the reciept.
                                                             var purchaseOrder = new DidOrderRequest
                                                             {
-                                                                customer_name = "Accelerate Networks",
+                                                                customer_name = "ACCELERN8230",
                                                                 order_numbers = new OrderNumber[]
                                                                 {
                                                                     new OrderNumber
                                                                     {
                                                                         did = matchingNumber.DialedNumber,
                                                                         connection_type = "trunk",
-                                                                        trunk_name = "sfo",
+                                                                        trunk_name = "ACCELERN8230_SFO555930",
+                                                                        extension_id = string.Empty,
                                                                         cnam_delivery = false,
                                                                         cnam_storage = false,
+                                                                        cnam_storage_name = string.Empty,
                                                                         e911 = false,
+                                                                        address = new { },
+                                                                        directory_listing = new { },
                                                                     }
                                                                 }
                                                             };

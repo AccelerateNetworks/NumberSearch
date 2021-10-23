@@ -16,7 +16,7 @@ namespace NumberSearch.DataAccess.Call48
         /// <param name="dialedNumber"></param>
         /// <param name="apiKey"></param>
         /// <returns></returns>
-        public static async Task<PurchaseResult> PurchasePhoneNumberAsync(string loc, SearchResult number, string token)
+        public static async Task<PurchaseResult> PurchasePhoneNumberAsync(SearchResult number, string token)
         {
             string baseUrl = "https://apicontrol.call48.com/api/v4/";
             string endPointName = $"purchase";
