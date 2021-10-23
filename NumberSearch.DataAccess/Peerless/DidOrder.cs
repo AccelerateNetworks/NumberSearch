@@ -7,6 +7,7 @@ namespace NumberSearch.DataAccess.Peerless
 
     public class DidOrder
     {
+        public string order_id { get; set; }
         public string order_status { get; set; }
         public string code { get; set; }
         public string message { get; set; }
@@ -33,7 +34,7 @@ namespace NumberSearch.DataAccess.Peerless
         {
             string baseUrl = "https://api.peerlessnetwork.io/mag/v1/";
             string endpoint = "did/order";
-            string apiKeyParameter = $"&api_key={apiKey}";
+            string apiKeyParameter = $"?api_key={apiKey}";
             string route = $"{baseUrl}{endpoint}{apiKeyParameter}";
 
             return await route.PostJsonAsync(this).ReceiveJson<DidOrder>();

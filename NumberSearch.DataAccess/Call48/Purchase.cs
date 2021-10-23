@@ -2,6 +2,7 @@
 
 using Serilog;
 
+using System;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.Call48
@@ -40,15 +41,14 @@ namespace NumberSearch.DataAccess.Call48
 
             try
             {
-                var result = await route.WithHeader("Authorization", token).PostJsonAsync(request).ReceiveJson<PurchaseResult>().ConfigureAwait(false);
-
-                return result;
+                return await route.WithHeader("Authorization", token).PostJsonAsync(request).ReceiveJson<PurchaseResult>().ConfigureAwait(false);
             }
             catch (FlurlHttpException ex)
             {
-                var error = await ex.GetResponseJsonAsync<PurchaseResult>();
-                Log.Error($"[Ingest] [Call48] Failed to purchase {number.DialedNumber}.");
-                return error;
+                var error = await ex.GetResponseStringAsync();
+                Log.Fatal($"[Ingest] [Call48] Failed to purchase {number.DialedNumber}.");
+                Log.Fatal(error);
+                return null;
             }
         }
 
@@ -62,8 +62,15 @@ namespace NumberSearch.DataAccess.Call48
         {
             public int code { get; set; }
             public string message { get; set; }
-            public bool data { get; set; }
+            public PurchaseData data { get; set; }
             public string error { get; set; }
+        }
+
+        public class PurchaseData
+        {
+            public bool success { get; set; }
+            public string message { get; set; }
+            public int fulfilled_quantity { get; set; }
         }
 
         public class PurchaseNumber

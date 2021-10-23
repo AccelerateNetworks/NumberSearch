@@ -180,22 +180,14 @@ namespace NumberSearch.Mvc
                                                     }
                                                     else if (nto.IngestedFrom == "Peerless")
                                                     {
-                                                        // Find the number.
-                                                        var numbers = await DidFind.GetByDialedNumberAsync(nto.NPA.ToString("000"), nto.NXX.ToString("000"), nto.XXXX.ToString("0000"), _peerlessApiKey);
-                                                        // Sometimes Call48 includes dashes in their numbers for no reason.
-                                                        var matchingNumber = numbers.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
-
-                                                        if (matchingNumber is not null)
+                                                        var purchaseOrder = new DidOrderRequest
                                                         {
-                                                            // Buy it and save the reciept.
-                                                            var purchaseOrder = new DidOrderRequest
+                                                            customer_name = "ACCELERN8230",
+                                                            order_numbers = new OrderNumber[]
                                                             {
-                                                                customer_name = "ACCELERN8230",
-                                                                order_numbers = new OrderNumber[]
-                                                                {
                                                                     new OrderNumber
                                                                     {
-                                                                        did = matchingNumber.DialedNumber,
+                                                                        did = nto.DialedNumber,
                                                                         connection_type = "trunk",
                                                                         trunk_name = "ACCELERN8230_SFO555930",
                                                                         extension_id = string.Empty,
@@ -206,25 +198,20 @@ namespace NumberSearch.Mvc
                                                                         address = new { },
                                                                         directory_listing = new { },
                                                                     }
-                                                                }
-                                                            };
+                                                            }
+                                                        };
 
-                                                            var checkPurchase = await purchaseOrder.PostAsync(_peerlessApiKey).ConfigureAwait(false);
+                                                        var checkPurchase = await purchaseOrder.PostAsync(_peerlessApiKey).ConfigureAwait(false);
 
-                                                            nto.Purchased = true;
-                                                            productOrder.DateOrdered = DateTime.Now;
-                                                            productOrder.OrderResponse = JsonSerializer.Serialize(checkPurchase);
-                                                            productOrder.Completed = checkPurchase.code == "200";
+                                                        nto.Purchased = true;
+                                                        productOrder.DateOrdered = DateTime.Now;
+                                                        productOrder.OrderResponse = JsonSerializer.Serialize(checkPurchase);
+                                                        productOrder.Completed = !string.IsNullOrWhiteSpace(checkPurchase.order_id);
 
-                                                            var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
-                                                            var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
+                                                        var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
+                                                        var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
 
-                                                            Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from Peerless.");
-                                                        }
-                                                        else
-                                                        {
-                                                            Log.Information($"[Background Worker] Unable to purchased number {nto.DialedNumber} from Peerless. Number could not be found.");
-                                                        }
+                                                        Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from Peerless.");
                                                     }
                                                     else if (nto.IngestedFrom == "FirstPointCom")
                                                     {
