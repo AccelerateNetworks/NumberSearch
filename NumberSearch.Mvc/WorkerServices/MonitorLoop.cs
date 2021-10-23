@@ -1,5 +1,7 @@
 ﻿using FirstCom;
 
+using Flurl.Http;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -192,16 +194,16 @@ namespace NumberSearch.Mvc
                                                             var purchaseOrder = new DidOrderRequest
                                                             {
                                                                 customer_name = "Accelerate Networks",
-                                                                order_numbers = new OrderNumbers[]
+                                                                order_numbers = new OrderNumber[]
                                                                 {
-                                                                    new OrderNumbers
+                                                                    new OrderNumber
                                                                     {
                                                                         did = matchingNumber.DialedNumber,
                                                                         connection_type = "trunk",
                                                                         trunk_name = "sfo",
                                                                         cnam_delivery = false,
                                                                         cnam_storage = false,
-                                                                        e911 = false
+                                                                        e911 = false,
                                                                     }
                                                                 }
                                                             };
@@ -257,6 +259,11 @@ namespace NumberSearch.Mvc
 
                                                         Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from OwnedNumbers.");
                                                     }
+                                                }
+                                                catch (FlurlHttpException ex)
+                                                {
+                                                    Log.Fatal($"[Background Worker] Failed to purchase number {nto.DialedNumber}");
+                                                    Log.Fatal($"[Background Worker] {await ex.GetResponseStringAsync()}");
                                                 }
                                                 catch (Exception ex)
                                                 {

@@ -27,7 +27,7 @@ namespace NumberSearch.DataAccess.Peerless
     public class DidOrderRequest
     {
         public string customer_name { get; set; }
-        public OrderNumbers[] order_numbers { get; set; }
+        public OrderNumber[] order_numbers { get; set; }
 
         public async Task<DidOrder> PostAsync(string apiKey)
         {
@@ -39,7 +39,7 @@ namespace NumberSearch.DataAccess.Peerless
             return await route.PostJsonAsync(this).ReceiveJson<DidOrder>();
         }
     }
-    public class OrderNumbers
+    public class OrderNumber
     {
         public string did { get; set; }
         public string connection_type { get; set; }

@@ -28,16 +28,7 @@ namespace NumberSearch.DataAccess.Call48
             {
                 npa = number.npa,
                 nxx = number.nxx,
-                xxxx = number.xxxx,
-                // Disabled the submission of these field based on directions recieved from Call48 support.
-                //type = "local",
-                //state = number.state,
-                //ratecenter = number.ratecenter,
-                //locData = number.locData,
-                //loc = loc,
-                //// This is the id for the SFO trunk group.
-                //fwd_trunk_grpid = 78,
-                //fwd_preconfigured = true
+                xxxx = number.xxxx
             };
 
             var request = new PurchaseRequest
@@ -82,13 +73,6 @@ namespace NumberSearch.DataAccess.Call48
             public string npa { get; set; }
             public string nxx { get; set; }
             public string xxxx { get; set; }
-            public string type { get; set; }
-            public string state { get; set; }
-            public string ratecenter { get; set; }
-            public string locData { get; set; }
-            public string loc { get; set; }
-            public int fwd_trunk_grpid { get; set; }
-            public bool fwd_preconfigured { get; set; }
         }
     }
 }
