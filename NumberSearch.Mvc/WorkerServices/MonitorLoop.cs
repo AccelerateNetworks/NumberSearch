@@ -164,12 +164,9 @@ namespace NumberSearch.Mvc
                                                     {
                                                         // Find the number.
                                                         var credentials = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
-                                                        var results = await Search.GetLocalNumbersAsync(nto.State, string.Empty, nto.NPA.ToString(), nto.NXX.ToString(), credentials.data.token).ConfigureAwait(false);
-                                                        // Sometimes Call48 includes dashes in their numbers for no reason.
-                                                        var matchingNumber = results.data.result.Where(x => x.did_number.Replace("-", string.Empty) == nto.DialedNumber).FirstOrDefault();
 
                                                         // Buy it and save the reciept.
-                                                        var executeOrder = await Purchase.PurchasePhoneNumberAsync(matchingNumber, credentials.data.token).ConfigureAwait(false);
+                                                        var executeOrder = await Purchase.PurchasePhoneNumberAsync(nto, credentials.data.token).ConfigureAwait(false);
 
                                                         nto.Purchased = true;
                                                         productOrder.DateOrdered = DateTime.Now;
@@ -273,7 +270,7 @@ namespace NumberSearch.Mvc
                                                 {
                                                     Log.Fatal($"[Background Worker] Failed to purchase number {nto.DialedNumber}");
                                                     Log.Fatal($"[Background Worker] {ex.Message}");
-                                                    Log.Fatal($"[Background Worker] {ex.InnerException}");
+                                                    Log.Fatal($"[Background Worker] {ex.StackTrace}");
                                                 }
                                             }
                                         }

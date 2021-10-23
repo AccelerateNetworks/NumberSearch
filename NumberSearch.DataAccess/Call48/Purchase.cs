@@ -4,8 +4,6 @@ using Serilog;
 
 using System.Threading.Tasks;
 
-using static NumberSearch.DataAccess.Call48.Search;
-
 namespace NumberSearch.DataAccess.Call48
 {
     public class Purchase
@@ -16,7 +14,7 @@ namespace NumberSearch.DataAccess.Call48
         /// <param name="dialedNumber"></param>
         /// <param name="apiKey"></param>
         /// <returns></returns>
-        public static async Task<PurchaseResult> PurchasePhoneNumberAsync(SearchResult number, string token)
+        public static async Task<PurchaseResult> PurchasePhoneNumberAsync(PhoneNumber number, string token)
         {
             string baseUrl = "https://apicontrol.call48.com/api/v4/";
             string endPointName = $"purchase";
@@ -26,9 +24,9 @@ namespace NumberSearch.DataAccess.Call48
             // Get the request body into the correct format.
             var purchase = new PurchaseNumber
             {
-                npa = number.npa,
-                nxx = number.nxx,
-                xxxx = number.xxxx
+                npa = number.NPA.ToString("000"),
+                nxx = number.NXX.ToString("000"),
+                xxxx = number.XXXX.ToString("0000")
             };
 
             var request = new PurchaseRequest
@@ -49,7 +47,7 @@ namespace NumberSearch.DataAccess.Call48
             catch (FlurlHttpException ex)
             {
                 var error = await ex.GetResponseJsonAsync<PurchaseResult>();
-                Log.Error($"[Ingest] [Call48] Failed to purchase {number.number}.");
+                Log.Error($"[Ingest] [Call48] Failed to purchase {number.DialedNumber}.");
                 return error;
             }
         }
