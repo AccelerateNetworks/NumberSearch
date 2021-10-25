@@ -2006,44 +2006,11 @@ namespace NumberSearch.Ops.Controllers
                 portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
                 var numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
 
-                var Query = dialedNumber;
-                // Clean up the query.
-                Query = Query?.Trim();
+                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
 
-                // Parse the query.
-                var converted = new List<char>();
-                foreach (var letter in Query)
+                if (checkParse)
                 {
-                    // Allow digits.
-                    if (char.IsDigit(letter))
-                    {
-                        converted.Add(letter);
-                    }
-                    // Allow stars.
-                    else if (letter == '*')
-                    {
-                        converted.Add(letter);
-                    }
-                    // Convert letters to digits.
-                    // This is disabled so as to avoid taking a dependancy on the Mvc project.
-                    //else if (char.IsLetter(letter))
-                    //{
-                    //    converted.Add(SearchController.LetterToKeypadDigit(letter));
-                    //}
-                    // Drop everything else.
-                }
-
-                // Drop leading 1's to improve the copy/paste experiance.
-                if (converted[0] == '1' && converted.Count >= 10)
-                {
-                    converted.Remove('1');
-                }
-
-                Query = new string(converted.ToArray());
-
-                if (Query != null && Query?.Length == 10)
-                {
-                    var port = await VerifyPortablityAsync(Query);
+                    var port = await VerifyPortablityAsync(phoneNumber.DialedNumber);
 
                     if (port.Portable)
                     {
@@ -2070,15 +2037,51 @@ namespace NumberSearch.Ops.Controllers
                         };
 
                         var checkProductOrder = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+
+                        if (checkProductOrder)
+                        {
+                            return View("PortRequestEdit", new PortRequestResult
+                            {
+                                Order = order,
+                                PortRequest = portRequest,
+                                PhoneNumbers = numbers,
+                                Message = $"Successfully added Ported Phone Number {port.PortedDialedNumber}.",
+                                AlertType = "success"
+                            });
+                        }
+                        else
+                        {
+                            return View("PortRequestEdit", new PortRequestResult
+                            {
+                                Order = order,
+                                PortRequest = portRequest,
+                                PhoneNumbers = numbers,
+                                Message = $"Failed to add Ported Phone Number {port.PortedDialedNumber}."
+                            });
+                        }
+                    }
+                    else
+                    {
+                        return View("PortRequestEdit", new PortRequestResult
+                        {
+                            Order = order,
+                            PortRequest = portRequest,
+                            PhoneNumbers = numbers,
+                            Message = $"Failed to add Ported Phone Number {port?.PortedDialedNumber}."
+                        });
                     }
                 }
-
-                return View("PortRequestEdit", new PortRequestResult
+                else
                 {
-                    Order = order,
-                    PortRequest = portRequest,
-                    PhoneNumbers = numbers
-                });
+                    return View("PortRequestEdit", new PortRequestResult
+                    {
+                        Order = order,
+                        PortRequest = portRequest,
+                        PhoneNumbers = numbers,
+                        Message = $"Failed to parse {dialedNumber} as a Phone Number."
+                    });
+                }
+
             }
             else if (portRequest is null)
             {
@@ -2105,19 +2108,50 @@ namespace NumberSearch.Ops.Controllers
                 else
                 {
                     Log.Error($"[Checkout] Failed automatic address formating.");
+
+                    portRequest = await PortRequest.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
+                    var numbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
+
+                    return View("PortRequestEdit", new PortRequestResult
+                    {
+                        Order = order,
+                        PortRequest = portRequest,
+                        PhoneNumbers = numbers,
+                        Message = "Failed to update this Port Request. 😠 The address could not be parsed, please file a bug on Github.",
+                        AlertType = "danger"
+                    });
                 }
 
-                var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
+                var checkUpdate = await portRequest.PutAsync(_postgresql).ConfigureAwait(false);
 
-                portRequest = await PortRequest.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
-                var numbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
-
-                return View("PortRequestEdit", new PortRequestResult
+                if (checkUpdate)
                 {
-                    Order = order,
-                    PortRequest = portRequest,
-                    PhoneNumbers = numbers
-                });
+                    portRequest = await PortRequest.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
+                    var numbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
+
+                    return View("PortRequestEdit", new PortRequestResult
+                    {
+                        Order = order,
+                        PortRequest = portRequest,
+                        PhoneNumbers = numbers,
+                        Message = "Successfully updated this Port Request! 🥳",
+                        AlertType = "success"
+                    });
+                }
+                else
+                {
+                    portRequest = await PortRequest.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
+                    var numbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
+
+                    return View("PortRequestEdit", new PortRequestResult
+                    {
+                        Order = order,
+                        PortRequest = portRequest,
+                        PhoneNumbers = numbers,
+                        Message = "Failed to update this Port Request. 😠",
+                        AlertType = "danger"
+                    });
+                }
             }
         }
 

@@ -10,5 +10,6 @@ namespace NumberSearch.Ops
         public PortRequest PortRequest { get; set; }
         public IEnumerable<PortedPhoneNumber> PhoneNumbers { get; set; }
         public string Message { get; set; }
+        public string AlertType { get; set; }
     }
 }

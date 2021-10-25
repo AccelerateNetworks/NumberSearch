@@ -40,6 +40,22 @@
 </script>
 
 <h1 class="display-4 p-3">🚢 Port Requests</h1>
+@if (!string.IsNullOrWhiteSpace(Model?.Message))
+{
+    if (string.IsNullOrWhiteSpace(Model?.AlertType))
+    {
+        <div class="alert alert-danger col-12" role="alert">
+            @Model?.Message
+        </div>
+    }
+    else
+    {
+        var alertType = Model?.AlertType ?? "alert-danger";
+        <div class="alert @alertType col-12" role="alert">
+            @Model?.Message
+        </div>
+    }
+}
 <div class="pb-3">
     @if (Model?.PortRequest?.OrderId is not null)
     {
@@ -50,27 +66,15 @@
     <a href="/Home/Emails/@Model?.PortRequest?.OrderId" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
         Related Emails
     </a>
-    @{
-        if (Model?.PortRequest is null)
-        {
-            <div class="alert alert-danger mt-3" role="alert">
-                This port request has not yet been submitted by the customer. <a href="https://acceleratenetworks.com/Cart/PortingInformation/{@Model?.Order?.OrderId}" target="_blank" rel="noopener noreferrer">Please make them fill out this form.</a>
-            </div>
-        }
+    @if (Model?.PortRequest is null)
+    {
+        <div class="alert alert-danger mt-3" role="alert">
+            This port request has not yet been submitted by the customer. <a href="https://acceleratenetworks.com/Cart/PortingInformation/{@Model?.Order?.OrderId}" target="_blank" rel="noopener noreferrer">Please make them fill out this form.</a>
+        </div>
     }
-    @{
-        if (!string.IsNullOrWhiteSpace(Model?.Message))
-        {
-            <div class="alert alert-danger mt-3" role="alert">
-                @Model?.Message
-            </div>
-        }
-    }
-    @{
-        if (!string.IsNullOrWhiteSpace(Model?.PortRequest?.BillImagePath))
-        {
-            <a class="btn btn-outline-success" href="/Home/BillImage/@Model?.Order?.OrderId" target="_blank">Losing Carrier Bill</a>
-        }
+    @if (!string.IsNullOrWhiteSpace(Model?.PortRequest?.BillImagePath))
+    {
+        <a class="btn btn-outline-success" href="/Home/BillImage/@Model?.Order?.OrderId" target="_blank">Losing Carrier Bill</a>
     }
 </div>
 <form action="/Home/PortRequests/@Model?.PortRequest?.OrderId" method="post" class="needs-validation mb-3">
@@ -126,25 +130,23 @@
             <label for="locationType">Location Type</label>
             <div class="form-group">
                 <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                    @{
-                        if (Model?.PortRequest?.LocationType == "Residential")
-                        {
-                            <label class="btn btn-outline-secondary">
-                                <input asp-for="PortRequest.LocationType" type="radio" id="ltoption1" value="Business"> Business
-                            </label>
-                            <label class="btn btn-outline-secondary active">
-                                <input asp-for="PortRequest.LocationType" type="radio" id="ltoption2" value="Residential" checked> Residential
-                            </label>
-                        }
-                        else
-                        {
-                            <label class="btn btn-outline-secondary active">
-                                <input asp-for="PortRequest.LocationType" type="radio" id="ltoption1" value="Business" checked> Business
-                            </label>
-                            <label class="btn btn-outline-secondary">
-                                <input asp-for="PortRequest.LocationType" type="radio" id="ltoption2" value="Residential"> Residential
-                            </label>
-                        }
+                    @if (Model?.PortRequest?.LocationType == "Residential")
+                    {
+                        <label class="btn btn-outline-secondary">
+                            <input asp-for="PortRequest.LocationType" type="radio" id="ltoption1" value="Business"> Business
+                        </label>
+                        <label class="btn btn-outline-secondary active">
+                            <input asp-for="PortRequest.LocationType" type="radio" id="ltoption2" value="Residential" checked> Residential
+                        </label>
+                    }
+                    else
+                    {
+                        <label class="btn btn-outline-secondary active">
+                            <input asp-for="PortRequest.LocationType" type="radio" id="ltoption1" value="Business" checked> Business
+                        </label>
+                        <label class="btn btn-outline-secondary">
+                            <input asp-for="PortRequest.LocationType" type="radio" id="ltoption2" value="Residential"> Residential
+                        </label>
                     }
                 </div>
             </div>
@@ -226,11 +228,11 @@
         <div class="col-md-6">
             @*<label for="inputGroupFile02">An Image of Your Current Bill</label>
                 <div class="input-group">
-                    <div class="custom-file">
-                        <input asp-for="PortRequest.BillImage" type="file" class="custom-file-input" id="inputGroupFile02" />
-                        <span asp-validation-for="PortRequest.BillImage"></span>
-                        <label class="custom-file-label" for="inputGroupFile02">Choose file</label>
-                    </div>
+                <div class="custom-file">
+                <input asp-for="PortRequest.BillImage" type="file" class="custom-file-input" id="inputGroupFile02" />
+                <span asp-validation-for="PortRequest.BillImage"></span>
+                <label class="custom-file-label" for="inputGroupFile02">Choose file</label>
+                </div>
                 </div>*@
         </div>
     </div>
@@ -239,30 +241,28 @@
         <div class="col-md-2 mb-3">
             <label for="partialPort">Partial Port</label>
             @*<select asp-for="PortRequest.PartialPort" class="custom-select" id="partialPort" title="Designates if this is a business address or a residential address." required>
-                    <option value="true">Yes</option>
-                    <option value="false" selected>No</option>
+                <option value="true">Yes</option>
+                <option value="false" selected>No</option>
                 </select>*@
             <div class="form-group">
                 <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                    @{
-                        if (Model?.PortRequest?.PartialPort ?? false)
-                        {
-                            <label class="btn btn-outline-secondary">
-                                <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption1" value="true" checked> Yes
-                            </label>
-                            <label class="btn btn-outline-secondary">
-                                <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption2" value="false"> No
-                            </label>
-                        }
-                        else
-                        {
-                            <label class="btn btn-outline-secondary">
-                                <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption1" value="true"> Yes
-                            </label>
-                            <label class="btn btn-outline-secondary">
-                                <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption2" value="false" checked> No
-                            </label>
-                        }
+                    @if (Model?.PortRequest?.PartialPort ?? false)
+                    {
+                        <label class="btn btn-outline-secondary">
+                            <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption1" value="true" checked> Yes
+                        </label>
+                        <label class="btn btn-outline-secondary">
+                            <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption2" value="false"> No
+                        </label>
+                    }
+                    else
+                    {
+                        <label class="btn btn-outline-secondary">
+                            <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption1" value="true"> Yes
+                        </label>
+                        <label class="btn btn-outline-secondary">
+                            <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption2" value="false" checked> No
+                        </label>
                     }
                 </div>
             </div>
@@ -280,7 +280,7 @@
     <br />
 </form>
 <div class="row">
-    <div class="col-md-6">
+    <div class="col">
         <label for="locationType">Numbers to Port</label>
         <div class="table-responsive">
             <table class="table table-borderless table-hover table-striped">
@@ -305,52 +305,50 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @{
-                        foreach (var number in Model?.PhoneNumbers)
-                        {
-                            var statusText = number?.RequestStatus?.ToString() ?? "No Status";
-                            var focText = number?.DateFirmOrderCommitment?.ToString() ?? "Not Set";
-                            <tr>
-                                <td>
-                                    @{
-                                        if (Model?.PortRequest?.VendorSubmittedTo == "TeliMessage")
-                                        {
-                                            <a href="https://control.teli.net/lnp/view?request_id=@number?.ExternalPortRequestId" target="_blank" rel="noopener noreferrer" class="btn btn-info">
-                                                Teli @number?.ExternalPortRequestId
-                                            </a>
-                                        }
-                                        else if (Model?.PortRequest?.VendorSubmittedTo == "BulkVS")
-                                        {
-                                            <a href="https://portal.bulkvs.com/" target="_blank" rel="noopener noreferrer" class="btn btn-info">
-                                                BulkVS @number?.ExternalPortRequestId
-                                            </a>
-                                        }
-                                        else
-                                        {
-                                            @number?.ExternalPortRequestId
-                                        }
+                    @foreach (var number in Model?.PhoneNumbers)
+                    {
+                        var statusText = number?.RequestStatus?.ToString() ?? "No Status";
+                        var focText = number?.DateFirmOrderCommitment?.ToString() ?? "Not Set";
+                        <tr>
+                            <td>
+                                @{
+                                    if (Model?.PortRequest?.VendorSubmittedTo == "TeliMessage")
+                                    {
+                                        <a href="https://control.teli.net/lnp/view?request_id=@number?.ExternalPortRequestId" target="_blank" rel="noopener noreferrer" class="btn btn-info">
+                                            Teli @number?.ExternalPortRequestId
+                                        </a>
                                     }
-                                </td>
-                                <td>
-                                    <h4>@number?.PortedDialedNumber</h4>
-                                </td>
-                                <td>
-                                    @statusText
-                                </td>
-                                <td>
-                                    @focText
-                                </td>
-                                <td>
-                                    @{
-                                        if (string.IsNullOrWhiteSpace(number?.ExternalPortRequestId))
-                                        {
-                                            <a class="btn btn-danger text-white" href="/Home/PortRequests/@Model?.Order?.OrderId/@number?.PortedDialedNumber">Remove</a>
-                                        }
+                                    else if (Model?.PortRequest?.VendorSubmittedTo == "BulkVS")
+                                    {
+                                        <a href="https://portal.bulkvs.com/" target="_blank" rel="noopener noreferrer" class="btn btn-info">
+                                            BulkVS @number?.ExternalPortRequestId
+                                        </a>
                                     }
-                                </td>
-                                <td>@number?.RawResponse</td>
-                            </tr>
-                        }
+                                    else
+                                    {
+                                        @number?.ExternalPortRequestId
+                                    }
+                                }
+                            </td>
+                            <td>
+                                <h4>@number?.PortedDialedNumber</h4>
+                            </td>
+                            <td>
+                                @statusText
+                            </td>
+                            <td>
+                                @focText
+                            </td>
+                            <td>
+                                @{
+                                    if (string.IsNullOrWhiteSpace(number?.ExternalPortRequestId))
+                                    {
+                                        <a class="btn btn-danger text-white" href="/Home/PortRequests/@Model?.Order?.OrderId/@number?.PortedDialedNumber">Remove</a>
+                                    }
+                                }
+                            </td>
+                            <td>@number?.RawResponse</td>
+                        </tr>
                     }
                 </tbody>
             </table>
@@ -373,14 +371,12 @@
 <form action="/Home/PortRequestUnified/@Model?.PortRequest?.OrderId" method="post">
     @Html.AntiForgeryToken()
     <input name="OrderId" value="@Model?.PortRequest?.OrderId" hidden />
-    @{
-        if (unSubmitted?.Count() > 0)
-        {
-            <button type="submit" class="btn btn-success btn-lg">Submit to Teli and BulkVS</button>
-        }
-        else
-        {
-            <button type="submit" class="btn btn-outline-success btn-lg" disabled>Submit to Teli and BulkVS</button>
-        }
+    @if (unSubmitted?.Count() > 0)
+    {
+        <button type="submit" class="btn btn-success btn-lg">Submit to Teli and BulkVS</button>
+    }
+    else
+    {
+        <button type="submit" class="btn btn-outline-success btn-lg" disabled>Submit to Teli and BulkVS</button>
     }
 </form>
