@@ -2046,7 +2046,7 @@ namespace NumberSearch.Ops.Controllers
                                 PortRequest = portRequest,
                                 PhoneNumbers = numbers,
                                 Message = $"Successfully added Ported Phone Number {port.PortedDialedNumber}.",
-                                AlertType = "success"
+                                AlertType = "alert-success"
                             });
                         }
                         else
@@ -2094,32 +2094,36 @@ namespace NumberSearch.Ops.Controllers
 
                 portRequest.PortRequestId = fromDb.PortRequestId;
 
-                // Format the address information
-                Log.Information($"[Checkout] Parsing address data from {portRequest.Address}");
-                var addressParts = portRequest.Address.Split(", ");
-                if (addressParts.Length > 4)
+                // If the address has changed update it.
+                if (portRequest.Address != fromDb.Address)
                 {
-                    portRequest.Address = addressParts[0];
-                    portRequest.City = addressParts[1];
-                    portRequest.State = addressParts[2];
-                    portRequest.Zip = addressParts[3];
-                    Log.Information($"[Checkout] Address: {portRequest.Address} City: {portRequest.City} State: {portRequest.State} Zip: {portRequest.Zip}");
-                }
-                else
-                {
-                    Log.Error($"[Checkout] Failed automatic address formating.");
-
-                    portRequest = await PortRequest.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
-                    var numbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
-
-                    return View("PortRequestEdit", new PortRequestResult
+                    // Format the address information
+                    Log.Information($"[Checkout] Parsing address data from {portRequest.Address}");
+                    var addressParts = portRequest.Address.Split(", ");
+                    if (addressParts.Length > 4)
                     {
-                        Order = order,
-                        PortRequest = portRequest,
-                        PhoneNumbers = numbers,
-                        Message = "Failed to update this Port Request. 😠 The address could not be parsed, please file a bug on Github.",
-                        AlertType = "danger"
-                    });
+                        portRequest.Address = addressParts[0];
+                        portRequest.City = addressParts[1];
+                        portRequest.State = addressParts[2];
+                        portRequest.Zip = addressParts[3];
+                        Log.Information($"[Checkout] Address: {portRequest.Address} City: {portRequest.City} State: {portRequest.State} Zip: {portRequest.Zip}");
+                    }
+                    else
+                    {
+                        Log.Error($"[Checkout] Failed automatic address formating.");
+
+                        portRequest = await PortRequest.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
+                        var numbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
+
+                        return View("PortRequestEdit", new PortRequestResult
+                        {
+                            Order = order,
+                            PortRequest = portRequest,
+                            PhoneNumbers = numbers,
+                            Message = "Failed to update this Port Request. 😠 The address could not be parsed, please file a bug on Github.",
+                            AlertType = "alert-danger"
+                        });
+                    }
                 }
 
                 var checkUpdate = await portRequest.PutAsync(_postgresql).ConfigureAwait(false);
@@ -2135,7 +2139,7 @@ namespace NumberSearch.Ops.Controllers
                         PortRequest = portRequest,
                         PhoneNumbers = numbers,
                         Message = "Successfully updated this Port Request! 🥳",
-                        AlertType = "success"
+                        AlertType = "alert-success"
                     });
                 }
                 else
@@ -2149,7 +2153,7 @@ namespace NumberSearch.Ops.Controllers
                         PortRequest = portRequest,
                         PhoneNumbers = numbers,
                         Message = "Failed to update this Port Request. 😠",
-                        AlertType = "danger"
+                        AlertType = "alert-danger"
                     });
                 }
             }

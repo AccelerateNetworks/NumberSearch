@@ -194,10 +194,10 @@
 
     <div class="mb-3">
         <label for="address2">Service Address 2 <span class="text-muted">(Optional)</span></label>
-        @{
+@*        @{
             var address2 = string.IsNullOrWhiteSpace(Model?.PortRequest?.Address2) ? Model?.Order?.Address2 : Model?.PortRequest?.Address2;
-        }
-        <input asp-for="PortRequest.Address2" type="text" value="@address2" class="form-control" id="address2" title="The city of the service address listed above." placeholder="Apartment or suite">
+        }*@
+        <input asp-for="PortRequest.Address2" type="text" class="form-control" id="address2" title="The city of the service address listed above." placeholder="Apartment or suite">
     </div>
 
     @if (!string.IsNullOrWhiteSpace(Model?.PortRequest?.City))
