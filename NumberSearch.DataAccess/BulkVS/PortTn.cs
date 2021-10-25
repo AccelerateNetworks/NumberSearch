@@ -38,7 +38,7 @@ namespace NumberSearch.DataAccess.BulkVS
             catch (FlurlHttpException ex)
             {
                 Log.Warning($"[Porting] [BulkVS] {ex.Message} for BulkVS orderId {orderId}.");
-
+                Log.Warning($"[Porting] [BulkVS] {await ex.GetResponseStringAsync()}.");
                 return null;
             }
         }
