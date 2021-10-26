@@ -11,15 +11,13 @@
         <h1 class="display-4">Your Cart</h1>
     </div>
     <br />
-    @{
-        if (!string.IsNullOrWhiteSpace(Model?.Message))
-        {
-            <div class="row">
-                <div class="alert alert-danger col" role="alert">
-                    @Model?.Message
-                </div>
+    @if (!string.IsNullOrWhiteSpace(Model?.Message))
+    {
+        <div class="row">
+            <div class="alert alert-danger col" role="alert">
+                @Model?.Message
             </div>
-        }
+        </div>
     }
     @{
         var productOrders = Model?.Cart?.ProductOrdersToDictionary();
@@ -40,38 +38,36 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @{
-                                foreach (var item in Model?.Cart?.PhoneNumbers)
-                                {
-                                    var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
-                                    var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
-                                    var number = item.DialedNumber;
-                                    <tr>
-                                        <td scope="row"><h4>@formattedNumber</h4></td>
-                                        <td>@Html.Raw(number)</td>
-                                        <td>@location</td>
-                                        @{
-                                            if (item.NumberType == "Executive")
-                                            {
-                                                <td>$200</td>
-                                            }
-                                            else if (item.NumberType == "Premium")
-                                            {
-                                                <td>$40</td>
-                                            }
-                                            else
-                                            {
-                                                <td>$20</td>
-                                            }
+                            @foreach (var item in Model?.Cart?.PhoneNumbers)
+                            {
+                                var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
+                                var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
+                                var number = item.DialedNumber;
+                                <tr>
+                                    <td scope="row"><h4>@formattedNumber</h4></td>
+                                    <td>@Html.Raw(number)</td>
+                                    <td>@location</td>
+                                    @{
+                                        if (item.NumberType == "Executive")
+                                        {
+                                            <td>$200</td>
                                         }
-                                        <td>
-                                            <button onclick="RemoveFromCart('PhoneNumber','@item.DialedNumber', 1, this)" class="btn btn-outline-danger">
-                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                Remove
-                                            </button>
-                                        </td>
-                                    </tr>
-                                }
+                                        else if (item.NumberType == "Premium")
+                                        {
+                                            <td>$40</td>
+                                        }
+                                        else
+                                        {
+                                            <td>$20</td>
+                                        }
+                                    }
+                                    <td>
+                                        <button onclick="RemoveFromCart('PhoneNumber','@item.DialedNumber', 1, this)" class="btn btn-outline-danger">
+                                            <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                            Remove
+                                        </button>
+                                    </td>
+                                </tr>
                             }
                             @{
                                 var freePortedNumbers = Model?.Cart.Services.Count();
@@ -98,104 +94,104 @@
                                     </tr>
                                 }
                             }
-                            @{
-                                foreach (var item in Model?.Cart?.VerifiedPhoneNumbers)
-                                {
-                                    var location = $"{item?.City ?? "Unknown City"}, {item?.Province ?? "Unknown State"}";
-                                    var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
-                                    var number = item.VerifiedDialedNumber;
-                                    <tr>
-                                        <td scope="row"><h4>@formattedNumber</h4></td>
-                                        <td>@Html.Raw(number)</td>
-                                        <td>@location</td>
-                                        <td>$10</td>
-                                        <td>
-                                            <button onclick="RemoveFromCart('VerifiedPhoneNumber', '@item.VerifiedDialedNumber', 1, this)" class="btn btn-outline-danger">
-                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                Remove
-                                            </button>
-                                        </td>
-                                    </tr>
-                                }
+                            @foreach (var item in Model?.Cart?.VerifiedPhoneNumbers)
+                            {
+                                var location = $"{item?.City ?? "Unknown City"}, {item?.Province ?? "Unknown State"}";
+                                var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
+                                var number = item.VerifiedDialedNumber;
+                                <tr>
+                                    <td scope="row"><h4>@formattedNumber</h4></td>
+                                    <td>@Html.Raw(number)</td>
+                                    <td>@location</td>
+                                    <td>$10</td>
+                                    <td>
+                                        <button onclick="RemoveFromCart('VerifiedPhoneNumber', '@item.VerifiedDialedNumber', 1, this)" class="btn btn-outline-danger">
+                                            <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                            Remove
+                                        </button>
+                                    </td>
+                                </tr>
                             }
-                            @{
-                                foreach (var item in Model?.Cart?.Products)
-                                {
-                                    var productOrder = productOrders[item?.ProductId.ToString()];
-                                    var localTotal = productOrder.Quantity * item.Price;
-                                    <tr>
-                                        <td scope="row"><h4>@item.Name</h4></td>
-                                        @{
-                                            if (productOrder.Quantity > 1)
-                                            {
-                                                <td>@productOrder.Quantity Units</td>
-                                            }
-                                            else
-                                            {
-                                                <td>@productOrder.Quantity Unit</td>
-                                            }
+                            @foreach (var item in Model?.Cart?.Products)
+                            {
+                                var productOrder = productOrders[item?.ProductId.ToString()];
+                                var localTotal = productOrder.Quantity * item.Price;
+                                <tr>
+                                    <td scope="row"><h4>@item.Name</h4></td>
+                                    @{
+                                        if (productOrder.Quantity > 1)
+                                        {
+                                            <td>@productOrder.Quantity Units</td>
                                         }
-                                        <td>at $@item.Price each</td>
-                                        <td>$@localTotal</td>
-                                        <td>
-                                            <button onclick="RemoveFromCart('Product', '@item.ProductId', 1, this)" class="btn btn-outline-danger">
-                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                Remove
-                                            </button>
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                            @{
-                                foreach (var item in Model?.Cart?.Services)
-                                {
-                                    var productOrder = productOrders[item?.ServiceId.ToString()];
-                                    var localTotal = productOrder.Quantity * item.Price;
-                                    <tr>
-                                        <td scope="row"><h4>@item.Name</h4></td>
-                                        @{
-                                            if (productOrder.Quantity > 1)
-                                            {
-                                                <td>@productOrder.Quantity Units</td>
-                                            }
-                                            else
-                                            {
-                                                <td>@productOrder.Quantity Unit</td>
-                                            }
+                                        else
+                                        {
+                                            <td>@productOrder.Quantity Unit</td>
                                         }
-                                        <td>at $@item.Price per</td>
-                                        <td>$@localTotal</td>
-                                        <td>
-                                            <button onclick="RemoveFromCart('Service', '@item.ServiceId', 1, this)" class="btn btn-outline-danger">
-                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                Remove
-                                            </button>
-                                        </td>
-                                    </tr>
-                                }
+                                    }
+                                    <td>at $@item.Price each</td>
+                                    <td>$@localTotal</td>
+                                    <td>
+                                        <button onclick="RemoveFromCart('Product', '@item.ProductId', 1, this)" class="btn btn-outline-danger">
+                                            <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                            Remove
+                                        </button>
+                                    </td>
+                                </tr>
                             }
-                            @{
-                                foreach (var item in Model?.Cart?.Coupons)
-                                {
-                                    var productOrder = productOrders[item?.CouponId.ToString()];
-                                    <tr>
-                                        <td scope="row"><h4>@item.Name</h4></td>
-                                        <td>Discount</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td>
-                                            <button onclick="RemoveFromCart('Coupon', '@item.CouponId', 1, this)" class="btn btn-outline-danger">
-                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                Remove
-                                            </button>
-                                        </td>
-                                    </tr>
-                                }
-
-
+                            @foreach (var item in Model?.Cart?.Services)
+                            {
+                                var productOrder = productOrders[item?.ServiceId.ToString()];
+                                var localTotal = productOrder.Quantity * item.Price;
+                                <tr>
+                                    <td scope="row"><h4>@item.Name</h4></td>
+                                    @{
+                                        if (productOrder.Quantity > 1)
+                                        {
+                                            <td>@productOrder.Quantity Units</td>
+                                        }
+                                        else
+                                        {
+                                            <td>@productOrder.Quantity Unit</td>
+                                        }
+                                    }
+                                    <td>at $@item.Price per</td>
+                                    <td>$@localTotal</td>
+                                    <td>
+                                        <button onclick="RemoveFromCart('Service', '@item.ServiceId', 1, this)" class="btn btn-outline-danger">
+                                            <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                            Remove
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                            @foreach (var item in Model?.Cart?.Coupons)
+                            {
+                                var productOrder = productOrders[item?.CouponId.ToString()];
+                                <tr>
+                                    <td scope="row"><h4>@item.Name</h4></td>
+                                    <td>Discount</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>
+                                        <button onclick="RemoveFromCart('Coupon', '@item.CouponId', 1, this)" class="btn btn-outline-danger">
+                                            <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                            Remove
+                                        </button>
+                                    </td>
+                                </tr>
                             }
                         </tbody>
                     </table>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 offset-md-4">
+                    <div class="input-group mt-4">
+                        <input type="text" class="form-control" id="couponText" placeholder="Coupon code">
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-secondary" onclick="AddToCart('Coupon', document.getElementById('couponText').value, 1, this);">Redeem</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             if (!Model.Cart.Services.Any())

@@ -404,19 +404,6 @@
                     }
                 </li>
                 @{
-                    if (Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted == DateTime.MinValue)
-                    {
-                        <div class="card p-2 mt-3">
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="couponText" placeholder="Coupon code">
-                                <div class="input-group-append">
-                                    <button type="button" class="btn btn-secondary" onclick="AddToCart('Coupon', document.getElementById('couponText').value, 1, this);">Redeem</button>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                }
-                @{
                     if (Model.Order.DateSubmitted > DateTime.Now.AddYears(-99))
                     {
                         <h4 class="d-flex justify-content-between align-items-center mt-3">
@@ -520,28 +507,28 @@
                         <select asp-for="Order.AddressUnitType" class="custom-select d-block w-100" id="unitType">
                             @{
                                 var unitTypes = new string[] {
-                                "Apartment",
-                                "Basement",
-                                "Building",
-                                "Department",
-                                "Floor",
-                                "Front",
-                                "Hanger",
-                                "Lobby",
-                                "Lot",
-                                "Lower",
-                                "Office",
-                                "Penthouse",
-                                "Pier",
-                                "Rear",
-                                "Room",
-                                "Side",
-                                "Space",
-                                "Suite",
-                                "Trailer",
-                                "Unit",
-                                "Upper",
-                                };
+                            "Apartment",
+                            "Basement",
+                            "Building",
+                            "Department",
+                            "Floor",
+                            "Front",
+                            "Hanger",
+                            "Lobby",
+                            "Lot",
+                            "Lower",
+                            "Office",
+                            "Penthouse",
+                            "Pier",
+                            "Rear",
+                            "Room",
+                            "Side",
+                            "Space",
+                            "Suite",
+                            "Trailer",
+                            "Unit",
+                            "Upper",
+                            };
 
                                 foreach (var unitType in unitTypes)
                                 {
@@ -665,7 +652,7 @@
                     }
                     else if (Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted == DateTime.MinValue)
                     {
-                    
+
                         <hr class="mb-4">
                         <button class="btn btn-primary btn-lg btn-block shadow" type="submit" value="Submit">Submit your Order</button>
                     }
