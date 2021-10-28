@@ -1,0 +1,110 @@
+﻿@model NumberSearch.Ops.EFModels.PhoneNumberLookup
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1 class="display-4 p-3">🥠 Edit Lookup</h1>
+
+@Html.AntiForgeryToken()
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="PhoneNumberLookupId" />
+            <div class="form-group">
+                <label asp-for="DialedNumber" class="control-label"></label>
+                <input asp-for="DialedNumber" class="form-control" />
+                <span asp-validation-for="DialedNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Lrn" class="control-label"></label>
+                <input asp-for="Lrn" class="form-control" />
+                <span asp-validation-for="Lrn" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Ocn" class="control-label"></label>
+                <input asp-for="Ocn" class="form-control" />
+                <span asp-validation-for="Ocn" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Lata" class="control-label"></label>
+                <input asp-for="Lata" class="form-control" />
+                <span asp-validation-for="Lata" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="City" class="control-label"></label>
+                <input asp-for="City" class="form-control" />
+                <span asp-validation-for="City" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="State" class="control-label"></label>
+                <input asp-for="State" class="form-control" />
+                <span asp-validation-for="State" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Jurisdiction" class="control-label"></label>
+                <input asp-for="Jurisdiction" class="form-control" />
+                <span asp-validation-for="Jurisdiction" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Local" class="control-label"></label>
+                <input asp-for="Local" class="form-control" />
+                <span asp-validation-for="Local" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Lec" class="control-label"></label>
+                <input asp-for="Lec" class="form-control" type="datetime" readonly />
+                <span asp-validation-for="Lec" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Lectype" class="control-label"></label>
+                <input asp-for="Lectype" class="form-control" type="datetime" readonly />
+                <span asp-validation-for="Lectype" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Spid" class="control-label"></label>
+                <input asp-for="Spid" class="form-control" type="datetime" readonly />
+                <span asp-validation-for="Spid" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Lidbname" class="control-label"></label>
+                <input asp-for="Lidbname" class="form-control" type="datetime" readonly />
+                <span asp-validation-for="Lidbname" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LastPorted" class="control-label"></label>
+                <input asp-for="LastPorted" class="form-control" type="datetime" readonly />
+                <span asp-validation-for="LastPorted" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IngestedFrom" class="control-label"></label>
+                <input asp-for="IngestedFrom" class="form-control" type="datetime" readonly />
+                <span asp-validation-for="IngestedFrom" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DateIngested" class="control-label"></label>
+                <input asp-for="DateIngested" class="form-control" type="datetime" readonly />
+                <span asp-validation-for="DateIngested" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CarrierId" class="control-label"></label>
+                <input asp-for="CarrierId" class="form-control" type="datetime" readonly />
+                <span asp-validation-for="CarrierId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index" class="btn btn-outline-primary">Back to List</a>
+</div>
+
+@section Scripts {
+    @{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}
+}

@@ -1,0 +1,127 @@
+﻿@model IEnumerable<NumberSearch.Ops.EFModels.PhoneNumberLookup>
+@{
+    ViewData["Title"] = "Lookups";
+}
+
+<div class="d-flex justify-content-between align-items-center">
+    <h1 class="display-4 p-3">🥠 Lookups</h1>
+    <a asp-action="Create" class="btn btn-lg btn-success">Create New</a>
+</div>
+<div class="table-responsive">
+    <table class="table table-striped table-borderless table-hover" id="table">
+        <thead>
+            <tr>
+                <th scope="col">
+                    DialedNumber
+                </th>
+                <th scope="col">
+                    Lrn
+                </th>
+                <th scope="col">
+                    Ocn
+                </th>
+                <th scope="col">
+                    Lata
+                </th>
+                <th>
+                    City
+                </th>
+                <th scope="col">
+                    State
+                </th>
+                <th scope="col">
+                    Jurisdiction
+                </th>
+                <th scope="col">
+                    Local
+                </th>
+                <th scope="col">
+                    Lec
+                </th>
+                <th scope="col">
+                    Lectype
+                </th>
+                <th scope="col">
+                    Spid
+                </th>
+                <th scope="col">
+                    Lidbname
+                </th>
+                <th scope="col">
+                    LastPorted
+                </th>
+                <th scope="col">
+                    IngestedFrom
+                </th>
+                <th scope="col">
+                    DateIngested
+                </th>
+                <th scope="col">
+                    CarrierId
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in Model?.OrderByDescending(x => x?.DateIngested))
+            {
+                <tr>
+                    <td>
+                        @product?.DialedNumber
+                    </td>
+                    <td>
+                        @product?.Lrn
+                    </td>
+                    <td>
+                        @product?.Ocn
+                    </td>
+                    <td>
+                        @product?.Lata
+                    </td>
+                    <td>
+                        @product?.City
+                    </td>
+                    <td>
+                        @product?.State
+                    </td>
+                    <td>
+                        @product?.Jurisdiction
+                    </td>
+                    <td>
+                        @product?.Local
+                    </td>
+                    <td>
+                        @product?.Lec
+                    </td>
+                    <td>
+                        @product?.Lectype
+                    </td>
+                    <td>
+                        @product?.Spid
+                    </td>
+                    <td>
+                        @product?.Lidbname
+                    </td>
+                    <td>
+                        @product?.LastPorted
+                    </td>
+                    <td>
+                        @product?.IngestedFrom
+                    </td>
+                    <td>
+                        @product?.DateIngested
+                    </td>
+                    <td>
+                        @product?.CarrierId
+                    </td>
+                    <td>
+                        <div class="btn-group" role="group" aria-label="Basic example">
+                            <a asp-action="Edit" asp-route-id="@product.PhoneNumberLookupId" class="btn btn-warning">Edit</a>
+                            <a asp-action="Details" asp-route-id="@product.PhoneNumberLookupId" class="btn btn-primary">Details</a>
+                            <a asp-action="Delete" asp-route-id="@product.PhoneNumberLookupId" class="btn btn-danger">Delete</a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
