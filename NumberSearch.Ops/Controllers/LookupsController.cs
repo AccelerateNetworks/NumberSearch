@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 using NumberSearch.Ops.EFModels;
+using NumberSearch.Ops.Models;
 
 using System;
 using System.Linq;
@@ -10,25 +11,25 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Ops.Controllers
 {
-    public class CarriersController : Controller
+    public class LookupsController : Controller
     {
         private readonly numberSearchContext _context;
 
-        public CarriersController(numberSearchContext context)
+        public LookupsController(numberSearchContext context)
         {
             _context = context;
         }
 
         [Authorize]
-        [HttpGet("/Carriers")]
+        [HttpGet("/Lookups")]
         // GET: CarriersController
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Carriers.ToListAsync());
+            return View(await _context.PhoneNumberLookups.ToListAsync());
         }
 
         [Authorize]
-        [HttpGet("/Carriers/Details/{id}")]
+        [HttpGet("/Lookups/Details/{id}")]
         // GET: CarriersController/Details/5
         public async Task<IActionResult> Details(Guid? id)
         {
@@ -37,8 +38,8 @@ namespace NumberSearch.Ops.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Carriers
-                .FirstOrDefaultAsync(m => m.CarrierId == id);
+            var product = await _context.PhoneNumberLookups
+                .FirstOrDefaultAsync(m => m.PhoneNumberLookupId == id);
             if (product == null)
             {
                 return NotFound();
@@ -48,32 +49,32 @@ namespace NumberSearch.Ops.Controllers
         }
 
         [Authorize]
-        [HttpGet("/Carriers/Create")]
+        [HttpGet("/Lookups/Create")]
         // GET: CarriersController/Create
-        public ActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            return View();
+            return View(new CreateLookup { Carriers = await _context.Carriers.ToListAsync() });
         }
 
         // POST: CarriersController/Create
         [Authorize]
         [ValidateAntiForgeryToken]
-        [HttpPost("/Carriers/Create")]
-        public async Task<IActionResult> Create([Bind("CarrierId,Ocn,Lec,Lectype,Spid,Name,Type,Ratecenter,Color,LogoLink,LastUpdated")] Carrier carrier)
+        [HttpPost("/Lookups/Create")]
+        public async Task<IActionResult> Create([Bind("PhoneNumberLookupId,DialedNumber,Lrn,Ocn,Lata,City,Ratecenter,State,Jurisdiction,Local,Lec,Lectype,Spid,Lidbname,LastPorted,IngestedFrom,DateIngested,CarrierId")] PhoneNumberLookup lookup)
         {
             if (ModelState.IsValid)
             {
-                carrier.CarrierId = Guid.NewGuid();
-                carrier.LastUpdated = DateTime.Now;
-                _context.Add(carrier);
+                lookup.PhoneNumberLookupId = Guid.NewGuid();
+                lookup.DateIngested = DateTime.Now;
+                _context.Add(lookup);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(carrier);
+            return View(lookup);
         }
 
         [Authorize]
-        [HttpGet("/Carriers/Edit/{id}")]
+        [HttpGet("/Lookups/Edit/{id}")]
         // GET: CarriersController/Edit/5
         public async Task<IActionResult> Edit(Guid? id)
         {
@@ -82,21 +83,21 @@ namespace NumberSearch.Ops.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Carriers.FindAsync(id);
+            var product = await _context.PhoneNumberLookups.FindAsync(id);
             if (product == null)
             {
                 return NotFound();
             }
-            return View(product);
+            return View(new CreateLookup { Lookup = product, Carriers = await _context.Carriers.ToListAsync() });
         }
 
         // POST: CarriersController/Edit/5
         [Authorize]
         [ValidateAntiForgeryToken]
-        [HttpPost("/Carriers/Edit/{id}")]
-        public async Task<IActionResult> Edit(Guid id, [Bind("CarrierId,Ocn,Lec,Lectype,Spid,Name,Type,Ratecenter,Color,LogoLink,LastUpdated")] Carrier carrier)
+        [HttpPost("/Lookups/Edit/{id}")]
+        public async Task<IActionResult> Edit(Guid id, [Bind("PhoneNumberLookupId,DialedNumber,Lrn,Ocn,Lata,City,Ratecenter,State,Jurisdiction,Local,Lec,Lectype,Spid,Lidbname,LastPorted,IngestedFrom,DateIngested,CarrierId")] PhoneNumberLookup lookup)
         {
-            if (id != carrier.CarrierId)
+            if (id != lookup.CarrierId)
             {
                 return NotFound();
             }
@@ -105,13 +106,13 @@ namespace NumberSearch.Ops.Controllers
             {
                 try
                 {
-                    carrier.LastUpdated = DateTime.Now;
-                    _context.Update(carrier);
+                    lookup.DateIngested = DateTime.Now;
+                    _context.Update(lookup);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CarrierExists(carrier.CarrierId))
+                    if (!PhoneNumberLookupExists(lookup.PhoneNumberLookupId))
                     {
                         return NotFound();
                     }
@@ -122,11 +123,11 @@ namespace NumberSearch.Ops.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(carrier);
+            return View(lookup);
         }
 
         [Authorize]
-        [HttpGet("/Carriers/Delete/{id}")]
+        [HttpGet("/Lookups/Delete/{id}")]
         // GET: CarriersController/Delete/5
         public async Task<IActionResult> Delete(Guid? id)
         {
@@ -135,8 +136,8 @@ namespace NumberSearch.Ops.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Carriers
-                .FirstOrDefaultAsync(m => m.CarrierId == id);
+            var product = await _context.PhoneNumberLookups
+                .FirstOrDefaultAsync(m => m.PhoneNumberLookupId == id);
             if (product == null)
             {
                 return NotFound();
@@ -148,18 +149,18 @@ namespace NumberSearch.Ops.Controllers
         // POST: CarriersController/Delete/5
         [Authorize]
         [ValidateAntiForgeryToken]
-        [HttpPost("/Carriers/Delete/{id}")]
+        [HttpPost("/Lookups/Delete/{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var product = await _context.Carriers.FindAsync(id);
-            _context.Carriers.Remove(product);
+            var product = await _context.PhoneNumberLookups.FindAsync(id);
+            _context.PhoneNumberLookups.Remove(product);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool CarrierExists(Guid id)
+        private bool PhoneNumberLookupExists(Guid id)
         {
-            return _context.Carriers.Any(e => e.CarrierId == id);
+            return _context.PhoneNumberLookups.Any(e => e.PhoneNumberLookupId == id);
         }
     }
 }
