@@ -54,22 +54,22 @@
             </div>
             <div class="form-group">
                 <label asp-for="Lookup.Lec" class="control-label"></label>
-                <input asp-for="Lookup.Lec" class="form-control" type="datetime" readonly />
+                <input asp-for="Lookup.Lec" class="form-control" />
                 <span asp-validation-for="Lookup.Lec" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Lookup.Lectype" class="control-label"></label>
-                <input asp-for="Lookup.Lectype" class="form-control" type="datetime" readonly />
+                <input asp-for="Lookup.Lectype" class="form-control" />
                 <span asp-validation-for="Lookup.Lectype" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Lookup.Spid" class="control-label"></label>
-                <input asp-for="Lookup.Spid" class="form-control" type="datetime" readonly />
+                <input asp-for="Lookup.Spid" class="form-control"/>
                 <span asp-validation-for="Lookup.Spid" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Lookup.Lidbname" class="control-label"></label>
-                <input asp-for="Lookup.Lidbname" class="form-control" type="datetime" readonly />
+                <input asp-for="Lookup.Lidbname" class="form-control"/>
                 <span asp-validation-for="Lookup.Lidbname" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -79,7 +79,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="Lookup.IngestedFrom" class="control-label"></label>
-                <input asp-for="Lookup.IngestedFrom" class="form-control" type="datetime" readonly />
+                <input asp-for="Lookup.IngestedFrom" class="form-control" />
                 <span asp-validation-for="Lookup.IngestedFrom" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -94,7 +94,7 @@
                     @{
                         foreach (var product in Model.Carriers?.OrderByDescending(x => x.Name))
                         {
-                            <option value="@product.CarrierId">@product.Name</option>
+                            <option value="@product.CarrierId">@product.Name - OCN @product.Ocn</option>
                         }
                     }
                 </select>

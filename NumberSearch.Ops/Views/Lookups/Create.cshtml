@@ -96,7 +96,7 @@
                     <option selected>Choose...</option>
                     @foreach (var product in Model?.Carriers?.OrderByDescending(x => x?.Name))
                     {
-                        <option value="@product?.CarrierId">@product?.Name</option>
+                        <option value="@product.CarrierId">@product.Name - OCN @product.Ocn</option>
                     }
                 </select>
                 <span asp-validation-for="Lookup.CarrierId" class="text-danger"></span>

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 using NumberSearch.Ops.EFModels;
+using NumberSearch.Ops.Models;
 
 using System;
 using System.Linq;
@@ -55,6 +56,29 @@ namespace NumberSearch.Ops.Controllers
             return View();
         }
 
+        [Authorize]
+        [HttpGet("/Carriers/FromLookup/{lookupId}")]
+        // GET: CarriersController/Create
+        public async Task<IActionResult> CreateFromLookup(Guid lookupId)
+        {
+            var lookup = await _context.PhoneNumberLookups.Where(x => x.PhoneNumberLookupId == lookupId).FirstOrDefaultAsync();
+
+            if (lookup is not null)
+            {
+                return View("Create", new Carrier
+                {
+                    Lec = lookup.Lec,
+                    Spid = lookup.Spid,
+                    Lectype = lookup.Lectype,
+                    Ocn = lookup.Ocn
+                });
+            }
+            else
+            {
+                return View("Create");
+            }
+        }
+
         // POST: CarriersController/Create
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -82,12 +106,14 @@ namespace NumberSearch.Ops.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Carriers.FindAsync(id);
-            if (product == null)
+            var carrier = await _context.Carriers.FindAsync(id);
+            var lookups = await _context.PhoneNumberLookups.Where(x => x.Ocn == carrier.Ocn).ToListAsync();
+
+            if (carrier == null)
             {
                 return NotFound();
             }
-            return View(product);
+            return View(new EditCarrier { Carrier = carrier, Lookups = lookups });
         }
 
         // POST: CarriersController/Edit/5

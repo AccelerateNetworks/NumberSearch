@@ -21,21 +21,6 @@
                     Ocn
                 </th>
                 <th scope="col">
-                    Lata
-                </th>
-                <th>
-                    City
-                </th>
-                <th scope="col">
-                    State
-                </th>
-                <th scope="col">
-                    Jurisdiction
-                </th>
-                <th scope="col">
-                    Local
-                </th>
-                <th scope="col">
                     Lec
                 </th>
                 <th scope="col">
@@ -43,15 +28,6 @@
                 </th>
                 <th scope="col">
                     Spid
-                </th>
-                <th scope="col">
-                    Lidbname
-                </th>
-                <th scope="col">
-                    LastPorted
-                </th>
-                <th scope="col">
-                    IngestedFrom
                 </th>
                 <th scope="col">
                     DateIngested
@@ -75,21 +51,6 @@
                         @product?.Ocn
                     </td>
                     <td>
-                        @product?.Lata
-                    </td>
-                    <td>
-                        @product?.City
-                    </td>
-                    <td>
-                        @product?.State
-                    </td>
-                    <td>
-                        @product?.Jurisdiction
-                    </td>
-                    <td>
-                        @product?.Local
-                    </td>
-                    <td>
                         @product?.Lec
                     </td>
                     <td>
@@ -99,15 +60,6 @@
                         @product?.Spid
                     </td>
                     <td>
-                        @product?.Lidbname
-                    </td>
-                    <td>
-                        @product?.LastPorted
-                    </td>
-                    <td>
-                        @product?.IngestedFrom
-                    </td>
-                    <td>
                         @product?.DateIngested
                     </td>
                     <td>
@@ -115,6 +67,7 @@
                     </td>
                     <td>
                         <div class="btn-group" role="group" aria-label="Basic example">
+                            <a asp-controller="Carriers" asp-action="FromLookup" asp-route-id="@product.PhoneNumberLookupId" class="btn btn-success">New Carrier</a>
                             <a asp-action="Edit" asp-route-id="@product.PhoneNumberLookupId" class="btn btn-warning">Edit</a>
                             <a asp-action="Details" asp-route-id="@product.PhoneNumberLookupId" class="btn btn-primary">Details</a>
                             <a asp-action="Delete" asp-route-id="@product.PhoneNumberLookupId" class="btn btn-danger">Delete</a>
