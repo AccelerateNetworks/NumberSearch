@@ -1,7 +1,5 @@
-﻿using System;
-
+﻿
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
@@ -42,6 +40,8 @@ namespace NumberSearch.Ops.EFModels
         public virtual DbSet<SentEmail> SentEmails { get; set; }
         public virtual DbSet<Service> Services { get; set; }
         public virtual DbSet<VerifiedPhoneNumber> VerifiedPhoneNumbers { get; set; }
+        public virtual DbSet<Carrier> Carriers { get; set; }
+        public virtual DbSet<PhoneNumberLookup> PhoneNumberLookups { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -561,6 +561,84 @@ namespace NumberSearch.Ops.EFModels
                     .HasMaxLength(10);
 
                 entity.Property(e => e.Xxxx).HasColumnName("XXXX");
+            });
+
+            modelBuilder.Entity<Carrier>(entity =>
+            {
+                entity.Property(e => e.CarrierId).HasDefaultValueSql("uuid_generate_v4()");
+
+                entity.Property(e => e.Color).HasColumnType("character varying");
+
+                entity.Property(e => e.Lec)
+                    .HasColumnType("character varying")
+                    .HasColumnName("LEC");
+
+                entity.Property(e => e.Lectype)
+                    .HasColumnType("character varying")
+                    .HasColumnName("LECType");
+
+                entity.Property(e => e.LogoLink).HasColumnType("character varying");
+
+                entity.Property(e => e.Name).HasColumnType("character varying");
+
+                entity.Property(e => e.Ocn)
+                    .HasColumnType("character varying")
+                    .HasColumnName("OCN");
+
+                entity.Property(e => e.Ratecenter).HasColumnType("character varying");
+
+                entity.Property(e => e.Spid)
+                    .HasColumnType("character varying")
+                    .HasColumnName("SPID");
+
+                entity.Property(e => e.Type).HasColumnType("character varying");
+            });
+
+            modelBuilder.Entity<PhoneNumberLookup>(entity =>
+            {
+                entity.Property(e => e.PhoneNumberLookupId).HasDefaultValueSql("uuid_generate_v4()");
+
+                entity.Property(e => e.City).HasColumnType("character varying");
+
+                entity.Property(e => e.DialedNumber)
+                    .IsRequired()
+                    .HasMaxLength(11);
+
+                entity.Property(e => e.IngestedFrom).HasColumnType("character varying");
+
+                entity.Property(e => e.Jurisdiction).HasColumnType("character varying");
+
+                entity.Property(e => e.Lata)
+                    .HasColumnType("character varying")
+                    .HasColumnName("LATA");
+
+                entity.Property(e => e.Lec)
+                    .HasColumnType("character varying")
+                    .HasColumnName("LEC");
+
+                entity.Property(e => e.Lectype)
+                    .HasColumnType("character varying")
+                    .HasColumnName("LECType");
+
+                entity.Property(e => e.Lidbname)
+                    .HasColumnType("character varying")
+                    .HasColumnName("LIDBName");
+
+                entity.Property(e => e.Lrn)
+                    .HasColumnType("character varying")
+                    .HasColumnName("LRN");
+
+                entity.Property(e => e.Ocn)
+                    .HasColumnType("character varying")
+                    .HasColumnName("OCN");
+
+                entity.Property(e => e.Ratecenter).HasColumnType("character varying");
+
+                entity.Property(e => e.Spid)
+                    .HasColumnType("character varying")
+                    .HasColumnName("SPID");
+
+                entity.Property(e => e.State).HasColumnType("character varying");
             });
 
             OnModelCreatingPartial(modelBuilder);

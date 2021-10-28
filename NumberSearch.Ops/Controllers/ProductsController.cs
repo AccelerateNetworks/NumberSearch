@@ -151,8 +151,8 @@ namespace NumberSearch.Ops.Controllers
 
         // POST: Products/Delete/5
         [Authorize]
-        [HttpPost("/Products/Delete/{id}")]
         [ValidateAntiForgeryToken]
+        [HttpPost("/Products/Delete/{id}")]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
             var product = await _context.Products.FindAsync(id);

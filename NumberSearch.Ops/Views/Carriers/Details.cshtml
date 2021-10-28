@@ -1,0 +1,78 @@
+﻿@model NumberSearch.Ops.EFModels.Carrier
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1 class="display-4 p-3">📯 Carrier Details</h1>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Type)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Type)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Color)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Color)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Lec)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Lec)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Lectype)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Lectype)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.LogoLink)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.LogoLink)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Ocn)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Ocn)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Ratecenter)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Ratecenter)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Spid)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Spid)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.LastUpdated)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.LastUpdated)
+        </dd>
+    </dl>
+</div>
+<p>
+    <a asp-action="Edit" asp-route-id="@Model.CarrierId" class="btn btn-warning">Edit</a>
+</p>
+<p>
+    <a asp-action="Index" class="btn btn-outline-primary">Back to List</a>
+</p>

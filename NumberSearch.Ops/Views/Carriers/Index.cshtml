@@ -1,0 +1,93 @@
+﻿@model IEnumerable<NumberSearch.Ops.EFModels.Carrier>
+@{
+    ViewData["Title"] = "Carriers";
+}
+
+<div class="d-flex justify-content-between align-items-center">
+    <h1 class="display-4 p-3">📯 Carriers</h1>
+    <a asp-action="Create" class="btn btn-lg btn-success">Create New</a>
+</div>
+<div class="table-responsive">
+    <table class="table table-striped table-borderless table-hover" id="table">
+        <thead>
+            <tr>
+                <th scope="col">
+                    Name
+                </th>
+                <th scope="col">
+                    CarrierId
+                </th>
+                <th scope="col">
+                    Type
+                </th>
+                <th scope="col">
+                    Color
+                </th>
+                <th>
+                    Lec
+                </th>
+                <th>
+                    Lectype
+                </th>
+                <th scope="col">
+                    LogoLink
+                </th>
+                <th scope="col">
+                    Ocn
+                </th>
+                <th scope="col">
+                    Ratecenter
+                </th>
+                <th scope="col">
+                    Spid
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                foreach (var product in Model?.OrderByDescending(x => x?.Name))
+                {
+                    <tr>
+                        <td>
+                            @product?.Name
+                        </td>
+                        <td>
+                            @product?.CarrierId
+                        </td>
+                        <td>
+                            @product?.Type
+                        </td>
+                        <td>
+                            @product?.Color
+                        </td>
+                        <td>
+                            @product?.Lec
+                        </td>
+                        <td>
+                            @product?.Lectype
+                        </td>
+                        <td>
+                            @product?.LogoLink
+                        </td>
+                        <td>
+                            @product?.Ocn
+                        </td>
+                        <td>
+                            @product?.Ratecenter
+                        </td>
+                        <td>
+                            @product?.Spid
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group" aria-label="Basic example">
+                                <a asp-action="Edit" asp-route-id="@product.CarrierId" class="btn btn-warning">Edit</a>
+                                <a asp-action="Details" asp-route-id="@product.CarrierId" class="btn btn-primary">Details</a>
+                                <a asp-action="Delete" asp-route-id="@product.CarrierId" class="btn btn-danger">Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
