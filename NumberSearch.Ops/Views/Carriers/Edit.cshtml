@@ -48,6 +48,11 @@
                 <span asp-validation-for="Carrier.Color" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="Carrier.LogoLink" class="control-label"></label>
+                <input asp-for="Carrier.LogoLink" class="form-control" />
+                <span asp-validation-for="Carrier.LogoLink" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <label asp-for="Carrier.LastUpdated" class="control-label"></label>
                 <input asp-for="Carrier.LastUpdated" class="form-control" type="datetime" readonly />
                 <span asp-validation-for="Carrier.LastUpdated" class="text-danger"></span>
