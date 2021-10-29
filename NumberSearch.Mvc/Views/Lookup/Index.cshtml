@@ -197,10 +197,10 @@
                                     Caller Name
                                 </th>
                                 <th>
-                                    Local Routing #
+                                    Carrier
                                 </th>
                                 <th>
-                                    Carrier
+                                    Type
                                 </th>
                                 <th>
 
@@ -209,7 +209,7 @@
                             @{
                                 foreach (var number in Model.Portable)
                                 {
-                                    <tr>
+                                    <tr style="background-color: @number.Carrier.Color;">
                                         <td>
                                             <h4>@number?.LrnLookup?.tn?.Substring(1)</h4>
                                         </td>
@@ -220,16 +220,37 @@
                                             @number?.LrnLookup?.LIDBName
                                         </td>
                                         <td>
-                                            <h4>@number?.LrnLookup?.lrn.Substring(1)</h4>
+                                            @if (number.Carrier is not null)
+                                            {
+                                                <img src="@number.Carrier.LogoLink" alt="@number.Carrier.Name" title="LRN @number.LrnLookup.lrn" height="30">
+                                            }
+                                            else
+                                            {
+                                                <p>
+                                                    @number?.LrnLookup?.spid
+                                                    -
+                                                    @number?.LrnLookup?.lec
+                                                    -
+                                                    @number?.LrnLookup?.lectype
+                                                </p>
+                                            }
                                         </td>
                                         <td>
-                                            <p>
-                                                @number?.LrnLookup?.spid
-                                                -
-                                                @number?.LrnLookup?.lec
-                                                -
-                                                @number?.LrnLookup?.lectype
-                                            </p>
+                                            @if (!string.IsNullOrWhiteSpace(number.Carrier?.Type))
+                                            {
+                                                <h4>@number?.Carrier?.Type</h4>
+                                            }
+                                            else
+                                            {
+                                                if (number.Wireless)
+                                                {
+                                                    <h4>Wireless</h4>
+                                                }
+                                                else
+                                                {
+                                                    <h4>Non-Wireless</h4>
+                                                }
+                                            }
                                         </td>
                                         <td>
                                             @{
@@ -295,10 +316,10 @@
                                     Caller Name
                                 </th>
                                 <th>
-                                    Local Routing #
+                                    Carrier
                                 </th>
                                 <th>
-                                    Carrier
+                                    Type
                                 </th>
                                 <th>
 
@@ -307,7 +328,7 @@
                             @{
                                 foreach (var number in Model.Wireless)
                                 {
-                                    <tr>
+                                    <tr style="background-color: @number.Carrier.Color;">
                                         <td>
                                             <h4>@number?.LrnLookup?.tn</h4>
                                         </td>
@@ -318,16 +339,37 @@
                                             @number?.LrnLookup?.LIDBName
                                         </td>
                                         <td>
-                                            <h4>@number?.LrnLookup?.lrn</h4>
+                                            @if (number.Carrier is not null)
+                                            {
+                                                <img src="@number.Carrier.LogoLink" alt="@number.Carrier.Name" title="LRN @number.LrnLookup.lrn" height="30">
+                                            }
+                                            else
+                                            {
+                                                <p>
+                                                    @number?.LrnLookup?.spid
+                                                    -
+                                                    @number?.LrnLookup?.lec
+                                                    -
+                                                    @number?.LrnLookup?.lectype
+                                                </p>
+                                            }
                                         </td>
                                         <td>
-                                            <p>
-                                                @number?.LrnLookup?.spid
-                                                -
-                                                @number?.LrnLookup?.lec
-                                                -
-                                                @number?.LrnLookup?.lectype
-                                            </p>
+                                            @if (!string.IsNullOrWhiteSpace(number.Carrier?.Type))
+                                            {
+                                                <h4>@number?.Carrier?.Type</h4>
+                                            }
+                                            else
+                                            {
+                                                if (number.Wireless)
+                                                {
+                                                    <h4>Wireless</h4>
+                                                }
+                                                else
+                                                {
+                                                    <h4>Non-Wireless</h4>
+                                                }
+                                            }
                                         </td>
                                         <td>
                                             @{

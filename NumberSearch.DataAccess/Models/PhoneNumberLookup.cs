@@ -6,7 +6,6 @@ using NumberSearch.DataAccess.BulkVS;
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess
@@ -30,6 +29,7 @@ namespace NumberSearch.DataAccess
         public DateTime LastPorted { get; set; }
         public string IngestedFrom { get; set; }
         public DateTime DateIngested { get; set; }
+        public Guid? CarrierId { get; set; }
 
         public PhoneNumberLookup(LrnBulkCnam source)
         {
@@ -62,7 +62,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             return await connection
-                .QueryAsync<PhoneNumberLookup>("SELECT \"PhoneNumberLookupId\", \"DialedNumber\", \"LRN\", \"OCN\", \"LATA\", \"City\", \"Ratecenter\", \"State\", \"Jurisdiction\", \"Local\", \"LEC\", \"LECType\", \"SPID\", \"LIDBName\", \"LastPorted\", \"IngestedFrom\", \"DateIngested\" " +
+                .QueryAsync<PhoneNumberLookup>("SELECT \"PhoneNumberLookupId\", \"DialedNumber\", \"LRN\", \"OCN\", \"LATA\", \"City\", \"Ratecenter\", \"State\", \"Jurisdiction\", \"Local\", \"LEC\", \"LECType\", \"SPID\", \"LIDBName\", \"LastPorted\", \"IngestedFrom\", \"DateIngested\", \"CarrierId\" " +
                 "FROM public.\"PhoneNumberLookups\"")
                 .ConfigureAwait(false);
         }
@@ -77,9 +77,9 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"PhoneNumberLookups\" ( \"DialedNumber\", \"LRN\", \"OCN\", \"LATA\", \"City\", \"Ratecenter\", \"State\", \"Jurisdiction\", \"Local\", \"LEC\", \"LECType\", \"SPID\", \"LIDBName\", \"LastPorted\", \"IngestedFrom\", \"DateIngested\") " +
-                "VALUES ( @DialedNumber, @LRN, @OCN, @LATA, @City, @Ratecenter, @State, @Jurisdiction, @Local, @LEC, @LECType, @SPID, @LIDBName, @LastPorted, @IngestedFrom, @DateIngested )",
-                new { DialedNumber, LRN, OCN, LATA, City, Ratecenter, State, Jurisdiction, Local, LEC, LECType, SPID, LIDBName, LastPorted, IngestedFrom, DateIngested })
+                .ExecuteAsync("INSERT INTO public.\"PhoneNumberLookups\" ( \"DialedNumber\", \"LRN\", \"OCN\", \"LATA\", \"City\", \"Ratecenter\", \"State\", \"Jurisdiction\", \"Local\", \"LEC\", \"LECType\", \"SPID\", \"LIDBName\", \"LastPorted\", \"IngestedFrom\", \"DateIngested\", \"CarrierId\") " +
+                "VALUES ( @DialedNumber, @LRN, @OCN, @LATA, @City, @Ratecenter, @State, @Jurisdiction, @Local, @LEC, @LECType, @SPID, @LIDBName, @LastPorted, @IngestedFrom, @DateIngested, @CarrierId )",
+                new { DialedNumber, LRN, OCN, LATA, City, Ratecenter, State, Jurisdiction, Local, LEC, LECType, SPID, LIDBName, LastPorted, IngestedFrom, DateIngested, CarrierId })
                 .ConfigureAwait(false);
 
             if (result == 1)

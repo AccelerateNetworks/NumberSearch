@@ -1069,6 +1069,19 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task GetCarrierByOCNAsync()
+        {
+            // Arrange
+            var ocn = "4324";
+
+            // Act
+            var results = await Carrier.GetByOCNAsync(ocn, postgresql);
+
+            Assert.NotNull(results);
+            Assert.True(results.Ocn == ocn);
+        }
+
+        [Fact]
         public async Task TeleNoteTestAsync()
         {
             // Arrange

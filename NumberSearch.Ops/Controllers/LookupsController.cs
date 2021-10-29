@@ -25,7 +25,24 @@ namespace NumberSearch.Ops.Controllers
         // GET: CarriersController
         public async Task<IActionResult> Index()
         {
-            return View(await _context.PhoneNumberLookups.ToListAsync());
+            // Match lookups to existing carriers.
+            //var carriers = await _context.Carriers.ToListAsync();
+            //var lookups = await _context.PhoneNumberLookups.ToListAsync();
+
+            //foreach (var item in lookups)
+            //{
+            //    var carrier = carriers.Where(x => x.Ocn == item.Ocn).FirstOrDefault();
+
+            //    if (carrier is not null)
+            //    {
+            //        item.CarrierId = carrier.CarrierId;
+            //        _context.Update(item);
+            //    }
+            //}
+
+            //await _context.SaveChangesAsync();
+
+            return View(await _context.PhoneNumberLookups.Where(x => x.CarrierId == null).ToListAsync());
         }
 
         [Authorize]

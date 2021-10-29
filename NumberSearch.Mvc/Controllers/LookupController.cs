@@ -302,6 +302,11 @@ namespace NumberSearch.Mvc.Controllers
 
                     // Log the lookup to the db.
                     var lookup = new PhoneNumberLookup(checkNumber);
+                    var carrier = await Carrier.GetByOCNAsync(lookup.OCN, _postgresql).ConfigureAwait(false);
+                    if (carrier is not null)
+                    {
+                        lookup.CarrierId = carrier.CarrierId;
+                    }
                     var checkLog = await lookup.PostAsync(_postgresql).ConfigureAwait(false);
 
                     Log.Information($"[Portability] {phoneNumber.DialedNumber} is Portable.");
@@ -319,6 +324,7 @@ namespace NumberSearch.Mvc.Controllers
                         IngestedFrom = "UserInput",
                         Wireless = wireless,
                         LrnLookup = checkNumber,
+                        Carrier = carrier,
                         Portable = true
                     };
 
@@ -358,6 +364,11 @@ namespace NumberSearch.Mvc.Controllers
 
             // Log the lookup to the db.
             var lookup = new PhoneNumberLookup(checkNumber);
+            var carrier = await Carrier.GetByOCNAsync(lookup.OCN, _postgresql).ConfigureAwait(false);
+            if (carrier is not null)
+            {
+                lookup.CarrierId = carrier.CarrierId;
+            }
             var checkLog = await lookup.PostAsync(_postgresql).ConfigureAwait(false);
 
             return checkNumber;

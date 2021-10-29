@@ -23,6 +23,9 @@
                 <th>
                     Lectype
                 </th>
+                <th>
+                    Logo
+                </th>
                 <th scope="col">
                     Ocn
                 </th>
@@ -34,7 +37,7 @@
         <tbody>
             @foreach (var product in Model?.OrderByDescending(x => x?.Name))
             {
-                <tr>
+                <tr style="background-color: @product.Color;">
                     <td>
                         @product?.Name
                     </td>
@@ -46,6 +49,9 @@
                     </td>
                     <td>
                         @product?.Lectype
+                    </td>
+                    <td>
+                        <img src="@product?.LogoLink" alt="@product?.Name" height="30">
                     </td>
                     <td>
                         @product?.Ocn
