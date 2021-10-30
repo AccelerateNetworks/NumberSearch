@@ -209,7 +209,13 @@
                             @{
                                 foreach (var number in Model.Portable)
                                 {
-                                    <tr style="background-color: @number.Carrier.Color;">
+                                    var color = string.Empty;
+                                    if (!string.IsNullOrWhiteSpace(number?.Carrier?.Color))
+                                    {
+                                        color = $"background-color: {number.Carrier.Color};";
+                                    }
+                                    <tr style="@color">
+
                                         <td>
                                             <h4>@number?.LrnLookup?.tn?.Substring(1)</h4>
                                         </td>
