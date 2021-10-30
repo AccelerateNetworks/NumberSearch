@@ -25,7 +25,7 @@ namespace NumberSearch.Ops.Controllers
         // GET: CarriersController
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Carriers.ToListAsync());
+            return View(await _context.Carriers.OrderBy(x => x.Name).ToListAsync());
         }
 
         [Authorize]
@@ -90,6 +90,14 @@ namespace NumberSearch.Ops.Controllers
                 carrier.CarrierId = Guid.NewGuid();
                 carrier.LastUpdated = DateTime.Now;
                 _context.Add(carrier);
+
+                // Updated all the lookups related to this OCN.
+                var relatedLookups = await _context.PhoneNumberLookups.Where(x => x.Ocn == carrier.Ocn).ToListAsync();
+                foreach (var relatedLookup in relatedLookups)
+                {
+                    relatedLookup.CarrierId = carrier.CarrierId;
+                }
+                _context.UpdateRange(relatedLookups);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -133,6 +141,14 @@ namespace NumberSearch.Ops.Controllers
                 {
                     carrier.LastUpdated = DateTime.Now;
                     _context.Update(carrier);
+
+                    // Updated all the lookups related to this OCN.
+                    var relatedLookups = await _context.PhoneNumberLookups.Where(x => x.Ocn == carrier.Ocn).ToListAsync();
+                    foreach (var relatedLookup in relatedLookups)
+                    {
+                        relatedLookup.CarrierId = carrier.CarrierId;
+                    }
+                    _context.UpdateRange(relatedLookups);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
