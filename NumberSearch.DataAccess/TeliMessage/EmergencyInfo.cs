@@ -2,6 +2,8 @@
 
 using NumberSearch.DataAccess.TeliMessage;
 
+using Serilog;
+
 using System;
 using System.Threading.Tasks;
 
@@ -40,9 +42,7 @@ namespace NumberSearch.DataAccess
             string route = $"{baseUrl}{endpoint}{tokenParameter}{numberParameter}";
             try
             {
-                var result = await route.GetJsonAsync<EmergencyInfo>().ConfigureAwait(false);
-
-                return result;
+                return await route.GetJsonAsync<EmergencyInfo>().ConfigureAwait(false);
             }
             catch (FlurlHttpException)
             {
@@ -57,6 +57,54 @@ namespace NumberSearch.DataAccess
                         did_note = result.data
                     }
                 };
+            }
+        }
+
+        public static async Task<TeliError> ValidateAddressAsync(string address, string city, string state, string zip, Guid token)
+        {
+            string baseUrl = "https://apiv1.teleapi.net/";
+            string endpoint = "911/validate";
+            string tokenParameter = $"?token={token}";
+            string addressParameter = $"&address={address}";
+            string cityParameter = $"&city={city}";
+            string stateParameter = $"&state={state}";
+            string zipParameter = $"&zip={zip}";
+            string route = $"{baseUrl}{endpoint}{tokenParameter}{addressParameter}{cityParameter}{stateParameter}{zipParameter}";
+
+            try
+            {
+                return await route.GetJsonAsync<TeliError>().ConfigureAwait(false);
+            }
+            catch (FlurlHttpException ex)
+            {
+                var result = await ex.GetResponseStringAsync().ConfigureAwait(false);
+
+                return new TeliError { code = 500, status = "error", data = result };
+            }
+        }
+
+        public static async Task<EmergencyInfoDetail> CreateE911RecordAsync(string didId, string fullName, string address, string city, string state, string zip, string unitType, string unitNumber, Guid token)
+        {
+            string baseUrl = "https://apiv1.teleapi.net/";
+            string endpoint = "911/create";
+            string tokenParameter = $"?token={token}";
+            string didIdParameter = $"&did_id={didId}";
+            string fullNameParameter = $"&fullName={fullName}";
+            string addressParameter = $"&address={address}";
+            string cityParameter = $"&city={city}";
+            string stateParameter = $"&state={state}";
+            string zipParameter = $"&zip={zip}";
+            string route = $"{baseUrl}{endpoint}{tokenParameter}{didIdParameter}{fullNameParameter}{addressParameter}{cityParameter}{stateParameter}{zipParameter}";
+
+            try
+            {
+                return await route.GetJsonAsync<EmergencyInfoDetail>().ConfigureAwait(false);
+            }
+            catch (FlurlHttpException ex)
+            {
+                Log.Fatal("[TeliMessage] [E911Registration] Failed to register E911 information.");
+                Log.Fatal($"[TeliMessage] [E911Registration] {await ex.GetResponseStringAsync()}");
+                return null;
             }
         }
     }

@@ -15,9 +15,7 @@ using Microsoft.Extensions.Logging;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
-using NumberSearch.DataAccess.Data247;
 using NumberSearch.DataAccess.InvoiceNinja;
-using NumberSearch.DataAccess.Models;
 using NumberSearch.DataAccess.TeliMesssage;
 using NumberSearch.Ops.Models;
 
@@ -37,7 +35,6 @@ namespace NumberSearch.Ops.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
         private readonly IConfiguration _configuration;
         private readonly string _postgresql;
         private readonly string _username;
@@ -367,7 +364,7 @@ namespace NumberSearch.Ops.Controllers
         [Route("/Home/Order/{orderId}")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> OrderUpdate(Order? order)
+        public async Task<IActionResult> OrderUpdate(Order order)
         {
             if (order is null)
             {
@@ -525,6 +522,178 @@ namespace NumberSearch.Ops.Controllers
                 if (order is not null && order.OrderId == Guid.Parse(orderId))
                 {
                     var checkDelete = await order.DeleteAsync(_postgresql).ConfigureAwait(false);
+                }
+
+                return Redirect("/Home/Order");
+            }
+        }
+
+        [Authorize]
+        [Route("/Home/Order/{orderId}/RegisterE911")]
+        public async Task<IActionResult> RegisterE911Async(string orderId)
+        {
+            if (string.IsNullOrWhiteSpace(orderId))
+            {
+                return Redirect("/Home/Order");
+            }
+            else
+            {
+                var order = await Order.GetByIdAsync(Guid.Parse(orderId), _postgresql).ConfigureAwait(false);
+
+                if (order is not null && order.OrderId == Guid.Parse(orderId))
+                {
+                    var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(order.E911ServiceNumber, out var phoneNumber);
+                    // Register the number with Teli for E911 service.
+                    if (checkParse)
+                    {
+                        var existingRegistration = await EmergencyInfo.GetAsync(phoneNumber.DialedNumber, _teleToken);
+
+                        if (existingRegistration.code == 200)
+                        {
+                            // This number is already registered with Teli.
+                            var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                            var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                            var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                            var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                            var products = new List<Product>();
+                            var services = new List<Service>();
+                            var coupons = new List<Coupon>();
+                            foreach (var item in productOrders)
+                            {
+                                if (item?.ProductId != Guid.Empty)
+                                {
+                                    var product = await Product.GetByIdAsync(item.ProductId, _postgresql).ConfigureAwait(false);
+                                    products.Add(product);
+                                }
+                                else if (item?.ServiceId != Guid.Empty)
+                                {
+                                    var service = await Service.GetAsync(item.ServiceId, _postgresql).ConfigureAwait(false);
+                                    services.Add(service);
+                                }
+                                else if (item?.CouponId is not null)
+                                {
+                                    var coupon = await Coupon.GetByIdAsync(item.CouponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                                    coupons.Add(coupon);
+                                }
+                            }
+
+                            var cart = new Cart
+                            {
+                                Order = order,
+                                PhoneNumbers = new List<PhoneNumber>(),
+                                ProductOrders = productOrders,
+                                Products = products,
+                                Services = services,
+                                Coupons = coupons,
+                                PortedPhoneNumbers = portedPhoneNumbers,
+                                VerifiedPhoneNumbers = verifiedPhoneNumbers,
+                                PurchasedPhoneNumbers = purchasedPhoneNumbers
+                            };
+
+                            return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = "The currently selected phone number is already registered. 🤔", AlertType = "alert-warning" });
+                        }
+                        else
+                        {
+                            // Register the number with Teli for E911 service.
+                            var checkAddressValid = await EmergencyInfo.ValidateAddressAsync(order.Address, order.City, order.State, order.Zip, _teleToken);
+
+                            if (checkAddressValid.status == "200")
+                            {
+                                // With a valid address we can now register the address to the phone number selected for this account.
+
+                            }
+                            else
+                            {
+                                // Address is invalid, inform the user.
+                                var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                var products = new List<Product>();
+                                var services = new List<Service>();
+                                var coupons = new List<Coupon>();
+                                foreach (var item in productOrders)
+                                {
+                                    if (item?.ProductId != Guid.Empty)
+                                    {
+                                        var product = await Product.GetByIdAsync(item.ProductId, _postgresql).ConfigureAwait(false);
+                                        products.Add(product);
+                                    }
+                                    else if (item?.ServiceId != Guid.Empty)
+                                    {
+                                        var service = await Service.GetAsync(item.ServiceId, _postgresql).ConfigureAwait(false);
+                                        services.Add(service);
+                                    }
+                                    else if (item?.CouponId is not null)
+                                    {
+                                        var coupon = await Coupon.GetByIdAsync(item.CouponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                                        coupons.Add(coupon);
+                                    }
+                                }
+
+                                var cart = new Cart
+                                {
+                                    Order = order,
+                                    PhoneNumbers = new List<PhoneNumber>(),
+                                    ProductOrders = productOrders,
+                                    Products = products,
+                                    Services = services,
+                                    Coupons = coupons,
+                                    PortedPhoneNumbers = portedPhoneNumbers,
+                                    VerifiedPhoneNumbers = verifiedPhoneNumbers,
+                                    PurchasedPhoneNumbers = purchasedPhoneNumbers
+                                };
+
+                                return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to register with E911! 😠 Teli reports that the Address associated with this Order is invalid. {checkAddressValid?.data}", AlertType = "alert-danger" });
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                        var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                        var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                        var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                        var products = new List<Product>();
+                        var services = new List<Service>();
+                        var coupons = new List<Coupon>();
+                        foreach (var item in productOrders)
+                        {
+                            if (item?.ProductId != Guid.Empty)
+                            {
+                                var product = await Product.GetByIdAsync(item.ProductId, _postgresql).ConfigureAwait(false);
+                                products.Add(product);
+                            }
+                            else if (item?.ServiceId != Guid.Empty)
+                            {
+                                var service = await Service.GetAsync(item.ServiceId, _postgresql).ConfigureAwait(false);
+                                services.Add(service);
+                            }
+                            else if (item?.CouponId is not null)
+                            {
+                                var coupon = await Coupon.GetByIdAsync(item.CouponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                                coupons.Add(coupon);
+                            }
+                        }
+
+                        var cart = new Cart
+                        {
+                            Order = order,
+                            PhoneNumbers = new List<PhoneNumber>(),
+                            ProductOrders = productOrders,
+                            Products = products,
+                            Services = services,
+                            Coupons = coupons,
+                            PortedPhoneNumbers = portedPhoneNumbers,
+                            VerifiedPhoneNumbers = verifiedPhoneNumbers,
+                            PurchasedPhoneNumbers = purchasedPhoneNumbers
+                        };
+
+                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = "Failed to register with E911! 😠 The currently selected phone number is not a valid value.", AlertType = "alert-danger" });
+                    }
                 }
 
                 return Redirect("/Home/Order");
@@ -1874,7 +2043,7 @@ namespace NumberSearch.Ops.Controllers
                         {
                             specificTaxRate = await SalesTax.GetLocalAPIAsync(location.Address, location.City, location.Zip).ConfigureAwait(false);
                         }
-                        catch (Exception ex)
+                        catch
                         {
                             if (retryCount > 10)
                             {

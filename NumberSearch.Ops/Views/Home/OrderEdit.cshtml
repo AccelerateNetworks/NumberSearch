@@ -287,14 +287,38 @@
             </select>
         </div>
     </div>
-
     <div class="row">
         <div class="col-md-12 mb-3">
             <label for="zip" class="text-muted">Notes</label>
             <input asp-for="Order.CustomerNotes" type="text" class="form-control" id="customernotes" placeholder="Add important information for our staff">
         </div>
     </div>
+    <h4 class="mb-3">E911 Registration</h4>
     <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="sales">Main Phone Number for Address (Update the Order to Save)</label>
+            <select asp-for="Order.E911ServiceNumber" class="custom-select mr-sm-2" id="e911">
+                <option selected>Choose...</option>
+                @{
+                    var ported = Model?.Cart?.PortedPhoneNumbers.Select(x => x.PortedDialedNumber).ToArray();
+                    var purchased = Model?.Cart?.PurchasedPhoneNumbers.Select(x => x.DialedNumber).ToArray();
+                    foreach (var item in ported.Union(purchased).ToArray())
+                    {
+                        <option value="@item">@item</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-6 mb-3">
+            @{
+                var registeredNumber = Model?.Order?.E911ServiceNumber ?? "E911 Number Not Set";
+            }
+            <label for="sales">@registeredNumber @@ @Model?.Order?.UnparsedAddress</label>
+            <a href="/Home/Order/@Model.Order.OrderId/RegisterE911" class="btn btn-danger btn-block">Register</a>
+        </div>
+    </div>
+    <h4 class="mb-3">Order Management</h4>
+    <div class="row mb-3">
         <div class="col">
             <button type="submit" class="btn btn-success btn-block">Update</button>
         </div>
@@ -307,7 +331,7 @@
     </div>
 </form>
 <form action="/Home/Order/@Model?.Order?.OrderId/Merge" method="post">
-    <div class="row mt-3">
+    <div class="row mt-3 mb-3">
         <div class="col">
             <label for="address">Current Order Id</label>
             <input value="@Model?.Order?.OrderId" type="text" class="form-control" readonly>
@@ -327,6 +351,7 @@
     var productOrders = Model?.Cart?.ProductOrdersToDictionary();
     if (Model?.Cart?.PhoneNumbers.Count() > 0 || Model?.Cart?.Products.Count() > 0 || Model?.Cart?.Services.Count() > 0 || Model?.Cart?.PortedPhoneNumbers.Count() > 0 || Model?.Cart?.VerifiedPhoneNumbers.Count() > 0 || Model?.Cart?.PurchasedPhoneNumbers.Count() > 0)
     {
+        <h4 class="mb-3">Product Orders</h4>
         <div class="row mt-3">
             <div class="col">
                 <div class="table-responsive shadow-sm">

@@ -108,7 +108,7 @@ namespace NumberSearch.DataAccess.BulkVS
                 }
                 else
                 {
-                    Log.Warning($"[Ingest] [BulkVS] Failed to parse {item.TN}");
+                    Log.Fatal($"[Ingest] [BulkVS] Failed to parse {item.TN}");
                 }
             }
             return output;
@@ -128,7 +128,6 @@ namespace NumberSearch.DataAccess.BulkVS
 
             foreach (var item in results?.ToArray())
             {
-
                 var checkParsed = PhoneNumbersNA.PhoneNumber.TryParse(item.TN, out var phoneNumber);
 
                 if (checkParsed)
@@ -143,7 +142,7 @@ namespace NumberSearch.DataAccess.BulkVS
                 }
                 else
                 {
-                    Log.Warning($"[Ingest] [BulkVS] Failed to parse {item.TN}");
+                    Log.Fatal($"[Ingest] [BulkVS] Failed to parse {item.TN}");
                 }
             }
             return output;

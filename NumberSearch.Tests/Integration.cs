@@ -555,6 +555,25 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task TeliValidateEmergencyAddressAsync()
+        {
+            // Arrange
+
+            // Act
+            var results = await EmergencyInfo.GetAsync("2062011205", token);
+
+            // Assert
+            Assert.NotNull(results);
+            Assert.False(string.IsNullOrWhiteSpace(results.status));
+            output.WriteLine(JsonSerializer.Serialize(results));
+
+            var result = await EmergencyInfo.ValidateAddressAsync(results.data.address, results.data.city, results.data.state, results.data.zip, token);
+            Assert.NotNull(result);
+            Assert.False(string.IsNullOrWhiteSpace(result.status));
+            output.WriteLine(JsonSerializer.Serialize(result));
+        }
+
+        [Fact]
         public async Task TeliPortRequestStatusAsync()
         {
             // Arrange
@@ -597,7 +616,7 @@ namespace NumberSearch.Tests
         public async Task PeerlessGetPhoneNumbersTestAsync()
         {
             // Arrange
-            string npa = "425";
+            string npa = "206";
 
             // Act
             var results = await DidFind.GetByNPAAsync(npa, peerlessAPIKey).ConfigureAwait(false);

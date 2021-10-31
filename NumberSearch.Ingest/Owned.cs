@@ -1,11 +1,14 @@
 ﻿using FirstCom;
 
+using Flurl.Http;
+
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
-using NumberSearch.DataAccess.Models;
 using NumberSearch.DataAccess.TeliMesssage;
+
+using PhoneNumbersNA;
 
 using Serilog;
 
@@ -42,8 +45,8 @@ namespace NumberSearch.Ingest
             // Ingest all owned numbers from the providers.
             try
             {
-                var firstComNumbers = await Owned.FirstPointComAsync(username, password).ConfigureAwait(false);
-                var teleMessageNumbers = await Owned.TeleMessageAsync(teleToken).ConfigureAwait(false);
+                var firstComNumbers = await FirstPointComAsync(username, password).ConfigureAwait(false);
+                var teleMessageNumbers = await TeleMessageAsync(teleToken).ConfigureAwait(false);
                 var bulkVSNumbers = await TnRecord.GetOwnedAsync(bulkVSusername, bulkVSpassword).ConfigureAwait(false);
 
                 if (firstComNumbers != null)
@@ -69,7 +72,7 @@ namespace NumberSearch.Ingest
             }
 
             // Update emergency info
-            var emergency = await Owned.VerifyEmergencyInformationAsync(allNumbers, teleToken, postgresSQL).ConfigureAwait(false);
+            var emergency = await VerifyEmergencyInformationAsync(allNumbers, teleToken, postgresSQL).ConfigureAwait(false);
             allNumbers = emergency.ToList();
 
             // If we ingested any owned numbers update the database.
@@ -77,7 +80,7 @@ namespace NumberSearch.Ingest
             if (allNumbers.Count > 0)
             {
                 Log.Information($"[OwnedNumbers] Submitting {allNumbers.Count} numbers to the database.");
-                ownedNumberStats = await Owned.SubmitOwnedNumbersAsync(allNumbers, postgresSQL).ConfigureAwait(false);
+                ownedNumberStats = await SubmitOwnedNumbersAsync(allNumbers, postgresSQL).ConfigureAwait(false);
             }
             else
             {
@@ -102,12 +105,12 @@ namespace NumberSearch.Ingest
             try
             {
                 Log.Information("[OwnedNumbers] Looking for LRN changes on owned numbers.");
-                var changedNumbers = await Owned.VerifyServiceProvidersAsync(teleToken, bulkVSKey, postgresSQL).ConfigureAwait(false);
+                var changedNumbers = await VerifyServiceProvidersAsync(teleToken, bulkVSKey, postgresSQL).ConfigureAwait(false);
 
                 if (changedNumbers != null && changedNumbers.Any())
                 {
                     Log.Information($"[OwnedNumbers] Emailing out a notification that {changedNumbers.Count()} numbers LRN updates.");
-                    var checkSend = await Owned.SendPortingNotificationEmailAsync(changedNumbers, smtpUsername, smtpPassword, emailDan, emailOrders, postgresSQL).ConfigureAwait(false);
+                    var checkSend = await SendPortingNotificationEmailAsync(changedNumbers, smtpUsername, smtpPassword, emailDan, emailOrders, postgresSQL).ConfigureAwait(false);
                 }
 
                 var orderStatuses = await Orders.OrdersRequiringPortingInformationAsync(postgresSQL).ConfigureAwait(false);
@@ -125,10 +128,10 @@ namespace NumberSearch.Ingest
             }
 
             // Offer unassigned phone numbers we own for purchase on the website.
-            var unassignedNubmers = await Owned.OfferUnassignedNumberForSaleAsync(bulkVSKey, postgresSQL).ConfigureAwait(false);
+            var unassignedNubmers = await OfferUnassignedNumberForSaleAsync(postgresSQL).ConfigureAwait(false);
 
             // Match up owned numbers and their billingClients.
-            var billingClients = await Owned.MatchOwnedNumbersToBillingClientsAsync(postgresSQL).ConfigureAwait(false);
+            var billingClients = await MatchOwnedNumbersToBillingClientsAsync(postgresSQL).ConfigureAwait(false);
 
             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
             var lockEntry = await IngestStatistics.GetLockAsync("OwnedNumbers", postgresSQL).ConfigureAwait(false);
@@ -136,7 +139,6 @@ namespace NumberSearch.Ingest
 
             // Remove all of the old numbers from the database.
             Log.Information("[OwnedNumbers] Marking numbers that failed to reingest as inactive in the database.");
-            // TODO: Mark old owned numbers as in active.
 
             var combined = new IngestStatistics
             {
@@ -167,24 +169,19 @@ namespace NumberSearch.Ingest
         {
             var numbers = new List<OwnedPhoneNumber>();
 
-            var areaCodes = PhoneNumbersNA.AreaCode.All;
-
-            foreach (var npa in areaCodes)
+            foreach (var npa in PhoneNumbersNA.AreaCode.All)
             {
                 var results = await FirstPointComOwnedPhoneNumber.GetAsync(npa.ToString(), username, password).ConfigureAwait(false);
 
                 foreach (var item in results.DIDOrder)
                 {
-                    bool checkNpa = int.TryParse(item.NPA, out int outNpa);
-                    bool checkNxx = int.TryParse(item.NXX, out int outNxx);
-                    bool checkXxxx = int.TryParse(item.DID.Substring(7), out int outXxxx);
+                    var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.DID, out var phoneNumber);
 
-                    if (checkNpa && outNpa < 1000 && checkNxx && outNxx < 1000 && checkXxxx && outXxxx < 10000 && item.DID.Length == 11)
+                    if (checkParse)
                     {
                         numbers.Add(new OwnedPhoneNumber
                         {
-
-                            DialedNumber = item.DID.Substring(1),
+                            DialedNumber = phoneNumber.DialedNumber,
                             IngestedFrom = "FirstPointCom",
                             Active = true,
                             DateIngested = DateTime.Now
@@ -192,7 +189,7 @@ namespace NumberSearch.Ingest
                     }
                     else
                     {
-                        Log.Error($"This failed the 11 char check {item.DID.Length}");
+                        Log.Fatal($"[OwnedNumber] Failed to parse Owned Number {item.DID} from FirstPointCom.");
                     }
                 }
             }
@@ -210,40 +207,35 @@ namespace NumberSearch.Ingest
 
             foreach (var item in results?.data)
             {
-                bool checkNpa = int.TryParse(item.npa, out int npa);
-                bool checkNxx = int.TryParse(item.nxx, out int nxx);
-                bool checkXxxx = int.TryParse(item.xxxx, out int xxxx);
+                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.number, out var phoneNumber);
 
-                if (checkNpa && checkNxx && checkXxxx)
+                if (checkParse)
                 {
                     var number = new OwnedPhoneNumber
                     {
-                        DialedNumber = item.number,
+                        DialedNumber = phoneNumber.DialedNumber,
                         IngestedFrom = "TeleMessage",
                         Active = true,
                         DateIngested = DateTime.Now,
                         Notes = item.note
                     };
 
-                    if (number.IngestedFrom == "TeleMessage")
+                    // Enabled CNAM on Teli numbers every time they are ingested.
+                    try
                     {
-                        // Enabled CNAM on Teli numbers every time they are ingested.
-                        try
-                        {
-                            var cnamEnable = await UserDidsCnamEnable.GetAsync(number.DialedNumber, token).ConfigureAwait(false);
-                            var result = await UserDidsGet.GetAsync(number.DialedNumber, token).ConfigureAwait(false);
-                            var lidb = await UserDidsLibdGet.GetAsync(result?.data?.id, token).ConfigureAwait(false);
-                            number.LIDBCNAM = lidb?.data ?? string.Empty;
-                            Log.Information($"[OwnedNumber] [TeleMessage] LIDB CNAM {lidb?.data} for {number.DialedNumber} or did_id {result?.data?.id} is enabled? {cnamEnable.CnamEnabled()}.");
-                        }
-                        catch
-                        {
-                            Log.Fatal($"[OwnedNumber] [TeleMessage] Failed to enable CNAM for {number.DialedNumber}.");
-                        }
+                        var cnamEnable = await UserDidsCnamEnable.GetAsync(number.DialedNumber, token).ConfigureAwait(false);
+                        var result = await UserDidsGet.GetAsync(number.DialedNumber, token).ConfigureAwait(false);
+                        var lidb = await UserDidsLibdGet.GetAsync(result?.data?.id, token).ConfigureAwait(false);
+                        number.LIDBCNAM = lidb?.data ?? string.Empty;
+                        Log.Information($"[OwnedNumber] [TeleMessage] LIDB CNAM {lidb?.data} for {number.DialedNumber} or did_id {result?.data?.id} is enabled? {cnamEnable.CnamEnabled()}.");
+                    }
+                    catch (FlurlHttpException ex)
+                    {
+                        Log.Fatal($"[OwnedNumber] [TeleMessage] Failed to enable CNAM for {number.DialedNumber}.");
+                        Log.Fatal($"[OwnedNumber] [TeleMessage] {ex.GetResponseStringAsync()}.");
                     }
 
                     list.Add(number);
-
                 }
             }
 
@@ -268,14 +260,30 @@ namespace NumberSearch.Ingest
                 if (number is null)
                 {
                     var checkCreate = await item.PostAsync(connectionString).ConfigureAwait(false);
-                    ingestedNew++;
+                    if (checkCreate)
+                    {
+                        ingestedNew++;
+                        Log.Information($"[OwnedNumbers] Added {item.DialedNumber} as an owned number.");
+                    }
+                    else
+                    {
+                        Log.Fatal($"[OwnedNumbers] Failed to add {item.DialedNumber} as an owned number.");
+                    }
                 }
                 else
                 {
                     item.Notes = string.IsNullOrWhiteSpace(number.Notes) ? item.Notes : number.Notes;
 
                     var checkCreate = await item.PutAsync(connectionString).ConfigureAwait(false);
-                    updatedExisting++;
+                    if (checkCreate)
+                    {
+                        updatedExisting++;
+                        Log.Information($"[OwnedNumbers] Updated {item.DialedNumber} as an owned number.");
+                    }
+                    else
+                    {
+                        Log.Fatal($"[OwnedNumbers] Failed to add {item.DialedNumber} as an owned number.");
+                    }
                 }
             }
 
@@ -302,7 +310,7 @@ namespace NumberSearch.Ingest
             return stats;
         }
 
-        public static async Task<IngestStatistics> OfferUnassignedNumberForSaleAsync(string bulkVSAPIKey, string connectionString)
+        public static async Task<IngestStatistics> OfferUnassignedNumberForSaleAsync(string connectionString)
         {
             var start = DateTime.Now;
             var ingestedNew = 0;
@@ -310,53 +318,39 @@ namespace NumberSearch.Ingest
 
             var numbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
 
-            var newUnassigned = new List<PhoneNumber>();
+            var newUnassigned = new List<DataAccess.PhoneNumber>();
 
             foreach (var item in numbers)
             {
                 if (item?.Notes != null && item?.Notes.Trim() == "Unassigned")
                 {
-                    var number = await PhoneNumber.GetAsync(item.DialedNumber, connectionString).ConfigureAwait(false);
+                    var number = await DataAccess.PhoneNumber.GetAsync(item.DialedNumber, connectionString).ConfigureAwait(false);
 
-                    if (number is null || string.IsNullOrWhiteSpace(number?.DialedNumber))
+                    if (number is null)
                     {
-                        // If the number has at least 10 chars then it could be a valid phone number.
-                        // If the number starts with a 1 then it's a US number, we want to ignore internation numbers.
-                        if (item.DialedNumber.Length == 10 || item.DialedNumber.Length == 11)
-                        {
-                            item.DialedNumber = item.DialedNumber.Substring(item.DialedNumber.Length - 10);
-                        }
-                        else
-                        {
-                            Log.Warning($"[Ingest] [OwnedNumber] Failed to parse {item.DialedNumber}. Passed neither the 10 or 11 char checks.");
-                            continue;
-                        }
+                        var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number.DialedNumber, out var phoneNumber);
 
-                        bool checkNpa = int.TryParse(item.DialedNumber.Substring(0, 3), out int npa);
-                        bool checkNxx = int.TryParse(item.DialedNumber.Substring(3, 3), out int nxx);
-                        bool checkXxxx = int.TryParse(item.DialedNumber.Substring(6, 4), out int xxxx);
-
-                        if (checkNpa && checkNxx && checkXxxx)
+                        if (checkParse)
                         {
-                            var lrnInfo = await LrnBulkCnam.GetAsync(item.DialedNumber, bulkVSAPIKey).ConfigureAwait(false);
-
-                            number = new PhoneNumber
+                            number = new DataAccess.PhoneNumber
                             {
-                                NPA = npa,
-                                NXX = nxx,
-                                XXXX = xxxx,
-                                DialedNumber = item.DialedNumber,
-                                City = string.IsNullOrWhiteSpace(lrnInfo.city) ? "Unknown City" : lrnInfo.city,
-                                State = string.IsNullOrWhiteSpace(lrnInfo.province) ? "Unknown State" : lrnInfo.province,
+                                NPA = phoneNumber.NPA,
+                                NXX = phoneNumber.NXX,
+                                XXXX = phoneNumber.XXXX,
+                                DialedNumber = phoneNumber.DialedNumber,
                                 DateIngested = item.DateIngested,
                                 IngestedFrom = "OwnedNumber"
                             };
+
+                            newUnassigned.Add(number);
+                            ingestedNew++;
+
+                            Log.Information($"[Ingest] [OwnedNumber] Put unassigned number {item.DialedNumber} up for sale.");
                         }
-
-                        newUnassigned.Add(number);
-                        ingestedNew++;
-
-                        Log.Information($"[Ingest] [OwnedNumber] Put unassigned number {item.DialedNumber} up for sale.");
+                        else
+                        {
+                            Log.Fatal($"[Ingest] [OwnedNumber] Failed to put unassigned number {item.DialedNumber} up for sale. Number could not be parsed.");
+                        }
                     }
                     else
                     {
@@ -372,8 +366,8 @@ namespace NumberSearch.Ingest
             }
 
             var typedNumbers = Services.AssignNumberTypes(newUnassigned).ToArray();
-
-            var unassignedNumberStats = await Services.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
+            var locations = await Services.AssignRatecenterAndRegionAsync(typedNumbers).ConfigureAwait(false);
+            var unassignedNumberStats = await Services.SubmitPhoneNumbersAsync(locations.ToArray(), connectionString).ConfigureAwait(false);
 
             var end = DateTime.Now;
 
@@ -490,49 +484,63 @@ namespace NumberSearch.Ingest
         public static async Task<IEnumerable<ServiceProviderChanged>> VerifyServiceProvidersAsync(Guid teleToken, string bulkApiKey, string connectionString)
         {
             var owned = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
-            var tollFree = PhoneNumbersNA.AreaCode.TollFree;
-
             var serviceProviderChanged = new List<ServiceProviderChanged>();
 
             foreach (var number in owned)
             {
-                var npa = number.DialedNumber.Substring(0, 3);
-                var isTollFree = tollFree.Where(x => x.ToString() == npa).Any();
+                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number.DialedNumber, out var phoneNumber);
 
-                if (isTollFree)
+                if (checkParse)
                 {
-                    // Skip the LRNlookup if the current number is TollFree.
-                    Log.Information($"[OwnedNumbers] Skipping Toll Free number {number.DialedNumber}.");
+                    if (phoneNumber.DialedNumber.IsTollfree())
+                    {
+                        // Skip the LRNlookup if the current number is TollFree.
+                        Log.Information($"[OwnedNumbers] Skipping Toll Free number {number.DialedNumber}.");
+                    }
+                    else
+                    {
+                        var result = await LrnBulkCnam.GetAsync(number.DialedNumber, bulkApiKey).ConfigureAwait(false);
+
+                        var provider = "BulkVS";
+                        var newSpid = result?.spid ?? string.Empty;
+                        var newSpidName = result?.lec ?? string.Empty;
+
+                        var updatedSPID = newSpid != number.SPID;
+                        var updatedSPIDName = newSpidName != number.SPIDName;
+
+                        if (updatedSPID || updatedSPIDName)
+                        {
+                            serviceProviderChanged.Add(new ServiceProviderChanged
+                            {
+                                CurrentSPID = newSpid,
+                                OldSPID = number.SPID,
+                                CurrentSPIDName = newSpidName,
+                                OldSPIDName = number.SPIDName,
+                                DialedNumber = number.DialedNumber
+                            });
+
+                            // Update the SPID to the current value.
+                            number.SPID = newSpid;
+                            number.SPIDName = newSpidName;
+                            var checkUpdate = await number.PutAsync(connectionString).ConfigureAwait(false);
+                            if (checkUpdate)
+                            {
+                                Log.Information($"[OwnedNumbers] Updated {newSpidName}, {newSpid} for {number.DialedNumber} from [{provider}].");
+                            }
+                            else
+                            {
+                                Log.Fatal($"[OwnedNumbers] Failed to update {newSpidName}, {newSpid} for {number.DialedNumber} from [{provider}].");
+                            }
+                        }
+                        else
+                        {
+                            Log.Information($"[OwnedNumbers] Found {newSpidName}, {newSpid} for {number.DialedNumber} from [{provider}].");
+                        }
+                    }
                 }
                 else
                 {
-                    var result = await LrnBulkCnam.GetAsync(number.DialedNumber, bulkApiKey).ConfigureAwait(false);
-
-                    var provider = "BulkVS";
-                    var newSpid = result?.spid ?? string.Empty;
-                    var newSpidName = result?.lec ?? string.Empty;
-
-                    var checkSPID = newSpid != number.SPID;
-                    var checkSPIDName = newSpidName != number.SPIDName;
-
-                    if (checkSPID || checkSPIDName)
-                    {
-                        serviceProviderChanged.Add(new ServiceProviderChanged
-                        {
-                            CurrentSPID = newSpid,
-                            OldSPID = number.SPID,
-                            CurrentSPIDName = newSpidName,
-                            OldSPIDName = number.SPIDName,
-                            DialedNumber = number.DialedNumber
-                        });
-
-                        // Update the SPID to the current value.
-                        number.SPID = newSpid;
-                        number.SPIDName = newSpidName;
-                        var checkUpdate = await number.PutAsync(connectionString).ConfigureAwait(false);
-                    }
-
-                    Log.Information($"[OwnedNumbers] Found {newSpidName}, {newSpid} for {number.DialedNumber} from [{provider}].");
+                    Log.Fatal($"[OwnedNumbers] Failed to parsed Owned Number {number.DialedNumber}.");
                 }
             }
 
@@ -549,47 +557,70 @@ namespace NumberSearch.Ingest
 
             foreach (var number in owned)
             {
-                var info = await EmergencyInfo.GetAsync(number.DialedNumber, teleToken).ConfigureAwait(false);
-
-                if (info?.code == 200)
+                try
                 {
-                    var checkCreate = DateTime.TryParse(info?.data?.create_dt, out var createdDate);
-                    var checkMod = DateTime.TryParse(info?.data?.modify_dt, out var modDate);
+                    var info = await EmergencyInfo.GetAsync(number.DialedNumber, teleToken).ConfigureAwait(false);
 
-                    var toDb = new EmergencyInformation
+                    if (info?.code == 200)
                     {
-                        Address = info?.data?.address,
-                        AlertGroup = info?.data?.alert_group,
-                        City = info?.data?.city,
-                        CreatedDate = checkCreate ? createdDate : DateTime.Now,
-                        DateIngested = DateTime.Now,
-                        DialedNumber = number.DialedNumber,
-                        FullName = info?.data?.full_name,
-                        IngestedFrom = "TeleMessage",
-                        ModifyDate = checkMod ? modDate : DateTime.Now,
-                        Note = info?.data?.did_note.Trim(),
-                        State = info?.data?.state,
-                        TeliId = info?.data?.did_id,
-                        UnitNumber = info?.data?.unit_number,
-                        UnitType = info?.data?.unit_type,
-                        Zip = info?.data?.zip
-                    };
+                        var checkCreate = DateTime.TryParse(info?.data?.create_dt, out var createdDate);
+                        var checkMod = DateTime.TryParse(info?.data?.modify_dt, out var modDate);
 
-                    var existing = emergencyInformation.Where(x => x.DialedNumber == toDb.DialedNumber).FirstOrDefault();
+                        var toDb = new EmergencyInformation
+                        {
+                            Address = info?.data?.address,
+                            AlertGroup = info?.data?.alert_group,
+                            City = info?.data?.city,
+                            CreatedDate = checkCreate ? createdDate : DateTime.Now,
+                            DateIngested = DateTime.Now,
+                            DialedNumber = number.DialedNumber,
+                            FullName = info?.data?.full_name,
+                            IngestedFrom = "TeleMessage",
+                            ModifyDate = checkMod ? modDate : DateTime.Now,
+                            Note = info?.data?.did_note.Trim(),
+                            State = info?.data?.state,
+                            TeliId = info?.data?.did_id,
+                            UnitNumber = info?.data?.unit_number,
+                            UnitType = info?.data?.unit_type,
+                            Zip = info?.data?.zip
+                        };
 
-                    if (existing is null)
-                    {
-                        var checkSubmit = await toDb.PostAsync(connectionString).ConfigureAwait(false);
+                        var existing = emergencyInformation.Where(x => x.DialedNumber == toDb.DialedNumber).FirstOrDefault();
 
-                        Log.Information($"[OwnedNumbers] Added Emergency Information for {number.DialedNumber}.");
-                    }
-                    else
-                    {
-                        var checkSubmit = await toDb.PutAsync(connectionString).ConfigureAwait(false);
+                        if (existing is null)
+                        {
+                            var checkSubmit = await toDb.PostAsync(connectionString).ConfigureAwait(false);
 
-                        Log.Information($"[OwnedNumbers] Updated Emergency Information for {number.DialedNumber}.");
+                            if (checkSubmit)
+                            {
+                                Log.Information($"[OwnedNumbers] Added Emergency Information for {number.DialedNumber}.");
+                            }
+                            else
+                            {
+                                Log.Fatal($"[OwnedNumbers] Failed to add Emergency Information for {number.DialedNumber}.");
+                            }
+                        }
+                        else
+                        {
+                            var checkSubmit = await toDb.PutAsync(connectionString).ConfigureAwait(false);
+
+                            if (checkSubmit)
+                            {
+                                Log.Information($"[OwnedNumbers] Updated Emergency Information for {number.DialedNumber}.");
+                            }
+                            else
+                            {
+                                Log.Fatal($"[OwnedNumbers] Failed to updated Emergency Information for {number.DialedNumber}.");
+                            }
+                        }
                     }
                 }
+                catch (Exception ex)
+                {
+                    Log.Information($"[OwnedNumbers] Failed to update Emergency Information for {number.DialedNumber}.");
+                    Log.Information($"[OwnedNumbers] {ex.Message}.");
+                    Log.Information($"[OwnedNumbers] {ex.StackTrace}.");
+                };
             }
 
             var fromDb = await EmergencyInformation.GetAllAsync(connectionString).ConfigureAwait(false);
@@ -598,9 +629,10 @@ namespace NumberSearch.Ingest
             {
                 var emergencyInfo = fromDb.Where(x => x.DialedNumber == item.DialedNumber).FirstOrDefault();
 
-                if (!(emergencyInfo is null))
+                if (emergencyInfo is not null)
                 {
                     item.EmergencyInformationId = emergencyInfo?.EmergencyInformationId;
+                    Log.Information($"[OwnedNumbers] Matched Emergency Information {item.EmergencyInformationId} to {item.DialedNumber}.");
                 }
             }
 
