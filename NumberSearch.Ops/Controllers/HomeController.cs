@@ -591,17 +591,486 @@ namespace NumberSearch.Ops.Controllers
                                 PurchasedPhoneNumbers = purchasedPhoneNumbers
                             };
 
-                            return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = "The currently selected phone number is already registered. 🤔", AlertType = "alert-warning" });
+                            return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"The currently selected phone number {phoneNumber.DialedNumber} is already registered for E911 service. 🤔", AlertType = "alert-warning" });
                         }
                         else
                         {
                             // Register the number with Teli for E911 service.
                             var checkAddressValid = await EmergencyInfo.ValidateAddressAsync(order.Address, order.City, order.State, order.Zip, _teleToken);
 
-                            if (checkAddressValid.status == "200")
+                            if (checkAddressValid.code == 200)
                             {
                                 // With a valid address we can now register the address to the phone number selected for this account.
+                                var checkNumber = await UserDidsGet.GetAsync(phoneNumber.DialedNumber, _teleToken);
+                                if (checkNumber is null)
+                                {
+                                    // Check if the number can be registered as an offnet number with Teli.
+                                    var checkOffnet = await DidsOffnet.VerifyCapabilityAsync(phoneNumber.DialedNumber, _teleToken);
+                                    if (checkOffnet.code == 200)
+                                    {
+                                        // Insert the offnet number.
+                                        var offnetInsertJob = await DidsOffnet.SubmitNumberAsync(phoneNumber.DialedNumber, _teleToken);
 
+                                        // Check the status of the job until it completes.
+                                        if (!string.IsNullOrWhiteSpace(offnetInsertJob?.data?.jobid))
+                                        {
+                                            var checkJobStatus = await DidsOffnet.StatusSubmitNumberAsync(offnetInsertJob.data.jobid, _teleToken);
+
+                                            while (checkJobStatus.code != 200)
+                                            {
+                                                await Task.Delay(1000);
+                                                checkJobStatus = await DidsOffnet.StatusSubmitNumberAsync(offnetInsertJob.data.jobid, _teleToken);
+
+                                                // Bail out if the job has failed.
+                                                if (checkJobStatus.code == 500)
+                                                {
+                                                    // Number cannot be register with Teli as an offnet number.
+                                                    var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                                    var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                                    var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                                    var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                                    var products = new List<Product>();
+                                                    var services = new List<Service>();
+                                                    var coupons = new List<Coupon>();
+                                                    foreach (var item in productOrders)
+                                                    {
+                                                        if (item?.ProductId != Guid.Empty)
+                                                        {
+                                                            var product = await Product.GetByIdAsync(item.ProductId, _postgresql).ConfigureAwait(false);
+                                                            products.Add(product);
+                                                        }
+                                                        else if (item?.ServiceId != Guid.Empty)
+                                                        {
+                                                            var service = await Service.GetAsync(item.ServiceId, _postgresql).ConfigureAwait(false);
+                                                            services.Add(service);
+                                                        }
+                                                        else if (item?.CouponId is not null)
+                                                        {
+                                                            var coupon = await Coupon.GetByIdAsync(item.CouponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                                                            coupons.Add(coupon);
+                                                        }
+                                                    }
+
+                                                    var cart = new Cart
+                                                    {
+                                                        Order = order,
+                                                        PhoneNumbers = new List<PhoneNumber>(),
+                                                        ProductOrders = productOrders,
+                                                        Products = products,
+                                                        Services = services,
+                                                        Coupons = coupons,
+                                                        PortedPhoneNumbers = portedPhoneNumbers,
+                                                        VerifiedPhoneNumbers = verifiedPhoneNumbers,
+                                                        PurchasedPhoneNumbers = purchasedPhoneNumbers
+                                                    };
+
+                                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to register with E911! 😠 Teli reports that the number is offnet and the job to register it failed. {checkJobStatus?.error}", AlertType = "alert-danger" });
+                                                }
+                                            }
+
+                                            // If the job completed successfully get the did_id.
+                                            var didDetails = await DidsGet.GetAsync(phoneNumber.DialedNumber, _teleToken);
+                                            if (didDetails?.code == 200 && !string.IsNullOrWhiteSpace(didDetails?.data?.id))
+                                            {
+                                                var fullName = $"{order.FirstName} {order.LastName}";
+                                                EmergencyInfo E911Request = null;
+                                                // Request E911 service for this number at the previously validated address.
+                                                if (string.IsNullOrWhiteSpace(order.AddressUnitNumber))
+                                                {
+                                                    E911Request = await EmergencyInfo.CreateE911RecordAsync(didDetails.data.id, fullName, order.Address, order.City, order.State, order.Zip, string.Empty, string.Empty, _teleToken);
+
+                                                }
+                                                else
+                                                {
+                                                    E911Request = await EmergencyInfo.CreateE911RecordAsync(didDetails.data.id, fullName, order.Address, order.City, order.State, order.Zip, order.AddressUnitType, order.AddressUnitNumber, _teleToken);
+                                                }
+
+                                                if (E911Request is not null && E911Request?.code == 200)
+                                                {
+                                                    // Congrats we did it!
+                                                    var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                                    var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                                    var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                                    var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                                    var products = new List<Product>();
+                                                    var services = new List<Service>();
+                                                    var coupons = new List<Coupon>();
+                                                    foreach (var item in productOrders)
+                                                    {
+                                                        if (item?.ProductId != Guid.Empty)
+                                                        {
+                                                            var product = await Product.GetByIdAsync(item.ProductId, _postgresql).ConfigureAwait(false);
+                                                            products.Add(product);
+                                                        }
+                                                        else if (item?.ServiceId != Guid.Empty)
+                                                        {
+                                                            var service = await Service.GetAsync(item.ServiceId, _postgresql).ConfigureAwait(false);
+                                                            services.Add(service);
+                                                        }
+                                                        else if (item?.CouponId is not null)
+                                                        {
+                                                            var coupon = await Coupon.GetByIdAsync(item.CouponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                                                            coupons.Add(coupon);
+                                                        }
+                                                    }
+
+                                                    var cart = new Cart
+                                                    {
+                                                        Order = order,
+                                                        PhoneNumbers = new List<PhoneNumber>(),
+                                                        ProductOrders = productOrders,
+                                                        Products = products,
+                                                        Services = services,
+                                                        Coupons = coupons,
+                                                        PortedPhoneNumbers = portedPhoneNumbers,
+                                                        VerifiedPhoneNumbers = verifiedPhoneNumbers,
+                                                        PurchasedPhoneNumbers = purchasedPhoneNumbers
+                                                    };
+
+                                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Successfully registered {phoneNumber.DialedNumber} with E911! 🥳", AlertType = "alert-success" });
+                                                }
+                                                else
+                                                {
+                                                    // Failed to get the did_id.
+                                                    var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                                    var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                                    var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                                    var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                                    var products = new List<Product>();
+                                                    var services = new List<Service>();
+                                                    var coupons = new List<Coupon>();
+                                                    foreach (var item in productOrders)
+                                                    {
+                                                        if (item?.ProductId != Guid.Empty)
+                                                        {
+                                                            var product = await Product.GetByIdAsync(item.ProductId, _postgresql).ConfigureAwait(false);
+                                                            products.Add(product);
+                                                        }
+                                                        else if (item?.ServiceId != Guid.Empty)
+                                                        {
+                                                            var service = await Service.GetAsync(item.ServiceId, _postgresql).ConfigureAwait(false);
+                                                            services.Add(service);
+                                                        }
+                                                        else if (item?.CouponId is not null)
+                                                        {
+                                                            var coupon = await Coupon.GetByIdAsync(item.CouponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                                                            coupons.Add(coupon);
+                                                        }
+                                                    }
+
+                                                    var cart = new Cart
+                                                    {
+                                                        Order = order,
+                                                        PhoneNumbers = new List<PhoneNumber>(),
+                                                        ProductOrders = productOrders,
+                                                        Products = products,
+                                                        Services = services,
+                                                        Coupons = coupons,
+                                                        PortedPhoneNumbers = portedPhoneNumbers,
+                                                        VerifiedPhoneNumbers = verifiedPhoneNumbers,
+                                                        PurchasedPhoneNumbers = purchasedPhoneNumbers
+                                                    };
+
+                                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to register with E911! 😠 Teli reports that the number is offnet and is registered. But we failed to register an address against its did_id. {E911Request?.error}", AlertType = "alert-danger" });
+                                                }
+                                            }
+                                            else
+                                            {
+                                                // Failed to get the did_id.
+                                                var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                                var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                                var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                                var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                                var products = new List<Product>();
+                                                var services = new List<Service>();
+                                                var coupons = new List<Coupon>();
+                                                foreach (var item in productOrders)
+                                                {
+                                                    if (item?.ProductId != Guid.Empty)
+                                                    {
+                                                        var product = await Product.GetByIdAsync(item.ProductId, _postgresql).ConfigureAwait(false);
+                                                        products.Add(product);
+                                                    }
+                                                    else if (item?.ServiceId != Guid.Empty)
+                                                    {
+                                                        var service = await Service.GetAsync(item.ServiceId, _postgresql).ConfigureAwait(false);
+                                                        services.Add(service);
+                                                    }
+                                                    else if (item?.CouponId is not null)
+                                                    {
+                                                        var coupon = await Coupon.GetByIdAsync(item.CouponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                                                        coupons.Add(coupon);
+                                                    }
+                                                }
+
+                                                var cart = new Cart
+                                                {
+                                                    Order = order,
+                                                    PhoneNumbers = new List<PhoneNumber>(),
+                                                    ProductOrders = productOrders,
+                                                    Products = products,
+                                                    Services = services,
+                                                    Coupons = coupons,
+                                                    PortedPhoneNumbers = portedPhoneNumbers,
+                                                    VerifiedPhoneNumbers = verifiedPhoneNumbers,
+                                                    PurchasedPhoneNumbers = purchasedPhoneNumbers
+                                                };
+
+                                                return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to register with E911! 😠 Teli reports that the number is offnet and is registered. But we could not lookup it's did_id. {didDetails?.ErrorData}", AlertType = "alert-danger" });
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            // Number cannot be register with Teli as an offnet number.
+                                            var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                            var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                            var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                            var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                            var products = new List<Product>();
+                                            var services = new List<Service>();
+                                            var coupons = new List<Coupon>();
+                                            foreach (var item in productOrders)
+                                            {
+                                                if (item?.ProductId != Guid.Empty)
+                                                {
+                                                    var product = await Product.GetByIdAsync(item.ProductId, _postgresql).ConfigureAwait(false);
+                                                    products.Add(product);
+                                                }
+                                                else if (item?.ServiceId != Guid.Empty)
+                                                {
+                                                    var service = await Service.GetAsync(item.ServiceId, _postgresql).ConfigureAwait(false);
+                                                    services.Add(service);
+                                                }
+                                                else if (item?.CouponId is not null)
+                                                {
+                                                    var coupon = await Coupon.GetByIdAsync(item.CouponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                                                    coupons.Add(coupon);
+                                                }
+                                            }
+
+                                            var cart = new Cart
+                                            {
+                                                Order = order,
+                                                PhoneNumbers = new List<PhoneNumber>(),
+                                                ProductOrders = productOrders,
+                                                Products = products,
+                                                Services = services,
+                                                Coupons = coupons,
+                                                PortedPhoneNumbers = portedPhoneNumbers,
+                                                VerifiedPhoneNumbers = verifiedPhoneNumbers,
+                                                PurchasedPhoneNumbers = purchasedPhoneNumbers
+                                            };
+
+                                            return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to register with E911! 😠 Teli reports that the number is offnet and cannot be registered. {offnetInsertJob?.error}", AlertType = "alert-danger" });
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // Number cannot be register with Teli as an offnet number.
+                                        var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                        var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                        var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                        var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                        var products = new List<Product>();
+                                        var services = new List<Service>();
+                                        var coupons = new List<Coupon>();
+                                        foreach (var item in productOrders)
+                                        {
+                                            if (item?.ProductId != Guid.Empty)
+                                            {
+                                                var product = await Product.GetByIdAsync(item.ProductId, _postgresql).ConfigureAwait(false);
+                                                products.Add(product);
+                                            }
+                                            else if (item?.ServiceId != Guid.Empty)
+                                            {
+                                                var service = await Service.GetAsync(item.ServiceId, _postgresql).ConfigureAwait(false);
+                                                services.Add(service);
+                                            }
+                                            else if (item?.CouponId is not null)
+                                            {
+                                                var coupon = await Coupon.GetByIdAsync(item.CouponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                                                coupons.Add(coupon);
+                                            }
+                                        }
+
+                                        var cart = new Cart
+                                        {
+                                            Order = order,
+                                            PhoneNumbers = new List<PhoneNumber>(),
+                                            ProductOrders = productOrders,
+                                            Products = products,
+                                            Services = services,
+                                            Coupons = coupons,
+                                            PortedPhoneNumbers = portedPhoneNumbers,
+                                            VerifiedPhoneNumbers = verifiedPhoneNumbers,
+                                            PurchasedPhoneNumbers = purchasedPhoneNumbers
+                                        };
+
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to register with E911! 😠 Teli reports that the number is offnet and cannot be registered. {checkOffnet?.error}", AlertType = "alert-danger" });
+                                    }
+                                }
+                                else
+                                {
+                                    // Get the did_id and use it to register the number.
+                                    if (checkNumber?.code == 200 && !string.IsNullOrWhiteSpace(checkNumber?.data?.id))
+                                    {
+                                        var fullName = $"{order.FirstName} {order.LastName}";
+                                        EmergencyInfo E911Request = null;
+                                        // Request E911 service for this number at the previously validated address.
+                                        if (string.IsNullOrWhiteSpace(order.AddressUnitNumber))
+                                        {
+                                            E911Request = await EmergencyInfo.CreateE911RecordAsync(checkNumber.data.id, fullName, order.Address, order.City, order.State, order.Zip, string.Empty, string.Empty, _teleToken);
+
+                                        }
+                                        else
+                                        {
+                                            E911Request = await EmergencyInfo.CreateE911RecordAsync(checkNumber.data.id, fullName, order.Address, order.City, order.State, order.Zip, order.AddressUnitType, order.AddressUnitNumber, _teleToken);
+                                        }
+
+                                        if (E911Request is not null && E911Request?.code == 200)
+                                        {
+                                            // Congrats we did it!
+                                            var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                            var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                            var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                            var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                            var products = new List<Product>();
+                                            var services = new List<Service>();
+                                            var coupons = new List<Coupon>();
+                                            foreach (var item in productOrders)
+                                            {
+                                                if (item?.ProductId != Guid.Empty)
+                                                {
+                                                    var product = await Product.GetByIdAsync(item.ProductId, _postgresql).ConfigureAwait(false);
+                                                    products.Add(product);
+                                                }
+                                                else if (item?.ServiceId != Guid.Empty)
+                                                {
+                                                    var service = await Service.GetAsync(item.ServiceId, _postgresql).ConfigureAwait(false);
+                                                    services.Add(service);
+                                                }
+                                                else if (item?.CouponId is not null)
+                                                {
+                                                    var coupon = await Coupon.GetByIdAsync(item.CouponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                                                    coupons.Add(coupon);
+                                                }
+                                            }
+
+                                            var cart = new Cart
+                                            {
+                                                Order = order,
+                                                PhoneNumbers = new List<PhoneNumber>(),
+                                                ProductOrders = productOrders,
+                                                Products = products,
+                                                Services = services,
+                                                Coupons = coupons,
+                                                PortedPhoneNumbers = portedPhoneNumbers,
+                                                VerifiedPhoneNumbers = verifiedPhoneNumbers,
+                                                PurchasedPhoneNumbers = purchasedPhoneNumbers
+                                            };
+
+                                            return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Successfully registered {phoneNumber.DialedNumber} with E911! 🥳", AlertType = "alert-success" });
+                                        }
+                                        else
+                                        {
+                                            // Failed to get the did_id.
+                                            var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                            var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                            var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                            var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                            var products = new List<Product>();
+                                            var services = new List<Service>();
+                                            var coupons = new List<Coupon>();
+                                            foreach (var item in productOrders)
+                                            {
+                                                if (item?.ProductId != Guid.Empty)
+                                                {
+                                                    var product = await Product.GetByIdAsync(item.ProductId, _postgresql).ConfigureAwait(false);
+                                                    products.Add(product);
+                                                }
+                                                else if (item?.ServiceId != Guid.Empty)
+                                                {
+                                                    var service = await Service.GetAsync(item.ServiceId, _postgresql).ConfigureAwait(false);
+                                                    services.Add(service);
+                                                }
+                                                else if (item?.CouponId is not null)
+                                                {
+                                                    var coupon = await Coupon.GetByIdAsync(item.CouponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                                                    coupons.Add(coupon);
+                                                }
+                                            }
+
+                                            var cart = new Cart
+                                            {
+                                                Order = order,
+                                                PhoneNumbers = new List<PhoneNumber>(),
+                                                ProductOrders = productOrders,
+                                                Products = products,
+                                                Services = services,
+                                                Coupons = coupons,
+                                                PortedPhoneNumbers = portedPhoneNumbers,
+                                                VerifiedPhoneNumbers = verifiedPhoneNumbers,
+                                                PurchasedPhoneNumbers = purchasedPhoneNumbers
+                                            };
+
+                                            return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to register with E911! 😠 Teli reports that the number is offnet and is registered. But we failed to register an address against its did_id. {E911Request?.error}", AlertType = "alert-danger" });
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // Failed to get the did_id.
+                                        var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                        var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                        var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                        var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                        var products = new List<Product>();
+                                        var services = new List<Service>();
+                                        var coupons = new List<Coupon>();
+                                        foreach (var item in productOrders)
+                                        {
+                                            if (item?.ProductId != Guid.Empty)
+                                            {
+                                                var product = await Product.GetByIdAsync(item.ProductId, _postgresql).ConfigureAwait(false);
+                                                products.Add(product);
+                                            }
+                                            else if (item?.ServiceId != Guid.Empty)
+                                            {
+                                                var service = await Service.GetAsync(item.ServiceId, _postgresql).ConfigureAwait(false);
+                                                services.Add(service);
+                                            }
+                                            else if (item?.CouponId is not null)
+                                            {
+                                                var coupon = await Coupon.GetByIdAsync(item.CouponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                                                coupons.Add(coupon);
+                                            }
+                                        }
+
+                                        var cart = new Cart
+                                        {
+                                            Order = order,
+                                            PhoneNumbers = new List<PhoneNumber>(),
+                                            ProductOrders = productOrders,
+                                            Products = products,
+                                            Services = services,
+                                            Coupons = coupons,
+                                            PortedPhoneNumbers = portedPhoneNumbers,
+                                            VerifiedPhoneNumbers = verifiedPhoneNumbers,
+                                            PurchasedPhoneNumbers = purchasedPhoneNumbers
+                                        };
+
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to register with E911! 😠 Teli reports that the number is offnet and is registered. But we could not lookup it's did_id. {checkNumber?.status}", AlertType = "alert-danger" });
+                                    }
+                                }
                             }
                             else
                             {

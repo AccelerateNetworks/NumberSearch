@@ -1,5 +1,7 @@
 ﻿using Flurl.Http;
 
+using NumberSearch.DataAccess.TeliMessage;
+
 using Serilog;
 
 using System;
@@ -12,6 +14,7 @@ namespace NumberSearch.DataAccess.TeliMesssage
         public int code { get; set; }
         public string status { get; set; }
         public ResponseData data { get; set; }
+        public string ErrorData { get; set; }
 
         public class ResponseData
         {
@@ -70,7 +73,8 @@ namespace NumberSearch.DataAccess.TeliMesssage
             catch (FlurlHttpException ex)
             {
                 Log.Fatal($"{await ex.GetResponseStringAsync()}");
-                return null;
+                var error = await ex.GetResponseJsonAsync<TeliError>();
+                return new DidsGet { code = error.code, status = error.status, ErrorData = error.data };
             }
         }
     }

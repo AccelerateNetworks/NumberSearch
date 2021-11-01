@@ -1,5 +1,7 @@
 ﻿using Flurl.Http;
 
+using Serilog;
+
 using System;
 using System.Threading.Tasks;
 
@@ -46,7 +48,15 @@ namespace NumberSearch.DataAccess.TeliMesssage
             string tokenParameter = $"?token={token}";
             string numberParameter = $"&number={number}";
             string route = $"{baseUrl}{endpoint}{tokenParameter}{numberParameter}";
-            return await route.GetJsonAsync<UserDidsGet>().ConfigureAwait(false);
+            try
+            {
+                return await route.GetJsonAsync<UserDidsGet>().ConfigureAwait(false);
+            }
+            catch (FlurlHttpException ex)
+            {
+                Log.Warning($"{await ex.GetResponseStringAsync()}");
+                return null;
+            }
         }
     }
 }

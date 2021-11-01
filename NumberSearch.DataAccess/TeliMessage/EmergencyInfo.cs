@@ -14,6 +14,7 @@ namespace NumberSearch.DataAccess
         public int code { get; set; }
         public string status { get; set; }
         public EmergencyInfoDetail data { get; set; }
+        public string error { get; set; }
 
         public class EmergencyInfoDetail
         {
@@ -83,28 +84,30 @@ namespace NumberSearch.DataAccess
             }
         }
 
-        public static async Task<EmergencyInfoDetail> CreateE911RecordAsync(string didId, string fullName, string address, string city, string state, string zip, string unitType, string unitNumber, Guid token)
+        public static async Task<EmergencyInfo> CreateE911RecordAsync(string didId, string fullName, string address, string city, string state, string zip, string unitType, string unitNumber, Guid token)
         {
             string baseUrl = "https://apiv1.teleapi.net/";
             string endpoint = "911/create";
             string tokenParameter = $"?token={token}";
             string didIdParameter = $"&did_id={didId}";
-            string fullNameParameter = $"&fullName={fullName}";
+            string fullNameParameter = $"&full_name={fullName}";
             string addressParameter = $"&address={address}";
             string cityParameter = $"&city={city}";
             string stateParameter = $"&state={state}";
             string zipParameter = $"&zip={zip}";
-            string route = $"{baseUrl}{endpoint}{tokenParameter}{didIdParameter}{fullNameParameter}{addressParameter}{cityParameter}{stateParameter}{zipParameter}";
+            string unitTypeParameter = $"&unit_type={unitType}";
+            string unitNumberParameter = $"&unit_number={unitNumber}";
+            string route = $"{baseUrl}{endpoint}{tokenParameter}{didIdParameter}{fullNameParameter}{addressParameter}{cityParameter}{stateParameter}{zipParameter}{unitTypeParameter}{unitNumberParameter}";
 
             try
             {
-                return await route.GetJsonAsync<EmergencyInfoDetail>().ConfigureAwait(false);
+                return await route.GetJsonAsync<EmergencyInfo>().ConfigureAwait(false);
             }
             catch (FlurlHttpException ex)
             {
                 Log.Fatal("[TeliMessage] [E911Registration] Failed to register E911 information.");
                 Log.Fatal($"[TeliMessage] [E911Registration] {await ex.GetResponseStringAsync()}");
-                return null;
+                return new EmergencyInfo { code = 500, error = await ex.GetResponseStringAsync() };
             }
         }
     }
