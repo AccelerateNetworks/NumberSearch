@@ -616,7 +616,7 @@ namespace NumberSearch.Ops.Controllers
                                         {
                                             var checkJobStatus = await DidsOffnet.StatusSubmitNumberAsync(offnetInsertJob.data.jobid, _teleToken);
 
-                                            while (checkJobStatus.code != 200)
+                                            while (checkJobStatus.status != "success")
                                             {
                                                 await Task.Delay(1000);
                                                 checkJobStatus = await DidsOffnet.StatusSubmitNumberAsync(offnetInsertJob.data.jobid, _teleToken);
