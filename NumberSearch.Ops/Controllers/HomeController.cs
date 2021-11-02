@@ -665,7 +665,7 @@ namespace NumberSearch.Ops.Controllers
                                                         PurchasedPhoneNumbers = purchasedPhoneNumbers
                                                     };
 
-                                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to register with E911! 😠 Teli reports that the number is offnet and the job to register it failed. {checkJobStatus?.error}", AlertType = "alert-danger" });
+                                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to register with E911! 😠 Teli reports that the number is offnet and the job to register it failed. {checkJobStatus?.data}", AlertType = "alert-danger" });
                                                 }
                                             }
 
@@ -927,11 +927,36 @@ namespace NumberSearch.Ops.Controllers
                                         if (string.IsNullOrWhiteSpace(order.AddressUnitNumber))
                                         {
                                             E911Request = await EmergencyInfo.CreateE911RecordAsync(checkNumber.data.id, fullName, order.Address, order.City, order.State, order.Zip, string.Empty, string.Empty, _teleToken);
+                                            if (E911Request is not null && E911Request?.code != 200)
+                                            {
+                                                // Wait and then retry the request.
+                                                await Task.Delay(1000);
+                                                E911Request = await EmergencyInfo.CreateE911RecordAsync(checkNumber.data.id, fullName, order.Address, order.City, order.State, order.Zip, string.Empty, string.Empty, _teleToken);
+                                            }
 
+                                            if (E911Request is not null && E911Request?.code != 200)
+                                            {
+                                                // Wait and then retry the request.
+                                                await Task.Delay(1000);
+                                                E911Request = await EmergencyInfo.CreateE911RecordAsync(checkNumber.data.id, fullName, order.Address, order.City, order.State, order.Zip, string.Empty, string.Empty, _teleToken);
+                                            }
                                         }
                                         else
                                         {
                                             E911Request = await EmergencyInfo.CreateE911RecordAsync(checkNumber.data.id, fullName, order.Address, order.City, order.State, order.Zip, order.AddressUnitType, order.AddressUnitNumber, _teleToken);
+                                            if (E911Request is not null && E911Request?.code != 200)
+                                            {
+                                                // Wait and then retry the request.
+                                                await Task.Delay(1000);
+                                                E911Request = await EmergencyInfo.CreateE911RecordAsync(checkNumber.data.id, fullName, order.Address, order.City, order.State, order.Zip, order.AddressUnitType, order.AddressUnitNumber, _teleToken);
+                                            }
+
+                                            if (E911Request is not null && E911Request?.code != 200)
+                                            {
+                                                // Wait and then retry the request.
+                                                await Task.Delay(1000);
+                                                E911Request = await EmergencyInfo.CreateE911RecordAsync(checkNumber.data.id, fullName, order.Address, order.City, order.State, order.Zip, order.AddressUnitType, order.AddressUnitNumber, _teleToken);
+                                            }
                                         }
 
                                         if (E911Request is not null && E911Request?.code == 200)

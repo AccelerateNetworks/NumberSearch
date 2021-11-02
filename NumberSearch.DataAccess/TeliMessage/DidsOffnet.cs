@@ -19,8 +19,14 @@ namespace NumberSearch.DataAccess.TeliMesssage
 
         public class OffnetResponseData
         {
-            public string[] success { get; set; }
             public string jobid { get; set; }
+        }
+
+        public class StatusResponse
+        {
+            public int code { get; set; }
+            public string status { get; set; }
+            public string data { get; set; }
         }
 
 
@@ -39,8 +45,7 @@ namespace NumberSearch.DataAccess.TeliMesssage
             catch (FlurlHttpException ex)
             {
                 Log.Fatal($"{await ex.GetResponseStringAsync()}");
-                var error = await ex.GetResponseJsonAsync<TeliError>();
-                return new DidsOffnet { code = error.code, status = error.status, error = await ex.GetResponseJsonAsync() };
+                return new DidsOffnet { code = 500, status = "error", error = await ex.GetResponseJsonAsync() };
             }
         }
 
@@ -49,7 +54,7 @@ namespace NumberSearch.DataAccess.TeliMesssage
             string baseUrl = "https://apiv1.teleapi.net/";
             string endpoint = "dids/offnet/submit";
             string tokenParameter = $"?token={token}";
-            string numbersParameter = $"&numbers={number}";
+            string numbersParameter = $"&numbers=[{number}]";
             string enableSMSParameter = $"&enable_sms=no";
             string route = $"{baseUrl}{endpoint}{tokenParameter}{numbersParameter}{enableSMSParameter}";
 
@@ -61,11 +66,11 @@ namespace NumberSearch.DataAccess.TeliMesssage
             {
                 Log.Fatal($"{await ex.GetResponseStringAsync()}");
                 var error = await ex.GetResponseJsonAsync<TeliError>();
-                return new DidsOffnet { code = error.code, status = error.status, error = await ex.GetResponseJsonAsync() };
+                return new DidsOffnet { code = 500, status = "error", error = await ex.GetResponseJsonAsync() };
             }
         }
 
-        public static async Task<DidsOffnet> StatusSubmitNumberAsync(string jobid, Guid token)
+        public static async Task<StatusResponse> StatusSubmitNumberAsync(string jobid, Guid token)
         {
             string baseUrl = "https://apiv1.teleapi.net/";
             string endpoint = "dids/offnet/submit";
@@ -75,13 +80,13 @@ namespace NumberSearch.DataAccess.TeliMesssage
 
             try
             {
-                return await route.GetJsonAsync<DidsOffnet>().ConfigureAwait(false);
+                return await route.GetJsonAsync<StatusResponse>().ConfigureAwait(false);
             }
             catch (FlurlHttpException ex)
             {
                 Log.Fatal($"{await ex.GetResponseStringAsync()}");
                 var error = await ex.GetResponseJsonAsync<TeliError>();
-                return new DidsOffnet { code = error.code, status = error.status, error = await ex.GetResponseJsonAsync() };
+                return new StatusResponse { code = 500, status = "Error", data = await ex.GetResponseJsonAsync() };
             }
         }
     }

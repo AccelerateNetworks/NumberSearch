@@ -459,7 +459,7 @@
                             @{
                                 var freePortedNumbers = Model?.Cart.Services.Count();
 
-                                foreach (var item in Model?.Cart?.PortedPhoneNumbers)
+                                foreach (var item in Model?.Cart?.PortedPhoneNumbers.ToArray())
                                 {
                                     var calculatedCost = 20;
 
