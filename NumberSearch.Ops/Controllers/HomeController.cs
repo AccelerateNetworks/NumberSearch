@@ -2969,8 +2969,8 @@ namespace NumberSearch.Ops.Controllers
                                 PortoutPin = portRequest.ProviderPIN,
                                 TrunkGroup = "SFO",
                                 Lidb = portRequest.CallerId,
-                                Sms = true,
-                                Mms = true,
+                                Sms = false,
+                                Mms = false,
                                 SignLoa = false,
                                 Notify = _emailOrders
                             };
@@ -3051,8 +3051,8 @@ namespace NumberSearch.Ops.Controllers
                             PortoutPin = portRequest.ProviderPIN,
                             TrunkGroup = "SFO",
                             Lidb = portRequest.CallerId,
-                            Sms = true,
-                            Mms = true,
+                            Sms = false,
+                            Mms = false,
                             SignLoa = false,
                             Notify = _emailOrders
                         };
@@ -3274,8 +3274,8 @@ namespace NumberSearch.Ops.Controllers
                                     PortoutPin = portRequest.ProviderPIN,
                                     TrunkGroup = "SFO",
                                     Lidb = portRequest.CallerId,
-                                    Sms = true,
-                                    Mms = true,
+                                    Sms = false,
+                                    Mms = false,
                                     SignLoa = false,
                                     Notify = _emailOrders
                                 };
@@ -3359,8 +3359,8 @@ namespace NumberSearch.Ops.Controllers
                                 PortoutPin = portRequest.ProviderPIN,
                                 TrunkGroup = "SFO",
                                 Lidb = portRequest.CallerId,
-                                Sms = true,
-                                Mms = true,
+                                Sms = false,
+                                Mms = false,
                                 SignLoa = false,
                                 Notify = _emailOrders
                             };

@@ -114,7 +114,7 @@ namespace NumberSearch.Mvc
                                                             Lidb = "Accelerate Networks",
                                                             PortoutPin = productOrder.PIN,
                                                             TrunkGroup = "SFO",
-                                                            Sms = true,
+                                                            Sms = false,
                                                             Mms = false
                                                         };
 

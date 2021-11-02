@@ -55,7 +55,7 @@ namespace NumberSearch.DataAccess.TeliMesssage
             string endpoint = "dids/offnet/submit";
             string tokenParameter = $"?token={token}";
             string numbersParameter = $"&numbers=[{number}]";
-            string enableSMSParameter = $"&enable_sms=no";
+            string enableSMSParameter = $"&enable_sms=yes";
             string route = $"{baseUrl}{endpoint}{tokenParameter}{numbersParameter}{enableSMSParameter}";
 
             try
