@@ -297,17 +297,17 @@
     <div class="row">
         <div class="col-md-6 mb-3">
             <label for="sales">Main Phone Number for Address (Update the Order to Save)</label>
-            <select asp-for="Order.E911ServiceNumber" class="custom-select mr-sm-2" id="e911">
-                <option selected>Choose...</option>
+            <input list="e911numbers" asp-for="Order.E911ServiceNumber" class="custom-select mr-sm-2" id="e911" />
+            <datalist id="e911numbers">
                 @{
                     var ported = Model?.Cart?.PortedPhoneNumbers.Select(x => x.PortedDialedNumber).ToArray();
                     var purchased = Model?.Cart?.PurchasedPhoneNumbers.Select(x => x.DialedNumber).ToArray();
                     foreach (var item in ported.Union(purchased).ToArray())
                     {
-                        <option value="@item">@item</option>
+                        <option value="@item"></option>
                     }
                 }
-            </select>
+            </datalist>
         </div>
         <div class="col-md-6 mb-3">
             @{
