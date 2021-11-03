@@ -247,6 +247,20 @@ namespace NumberSearch.Mvc
 
                                                         Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from OwnedNumbers.");
                                                     }
+
+                                                    // Now that the number is purchased, register it as an offnet number with Teli.
+                                                    var checkSubmit = await DidsOffnet.SubmitNumberAsync(nto.DialedNumber, _teleToken);
+
+                                                    if (checkSubmit.code == 200)
+                                                    {
+                                                        Log.Information($"[Background Worker] Submitted {nto.DialedNumber} as an Offnet number to Teli.");
+                                                    }
+                                                    else
+                                                    {
+                                                        Log.Fatal($"[Background Worker] Failed to submit {nto.DialedNumber} as an Offnet number to Teli.");
+                                                        Log.Fatal($"[Background Worker] {checkSubmit?.status} {checkSubmit?.error}");
+                                                    }
+
                                                 }
                                                 catch (FlurlHttpException ex)
                                                 {
