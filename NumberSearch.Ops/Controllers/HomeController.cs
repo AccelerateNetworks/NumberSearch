@@ -3121,6 +3121,19 @@ namespace NumberSearch.Ops.Controllers
                     }
                 }
 
+                // Trigger the background processes to bring the ported numbers into Teli as offnet numbers for texting and E911 service.
+                order.BackgroundWorkCompleted = false;
+                var checkOrder = await order.PutAsync(_postgresql);
+
+                if (checkOrder)
+                {
+                    Log.Information($"[Port Request] Updated Order {order.OrderId} to kick off the background work.");
+                }
+                else
+                {
+                    Log.Fatal($"[Port Request] Failed to update Order {order.OrderId} to kick off the background work.");
+                }
+
                 return View("PortRequestEdit", new PortRequestResult
                 {
                     Order = order,

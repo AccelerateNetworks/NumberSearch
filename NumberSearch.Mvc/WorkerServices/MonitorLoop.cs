@@ -248,18 +248,25 @@ namespace NumberSearch.Mvc
                                                         Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from OwnedNumbers.");
                                                     }
 
-                                                    // Now that the number is purchased, register it as an offnet number with Teli.
-                                                    var checkSubmit = await DidsOffnet.SubmitNumberAsync(nto.DialedNumber, _teleToken);
 
-                                                    if (checkSubmit.code == 200)
+                                                    // Now that the number is purchased, register it as an offnet number with Teli.
+                                                    var checkExists = await DidsGet.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
+
+                                                    if (checkExists.code != 200)
                                                     {
-                                                        Log.Information($"[Background Worker] Submitted {nto.DialedNumber} as an Offnet number to Teli.");
+                                                        var checkSubmit = await DidsOffnet.SubmitNumberAsync(nto.DialedNumber, _teleToken);
+
+                                                        if (checkSubmit.code == 200)
+                                                        {
+                                                            Log.Information($"[Background Worker] Submitted {nto.DialedNumber} as an Offnet number to Teli.");
+                                                        }
+                                                        else
+                                                        {
+                                                            Log.Fatal($"[Background Worker] Failed to submit {nto.DialedNumber} as an Offnet number to Teli.");
+                                                            Log.Fatal($"[Background Worker] {checkSubmit?.status} {checkSubmit?.error}");
+                                                        }
                                                     }
-                                                    else
-                                                    {
-                                                        Log.Fatal($"[Background Worker] Failed to submit {nto.DialedNumber} as an Offnet number to Teli.");
-                                                        Log.Fatal($"[Background Worker] {checkSubmit?.status} {checkSubmit?.error}");
-                                                    }
+
 
                                                 }
                                                 catch (FlurlHttpException ex)
@@ -278,6 +285,31 @@ namespace NumberSearch.Mvc
                                         catch (OperationCanceledException)
                                         {
                                             // Prevent throwing if the Delay is cancelled
+                                        }
+                                    }
+                                }
+
+                                // Now that the number has been submitted for porting, register it as an offnet number with Teli.
+                                var portedPhoneNumber = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                                foreach (var phoneNumber in portedPhoneNumber)
+                                {
+                                    if (!string.IsNullOrWhiteSpace(phoneNumber.ExternalPortRequestId))
+                                    {
+                                        var checkExists = await DidsGet.GetAsync(phoneNumber.PortedDialedNumber, _teleToken).ConfigureAwait(false);
+
+                                        if (checkExists.code != 200)
+                                        {
+                                            var checkOffnet = await DidsOffnet.SubmitNumberAsync(phoneNumber.PortedDialedNumber, _teleToken).ConfigureAwait(false);
+
+                                            if (checkOffnet.code == 200)
+                                            {
+                                                Log.Information($"[Background Worker] Submitted {phoneNumber.PortedDialedNumber} as an Offnet number to Teli.");
+                                            }
+                                            else
+                                            {
+                                                Log.Information($"[Background Worker] Failed to submit {phoneNumber.PortedDialedNumber} as an Offnet number to Teli.");
+                                            }
                                         }
                                     }
                                 }
