@@ -42,7 +42,7 @@ namespace NumberSearch.Ops.Controllers
 
             //await _context.SaveChangesAsync();
 
-            return View(await _context.PhoneNumberLookups.Where(x => x.CarrierId == null).ToListAsync());
+            return View(await _context.PhoneNumberLookups.Where(x => x.CarrierId == null && !string.IsNullOrWhiteSpace(x.Ocn)).ToListAsync());
         }
 
         [Authorize]
