@@ -1121,7 +1121,6 @@ namespace NumberSearch.Tests
             output.WriteLine(setNote.data);
         }
 
-
         [Fact]
         public async Task GetPhoneNumbersAsync()
         {

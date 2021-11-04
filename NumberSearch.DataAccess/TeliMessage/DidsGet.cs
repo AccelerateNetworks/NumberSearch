@@ -73,8 +73,7 @@ namespace NumberSearch.DataAccess.TeliMesssage
             catch (FlurlHttpException ex)
             {
                 Log.Fatal($"{await ex.GetResponseStringAsync()}");
-                var error = await ex.GetResponseJsonAsync<TeliError>();
-                return new DidsGet { code = error.code, status = error.status, ErrorData = error.data };
+                return new DidsGet { code = 500, status = "error", ErrorData = await ex.GetResponseStringAsync() };
             }
         }
     }

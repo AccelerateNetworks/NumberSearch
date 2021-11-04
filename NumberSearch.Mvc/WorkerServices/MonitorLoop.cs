@@ -250,9 +250,9 @@ namespace NumberSearch.Mvc
 
 
                                                     // Now that the number is purchased, register it as an offnet number with Teli.
-                                                    var checkExists = await DidsGet.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
+                                                    var checkExists = await UserDidsGet.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
 
-                                                    if (checkExists.code != 200)
+                                                    if (checkExists is null || checkExists?.code != 200)
                                                     {
                                                         var checkSubmit = await DidsOffnet.SubmitNumberAsync(nto.DialedNumber, _teleToken);
 
@@ -296,9 +296,9 @@ namespace NumberSearch.Mvc
                                 {
                                     if (!string.IsNullOrWhiteSpace(phoneNumber.ExternalPortRequestId))
                                     {
-                                        var checkExists = await DidsGet.GetAsync(phoneNumber.PortedDialedNumber, _teleToken).ConfigureAwait(false);
+                                        var checkExists = await UserDidsGet.GetAsync(phoneNumber.PortedDialedNumber, _teleToken).ConfigureAwait(false);
 
-                                        if (checkExists.code != 200)
+                                        if (checkExists is null || checkExists?.code != 200)
                                         {
                                             var checkOffnet = await DidsOffnet.SubmitNumberAsync(phoneNumber.PortedDialedNumber, _teleToken).ConfigureAwait(false);
 
