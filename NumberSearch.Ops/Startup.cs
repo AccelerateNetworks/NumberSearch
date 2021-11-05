@@ -15,6 +15,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using NumberSearch.Ops.Services;
 using Microsoft.AspNetCore.Authorization;
+using Prometheus;
 
 namespace NumberSearch.Ops
 {
@@ -116,9 +117,11 @@ Configuration.GetConnectionString("PostgresqlProd")));
             app.UseStaticFiles();
 
             app.UseRouting();
-
+            // https://github.com/prometheus-net/prometheus-net
+            app.UseHttpMetrics();
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseMetricServer();
 
             app.UseEndpoints(endpoints =>
             {
@@ -126,6 +129,7 @@ Configuration.GetConnectionString("PostgresqlProd")));
                     name: "default",
                     pattern: "{controller}/{action}/{id?}");
                 endpoints.MapRazorPages();
+                endpoints.MapMetrics();
             });
         }
     }

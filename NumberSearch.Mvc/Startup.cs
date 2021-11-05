@@ -5,6 +5,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using Prometheus;
+
 using Serilog;
 
 using System;
@@ -44,8 +46,8 @@ namespace NumberSearch.Mvc
                 options.Cookie.IsEssential = true;
             });
 
-            services.AddControllersWithViews()
-                .AddRazorRuntimeCompilation();
+            services.AddControllersWithViews();
+            //.AddRazorRuntimeCompilation();
 
             services.AddControllers();
 
@@ -103,6 +105,9 @@ namespace NumberSearch.Mvc
             });
 
             app.UseRouting();
+
+            // https://github.com/prometheus-net/prometheus-net
+            app.UseHttpMetrics();
             app.UseResponseCaching();
 
             // using Microsoft.AspNetCore.Http;
@@ -125,10 +130,13 @@ namespace NumberSearch.Mvc
 
             app.UseSession();
 
+            app.UseMetricServer();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();
                 endpoints.MapRazorPages();
+                endpoints.MapMetrics();
             });
         }
     }
