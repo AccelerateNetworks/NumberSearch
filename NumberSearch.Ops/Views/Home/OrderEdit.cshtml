@@ -293,11 +293,25 @@
             <input asp-for="Order.CustomerNotes" type="text" class="form-control" id="customernotes" placeholder="Add important information for our staff">
         </div>
     </div>
+    <h4 class="mb-3">Order Management</h4>
+    <div class="row mb-3">
+        <div class="col">
+            <button type="submit" class="btn btn-success btn-block">Update</button>
+        </div>
+        <div class="col">
+            <a href="/Home/Order/@Model.Order.OrderId/Delete" class="btn btn-danger btn-block">Delete</a>
+        </div>
+        <div class="col">
+            <a href="/Home/Order/@Model.Order.OrderId/Delete" class="btn btn-danger btn-block" hidden>Delete</a>
+        </div>
+    </div>
+</form>
+<form action="/Home/Order/@Model.Order.OrderId/RegisterE911/" method="post">
     <h4 class="mb-3">E911 Registration</h4>
     <div class="row">
         <div class="col-md-6 mb-3">
             <label for="sales">Main Phone Number for Address (Update the Order to Save)</label>
-            <input list="e911numbers" asp-for="Order.E911ServiceNumber" class="custom-select mr-sm-2" id="e911" />
+            <input list="e911numbers" name="serviceNumber" class="custom-select mr-sm-2" id="e911" />
             <datalist id="e911numbers">
                 @{
                     var ported = Model?.Cart?.PortedPhoneNumbers.Select(x => x.PortedDialedNumber).ToArray();
@@ -314,19 +328,7 @@
                 var registeredNumber = Model?.Order?.E911ServiceNumber ?? "E911 Number Not Set";
             }
             <label for="sales">@registeredNumber @@ @Model?.Order?.UnparsedAddress</label>
-            <a href="/Home/Order/@Model.Order.OrderId/RegisterE911" class="btn btn-danger btn-block">Register</a>
-        </div>
-    </div>
-    <h4 class="mb-3">Order Management</h4>
-    <div class="row mb-3">
-        <div class="col">
-            <button type="submit" class="btn btn-success btn-block">Update</button>
-        </div>
-        <div class="col">
-            <a href="/Home/Order/@Model.Order.OrderId/Delete" class="btn btn-danger btn-block">Delete</a>
-        </div>
-        <div class="col">
-            <a href="/Home/Order/@Model.Order.OrderId/Delete" class="btn btn-danger btn-block" hidden>Delete</a>
+            <button type="submit" class="btn btn-danger btn-block">Register</button>
         </div>
     </div>
 </form>

@@ -527,7 +527,7 @@ namespace NumberSearch.Ops.Controllers
 
         [Authorize]
         [Route("/Home/Order/{orderId}/RegisterE911")]
-        public async Task<IActionResult> RegisterE911Async(string orderId)
+        public async Task<IActionResult> RegisterE911Async(string serviceNumber, string orderId)
         {
             if (string.IsNullOrWhiteSpace(orderId))
             {
@@ -539,6 +539,57 @@ namespace NumberSearch.Ops.Controllers
 
                 if (order is not null && order.OrderId == Guid.Parse(orderId))
                 {
+                    if (!string.IsNullOrWhiteSpace(serviceNumber))
+                    {
+                        order.E911ServiceNumber = serviceNumber;
+                        var checkUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
+                        if (!checkUpdate)
+                        {
+                            // The order failed to update with the new e911 service number.
+                            var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                            var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                            var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                            var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                            var products = new List<Product>();
+                            var services = new List<Service>();
+                            var coupons = new List<Coupon>();
+                            foreach (var item in productOrders)
+                            {
+                                if (item?.ProductId != Guid.Empty)
+                                {
+                                    var product = await Product.GetByIdAsync(item.ProductId, _postgresql).ConfigureAwait(false);
+                                    products.Add(product);
+                                }
+                                else if (item?.ServiceId != Guid.Empty)
+                                {
+                                    var service = await Service.GetAsync(item.ServiceId, _postgresql).ConfigureAwait(false);
+                                    services.Add(service);
+                                }
+                                else if (item?.CouponId is not null)
+                                {
+                                    var coupon = await Coupon.GetByIdAsync(item.CouponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                                    coupons.Add(coupon);
+                                }
+                            }
+
+                            var cart = new Cart
+                            {
+                                Order = order,
+                                PhoneNumbers = new List<PhoneNumber>(),
+                                ProductOrders = productOrders,
+                                Products = products,
+                                Services = services,
+                                Coupons = coupons,
+                                PortedPhoneNumbers = portedPhoneNumbers,
+                                VerifiedPhoneNumbers = verifiedPhoneNumbers,
+                                PurchasedPhoneNumbers = purchasedPhoneNumbers
+                            };
+
+                            return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"The currently selected phone number {serviceNumber} could not be added to the order. 🤔", AlertType = "alert-warning" });
+                        }
+                    }
+
                     var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(order.E911ServiceNumber, out var phoneNumber);
                     // Register the number with Teli for E911 service.
                     if (checkParse)
