@@ -119,9 +119,9 @@ Configuration.GetConnectionString("PostgresqlProd")));
             app.UseRouting();
             // https://github.com/prometheus-net/prometheus-net
             app.UseHttpMetrics();
+            app.UseMetricServer();
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseMetricServer();
 
             app.UseEndpoints(endpoints =>
             {
