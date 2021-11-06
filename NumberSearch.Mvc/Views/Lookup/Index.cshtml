@@ -362,7 +362,12 @@
                             @{
                                 foreach (var number in Model.Wireless)
                                 {
-                                    <tr style="background-color: @number.Carrier.Color;">
+                                    var color = string.Empty;
+                                    if (!string.IsNullOrWhiteSpace(number?.Carrier?.Color))
+                                    {
+                                        color = $"background-color: {number.Carrier.Color};";
+                                    }
+                                    <tr style="@color">
                                         <td>
                                             <h4>@number?.LrnLookup?.tn</h4>
                                         </td>
