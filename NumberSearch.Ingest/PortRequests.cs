@@ -297,7 +297,14 @@ Accelerate Networks
 
                     // Update the request in the database.
                     var checkUpdate = await request.PutAsync(postgresSQL).ConfigureAwait(false);
-                    Log.Information($"[TeliMessage] [PortRequests] Updated Teli Port Request {request?.TeliId} - {request?.RequestStatus} - {request?.DateCompleted?.ToShortDateString()}");
+                    if (checkUpdate)
+                    {
+                        Log.Information($"[TeliMessage] [PortRequests] Updated Teli Port Request {request?.TeliId} - {request?.RequestStatus} - {request?.DateCompleted?.ToShortDateString()}");
+                    }
+                    else
+                    {
+                        Log.Fatal($"[TeliMessage] [PortRequests] Failed to update Teli Port Request {request?.TeliId} - {request?.RequestStatus} - {request?.DateCompleted?.ToShortDateString()}. Could not save to our database.");
+                    }
 
                     // Get the original order and the numbers associated with the outstanding Port Request.
                     var originalOrder = await Order.GetByIdAsync(request.OrderId, postgresSQL).ConfigureAwait(false);
@@ -344,7 +351,14 @@ Accelerate Networks
                                 }
 
                                 var checkPortedNumberUpdate = await match.PutAsync(postgresSQL).ConfigureAwait(false);
-                                Log.Information($"[TeleMessage] [PortRequests] Updated Teli Port Request {request?.TeliId} - {match?.PortedDialedNumber} - {match?.RequestStatus} - {match?.DateFirmOrderCommitment?.ToShortDateString()}");
+                                if (checkPortedNumberUpdate)
+                                {
+                                    Log.Information($"[TeleMessage] [PortRequests] Updated Teli Port Request {request?.TeliId} - {match?.PortedDialedNumber} - {match?.RequestStatus} - {match?.DateFirmOrderCommitment?.ToShortDateString()}");
+                                }
+                                else
+                                {
+                                    Log.Fatal($"[TeleMessage] [PortRequests] Failed to update Teli Port Request {request?.TeliId} - {match?.PortedDialedNumber} - {match?.RequestStatus} - {match?.DateFirmOrderCommitment?.ToShortDateString()}. Could not save to our database.");
+                                }
                             }
                             else
                             {
@@ -372,7 +386,14 @@ Accelerate Networks
                                 }
 
                                 var checkInsertPortedNumber = await supriseNumber.PostAsync(postgresSQL).ConfigureAwait(false);
-                                Log.Information($"[TeleMessage] [PortRequests] Updated Teli Port Request with new phone number {request?.TeliId} - {match?.PortedDialedNumber} - {match?.RequestStatus} - {match?.DateFirmOrderCommitment?.ToShortDateString()}");
+                                if (checkInsertPortedNumber)
+                                {
+                                    Log.Information($"[TeleMessage] [PortRequests] Updated Teli Port Request with new phone number {request?.TeliId} - {match?.PortedDialedNumber} - {match?.RequestStatus} - {match?.DateFirmOrderCommitment?.ToShortDateString()}");
+                                }
+                                else
+                                {
+                                    Log.Information($"[TeleMessage] [PortRequests] Updated Teli Port Request with new phone number {request?.TeliId} - {match?.PortedDialedNumber} - {match?.RequestStatus} - {match?.DateFirmOrderCommitment?.ToShortDateString()}");
+                                }
                             }
                         }
                     }

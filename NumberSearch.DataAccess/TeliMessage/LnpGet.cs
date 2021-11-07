@@ -65,20 +65,18 @@ namespace NumberSearch.DataAccess.TeliMesssage
             string url = $"{baseUrl}{endpoint}{tokenParameter}{requestIdParameter}";
             try
             {
-                var result = await url.GetJsonAsync<LnpGet>().ConfigureAwait(false);
-
-                return result;
+                return await url.GetJsonAsync<LnpGet>().ConfigureAwait(false);
             }
-            catch (FlurlHttpException)
+            catch (FlurlHttpException ex)
             {
                 var result = await url.GetJsonAsync<TeliError>().ConfigureAwait(false);
 
-                Log.Fatal($"[TeliMessage] {JsonSerializer.Serialize(result)}");
+                Log.Fatal($"[TeliMessage] {await ex.GetResponseStringAsync()}");
 
                 return new LnpGet
                 {
-                    code = result.code,
-                    status = result.status,
+                    code = result?.code ?? 500,
+                    status = result?.status ?? "error",
                     data = new LnpGetResponse()
                 };
             }
