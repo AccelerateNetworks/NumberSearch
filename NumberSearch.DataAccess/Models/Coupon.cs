@@ -28,7 +28,7 @@ namespace NumberSearch.DataAccess
             var result = await connection
                 .QueryFirstOrDefaultAsync<Coupon>("SELECT \"CouponId\", \"Name\", \"Description\", \"Public\" FROM public.\"Coupons\" " +
                 "WHERE \"CouponId\" = @CouponId",
-                new { couponId })
+                new { CouponId = couponId })
                 .ConfigureAwait(false);
 
             return result;

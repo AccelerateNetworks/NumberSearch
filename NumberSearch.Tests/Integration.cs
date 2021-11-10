@@ -987,7 +987,7 @@ namespace NumberSearch.Tests
             // Act
             var result = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
 
-            var results = await Search.GetLocalNumbersAsync("WA", string.Empty, "425", string.Empty, result.data.token).ConfigureAwait(false);
+            var results = await Search.GetLocalNumbersAsync("WA", string.Empty, "206", string.Empty, result.data.token).ConfigureAwait(false);
 
             Assert.NotEmpty(results.data.result);
             output.WriteLine(results.data.result.Length.ToString());
