@@ -411,6 +411,7 @@ namespace NumberSearch.Ops.EFModels
                 entity.Property(e => e.DialedNumber).HasMaxLength(10);
 
                 entity.Property(e => e.PortedDialedNumber).HasMaxLength(10);
+
             });
 
             modelBuilder.Entity<ProductShipment>(entity =>

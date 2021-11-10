@@ -41,6 +41,10 @@ namespace NumberSearch.Ops
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Use the old timestamp handling. 
+            // https://githubmemory.com/repo/npgsql/efcore.pg/issues/2000
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(
                     Configuration.GetConnectionString("PostgresqlProd")));
@@ -122,7 +126,6 @@ Configuration.GetConnectionString("PostgresqlProd")));
             app.UseMetricServer();
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
