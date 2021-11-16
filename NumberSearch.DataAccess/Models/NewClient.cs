@@ -24,7 +24,11 @@ namespace NumberSearch.DataAccess
         public bool OverheadPaging { get; set; }
         public string OverheadPagingDescription { get; set; }
         public bool Intercom { get; set; }
+        // Add this to the db
+        public string IntercomDescription { get; set; }
         public IntercomRegistration[] IntercomRegistrations { get; set; }
+        // Add this to the db
+        public bool SpeedDial { get; set; }
         public SpeedDialKey[] SpeedDialKeys { get; set; }
         public bool CustomHoldMusic { get; set; }
         public string HoldMusicDescription { get; set; }

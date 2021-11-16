@@ -7,20 +7,116 @@
     var orderedPhones = Model?.ProductOrders?.Where(x => x.ProductId != Guid.Empty).ToArray();
 }
 <script type="text/javascript">
-    const ext = document.getElementById('ext');
-    ext.addEventListener('input', function (event) {
-      // Each time the user types something, we check if the
-      // form fields are valid.
+    $(document).ready(function () {
 
-      if (email.validity.valid) {
-        // In case there is an error message visible, if the field
-        // is valid, we remove the error message.
-        emailError.textContent = ''; // Reset the content of the message
-        emailError.className = 'error'; // Reset the visual state of the message
-      } else {
-        // If there is still an error, show the correct error
-        showError();
-      }
+        phoneMenuDiscription();
+        textingServiceDescription();
+        overheadPagingDescription();
+        intercomDescription();
+        speedDialDescription();
+        customMusicDescription();
+
+        $("#pmoption1").change(function () {
+            phoneMenuDiscription();
+        });
+
+        $("#pmoption2").change(function () {
+            phoneMenuDiscription();
+        });
+
+        $("#tsoption1").change(function () {
+            textingServiceDescription();
+        });
+
+        $("#tsoption2").change(function () {
+            textingServiceDescription();
+        });
+
+        $("#opoption1").change(function () {
+            overheadPagingDescription();
+        });
+
+        $("#opoption2").change(function () {
+            overheadPagingDescription();
+        });
+
+        $("#icoption1").change(function () {
+            intercomDescription();
+        });
+
+        $("#icoption2").change(function () {
+            intercomDescription();
+        });
+
+        $("#sdoption1").change(function () {
+            speedDialDescription();
+        });
+
+        $("#sdoption2").change(function () {
+            speedDialDescription();
+        });
+
+        $("#cmoption1").change(function () {
+            customMusicDescription();
+        });
+
+        $("#cmoption2").change(function () {
+            customMusicDescription();
+        });
+
+        function phoneMenuDiscription() {
+            var selectedLocation = $('input[name="NewClient.PhoneMenu"]:checked').val();
+            if (selectedLocation == 'true') {
+                $("#phoneMenuTextAreaDescription").show();
+            } else {
+                $("#phoneMenuTextAreaDescription").hide();
+            }
+        }
+
+        function textingServiceDescription() {
+            var selectedLocation = $('input[name="NewClient.TextingService"]:checked').val();
+            if (selectedLocation == 'true') {
+                $("#TextingServiceTextArea").show();
+            } else {
+                $("#TextingServiceTextArea").hide();
+            }
+        }
+
+        function overheadPagingDescription() {
+            var selectedLocation = $('input[name="NewClient.OverheadPaging"]:checked').val();
+            if (selectedLocation == 'true') {
+                $("#OverheadPagingTextArea").show();
+            } else {
+                $("#OverheadPagingTextArea").hide();
+            }
+        }
+
+        function intercomDescription() {
+            var selectedLocation = $('input[name="NewClient.Intercom"]:checked').val();
+            if (selectedLocation == 'true') {
+                $("#IntercomTextArea").show();
+            } else {
+                $("#IntercomTextArea").hide();
+            }
+        }
+
+        function speedDialDescription() {
+            var selectedLocation = $('input[name="NewClient.SpeedDial"]:checked').val();
+            if (selectedLocation == 'true') {
+                $("#SpeedDialDescriptions").show();
+            } else {
+                $("#SpeedDialDescriptions").hide();
+            }
+        }
+
+        function customMusicDescription() {
+            var selectedLocation = $('input[name="NewClient.CustomHoldMusic"]:checked').val();
+            if (selectedLocation == 'true') {
+                $("#CustomMusicTextArea").show();
+            } else {
+                $("#CustomMusicTextArea").hide();
+            }
+        }
     });
 </script>
 
@@ -138,20 +234,43 @@
                         </div>
                     </div>
                 </div>
-                <p class="mt-3">When someone calls, should they ring certain phones or be greeted with a menu? ( Check the box for yes. )</p>
+                <p class="mt-3">When someone calls, should they ring certain phones or be greeted with a menu?</p>
                 <div class="input-group">
-                    <input type="checkbox" asp-for="NewClient.PhoneMenu" class="form-control" />
-                    <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.PhonesToRingOrMenuDescription"></textarea>
+                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                        @{
+                            if (Model.NewClient.PhoneMenu)
+                            {
+                                <label class="btn btn-outline-secondary">
+                                    <input asp-for="NewClient.PhoneMenu" type="radio" id="pmoption1" value="true" checked> Phone Menu
+                                </label>
+                                <label class="btn btn-outline-secondary">
+                                    <input asp-for="NewClient.PhoneMenu" type="radio" id="pmoption2" value="false"> No Phone Menu
+                                </label>
+                            }
+                            else
+                            {
+                                <label class="btn btn-outline-secondary">
+                                    <input asp-for="NewClient.PhoneMenu" type="radio" id="pmoption1" value="true"> Phone Menu
+                                </label>
+                                <label class="btn btn-outline-secondary">
+                                    <input asp-for="NewClient.PhoneMenu" type="radio" id="pmoption2" value="false" checked> No Phone Menu
+                                </label>
+                            }
+                        }
+                    </div>
                 </div>
-                <p>What are your business hours? Do you want calls to route directly to voicemail or a menu after business hours or during lunch? </p>
+                <div class="input-group mt-3" id="phoneMenuTextAreaDescription">
+                    <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.PhonesToRingOrMenuDescription" placeholder="When someone calls, should they ring certain phones or be greeted with a menu?"></textarea>
+                </div>
+                <p class="mt-3">What are your business hours? Do you want calls to route directly to voicemail or a menu after business hours or during lunch? </p>
                 <div class="input-group">
                     <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.BusinessHours"></textarea>
                 </div>
-                <p>Confirm whose voicemail box should receive calls outside of business hours.</p>
+                <p class="mt-3">Confirm whose voicemail box should receive calls outside of business hours.</p>
                 <div class="input-group">
                     <input type="text" class="form-control" asp-for="NewClient.AfterHoursVoicemail" aria-label="Username" aria-describedby="basic-addon1">
                 </div>
-                <p>What does each of these phone numbers do for your business? We can prefix a word to the Caller Name for inbound calls to enable you to differentiate callers easily! Eg: Main #, Fax, Back #</p>
+                <p class="mt-3">What does each of these phone numbers do for your business? We can prefix a word to the Caller Name for inbound calls to enable you to differentiate callers easily! Eg: Main #, Fax, Back #</p>
                 <div class="table-responsive">
                     <table class="table table-borderless table-hover table-striped">
                         <thead>
@@ -216,18 +335,99 @@
                         </div>
                     </div>
                 </div>
-                <p class="mt-3">Do you use any texting service, overhead paging speakers, intercom, or have any speed dial keys you would like us to configure?</p>
+                <p class="mt-3">Do you use any texting services? If so what are they called?</p>
                 <div class="input-group">
-                    <input type="checkbox" asp-for="NewClient.TextingService" class="form-control" />
-                    <input type="text" class="form-control" asp-for="NewClient.TextingServiceName" aria-label="TextingServiceName" aria-describedby="basic-addon1">
+                    <div class="form-group">
+                        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                            @{
+                                if (Model.NewClient.TextingService)
+                                {
+                                    <label class="btn btn-outline-secondary">
+                                        <input asp-for="NewClient.TextingService" type="radio" id="tsoption1" value="true" checked> Texting Service
+                                    </label>
+                                    <label class="btn btn-outline-secondary">
+                                        <input asp-for="NewClient.TextingService" type="radio" id="tsoption2" value="false"> No Texting Service
+                                    </label>
+                                }
+                                else
+                                {
+                                    <label class="btn btn-outline-secondary">
+                                        <input asp-for="NewClient.TextingService" type="radio" id="tsoption1" value="true"> Texting Service
+                                    </label>
+                                    <label class="btn btn-outline-secondary">
+                                        <input asp-for="NewClient.TextingService" type="radio" id="tsoption2" value="false" checked> No Texting Service
+                                    </label>
+                                }
+                            }
+                        </div>
+                    </div>
                 </div>
-                <p>What speakers and amplifier are in use, we recommend using a Snom PA1 paging adapter with most speaker systems.</p>
+                <div class="input-group" id="TextingServiceTextArea">
+                    <input type="text" class="form-control" asp-for="NewClient.TextingServiceName" aria-label="TextingServiceName" aria-describedby="basic-addon1" placeholder="What are your Texting Services called?">
+                </div>
+                <p class="mt-3">Do you use any overhead paging speakers? What speakers and amplifier are in use, we recommend using a Snom PA1 paging adapter with most speaker systems.</p>
                 <div class="input-group">
-                    <input type="checkbox" asp-for="NewClient.OverheadPaging" class="form-control" />
-                    <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.OverheadPagingDescription"></textarea>
+                    <div class="form-group">
+                        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                            @{
+                                if (Model.NewClient.OverheadPaging)
+                                {
+                                    <label class="btn btn-outline-secondary">
+                                        <input asp-for="NewClient.OverheadPaging" type="radio" id="opoption1" value="true" checked> Overhead Paging
+                                    </label>
+                                    <label class="btn btn-outline-secondary">
+                                        <input asp-for="NewClient.OverheadPaging" type="radio" id="opoption2" value="false"> No Overhead Paging
+                                    </label>
+                                }
+                                else
+                                {
+                                    <label class="btn btn-outline-secondary">
+                                        <input asp-for="NewClient.OverheadPaging" type="radio" id="opoption1" value="true"> Overhead Paging
+                                    </label>
+                                    <label class="btn btn-outline-secondary">
+                                        <input asp-for="NewClient.OverheadPaging" type="radio" id="opoption2" value="false" checked> No Overhead Paging
+                                    </label>
+                                }
+                            }
+                        </div>
+                    </div>
                 </div>
-                <p>
+                <div class="input-group" id="OverheadPagingTextArea">
+                    <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.OverheadPagingDescription" placeholder=" What speakers and amplifier are in use, we recommend using a Snom PA1 paging adapter with most speaker systems."></textarea>
+                </div>
+                <p class="mt-3">
                     Who do you intercom? Can they talk back to you or is it one way audio?
+                </p>
+                <div class="input-group">
+                    <div class="form-group">
+                        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                            @{
+                                if (Model.NewClient.Intercom)
+                                {
+                                    <label class="btn btn-outline-secondary">
+                                        <input asp-for="NewClient.Intercom" type="radio" id="icoption1" value="true" checked> Intercom
+                                    </label>
+                                    <label class="btn btn-outline-secondary">
+                                        <input asp-for="NewClient.Intercom" type="radio" id="icoption2" value="false"> No Intercom
+                                    </label>
+                                }
+                                else
+                                {
+                                    <label class="btn btn-outline-secondary">
+                                        <input asp-for="NewClient.Intercom" type="radio" id="icoption1" value="true"> Intercom
+                                    </label>
+                                    <label class="btn btn-outline-secondary">
+                                        <input asp-for="NewClient.Intercom" type="radio" id="icoption2" value="false" checked> No Intercom
+                                    </label>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group" id="IntercomTextArea">
+                    <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.IntercomDescription" placeholder="Can they talk back to you or is it one way audio?"></textarea>
+                </div>
+                <p class="mt-3">
                     List any intercom keys that should be configured below:
                 </p>
                 <div class="table-responsive">
@@ -283,66 +483,118 @@
                 <p class="mt-3">
                     Do you want any speed dial keys configured to enable easy calling or transferring of calls?
                 </p>
-                <div class="table-responsive">
-                    <table class="table table-borderless table-hover table-striped">
-                        <thead>
-                            <tr>
-                                <th>
-                                    Phone Number/Extension Number
-                                </th>
-                                <th>
-                                    Label/Name
-                                </th>
-                                <th>
-
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody id="speeddialtable">
-                            @if (Model?.NewClient?.SpeedDialKeys is not null)
+                <div class="form-group">
+                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                        @{
+                            if (Model.NewClient.SpeedDial)
                             {
-                                foreach (var number in Model?.NewClient?.SpeedDialKeys)
-                                {
-                                    <tr>
-                                        <td>@number?.NumberOrExtension</td>
-                                        <td>@number?.LabelOrName</td>
-                                        <td>
-                                            <button type="button" onclick='RemoveSpeedDialKey("@Model?.NewClient?.NewClientId", "@number.SpeedDialKeyId", this)' class="btn btn-outline-danger">
-                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                Remove
-                                            </button>
-                                        </td>
-                                    </tr>
-                                }
+                                <label class="btn btn-outline-secondary">
+                                    <input asp-for="NewClient.SpeedDial" type="radio" id="sdoption1" value="true" checked> Speed Dial
+                                </label>
+                                <label class="btn btn-outline-secondary">
+                                    <input asp-for="NewClient.SpeedDial" type="radio" id="sdoption2" value="false"> No Speed Dial
+                                </label>
                             }
-                        </tbody>
-                    </table>
+                            else
+                            {
+                                <label class="btn btn-outline-secondary">
+                                    <input asp-for="NewClient.SpeedDial" type="radio" id="sdoption1" value="true"> Speed Dial
+                                </label>
+                                <label class="btn btn-outline-secondary">
+                                    <input asp-for="NewClient.SpeedDial" type="radio" id="sdoption2" value="false" checked> No Speed Dial
+                                </label>
+                            }
+                        }
+                    </div>
                 </div>
-                <div class="card p-2 bg-light">
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="numberOrExt" placeholder="Phone Number/Extension Number" maxlength="14">
-                        <input type="text" class="form-control" id="labelOrName" placeholder="Label/Name">
-                        <div class="input-group-append">
-                            <button type="button" class="btn btn-primary"
-                                    onclick="AddSpeedDialKey(document.getElementById('newClientId').value,
+                <div id="SpeedDialDescriptions">
+                    <div class="table-responsive">
+                        <table class="table table-borderless table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Phone Number/Extension Number
+                                    </th>
+                                    <th>
+                                        Label/Name
+                                    </th>
+                                    <th>
+
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="speeddialtable">
+                                @if (Model?.NewClient?.SpeedDialKeys is not null)
+                                {
+                                    foreach (var number in Model?.NewClient?.SpeedDialKeys)
+                                    {
+                                        <tr>
+                                            <td>@number?.NumberOrExtension</td>
+                                            <td>@number?.LabelOrName</td>
+                                            <td>
+                                                <button type="button" onclick='RemoveSpeedDialKey("@Model?.NewClient?.NewClientId", "@number.SpeedDialKeyId", this)' class="btn btn-outline-danger">
+                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                    Remove
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card p-2 bg-light">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="numberOrExt" placeholder="Phone Number/Extension Number" maxlength="14">
+                            <input type="text" class="form-control" id="labelOrName" placeholder="Label/Name">
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-primary"
+                                        onclick="AddSpeedDialKey(document.getElementById('newClientId').value,
                                                 document.getElementById('numberOrExt').value,
                                                 document.getElementById('labelOrName').value,
                                                 this);">
-                                Add
-                            </button>
+                                    Add
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
+
                 <p class="mt-3">Is there any custom hold music you would prefer to use? By default we play Claire De Lune and a few other classical songs as your music on hold.</p>
                 <div class="input-group">
-                    <input type="checkbox" asp-for="NewClient.CustomHoldMusic" class="form-control" />
-                    <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.HoldMusicDescription"></textarea>
+                    <div class="form-group">
+                        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                            @{
+                                if (Model.NewClient.CustomHoldMusic)
+                                {
+                                    <label class="btn btn-outline-secondary">
+                                        <input asp-for="NewClient.CustomHoldMusic" type="radio" id="cmoption1" value="true" checked> Custom Music
+                                    </label>
+                                    <label class="btn btn-outline-secondary">
+                                        <input asp-for="NewClient.CustomHoldMusic" type="radio" id="cmoption2" value="false"> Generic Music
+                                    </label>
+                                }
+                                else
+                                {
+                                    <label class="btn btn-outline-secondary">
+                                        <input asp-for="NewClient.CustomHoldMusic" type="radio" id="cmoption1" value="true"> Custom Music
+                                    </label>
+                                    <label class="btn btn-outline-secondary">
+                                        <input asp-for="NewClient.CustomHoldMusic" type="radio" id="cmoption2" value="false" checked> Generic Music
+                                    </label>
+                                }
+                            }
+                        </div>
+                    </div>
                 </div>
-                <p>When a phone is offline, should calls be forwarded anywhere special? By default they will reach your voicemail or after hours menu.</p>
+                <div class="input-group" id="CustomMusicTextArea">
+                    <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.HoldMusicDescription" placeholder="Is there any custom hold music you would prefer to use? By default we play Claire De Lune and a few other classical songs as your music on hold."></textarea>
+                </div>
+                <p class="mt-3">When a phone is offline, should calls be forwarded anywhere special? By default they will reach your voicemail or after hours menu.</p>
                 <div class="input-group">
                     <input type="text" class="form-control" asp-for="NewClient.PhoneOfflineInstructions" aria-label="Offline" aria-describedby="basic-addon1">
                 </div>
-                <p>
+                <p class="mt-3">
                     We can also have your cellphone ring at the same time as your office phone if you enter your cellphone # under Follow Me below!
                 </p>
                 <div class="table-responsive">
