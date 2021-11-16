@@ -141,7 +141,14 @@ namespace NumberSearch.Mvc.Controllers
             newClient.SpeedDialKeys = await SpeedDialKey.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
             newClient.FollowMeRegistrations = await FollowMeRegistration.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
 
-            return View("Index", new NewClientResult { NewClient = newClient, Order = order });
+            var productOrders = await ProductOrder.GetAsync(orderId, _postgresql).ConfigureAwait(false);
+            var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var phoneNumbers = productOrders.Where(x => !string.IsNullOrWhiteSpace(x.DialedNumber))?.Select(x => x.DialedNumber)?.ToArray();
+            var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(orderId, _postgresql).ConfigureAwait(false);
+            var portedStrippedNumbers = portedNumbers?.Select(x => x.PortedDialedNumber).ToArray();
+            var allNumbers = phoneNumbers?.Concat(portedStrippedNumbers)?.ToArray();
+
+            return View("Index", new NewClientResult { NewClient = newClient, Order = order, Products = products.ToArray(), ProductOrders = productOrders.ToArray(), PhoneNumbers = allNumbers });
         }
     }
 }

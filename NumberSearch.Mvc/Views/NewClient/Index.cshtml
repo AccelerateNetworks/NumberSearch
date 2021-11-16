@@ -196,11 +196,6 @@
                         <input type="text" class="form-control" id="model" list="model-list" placeholder="Model of Phone">
                         <datalist id="model-list">
                             @{
-                                foreach (var item in orderedPhones)
-                                {
-                                    var productName = Model?.Products?.Where(x => x.ProductId == item.ProductId).FirstOrDefault()?.Name;
-                                    <option value="@productName">@productName</option>
-                                }
 
                                 if (orderedPhones is null || orderedPhones.Length < 1)
                                 {
@@ -209,6 +204,15 @@
                                         <option value="@product.Name">@product.Name</option>
                                     }
                                 }
+                                else
+                                {
+                                    foreach (var item in orderedPhones)
+                                    {
+                                        var productName = Model?.Products?.Where(x => x.ProductId == item.ProductId).FirstOrDefault()?.Name;
+                                        <option value="@productName">@productName</option>
+                                    }
+                                }
+
                             }
                         </datalist>
                         <input type="text" class="form-control" id="callerId" list="callerId-list" placeholder="Outbound Caller Id">

@@ -41,7 +41,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QuerySingleOrDefaultAsync<NewClient>("SELECT \"NewClientId\", \"OrderId\", \"BillingClientId\", \"PhoneMenu\", \"PhonesToRingOrMenuDescription\", \"BusinessHours\", \"AfterHoursVoicemail\", \"TextingService\", \"TextingServiceName\", \"OverheadPaging\", \"OverheadPagingDescription\", \"Intercom\", \"CustomHoldMusic\", \"HoldMusicDescription\", \"PhoneOfflineInstructions\", \"DateUpdated\" FROM public.\"NewClients\" " +
+                .QuerySingleOrDefaultAsync<NewClient>("SELECT \"NewClientId\", \"OrderId\", \"BillingClientId\", \"PhoneMenu\", \"PhonesToRingOrMenuDescription\", \"BusinessHours\", \"AfterHoursVoicemail\", \"TextingService\", \"TextingServiceName\", \"OverheadPaging\", \"OverheadPagingDescription\", \"Intercom\", \"CustomHoldMusic\", \"HoldMusicDescription\", \"PhoneOfflineInstructions\", \"DateUpdated\", \"SpeedDial\", \"IntercomDescription\" FROM public.\"NewClients\" " +
                 "WHERE \"NewClientId\" = @newClientId", new { newClientId })
                 .ConfigureAwait(false);
 
@@ -53,7 +53,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QuerySingleOrDefaultAsync<NewClient>("SELECT \"NewClientId\", \"OrderId\", \"BillingClientId\", \"PhoneMenu\", \"PhonesToRingOrMenuDescription\", \"BusinessHours\", \"AfterHoursVoicemail\", \"TextingService\", \"TextingServiceName\", \"OverheadPaging\", \"OverheadPagingDescription\", \"Intercom\", \"CustomHoldMusic\", \"HoldMusicDescription\", \"PhoneOfflineInstructions\", \"DateUpdated\" FROM public.\"NewClients\" " +
+                .QuerySingleOrDefaultAsync<NewClient>("SELECT \"NewClientId\", \"OrderId\", \"BillingClientId\", \"PhoneMenu\", \"PhonesToRingOrMenuDescription\", \"BusinessHours\", \"AfterHoursVoicemail\", \"TextingService\", \"TextingServiceName\", \"OverheadPaging\", \"OverheadPagingDescription\", \"Intercom\", \"CustomHoldMusic\", \"HoldMusicDescription\", \"PhoneOfflineInstructions\", \"DateUpdated\", \"SpeedDial\", \"IntercomDescription\" FROM public.\"NewClients\" " +
                 "WHERE \"OrderId\" = @orderId", new { orderId })
                 .ConfigureAwait(false);
 
@@ -65,9 +65,9 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"NewClients\" ( \"NewClientId\", \"OrderId\", \"BillingClientId\", \"PhoneMenu\", \"PhonesToRingOrMenuDescription\", \"BusinessHours\", \"AfterHoursVoicemail\", \"TextingService\", \"TextingServiceName\", \"OverheadPaging\", \"OverheadPagingDescription\", \"Intercom\", \"CustomHoldMusic\", \"HoldMusicDescription\", \"PhoneOfflineInstructions\", \"DateUpdated\") " +
-                "VALUES (@NewClientId, @OrderId, @BillingClientId, @PhoneMenu, @PhonesToRingOrMenuDescription, @BusinessHours, @AfterHoursVoicemail, @TextingService, @TextingServiceName, @OverheadPaging, @OverheadPagingDescription, @Intercom, @CustomHoldMusic, @HoldMusicDescription, @PhoneOfflineInstructions, @DateUpdated)",
-                new { NewClientId, OrderId, BillingClientId, PhoneMenu, PhonesToRingOrMenuDescription, BusinessHours, AfterHoursVoicemail, TextingService, TextingServiceName, OverheadPaging, OverheadPagingDescription, Intercom, CustomHoldMusic, HoldMusicDescription, PhoneOfflineInstructions, DateUpdated })
+                .ExecuteAsync("INSERT INTO public.\"NewClients\" ( \"NewClientId\", \"OrderId\", \"BillingClientId\", \"PhoneMenu\", \"PhonesToRingOrMenuDescription\", \"BusinessHours\", \"AfterHoursVoicemail\", \"TextingService\", \"TextingServiceName\", \"OverheadPaging\", \"OverheadPagingDescription\", \"Intercom\", \"CustomHoldMusic\", \"HoldMusicDescription\", \"PhoneOfflineInstructions\", \"DateUpdated\", \"SpeedDial\", \"IntercomDescription\") " +
+                "VALUES (@NewClientId, @OrderId, @BillingClientId, @PhoneMenu, @PhonesToRingOrMenuDescription, @BusinessHours, @AfterHoursVoicemail, @TextingService, @TextingServiceName, @OverheadPaging, @OverheadPagingDescription, @Intercom, @CustomHoldMusic, @HoldMusicDescription, @PhoneOfflineInstructions, @DateUpdated, @SpeedDial, @IntercomDescription)",
+                new { NewClientId, OrderId, BillingClientId, PhoneMenu, PhonesToRingOrMenuDescription, BusinessHours, AfterHoursVoicemail, TextingService, TextingServiceName, OverheadPaging, OverheadPagingDescription, Intercom, CustomHoldMusic, HoldMusicDescription, PhoneOfflineInstructions, DateUpdated, SpeedDial, IntercomDescription })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -85,9 +85,9 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("UPDATE public.\"NewClients\" SET \"BillingClientId\" = @BillingClientId, \"PhoneMenu\" = @PhoneMenu, \"PhonesToRingOrMenuDescription\" = @PhonesToRingOrMenuDescription, \"BusinessHours\" = @BusinessHours, \"AfterHoursVoicemail\" = @AfterHoursVoicemail, \"TextingService\" = @TextingService, \"TextingServiceName\" = @TextingServiceName, \"OverheadPaging\" = @OverheadPaging, \"OverheadPagingDescription\" = @OverheadPagingDescription, \"Intercom\" = @Intercom, \"CustomHoldMusic\" = @CustomHoldMusic, \"HoldMusicDescription\" = @HoldMusicDescription, \"PhoneOfflineInstructions\" = @PhoneOfflineInstructions, \"DateUpdated\" = @DateUpdated " +
+                .ExecuteAsync("UPDATE public.\"NewClients\" SET \"BillingClientId\" = @BillingClientId, \"PhoneMenu\" = @PhoneMenu, \"PhonesToRingOrMenuDescription\" = @PhonesToRingOrMenuDescription, \"BusinessHours\" = @BusinessHours, \"AfterHoursVoicemail\" = @AfterHoursVoicemail, \"TextingService\" = @TextingService, \"TextingServiceName\" = @TextingServiceName, \"OverheadPaging\" = @OverheadPaging, \"OverheadPagingDescription\" = @OverheadPagingDescription, \"Intercom\" = @Intercom, \"CustomHoldMusic\" = @CustomHoldMusic, \"HoldMusicDescription\" = @HoldMusicDescription, \"PhoneOfflineInstructions\" = @PhoneOfflineInstructions, \"DateUpdated\" = @DateUpdated, \"SpeedDial\" = @SpeedDial, \"IntercomDescription\" = @IntercomDescription " +
                 "WHERE \"NewClientId\" = @NewClientId",
-                new { NewClientId, BillingClientId, PhoneMenu, PhonesToRingOrMenuDescription, BusinessHours, AfterHoursVoicemail, TextingService, TextingServiceName, OverheadPaging, OverheadPagingDescription, Intercom, CustomHoldMusic, HoldMusicDescription, PhoneOfflineInstructions, DateUpdated })
+                new { NewClientId, BillingClientId, PhoneMenu, PhonesToRingOrMenuDescription, BusinessHours, AfterHoursVoicemail, TextingService, TextingServiceName, OverheadPaging, OverheadPagingDescription, Intercom, CustomHoldMusic, HoldMusicDescription, PhoneOfflineInstructions, DateUpdated, SpeedDial, IntercomDescription })
                 .ConfigureAwait(false);
 
             if (result == 1)
