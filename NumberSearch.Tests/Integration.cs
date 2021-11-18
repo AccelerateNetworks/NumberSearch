@@ -989,11 +989,15 @@ namespace NumberSearch.Tests
 
             var results = await Search.GetLocalNumbersAsync("WA", string.Empty, "206", string.Empty, result.data.token).ConfigureAwait(false);
 
+            if(results is null || !results.data.result.Any())
+            {
+                results = await Search.GetLocalNumbersAsync("WA", string.Empty, "425", string.Empty, result.data.token).ConfigureAwait(false);
+            }
+
             Assert.NotEmpty(results.data.result);
             output.WriteLine(results.data.result.Length.ToString());
             foreach (var number in results.data.result)
             {
-                Assert.False(string.IsNullOrWhiteSpace(number.did_number));
                 Assert.False(string.IsNullOrWhiteSpace(number.number));
                 Assert.False(string.IsNullOrWhiteSpace(number.npa));
                 Assert.False(string.IsNullOrWhiteSpace(number.nxx));
