@@ -194,9 +194,9 @@
 
     <div class="mb-3">
         <label for="address2">Service Address 2 <span class="text-muted">(Optional)</span></label>
-@*        @{
+        @*        @{
             var address2 = string.IsNullOrWhiteSpace(Model?.PortRequest?.Address2) ? Model?.Order?.Address2 : Model?.PortRequest?.Address2;
-        }*@
+            }*@
         <input asp-for="PortRequest.Address2" type="text" class="form-control" id="address2" title="The city of the service address listed above." placeholder="Apartment or suite">
     </div>
 
@@ -239,31 +239,10 @@
 
     <div class="row">
         <div class="col-md-2 mb-3">
-            <label for="partialPort">Partial Port</label>
-            @*<select asp-for="PortRequest.PartialPort" class="custom-select" id="partialPort" title="Designates if this is a business address or a residential address." required>
-                <option value="true">Yes</option>
-                <option value="false" selected>No</option>
-                </select>*@
             <div class="form-group">
-                <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                    @if (Model?.PortRequest?.PartialPort ?? false)
-                    {
-                        <label class="btn btn-outline-secondary">
-                            <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption1" value="true" checked> Yes
-                        </label>
-                        <label class="btn btn-outline-secondary">
-                            <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption2" value="false"> No
-                        </label>
-                    }
-                    else
-                    {
-                        <label class="btn btn-outline-secondary">
-                            <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption1" value="true"> Yes
-                        </label>
-                        <label class="btn btn-outline-secondary">
-                            <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption2" value="false" checked> No
-                        </label>
-                    }
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" asp-for="PortRequest.PartialPort" role="switch" id="partialPort">
+                    <label class="form-check-label" for="flexSwitchCheckDefault">Partial Port</label>
                 </div>
             </div>
         </div>
@@ -314,13 +293,13 @@
                                 @{
                                     if (Model?.PortRequest?.VendorSubmittedTo == "TeliMessage")
                                     {
-                                        <a href="https://control.teli.net/lnp/view?request_id=@number?.ExternalPortRequestId" target="_blank" rel="noopener noreferrer" class="btn btn-info">
+                                        <a href="https://control.teli.net/lnp/view?request_id=@number?.ExternalPortRequestId" target="_blank" rel="noopener noreferrer" class="btn btn-info text-light">
                                             Teli @number?.ExternalPortRequestId
                                         </a>
                                     }
                                     else if (Model?.PortRequest?.VendorSubmittedTo == "BulkVS")
                                     {
-                                        <a href="https://portal.bulkvs.com/" target="_blank" rel="noopener noreferrer" class="btn btn-info">
+                                        <a href="https://portal.bulkvs.com/" target="_blank" rel="noopener noreferrer" class="btn btn-info text-light">
                                             BulkVS @number?.ExternalPortRequestId
                                         </a>
                                     }
@@ -361,7 +340,7 @@
     <div class="input-group col-md-4 mb-3">
         <input name="dialedNumber" type="text" class="form-control" id="dialedNumber" placeholder="Another Number to Port" title="Enter another dialed number that you wish to add to this port request.">
         <div class="input-group-append">
-            <button type="submit" class="btn btn-info">Add</button>
+            <button type="submit" class="btn btn-info text-light">Add</button>
         </div>
     </div>
 </form>
