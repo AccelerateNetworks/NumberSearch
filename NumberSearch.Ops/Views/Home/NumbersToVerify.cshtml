@@ -43,13 +43,13 @@
                         switch (order?.IngestedFrom)
                         {
                             case "FirstPointCom":
-                                ingestedBadge = "<h4><span class='badge badge-info'>FirstPointCom</span></h4>";
+                                ingestedBadge = "<h4><span class='badge bg-info'>FirstPointCom</span></h4>";
                                 break;
                             case "BulkVS":
-                                ingestedBadge = "<h4><span class='badge badge-primary'>BulkVS</span></h4>";
+                                ingestedBadge = "<h4><span class='badge bg-primary'>BulkVS</span></h4>";
                                 break;
                             case "TeleMessage":
-                                ingestedBadge = "<h4><span class='badge badge-warning'>TeleMessage</span></h4>";
+                                ingestedBadge = "<h4><span class='badge bg-warning'>TeleMessage</span></h4>";
                                 break;
                         }
                         <tr>
@@ -61,18 +61,18 @@
                                     Order
                                 </a>
                                 <h4 class="d-flex justify-content-between align-items-center mt-3">
-                                    <span class="badge badge-info badge-pill">
+                                    <span class="badge bg-info rounded-pill">
                                         @order.DateIngested
                                     </span>
                                 </h4>
                                 @{
                                     if (order.DateToExpire >= DateTime.Now)
                                     {
-                                        <h4><span class="badge badge-success">Active</span></h4>
+                                        <h4><span class="badge bg-success">Active</span></h4>
                                     }
                                     else
                                     {
-                                        <h4><span class="badge badge-danger">Expired</span></h4>
+                                        <h4><span class="badge bg-danger">Expired</span></h4>
                                     }
                                 }
                             </td>

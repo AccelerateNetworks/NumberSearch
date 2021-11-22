@@ -17,7 +17,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="Type" class="control-label"></label>
-                <select asp-for="Type" class="custom-select mr-sm-2" id="name" required>
+                <select asp-for="Type" class="form-select mr-sm-2" id="name" required>
                     <option selected>Choose...</option>
                     <option value="Landline">Landline</option>
                     <option value="Wireless">Wireless</option>
@@ -56,15 +56,12 @@
                 <span asp-validation-for="LogoLink" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Create" class="btn btn-primary mt-3 mb-3" />
             </div>
         </form>
     </div>
 </div>
-
-<div>
     <a asp-action="Index" class="btn btn-outline-primary">Back to List</a>
-</div>
 
 @section Scripts {
     @{

@@ -72,57 +72,69 @@
 }
 <div class="row">
     <div class="col">
-        <a href="https://acceleratenetworks.com/cart/order/@Model?.Order?.OrderId" class="btn btn-primary btn-block" target="_blank" rel="noopener noreferrer">
-            Customer's View
-        </a>
+        <div class="d-grid gap-2">
+            <a href="https://acceleratenetworks.com/cart/order/@Model?.Order?.OrderId" class="btn btn-primary m-1" target="_blank" rel="noopener noreferrer">
+                Customer's View
+            </a>
+        </div>
     </div>
     <div class="col">
-        <a href="/Home/Emails/@Model?.Order?.OrderId" class="btn btn-secondary btn-block" target="_blank" rel="noopener noreferrer">
-            Related Emails
-        </a>
+        <div class="d-grid gap-2">
+            <a href="/Home/Emails/@Model?.Order?.OrderId" class="btn btn-secondary m-1" target="_blank" rel="noopener noreferrer">
+                Related Emails
+            </a>
+        </div>
     </div>
     <div class="col">
-        <a href="https://www.google.com/maps/place/@Model?.Order?.Address,+@Model?.Order?.City,+@Model?.Order?.State+@Model?.Order?.Zip/" class="btn btn-outline-secondary btn-block" target="_blank" rel="noopener noreferrer">
-            View on Map
-        </a>
+        <div class="d-grid gap-2">
+            <a href="https://www.google.com/maps/place/@Model?.Order?.Address,+@Model?.Order?.City,+@Model?.Order?.State+@Model?.Order?.Zip/" class="btn btn-outline-secondary m-1" target="_blank" rel="noopener noreferrer">
+                View on Map
+            </a>
+        </div>
     </div>
 </div>
-<div class="row mt-3">
+<div class="row">
     <div class="col">
-        @if (!string.IsNullOrWhiteSpace(Model?.Order?.BillingInvoiceId))
-        {
-            <a href="https://billing.acceleratenetworks.com/invoices/@Model?.Order?.BillingInvoiceId/edit" class="btn btn-outline-primary btn-block" target="_blank" rel="noopener noreferrer">
-                Upfront Billing Invoice
-            </a>
-        }
+        <div class="d-grid gap-2">
+            @if (!string.IsNullOrWhiteSpace(Model?.Order?.BillingInvoiceId))
+            {
+                <a href="https://billing.acceleratenetworks.com/invoices/@Model?.Order?.BillingInvoiceId/edit" class="btn btn-outline-primary m-1" target="_blank" rel="noopener noreferrer">
+                    Upfront Billing Invoice
+                </a>
+            }
+        </div>
     </div>
     <div class="col">
-        @if (!string.IsNullOrWhiteSpace(Model?.Order?.BillingInvoiceReoccuringId))
-        {
-            <a href="https://billing.acceleratenetworks.com/invoices/@Model?.Order?.BillingInvoiceReoccuringId/edit" class="btn btn-outline-success btn-block" target="_blank" rel="noopener noreferrer">
-                Recurring Billing Invoice
-            </a>
-        }
+        <div class="d-grid gap-2">
+            @if (!string.IsNullOrWhiteSpace(Model?.Order?.BillingInvoiceReoccuringId))
+            {
+                <a href="https://billing.acceleratenetworks.com/invoices/@Model?.Order?.BillingInvoiceReoccuringId/edit" class="btn btn-outline-success m-1" target="_blank" rel="noopener noreferrer">
+                    Recurring Billing Invoice
+                </a>
+            }
+        </div>
     </div>
     <div class="col">
-        @if (!string.IsNullOrWhiteSpace(Model?.Order?.BillingClientId))
-        {
-            <a href="https://billing.acceleratenetworks.com/clients/@Model?.Order?.BillingClientId/edit" class="btn btn-outline-info btn-block" target="_blank" rel="noopener noreferrer">
-                Billing System Client
-            </a>
-        }
+        <div class="d-grid gap-2">
+            @if (!string.IsNullOrWhiteSpace(Model?.Order?.BillingClientId))
+            {
+                <a href="https://billing.acceleratenetworks.com/clients/@Model?.Order?.BillingClientId/edit" class="btn btn-outline-info m-1" target="_blank" rel="noopener noreferrer">
+                    Billing System Client
+                </a>
+            }
+        </div>
     </div>
 </div>
 <form action="/Home/Order/@Model?.Order?.OrderId" method="post" class="needs-validation">
     @Html.AntiForgeryToken()
     <h4 class="mb-3 mt-3">
         Order Information
-        <span class="badge badge-info badge-pill">
+        <span class="badge bg-info rounded-pill">
             @Model.Order.DateSubmitted
         </span>
         @if (Model?.Order?.MergedOrderId is not null)
         {
-            <span class="badge badge-warning badge-pill">
+            <span class="badge bg-warning rounded-pill">
                 Merged into <a href="/Home/Order/{@Model?.Order?.MergedOrderId}">@Model?.Order?.MergedOrderId</a>
             </span>
         }
@@ -137,16 +149,19 @@
             <input asp-for="Order.DateSubmitted" type="text" class="form-control" placeholder="" readonly>
         </div>
         <div class="col mb-3">
-            <label for="backgroundWorkCompleted">Background Work Completed</label>
-            <input asp-for="Order.BackgroundWorkCompleted" type="checkbox" class="form-control">
-        </div>
-        <div class="col mb-3">
-            <label for="Quote">Quote</label>
-            <input asp-for="Order.Quote" type="checkbox" class="form-control">
-        </div>
-        <div class="col mb-3">
-            <label for="completed">Mark This Order as Completed</label>
-            <input asp-for="Order.Completed" type="checkbox" class="form-control">
+            <div class="form-check form-switch">
+                <input class="form-check-input" asp-for="Order.BackgroundWorkCompleted" type="checkbox" role="switch" id="backgroundWorkSwitch">
+                <label class="form-check-label" for="backgroundWorkSwitch">Background Work Completed</label>
+            </div>
+            <div class="form-check form-switch">
+                <input class="form-check-input" asp-for="Order.Quote" type="checkbox" role="switch" id="orderIsQuote">
+                <label class="form-check-label" for="orderIsQuote">Quote</label>
+            </div>
+
+            <div class="form-check form-switch">
+                <input class="form-check-input" asp-for="Order.Completed" type="checkbox" role="switch" id="orderisCompleted">
+                <label class="form-check-label" for="orderisCompleted">Mark This Order as Completed</label>
+            </div>
         </div>
     </div>
     <h4 class="mb-3">Invoice Ninja</h4>
@@ -205,7 +220,7 @@
     <div class="row">
         <div class="col-md-4 mb-3">
             <label for="unitType">Unit Type <span class="text-muted">(Optional)</span></label>
-            <select asp-for="Order.AddressUnitType" class="custom-select d-block w-100" id="unitType">
+            <select asp-for="Order.AddressUnitType" class="form-select d-block w-100" id="unitType">
                 <option></option>
                 @{
                     var unitTypes = new string[] {
@@ -259,16 +274,9 @@
     <h4 class="mb-3">Installation Information</h4>
     <div class="row">
         <div class="col-md-4 mb-3">
-            <label for="installationType">Installation Location</label>
-            <div class="form-group">
-                <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                    <label class="btn btn-outline-secondary">
-                        <input asp-for="Order.OnsiteInstallation" type="radio" id="ltoption1" value="false" disabled> Remote
-                    </label>
-                    <label class="btn btn-outline-secondary">
-                        <input asp-for="Order.OnsiteInstallation" type="radio" id="ltoption2" value="true" disabled> Onsite
-                    </label>
-                </div>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" asp-for="Order.OnsiteInstallation" role="switch" id="onsiteInstall">
+                <label class="form-check-label" for="onsiteInstall">Onsite Installation</label>
             </div>
         </div>
     </div>
@@ -279,7 +287,7 @@
         </div>
         <div class="col-md-6 mb-3">
             <label for="sales">Sales Representative</label>
-            <select asp-for="Order.SalesEmail" class="custom-select mr-sm-2" id="sales">
+            <select asp-for="Order.SalesEmail" class="form-select mr-sm-2" id="sales">
                 <option selected>Choose...</option>
                 <option value="scott@acceleratenetworks.com">Scott</option>
                 <option value="kyle@acceleratenetworks.com">Kyle</option>
@@ -296,10 +304,14 @@
     <h4 class="mb-3">Order Management</h4>
     <div class="row mb-3">
         <div class="col">
-            <button type="submit" class="btn btn-success btn-block">Update</button>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-success">Update</button>
+            </div>
         </div>
         <div class="col">
-            <a href="/Home/Order/@Model.Order.OrderId/Delete" class="btn btn-danger btn-block">Delete</a>
+            <div class="d-grid gap-2">
+                <a href="/Home/Order/@Model.Order.OrderId/Delete" class="btn btn-danger btn-block">Delete</a>
+            </div>
         </div>
         <div class="col">
             <a href="/Home/Order/@Model.Order.OrderId/Delete" class="btn btn-danger btn-block" hidden>Delete</a>
@@ -311,7 +323,7 @@
     <div class="row">
         <div class="col-md-6 mb-3">
             <label for="sales">Main Phone Number for Address (Update the Order to Save)</label>
-            <input list="e911numbers" name="serviceNumber" class="custom-select mr-sm-2" id="e911" />
+            <input list="e911numbers" name="serviceNumber" class="form-select mr-sm-2" id="e911" />
             <datalist id="e911numbers">
                 @{
                     var ported = Model?.Cart?.PortedPhoneNumbers.Select(x => x.PortedDialedNumber).ToArray();
@@ -328,7 +340,9 @@
                 var registeredNumber = Model?.Order?.E911ServiceNumber ?? "E911 Number Not Set";
             }
             <label for="sales">@registeredNumber @@ @Model?.Order?.UnparsedAddress</label>
-            <button type="submit" class="btn btn-danger btn-block">Register</button>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-danger btn-block">Register</button>
+            </div>
         </div>
     </div>
 </form>
@@ -344,8 +358,9 @@
         </div>
         <div class="col">
             <label for="address">Cannot be undone</label>
-
-            <button type="submit" class="btn btn-outline-danger btn-block">Merge</button>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-outline-danger btn-block">Merge</button>
+            </div>
         </div>
     </div>
 </form>
@@ -608,12 +623,16 @@
         </div>
         <div class="row mt-3">
             <div class="col">
-                <a href="/ProductOrders/Create?orderId=@Model?.Order?.OrderId" class="btn btn-outline-primary btn-block">
-                    Add Item
-                </a>
+                <div class="d-grid gap-2">
+                    <a href="/ProductOrders/Create?orderId=@Model?.Order?.OrderId" class="btn btn-outline-primary btn-block">
+                        Add Item
+                    </a>
+                </div>
             </div>
             <div class="col">
-                <a href="/Home/Order/@Model.Order.OrderId/NewInvoices" class="btn btn-outline-warning btn-block">Regenerate Invoices</a>
+                <div class="d-grid gap-2">
+                    <a href="/Home/Order/@Model.Order.OrderId/NewInvoices" class="btn btn-outline-warning btn-block">Regenerate Invoices</a>
+                </div>
             </div>
             <div class="col">
                 <a href="/Home/Order/@Model.Order.OrderId/NewInvoices" class="btn btn-outline-warning btn-block" hidden>Regenerate Invoices</a>

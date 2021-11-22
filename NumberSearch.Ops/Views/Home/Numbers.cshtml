@@ -12,14 +12,11 @@
 
 <h1 class="display-4 p-3">☎️ Available Numbers</h1>
 <div class="jumbotron mb-3">
-    <h1 class="display-4 text-center">Numbers for all your needs!</h1>
     <p class="text-center"> Use * to pad your search, for example ***word to search for a number containing word, but exclude the area code. Conversely, 206******* will find 206 area code numbers.</p>
     <form class="form-row justify-content-center" action="/Numbers">
         <div class="form-group">
             <div class="input-group mx-auto input-group-lg">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">+1</span>
-                </div>
+                <span class="input-group-text">+1</span>
                 <input type="text" name="Query" class="form-control" placeholder="Enter a Phone Number" value="@searchText">
                 <button type="submit" class="btn btn-success pr-4 pl-4" onclick="displayBusyIndicator(this)">Search</button>
             </div>

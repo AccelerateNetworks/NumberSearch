@@ -27,13 +27,13 @@
                         switch (cycle.IngestedFrom)
                         {
                             case "FirstPointCom":
-                                ingestedBadge = "<h4><span class='badge badge-info'>FirstPointCom</span></h4>";
+                                ingestedBadge = "<h4><span class='badge bg-info'>FirstPointCom</span></h4>";
                                 break;
                             case "BulkVS":
-                                ingestedBadge = "<h4><span class='badge badge-primary'>BulkVS</span></h4>";
+                                ingestedBadge = "<h4><span class='badge bg-primary'>BulkVS</span></h4>";
                                 break;
                             case "TeleMessage":
-                                ingestedBadge = "<h4><span class='badge badge-warning'>TeleMessage</span></h4>";
+                                ingestedBadge = "<h4><span class='badge bg-warning'>TeleMessage</span></h4>";
                                 break;
                         }
                         <tr>
@@ -42,17 +42,17 @@
                                 @{
                                     if (cycle.Enabled)
                                     {
-                                        <h4><span class="badge badge-success">Enabled</span></h4>
+                                        <h4><span class="badge bg-success">Enabled</span></h4>
                                     }
                                     else
                                     {
-                                        <h4><span class="badge badge-danger">Disabled</span></h4>
+                                        <h4><span class="badge bg-danger">Disabled</span></h4>
                                     }
                                 }
                                 @{
                                     if (cycle.RunNow)
                                     {
-                                        <h4><span class="badge badge-warning">Run Now</span></h4>
+                                        <h4><span class="badge bg-warning">Run Now</span></h4>
                                     }
                                 }
                             </td>

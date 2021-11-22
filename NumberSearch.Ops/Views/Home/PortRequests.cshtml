@@ -28,7 +28,7 @@
                                 Emails
                             </a>
                             <h4 class="d-flex justify-content-between align-items-center mt-2">
-                                <span class="badge badge-info badge-pill">
+                                <span class="badge bg-info rounded-pill">
                                     @port.DateSubmitted
                                 </span>
                             </h4>
@@ -37,7 +37,7 @@
                                 {
                                     if (port.Completed)
                                     {
-                                        <h4><span class="badge badge-success">Completed @port?.DateCompleted?.ToShortDateString()</span></h4>
+                                        <h4><span class="badge bg-success">Completed @port?.DateCompleted?.ToShortDateString()</span></h4>
                                     }
                                     else
                                     {
@@ -46,50 +46,50 @@
                                             switch (port?.RequestStatus)
                                             {
                                                 case "SUBMITTED":
-                                                    <h4><span class="badge badge-warning">Submitted @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    <h4><span class="badge bg-warning">Submitted @port?.DateSubmitted.ToShortDateString()</span></h4>
                                                     break;
                                                 case "EXCEPTION":
-                                                    <h4><span class="badge badge-danger">Exception @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    <h4><span class="badge bg-danger">Exception @port?.DateSubmitted.ToShortDateString()</span></h4>
                                                     break;
                                                 case "COMPLETE":
-                                                    <h4><span class="badge badge-warning">Complete @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    <h4><span class="badge bg-warning">Complete @port?.DateSubmitted.ToShortDateString()</span></h4>
                                                     break;
                                                 case "PENDING":
-                                                    <h4><span class="badge badge-warning">Pending @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    <h4><span class="badge bg-warning">Pending @port?.DateSubmitted.ToShortDateString()</span></h4>
                                                     break;
                                                 case "REQUESTED_SUPP":
-                                                    <h4><span class="badge badge-danger">Supplimental Information Requested @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    <h4><span class="badge bg-danger">Supplimental Information Requested @port?.DateSubmitted.ToShortDateString()</span></h4>
                                                     break;
                                                 case "FOC":
-                                                    <h4><span class="badge badge-warning">FOC Date Set @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    <h4><span class="badge bg-warning">FOC Date Set @port?.DateSubmitted.ToShortDateString()</span></h4>
                                                     break;
                                                 case "CANCELLED":
-                                                    <h4><span class="badge badge-danger">Cancelled @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    <h4><span class="badge bg-danger">Cancelled @port?.DateSubmitted.ToShortDateString()</span></h4>
                                                     break;
                                                 case "processing":
-                                                    <h4><span class="badge badge-warning">Processing @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    <h4><span class="badge bg-warning">Processing @port?.DateSubmitted.ToShortDateString()</span></h4>
                                                     break;
                                                 case "canceled":
-                                                    <h4><span class="badge badge-danger">Processing @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    <h4><span class="badge bg-danger">Processing @port?.DateSubmitted.ToShortDateString()</span></h4>
                                                     break;
                                                 case "rejected":
-                                                    <h4><span class="badge badge-danger">Processing @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    <h4><span class="badge bg-danger">Processing @port?.DateSubmitted.ToShortDateString()</span></h4>
                                                     break;
                                                 default:
-                                                    <h4><span class="badge badge-warning">Submitted @port?.DateSubmitted.ToShortDateString()</span></h4>
+                                                    <h4><span class="badge bg-warning">Submitted @port?.DateSubmitted.ToShortDateString()</span></h4>
                                                     break;
 
                                             }
                                         }
                                         else
                                         {
-                                            <h4><span class="badge badge-danger">Unsubmitted</span></h4>
+                                            <h4><span class="badge bg-danger">Unsubmitted</span></h4>
                                         }
                                     }
                                 }
                                 else
                                 {
-                                    <h4><span class="badge badge-danger">Unsubmitted</span></h4>
+                                    <h4><span class="badge bg-danger">Unsubmitted</span></h4>
                                 }
                             }
                         </td>

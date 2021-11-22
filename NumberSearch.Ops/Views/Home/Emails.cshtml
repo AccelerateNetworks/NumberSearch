@@ -29,7 +29,7 @@
                                 Order
                             </a>
                             <h4 class="d-flex justify-content-between align-items-center mt-3">
-                                <span class="badge badge-info badge-pill">
+                                <span class="badge bg-info rounded-pill">
                                     @email.DateSent
                                 </span>
                             </h4>
@@ -37,11 +37,11 @@
                                 @{
                                     if (email.Completed)
                                     {
-                                        <h4><span class="badge badge-success">Completed</span></h4>
+                                        <h4><span class="badge bg-success">Completed</span></h4>
                                     }
                                     else
                                     {
-                                        <h4><span class="badge badge-danger">Failed</span></h4>
+                                        <h4><span class="badge bg-danger">Failed</span></h4>
                                     }
                                 }
                             </div>

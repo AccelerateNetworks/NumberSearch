@@ -43,8 +43,10 @@
             <input asp-for="DialedNumber" type="text" class="form-control" id="DialedNumber" readonly>
         </div>
         <div class="col-md-6 mb-3">
-            <label for="lastName">Active</label>
-            <input asp-for="Active" type="checkbox" class="form-control" id="Active" required>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" asp-for="Active" role="switch" id="active">
+                <label class="form-check-label" for="active">Active</label>
+            </div>
         </div>
     </div>
     <div class="row">

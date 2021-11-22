@@ -31,13 +31,13 @@
                     switch (number.IngestedFrom)
                     {
                         case "FirstPointCom":
-                            ingestedBadge = "<h4><span class='badge badge-info'>FirstPointCom</span></h4>";
+                            ingestedBadge = "<h4><span class='badge bg-info'>FirstPointCom</span></h4>";
                             break;
                         case "BulkVS":
-                            ingestedBadge = "<h4><span class='badge badge-primary'>BulkVS</span></h4>";
+                            ingestedBadge = "<h4><span class='badge bg-primary'>BulkVS</span></h4>";
                             break;
                         case "TeleMessage":
-                            ingestedBadge = "<h4><span class='badge badge-warning'>TeleMessage</span></h4>";
+                            ingestedBadge = "<h4><span class='badge bg-warning'>TeleMessage</span></h4>";
                             break;
                     }
                     <tr>
@@ -56,11 +56,11 @@
                             @{
                                 if (number.Active)
                                 {
-                                    <h4><span class="badge badge-success">Active</span></h4>
+                                    <h4><span class="badge bg-success">Active</span></h4>
                                 }
                                 else
                                 {
-                                    <h4><span class="badge badge-danger">Inactive</span></h4>
+                                    <h4><span class="badge bg-danger">Inactive</span></h4>
                                 }
                             }
                         </td>
@@ -94,7 +94,7 @@
                                 @{
                                     if (!(number.EmergencyInformationId is null))
                                     {
-                                        <a href="/Home/EmergencyInformation/@number.DialedNumber" class="btn btn-info">
+                                        <a href="/Home/EmergencyInformation/@number.DialedNumber" class="btn btn-info text-light">
                                             Emergency
                                         </a>
                                     }

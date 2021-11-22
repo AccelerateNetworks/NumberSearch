@@ -23,7 +23,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="ProductOrder.ProductId" class="control-label"></label>
-                <select asp-for="ProductOrder.ProductId" class="custom-select mr-sm-2" id="name" required>
+                <select asp-for="ProductOrder.ProductId" class="form-select mr-sm-2" id="name" required>
                     <option selected>Choose...</option>
                     @{
                         foreach (var product in Model.Products?.OrderByDescending(x => x.Name))
@@ -36,7 +36,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="ProductOrder.ServiceId" class="control-label"></label>
-                <select asp-for="ProductOrder.ServiceId" class="custom-select mr-sm-2" id="name" required>
+                <select asp-for="ProductOrder.ServiceId" class="form-select mr-sm-2" id="name" required>
                     <option selected>Choose...</option>
                     @{
                         foreach (var product in Model.Services?.OrderByDescending(x => x.Name))
@@ -59,7 +59,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="ProductOrder.CouponId" class="control-label"></label>
-                <select asp-for="ProductOrder.CouponId" class="custom-select mr-sm-2" id="name" required>
+                <select asp-for="ProductOrder.CouponId" class="form-select mr-sm-2" id="name" required>
                     <option selected>Choose...</option>
                     @{
                         foreach (var product in Model.Coupons?.OrderByDescending(x => x.Name))
@@ -91,15 +91,12 @@
                 <span asp-validation-for="ProductOrder.VerifiedPhoneNumberId" class="text-danger"></span>
                 </div>*@
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Create" class="btn btn-primary mt-3 mb-3" />
             </div>
         </form>
     </div>
 </div>
-
-<p>
-    <a href="/Order/@Model?.ProductOrder?.OrderId/ProductOrders" class="btn btn-outline-primary">Back to List</a>
-</p>
+<a href="/Order/@Model?.ProductOrder?.OrderId/ProductOrders" class="btn btn-outline-primary">Back to List</a>
 
 @section Scripts {
     @{

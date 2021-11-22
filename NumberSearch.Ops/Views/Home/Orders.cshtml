@@ -89,12 +89,12 @@
                     <tr>
                         <td data-order="@order.Order.DateSubmitted.Ticks">
                             <h3>
-                                <span class="badge badge-@pillColor">
+                                <span class="badge bg-@pillColor">
                                     @nextStep
                                 </span>
                             </h3>
                             <h4 class="d-flex justify-content-between align-items-center mt-3">
-                                <span class="badge badge-info badge-pill">
+                                <span class="badge bg-info rounded-pill">
                                     @order.Order.DateSubmitted
                                 </span>
                             </h4>
@@ -113,13 +113,13 @@
                                     </a>
                                     @if (order.ProductOrders.Where(x => !string.IsNullOrWhiteSpace(x.DialedNumber)).Any())
                                     {
-                                        <a href="/Home/NumberOrder/@order?.Order?.OrderId" class="btn btn-info">
+                                        <a href="/Home/NumberOrder/@order?.Order?.OrderId" class="btn btn-info text-white">
                                             Related Purchased Numbers
                                         </a>
                                     }
                                     @if (order?.PortRequest is not null)
                                     {
-                                        <a href="/Home/PortRequests/@order?.Order?.OrderId" class="btn btn-info">
+                                        <a href="/Home/PortRequests/@order?.Order?.OrderId" class="btn btn-info text-white">
                                             Related Port Request
                                         </a>
                                     }
@@ -166,7 +166,7 @@
                                     }
                                     @if (!string.IsNullOrWhiteSpace(order.Order.BillingClientId))
                                     {
-                                        <a href="https://billing.acceleratenetworks.com/clients/@order?.Order?.BillingClientId/edit" class="btn btn-info" target="_blank" rel="noopener noreferrer">
+                                        <a href="https://billing.acceleratenetworks.com/clients/@order?.Order?.BillingClientId/edit" class="btn btn-info text-white" target="_blank" rel="noopener noreferrer">
                                             Billing Client
                                         </a>
                                     }

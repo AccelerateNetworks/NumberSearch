@@ -32,13 +32,13 @@
                                 switch (info.IngestedFrom)
                                 {
                                     case "FirstPointCom":
-                                        ingestedBadge = "<h4><span class='badge badge-info'>FirstPointCom</span></h4>";
+                                        ingestedBadge = "<h4><span class='badge bg-info'>FirstPointCom</span></h4>";
                                         break;
                                     case "BulkVS":
-                                        ingestedBadge = "<h4><span class='badge badge-primary'>BulkVS</span></h4>";
+                                        ingestedBadge = "<h4><span class='badge bg-primary'>BulkVS</span></h4>";
                                         break;
                                     case "TeleMessage":
-                                        ingestedBadge = "<h4><span class='badge badge-warning'>TeleMessage</span></h4>";
+                                        ingestedBadge = "<h4><span class='badge bg-warning'>TeleMessage</span></h4>";
                                         break;
                                 }
                             }
@@ -66,10 +66,12 @@
                             @info.Note
                         </td>
                         <td>
-                            <a href="https://www.google.com/maps/place/@info?.Address,+@info?.City,+@info?.State+@info?.Zip/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
-                                Map
-                            </a>
-                            <a class="btn btn-danger text-light mt-1" href="/Home/EmergencyInformation/@info.DialedNumber">Edit</a>
+                            <div class="btn-group">
+                                <a href="https://www.google.com/maps/place/@info?.Address,+@info?.City,+@info?.State+@info?.Zip/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+                                    Map
+                                </a>
+                                <a class="btn btn-danger text-light" href="/Home/EmergencyInformation/@info.DialedNumber">Edit</a>
+                            </div>
                         </td>
                     </tr>
                 }
