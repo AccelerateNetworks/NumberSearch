@@ -196,6 +196,55 @@ function RemoveNumberDescription(newClientId, extRegId, element) {
     request.send();
 }
 
+function AddPhoneMenuOption(newClientId, menuOption, destination, description, element) {
+    var request = new XMLHttpRequest();
+    var route = `/Add/NewClient/${newClientId}/PhoneMenuOption`;
+    request.open('POST', route, true);
+    request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    request.onload = function () {
+        if (this.response != null) {
+            console.log(`Added ${phoneNumber} to the NewClient.`)
+            var table = document.getElementById('numdestable');
+            var row = table.insertRow(0);
+            var menuOptionCell = row.insertCell(0);
+            menuOptionCell.innerHTML = menuOption;
+            var destinationCell = row.insertCell(1);
+            destinationCell.innerHTML = destination;
+            var descriptionCell = row.insertCell(2);
+            descriptionCell.innerHTML = description;
+            var removeButton = `<button type='button' onclick='RemovePhoneMenuOption("${newClientId}", ${this.response}, this)' class="btn btn-outline-danger"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>Remove</button>`;
+            var removeCell = row.insertCell(3);
+            removeCell.innerHTML = removeButton;
+        } else {
+            console.log(`Failed to add ${menuOption} to cart.`)
+        }
+    };
+    request.send(JSON.stringify({
+        "phoneMenuOptionId": `${newClientId}`,
+        "newClientId": `${newClientId}`,
+        "menuOption": `${menuOption}`,
+        "destination": `${destination}`,
+        "description": `${description}`,
+        "dateUpdated": "2021-09-21T01:23:45.125Z"
+    }));
+}
+
+function RemovePhoneMenuOption(newClientId, extRegId, element) {
+    var request = new XMLHttpRequest();
+    var route = `/Remove/NewClient/${newClientId}/PhoneMenuOption/${extRegId}`;
+    request.open('GET', route, true);
+    request.onload = function () {
+        if (this.response != null) {
+            console.log(`Removed ${extRegId} from NewClient ${newClientId}.`)
+            var row = element.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+        } else {
+            console.log(`Failed to remove ${extRegId} from NewClient ${newClientId}.`)
+        }
+    };
+    request.send();
+}
+
 function AddIntercomRegistration(newClientId, outgoing, incoming, element) {
     var request = new XMLHttpRequest();
     var route = `/Add/NewClient/${newClientId}/IntercomRegistration`;

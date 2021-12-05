@@ -16,6 +16,7 @@ namespace NumberSearch.DataAccess
         public ExtensionRegistration[] ExtensionRegistrations { get; set; }
         public bool PhoneMenu { get; set; }
         public string PhonesToRingOrMenuDescription { get; set; }
+        public PhoneMenuOption[] PhoneMenuOptions { get; set; }
         public string BusinessHours { get; set; }
         public string AfterHoursVoicemail { get; set; }
         public NumberDescription[] NumberDescriptions { get; set; }
@@ -24,10 +25,8 @@ namespace NumberSearch.DataAccess
         public bool OverheadPaging { get; set; }
         public string OverheadPagingDescription { get; set; }
         public bool Intercom { get; set; }
-        // Add this to the db
         public string IntercomDescription { get; set; }
         public IntercomRegistration[] IntercomRegistrations { get; set; }
-        // Add this to the db
         public bool SpeedDial { get; set; }
         public SpeedDialKey[] SpeedDialKeys { get; set; }
         public bool CustomHoldMusic { get; set; }
@@ -332,6 +331,67 @@ namespace NumberSearch.DataAccess
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"SpeedDialKeys\" WHERE \"SpeedDialKeyId\" = @SpeedDialKeyId",
                 new { SpeedDialKeyId })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+
+    public class PhoneMenuOption
+    {
+        public Guid PhoneMenuOptionId { get; set; }
+        public Guid NewClientId { get; set; }
+        public string MenuOption { get; set; }
+        public string Destination { get; set; }
+        public string Description { get; set; }
+        public DateTime DateUpdated { get; set; }
+
+        public static async Task<PhoneMenuOption[]> GetByNewClientAsync(Guid newClientId, string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<PhoneMenuOption>("SELECT \"PhoneMenuOptionId\", \"NewClientId\", \"MenuOption\", \"Destination\", \"Description\", \"DateUpdated\" FROM public.\"PhoneMenuOptions\" " +
+                "WHERE \"NewClientId\" = @newClientId", new { newClientId })
+                .ConfigureAwait(false);
+
+            return result.ToArray();
+        }
+
+        public async Task<bool> PostAsync(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("INSERT INTO public.\"PhoneMenuOptions\" (\"PhoneMenuOptionId\", \"NewClientId\", \"MenuOption\", \"Destination\", \"Description\", \"DateUpdated\") " +
+                "VALUES(@PhoneMenuOptionId, @NewClientId, @MenuOption, @Destination, @Description, @DateUpdated)",
+                new { PhoneMenuOptionId, NewClientId, MenuOption, Destination, Description, DateUpdated })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteAsync(string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("DELETE FROM public.\"PhoneMenuOptions\" WHERE \"PhoneMenuOptionId\" = @PhoneMenuOptionId",
+                new { PhoneMenuOptionId })
                 .ConfigureAwait(false);
 
             if (result == 1)

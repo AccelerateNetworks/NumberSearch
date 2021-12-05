@@ -391,6 +391,79 @@ namespace NumberSearch.Mvc.Controllers
             return BadRequest("Couldn't find a NewClient with this id.");
         }
 
+
+        [HttpPost("Add/NewClient/{id}/PhoneMenuOption")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> AddNewClientPhoneMenuOptionAsync([FromRoute] Guid id, [FromBody] PhoneMenuOption option)
+        {
+            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+
+            if (newClient is not null && newClient.NewClientId != Guid.Empty)
+            {
+                var extregs = await PhoneMenuOption.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+
+                var existing = extregs?.Where(x => x.PhoneMenuOptionId == option.PhoneMenuOptionId).FirstOrDefault();
+
+                if (existing is null)
+                {
+                    option.PhoneMenuOptionId = Guid.NewGuid();
+                    option.DateUpdated = DateTime.Now;
+                    option.NewClientId = id;
+
+                    var checkSubmit = await option.PostAsync(_postgresql).ConfigureAwait(false);
+
+                    if (checkSubmit)
+                    {
+                        return Ok(option.PhoneMenuOptionId);
+                    }
+                    else
+                    {
+                        return BadRequest($"Failed to save the Phone Menu Option to the database.");
+                    }
+                }
+                else
+                {
+                    return BadRequest("An Phone Menu Option with this Id already exists in the database.");
+                }
+            }
+
+            return BadRequest("Couldn't find a NewClient with this id.");
+        }
+
+        [HttpGet("Remove/NewClient/{id}/PhoneMenuOption/{menuOptId}")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> RemoveNewClientPhoneMenuOptionAsync([FromRoute] Guid id, [FromRoute] Guid menuOptId)
+        {
+            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+
+            if (newClient is not null && newClient.NewClientId != Guid.Empty)
+            {
+                var extregs = await PhoneMenuOption.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+
+                var existing = extregs?.Where(x => x.PhoneMenuOptionId == menuOptId).FirstOrDefault();
+
+                if (existing is null)
+                {
+                    return BadRequest($"An Phone Menu Option with and Id of {menuOptId} does not exist in the database.");
+                }
+                else
+                {
+                    var checkDelete = await existing.DeleteAsync(_postgresql).ConfigureAwait(false);
+
+                    if (checkDelete)
+                    {
+                        return Ok($"Deleted Phone Menu Option {menuOptId} from the database.");
+                    }
+                    else
+                    {
+                        return BadRequest($"Failed to delete Phone Menu Option {menuOptId} from the database.");
+                    }
+                }
+            }
+
+            return BadRequest("Couldn't find a NewClient with this id.");
+        }
+
         [HttpGet("Cart/Add/{type}/{id}/{quantity}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddToCartAsync([FromRoute] string type, [FromRoute] string id, [FromRoute] int quantity = 1)

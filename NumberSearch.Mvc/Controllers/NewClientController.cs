@@ -53,6 +53,7 @@ namespace NumberSearch.Mvc.Controllers
             newClient.IntercomRegistrations = await IntercomRegistration.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
             newClient.SpeedDialKeys = await SpeedDialKey.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
             newClient.FollowMeRegistrations = await FollowMeRegistration.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
+            newClient.PhoneMenuOptions = await PhoneMenuOption.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
 
             var form = new NewClientResult
             {

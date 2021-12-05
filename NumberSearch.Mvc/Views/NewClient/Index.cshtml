@@ -68,8 +68,12 @@
             var selectedLocation = $('input[name="NewClient.PhoneMenu"]:checked').val();
             if (selectedLocation == 'true') {
                 $("#phoneMenuTextAreaDescription").show();
+                $("#phoneMenuTable").show();
+                $("#phoneMenuForm").show();
             } else {
                 $("#phoneMenuTextAreaDescription").hide();
+                $("#phoneMenuTable").hide();
+                $("#phoneMenuForm").hide();
             }
         }
 
@@ -95,8 +99,14 @@
             var selectedLocation = $('input[name="NewClient.Intercom"]:checked').val();
             if (selectedLocation == 'true') {
                 $("#IntercomTextArea").show();
+                $("#IntercomTable").show();
+                $("#IntercomInstructions").show();
+                $("#IntercomForm").show();
             } else {
                 $("#IntercomTextArea").hide();
+                $("#IntercomTable").hide();
+                $("#IntercomInstructions").hide();
+                $("#IntercomForm").hide();
             }
         }
 
@@ -264,7 +274,63 @@
                     </div>
                 </div>
                 <div class="input-group mt-3" id="phoneMenuTextAreaDescription">
-                    <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.PhonesToRingOrMenuDescription" placeholder="When someone calls, should they ring certain phones or be greeted with a menu?"></textarea>
+                    <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.PhonesToRingOrMenuDescription" placeholder="What would you like your menu to say? Eg: Thanks for calling Business Name, press 1 for..."></textarea>
+                </div>
+                <div class="table-responsive" id="phoneMenuTable">
+                    <table class="table table-borderless table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Menu Option #
+                                </th>
+                                <th>
+                                    Destination
+                                </th>
+                                <th>
+                                    Description
+                                </th>
+                                <th>
+
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="numdestable">
+                            @if (Model?.NewClient?.NumberDescriptions is not null)
+                            {
+                                foreach (var number in Model?.NewClient?.PhoneMenuOptions)
+                                {
+                                    <tr>
+                                        <td>@number?.MenuOption</td>
+                                        <td>@number?.Destination</td>
+                                        <td>@number?.Description</td>
+                                        <td>
+                                            <button type="button" onclick='RemovePhoneMenuOption("@Model?.NewClient?.NewClientId", "@number.PhoneMenuOptionId", this)' class="btn btn-outline-danger">
+                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                Remove
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card p-2 bg-light" id="phoneMenuForm">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="menuOption" placeholder="Menu Option #">
+                        <input type="text" class="form-control" id="menuOptionDestination" placeholder="Destination">
+                        <input type="text" class="form-control" id="menuOptionDescription" placeholder="Description">
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-primary"
+                                    onclick="AddPhoneMenuOption(document.getElementById('newClientId').value,
+                                                document.getElementById('menuOption').value,
+                                                document.getElementById('menuOptionDestination').value,
+                                                document.getElementById('menuOptionDescription').value,
+                                                this);">
+                                Add
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <p class="mt-3">What are your business hours? Do you want calls to route directly to voicemail or a menu after business hours or during lunch? </p>
                 <div class="input-group">
@@ -431,10 +497,10 @@
                 <div class="input-group" id="IntercomTextArea">
                     <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.IntercomDescription" placeholder="Can they talk back to you or is it one way audio?"></textarea>
                 </div>
-                <p class="mt-3">
+                <p class="mt-3" id="IntercomInstructions">
                     List any intercom keys that should be configured below:
                 </p>
-                <div class="table-responsive">
+                <div class="table-responsive" id="IntercomTable">
                     <table class="table table-borderless table-hover table-striped">
                         <thead>
                             <tr>
@@ -469,7 +535,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="card p-2 bg-light">
+                <div class="card p-2 bg-light" id="IntercomForm">
                     <div class="input-group">
                         <input type="text" class="form-control" id="outgoing" placeholder="Extension making the call to Intercom" maxlength="14">
                         <input type="text" class="form-control" id="incoming" placeholder="Extension receiving the Intercom" maxlength="14">
