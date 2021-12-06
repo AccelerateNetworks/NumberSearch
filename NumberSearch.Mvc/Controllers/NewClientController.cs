@@ -55,6 +55,37 @@ namespace NumberSearch.Mvc.Controllers
             newClient.FollowMeRegistrations = await FollowMeRegistration.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
             newClient.PhoneMenuOptions = await PhoneMenuOption.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
 
+            // There is info entered make sure the users sees it.
+            if (newClient.IntercomRegistrations.Any())
+            {
+                newClient.Intercom = true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(newClient.IntercomDescription))
+            {
+                newClient.Intercom = true;
+            }
+
+            if (newClient.SpeedDialKeys.Any())
+            {
+                newClient.SpeedDial = true;
+            }
+
+            if (newClient.PhoneMenuOptions.Any())
+            {
+                newClient.PhoneMenu = true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(newClient.TextingServiceName))
+            {
+                newClient.TextingService = true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(newClient.OverheadPagingDescription))
+            {
+                newClient.OverheadPaging = true;
+            }
+
             var form = new NewClientResult
             {
                 Order = order,
@@ -141,6 +172,37 @@ namespace NumberSearch.Mvc.Controllers
             newClient.IntercomRegistrations = await IntercomRegistration.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
             newClient.SpeedDialKeys = await SpeedDialKey.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
             newClient.FollowMeRegistrations = await FollowMeRegistration.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
+
+            // There is info entered make sure the users sees it.
+            if (newClient.IntercomRegistrations.Any())
+            {
+                newClient.Intercom = true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(newClient.IntercomDescription))
+            {
+                newClient.Intercom = true;
+            }
+
+            if (newClient.SpeedDialKeys.Any())
+            {
+                newClient.SpeedDial = true;
+            }
+
+            if (newClient.PhoneMenuOptions.Any())
+            {
+                newClient.PhoneMenu = true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(newClient.TextingServiceName))
+            {
+                newClient.TextingService = true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(newClient.OverheadPagingDescription))
+            {
+                newClient.OverheadPaging = true;
+            }
 
             var productOrders = await ProductOrder.GetAsync(orderId, _postgresql).ConfigureAwait(false);
             var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
