@@ -37,6 +37,26 @@ namespace NumberSearch.Mvc.Controllers
             return View("Index", new HardwareResult { Cart = cart, Phones = products.Where(x => x.Type != "Accessory").ToArray(), Accessories = accessories });
         }
 
+        [HttpGet("Hardware/{product}")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> SpecificProductAsync(string product)
+        {
+            var products = await Product.GetAsync(product, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+
+            // If no matching products are found bump them back to the list of all hardware.
+            if (!products.Any())
+            {
+                return Redirect($"/Hardware/");
+            }
+
+            var accessories = products.Where(x => x.Type == "Accessory").ToArray();
+
+            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
+            var cart = Cart.GetFromSession(HttpContext.Session);
+
+            return View("Index", new HardwareResult { Cart = cart, Phones = products.Where(x => x.Type != "Accessory").ToArray(), Accessories = accessories });
+        }
+
         [HttpGet("Hardware/PartnerPriceList")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
         public async Task<IActionResult> PartnerPriceListAsync()
