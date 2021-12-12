@@ -434,7 +434,7 @@ namespace NumberSearch.Mvc.Controllers
 
                                     if (coupon is not null)
                                     {
-                                        if (coupon.Name == "Waive Port")
+                                        if (coupon.Type == "Port")
                                         {
 
                                             totalCost -= totalPortingCost;
@@ -446,7 +446,7 @@ namespace NumberSearch.Mvc.Controllers
                                                 qty = 1
                                             });
                                         }
-                                        else if (coupon.Name == "Waive Installation")
+                                        else if (coupon.Type == "Install")
                                         {
 
                                             onetimeItems.Add(new Invoice_Items
@@ -454,6 +454,16 @@ namespace NumberSearch.Mvc.Controllers
                                                 product_key = coupon.Name,
                                                 notes = coupon.Description,
                                                 cost = 60 * -1,
+                                                qty = 1
+                                            });
+                                        }
+                                        else
+                                        {
+                                            onetimeItems.Add(new Invoice_Items
+                                            {
+                                                product_key = coupon.Name,
+                                                notes = coupon.Description,
+                                                cost = coupon.Value * -1,
                                                 qty = 1
                                             });
                                         }

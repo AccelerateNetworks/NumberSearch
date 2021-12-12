@@ -13,6 +13,8 @@ namespace NumberSearch.DataAccess
         public Guid CouponId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+        public string Type { get; set; }
+        public int Value { get; set; }
         public bool Public { get; set; }
 
         /// <summary>
@@ -26,7 +28,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryFirstOrDefaultAsync<Coupon>("SELECT \"CouponId\", \"Name\", \"Description\", \"Public\" FROM public.\"Coupons\" " +
+                .QueryFirstOrDefaultAsync<Coupon>("SELECT \"CouponId\", \"Name\", \"Description\", \"Public\", \"Type\", \"Value\" FROM public.\"Coupons\" " +
                 "WHERE \"CouponId\" = @CouponId",
                 new { CouponId = couponId })
                 .ConfigureAwait(false);
@@ -44,7 +46,7 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<Coupon>("SELECT \"CouponId\", \"Name\", \"Description\", \"Public\" FROM public.\"Coupons\"")
+                .QueryAsync<Coupon>("SELECT \"CouponId\", \"Name\", \"Description\", \"Public\", \"Type\", \"Value\"  FROM public.\"Coupons\"")
                 .ConfigureAwait(false);
 
             return result;
@@ -60,9 +62,9 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"Coupons\"(\"CouponId\", \"Name\", \"Description\", \"Public\") " +
-                "VALUES(@CouponId, @Name, @Description, @Public)",
-                new { CouponId, Name, Description, Public })
+                .ExecuteAsync("INSERT INTO public.\"Coupons\"(\"CouponId\", \"Name\", \"Description\", \"Public\", \"Type\", \"Value\" ) " +
+                "VALUES(@CouponId, @Name, @Description, @Public, @Type, @Value)",
+                new { CouponId, Name, Description, Public, Type, Value })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -85,9 +87,9 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("UPDATE public.\"Coupons\" SET \"Name\" = @Name, \"Description\" = @Description, \"Public\" = @Public " +
+                .ExecuteAsync("UPDATE public.\"Coupons\" SET \"Name\" = @Name, \"Description\" = @Description, \"Public\" = @Public, \"Type\" = @Type, \"Value\" = @Value " +
                 "WHERE \"CouponId\" = @CouponId",
-                new { Name, Description, Public, CouponId })
+                new { Name, Description, Public, CouponId, Type, Value })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -103,10 +105,10 @@ namespace NumberSearch.DataAccess
         public async Task<bool> DeleteAsync(string connectionString)
         {
             // Fail fast if we don have the primary key.
-            if (CouponId == Guid.Empty)
-            {
-                return false;
-            }
+            //if (CouponId == Guid.Empty)
+            //{
+            //    return false;
+            //}
 
             using var connection = new NpgsqlConnection(connectionString);
 

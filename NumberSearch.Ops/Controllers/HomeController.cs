@@ -1639,7 +1639,7 @@ namespace NumberSearch.Ops.Controllers
 
                                 if (coupon is not null)
                                 {
-                                    if (coupon.Name == "Waive Port")
+                                    if (coupon.Type == "Port")
                                     {
 
                                         totalCost -= totalPortingCost;
@@ -1651,7 +1651,7 @@ namespace NumberSearch.Ops.Controllers
                                             qty = 1
                                         });
                                     }
-                                    else if (coupon.Name == "Waive Installation")
+                                    else if (coupon.Name == "Install")
                                     {
 
                                         onetimeItems.Add(new Invoice_Items
@@ -1659,6 +1659,16 @@ namespace NumberSearch.Ops.Controllers
                                             product_key = coupon.Name,
                                             notes = coupon.Description,
                                             cost = 60 * -1,
+                                            qty = 1
+                                        });
+                                    }
+                                    else
+                                    {
+                                        onetimeItems.Add(new Invoice_Items
+                                        {
+                                            product_key = coupon.Name,
+                                            notes = coupon.Description,
+                                            cost = coupon.Value * -1,
                                             qty = 1
                                         });
                                     }
@@ -2501,7 +2511,31 @@ namespace NumberSearch.Ops.Controllers
                 // Show all orders
                 var result = await Coupon.GetByIdAsync(couponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
 
-                return View("Coupons", new CouponResult { Coupons = new List<Coupon> { result } });
+                return View("Coupons", new CouponResult { Coupon = result, Coupons = new List<Coupon> { result } });
+            }
+        }
+
+        [Authorize]
+        [HttpGet]
+        [Route("/Home/Coupons/{couponId}/Delete")]
+        public async Task<IActionResult> DeleteCouponAsync(Guid? couponId)
+        {
+            if (couponId is null)
+            {
+                var results = await Coupon.GetAllAsync(_postgresql).ConfigureAwait(false);
+
+                return View("Coupons", new CouponResult { Coupons = results });
+            }
+            else
+            {
+                // Show all orders
+                var result = await Coupon.GetByIdAsync(couponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+
+                var checkDelete = await result.DeleteAsync(_postgresql).ConfigureAwait(false);
+
+                var results = await Coupon.GetAllAsync(_postgresql).ConfigureAwait(false);
+
+                return View("Coupons", new CouponResult { Coupons = results });
             }
         }
 
@@ -2512,18 +2546,22 @@ namespace NumberSearch.Ops.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CouponCreate(Coupon coupon)
         {
-            var checkExists = await Coupon.GetByIdAsync(coupon.CouponId, _postgresql).ConfigureAwait(false);
+            var coupons = await Coupon.GetAllAsync(_postgresql).ConfigureAwait(false);
+
+            var checkExists = coupons.Where(x => x.Name == coupon.Name).FirstOrDefault();
 
             if (checkExists is null)
             {
+                coupon.CouponId = Guid.NewGuid();
                 var checkSave = await coupon.PostAsync(_postgresql).ConfigureAwait(false);
             }
             else
             {
+                coupon.CouponId = checkExists.CouponId;
                 var checkUpdate = await coupon.PutAsync(_postgresql).ConfigureAwait(false);
             }
 
-            var coupons = await Coupon.GetAllAsync(_postgresql).ConfigureAwait(false);
+            coupons = await Coupon.GetAllAsync(_postgresql).ConfigureAwait(false);
 
             return View("Coupons", new CouponResult { Coupons = coupons });
         }

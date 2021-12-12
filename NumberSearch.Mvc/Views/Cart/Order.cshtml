@@ -373,14 +373,21 @@
                     {
                         var productOrder = productOrders[coupon?.CouponId.ToString()];
                         var localTotal = 0;
-                        if (coupon.Name == "Waive Port")
+                        if (coupon.Type == "Port")
                         {
                             localTotal = portedTotal;
                             couponTotal += localTotal * -1;
                         }
-                        else if (coupon.Name == "Waive Installation")
+                        else if (coupon.Type == "Install")
                         {
                             localTotal = 60;
+                            couponTotal += localTotal * -1;
+                        }
+                        else
+                        {
+                            // Hand custom coupon amounts.
+                            localTotal = coupon.Value;
+                            couponTotal += localTotal * -1;
                         }
                         <li class="list-group-item d-flex justify-content-between lh-condensed bg-light">
                             <div class="text-success">
@@ -389,7 +396,7 @@
                                 </h6>
                                 <small class="text-success">@coupon.Description</small>
                             </div>
-                            <span class="text-success">-$@localTotal</span>
+                            <span class="text-success">$@localTotal</span>
                         </li>
                     }
                 }

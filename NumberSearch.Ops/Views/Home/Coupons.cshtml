@@ -20,11 +20,19 @@
         </div>
         <div class="col mb-3">
             <label for="name">Name</label>
-            <input asp-for="Coupon.Name" type="text" class="form-control" id="name" placeholder="FreePhones">
+            <input asp-for="Coupon.Name" type="text" class="form-control" id="name" placeholder="FreePhones" required>
         </div>
         <div class="col mb-3">
             <label for="description">Description</label>
             <input asp-for="Coupon.Description" type="text" class="form-control" id="description" placeholder="Please charge the customer money for doing work." required>
+        </div>
+        <div class="col mb-3">
+            <label for="description">Type</label>
+            <input asp-for="Coupon.Type" type="text" class="form-control" id="type" placeholder="What type of coupon is this?" required>
+        </div>
+        <div class="col mb-3">
+            <label for="description">Value</label>
+            <input asp-for="Coupon.Value" type="number" class="form-control" id="value" required>
         </div>
         <div class="col mb-3 form-check">
             <input asp-for="Coupon.Public" type="checkbox" class="form-check-input" id="public">
@@ -49,7 +57,16 @@
                     Description
                 </th>
                 <th scope="col">
+                    Type
+                </th>
+                <th scope="col">
+                    Value
+                </th>
+                <th scope="col">
                     Public
+                </th>
+                <th>
+
                 </th>
             </tr>
         </thead>
@@ -68,7 +85,19 @@
                             @coupon.Description
                         </td>
                         <td>
+                            @coupon.Type
+                        </td>
+                        <td>
+                            @coupon.Value
+                        </td>
+                        <td>
                             @coupon.Public
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a class="btn btn-warning text-light" href="/Home/Coupons/@coupon.CouponId">Edit</a>
+                                <a class="btn btn-danger text-light" href="/Home/Coupons/@coupon.CouponId/Delete">Delete</a>
+                            </div>
                         </td>
                     </tr>
                 }
