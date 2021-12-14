@@ -537,15 +537,19 @@ namespace NumberSearch.Ops.Controllers
             {
                 var order = await Order.GetByIdAsync(Guid.Parse(orderId), _postgresql).ConfigureAwait(false);
 
+                Log.Information($"{JsonSerializer.Serialize(order)}");
+
                 if (order is not null && order.OrderId == Guid.Parse(orderId))
                 {
                     if (!string.IsNullOrWhiteSpace(serviceNumber))
                     {
                         order.E911ServiceNumber = serviceNumber;
+                        Log.Information($"[RegisterE911] E911 Service Number: {order.E911ServiceNumber}");
                         var checkUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
                         if (!checkUpdate)
                         {
                             // The order failed to update with the new e911 service number.
+                            Log.Error($"[RegisterE911] Failed to update order {order.OrderId} with E911 service number {order.E911ServiceNumber}");
                             var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
                             var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
                             var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
@@ -599,6 +603,7 @@ namespace NumberSearch.Ops.Controllers
                         if (existingRegistration.code == 200)
                         {
                             // This number is already registered with Teli.
+                            Log.Information($"[RegisterE911] E911 Service number {order.E911ServiceNumber} is already register with Teli.");
                             var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
                             var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
                             var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
