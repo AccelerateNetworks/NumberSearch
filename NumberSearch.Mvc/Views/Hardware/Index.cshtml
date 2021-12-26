@@ -73,22 +73,26 @@
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div class="btn-group">
                                                     <div class="input-group mb-3">
-                                                        @{
-                                                            if (quantity > 0)
-                                                            {
-                                                                <input id="@product.ProductId" type="number" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@quantity">
-                                                            }
-                                                            else
-                                                            {
-                                                                <input id="@product.ProductId" type="number" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
-                                                            }
+                                                        @if (quantity > 0)
+                                                        {
+                                                            <input id="@product.ProductId" type="number" min="0" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@quantity">
+                                                            <div class="input-group-append">
+                                                                <button onclick="RemoveFromCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)" class="btn btn-outline-danger">
+                                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>
+                                                                    Remove
+                                                                </button>
+                                                            </div>
                                                         }
-                                                        <div class="input-group-append">
-                                                            <button type="submit" class="btn btn-outline-primary" onclick="AddToCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)">
-                                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                                Add To Cart
-                                                            </button>
-                                                        </div>
+                                                        else
+                                                        {
+                                                            <input id="@product.ProductId" type="number" min="0" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                                            <div class="input-group-append">
+                                                                <button type="submit" class="btn btn-outline-primary" onclick="AddToCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)">
+                                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                                    Add To Cart
+                                                                </button>
+                                                            </div>
+                                                        }
                                                     </div>
                                                 </div>
                                             </div>
@@ -132,22 +136,26 @@
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div class="btn-group">
                                                     <div class="input-group mb-3">
-                                                        @{
-                                                            if (quantity > 0)
-                                                            {
-                                                                <input id="@product.ProductId" type="number" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@quantity">
-                                                            }
-                                                            else
-                                                            {
-                                                                <input id="@product.ProductId" type="number" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
-                                                            }
+                                                        @if (quantity > 0)
+                                                        {
+                                                            <input id="@product.ProductId" type="number" min="0" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@quantity">
+                                                            <div class="input-group-append">
+                                                                <button onclick="RemoveFromCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)" class="btn btn-outline-danger">
+                                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>
+                                                                    Remove
+                                                                </button>
+                                                            </div>
                                                         }
-                                                        <div class="input-group-append">
-                                                            <button type="submit" class="btn btn-outline-primary" onclick="AddToCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)">
-                                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                                Add To Cart
-                                                            </button>
-                                                        </div>
+                                                        else
+                                                        {
+                                                            <input id="@product.ProductId" type="number" min="0" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                                            <div class="input-group-append">
+                                                                <button type="submit" class="btn btn-outline-primary" onclick="AddToCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)">
+                                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                                    Add To Cart
+                                                                </button>
+                                                            </div>
+                                                        }
                                                     </div>
                                                 </div>
                                             </div>
@@ -196,22 +204,26 @@
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div class="btn-group">
                                                     <div class="input-group mb-3">
-                                                        @{
-                                                            if (quantity > 0)
-                                                            {
-                                                                <input id="@product.ProductId" type="number" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@quantity">
-                                                            }
-                                                            else
-                                                            {
-                                                                <input id="@product.ProductId" type="number" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
-                                                            }
+                                                        @if (quantity > 0)
+                                                        {
+                                                            <input id="@product.ProductId" type="number" min="0" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@quantity">
+                                                            <div class="input-group-append">
+                                                                <button onclick="RemoveFromCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)" class="btn btn-outline-danger">
+                                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>
+                                                                    Remove
+                                                                </button>
+                                                            </div>
                                                         }
-                                                        <div class="input-group-append">
-                                                            <button type="submit" class="btn btn-outline-primary" onclick="AddToCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)">
-                                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                                Add To Cart
-                                                            </button>
-                                                        </div>
+                                                        else
+                                                        {
+                                                            <input id="@product.ProductId" type="number" min="0" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                                            <div class="input-group-append">
+                                                                <button type="submit" class="btn btn-outline-primary" onclick="AddToCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)">
+                                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                                    Add To Cart
+                                                                </button>
+                                                            </div>
+                                                        }
                                                     </div>
                                                 </div>
                                             </div>
@@ -255,22 +267,26 @@
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div class="btn-group">
                                                     <div class="input-group mb-3">
-                                                        @{
-                                                            if (quantity > 0)
-                                                            {
-                                                                <input id="@product.ProductId" type="number" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@quantity">
-                                                            }
-                                                            else
-                                                            {
-                                                                <input id="@product.ProductId" type="number" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
-                                                            }
+                                                        @if (quantity > 0)
+                                                        {
+                                                            <input id="@product.ProductId" type="number" min="0" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@quantity">
+                                                            <div class="input-group-append">
+                                                                <button onclick="RemoveFromCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)" class="btn btn-outline-danger">
+                                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>
+                                                                    Remove
+                                                                </button>
+                                                            </div>
                                                         }
-                                                        <div class="input-group-append">
-                                                            <button type="submit" class="btn btn-outline-primary" onclick="AddToCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)">
-                                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                                Add To Cart
-                                                            </button>
-                                                        </div>
+                                                        else
+                                                        {
+                                                            <input id="@product.ProductId" type="number" min="0" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                                            <div class="input-group-append">
+                                                                <button type="submit" class="btn btn-outline-primary" onclick="AddToCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)">
+                                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                                    Add To Cart
+                                                                </button>
+                                                            </div>
+                                                        }
                                                     </div>
                                                 </div>
                                             </div>

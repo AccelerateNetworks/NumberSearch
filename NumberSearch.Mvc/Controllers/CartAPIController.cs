@@ -466,11 +466,16 @@ namespace NumberSearch.Mvc.Controllers
 
         [HttpGet("Cart/Add/{type}/{id}/{quantity}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public async Task<IActionResult> AddToCartAsync([FromRoute] string type, [FromRoute] string id, [FromRoute] int quantity = 1)
+        public async Task<IActionResult> AddToCartAsync([FromRoute] string type, [FromRoute] string id, [FromRoute] int quantity)
         {
             if (!ModelState.IsValid && !string.IsNullOrWhiteSpace(type) && !string.IsNullOrWhiteSpace(id))
             {
                 return BadRequest(ModelState);
+            }
+
+            if (quantity < 1)
+            {
+                return BadRequest($"The product quantity is less than 1.");
             }
 
             var cart = new CartServices(_configuration, HttpContext);
@@ -512,11 +517,16 @@ namespace NumberSearch.Mvc.Controllers
 
         [HttpGet("Cart/Remove/{type}/{id}/{quantity}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public async Task<IActionResult> RemoveFromCartAsync([FromRoute] string type, [FromRoute] string id, [FromRoute] int quantity = 1)
+        public async Task<IActionResult> RemoveFromCartAsync([FromRoute] string type, [FromRoute] string id, [FromRoute] int quantity)
         {
             if (!ModelState.IsValid && !string.IsNullOrWhiteSpace(type) && !string.IsNullOrWhiteSpace(id))
             {
                 return BadRequest(ModelState);
+            }
+
+            if (quantity < 1)
+            {
+                return BadRequest($"The product quantity is less than 1.");
             }
 
             var cart = new CartServices(_configuration, HttpContext);
