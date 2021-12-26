@@ -612,34 +612,34 @@ namespace NumberSearch.Tests
         //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
         //}
 
-        [Fact]
-        public async Task PeerlessGetPhoneNumbersTestAsync()
-        {
-            // Arrange
-            string npa = "206";
+        //[Fact]
+        //public async Task PeerlessGetPhoneNumbersTestAsync()
+        //{
+        //    // Arrange
+        //    string npa = "206";
 
-            // Act
-            var results = await DidFind.GetByNPAAsync(npa, peerlessAPIKey).ConfigureAwait(false);
+        //    // Act
+        //    var results = await DidFind.GetByNPAAsync(npa, peerlessAPIKey).ConfigureAwait(false);
 
-            // Assert
-            Assert.NotNull(results);
-            Assert.NotEmpty(results);
-            int count = 0;
+        //    // Assert
+        //    Assert.NotNull(results);
+        //    Assert.NotEmpty(results);
+        //    int count = 0;
 
-            foreach (var result in results.ToArray())
-            {
-                output.WriteLine(result.DialedNumber);
-                Assert.True(result.NPA > 99);
-                Assert.True(result.NXX > 99);
-                Assert.True(result.XXXX > 1);
-                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-                Assert.False(string.IsNullOrWhiteSpace(result.City));
-                Assert.False(string.IsNullOrWhiteSpace(result.State));
-                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
-                count++;
-            }
-            output.WriteLine($"{count} Results Reviewed");
-        }
+        //    foreach (var result in results.ToArray())
+        //    {
+        //        output.WriteLine(result.DialedNumber);
+        //        Assert.True(result.NPA > 99);
+        //        Assert.True(result.NXX > 99);
+        //        Assert.True(result.XXXX > 1);
+        //        Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+        //        Assert.False(string.IsNullOrWhiteSpace(result.City));
+        //        Assert.False(string.IsNullOrWhiteSpace(result.State));
+        //        Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+        //        count++;
+        //    }
+        //    output.WriteLine($"{count} Results Reviewed");
+        //}
 
         //[Fact]
         //public async Task TeleNXXsTestAsync()
