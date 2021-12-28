@@ -350,12 +350,12 @@
 <form action="/Home/PortRequestUnified/@Model?.PortRequest?.OrderId" method="post">
     @Html.AntiForgeryToken()
     <input name="OrderId" value="@Model?.PortRequest?.OrderId" hidden />
-    @if (unSubmitted?.Count() > 0)
-    {
+@*    @if (unSubmitted?.Count() > 0)
+    {*@
         <button type="submit" class="btn btn-success btn-lg">Submit to Teli and BulkVS</button>
-    }
+@*    }
     else
     {
         <button type="submit" class="btn btn-outline-success btn-lg" disabled>Submit to Teli and BulkVS</button>
-    }
+    }*@
 </form>

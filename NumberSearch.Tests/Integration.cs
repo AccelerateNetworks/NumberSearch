@@ -989,7 +989,7 @@ namespace NumberSearch.Tests
 
             var results = await Search.GetLocalNumbersAsync("WA", string.Empty, "206", string.Empty, result.data.token).ConfigureAwait(false);
 
-            if(results is null || !results.data.result.Any())
+            if (results is null || !results.data.result.Any())
             {
                 results = await Search.GetLocalNumbersAsync("WA", string.Empty, "425", string.Empty, result.data.token).ConfigureAwait(false);
             }
@@ -1551,6 +1551,24 @@ namespace NumberSearch.Tests
             Assert.NotEmpty(results);
             var order = await PortRequest.GetByOrderIdAsync(results.FirstOrDefault().OrderId, postgresql).ConfigureAwait(false);
             output.WriteLine(JsonSerializer.Serialize(order));
+        }
+
+        [Fact]
+        public async Task GetPostPutDeletePortRequestByOrderIdAsync()
+        {
+            var results = await PortRequest.GetAllAsync(postgresql).ConfigureAwait(false);
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            var portRequest = await PortRequest.GetByOrderIdAsync(results.FirstOrDefault().OrderId, postgresql).ConfigureAwait(false);
+            output.WriteLine(JsonSerializer.Serialize(portRequest));
+            portRequest.PortRequestId = Guid.NewGuid();
+            var checkCreate = await portRequest.PostAsync(postgresql).ConfigureAwait(false);
+            Assert.True(checkCreate);
+            portRequest.ProviderPIN = "1234";
+            var checkUpdate = await portRequest.PutAsync(postgresql).ConfigureAwait(false);
+            Assert.True(checkUpdate);
+            var checkDelete = await portRequest.DeleteByIdAsync(postgresql).ConfigureAwait(false);
+            Assert.True(checkDelete);
         }
 
         [Fact]

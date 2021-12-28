@@ -86,9 +86,9 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"PortRequests\"(\"OrderId\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"BillingPhone\", \"LocationType\", \"BusinessContact\", \"BusinessName\", \"ProviderAccountNumber\", \"ProviderPIN\", \"PartialPort\", \"PartialPortDescription\", \"WirelessNumber\", \"CallerId\", \"BillImagePath\", \"BillImageFileType\", \"DateSubmitted\", \"ResidentialFirstName\", \"ResidentialLastName\", \"TeliId\", \"RequestStatus\", \"Completed\", \"DateCompleted\", \"DateUpdated\", \"VendorSubmittedTo\") " +
-                "VALUES( @OrderId, @Address, @Address2, @City, @State, @Zip, @BillingPhone, @LocationType, @BusinessContact, @BusinessName, @ProviderAccountNumber, @ProviderPIN, @PartialPort, @PartialPortDescription, @WirelessNumber, @CallerId, @BillImagePath, @BillImageFileType, @DateSubmitted, @ResidentialFirstName, @ResidentialLastName, @TeliId, @RequestStatus, @Completed, @DateCompleted, @DateUpdated, @VendorSubmittedTo)",
-                new { OrderId, Address, Address2, City, State, Zip, BillingPhone, LocationType, BusinessContact, BusinessName, ProviderAccountNumber, ProviderPIN, PartialPort, PartialPortDescription, WirelessNumber, CallerId, BillImagePath, BillImageFileType, DateSubmitted, ResidentialFirstName, ResidentialLastName, TeliId, RequestStatus, Completed, DateCompleted, DateUpdated, VendorSubmittedTo })
+                .ExecuteAsync("INSERT INTO public.\"PortRequests\"(\"PortRequestId\", \"OrderId\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"BillingPhone\", \"LocationType\", \"BusinessContact\", \"BusinessName\", \"ProviderAccountNumber\", \"ProviderPIN\", \"PartialPort\", \"PartialPortDescription\", \"WirelessNumber\", \"CallerId\", \"BillImagePath\", \"BillImageFileType\", \"DateSubmitted\", \"ResidentialFirstName\", \"ResidentialLastName\", \"TeliId\", \"RequestStatus\", \"Completed\", \"DateCompleted\", \"DateUpdated\", \"VendorSubmittedTo\") " +
+                "VALUES(@PortRequestId, @OrderId, @Address, @Address2, @City, @State, @Zip, @BillingPhone, @LocationType, @BusinessContact, @BusinessName, @ProviderAccountNumber, @ProviderPIN, @PartialPort, @PartialPortDescription, @WirelessNumber, @CallerId, @BillImagePath, @BillImageFileType, @DateSubmitted, @ResidentialFirstName, @ResidentialLastName, @TeliId, @RequestStatus, @Completed, @DateCompleted, @DateUpdated, @VendorSubmittedTo)",
+                new { PortRequestId, OrderId, Address, Address2, City, State, Zip, BillingPhone, LocationType, BusinessContact, BusinessName, ProviderAccountNumber, ProviderPIN, PartialPort, PartialPortDescription, WirelessNumber, CallerId, BillImagePath, BillImageFileType, DateSubmitted, ResidentialFirstName, ResidentialLastName, TeliId, RequestStatus, Completed, DateCompleted, DateUpdated, VendorSubmittedTo })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -111,8 +111,15 @@ namespace NumberSearch.DataAccess
             using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("UPDATE public.\"PortRequests\" SET \"OrderId\" = @OrderId, \"Address\" = @Address, \"Address2\" = @Address2, \"City\" = @City, \"State\" = @State, \"Zip\" = @Zip, \"BillingPhone\" = @BillingPhone, \"LocationType\" = @LocationType, \"BusinessContact\" = @BusinessContact, \"BusinessName\" = @BusinessName, \"ProviderAccountNumber\" = @ProviderAccountNumber, \"ProviderPIN\" = @ProviderPIN, \"PartialPort\" = @PartialPort, \"PartialPortDescription\" = @PartialPortDescription, \"WirelessNumber\" = @WirelessNumber, \"CallerId\" = @CallerId, \"BillImagePath\" = @BillImagePath, \"BillImageFileType\" = @BillImageFileType, \"DateSubmitted\" = @DateSubmitted, \"ResidentialFirstName\" = @ResidentialFirstName, \"ResidentialLastName\" = @ResidentialLastName, \"TeliId\" = @TeliId, \"RequestStatus\" = @RequestStatus, \"Completed\" = @Completed, \"DateCompleted\" = @DateCompleted, \"DateUpdated\" = @DateUpdated, \"VendorSubmittedTo\" = @VendorSubmittedTo WHERE \"PortRequestId\" = @PortRequestId",
-                new { OrderId, Address, Address2, City, State, Zip, BillingPhone, LocationType, BusinessContact, BusinessName, ProviderAccountNumber, ProviderPIN, PartialPort, PartialPortDescription, WirelessNumber, CallerId, BillImagePath, BillImageFileType, DateSubmitted, PortRequestId, ResidentialFirstName, ResidentialLastName, TeliId, RequestStatus, Completed, DateCompleted, DateUpdated, VendorSubmittedTo })
+                .ExecuteAsync("UPDATE public.\"PortRequests\" SET \"OrderId\" = @OrderId, \"Address\" = @Address, \"Address2\" = @Address2, \"City\" = @City, \"State\" = @State, \"Zip\" = @Zip, " +
+                "\"BillingPhone\" = @BillingPhone, \"LocationType\" = @LocationType, \"BusinessContact\" = @BusinessContact, \"BusinessName\" = @BusinessName, " +
+                "\"ProviderAccountNumber\" = @ProviderAccountNumber, \"ProviderPIN\" = @ProviderPIN, \"PartialPort\" = @PartialPort, \"PartialPortDescription\" = @PartialPortDescription, " +
+                "\"WirelessNumber\" = @WirelessNumber, \"CallerId\" = @CallerId, \"BillImagePath\" = @BillImagePath, \"BillImageFileType\" = @BillImageFileType, \"DateSubmitted\" = @DateSubmitted, " +
+                "\"ResidentialFirstName\" = @ResidentialFirstName, \"ResidentialLastName\" = @ResidentialLastName, \"TeliId\" = @TeliId, \"RequestStatus\" = @RequestStatus, \"Completed\" = @Completed, " +
+                "\"DateCompleted\" = @DateCompleted, \"DateUpdated\" = @DateUpdated, \"VendorSubmittedTo\" = @VendorSubmittedTo WHERE \"PortRequestId\" = @PortRequestId",
+                new { OrderId, Address, Address2, City, State, Zip, BillingPhone, LocationType, BusinessContact, BusinessName, ProviderAccountNumber, ProviderPIN, PartialPort, 
+                    PartialPortDescription, WirelessNumber, CallerId, BillImagePath, BillImageFileType, DateSubmitted, ResidentialFirstName, ResidentialLastName, TeliId, 
+                    RequestStatus, Completed, DateCompleted, DateUpdated, VendorSubmittedTo, PortRequestId })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -138,6 +145,31 @@ namespace NumberSearch.DataAccess
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"PortRequests\" WHERE \"OrderId\" = @OrderId",
                 new { OrderId })
+                .ConfigureAwait(false);
+
+            if (result == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteByIdAsync(string connectionString)
+        {
+            // Fail fast if we don have the primary key.
+            if (OrderId == Guid.Empty)
+            {
+                return false;
+            }
+
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .ExecuteAsync("DELETE FROM public.\"PortRequests\" WHERE \"PortRequestId\" = @PortRequestId",
+                new { PortRequestId })
                 .ConfigureAwait(false);
 
             if (result == 1)

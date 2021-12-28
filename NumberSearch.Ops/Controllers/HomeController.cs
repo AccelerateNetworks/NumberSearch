@@ -19,6 +19,7 @@ using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.TeliMesssage;
 using NumberSearch.Ops.Models;
 
+
 using Serilog;
 
 using System;
@@ -2936,9 +2937,10 @@ namespace NumberSearch.Ops.Controllers
                 var order = await Order.GetByIdAsync(Guid.Parse(OrderId), _postgresql).ConfigureAwait(false);
                 var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
                 var numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
-                numbers = numbers.Where(x => string.IsNullOrWhiteSpace(x.ExternalPortRequestId)).ToList();
 
                 // Prevent duplicate submissions.
+                numbers = numbers.Where(x => string.IsNullOrWhiteSpace(x.ExternalPortRequestId)).ToList();
+
                 if (numbers is null || !numbers.Any())
                 {
                     numbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
@@ -2952,35 +2954,16 @@ namespace NumberSearch.Ops.Controllers
                     });
                 }
 
-                // Handle Tollfree numbers
-                var tollfreeLookup = new Dictionary<int, int>();
-                foreach (var code in PhoneNumbersNA.AreaCode.TollFree)
-                {
-                    tollfreeLookup.Add(code, code);
-                }
-
-                var tollfreeNumbers = new List<PortedPhoneNumber>();
-                var localNumbers = new List<PortedPhoneNumber>();
-
                 // Split the tollfree numbers out from the local numbers.
-                foreach (var number in numbers)
-                {
-                    if (tollfreeLookup.TryGetValue(number.NPA, out var _))
-                    {
-                        tollfreeNumbers.Add(number);
-                    }
-                    else
-                    {
-                        localNumbers.Add(number);
-                    }
-                }
+                var tollfreeNumbers = numbers.Where(x => PhoneNumbersNA.AreaCode.IsTollfree(x.PortedDialedNumber)).ToList();
+                var localNumbers = numbers.Where(x => !PhoneNumbersNA.AreaCode.IsTollfree(x.PortedDialedNumber)).ToList();
 
                 // Submit the tollfree numbers to TeliMessage in a port request.
                 if (tollfreeNumbers.Any())
                 {
                     try
                     {
-                        var teliResponse = await LnpCreate.GetAsync(portRequest, numbers, _teleToken).ConfigureAwait(false);
+                        var teliResponse = await LnpCreate.GetAsync(portRequest, tollfreeNumbers, _teleToken).ConfigureAwait(false);
                         if (teliResponse is not null && !string.IsNullOrWhiteSpace(teliResponse.data.id))
                         {
                             portRequest.TeliId = teliResponse.data.id;
@@ -2988,7 +2971,7 @@ namespace NumberSearch.Ops.Controllers
                             portRequest.VendorSubmittedTo = "TeliMessage";
                             var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
 
-                            foreach (var number in numbers)
+                            foreach (var number in tollfreeNumbers)
                             {
                                 number.ExternalPortRequestId = teliResponse.data.id;
                                 number.RawResponse = JsonSerializer.Serialize(teliResponse);
@@ -3016,7 +2999,7 @@ namespace NumberSearch.Ops.Controllers
                     }
                 }
 
-                // Submit the BulkVS numbers to TeliMessage in a port request.
+                // Submit the local numbers to BulkVS in a port request.
                 if (localNumbers.Any())
                 {
                     try
@@ -3076,14 +3059,13 @@ namespace NumberSearch.Ops.Controllers
 
                                     if (bulkResponse is not null && !string.IsNullOrWhiteSpace(bulkResponse?.OrderId))
                                     {
-                                        // Rename this to VendorOrderId, rather than TeliId.
-                                        portRequest.TeliId = bulkResponse?.OrderId;
                                         portRequest.DateSubmitted = DateTime.Now;
+                                        portRequest.VendorSubmittedTo = "BulkVS";
                                         var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
 
                                         foreach (var number in localTNs)
                                         {
-                                            var updatedNumber = numbers.Where(x => $"1{x.PortedDialedNumber}" == number).FirstOrDefault();
+                                            var updatedNumber = localNumbers.Where(x => $"1{x.PortedDialedNumber}" == number).FirstOrDefault();
                                             updatedNumber.ExternalPortRequestId = bulkResponse?.OrderId;
                                             updatedNumber.RawResponse = JsonSerializer.Serialize(bulkResponse);
                                             var checkUpdateId = await updatedNumber.PutAsync(_postgresql).ConfigureAwait(false);
@@ -3160,13 +3142,11 @@ namespace NumberSearch.Ops.Controllers
 
                             if (bulkResponse is not null && !string.IsNullOrWhiteSpace(bulkResponse?.OrderId))
                             {
-                                // Rename this to VendorOrderId, rather than TeliId.
-                                portRequest.TeliId = bulkResponse?.OrderId;
                                 portRequest.DateSubmitted = DateTime.Now;
                                 portRequest.VendorSubmittedTo = "BulkVS";
                                 var checkUpdate = portRequest.PutAsync(_postgresql).ConfigureAwait(false);
 
-                                foreach (var number in numbers)
+                                foreach (var number in localNumbers)
                                 {
                                     number.ExternalPortRequestId = bulkResponse?.OrderId;
                                     number.RawResponse = JsonSerializer.Serialize(bulkResponse);
@@ -3236,88 +3216,6 @@ namespace NumberSearch.Ops.Controllers
                     Message = string.Join(", ", responseMessages.ToArray())
                 });
             }
-        }
-
-
-        [Authorize]
-        public async Task<IActionResult> Tests(string testName, string npa, string nxx, string dialedNumber)
-        {
-            if (testName == "DIDInventorySearchAsync" && (!string.IsNullOrWhiteSpace(npa) || !string.IsNullOrWhiteSpace(nxx) || !string.IsNullOrWhiteSpace(dialedNumber)))
-            {
-                npa ??= string.Empty;
-                nxx ??= string.Empty;
-                dialedNumber ??= string.Empty;
-
-                var results = await NpaNxxFirstPointCom.GetAsync(npa, nxx, dialedNumber, _username, _password).ConfigureAwait(false);
-
-                return View("Tests", new TestResults
-                {
-                    NPA = npa,
-                    NXX = nxx,
-                    DialedNumber = dialedNumber,
-                    PhoneNumbersTM = results
-                });
-            }
-
-            if (testName == "DIDOrderAsync" && (!string.IsNullOrWhiteSpace(dialedNumber)))
-            {
-                var results = await FirstPointComOrderPhoneNumber.PostAsync(dialedNumber, _username, _password).ConfigureAwait(false);
-
-                return View("Tests", new TestResults
-                {
-                    DialedNumber = dialedNumber,
-                    PhoneNumberOrder = results
-                });
-            }
-
-            if (testName == "LRNLookup" && (!string.IsNullOrWhiteSpace(dialedNumber)))
-            {
-                var checkNumber = await LrnLookup.GetAsync(dialedNumber, _teleToken).ConfigureAwait(false);
-
-                return View("Tests", new TestResults
-                {
-                    DialedNumber = dialedNumber,
-                    LRNLookup = checkNumber
-                });
-            }
-
-            if (testName == "didslist" && (!string.IsNullOrWhiteSpace(dialedNumber)))
-            {
-                var checkNumber = await DidsList.GetAsync(dialedNumber, _teleToken).ConfigureAwait(false);
-
-                return View("Tests", new TestResults
-                {
-                    DialedNumber = dialedNumber,
-                    PhoneNumbersTM = checkNumber
-                });
-            }
-
-            if (testName == "lnpcheck" && (!string.IsNullOrWhiteSpace(dialedNumber)))
-            {
-                var checkNumber = await LnpCheck.GetRawAsync(dialedNumber, _teleToken).ConfigureAwait(false);
-
-                return View("Tests", new TestResults
-                {
-                    PortabilityResponse = checkNumber.data.Values.FirstOrDefault().status
-                });
-            }
-
-            if (testName == "DnSearchNpaNxx" && (!string.IsNullOrWhiteSpace(npa) || !string.IsNullOrWhiteSpace(nxx)))
-            {
-                npa ??= string.Empty;
-                nxx ??= string.Empty;
-                var checkNPA = int.TryParse(npa, out var NPA);
-                var checkNXX = int.TryParse(nxx, out var NXX);
-
-                var checkNumber = await OrderTn.GetAsync(NPA, NXX, _bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
-
-                return View("Tests", new TestResults
-                {
-                    PhoneNumbersBVS = checkNumber
-                });
-            }
-
-            return View("Tests");
         }
 
         [Authorize]
