@@ -1122,10 +1122,25 @@ namespace NumberSearch.Mvc.Controllers
 
                 await _httpContext.Session.LoadAsync().ConfigureAwait(false);
                 var cart = Cart.GetFromSession(_httpContext.Session);
-                var checkAdd = cart.AddCoupon(coupon, productOrder);
-                var checkSet = cart.SetToSession(_httpContext.Session);
 
-                return Ok(couponName.ToString());
+                if (coupon.Type == "Install" && cart.Products.Any())
+                {
+                    var checkAdd = cart.AddCoupon(coupon, productOrder);
+                    var checkSet = cart.SetToSession(_httpContext.Session);
+
+                    return Ok(couponName.ToString());
+                }
+                else if (coupon.Type == "Port" && cart.PortedPhoneNumbers.Any())
+                {
+                    var checkAdd = cart.AddCoupon(coupon, productOrder);
+                    var checkSet = cart.SetToSession(_httpContext.Session);
+
+                    return Ok(couponName.ToString());
+                }
+                else
+                {
+                    return BadRequest("This coupon cannot be applied to this order.");
+                }
             }
         }
 

@@ -427,6 +427,32 @@ namespace NumberSearch.Mvc.Controllers
                                     var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
                                 }
 
+
+                                // Handle hardware installation senarios, if hardware is in the order.
+                                if (cart?.Products is not null && cart.Products.Any())
+                                {
+                                    if (order.OnsiteInstallation)
+                                    {
+                                        onetimeItems.Add(new Invoice_Items
+                                        {
+                                            product_key = "Onsite Hardware Installation",
+                                            notes = $"We'll come visit you and get all your phones setup.",
+                                            cost = 60,
+                                            qty = 1
+                                        });
+                                    }
+                                    else
+                                    {
+                                        onetimeItems.Add(new Invoice_Items
+                                        {
+                                            product_key = "Remote Installation",
+                                            notes = $"We'll walk you through getting all your phones setup virtually.",
+                                            cost = 0,
+                                            qty = 1
+                                        });
+                                    }
+                                }
+
                                 // Apply coupon discounts
                                 if (productOrder.CouponId is not null)
                                 {
@@ -448,14 +474,27 @@ namespace NumberSearch.Mvc.Controllers
                                         }
                                         else if (coupon.Type == "Install")
                                         {
-
-                                            onetimeItems.Add(new Invoice_Items
+                                            // If they have selected onsite installation this coupon removes a $60 charge.
+                                            if (order.OnsiteInstallation)
                                             {
-                                                product_key = coupon.Name,
-                                                notes = coupon.Description,
-                                                cost = 60 * -1,
-                                                qty = 1
-                                            });
+                                                onetimeItems.Add(new Invoice_Items
+                                                {
+                                                    product_key = coupon.Name,
+                                                    notes = coupon.Description,
+                                                    cost = 60 * -1,
+                                                    qty = 1
+                                                });
+                                            }
+                                            else
+                                            {
+                                                onetimeItems.Add(new Invoice_Items
+                                                {
+                                                    product_key = coupon.Name,
+                                                    notes = coupon.Description,
+                                                    cost = 0,
+                                                    qty = 1
+                                                });
+                                            }
                                         }
                                         else
                                         {
@@ -470,31 +509,6 @@ namespace NumberSearch.Mvc.Controllers
                                     }
 
                                     var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
-                                }
-                            }
-
-                            // Handle hardware installation senarios, if hardware is in the order.
-                            if (cart?.Products is not null && cart.Products.Any())
-                            {
-                                if (order.OnsiteInstallation)
-                                {
-                                    onetimeItems.Add(new Invoice_Items
-                                    {
-                                        product_key = "Onsite Hardware Installation",
-                                        notes = $"We'll come visit you and get all your phones setup.",
-                                        cost = 60,
-                                        qty = 1
-                                    });
-                                }
-                                else
-                                {
-                                    onetimeItems.Add(new Invoice_Items
-                                    {
-                                        product_key = "Remote Installation",
-                                        notes = $"We'll walk you through getting all your phones setup virtually.",
-                                        cost = 0,
-                                        qty = 1
-                                    });
                                 }
                             }
 
