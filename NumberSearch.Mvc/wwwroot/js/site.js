@@ -205,7 +205,7 @@ function AddPhoneMenuOption(newClientId, menuOption, destination, description, e
     request.onload = function () {
         if (this.response != null) {
             console.log(`Added ${phoneNumber} to the NewClient.`)
-            var table = document.getElementById('numdestable');
+            var table = document.getElementById('menuopttable');
             var row = table.insertRow(0);
             var menuOptionCell = row.insertCell(0);
             menuOptionCell.innerHTML = menuOption;
