@@ -54,6 +54,7 @@ function AddToCart(type, id, quantity, element) {
             }
         } else {
             console.log(`Failed to add ${type} ${id} to cart.`)
+            alert(`Failed to add ${type} ${id} to cart.`);
             spinner.addClass('d-none')
         }
     };
