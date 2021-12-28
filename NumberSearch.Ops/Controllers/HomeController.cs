@@ -3081,7 +3081,7 @@ namespace NumberSearch.Ops.Controllers
 
                                         await note.PostAsync(portRequest.TeliId, _bulkVSusername, _bulkVSpassword);
 
-                                        responseMessages.Add($"{bulkResponse.Description} - {bulkResponse.Code}");
+                                        responseMessages.Add($"{bulkResponse?.Description} - {bulkResponse?.Code}");
                                     }
                                     else
                                     {
@@ -3092,7 +3092,7 @@ namespace NumberSearch.Ops.Controllers
                                         return View("PortRequestEdit", new PortRequestResult
                                         {
                                             Order = order,
-                                            Message = $"{bulkResponse.Description} - {bulkResponse.Code}",
+                                            Message = $"Failed to submit port request to BulkVS. {bulkResponse?.Description} - {bulkResponse?.Code}",
                                             PortRequest = portRequest,
                                             PhoneNumbers = numbers
                                         });
@@ -3172,7 +3172,7 @@ namespace NumberSearch.Ops.Controllers
                                 return View("PortRequestEdit", new PortRequestResult
                                 {
                                     Order = order,
-                                    Message = $"{bulkResponse.Description} - {bulkResponse.Code}",
+                                    Message = $"Failed to submit port request to BulkVS. {bulkResponse.Description} - {bulkResponse.Code}",
                                     PortRequest = portRequest,
                                     PhoneNumbers = numbers
                                 });

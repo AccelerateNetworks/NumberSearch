@@ -186,7 +186,9 @@ namespace NumberSearch.DataAccess.BulkVS
             }
             catch (FlurlHttpException ex)
             {
-                return await ex.GetResponseJsonAsync<PortTNResponse>();
+                var response = await ex.GetResponseStringAsync();
+                Log.Error(response);
+                return null;
             }
         }
 
