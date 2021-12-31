@@ -3079,7 +3079,7 @@ namespace NumberSearch.Ops.Controllers
                                             Note = "If the port completion date requested is unavailable please pick the next available date and set the port to complete at 8pm that day."
                                         };
 
-                                        await note.PostAsync(portRequest.TeliId, _bulkVSusername, _bulkVSpassword);
+                                        await note.PostAsync(bulkResponse?.OrderId, _bulkVSusername, _bulkVSpassword);
 
                                         responseMessages.Add($"{bulkResponse?.Description} - {bulkResponse?.Code}");
                                     }
@@ -3161,7 +3161,7 @@ namespace NumberSearch.Ops.Controllers
                                     Note = "If the port completion date requested is unavailable please pick the next available date and set the port to complete at 8pm that day."
                                 };
 
-                                await note.PostAsync(portRequest.TeliId, _bulkVSusername, _bulkVSpassword);
+                                await note.PostAsync(bulkResponse?.OrderId, _bulkVSusername, _bulkVSpassword);
 
                                 responseMessages.Add($"{bulkResponse.Description} - {bulkResponse.Code}");
                             }
