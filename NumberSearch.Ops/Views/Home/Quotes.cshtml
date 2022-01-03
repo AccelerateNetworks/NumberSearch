@@ -1,4 +1,5 @@
-﻿@model NumberSearch.Ops.OrderResult
+﻿@using AccelerateNetworks.Operations
+@model NumberSearch.Ops.OrderResult
 @{
     ViewData["Title"] = "Quotes";
 }
@@ -33,7 +34,7 @@
                     }
                     // The order is not completed, and is stale.
                     else if (order?.Order?.Completed is not true && order?.Order?.DateSubmitted <
-                        DateTime.Now.AddDays(-14))
+                    DateTime.Now.AddDays(-14))
                     {
                         nextStep = "⭕ Contact the Customer, the order is Stale";
                         pillColor = "warning";
@@ -206,11 +207,11 @@
                         </td>
                         <td>
                             @{
-                                var purchased = new List<NumberSearch.DataAccess.ProductOrder>();
-                                var ported = new List<NumberSearch.DataAccess.ProductOrder>();
-                                var services = new List<NumberSearch.DataAccess.ProductOrder>();
-                                var products = new List<NumberSearch.DataAccess.ProductOrder>();
-                                var verified = new List<NumberSearch.DataAccess.ProductOrder>();
+                                var purchased = new List<ProductOrder>();
+                                var ported = new List<ProductOrder>();
+                                var services = new List<ProductOrder>();
+                                var products = new List<ProductOrder>();
+                                var verified = new List<ProductOrder>();
                                 foreach (var product in order.ProductOrders)
                                 {
                                     if (!string.IsNullOrWhiteSpace(product.DialedNumber))

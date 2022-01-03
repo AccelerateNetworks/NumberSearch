@@ -1,4 +1,5 @@
-﻿@model IEnumerable<NumberSearch.DataAccess.VerifiedPhoneNumber>
+﻿@using AccelerateNetworks.Operations
+@model IEnumerable<VerifiedPhoneNumber>
 @{
     ViewData["Title"] = "Purchased Numbers";
 }
@@ -53,7 +54,7 @@
                                 break;
                         }
                         <tr>
-                            <td data-order="@order.DateToExpire.Ticks">
+                            <td data-order="@order.DateToExpire?.Ticks">
                                 <h4>@order.VerifiedDialedNumber</h4>
                             </td>
                             <td scope="row">

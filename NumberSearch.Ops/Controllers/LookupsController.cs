@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
-using NumberSearch.Ops.EFModels;
+using AccelerateNetworks.Operations;
 using NumberSearch.Ops.Models;
 
 using System;

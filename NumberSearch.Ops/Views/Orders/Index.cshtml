@@ -1,4 +1,4 @@
-﻿@model IEnumerable<NumberSearch.Ops.EFModels.Order>
+﻿@model IEnumerable<AccelerateNetworks.Operations.Order>
 
 @{
     ViewData["Title"] = "Orders";
@@ -38,7 +38,7 @@
                     }
                     // The order is not completed, and is stale.
                     else if (order?.Completed is not true && order?.DateSubmitted <
-                        DateTime.Now.AddDays(-14))
+                    DateTime.Now.AddDays(-14))
                     {
                         nextStep = "⭕ Contact the Customer, the order is Stale";
                         pillColor = "warning";

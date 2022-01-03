@@ -85,9 +85,9 @@ namespace NumberSearch.Ops
                 options.SlidingExpiration = true;
             });
 
-            services.AddDbContext<NumberSearch.Ops.EFModels.numberSearchContext>(options =>
-options.UseNpgsql(
-Configuration.GetConnectionString("PostgresqlProd")));
+            services.AddDbContext<AccelerateNetworks.Operations.numberSearchContext>(options =>
+                options.UseNpgsql(
+                Configuration.GetConnectionString("PostgresqlProd")));
 
             services.AddTransient<IEmailSender, EmailSender>();
 

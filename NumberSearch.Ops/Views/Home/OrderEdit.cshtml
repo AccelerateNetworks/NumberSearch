@@ -426,7 +426,7 @@
                                     var checkFind = productOrders.TryGetValue(item?.DialedNumber.ToString(), out var productOrder);
                                     if (checkFind)
                                     {
-                                        var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
+                                        var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX?.ToString("0000")}";
                                         var number = item.DialedNumber;
                                         <tr>
                                             <td scope="row"><h4>@formattedNumber</h4></td>
@@ -532,7 +532,8 @@
                                 foreach (var item in Model?.Cart?.Products)
                                 {
                                     var productOrder = productOrders[item?.ProductId.ToString()];
-                                    var localTotal = productOrder.Quantity * item.Price;
+                                    var checkPrice = int.TryParse(item.Price, out var price);
+                                    var localTotal = productOrder.Quantity * price;
                                     <tr>
                                         <td scope="row"><h4>@item.Name</h4></td>
                                         @{
@@ -564,7 +565,8 @@
                                 foreach (var item in Model?.Cart?.Services)
                                 {
                                     var productOrder = productOrders[item?.ServiceId.ToString()];
-                                    var localTotal = productOrder.Quantity * item.Price;
+                                    var checkPrice = int.TryParse(item.Price, out var price);
+                                    var localTotal = productOrder.Quantity * price;
                                     <tr>
                                         <td scope="row"><h4>@item.Name</h4></td>
                                         @{

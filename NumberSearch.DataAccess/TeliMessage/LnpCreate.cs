@@ -54,6 +54,55 @@ namespace NumberSearch.DataAccess.TeliMesssage
             public DateTime? modify_dt { get; set; }
         }
 
+        public static async Task<LnpCreate> GetAsync(string BillingPhone, string LocationType, string BusinessContact,
+            string BusinessName, string ResidentialFirstName, string ResidentialLastName, string ProviderAccountNumber,
+            string Address, string Address2, string City, string State, string Zip, bool PartialPort, string PartialPortDescription,
+            bool WirelessNumber, string CallerId, string BillImagePath, string[] PhoneNumbers, Guid token)
+        {
+            string baseUrl = "https://apiv1.teleapi.net/";
+            string endpoint = "lnp/create";
+            string tokenParameter = $"?token={token}";
+            string numbersParameter = $"&numbers=";
+            foreach (var number in PhoneNumbers)
+            {
+                // The last number should not have a comma.
+                if (number == PhoneNumbers.LastOrDefault())
+                {
+                    numbersParameter += number;
+                }
+                else
+                {
+                    numbersParameter += $"{number},";
+                }
+            }
+            string btnParameter = $"&btn={BillingPhone.Replace(" ", "").Trim()}";
+            string locationTypeParameter = $"&location_type={LocationType.ToLowerInvariant()}";
+            string businessContactParameter = $"&business_contact={BusinessContact.Trim()}";
+            string businessNameParameter = $"&business_name={BusinessName.Trim()}";
+            string firstNameParameter = $"&first_name={ResidentialFirstName.Trim()}";
+            string lastNameParameter = $"&last_name={ResidentialLastName.Trim()}";
+            string accountNumberParameter = $"&account_number={ProviderAccountNumber.Trim()}";
+            string serviceAddressParameter = $"&service_address={Address} {Address2}";
+            string serviceCityParameter = $"&service_city={City}";
+            string serviceStateParameter = $"&service_state={State}";
+            string serviceZipParameter = $"&service_zip={Zip}";
+            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(string.IsNullOrWhiteSpace(BusinessContact) ? $"{ResidentialFirstName} {ResidentialLastName}" : BusinessContact);
+            var base64Signature = Convert.ToBase64String(plainTextBytes);
+            string signatureParameter = $"&signature={base64Signature}";
+            string partialPortParameter = $"&partial_port=";
+            partialPortParameter += PartialPort ? "1" : "0";
+
+            string partialPortDetailsParameter = $"&partial_port_details={PartialPortDescription}";
+            string wirelessNumberParameter = $"&wireless_number=";
+            wirelessNumberParameter += WirelessNumber ? "1" : "0";
+            string wirelessPinParameter = $"&wireless_pin={WirelessNumber}";
+            string callerIdParameter = $"&caller_id={CallerId.Trim()}";
+            string billFileParameter = $"&bill_file=";
+            string billNameParameter = $"&bill_name={BillImagePath}";
+            string url = $"{baseUrl}{endpoint}{tokenParameter}{numbersParameter}{btnParameter}{locationTypeParameter}{businessContactParameter}{businessNameParameter}{firstNameParameter}{lastNameParameter}{accountNumberParameter}{serviceAddressParameter}{serviceCityParameter}{serviceStateParameter}{serviceZipParameter}{signatureParameter}{partialPortParameter}{partialPortDetailsParameter}{wirelessNumberParameter}{wirelessPinParameter}{callerIdParameter}{billFileParameter}{billNameParameter}";
+            return await url.GetJsonAsync<LnpCreate>().ConfigureAwait(false);
+        }
+
         public static async Task<LnpCreate> GetAsync(PortRequest PortRequest, IEnumerable<PortedPhoneNumber> PhoneNumbers, Guid token)
         {
             string baseUrl = "https://apiv1.teleapi.net/";

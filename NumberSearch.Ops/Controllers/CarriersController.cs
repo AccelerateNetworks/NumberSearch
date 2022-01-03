@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-using NumberSearch.Ops.EFModels;
+using AccelerateNetworks.Operations;
 using NumberSearch.Ops.Models;
 
 using System;
@@ -61,7 +61,7 @@ namespace NumberSearch.Ops.Controllers
         // GET: CarriersController/Create
         public async Task<IActionResult> CreateFromLookup(Guid lookupId)
         {
-            var lookup = await _context.PhoneNumberLookups.Where(x => x.PhoneNumberLookupId == lookupId).FirstOrDefaultAsync();
+            var lookup = await _context.PhoneNumberLookups.FirstOrDefaultAsync(x => x.PhoneNumberLookupId == lookupId);
 
             if (lookup is not null)
             {

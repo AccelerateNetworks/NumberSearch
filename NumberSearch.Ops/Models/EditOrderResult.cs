@@ -1,4 +1,4 @@
-﻿using NumberSearch.DataAccess;
+﻿using AccelerateNetworks.Operations;
 
 namespace NumberSearch.Ops.Models
 {

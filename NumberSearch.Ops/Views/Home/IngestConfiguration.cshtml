@@ -1,4 +1,5 @@
-﻿@model IEnumerable<NumberSearch.DataAccess.IngestCycle>
+﻿@using AccelerateNetworks.Operations
+@model IEnumerable<IngestCycle>
 @{
     ViewData["Title"] = "Ingest Configuration";
 }
@@ -40,7 +41,7 @@
                             <td>
                                 @Html.Raw(ingestedBadge)
                                 @{
-                                    if (cycle.Enabled)
+                                    if (cycle.Enabled ?? false)
                                     {
                                         <h4><span class="badge bg-success">Enabled</span></h4>
                                     }
@@ -50,7 +51,7 @@
                                     }
                                 }
                                 @{
-                                    if (cycle.RunNow)
+                                    if (cycle.RunNow ?? false)
                                     {
                                         <h4><span class="badge bg-warning">Run Now</span></h4>
                                     }
