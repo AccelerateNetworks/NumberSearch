@@ -8,6 +8,7 @@
 @*https://stackoverflow.com/questions/48613992/bootstrap-4-file-input-doesnt-show-the-file-name*@
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js"></script>
 
 <script type="text/javascript">
     function handleSearchQuery(textBox) {
@@ -63,6 +64,7 @@
 
     $(document).ready(function () {
 
+        bsCustomFileInput.init()
         locationType();
         partial();
 
@@ -285,7 +287,10 @@
                             <div class="custom-file">
                                 <input asp-for="PortRequest.BillImage" type="file" class="custom-file-input" id="inputGroupFile02" />
                                 <span asp-validation-for="PortRequest.BillImage"></span>
-                                <label class="custom-file-label" for="inputGroupFile02">Choose file</label>
+                                @{
+                                    var billLabel = string.IsNullOrWhiteSpace(Model.PortRequest.BillImagePath) ? "Choose Image" : Model.PortRequest.BillImagePath;
+                                }
+                                <label class="custom-file-label" for="inputGroupFile02">@billLabel</label>
                             </div>
                         </div>
                         <small class="text-muted">

@@ -186,7 +186,7 @@ public class HomeController : Controller
         if (orderId is null)
         {
             // Show all orders
-            var orders = await _context.Orders.ToListAsync();
+            var orders = await _context.Orders.OrderByDescending(x => x.DateSubmitted).ToListAsync();
             var portRequests = await _context.PortRequests.ToListAsync();
             var productOrders = await _context.ProductOrders.ToListAsync();
             var purchasedNumbers = await _context.PurchasedPhoneNumbers.ToListAsync();
@@ -295,7 +295,7 @@ public class HomeController : Controller
     public async Task<IActionResult> Quotes()
     {
         // Show all orders
-        var orders = await _context.Orders.ToListAsync();
+        var orders = await _context.Orders.OrderByDescending(x => x.DateSubmitted).ToListAsync();
         var portRequests = await _context.PortRequests.ToListAsync();
         var productOrders = await _context.ProductOrders.ToListAsync();
         var purchasedNumbers = await _context.PurchasedPhoneNumbers.ToListAsync();
