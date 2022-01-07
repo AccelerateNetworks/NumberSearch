@@ -85,7 +85,7 @@ namespace NumberSearch.Ops
                 options.SlidingExpiration = true;
             });
 
-            services.AddDbContext<AccelerateNetworks.Operations.numberSearchContext>(options =>
+            services.AddDbContextPool<AccelerateNetworks.Operations.numberSearchContext>(options =>
                 options.UseNpgsql(
                 Configuration.GetConnectionString("PostgresqlProd")));
 

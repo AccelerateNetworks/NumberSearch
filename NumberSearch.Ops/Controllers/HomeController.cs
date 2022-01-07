@@ -186,14 +186,14 @@ public class HomeController : Controller
         if (orderId is null)
         {
             // Show all orders
-            var orders = await _context.Orders.OrderByDescending(x => x.DateSubmitted).ToListAsync();
-            var portRequests = await _context.PortRequests.ToListAsync();
-            var productOrders = await _context.ProductOrders.ToListAsync();
-            var purchasedNumbers = await _context.PurchasedPhoneNumbers.ToListAsync();
-            var verifiedNumbers = await _context.VerifiedPhoneNumbers.ToListAsync();
-            var portedPhoneNumbers = await _context.PortedPhoneNumbers.ToListAsync();
-            var products = await _context.Products.ToListAsync();
-            var services = await _context.Services.ToListAsync();
+            var orders = new List<Order>();
+            var portRequests = await _context.PortRequests.AsNoTracking().ToListAsync();
+            var productOrders = await _context.ProductOrders.AsNoTracking().ToListAsync();
+            var purchasedNumbers = await _context.PurchasedPhoneNumbers.AsNoTracking().ToListAsync();
+            var verifiedNumbers = await _context.VerifiedPhoneNumbers.AsNoTracking().ToListAsync();
+            var portedPhoneNumbers = await _context.PortedPhoneNumbers.AsNoTracking().ToListAsync();
+            var products = await _context.Products.AsNoTracking().ToListAsync();
+            var services = await _context.Services.AsNoTracking().ToListAsync();
             var pairs = new List<OrderProducts>();
 
             // Show only the relevant Orders to a Sales rep.
@@ -203,16 +203,28 @@ public class HomeController : Controller
 
                 if (user is not null)
                 {
-                    orders = orders.Where(x => (x.Quote is not true) && (x.SalesEmail == user.Email)).ToList();
+                    orders = await _context.Orders
+                        .Where(x => (x.Quote != true) && (x.SalesEmail == user.Email))
+                        .OrderByDescending(x => x.DateSubmitted)
+                        .AsNoTracking()
+                        .ToListAsync();
                 }
                 else
                 {
-                    orders = orders.Where(x => x.Quote is not true).ToList();
+                    orders = await _context.Orders
+                        .Where(x => x.Quote != true)
+                        .OrderByDescending(x => x.DateSubmitted)
+                        .AsNoTracking()
+                        .ToListAsync();
                 }
             }
             else
             {
-                orders = orders.Where(x => x.Quote is not true).ToList();
+                orders = await _context.Orders
+                    .Where(x => x.Quote != true)
+                    .OrderByDescending(x => x.DateSubmitted)
+                    .AsNoTracking()
+                    .ToListAsync();
             }
 
             // Hide merged orders
@@ -243,11 +255,11 @@ public class HomeController : Controller
         }
         else
         {
-            var order = await _context.Orders.Where(x => x.OrderId == orderId).FirstOrDefaultAsync();
-            var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).ToListAsync();
-            var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-            var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-            var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+            var order = await _context.Orders.Where(x => x.OrderId == orderId).AsNoTracking().FirstOrDefaultAsync();
+            var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+            var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+            var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+            var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
 
             // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
             // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
@@ -258,17 +270,17 @@ public class HomeController : Controller
             {
                 if (item?.ProductId != Guid.Empty)
                 {
-                    var product = await _context.Products.Where(x => x.ProductId == item.ProductId).FirstOrDefaultAsync();
+                    var product = await _context.Products.Where(x => x.ProductId == item.ProductId).AsNoTracking().FirstOrDefaultAsync();
                     products.Add(product);
                 }
                 else if (item?.ServiceId != Guid.Empty)
                 {
-                    var service = await _context.Services.Where(x => x.ServiceId == item.ServiceId).FirstOrDefaultAsync();
+                    var service = await _context.Services.Where(x => x.ServiceId == item.ServiceId).AsNoTracking().FirstOrDefaultAsync();
                     services.Add(service);
                 }
                 else if (item?.CouponId is not null)
                 {
-                    var coupon = await _context.Coupons.Where(x => x.CouponId == item.CouponId).FirstOrDefaultAsync();
+                    var coupon = await _context.Coupons.Where(x => x.CouponId == item.CouponId).AsNoTracking().FirstOrDefaultAsync();
                     coupons.Add(coupon);
                 }
             }
@@ -295,14 +307,14 @@ public class HomeController : Controller
     public async Task<IActionResult> Quotes()
     {
         // Show all orders
-        var orders = await _context.Orders.OrderByDescending(x => x.DateSubmitted).ToListAsync();
-        var portRequests = await _context.PortRequests.ToListAsync();
-        var productOrders = await _context.ProductOrders.ToListAsync();
-        var purchasedNumbers = await _context.PurchasedPhoneNumbers.ToListAsync();
-        var verifiedNumbers = await _context.VerifiedPhoneNumbers.ToListAsync();
-        var portedPhoneNumbers = await _context.PortedPhoneNumbers.ToListAsync();
-        var products = await _context.Products.ToListAsync();
-        var services = await _context.Services.ToListAsync();
+        var orders = new List<Order>();
+        var portRequests = await _context.PortRequests.AsNoTracking().ToListAsync();
+        var productOrders = await _context.ProductOrders.AsNoTracking().ToListAsync();
+        var purchasedNumbers = await _context.PurchasedPhoneNumbers.AsNoTracking().ToListAsync();
+        var verifiedNumbers = await _context.VerifiedPhoneNumbers.AsNoTracking().ToListAsync();
+        var portedPhoneNumbers = await _context.PortedPhoneNumbers.AsNoTracking().ToListAsync();
+        var products = await _context.Products.AsNoTracking().ToListAsync();
+        var services = await _context.Services.AsNoTracking().ToListAsync();
         var pairs = new List<OrderProducts>();
 
         // Show only the relevant Orders to a Sales rep.
@@ -312,16 +324,26 @@ public class HomeController : Controller
 
             if (user is not null)
             {
-                orders = orders.Where(x => x.Quote && (x.SalesEmail == user.Email)).ToList();
+                orders = await _context.Orders
+                    .Where(x => x.Quote && (x.SalesEmail == user.Email))
+                    .OrderByDescending(x => x.DateSubmitted)
+                    .AsNoTracking()
+                    .ToListAsync();
             }
             else
             {
-                orders = orders.Where(x => x.Quote).ToList();
+                orders = await _context.Orders.Where(x => x.Quote)
+                    .OrderByDescending(x => x.DateSubmitted)
+                    .AsNoTracking()
+                    .ToListAsync();
             }
         }
         else
         {
-            orders = orders.Where(x => x.Quote).ToList();
+            orders = await _context.Orders.Where(x => x.Quote)
+                    .OrderByDescending(x => x.DateSubmitted)
+                    .AsNoTracking()
+                    .ToListAsync();
         }
 
         foreach (var order in orders)
@@ -394,10 +416,10 @@ public class HomeController : Controller
                 _context.Entry(existingOrder).CurrentValues.SetValues(order);
                 await _context.SaveChangesAsync();
 
-                var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+                var productOrders = await _context.ProductOrders.AsNoTracking().Where(x => x.OrderId == order.OrderId).ToListAsync();
+                var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.AsNoTracking().Where(x => x.OrderId == order.OrderId).ToListAsync();
+                var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.AsNoTracking().Where(x => x.OrderId == order.OrderId).ToListAsync();
+                var portedPhoneNumbers = await _context.PortedPhoneNumbers.AsNoTracking().Where(x => x.OrderId == order.OrderId).ToListAsync();
 
                 // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
                 // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
@@ -408,17 +430,17 @@ public class HomeController : Controller
                 {
                     if (item?.ProductId != Guid.Empty)
                     {
-                        var product = await _context.Products.Where(x => x.ProductId == item.ProductId).FirstOrDefaultAsync();
+                        var product = await _context.Products.Where(x => x.ProductId == item.ProductId).AsNoTracking().FirstOrDefaultAsync();
                         products.Add(product);
                     }
                     else if (item?.ServiceId != Guid.Empty)
                     {
-                        var service = await _context.Services.Where(x => x.ServiceId == item.ServiceId).FirstOrDefaultAsync();
+                        var service = await _context.Services.Where(x => x.ServiceId == item.ServiceId).AsNoTracking().FirstOrDefaultAsync();
                         services.Add(service);
                     }
                     else if (item?.CouponId is not null)
                     {
-                        var coupon = await _context.Coupons.Where(x => x.CouponId == item.CouponId).FirstOrDefaultAsync();
+                        var coupon = await _context.Coupons.Where(x => x.CouponId == item.CouponId).AsNoTracking().FirstOrDefaultAsync();
                         coupons.Add(coupon);
                     }
                 }
@@ -454,17 +476,17 @@ public class HomeController : Controller
                 {
                     if (item?.ProductId != Guid.Empty)
                     {
-                        var product = await _context.Products.Where(x => x.ProductId == item.ProductId).FirstOrDefaultAsync();
+                        var product = await _context.Products.FirstOrDefaultAsync(x => x.ProductId == item.ProductId);
                         products.Add(product);
                     }
                     else if (item?.ServiceId != Guid.Empty)
                     {
-                        var service = await _context.Services.Where(x => x.ServiceId == item.ServiceId).FirstOrDefaultAsync();
+                        var service = await _context.Services.FirstOrDefaultAsync(x => x.ServiceId == item.ServiceId);
                         services.Add(service);
                     }
                     else if (item?.CouponId is not null)
                     {
-                        var coupon = await _context.Coupons.Where(x => x.CouponId == item.CouponId).FirstOrDefaultAsync();
+                        var coupon = await _context.Coupons.FirstOrDefaultAsync(x => x.CouponId == item.CouponId);
                         coupons.Add(coupon);
                     }
                 }
@@ -535,10 +557,10 @@ public class HomeController : Controller
 
                     // The order failed to update with the new e911 service number.
                     Log.Error($"[RegisterE911] Failed to update order {order.OrderId} with E911 service number {order.E911ServiceNumber}");
-                    var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                    var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                    var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                    var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+                    var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                    var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                    var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                    var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
 
                     var products = new List<Product>();
                     var services = new List<Service>();
@@ -547,17 +569,17 @@ public class HomeController : Controller
                     {
                         if (item?.ProductId != Guid.Empty)
                         {
-                            var product = await _context.Products.Where(x => x.ProductId == item.ProductId).FirstOrDefaultAsync();
+                            var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == item.ProductId);
                             products.Add(product);
                         }
                         else if (item?.ServiceId != Guid.Empty)
                         {
-                            var service = await _context.Services.Where(x => x.ServiceId == item.ServiceId).FirstOrDefaultAsync();
+                            var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == item.ServiceId);
                             services.Add(service);
                         }
                         else if (item?.CouponId is not null)
                         {
-                            var coupon = await _context.Coupons.Where(x => x.CouponId == item.CouponId).FirstOrDefaultAsync();
+                            var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == item.CouponId);
                             coupons.Add(coupon);
                         }
                     }
@@ -589,10 +611,10 @@ public class HomeController : Controller
                     {
                         // This number is already registered with Teli.
                         Log.Information($"[RegisterE911] E911 Service number {order.E911ServiceNumber} is already register with Teli.");
-                        var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                        var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                        var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                        var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+                        var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                        var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                        var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                        var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
 
                         var products = new List<Product>();
                         var services = new List<Service>();
@@ -601,17 +623,17 @@ public class HomeController : Controller
                         {
                             if (item?.ProductId != Guid.Empty)
                             {
-                                var product = await _context.Products.Where(x => x.ProductId == item.ProductId).FirstOrDefaultAsync();
+                                var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == item.ProductId);
                                 products.Add(product);
                             }
                             else if (item?.ServiceId != Guid.Empty)
                             {
-                                var service = await _context.Services.Where(x => x.ServiceId == item.ServiceId).FirstOrDefaultAsync();
+                                var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == item.ServiceId);
                                 services.Add(service);
                             }
                             else if (item?.CouponId is not null)
                             {
-                                var coupon = await _context.Coupons.Where(x => x.CouponId == item.CouponId).FirstOrDefaultAsync();
+                                var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == item.CouponId);
                                 coupons.Add(coupon);
                             }
                         }
@@ -663,10 +685,10 @@ public class HomeController : Controller
                                             if (checkJobStatus.code == 500)
                                             {
                                                 // Number cannot be register with Teli as an offnet number.
-                                                var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                                var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                                var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                                var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+                                                var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                                var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                                var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                                var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
 
                                                 var products = new List<Product>();
                                                 var services = new List<Service>();
@@ -675,17 +697,17 @@ public class HomeController : Controller
                                                 {
                                                     if (item?.ProductId != Guid.Empty)
                                                     {
-                                                        var product = await _context.Products.Where(x => x.ProductId == item.ProductId).FirstOrDefaultAsync();
+                                                        var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == item.ProductId);
                                                         products.Add(product);
                                                     }
                                                     else if (item?.ServiceId != Guid.Empty)
                                                     {
-                                                        var service = await _context.Services.Where(x => x.ServiceId == item.ServiceId).FirstOrDefaultAsync();
+                                                        var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == item.ServiceId);
                                                         services.Add(service);
                                                     }
                                                     else if (item?.CouponId is not null)
                                                     {
-                                                        var coupon = await _context.Coupons.Where(x => x.CouponId == item.CouponId).FirstOrDefaultAsync();
+                                                        var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == item.CouponId);
                                                         coupons.Add(coupon);
                                                     }
                                                 }
@@ -727,10 +749,10 @@ public class HomeController : Controller
                                             if (E911Request is not null && E911Request?.code == 200)
                                             {
                                                 // Congrats we did it!
-                                                var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                                var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                                var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                                var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+                                                var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                                var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                                var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                                var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
 
                                                 var products = new List<Product>();
                                                 var services = new List<Service>();
@@ -739,17 +761,17 @@ public class HomeController : Controller
                                                 {
                                                     if (item?.ProductId != Guid.Empty)
                                                     {
-                                                        var product = await _context.Products.Where(x => x.ProductId == item.ProductId).FirstOrDefaultAsync();
+                                                        var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == item.ProductId);
                                                         products.Add(product);
                                                     }
                                                     else if (item?.ServiceId != Guid.Empty)
                                                     {
-                                                        var service = await _context.Services.Where(x => x.ServiceId == item.ServiceId).FirstOrDefaultAsync();
+                                                        var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == item.ServiceId);
                                                         services.Add(service);
                                                     }
                                                     else if (item?.CouponId is not null)
                                                     {
-                                                        var coupon = await _context.Coupons.Where(x => x.CouponId == item.CouponId).FirstOrDefaultAsync();
+                                                        var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == item.CouponId);
                                                         coupons.Add(coupon);
                                                     }
                                                 }
@@ -772,10 +794,10 @@ public class HomeController : Controller
                                             else
                                             {
                                                 // Failed to get the did_id.
-                                                var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                                var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                                var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                                var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+                                                var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                                var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                                var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                                var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
 
                                                 var products = new List<Product>();
                                                 var services = new List<Service>();
@@ -784,17 +806,17 @@ public class HomeController : Controller
                                                 {
                                                     if (item?.ProductId != Guid.Empty)
                                                     {
-                                                        var product = await _context.Products.Where(x => x.ProductId == item.ProductId).FirstOrDefaultAsync();
+                                                        var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == item.ProductId);
                                                         products.Add(product);
                                                     }
                                                     else if (item?.ServiceId != Guid.Empty)
                                                     {
-                                                        var service = await _context.Services.Where(x => x.ServiceId == item.ServiceId).FirstOrDefaultAsync();
+                                                        var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == item.ServiceId);
                                                         services.Add(service);
                                                     }
                                                     else if (item?.CouponId is not null)
                                                     {
-                                                        var coupon = await _context.Coupons.Where(x => x.CouponId == item.CouponId).FirstOrDefaultAsync();
+                                                        var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == item.CouponId);
                                                         coupons.Add(coupon);
                                                     }
                                                 }
@@ -818,10 +840,10 @@ public class HomeController : Controller
                                         else
                                         {
                                             // Failed to get the did_id.
-                                            var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                            var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                            var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                            var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+                                            var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                            var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                            var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                            var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
 
                                             var products = new List<Product>();
                                             var services = new List<Service>();
@@ -830,17 +852,17 @@ public class HomeController : Controller
                                             {
                                                 if (item?.ProductId != Guid.Empty)
                                                 {
-                                                    var product = await _context.Products.Where(x => x.ProductId == item.ProductId).FirstOrDefaultAsync();
+                                                    var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == item.ProductId);
                                                     products.Add(product);
                                                 }
                                                 else if (item?.ServiceId != Guid.Empty)
                                                 {
-                                                    var service = await _context.Services.Where(x => x.ServiceId == item.ServiceId).FirstOrDefaultAsync();
+                                                    var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == item.ServiceId);
                                                     services.Add(service);
                                                 }
                                                 else if (item?.CouponId is not null)
                                                 {
-                                                    var coupon = await _context.Coupons.Where(x => x.CouponId == item.CouponId).FirstOrDefaultAsync();
+                                                    var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == item.CouponId);
                                                     coupons.Add(coupon);
                                                 }
                                             }
@@ -865,10 +887,10 @@ public class HomeController : Controller
                                     else
                                     {
                                         // Number cannot be register with Teli as an offnet number.
-                                        var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                        var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                        var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                        var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+                                        var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                        var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                        var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                        var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
 
                                         var products = new List<Product>();
                                         var services = new List<Service>();
@@ -877,17 +899,17 @@ public class HomeController : Controller
                                         {
                                             if (item?.ProductId != Guid.Empty)
                                             {
-                                                var product = await _context.Products.Where(x => x.ProductId == item.ProductId).FirstOrDefaultAsync();
+                                                var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == item.ProductId);
                                                 products.Add(product);
                                             }
                                             else if (item?.ServiceId != Guid.Empty)
                                             {
-                                                var service = await _context.Services.Where(x => x.ServiceId == item.ServiceId).FirstOrDefaultAsync();
+                                                var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == item.ServiceId);
                                                 services.Add(service);
                                             }
                                             else if (item?.CouponId is not null)
                                             {
-                                                var coupon = await _context.Coupons.Where(x => x.CouponId == item.CouponId).FirstOrDefaultAsync();
+                                                var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == item.CouponId);
                                                 coupons.Add(coupon);
                                             }
                                         }
@@ -911,10 +933,10 @@ public class HomeController : Controller
                                 else
                                 {
                                     // Number cannot be register with Teli as an offnet number.
-                                    var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                    var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                    var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                    var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+                                    var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                    var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                    var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                    var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
 
                                     var products = new List<Product>();
                                     var services = new List<Service>();
@@ -923,17 +945,17 @@ public class HomeController : Controller
                                     {
                                         if (item?.ProductId != Guid.Empty)
                                         {
-                                            var product = await _context.Products.Where(x => x.ProductId == item.ProductId).FirstOrDefaultAsync();
+                                            var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == item.ProductId);
                                             products.Add(product);
                                         }
                                         else if (item?.ServiceId != Guid.Empty)
                                         {
-                                            var service = await _context.Services.Where(x => x.ServiceId == item.ServiceId).FirstOrDefaultAsync();
+                                            var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == item.ServiceId);
                                             services.Add(service);
                                         }
                                         else if (item?.CouponId is not null)
                                         {
-                                            var coupon = await _context.Coupons.Where(x => x.CouponId == item.CouponId).FirstOrDefaultAsync();
+                                            var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == item.CouponId);
                                             coupons.Add(coupon);
                                         }
                                     }
@@ -1000,10 +1022,10 @@ public class HomeController : Controller
                                     if (E911Request is not null && E911Request?.code == 200)
                                     {
                                         // Congrats we did it!
-                                        var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                        var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                        var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                        var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+                                        var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                        var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                        var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                        var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
 
                                         var products = new List<Product>();
                                         var services = new List<Service>();
@@ -1012,17 +1034,17 @@ public class HomeController : Controller
                                         {
                                             if (item?.ProductId != Guid.Empty)
                                             {
-                                                var product = await _context.Products.Where(x => x.ProductId == item.ProductId).FirstOrDefaultAsync();
+                                                var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == item.ProductId);
                                                 products.Add(product);
                                             }
                                             else if (item?.ServiceId != Guid.Empty)
                                             {
-                                                var service = await _context.Services.Where(x => x.ServiceId == item.ServiceId).FirstOrDefaultAsync();
+                                                var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == item.ServiceId);
                                                 services.Add(service);
                                             }
                                             else if (item?.CouponId is not null)
                                             {
-                                                var coupon = await _context.Coupons.Where(x => x.CouponId == item.CouponId).FirstOrDefaultAsync();
+                                                var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == item.CouponId);
                                                 coupons.Add(coupon);
                                             }
                                         }
@@ -1045,10 +1067,10 @@ public class HomeController : Controller
                                     else
                                     {
                                         // Failed to get the did_id.
-                                        var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                        var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                        var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                        var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+                                        var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                        var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                        var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                        var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
 
                                         var products = new List<Product>();
                                         var services = new List<Service>();
@@ -1057,17 +1079,17 @@ public class HomeController : Controller
                                         {
                                             if (item?.ProductId != Guid.Empty)
                                             {
-                                                var product = await _context.Products.Where(x => x.ProductId == item.ProductId).FirstOrDefaultAsync();
+                                                var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == item.ProductId);
                                                 products.Add(product);
                                             }
                                             else if (item?.ServiceId != Guid.Empty)
                                             {
-                                                var service = await _context.Services.Where(x => x.ServiceId == item.ServiceId).FirstOrDefaultAsync();
+                                                var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == item.ServiceId);
                                                 services.Add(service);
                                             }
                                             else if (item?.CouponId is not null)
                                             {
-                                                var coupon = await _context.Coupons.Where(x => x.CouponId == item.CouponId).FirstOrDefaultAsync();
+                                                var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == item.CouponId);
                                                 coupons.Add(coupon);
                                             }
                                         }
@@ -1091,10 +1113,10 @@ public class HomeController : Controller
                                 else
                                 {
                                     // Failed to get the did_id.
-                                    var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                    var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                    var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                                    var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+                                    var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                    var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                    var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                    var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
 
                                     var products = new List<Product>();
                                     var services = new List<Service>();
@@ -1103,17 +1125,17 @@ public class HomeController : Controller
                                     {
                                         if (item?.ProductId != Guid.Empty)
                                         {
-                                            var product = await _context.Products.Where(x => x.ProductId == item.ProductId).FirstOrDefaultAsync();
+                                            var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == item.ProductId);
                                             products.Add(product);
                                         }
                                         else if (item?.ServiceId != Guid.Empty)
                                         {
-                                            var service = await _context.Services.Where(x => x.ServiceId == item.ServiceId).FirstOrDefaultAsync();
+                                            var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == item.ServiceId);
                                             services.Add(service);
                                         }
                                         else if (item?.CouponId is not null)
                                         {
-                                            var coupon = await _context.Coupons.Where(x => x.CouponId == item.CouponId).FirstOrDefaultAsync();
+                                            var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == item.CouponId);
                                             coupons.Add(coupon);
                                         }
                                     }

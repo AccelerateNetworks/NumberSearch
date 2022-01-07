@@ -288,7 +288,7 @@
                                 <input asp-for="PortRequest.BillImage" type="file" class="custom-file-input" id="inputGroupFile02" />
                                 <span asp-validation-for="PortRequest.BillImage"></span>
                                 @{
-                                    var billLabel = string.IsNullOrWhiteSpace(Model.PortRequest.BillImagePath) ? "Choose Image" : Model.PortRequest.BillImagePath;
+                                    var billLabel = string.IsNullOrWhiteSpace(Model?.PortRequest?.BillImagePath) ? "Choose Image" : Model?.PortRequest?.BillImagePath;
                                 }
                                 <label class="custom-file-label" for="inputGroupFile02">@billLabel</label>
                             </div>
