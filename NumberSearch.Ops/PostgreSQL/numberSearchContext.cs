@@ -7,10 +7,6 @@ namespace AccelerateNetworks.Operations;
 
 public partial class numberSearchContext : DbContext
 {
-    public numberSearchContext()
-    {
-    }
-
     public numberSearchContext(DbContextOptions<numberSearchContext> options)
         : base(options)
     {
@@ -446,8 +442,6 @@ public partial class numberSearchContext : DbContext
 
         modelBuilder.Entity<OwnedPhoneNumber>(entity =>
         {
-            entity.HasNoKey();
-
             entity.Property(e => e.BillingClientId).HasColumnType("character varying");
 
             entity.Property(e => e.DateIngested).HasColumnType("timestamp without time zone");
