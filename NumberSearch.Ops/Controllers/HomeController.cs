@@ -2585,7 +2585,7 @@ public class HomeController : Controller
             await _context.SaveChangesAsync();
         }
 
-        var coupons = await _context.Coupons.ToListAsync();
+        var coupons = await _context.Coupons.AsNoTracking().ToListAsync();
 
         return View("Coupons", new CouponResult { Coupons = coupons });
     }
@@ -2727,10 +2727,10 @@ public class HomeController : Controller
     {
         if (!string.IsNullOrWhiteSpace(dialedNumber))
         {
-            var order = await _context.Orders.Where(x => x.OrderId == orderId).FirstOrDefaultAsync();
-            var portRequest = await _context.PortRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefaultAsync();
+            var order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId);
+            var portRequest = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
             var numberToRemove = await _context.PortedPhoneNumbers
-                .Where(x => x.OrderId == order.OrderId && x.PortedDialedNumber == dialedNumber).FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(x => x.OrderId == order.OrderId && x.PortedDialedNumber == dialedNumber);
 
             if (numberToRemove is not null)
             {
@@ -2738,7 +2738,7 @@ public class HomeController : Controller
                 await _context.SaveChangesAsync();
 
                 var productOrder = await _context.ProductOrders
-                    .Where(x => x.OrderId == order.OrderId && x.PortedPhoneNumberId == numberToRemove.PortedPhoneNumberId).FirstOrDefaultAsync();
+                        .FirstOrDefaultAsync(x => x.OrderId == order.OrderId && x.PortedPhoneNumberId == numberToRemove.PortedPhoneNumberId);
 
                 if (productOrder is not null)
                 {
@@ -2747,7 +2747,7 @@ public class HomeController : Controller
                 }
             }
 
-            var numbers = await _context.PortedPhoneNumbers.ToListAsync();
+            var numbers = await _context.PortedPhoneNumbers.AsNoTracking().ToListAsync();
 
             return View("PortRequestEdit", new PortRequestResult
             {
@@ -2885,7 +2885,7 @@ public class HomeController : Controller
             await _context.SaveChangesAsync();
 
             portRequest = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == portRequest.OrderId);
-            var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == portRequest.OrderId).ToListAsync();
+            var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == portRequest.OrderId).AsNoTracking().ToListAsync();
 
             return View("PortRequestEdit", new PortRequestResult
             {
@@ -2980,7 +2980,7 @@ public class HomeController : Controller
                     Log.Error(ex.Message);
                     Log.Error(ex.StackTrace.ToString());
 
-                    numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == portRequest.OrderId).ToListAsync();
+                    numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == portRequest.OrderId).AsNoTracking().ToListAsync();
 
                     return View("PortRequestEdit", new PortRequestResult
                     {
@@ -3082,7 +3082,7 @@ public class HomeController : Controller
                                 {
                                     Log.Fatal($"[PortRequest] Failed to submit port request to BulkVS.");
 
-                                    numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+                                    numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
 
                                     return View("PortRequestEdit", new PortRequestResult
                                     {
@@ -3229,7 +3229,7 @@ public class HomeController : Controller
     [HttpGet("/Home/Emails/{orderId}/Resend/{emailId}")]
     public async Task<IActionResult> ResendEmails(Guid orderId, Guid emailId)
     {
-        var email = await _context.SentEmails.Where(x => x.EmailId == emailId).FirstOrDefaultAsync();
+        var email = await _context.SentEmails.FirstOrDefaultAsync(x => x.EmailId == emailId);
 
         email.DoNotSend = false;
         email.Completed = false;
@@ -3298,7 +3298,7 @@ public class HomeController : Controller
             }
         }
 
-        var ingests = await _context.IngestCycles.ToListAsync();
+        var ingests = await _context.IngestCycles.AsNoTracking().ToListAsync();
 
         return View("IngestConfiguration", ingests);
     }
@@ -3352,10 +3352,10 @@ public class HomeController : Controller
 
         var results = await _context.PhoneNumbers
             .Where(x => x.DialedNumber.Contains(new string(converted.ToArray())))
-            .OrderBy(x => x.DialedNumber).Skip((page * 50) - 50).Take(50).ToListAsync();
+            .OrderBy(x => x.DialedNumber).Skip((page * 50) - 50).Take(50).AsNoTracking().ToListAsync();
 
         var count = await _context.PhoneNumbers
-            .Where(x => x.DialedNumber.Contains(new string(converted.ToArray()))).CountAsync();
+            .Where(x => x.DialedNumber.Contains(new string(converted.ToArray()))).AsNoTracking().CountAsync();
 
         return View("Numbers", new SearchResults
         {

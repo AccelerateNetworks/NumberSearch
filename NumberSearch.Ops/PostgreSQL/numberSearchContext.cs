@@ -688,8 +688,6 @@ public partial class numberSearchContext : DbContext
 
         modelBuilder.Entity<PurchasedPhoneNumber>(entity =>
         {
-            entity.HasNoKey();
-
             entity.Property(e => e.DateIngested).HasColumnType("timestamp without time zone");
 
             entity.Property(e => e.DateOrdered).HasColumnType("timestamp without time zone");
