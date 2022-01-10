@@ -3076,7 +3076,10 @@ public class HomeController : Controller
 
                                     await note.PostAsync(bulkResponse?.OrderId, _bulkVSusername, _bulkVSpassword);
 
-                                    responseMessages.Add($"{bulkResponse?.Description} - {bulkResponse?.Code}");
+                                    if (!string.IsNullOrWhiteSpace(bulkResponse.Description))
+                                    {
+                                        responseMessages.Add($"{bulkResponse.Description} - {bulkResponse.Code}");
+                                    }
                                 }
                                 else
                                 {
