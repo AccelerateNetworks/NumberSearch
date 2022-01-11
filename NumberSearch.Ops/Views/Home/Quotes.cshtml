@@ -294,7 +294,7 @@
                                         @{
                                             foreach (var product in services)
                                             {
-                                                var serviceOutput = $"<li>{product.Quantity} x {Model.Services.Where(x => x.ServiceId == product.ServiceId).FirstOrDefault().Name}</li>";
+                                                var serviceOutput = $"<li>{product.Quantity} x {Model.Services.Where(x => x.ServiceId == product.ServiceId).FirstOrDefault()?.Name}</li>";
                                                 @Html.Raw(serviceOutput)
                                             }
                                         }
