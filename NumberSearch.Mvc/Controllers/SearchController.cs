@@ -123,7 +123,7 @@ namespace NumberSearch.Mvc.Controllers
             var cart = Cart.GetFromSession(HttpContext.Session);
 
             // The query is a complete phone number and we have no results, perhaps they mean to port it?
-            if (cleanedQuery.Length == 10 && !results.Any())
+            if (cleanedQuery.Length == 10 && !cleanedQuery.Contains('*') && !results.Any())
             {
                 var lookup = new LookupController(configuration);
 
