@@ -1,20 +1,21 @@
-﻿@model NumberSearch.Mvc.Cart;
+﻿@using PhoneNumbersNA
+@model NumberSearch.Mvc.Cart;
 
 @{
     ViewData["Title"] = "Order";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
-    var numbers = Model?.PhoneNumbers?.ToArray();
-    var purchased = Model?.PurchasedPhoneNumbers?.ToArray();
-    var ported = Model?.PortedPhoneNumbers?.ToArray();
+    var numbers = Model?.PhoneNumbers?.OrderByDescending(x => x.DialedNumber).ToArray();
+    var purchased = Model?.PurchasedPhoneNumbers?.OrderByDescending(x => x.DialedNumber).ToArray();
+    var ported = Model?.PortedPhoneNumbers?.OrderByDescending(x => x.PortedDialedNumber).ToArray();
     var products = Model?.Products?.ToArray();
     var services = Model?.Services?.ToArray();
-    var verified = Model?.VerifiedPhoneNumbers?.ToArray();
+    var verified = Model?.VerifiedPhoneNumbers?.OrderByDescending(x => x.VerifiedDialedNumber).ToArray();
     var coupons = Model?.Coupons?.ToArray();
     var sumOfitems = numbers?.Length + ported?.Length + products?.Length + services?.Length + purchased?.Length + verified?.Length + coupons?.Length;
     var productOrders = Model?.ProductOrdersToDictionary();
-
 }
+
 <script type="text/javascript">
     function handleSearchQuery(textBox) {
         var route = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest?text=';
@@ -255,35 +256,59 @@
                     foreach (var number in purchased)
                     {
                         <li class="list-group-item d-flex justify-content-between lh-condensed">
-                            <div>
-                                <h6 class="my-0">Phone Number ✔️</h6>
-                                @{
-                                    if (number.NPA == 0 && number.NXX == 0 && number.XXXX == 0)
-                                    {
-                                        <small class="text-muted">@number.DialedNumber</small>
+                            @if (number.NumberType == "Executive")
+                            {
+                                numbersTotal += 200;
+                                <div>
+                                    <h6 class="my-0">Executive Phone Number ✔️</h6>
+                                    @{
+                                        if (number.NPA == 0 && number.NXX == 0 && number.XXXX == 0)
+                                        {
+                                            <small class="text-muted">@number.DialedNumber</small>
+                                        }
+                                        else
+                                        {
+                                            <small class="text-muted">(@number.NPA) @number.NXX.ToString("000") @number.XXXX.ToString("0000")</small>
+                                        }
                                     }
-                                    else
-                                    {
-                                        <small class="text-muted">(@number.NPA) @number.NXX.ToString("000") @number.XXXX.ToString("0000")</small>
+                                </div>
+                                <span class="text-muted">$200</span>
+                            }
+                            else if (number.NumberType == "Premium")
+                            {
+                                numbersTotal += 40;
+                                <div>
+                                    <h6 class="my-0">Premium Phone Number ✔️</h6>
+                                    @{
+                                        if (number.NPA == 0 && number.NXX == 0 && number.XXXX == 0)
+                                        {
+                                            <small class="text-muted">@number.DialedNumber</small>
+                                        }
+                                        else
+                                        {
+                                            <small class="text-muted">(@number.NPA) @number.NXX.ToString("000") @number.XXXX.ToString("0000")</small>
+                                        }
                                     }
-                                }
-                            </div>
-                            @{
-                                if (number.NumberType == "Executive")
-                                {
-                                    numbersTotal += 200;
-                                    <span class="text-muted">$200</span>
-                                }
-                                else if (number.NumberType == "Premium")
-                                {
-                                    numbersTotal += 40;
-                                    <span class="text-muted">$40</span>
-                                }
-                                else
-                                {
-                                    numbersTotal += 20;
-                                    <span class="text-muted">$20</span>
-                                }
+                                </div>
+                                <span class="text-muted">$40</span>
+                            }
+                            else
+                            {
+                                numbersTotal += 20;
+                                <div>
+                                    <h6 class="my-0">Phone Number ✔️</h6>
+                                    @{
+                                        if (number.NPA == 0 && number.NXX == 0 && number.XXXX == 0)
+                                        {
+                                            <small class="text-muted">@number.DialedNumber</small>
+                                        }
+                                        else
+                                        {
+                                            <small class="text-muted">(@number.NPA) @number.NXX.ToString("000") @number.XXXX.ToString("0000")</small>
+                                        }
+                                    }
+                                </div>
+                                <span class="text-muted">$20</span>
                             }
                         </li>
                     }
@@ -299,10 +324,22 @@
                         portedTotal += calculatedCost;
                         <li class="list-group-item d-flex justify-content-between lh-condensed">
                             <div>
-                                @{
-                                    if (number.Completed)
+                                @if (number.Completed)
+                                {
+                                    if (number.PortedDialedNumber.IsTollfree())
+                                    {
+                                        <h6 class="my-0">Porting Tollfree Number ✔️</h6>
+                                    }
+                                    else
                                     {
                                         <h6 class="my-0">Porting Phone Number ✔️</h6>
+                                    }
+                                }
+                                else
+                                {
+                                    if (number.PortedDialedNumber.IsTollfree())
+                                    {
+                                        <h6 class="my-0">Porting Tollfree Number ❓</h6>
                                     }
                                     else
                                     {
@@ -310,11 +347,9 @@
                                     }
                                 }
                                 <small class="text-muted">(@number.NPA) @number.NXX @number.XXXX.ToString("0000")</small>
-                                @{
-                                    if (number.DateFirmOrderCommitment is not null && !string.IsNullOrWhiteSpace(number.RequestStatus))
-                                    {
-                                        <h6 class="text-muted">@status - @date</h6>
-                                    }
+                                @if (number.DateFirmOrderCommitment is not null && !string.IsNullOrWhiteSpace(number.RequestStatus))
+                                {
+                                    <h6 class="text-muted">@status - @date</h6>
                                 }
                             </div>
                             <span class="text-muted">$@calculatedCost</span>
