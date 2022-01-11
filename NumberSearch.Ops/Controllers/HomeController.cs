@@ -39,6 +39,7 @@ public class HomeController : Controller
     private readonly IConfiguration _configuration;
     private readonly Guid _teleToken;
     private readonly string _bulkVSAPIKey;
+    private readonly string _postgresql;
     private readonly string _invoiceNinjaToken;
     private readonly string _bulkVSusername;
     private readonly string _bulkVSpassword;
@@ -64,6 +65,7 @@ public class HomeController : Controller
         _azureStorage = config.GetConnectionString("AzureStorageAccount");
         _emailUsername = config.GetConnectionString("SmtpUsername");
         _emailPassword = config.GetConnectionString("SmtpPassword");
+        _postgresql = _configuration.GetConnectionString("PostgresqlProd");
         _context = context;
         _userManager = userManager;
     }
@@ -3357,12 +3359,9 @@ public class HomeController : Controller
             converted.Remove('1');
         }
 
-        var results = await _context.PhoneNumbers
-            .Where(x => x.DialedNumber.Contains(new string(converted.ToArray())))
-            .OrderBy(x => x.DialedNumber).Skip((page * 50) - 50).Take(50).AsNoTracking().ToListAsync();
+        var count = await DataAccess.PhoneNumber.NumberOfResultsInQuery(new string(converted.ToArray()), _postgresql).ConfigureAwait(false);
 
-        var count = await _context.PhoneNumbers
-            .Where(x => x.DialedNumber.Contains(new string(converted.ToArray()))).AsNoTracking().CountAsync();
+        var results = await DataAccess.PhoneNumber.RecommendedPaginatedSearchAsync(new string(converted.ToArray()), page, _postgresql).ConfigureAwait(false);
 
         return View("Numbers", new SearchResults
         {
