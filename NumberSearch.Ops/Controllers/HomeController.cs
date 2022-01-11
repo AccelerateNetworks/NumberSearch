@@ -1454,7 +1454,7 @@ public class HomeController : Controller
         else
         {
             var order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId);
-            var orderToUpdate = _context.Orders.FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
+            var orderToUpdate = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
             var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
             var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
             var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
