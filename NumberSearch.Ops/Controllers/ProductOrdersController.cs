@@ -148,9 +148,9 @@ public class ProductOrdersController : Controller
 
                     if (checkExists is null)
                     {
-                        var homeController = new HomeController(_configuration, _userManager, _context);
+                        var portRequestsController = new PortRequestsController(_configuration, _context);
 
-                        var port = await homeController.VerifyPortablityAsync(number.DialedNumber);
+                        var port = await portRequestsController.VerifyPortablityAsync(number.DialedNumber);
 
                         if (port.Portable)
                         {
