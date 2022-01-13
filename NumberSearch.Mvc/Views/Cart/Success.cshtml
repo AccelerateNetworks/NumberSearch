@@ -134,6 +134,7 @@
             <form asp-controller="Porting" asp-action="AddPortingInformation" method="post" enctype="multipart/form-data" class="needs-validation mb-3">
                 @Html.AntiForgeryToken()
                 <input asp-for="PortRequest.OrderId" type="text" value="@Model?.Order?.OrderId" hidden />
+                <input asp-for="PortRequest.PortRequestId" type="text" value="Guid.NewGuid()" hidden />
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <label for="billingPhone">Current Billing Phone Number</label>

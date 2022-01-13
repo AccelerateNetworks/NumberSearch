@@ -252,6 +252,8 @@ namespace NumberSearch.Mvc.Controllers
         {
             var order = await Order.GetByIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
 
+            portRequest.PortRequestId = Guid.NewGuid();
+
             // Prevent duplicate submissions of port requests.
             if (order is not null && order.OrderId != Guid.Empty)
             {
