@@ -242,132 +242,130 @@ public class OrdersController : Controller
         {
             return Redirect("/Home/Order");
         }
-        else
+
+        var existingOrder = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
+
+        try
         {
-            var existingOrder = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
-
-            try
+            // Format the address information
+            Log.Information($"[Checkout] Parsing address data from {order.Address}");
+            var addressParts = order.UnparsedAddress.Split(", ");
+            if (addressParts.Length > 4)
             {
-                // Format the address information
-                Log.Information($"[Checkout] Parsing address data from {order.Address}");
-                var addressParts = order.UnparsedAddress.Split(", ");
-                if (addressParts.Length > 4)
-                {
-                    order.Address = addressParts[0];
-                    order.City = addressParts[1];
-                    order.State = addressParts[2];
-                    order.Zip = addressParts[3];
-                    Log.Information($"[Checkout] Address: {order.Address} City: {order.City} State: {order.State} Zip: {order.Zip}");
-                }
-                else
-                {
-                    Log.Error($"[Checkout] Failed automatic address formating.");
-                }
-
-                // Fillout the address2 information from its components.
-                if (!string.IsNullOrWhiteSpace(order.AddressUnitNumber))
-                {
-                    order.Address2 = $"{order.AddressUnitType} {order.AddressUnitNumber}";
-                }
-
-                order.BillingClientId = existingOrder?.BillingClientId;
-                order.BillingInvoiceId = existingOrder?.BillingInvoiceId;
-                order.BillingInvoiceReoccuringId = existingOrder?.BillingInvoiceReoccuringId;
-                order.DateSubmitted = existingOrder.DateSubmitted;
-
-                _context.Entry(existingOrder).CurrentValues.SetValues(order);
-                await _context.SaveChangesAsync();
-
-                var productOrders = await _context.ProductOrders.AsNoTracking().Where(x => x.OrderId == order.OrderId).ToListAsync();
-                var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.AsNoTracking().Where(x => x.OrderId == order.OrderId).ToListAsync();
-                var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.AsNoTracking().Where(x => x.OrderId == order.OrderId).ToListAsync();
-                var portedPhoneNumbers = await _context.PortedPhoneNumbers.AsNoTracking().Where(x => x.OrderId == order.OrderId).ToListAsync();
-
-                // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
-                // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
-                var products = new List<Product>();
-                var services = new List<Service>();
-                var coupons = new List<Coupon>();
-                foreach (var item in productOrders)
-                {
-                    if (item?.ProductId != Guid.Empty)
-                    {
-                        var product = await _context.Products.Where(x => x.ProductId == item.ProductId).AsNoTracking().FirstOrDefaultAsync();
-                        products.Add(product);
-                    }
-                    else if (item?.ServiceId != Guid.Empty)
-                    {
-                        var service = await _context.Services.Where(x => x.ServiceId == item.ServiceId).AsNoTracking().FirstOrDefaultAsync();
-                        services.Add(service);
-                    }
-                    else if (item?.CouponId is not null)
-                    {
-                        var coupon = await _context.Coupons.Where(x => x.CouponId == item.CouponId).AsNoTracking().FirstOrDefaultAsync();
-                        coupons.Add(coupon);
-                    }
-                }
-
-                var cart = new Cart
-                {
-                    Order = order,
-                    PhoneNumbers = new List<PhoneNumber>(),
-                    ProductOrders = productOrders,
-                    Products = products,
-                    Services = services,
-                    Coupons = coupons,
-                    PortedPhoneNumbers = portedPhoneNumbers,
-                    VerifiedPhoneNumbers = verifiedPhoneNumbers,
-                    PurchasedPhoneNumbers = purchasedPhoneNumbers
-                };
-
-                return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = "Order updated successfully! 😘", AlertType = "alert-success" });
+                order.Address = addressParts[0];
+                order.City = addressParts[1];
+                order.State = addressParts[2];
+                order.Zip = addressParts[3];
+                Log.Information($"[Checkout] Address: {order.Address} City: {order.City} State: {order.State} Zip: {order.Zip}");
             }
-            catch (Exception ex)
+            else
             {
-                var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-                var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-
-                // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
-                // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
-                var products = new List<Product>();
-                var services = new List<Service>();
-                var coupons = new List<Coupon>();
-                foreach (var item in productOrders)
-                {
-                    if (item?.ProductId != Guid.Empty)
-                    {
-                        var product = await _context.Products.FirstOrDefaultAsync(x => x.ProductId == item.ProductId);
-                        products.Add(product);
-                    }
-                    else if (item?.ServiceId != Guid.Empty)
-                    {
-                        var service = await _context.Services.FirstOrDefaultAsync(x => x.ServiceId == item.ServiceId);
-                        services.Add(service);
-                    }
-                    else if (item?.CouponId is not null)
-                    {
-                        var coupon = await _context.Coupons.FirstOrDefaultAsync(x => x.CouponId == item.CouponId);
-                        coupons.Add(coupon);
-                    }
-                }
-
-                var cart = new Cart
-                {
-                    Order = order,
-                    PhoneNumbers = new List<PhoneNumber>(),
-                    ProductOrders = productOrders,
-                    Products = products,
-                    Services = services,
-                    Coupons = coupons,
-                    PortedPhoneNumbers = portedPhoneNumbers,
-                    VerifiedPhoneNumbers = verifiedPhoneNumbers,
-                    PurchasedPhoneNumbers = purchasedPhoneNumbers
-                };
-
-                return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update this order! 😠\r\n{ex.Message}\r\n{ex.StackTrace}", AlertType = "alert-danger" });
+                Log.Error($"[Checkout] Failed automatic address formating.");
             }
+
+            // Fillout the address2 information from its components.
+            if (!string.IsNullOrWhiteSpace(order.AddressUnitNumber))
+            {
+                order.Address2 = $"{order.AddressUnitType} {order.AddressUnitNumber}";
+            }
+
+            order.BillingClientId = existingOrder?.BillingClientId;
+            order.BillingInvoiceId = existingOrder?.BillingInvoiceId;
+            order.BillingInvoiceReoccuringId = existingOrder?.BillingInvoiceReoccuringId;
+            order.DateSubmitted = existingOrder.DateSubmitted;
+
+            _context.Entry(existingOrder).CurrentValues.SetValues(order);
+            await _context.SaveChangesAsync();
+
+            var productOrders = await _context.ProductOrders.AsNoTracking().Where(x => x.OrderId == order.OrderId).ToListAsync();
+            var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.AsNoTracking().Where(x => x.OrderId == order.OrderId).ToListAsync();
+            var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.AsNoTracking().Where(x => x.OrderId == order.OrderId).ToListAsync();
+            var portedPhoneNumbers = await _context.PortedPhoneNumbers.AsNoTracking().Where(x => x.OrderId == order.OrderId).ToListAsync();
+
+            // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
+            // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
+            var products = new List<Product>();
+            var services = new List<Service>();
+            var coupons = new List<Coupon>();
+            foreach (var item in productOrders)
+            {
+                if (item?.ProductId != Guid.Empty)
+                {
+                    var product = await _context.Products.Where(x => x.ProductId == item.ProductId).AsNoTracking().FirstOrDefaultAsync();
+                    products.Add(product);
+                }
+                else if (item?.ServiceId != Guid.Empty)
+                {
+                    var service = await _context.Services.Where(x => x.ServiceId == item.ServiceId).AsNoTracking().FirstOrDefaultAsync();
+                    services.Add(service);
+                }
+                else if (item?.CouponId is not null)
+                {
+                    var coupon = await _context.Coupons.Where(x => x.CouponId == item.CouponId).AsNoTracking().FirstOrDefaultAsync();
+                    coupons.Add(coupon);
+                }
+            }
+
+            var cart = new Cart
+            {
+                Order = order,
+                PhoneNumbers = new List<PhoneNumber>(),
+                ProductOrders = productOrders,
+                Products = products,
+                Services = services,
+                Coupons = coupons,
+                PortedPhoneNumbers = portedPhoneNumbers,
+                VerifiedPhoneNumbers = verifiedPhoneNumbers,
+                PurchasedPhoneNumbers = purchasedPhoneNumbers
+            };
+
+            return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = "Order updated successfully! 😘", AlertType = "alert-success" });
+        }
+        catch (Exception ex)
+        {
+            var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).ToListAsync();
+            var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+            var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+            var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+
+            // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
+            // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
+            var products = new List<Product>();
+            var services = new List<Service>();
+            var coupons = new List<Coupon>();
+            foreach (var item in productOrders)
+            {
+                if (item?.ProductId != Guid.Empty)
+                {
+                    var product = await _context.Products.FirstOrDefaultAsync(x => x.ProductId == item.ProductId);
+                    products.Add(product);
+                }
+                else if (item?.ServiceId != Guid.Empty)
+                {
+                    var service = await _context.Services.FirstOrDefaultAsync(x => x.ServiceId == item.ServiceId);
+                    services.Add(service);
+                }
+                else if (item?.CouponId is not null)
+                {
+                    var coupon = await _context.Coupons.FirstOrDefaultAsync(x => x.CouponId == item.CouponId);
+                    coupons.Add(coupon);
+                }
+            }
+
+            var cart = new Cart
+            {
+                Order = order,
+                PhoneNumbers = new List<PhoneNumber>(),
+                ProductOrders = productOrders,
+                Products = products,
+                Services = services,
+                Coupons = coupons,
+                PortedPhoneNumbers = portedPhoneNumbers,
+                VerifiedPhoneNumbers = verifiedPhoneNumbers,
+                PurchasedPhoneNumbers = purchasedPhoneNumbers
+            };
+
+            return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update this order! 😠\r\n{ex.Message}\r\n{ex.StackTrace}", AlertType = "alert-danger" });
         }
     }
 
