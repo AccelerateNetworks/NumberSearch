@@ -16,7 +16,7 @@ using System.Collections.Generic;
 
 namespace NumberSearch.Mvc
 {
-    public class Program
+    public partial class Program
     {
         public static int Main(string[] args)
         {
