@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 
 using Xunit;
 using Xunit.Abstractions;
-using Serilog;
 
 namespace NumberSearch.Tests
 {
@@ -26,7 +25,7 @@ namespace NumberSearch.Tests
 
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
-                .AddUserSecrets("328593cf-cbb9-48e9-8938-e38a44c8291d")
+                //.AddUserSecrets("328593cf-cbb9-48e9-8938-e38a44c8291d")
                 .Build();
 
             configuration = config;
@@ -58,6 +57,57 @@ namespace NumberSearch.Tests
 
             // Assert
             Assert.Contains("Seattle", stringResponse);
+            output.WriteLine(stringResponse);
+        }
+
+        [Theory]
+        [InlineData("206")]
+        [InlineData("206*")]
+        [InlineData("206***")]
+        [InlineData("206*******")]
+        public async Task GetNumberSearchQueryAsync(string query)
+        {
+            // Arrange
+            var response = await _client.GetAsync($"/Search?Query={query}");
+
+            // Act
+            response.EnsureSuccessStatusCode();
+            var stringResponse = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Contains("available numbers found!", stringResponse);
+            output.WriteLine(stringResponse);
+        }
+
+        [Theory]
+        [InlineData("2062974300")]
+        public async Task RedirectToPortAsync(string query)
+        {
+            // Arrange
+            var response = await _client.GetAsync($"/Search?Query={query}");
+
+            // Act
+            response.EnsureSuccessStatusCode();
+            var stringResponse = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Contains("This phone number can be ported to our network!", stringResponse);
+            output.WriteLine(stringResponse);
+        }
+
+        [Theory]
+        [InlineData("1111111111")]
+        public async Task NothingFoundAsync(string query)
+        {
+            // Arrange
+            var response = await _client.GetAsync($"/Search?Query={query}");
+
+            // Act
+            response.EnsureSuccessStatusCode();
+            var stringResponse = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Contains("No available numbers found!", stringResponse);
             output.WriteLine(stringResponse);
         }
     }
