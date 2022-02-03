@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 
 using System.Collections.Generic;
+using AccelerateNetworks.Operations;
 
 namespace AccelerateNetworks.Operations;
 
@@ -40,21 +41,13 @@ public partial class numberSearchContext : DbContext
     public virtual DbSet<Product> Products { get; set; } = null!;
     public virtual DbSet<ProductOrder> ProductOrders { get; set; } = null!;
     public virtual DbSet<ProductShipment> ProductShipments { get; set; } = null!;
+    public virtual DbSet<ProductItem> ProductItems { get; set; } = null!;
     public virtual DbSet<PurchasedPhoneNumber> PurchasedPhoneNumbers { get; set; } = null!;
     public virtual DbSet<SalesLead> SalesLeads { get; set; } = null!;
     public virtual DbSet<SentEmail> SentEmails { get; set; } = null!;
     public virtual DbSet<Service> Services { get; set; } = null!;
     public virtual DbSet<SpeedDialKey> SpeedDialKeys { get; set; } = null!;
     public virtual DbSet<VerifiedPhoneNumber> VerifiedPhoneNumbers { get; set; } = null!;
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured)
-        {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-            optionsBuilder.UseNpgsql("Server=numbersearch.acceleratenetworks.com;Port=5432;Database=numberSearch;User Id=numberSearch;Password=RelyFritzObservePartsDwyerSalve;Ssl Mode=Require;Trust Server Certificate=true;");
-        }
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -684,6 +677,28 @@ public partial class numberSearchContext : DbContext
             entity.Property(e => e.ShipmentSource).HasColumnType("character varying");
 
             entity.Property(e => e.ShipmentType).HasColumnType("character varying");
+        });
+
+        modelBuilder.Entity<ProductItem>(entity =>
+        {
+            entity.Property(e => e.ProductItemId).HasDefaultValueSql("uuid_generate_v4()");
+            entity.Property(e => e.ProductId);
+            entity.Property(e => e.ProductShipmentId);
+            entity.Property(e => e.OrderId);
+
+            entity.Property(e => e.SerialNumber).HasColumnType("character varying");
+
+            entity.Property(e => e.MACAddress).HasColumnType("character varying");
+
+            entity.Property(e => e.Condition).HasColumnType("character varying");
+
+            entity.Property(e => e.DateCreated)
+                .HasColumnType("timestamp without time zone")
+                .HasDefaultValueSql("now()");
+
+            entity.Property(e => e.DateUpdated)
+                .HasColumnType("timestamp without time zone")
+                .HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<PurchasedPhoneNumber>(entity =>

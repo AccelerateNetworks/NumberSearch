@@ -117,11 +117,12 @@ public class OrdersController : Controller
         }
         else
         {
-            var order = await _context.Orders.Where(x => x.OrderId == orderId).AsNoTracking().FirstOrDefaultAsync();
+            var order = await _context.Orders.AsNoTracking().FirstOrDefaultAsync(x => x.OrderId == orderId);
             var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
             var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
             var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
             var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+            var shipments = await _context.ProductShipments.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToArrayAsync();
 
             // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
             // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
@@ -160,7 +161,7 @@ public class OrdersController : Controller
                 PurchasedPhoneNumbers = purchasedPhoneNumbers
             };
 
-            return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart });
+            return View("OrderEdit", new EditOrderResult { Order = order, ProductShipments = shipments, Cart = cart });
         }
     }
 
@@ -281,6 +282,7 @@ public class OrdersController : Controller
             var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.AsNoTracking().Where(x => x.OrderId == order.OrderId).ToListAsync();
             var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.AsNoTracking().Where(x => x.OrderId == order.OrderId).ToListAsync();
             var portedPhoneNumbers = await _context.PortedPhoneNumbers.AsNoTracking().Where(x => x.OrderId == order.OrderId).ToListAsync();
+            var shipments = await _context.ProductShipments.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToArrayAsync();
 
             // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
             // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
@@ -319,7 +321,7 @@ public class OrdersController : Controller
                 PurchasedPhoneNumbers = purchasedPhoneNumbers
             };
 
-            return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = "Order updated successfully! 😘", AlertType = "alert-success" });
+            return View("OrderEdit", new EditOrderResult { Order = order, ProductShipments = shipments, Cart = cart, Message = "Order updated successfully! 😘", AlertType = "alert-success" });
         }
         catch (Exception ex)
         {
@@ -327,6 +329,7 @@ public class OrdersController : Controller
             var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
             var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
             var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+            var shipments = await _context.ProductShipments.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToArrayAsync();
 
             // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
             // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
@@ -365,7 +368,7 @@ public class OrdersController : Controller
                 PurchasedPhoneNumbers = purchasedPhoneNumbers
             };
 
-            return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update this order! 😠\r\n{ex.Message}\r\n{ex.StackTrace}", AlertType = "alert-danger" });
+            return View("OrderEdit", new EditOrderResult { Order = order, ProductShipments = shipments, Cart = cart, Message = $"Failed to update this order! 😠\r\n{ex.Message}\r\n{ex.StackTrace}", AlertType = "alert-danger" });
         }
     }
 

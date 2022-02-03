@@ -52,14 +52,33 @@ public class ProductShipmentsController : Controller
     // GET: ProductShipments/Create
     [Authorize]
     [HttpGet("ProductShipments/Create")]
-    public async Task<IActionResult> Create()
+    public async Task<IActionResult> Create(Guid? orderId)
     {
         var products = await _context.Products.ToListAsync();
-        var create = new Ops.Models.CreateProductShipment
+
+        if (orderId is not null)
         {
-            Products = products
-        };
-        return View(create);
+            var order = await _context.Orders.FirstOrDefaultAsync(m => m.OrderId == orderId);
+
+            return View(new Ops.Models.CreateProductShipment
+            {
+                Products = products,
+                Shipment = new ProductShipment
+                {
+                    OrderId = order.OrderId,
+                    BillingClientId = order.BillingClientId,
+                    ShipmentType = "Assigned"
+                }
+            });
+        }
+        else
+        {
+            return View(new Ops.Models.CreateProductShipment
+            {
+                Products = products
+            });
+        }
+
     }
 
     // POST: ProductShipments/Create
@@ -114,7 +133,8 @@ public class ProductShipmentsController : Controller
         {
             return NotFound();
         }
-        return View(productShipment);
+        var productItems = await _context.ProductItems.Where(x => x.ProductShipmentId == productShipment.ProductShipmentId).ToListAsync();
+        return View(new EditProductShipment { ProductItems = productItems, Shipment = productShipment });
     }
 
     // POST: ProductShipments/Edit/5
@@ -168,7 +188,9 @@ public class ProductShipmentsController : Controller
             }
             return RedirectToAction(nameof(Index));
         }
-        return View(productShipment);
+
+        var productItems = await _context.ProductItems.Where(x => x.ProductShipmentId == productShipment.ProductShipmentId).ToListAsync();
+        return View(new EditProductShipment { ProductItems = productItems, Shipment = productShipment });
     }
 
     // GET: ProductShipments/Delete/5

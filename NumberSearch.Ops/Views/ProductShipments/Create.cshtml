@@ -9,11 +9,11 @@
 @Html.AntiForgeryToken()
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="Create" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Shipment.ProductId" class="control-label"></label>
-                <select asp-for="Shipment.ProductId" class="custom-select mr-sm-2" id="name" required>
+                <select asp-for="Shipment.ProductId" class="form-select mr-sm-2" id="name" required>
                     <option selected>Choose...</option>
                     @{
                         foreach (var product in Model.Products?.OrderByDescending(x => x.Name))
@@ -51,7 +51,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="Shipment.ShipmentType" class="control-label"></label>
-                <select asp-for="Shipment.ShipmentType" class="custom-select mr-sm-2" id="shipmenttype" required>
+                <select asp-for="Shipment.ShipmentType" class="form-select mr-sm-2" id="shipmenttype" required>
                     <option selected>Choose...</option>
                     <option value="Ordered">Ordered</option>
                     <option value="Instock">Instock</option>
@@ -65,7 +65,7 @@
                 <span asp-validation-for="Shipment.Quantity" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Create" class="btn btn-primary mt-3 mb-3" />
             </div>
         </form>
     </div>
