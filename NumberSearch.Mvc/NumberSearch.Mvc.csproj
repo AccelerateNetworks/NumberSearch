@@ -216,8 +216,14 @@
 		<Content Update="wwwroot\images\scaled\favicon-194x194.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Update="wwwroot\images\scaled\GBX20-400.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Update="wwwroot\images\scaled\GBX20-front-400.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\scaled\GDS3710-400.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\GRP2612front-400.jpg">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -242,6 +248,9 @@
 		</Content>
 		<Content Update="wwwroot\images\scaled\GRP2615-right.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\scaled\GRP2616-400.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\GS-DP752-400.jpg">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -275,6 +284,12 @@
 		</Content>
 		<Content Update="wwwroot\images\scaled\gxp2170-400.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\scaled\GXP2200EXT-400.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\scaled\GXV3350-400.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\headthumb.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -356,6 +371,12 @@
 		</Content>
 		<Content Update="wwwroot\images\scaled\YEA-WMB-T5W-400.jpg">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\scaled\yealink-t46s-400.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\scaled\yealink-t53w-400.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\yealinkcp930w-400.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
