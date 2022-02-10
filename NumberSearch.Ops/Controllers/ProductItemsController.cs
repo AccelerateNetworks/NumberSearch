@@ -160,7 +160,7 @@ namespace NumberSearch.Ops.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction($"/ProductItems/Details/{productItem.ProductItemId}");
+                return Redirect($"/Home/Order/{productItem?.OrderId}");
             }
             return View(productItem);
         }
@@ -194,6 +194,10 @@ namespace NumberSearch.Ops.Controllers
             var productItem = await _context.ProductItems.FindAsync(id);
             _context.ProductItems.Remove(productItem);
             await _context.SaveChangesAsync();
+            if (productItem?.OrderId is not null)
+            {
+                return Redirect($"/Home/Order/{productItem?.OrderId}");
+            }
             return RedirectToAction(nameof(Index));
         }
 

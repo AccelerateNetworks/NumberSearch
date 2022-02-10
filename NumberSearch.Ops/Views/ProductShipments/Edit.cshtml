@@ -67,46 +67,49 @@
 <div>
     <a href="/ProductItems/Create/@Model?.Shipment.ProductShipmentId" class="btn btn-warning text-white mb-3">Create Product Items For This Shipment</a>
 </div>
-<div class='table-responsive'>
-    <table class='table table-borderless table-hover'>
-        <thead>
-            <tr>
-                <th>
-                    Serial Number
-                </th>
-                <th>
-                    MAC Address
-                </th>
-                <th>
-                    Condition
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model?.ProductItems)
-            {
+@if (Model?.ProductItems is not null)
+{
+    <div class='table-responsive'>
+        <table class='table table-borderless table-hover'>
+            <thead>
                 <tr>
-                    <td>
-                        @item.SerialNumber
-                    </td>
-                    <td>
-                        @item.MACAddress
-                    </td>
-                    <td>
-                        @item.Condition
-                    </td>
-                    <td>
-                        <div class="btn-group" role="group" aria-label="Basic example">
-                            <a href="/ProductItems/Edit/{@item.ProductItemId}" class="btn btn-warning">Edit</a>
-                            <a href="/ProductItems/Details/{@item.ProductItemId}" class="btn btn-primary">Details</a>
-                            <a href="/ProductItems/Delete/{@item.ProductItemId}" class="btn btn-danger">Delete</a>
-                        </div>
-                    </td>
+                    <th>
+                        Serial Number
+                    </th>
+                    <th>
+                        MAC Address
+                    </th>
+                    <th>
+                        Condition
+                    </th>
                 </tr>
-            }
-        </tbody>
-    </table>
-</div>
+            </thead>
+            <tbody>
+                @foreach (var item in Model?.ProductItems)
+                {
+                    <tr>
+                        <td>
+                            @item.SerialNumber
+                        </td>
+                        <td>
+                            @item.MACAddress
+                        </td>
+                        <td>
+                            @item.Condition
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group" aria-label="Basic example">
+                                <a href="/ProductItems/Edit/@item.ProductItemId" class="btn btn-warning">Edit</a>
+                                <a href="/ProductItems/Details/@item.ProductItemId" class="btn btn-primary">Details</a>
+                                <a href="/ProductItems/Delete/@item.ProductItemId" class="btn btn-danger">Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
 @if (Model?.Shipment?.OrderId is not null)
 {
     <p>

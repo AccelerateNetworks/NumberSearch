@@ -61,9 +61,14 @@
 </div>
 
 <p>
+    <a href="/Home/Order/@Model?.OrderId" class="btn btn-outline-primary">Order</a>
+</p>
+<p>
     <a href="/ProductItems" class="btn btn-outline-primary">Back to List</a>
 </p>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}
 }

@@ -143,8 +143,10 @@ public class ProductShipmentsController : Controller
     [Authorize]
     [HttpPost("ProductShipments/Edit/{id}")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(Guid id, [Bind("ProductShipmentId,ProductId,OrderId,BillingClientId,Name,ShipmentSource,PurchasePrice,ShipmentType,Quantity,DateCreated")] ProductShipment productShipment)
+    public async Task<IActionResult> Edit(Guid id, EditProductShipment editProductShipment)
     {
+        var productShipment = editProductShipment.Shipment;
+
         if (id != productShipment.ProductShipmentId)
         {
             return NotFound();
