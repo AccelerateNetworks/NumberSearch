@@ -99,7 +99,7 @@ namespace NumberSearch.Ops.Controllers
         [Authorize]
         [HttpPost("ProductItems")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ProductItemId,ProductId,ProductShipmentId,OrderId,SerialNumber,MACAddress,Condition,DateCreated,DateUpdated")] ProductItem productItem)
+        public async Task<IActionResult> Create([Bind("ProductItemId,ProductId,ProductShipmentId,OrderId,SerialNumber,MACAddress,Condition,ExternalOrderId,ShipmentTrackingLink,DateCreated,DateUpdated")] ProductItem productItem)
         {
             if (ModelState.IsValid)
             {
@@ -135,7 +135,7 @@ namespace NumberSearch.Ops.Controllers
         [Authorize]
         [HttpPost("ProductItems/Edit/{id}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("ProductItemId,ProductId,ProductShipmentId,OrderId,SerialNumber,MACAddress,Condition,DateCreated,DateUpdated")] ProductItem productItem)
+        public async Task<IActionResult> Edit(Guid id, [Bind("ProductItemId,ProductId,ProductShipmentId,OrderId,SerialNumber,MACAddress,Condition,ExternalOrderId,ShipmentTrackingLink,DateCreated,DateUpdated")] ProductItem productItem)
         {
             if (id != productItem.ProductItemId)
             {

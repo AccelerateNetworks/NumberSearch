@@ -23,6 +23,12 @@
                     Condition
                 </th>
                 <th>
+                    TeleDynamics Order Id
+                </th>
+                <th>
+                    Tracking
+                </th>
+                <th>
                     Action
                 </th>
             </tr>
@@ -40,6 +46,8 @@
                     <td>
                         @item?.Condition
                     </td>
+                    <td>@item?.ExternalOrderId</td>
+                    <td><a href="@item?.ShipmentTrackingLink" target="_blank" rel="noreferrer" class="btn btn-info">Tracking Status</a></td>
                     <td>
                         <div class="btn-group" role="group" aria-label="Basic example">
                             <a href="/Home/Order/@item?.OrderId" class="btn btn-outline-primary">Order</a>

@@ -691,6 +691,10 @@ public partial class numberSearchContext : DbContext
             entity.Property(e => e.MACAddress).HasColumnType("character varying");
 
             entity.Property(e => e.Condition).HasColumnType("character varying");
+            
+            entity.Property(e => e.ExternalOrderId).HasColumnType("character varying");
+            
+            entity.Property(e => e.ShipmentTrackingLink).HasColumnType("character varying");
 
             entity.Property(e => e.DateCreated)
                 .HasColumnType("timestamp without time zone")

@@ -11,6 +11,8 @@ namespace AccelerateNetworks.Operations
         public string SerialNumber { get; set; }
         public string MACAddress { get; set; }
         public string Condition { get; set; }
+        public string ExternalOrderId { get; set; }
+        public string ShipmentTrackingLink { get; set; }
         public DateTime DateCreated { get; set; }
         public DateTime DateUpdated { get; set; }
     }
