@@ -502,22 +502,22 @@ namespace NumberSearch.Tests
             output.WriteLine(JsonSerializer.Serialize(results));
         }
 
-        [Fact]
-        public async Task TeliGetAllTollfreeAsync()
-        {
-            // Arrange
+        //[Fact]
+        //public async Task TeliGetAllTollfreeAsync()
+        //{
+        //    // Arrange
 
-            // Act
-            var results = await DidsList.GetAllTollfreeAsync(token).ConfigureAwait(false);
+        //    // Act
+        //    var results = await DidsList.GetAllTollfreeAsync(token).ConfigureAwait(false);
 
-            // Assert
-            Assert.NotNull(results);
-            foreach (var result in results)
-            {
-                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-            }
-            output.WriteLine(JsonSerializer.Serialize(results));
-        }
+        //    // Assert
+        //    Assert.NotNull(results);
+        //    foreach (var result in results)
+        //    {
+        //        Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+        //    }
+        //    output.WriteLine(JsonSerializer.Serialize(results));
+        //}
 
         [Fact]
         public async Task TeliEnableCNAMAsync()
