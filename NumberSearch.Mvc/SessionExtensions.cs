@@ -11,7 +11,7 @@ namespace NumberSearch.Mvc
             session.SetString(key, JsonSerializer.Serialize(value));
         }
 
-        public static T Get<T>(this ISession session, string key)
+        public static T? Get<T>(this ISession session, string key)
         {
             var value = session.GetString(key);
             return value == null ? default : JsonSerializer.Deserialize<T>(value);

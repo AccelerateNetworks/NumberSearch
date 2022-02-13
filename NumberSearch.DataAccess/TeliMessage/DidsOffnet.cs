@@ -65,7 +65,6 @@ namespace NumberSearch.DataAccess.TeliMesssage
             catch (FlurlHttpException ex)
             {
                 Log.Fatal($"{await ex.GetResponseStringAsync()}");
-                var error = await ex.GetResponseJsonAsync<TeliError>();
                 return new DidsOffnet { code = 500, status = "error", error = await ex.GetResponseJsonAsync() };
             }
         }
@@ -85,7 +84,6 @@ namespace NumberSearch.DataAccess.TeliMesssage
             catch (FlurlHttpException ex)
             {
                 Log.Fatal($"{await ex.GetResponseStringAsync()}");
-                var error = await ex.GetResponseJsonAsync<TeliError>();
                 return new StatusResponse { code = 500, status = "Error", data = await ex.GetResponseJsonAsync() };
             }
         }

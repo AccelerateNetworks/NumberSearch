@@ -29,14 +29,10 @@ namespace NumberSearch.Tests
         private readonly ITestOutputHelper output;
         private readonly Credentials pComNetCredentials;
         private readonly string bulkVSKey;
-        private readonly string bulkVSSecret;
         private readonly string bulkVSUsername;
         private readonly string bulkVSPassword;
         private readonly string postgresql;
-        private readonly string peerlessAPIKey;
         private readonly string invoiceNinjaToken;
-        private readonly string _data247username;
-        private readonly string _data247password;
         private readonly string _teleDynamicsUsername;
         private readonly string _teleDynamicsPassword;
         private readonly string _call48Username;
@@ -61,15 +57,11 @@ namespace NumberSearch.Tests
             };
 
             bulkVSKey = config.GetConnectionString("BulkVSAPIKEY");
-            bulkVSSecret = config.GetConnectionString("BulkVSAPISecret");
             bulkVSUsername = config.GetConnectionString("BulkVSUsername");
             bulkVSPassword = config.GetConnectionString("BulkVSPassword");
             token = Guid.Parse(config.GetConnectionString("TeleAPI"));
             postgresql = config.GetConnectionString("PostgresqlProd");
-            peerlessAPIKey = config.GetConnectionString("PeerlessAPIKey");
             invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
-            _data247username = config.GetConnectionString("Data247Username");
-            _data247password = config.GetConnectionString("Data247Password");
             _teleDynamicsUsername = config.GetConnectionString("TeleDynamicsUsername");
             _teleDynamicsPassword = config.GetConnectionString("TeleDynamicsPassword");
             _call48Username = config.GetConnectionString("Call48Username");
@@ -1283,7 +1275,7 @@ namespace NumberSearch.Tests
 
             if (existing is not null && existing?.DialedNumber?.Length == 10)
             {
-                var checkDeleteNumber = existing.DeleteAsync(postgresql).ConfigureAwait(false);
+                _ = existing.DeleteAsync(postgresql).ConfigureAwait(false);
             }
 
             var response = await number.PostAsync(conn);

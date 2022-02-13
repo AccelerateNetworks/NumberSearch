@@ -27,8 +27,8 @@ namespace NumberSearch.Mvc
                 throw new ArgumentNullException(nameof(workItem));
             }
 
-            _workItems.Enqueue(workItem);
-            _signal.Release();
+            _workItems?.Enqueue(workItem);
+            _signal?.Release();
         }
 
         public async Task<Func<CancellationToken, Task>> DequeueAsync(

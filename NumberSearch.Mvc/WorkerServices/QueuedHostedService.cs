@@ -20,17 +20,17 @@ namespace NumberSearch.Mvc
 
         public IBackgroundTaskQueue TaskQueue { get; }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation(
                 $"Queued Hosted Service is running.{Environment.NewLine}" +
                 $"{Environment.NewLine}Tap W to add a work item to the " +
                 $"background queue.{Environment.NewLine}");
 
-            await BackgroundProcessing(stoppingToken);
+            return BackgroundProcessingAsync(stoppingToken);
         }
 
-        private async Task BackgroundProcessing(CancellationToken stoppingToken)
+        private async Task BackgroundProcessingAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -49,11 +49,11 @@ namespace NumberSearch.Mvc
             }
         }
 
-        public override async Task StopAsync(CancellationToken stoppingToken)
+        public override Task StopAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Queued Hosted Service is stopping.");
 
-            await base.StopAsync(stoppingToken);
+            return base.StopAsync(stoppingToken);
         }
     }
 }

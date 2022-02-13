@@ -874,7 +874,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
             }
 
-            var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), PortedDialedNumber = portedPhoneNumber?.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber.PortedPhoneNumberId, Quantity = 1 };
+            var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), PortedDialedNumber = portedPhoneNumber?.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber?.PortedPhoneNumberId, Quantity = 1 };
 
             var checkAdd = cart.AddPortedPhoneNumber(portedPhoneNumber, productOrder);
             var checkSet = cart.SetToSession(_httpContext.Session);
@@ -1185,7 +1185,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 var productOrder = cart.ProductOrders.Where(x => x.PortedPhoneNumberId == portedPhoneNumber.PortedPhoneNumberId).FirstOrDefault();
 
-                var newProductOrder = new ProductOrder { PortedDialedNumber = portedPhoneNumber?.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber.PortedPhoneNumberId, Quantity = 1 };
+                var newProductOrder = new ProductOrder { PortedDialedNumber = portedPhoneNumber?.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber?.PortedPhoneNumberId, Quantity = 1 };
 
                 var checkRemove = cart.RemovePortedPhoneNumber(portedPhoneNumber, productOrder ?? newProductOrder);
                 var checkSet = cart.SetToSession(_httpContext.Session);
