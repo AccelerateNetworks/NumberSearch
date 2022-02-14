@@ -97,15 +97,15 @@
                             @foreach (var item in Model?.Cart?.VerifiedPhoneNumbers)
                             {
                                 var location = $"{item?.City ?? "Unknown City"}, {item?.Province ?? "Unknown State"}";
-                                var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
-                                var number = item.VerifiedDialedNumber;
+                                var formattedNumber = $"({item?.NPA}) {item?.NXX}-{item?.XXXX.ToString("0000")}";
+                                var number = item?.VerifiedDialedNumber;
                                 <tr>
                                     <td scope="row"><h4>@formattedNumber</h4></td>
                                     <td>@Html.Raw(number)</td>
                                     <td>@location</td>
                                     <td>$10</td>
                                     <td>
-                                        <button onclick="RemoveFromCart('VerifiedPhoneNumber', '@item.VerifiedDialedNumber', 1, this)" class="btn btn-outline-danger">
+                                        <button onclick="RemoveFromCart('VerifiedPhoneNumber', '@item?.VerifiedDialedNumber', 1, this)" class="btn btn-outline-danger">
                                             <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                             Remove
                                         </button>
@@ -118,17 +118,18 @@
                                 var localTotal = productOrder.Quantity * item.Price;
                                 <tr>
                                     <td scope="row"><h4>@item.Name</h4></td>
-                                    @{
-                                        if (productOrder.Quantity > 1)
-                                        {
-                                            <td>@productOrder.Quantity Units</td>
-                                        }
-                                        else
-                                        {
-                                            <td>@productOrder.Quantity Unit</td>
-                                        }
-                                    }
-                                    <td>at $@item.Price each</td>
+                                    <td>
+                                        <form method="get" asp-controller="Cart" asp-action="Index">
+                                            <div class="input-group">
+                                                <input type="text" value="@item?.Name" class="form-control" name="product" id="product" hidden>
+                                                <input type="number" value="@productOrder.Quantity" max="999" min="1" class="form-control" name="quantity" id="quantity">
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-outline-secondary" name="submit" type="submit">Update</button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </td>
+                                    <td>at $@item?.Price each</td>
                                     <td>$@localTotal</td>
                                     <td>
                                         <button onclick="RemoveFromCart('Product', '@item.ProductId', 1, this)" class="btn btn-outline-danger">

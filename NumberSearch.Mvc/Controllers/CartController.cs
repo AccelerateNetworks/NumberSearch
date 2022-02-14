@@ -37,7 +37,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [HttpGet]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public async Task<IActionResult> IndexAsync(bool? emptyCart)
+        public async Task<IActionResult> IndexAsync(bool? emptyCart, string product, int? quantity)
         {
             await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
@@ -53,6 +53,48 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     Cart = cart
                 });
+            }
+            else if (!string.IsNullOrWhiteSpace(product) && quantity is not null & quantity > 0)
+            {
+                var products = await Product.GetAllAsync(_postgresql);
+                var productToUpdate = products.FirstOrDefault(x => x.Name == product);
+
+                if (productToUpdate is not null)
+                {
+                    var toRemove = cart.ProductOrders.Where(x => x.ProductId == productToUpdate.ProductId).FirstOrDefault();
+
+                    if (toRemove is not null)
+                    {
+                        var checkRemove = cart.RemoveProduct(productToUpdate, toRemove);
+
+                        toRemove.Quantity = quantity ?? toRemove.Quantity;
+
+                        var checkAdd = cart.AddProduct(productToUpdate, toRemove);
+
+                        var checkSet = cart.SetToSession(HttpContext.Session);
+                        cart = Cart.GetFromSession(HttpContext.Session);
+
+                        return View("Index", new CartResult
+                        {
+                            Cart = cart
+                        });
+                    }
+                    else
+                    {
+                        return View("Index", new CartResult
+                        {
+                            Cart = cart
+                        });
+                    }
+                }
+                else
+                {
+                    // Do nothing and return to the cart.
+                    return View("Index", new CartResult
+                    {
+                        Cart = cart
+                    });
+                }
             }
             else
             {
