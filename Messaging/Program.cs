@@ -47,15 +47,49 @@ app.MapGet("/Conversations", async (string primary, MessagingContext db) =>
         return Results.BadRequest("Primary number couldn't be parsed as a valid NANP (North American Number Plan) number.");
     }
 
-    var outgoing = await db.Messages
+    var messages = await db.Messages
                             .Where(x => x.ToFromCompound.Contains(primaryNumber.DialedNumber))
-                            .DistinctBy(x => x.ToFromCompound)
                             .OrderByDescending(x => x.DateRecieved)
                             .ToListAsync();
 
-    if (outgoing is not null && outgoing.Any())
+    if (messages is not null && messages.Any())
     {
-        return Results.Ok(outgoing);
+        var uniqueCompoundKeys = messages
+                                    .DistinctBy(x => x.ToFromCompound)
+                                    .OrderByDescending(x => x.DateRecieved)
+                                    .ToList();
+
+        var recordsToRemove = new List<MessageRecord>();
+
+        foreach (var record in uniqueCompoundKeys)
+        {
+            var reverseToAndFrom = $"{record.To},{record.From}";
+
+            var reverseMatch = uniqueCompoundKeys.Where(x => x.ToFromCompound.Contains(reverseToAndFrom)).FirstOrDefault();
+
+            if (reverseMatch is not null)
+            {
+                // Remove the older record.
+                if (DateTime.Compare(reverseMatch.DateRecieved, record.DateRecieved) > 0)
+                {
+                    recordsToRemove.Add(record);
+                }
+                else
+                {
+                    recordsToRemove.Add(reverseMatch);
+                }
+            }
+        }
+
+        if (recordsToRemove.Any())
+        {
+            foreach (var item in recordsToRemove)
+            {
+                uniqueCompoundKeys.Remove(item);
+            }
+        }
+
+        return Results.Ok(uniqueCompoundKeys);
     }
     else
     {
@@ -78,16 +112,9 @@ app.MapGet("/Thread", async (string primary, string contacts, MessagingContext d
         return Results.BadRequest("None of the contact numbers could be parsed as a valid NANP (North American Number Plan) number.");
     }
 
-    var outgoingCompoundKey = $"{primaryNumber.DialedNumber},{string.Join(',', contactNumbers.Select(x => x.DialedNumber))}";
-    var incomingCompoundKeys = new List<string>();
-
-    foreach (var contact in contactNumbers)
-    {
-        incomingCompoundKeys.Add($"{primaryNumber.DialedNumber},{string.Join(',', contactNumbers.Select(x => x.DialedNumber))}");
-    }
-
-
     var combined = new List<MessageRecord>();
+
+    var outgoingCompoundKey = $"{primaryNumber.DialedNumber},{string.Join(',', contactNumbers.Select(x => x.DialedNumber))}";
 
     var outgoing = await db.Messages.Where(x => x.ToFromCompound == outgoingCompoundKey).ToListAsync();
     if (outgoing is not null && outgoing.Any())
@@ -95,15 +122,25 @@ app.MapGet("/Thread", async (string primary, string contacts, MessagingContext d
         combined.AddRange(outgoing);
     }
 
-    //var incoming = await db.Messages.Where(x => x.To == primaryNumber.DialedNumber && x.From == contactNumber.DialedNumber).ToListAsync();
-    //if (incoming is not null && incoming.Any())
-    //{
-    //    combined.AddRange(incoming);
-    //}
+    var incomingCompoundKeys = new List<string>();
+
+    foreach (var contact in contactNumbers)
+    {
+        incomingCompoundKeys.Add($"{contact.DialedNumber},{string.Join(',', contactNumbers.Append(primaryNumber).Where(x => x.DialedNumber != contact.DialedNumber).Select(x => x.DialedNumber))}");
+    }
+
+    foreach (var key in incomingCompoundKeys)
+    {
+        var incoming = await db.Messages.Where(x => x.ToFromCompound == key).ToListAsync();
+        if (incoming is not null && incoming.Any())
+        {
+            combined.AddRange(incoming);
+        }
+    }
 
     if (combined.Any())
     {
-        return Results.Ok(combined);
+        return Results.Ok(combined.OrderByDescending(x => x.DateRecieved));
     }
     else
     {
