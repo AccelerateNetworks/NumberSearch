@@ -174,7 +174,7 @@ app.MapPost("/Message/Inbound/Teli", async ([Microsoft.AspNetCore.Mvc.FromBody] 
     }
 });
 
-app.MapPost("Message/Outbound/Teli", async ([Microsoft.AspNetCore.Mvc.FromBody] TeliOutbound message, MessagingContext db) =>
+app.MapPost("/Message/Outbound/Teli", async ([Microsoft.AspNetCore.Mvc.FromBody] TeliOutbound message, MessagingContext db) =>
 {
     // Validate and regularize the incoming message.
     if (!message.RegularizeAndValidate())
@@ -289,7 +289,7 @@ app.MapPost("/Message/Inbound/BulkVS", async ([Microsoft.AspNetCore.Mvc.FromBody
     }
 });
 
-app.MapPost("Message/Outbound/BulkVS", async ([Microsoft.AspNetCore.Mvc.FromBody] BulkVSInbound message, MessagingContext db) =>
+app.MapPost("/Message/Outbound/BulkVS", async ([Microsoft.AspNetCore.Mvc.FromBody] BulkVSInbound message, MessagingContext db) =>
 {
     // Validate and regularize the incoming message.
     if (!message.RegularizeAndValidate())
