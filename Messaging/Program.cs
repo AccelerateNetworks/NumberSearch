@@ -52,14 +52,14 @@ app.MapGet("/Conversations", async (string primary, MessagingContext db) =>
 
     var messages = await db.Messages
                             .Where(x => x.ToFromCompound.Contains(primaryNumber.DialedNumber))
-                            .OrderByDescending(x => x.DateRecievedUtc)
+                            .OrderByDescending(x => x.DateRecievedUTC)
                             .ToListAsync();
 
     if (messages is not null && messages.Any())
     {
         var uniqueCompoundKeys = messages
                                     .DistinctBy(x => x.ToFromCompound)
-                                    .OrderByDescending(x => x.DateRecievedUtc)
+                                    .OrderByDescending(x => x.DateRecievedUTC)
                                     .ToList();
 
         var recordsToRemove = new List<MessageRecord>();
@@ -73,7 +73,7 @@ app.MapGet("/Conversations", async (string primary, MessagingContext db) =>
             if (reverseMatch is not null)
             {
                 // Remove the older record.
-                if (DateTime.Compare(reverseMatch.DateRecievedUtc, record.DateRecievedUtc) > 0)
+                if (DateTime.Compare(reverseMatch.DateRecievedUTC, record.DateRecievedUTC) > 0)
                 {
                     recordsToRemove.Add(record);
                 }
@@ -143,7 +143,7 @@ app.MapGet("/Thread", async (string primary, string contacts, MessagingContext d
 
     if (combined.Any())
     {
-        return Results.Ok(combined.OrderByDescending(x => x.DateRecievedUtc));
+        return Results.Ok(combined.OrderByDescending(x => x.DateRecievedUTC));
     }
     else
     {
@@ -203,7 +203,7 @@ app.MapPost("/Message/Outbound/Teli", async ([Microsoft.AspNetCore.Mvc.FromBody]
         {
             Id = Guid.NewGuid(),
             Content = message?.Message ?? string.Empty,
-            DateRecievedUtc = DateTime.UtcNow,
+            DateRecievedUTC = DateTime.UtcNow,
             From = message?.FromPhoneNumber?.DialedNumber ?? string.Empty,
             To = string.Join(',', message?.ToPhoneNumbers?.Select(x => x.DialedNumber) ?? Array.Empty<string>()),
             MediaURLs = string.Empty,
@@ -379,7 +379,7 @@ app.MapPost("/Message/Outbound/BulkVS", async ([Microsoft.AspNetCore.Mvc.FromBod
         {
             Id = Guid.NewGuid(),
             Content = message?.Message ?? string.Empty,
-            DateRecievedUtc = DateTime.UtcNow,
+            DateRecievedUTC = DateTime.UtcNow,
             From = message?.FromPhoneNumber?.DialedNumber ?? string.Empty,
             To = string.Join(',', message?.ToPhoneNumbers?.Select(x => x.DialedNumber) ?? Array.Empty<string>()),
             MediaURLs = string.Join(',', message?.MediaURLs ?? Array.Empty<string>()),
@@ -435,7 +435,7 @@ namespace Models
                 MediaURLs = MediaURLs is not null ? string.Join(',', MediaURLs) : string.Empty,
                 MessageType = MediaURLs is not null && MediaURLs.Any() ? MessageType.MMS : MessageType.SMS,
                 MessageSource = MessageSource.Incoming,
-                DateRecievedUtc = DateTime.UtcNow
+                DateRecievedUTC = DateTime.UtcNow
             };
 
             record.ToFromCompound = $"{record.From},{record.To}";
@@ -572,7 +572,7 @@ namespace Models
                 MediaURLs = string.Empty,
                 MessageType = string.IsNullOrWhiteSpace(Type) && Type == "mms" ? MessageType.MMS : MessageType.SMS,
                 MessageSource = MessageSource.Incoming,
-                DateRecievedUtc = DateTime.UtcNow
+                DateRecievedUTC = DateTime.UtcNow
             };
 
             record.ToFromCompound = $"{record.From},{record.To}";
@@ -665,7 +665,7 @@ namespace Models
         public MessageType MessageType { get; set; }
         public MessageSource MessageSource { get; set; }
         // Convert to DateTimeOffset if db is not sqlite.
-        public DateTime DateRecievedUtc { get; set; }
+        public DateTime DateRecievedUTC { get; set; }
     }
 
     public enum MessageType { SMS, MMS };
