@@ -113,7 +113,7 @@ namespace NumberSearch.Mvc.Controllers
             await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            if (cart.ProductOrders.Count() == 0)
+            if (cart is not null && cart.ProductOrders.Count() == 0)
             {
                 return View("Index", new CartResult { Cart = cart });
             }
@@ -161,17 +161,17 @@ namespace NumberSearch.Mvc.Controllers
                 var coupons = new List<Coupon>();
                 foreach (var item in productOrders)
                 {
-                    if (item?.ProductId != Guid.Empty)
+                    if (item.ProductId != Guid.Empty)
                     {
                         var product = await Product.GetByIdAsync(item.ProductId, _postgresql).ConfigureAwait(false);
                         products.Add(product);
                     }
-                    else if (item?.ServiceId != Guid.Empty)
+                    else if (item.ServiceId != Guid.Empty)
                     {
                         var service = await Service.GetAsync(item.ServiceId, _postgresql).ConfigureAwait(false);
                         services.Add(service);
                     }
-                    else if (item?.CouponId is not null)
+                    else if (item.CouponId is not null)
                     {
                         var coupon = await Coupon.GetByIdAsync(item.CouponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
                         coupons.Add(coupon);

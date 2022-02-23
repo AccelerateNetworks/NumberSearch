@@ -60,31 +60,26 @@ namespace NumberSearch.Ingest
                 var productOrders = await ProductOrder.GetAsync(order.OrderId, connectionString);
                 var businessName = string.IsNullOrWhiteSpace(order.BusinessName) ? "Consumer" : order.BusinessName;
                 var nextStep = "Next Step";
-                var pillColor = "danger";
                 // The order is completed, we're good.
                 if (order?.Completed is true)
                 {
                     nextStep = "🎉 Done, Good Job";
-                    pillColor = "success";
                 }
                 // The order is not completed, and is stale.
                 else if (order?.Completed is not true && order?.DateSubmitted <
                     DateTime.Now.AddDays(-14))
                 {
                     nextStep = "⭕ Contact the Customer, the order is Stale";
-                    pillColor = "warning";
                 }
                 else if (order?.Completed is not true)
                 {
                     if (order.Quote)
                     {
                         nextStep = $"⭕ Pending Quote Approval";
-                        pillColor = "warning";
                     }
                     else if (portRequest is null && productOrders.Where(x => x.PortedPhoneNumberId.HasValue is true).Any())
                     {
                         nextStep = $"⭕ Get the Porting information from the Customer";
-                        pillColor = "danger";
                         orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
                     }
                     else if (portRequest is not null)
@@ -94,20 +89,17 @@ namespace NumberSearch.Ingest
                             if (order?.OnsiteInstallation is true)
                             {
                                 nextStep = $"⭕ Install the cusomter's hardware onsite {order?.InstallDate.GetValueOrDefault().ToShortDateString()}";
-                                pillColor = "info";
                                 orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
                             }
                             else
                             {
                                 nextStep = $"⭕ Ship the hardware to the customer for self-install";
-                                pillColor = "info";
                                 orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
                             }
                         }
                         else
                         {
                             nextStep = "⭕ Port the Customer's Numbers to our Network";
-                            pillColor = "danger";
                             orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
                         }
                     }
@@ -116,13 +108,11 @@ namespace NumberSearch.Ingest
                         if (order?.OnsiteInstallation is true)
                         {
                             nextStep = $"⭕ Install the cusomter's hardware onsite";
-                            pillColor = "info";
                             orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
                         }
                         else
                         {
                             nextStep = $"⭕ Ship the hardware to the customer for self-install";
-                            pillColor = "info";
                             orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
                         }
                     }

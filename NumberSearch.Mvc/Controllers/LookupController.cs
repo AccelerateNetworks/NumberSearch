@@ -158,7 +158,7 @@ namespace NumberSearch.Mvc.Controllers
         {
             var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number, out var phoneNumber);
 
-            if (checkParse)
+            if (checkParse && phoneNumber is not null)
             {
                 try
                 {
@@ -241,11 +241,11 @@ namespace NumberSearch.Mvc.Controllers
             }
             else
             {
-                Log.Information($"[Portability] {phoneNumber.DialedNumber} is not Portable. Failed NPA, NXX, XXXX parsing.");
+                Log.Information($"[Portability] {number} is not Portable. Failed NPA, NXX, XXXX parsing.");
 
                 return new PortedPhoneNumber
                 {
-                    PortedDialedNumber = phoneNumber.DialedNumber,
+                    PortedDialedNumber = number,
                     Portable = false
                 };
             }
@@ -262,7 +262,7 @@ namespace NumberSearch.Mvc.Controllers
         {
             var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
 
-            if (checkParse)
+            if (checkParse && phoneNumber is not null)
             {
                 try
                 {

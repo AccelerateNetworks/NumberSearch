@@ -93,7 +93,7 @@ namespace NumberSearch.Ingest
                 }
 
                 // Overwrite the number type with Tollfree, as that's the primary type.
-                foreach (var tollfree in PhoneNumbersNA.AreaCode.TollFree)
+                foreach (var tollfree in PhoneNumbersNA.AreaCode.TollFree.Span)
                 {
                     if (tollfree == number.NPA)
                     {
@@ -263,7 +263,7 @@ namespace NumberSearch.Ingest
 
             foreach (var number in numbers)
             {
-                foreach (var area in PhoneNumbersNA.AreaCode.TollFree)
+                foreach (var area in PhoneNumbersNA.AreaCode.TollFree.ToArray())
                 {
                     if (number.NPA == area)
                     {

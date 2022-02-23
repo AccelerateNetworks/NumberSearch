@@ -108,7 +108,7 @@ app.MapGet("/Thread", async (string primary, string contacts, MessagingContext d
         return Results.BadRequest("Primary number couldn't be parsed as a valid NANP (North American Number Plan) number.");
     }
 
-    var contactNumbers = PhoneNumbersNA.AreaCode.ExtractPhoneNumbers(contacts).ToArray();
+    var contactNumbers = PhoneNumbersNA.Parse.AsPhoneNumbers(contacts).ToArray();
 
     if (contactNumbers is null || !contactNumbers.Any())
     {
@@ -533,7 +533,7 @@ namespace Models
                 FromParsed = true;
             }
 
-            var To = PhoneNumbersNA.AreaCode.ExtractDialedNumbers(Destination);
+            var To = PhoneNumbersNA.Parse.AsDialedNumbers(Destination);
 
             if (To.Any())
             {
@@ -608,7 +608,7 @@ namespace Models
                 FromParsed = true;
             }
 
-            var To = PhoneNumbersNA.AreaCode.ExtractDialedNumbers(Destination);
+            var To = PhoneNumbersNA.Parse.AsDialedNumbers(Destination);
 
             if (To.Any())
             {

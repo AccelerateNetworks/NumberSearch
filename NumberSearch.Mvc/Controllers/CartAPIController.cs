@@ -802,7 +802,7 @@ namespace NumberSearch.Mvc.Controllers
 
             var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedPhoneNumber, out var phoneNumber);
 
-            if (checkParse)
+            if (checkParse && phoneNumber is not null)
             {
                 // Determine if the number is a wireless number.
                 var lrnLookup = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber, _apiKey).ConfigureAwait(false);

@@ -1037,7 +1037,7 @@ namespace NumberSearch.Tests
             // Act
             var cred = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
 
-            var results = await Ratecenter.GetAllRatecentersAsync(PhoneNumbersNA.AreaCode.States, cred.data.token).ConfigureAwait(false);
+            var results = await Ratecenter.GetAllRatecentersAsync(PhoneNumbersNA.AreaCode.States.ToArray(), cred.data.token).ConfigureAwait(false);
 
             Assert.NotEmpty(results);
             output.WriteLine(results.Length.ToString());

@@ -169,7 +169,7 @@ namespace NumberSearch.Ingest
         {
             var numbers = new List<OwnedPhoneNumber>();
 
-            foreach (var npa in PhoneNumbersNA.AreaCode.All)
+            foreach (var npa in PhoneNumbersNA.AreaCode.All.ToArray())
             {
                 var results = await FirstPointComOwnedPhoneNumber.GetAsync(npa.ToString(), username, password).ConfigureAwait(false);
 
