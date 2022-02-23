@@ -14,5 +14,6 @@ namespace NumberSearch.Mvc.Models
         public IEnumerable<string> NotPortable { get; set; }
         public Cart Cart { get; set; }
         public bool Port { get; set; }
+        public string Message { get; set; }
     }
 }

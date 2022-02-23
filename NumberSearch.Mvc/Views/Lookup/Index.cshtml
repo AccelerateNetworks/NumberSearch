@@ -53,6 +53,16 @@
 <div class="container">
     <div class="pb-3">
         @{
+            if (!string.IsNullOrWhiteSpace(Model?.Message))
+            {
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="alert alert-danger" role="alert">
+                            @Model?.Message
+                        </div>
+                    </div>
+                </div>
+            }
             if (Model != null && Model?.Lookups != null && Model.Lookups.Any())
             {
                 <div class="table-responsive shadow-sm mb-4">

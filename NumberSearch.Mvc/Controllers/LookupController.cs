@@ -94,6 +94,14 @@ namespace NumberSearch.Mvc.Controllers
             {
                 var parsedNumbers = dialedNumber.ExtractDialedNumbers();
 
+                if (!parsedNumbers.Any())
+                {
+                    return View("Index", new LookupResults
+                    {
+                        Message = "No dialed phone numbers found. Please try a different query. 🥺👉👈"
+                    });
+                }
+
                 var cart = Cart.GetFromSession(HttpContext.Session);
 
                 var results = await VerifyPortablityInBulkAsync(parsedNumbers.ToArray());
