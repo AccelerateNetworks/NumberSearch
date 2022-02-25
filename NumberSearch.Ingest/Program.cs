@@ -128,7 +128,7 @@ namespace NumberSearch.Ingest
 
                             // Ingest all avablie phones numbers from the BulkVs API.
                             Log.Information("Ingesting data from BulkVS");
-                            var BulkVSStats = await Provider.BulkVSAsync(bulkVSusername, bulkVSpassword, PhoneNumbersNA.AreaCode.All.ToArray(), postgresSQL).ConfigureAwait(false);
+                            var BulkVSStats = await Provider.BulkVSAsync(bulkVSusername, bulkVSpassword, PhoneNumbersNA.AreaCode.All, postgresSQL).ConfigureAwait(false);
 
                             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
                             var lockEntry = await IngestStatistics.GetLockAsync("BulkVS", postgresSQL).ConfigureAwait(false);
@@ -256,7 +256,7 @@ namespace NumberSearch.Ingest
 
                             // Ingest all avalible numbers in the FirsPointtCom API.
                             Log.Information("[FirstPointCom] Ingesting data from FirstPointCom");
-                            var FirstPointComStats = await Provider.FirstPointComAsync(username, password, PhoneNumbersNA.AreaCode.All.ToArray(), postgresSQL).ConfigureAwait(false);
+                            var FirstPointComStats = await Provider.FirstPointComAsync(username, password, PhoneNumbersNA.AreaCode.All, postgresSQL).ConfigureAwait(false);
 
                             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
                             var lockEntry = await IngestStatistics.GetLockAsync("FirstPointCom", postgresSQL).ConfigureAwait(false);

@@ -93,14 +93,13 @@ namespace NumberSearch.Ingest
                 }
 
                 // Overwrite the number type with Tollfree, as that's the primary type.
-                foreach (var tollfree in PhoneNumbersNA.AreaCode.TollFree.Span)
+                var checkTollfree = PhoneNumbersNA.AreaCode.TollFreeFlatLookup[number.NPA];
+
+                if (checkTollfree)
                 {
-                    if (tollfree == number.NPA)
-                    {
-                        number.NumberType = Tollfree;
-                        number.City = "Tollfree";
-                        number.State = string.Empty;
-                    }
+                    number.NumberType = Tollfree;
+                    number.City = "Tollfree";
+                    number.State = string.Empty;
                 }
             }
 
@@ -263,13 +262,12 @@ namespace NumberSearch.Ingest
 
             foreach (var number in numbers)
             {
-                foreach (var area in PhoneNumbersNA.AreaCode.TollFree.ToArray())
+                var checkTollfree = PhoneNumbersNA.AreaCode.TollFreeFlatLookup[number.NPA];
+
+                if (checkTollfree)
                 {
-                    if (number.NPA == area)
-                    {
-                        // Skip tollfree numbers
-                        continue;
-                    }
+                    // Skip tollfree numbers
+                    continue;
                 }
 
                 var checkMatch = npaNxxLookup.TryGetValue($"{number.NPA}{number.NXX}", out var match);
