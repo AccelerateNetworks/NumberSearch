@@ -22,7 +22,7 @@ namespace NumberSearch.Tests
             var validChars = new char[] { '0', '*', '2', '3', '4', '5', '6', '7', '8', '9' };
             foreach (var letter in allAscii)
             {
-                var result = SearchController.LetterToKeypadDigit(Convert.ToChar(letter));
+                var result = PhoneNumbersNA.PhoneNumber.LetterToKeypadDigit(Convert.ToChar(letter));
                 Assert.Contains(result, validChars);
                 output.WriteLine($"{letter}, {result}");
             }
