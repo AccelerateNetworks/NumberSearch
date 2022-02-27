@@ -40,7 +40,7 @@ namespace NumberSearch.Mvc.Controllers
             }
 
             // Clean up the query.
-            query = query?.Trim().ToLowerInvariant();
+            query = query.Trim().ToLowerInvariant();
 
             // Parse the query.
             var converted = new List<char>();
@@ -59,7 +59,7 @@ namespace NumberSearch.Mvc.Controllers
                 // Convert letters to digits.
                 else if (char.IsLetter(letter))
                 {
-                    converted.Add(LetterToKeypadDigit(letter));
+                    converted.Add(PhoneNumbersNA.PhoneNumber.LetterToKeypadDigit(letter));
                 }
                 // Drop everything else.
             }
@@ -184,59 +184,6 @@ namespace NumberSearch.Mvc.Controllers
                 Query = query,
                 Cart = cart
             });
-        }
-
-        /// <summary>
-        /// Converts a letter in a string to numbers on a dialpad.
-        /// </summary>
-        /// <param name="letter"> A lowercase char. </param>
-        /// <returns> The dialpad equivalent. </returns>
-        public static char LetterToKeypadDigit(char letter)
-        {
-            // Map the chars to their keypad numerical values.
-            switch (letter)
-            {
-                case '+':
-                    return '0';
-                case 'a':
-                case 'b':
-                case 'c':
-                    return '2';
-                case 'd':
-                case 'e':
-                case 'f':
-                    return '3';
-                case 'g':
-                case 'h':
-                case 'i':
-                    return '4';
-                case 'j':
-                case 'k':
-                case 'l':
-                    return '5';
-                case 'm':
-                case 'n':
-                case 'o':
-                    return '6';
-                case 'p':
-                case 'q':
-                case 'r':
-                case 's':
-                    return '7';
-                case 't':
-                case 'u':
-                case 'v':
-                    return '8';
-                case 'w':
-                case 'x':
-                case 'y':
-                case 'z':
-                    return '9';
-                default:
-                    // The digit 1 isn't mapped to any chars on a phone keypad.
-                    // If the char isn't mapped to anything, respect it's existence by mapping it to a wildcard.
-                    return '*';
-            }
         }
     }
 }

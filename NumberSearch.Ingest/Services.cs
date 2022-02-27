@@ -1,13 +1,11 @@
 ﻿using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.LCGuide;
-using NumberSearch.DataAccess.Models;
 
 using Serilog;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Ingest
@@ -181,41 +179,32 @@ namespace NumberSearch.Ingest
                 Log.Information($"Found {updates?.Count} existing Phone Numbers to Update.");
             }
 
-            // Execute these API requests in parallel.
-            var semaphore = new SemaphoreSlim(Environment.ProcessorCount);
-
-            var results = new List<Task>();
             var count = 0;
 
-            foreach (var update in updates.Values.ToArray())
+            ParallelOptions options = new()
             {
-                // Wait for an open slot in the semaphore before grabbing another thread from the threadpool.
-                await semaphore.WaitAsync().ConfigureAwait(false);
-                if (count % 100 == 0)
+                MaxDegreeOfParallelism = Environment.ProcessorCount * 2,
+            };
+
+            // Execute these API requests in parallel.
+            await Parallel.ForEachAsync(updates.Values.ToArray(), options, async (update, token) =>
+            {
+                if (count % 100 == 0 && count != 0)
                 {
                     Log.Information($"Updated {count} of {updates?.Count} Phone Numbers.");
                 }
-                results.Add(Task.Run(async () =>
+                try
                 {
-                    try
-                    {
-                        var result = await update.PutAsync(connectionString).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Fatal(ex.Message);
-                        Log.Fatal(ex.InnerException.ToString());
-                        Log.Fatal($"{update.DialedNumber} {update.NPA} {update.NXX} {update.XXXX} {update.City} {update.State} {update.IngestedFrom} {update.NumberType} {update.DateIngested} {update.Purchased}");
-                    }
-                    finally
-                    {
-                        semaphore.Release();
-                    }
-                }));
+                    var result = await update.PutAsync(connectionString).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Log.Fatal(ex.Message);
+                    Log.Fatal(ex.InnerException.ToString());
+                    Log.Fatal($"{update.DialedNumber} {update.NPA} {update.NXX} {update.XXXX} {update.City} {update.State} {update.IngestedFrom} {update.NumberType} {update.DateIngested} {update.Purchased}");
+                }
                 count++;
-            }
-
-            await Task.WhenAll(results).ConfigureAwait(false);
+            });
 
             Log.Information($"Updated {updates?.Count} Phone Numbers");
 
