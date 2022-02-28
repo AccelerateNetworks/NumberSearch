@@ -131,17 +131,17 @@ public class OrdersController : Controller
             var coupons = new List<Coupon>();
             foreach (var item in productOrders)
             {
-                if (item?.ProductId != Guid.Empty)
+                if (item.ProductId is not null && item?.ProductId != Guid.Empty)
                 {
                     var product = await _context.Products.Where(x => x.ProductId == item.ProductId).AsNoTracking().FirstOrDefaultAsync();
                     products.Add(product);
                 }
-                else if (item?.ServiceId != Guid.Empty)
+                else if (item.ProductId is not null && item?.ServiceId != Guid.Empty)
                 {
                     var service = await _context.Services.Where(x => x.ServiceId == item.ServiceId).AsNoTracking().FirstOrDefaultAsync();
                     services.Add(service);
                 }
-                else if (item?.CouponId is not null)
+                else if (item.ProductId is not null && item?.CouponId is not null)
                 {
                     var coupon = await _context.Coupons.Where(x => x.CouponId == item.CouponId).AsNoTracking().FirstOrDefaultAsync();
                     coupons.Add(coupon);
