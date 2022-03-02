@@ -115,13 +115,16 @@ namespace NumberSearch.Ops.Controllers
             }
 
             var carrier = await _context.Carriers.FindAsync(id);
-            var lookups = await _context.PhoneNumberLookups.Where(x => x.Ocn == carrier.Ocn).ToListAsync();
 
-            if (carrier == null)
+            if (carrier is null)
             {
                 return NotFound();
             }
-            return View(new EditCarrier { Carrier = carrier, Lookups = lookups });
+            else
+            {
+                var lookups = await _context.PhoneNumberLookups.Where(x => x.Ocn == carrier.Ocn).ToListAsync();
+                return View(new EditCarrier { Carrier = carrier, Lookups = lookups });
+            }
         }
 
         // POST: CarriersController/Edit/5
@@ -194,8 +197,11 @@ namespace NumberSearch.Ops.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var product = await _context.Carriers.FindAsync(id);
-            _context.Carriers.Remove(product);
-            await _context.SaveChangesAsync();
+            if (product is not null)
+            {
+                _context.Carriers.Remove(product);
+                await _context.SaveChangesAsync();
+            }
             return RedirectToAction(nameof(Index));
         }
 

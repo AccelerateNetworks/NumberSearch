@@ -169,8 +169,11 @@ namespace NumberSearch.Ops.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var product = await _context.PhoneNumberLookups.FindAsync(id);
-            _context.PhoneNumberLookups.Remove(product);
-            await _context.SaveChangesAsync();
+            if (product is not null)
+            {
+                _context.PhoneNumberLookups.Remove(product);
+                await _context.SaveChangesAsync();
+            }
             return RedirectToAction(nameof(Index));
         }
 

@@ -48,7 +48,7 @@ public class PortRequestsController : Controller
     {
         var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number, out var phoneNumber);
 
-        if (checkParse)
+        if (checkParse && phoneNumber is not null)
         {
             try
             {
@@ -101,7 +101,7 @@ public class PortRequestsController : Controller
                 var portableNumber = new PortedPhoneNumber
                 {
                     PortedPhoneNumberId = Guid.NewGuid(),
-                    PortedDialedNumber = phoneNumber.DialedNumber,
+                    PortedDialedNumber = phoneNumber.DialedNumber!,
                     NPA = phoneNumber.NPA,
                     NXX = phoneNumber.NXX,
                     XXXX = phoneNumber.XXXX,
@@ -150,23 +150,27 @@ public class PortRequestsController : Controller
         if (orderId is not null && orderId.HasValue)
         {
             var order = await _context.Orders.Where(x => x.OrderId == orderId).AsNoTracking().FirstOrDefaultAsync(x => x.OrderId == orderId);
-            var portRequest = await _context.PortRequests.Where(x => x.OrderId == order.OrderId).AsNoTracking().FirstOrDefaultAsync(x => x.OrderId == orderId);
-            var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-
-            return View("PortRequestEdit", new PortRequestResult
+            if (order is not null)
             {
-                Order = order,
-                PortRequest = portRequest,
-                PhoneNumbers = numbers
-            });
-        }
-        else
-        {
-            // Show all orders
-            var portRequests = await _context.PortRequests.OrderByDescending(x => x.DateSubmitted).AsNoTracking().ToListAsync();
+                var portRequest = await _context.PortRequests.Where(x => x.OrderId == order.OrderId).AsNoTracking().FirstOrDefaultAsync(x => x.OrderId == orderId);
+                if (portRequest is not null)
+                {
+                    var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
 
-            return View("PortRequests", portRequests);
+                    return View("PortRequestEdit", new PortRequestResult
+                    {
+                        Order = order,
+                        PortRequest = portRequest,
+                        PhoneNumbers = numbers
+                    });
+                }
+            }
         }
+
+        // Show all orders
+        var portRequests = await _context.PortRequests.OrderByDescending(x => x.DateSubmitted).AsNoTracking().ToListAsync();
+
+        return View("PortRequests", portRequests);
     }
 
     [Authorize]
@@ -196,7 +200,7 @@ public class PortRequestsController : Controller
             //return new FileContentResult();
         }
 
-        var blobClient = containerClient.GetBlobClient(billImage.Name);
+        var blobClient = containerClient.GetBlobClient(billImage?.Name);
         var download = await blobClient.DownloadAsync();
 
         var fileBytes = new byte[] { };
@@ -211,7 +215,7 @@ public class PortRequestsController : Controller
 
         return new FileContentResult(fileBytes, download.Value.ContentType)
         {
-            FileDownloadName = billImage.Name
+            FileDownloadName = billImage?.Name
         };
     }
 
@@ -246,38 +250,42 @@ public class PortRequestsController : Controller
         if (!string.IsNullOrWhiteSpace(dialedNumber))
         {
             var order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId);
-            var portRequest = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
-            var numberToRemove = await _context.PortedPhoneNumbers
-                .FirstOrDefaultAsync(x => x.OrderId == order.OrderId && x.PortedDialedNumber == dialedNumber);
-
-            if (numberToRemove is not null)
+            if (order is not null)
             {
-                _context.PortedPhoneNumbers.Remove(numberToRemove);
-                await _context.SaveChangesAsync();
-
-                var productOrder = await _context.ProductOrders
-                        .FirstOrDefaultAsync(x => x.OrderId == order.OrderId && x.PortedPhoneNumberId == numberToRemove.PortedPhoneNumberId);
-
-                if (productOrder is not null)
+                var portRequest = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
+                if (portRequest is not null)
                 {
-                    _context.ProductOrders.Remove(productOrder);
-                    await _context.SaveChangesAsync();
+                    var numberToRemove = await _context.PortedPhoneNumbers
+                                .FirstOrDefaultAsync(x => x.OrderId == order.OrderId && x.PortedDialedNumber == dialedNumber);
+
+                    if (numberToRemove is not null)
+                    {
+                        _context.PortedPhoneNumbers.Remove(numberToRemove);
+                        await _context.SaveChangesAsync();
+
+                        var productOrder = await _context.ProductOrders
+                                .FirstOrDefaultAsync(x => x.OrderId == order.OrderId && x.PortedPhoneNumberId == numberToRemove.PortedPhoneNumberId);
+
+                        if (productOrder is not null)
+                        {
+                            _context.ProductOrders.Remove(productOrder);
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+
+                    var numbers = await _context.PortedPhoneNumbers.AsNoTracking().ToListAsync();
+
+                    return View("PortRequestEdit", new PortRequestResult
+                    {
+                        Order = order,
+                        PortRequest = portRequest,
+                        PhoneNumbers = numbers
+                    });
                 }
             }
-
-            var numbers = await _context.PortedPhoneNumbers.AsNoTracking().ToListAsync();
-
-            return View("PortRequestEdit", new PortRequestResult
-            {
-                Order = order,
-                PortRequest = portRequest,
-                PhoneNumbers = numbers
-            });
         }
-        else
-        {
-            return Redirect("/Home/PortRequests");
-        }
+
+        return Redirect("/Home/PortRequests");
     }
 
     [Authorize]
@@ -287,133 +295,139 @@ public class PortRequestsController : Controller
     {
         var portRequest = result?.PortRequest ?? null;
 
-        if (!string.IsNullOrWhiteSpace(dialedNumber))
+        if (!string.IsNullOrWhiteSpace(dialedNumber) && orderId is not null && orderId != Guid.Empty)
         {
             var order = await _context.Orders.Where(x => x.OrderId == orderId).FirstOrDefaultAsync();
-            portRequest = await _context.PortRequests.Where(x => x.OrderId == orderId).FirstOrDefaultAsync();
-            var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
 
-            var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
-
-            if (checkParse)
+            if (order is not null)
             {
-                var port = await VerifyPortablityAsync(phoneNumber.DialedNumber);
+                portRequest = await _context.PortRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefaultAsync();
+                var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
 
-                if (port.Portable)
+                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
+
+                if (portRequest is not null && checkParse && phoneNumber is not null)
                 {
-                    Log.Information($"[Portability] {port.PortedDialedNumber} is Portable.");
+                    var port = await VerifyPortablityAsync(phoneNumber.DialedNumber ?? string.Empty);
 
-                    port.OrderId = order.OrderId;
-                    port.PortRequestId = portRequest.PortRequestId;
-
-                    _context.PortedPhoneNumbers.Add(port);
-                    await _context.SaveChangesAsync();
-
-                    numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-
-                    var productOrder = new ProductOrder
+                    if (port is not null && port.Portable)
                     {
-                        PortedDialedNumber = port.PortedDialedNumber,
-                        PortedPhoneNumberId = port.PortedPhoneNumberId,
-                        Quantity = 1,
-                        CreateDate = DateTime.Now,
-                        OrderId = order.OrderId,
-                        ProductOrderId = Guid.NewGuid()
-                    };
+                        Log.Information($"[Portability] {port.PortedDialedNumber} is Portable.");
 
-                    _context.ProductOrders.Add(productOrder);
+                        port.OrderId = order.OrderId;
+                        port.PortRequestId = portRequest.PortRequestId;
+
+                        _context.PortedPhoneNumbers.Add(port);
+                        await _context.SaveChangesAsync();
+
+                        numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+
+                        var productOrder = new ProductOrder
+                        {
+                            PortedDialedNumber = port.PortedDialedNumber,
+                            PortedPhoneNumberId = port.PortedPhoneNumberId,
+                            Quantity = 1,
+                            CreateDate = DateTime.Now,
+                            OrderId = order.OrderId,
+                            ProductOrderId = Guid.NewGuid()
+                        };
+
+                        _context.ProductOrders.Add(productOrder);
+                        await _context.SaveChangesAsync();
+
+                        return View("PortRequestEdit", new PortRequestResult
+                        {
+                            Order = order,
+                            PortRequest = portRequest,
+                            PhoneNumbers = numbers,
+                            Message = $"Successfully added Ported Phone Number {port.PortedDialedNumber}.",
+                            AlertType = "alert-success"
+                        });
+                    }
+                    else
+                    {
+                        return View("PortRequestEdit", new PortRequestResult
+                        {
+                            Order = order,
+                            PortRequest = portRequest,
+                            PhoneNumbers = numbers,
+                            Message = $"Failed to add Ported Phone Number {port?.PortedDialedNumber}."
+                        });
+                    }
+                }
+                else
+                {
+                    return Redirect("/Home/PortRequests");
+                }
+            }
+        }
+        else if (orderId is not null && orderId != Guid.Empty)
+        {
+            var order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId);
+
+            if (order is not null && portRequest is not null)
+            {
+                var fromDb = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
+
+                if (fromDb is not null)
+                {
+                    portRequest.PortRequestId = fromDb.PortRequestId;
+
+                    // If the address has changed update it.
+                    if (portRequest.Address != fromDb.Address)
+                    {
+                        // Format the address information
+                        Log.Information($"[Checkout] Parsing address data from {portRequest.Address}");
+                        var addressParts = portRequest.Address?.Split(", ") ?? Array.Empty<string>();
+                        if (addressParts.Length > 4)
+                        {
+                            portRequest.Address = addressParts[0];
+                            portRequest.City = addressParts[1];
+                            portRequest.State = addressParts[2];
+                            portRequest.Zip = addressParts[3];
+                            Log.Information($"[Checkout] Address: {portRequest.Address} City: {portRequest.City} State: {portRequest.State} Zip: {portRequest.Zip}");
+                        }
+                        else
+                        {
+                            Log.Error($"[Checkout] Failed automatic address formating.");
+
+                            portRequest = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == portRequest.OrderId);
+
+                            if (portRequest is not null)
+                            {
+                                var numbersFailed = await _context.PortedPhoneNumbers.Where(x => x.OrderId == portRequest.OrderId).ToListAsync();
+
+                                return View("PortRequestEdit", new PortRequestResult
+                                {
+                                    Order = order,
+                                    PortRequest = portRequest,
+                                    PhoneNumbers = numbersFailed,
+                                    Message = "Failed to update this Port Request. 😠 The address could not be parsed, please file a bug on Github.",
+                                    AlertType = "alert-danger"
+                                });
+                            }
+                        }
+                    }
+
+                    _context.PortRequests.Update(portRequest!);
                     await _context.SaveChangesAsync();
+
+                    portRequest = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == portRequest!.OrderId);
+                    var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == portRequest!.OrderId).AsNoTracking().ToListAsync();
 
                     return View("PortRequestEdit", new PortRequestResult
                     {
                         Order = order,
-                        PortRequest = portRequest,
+                        PortRequest = portRequest!,
                         PhoneNumbers = numbers,
-                        Message = $"Successfully added Ported Phone Number {port.PortedDialedNumber}.",
+                        Message = "Successfully updated this Port Request! 🥳",
                         AlertType = "alert-success"
                     });
                 }
-                else
-                {
-                    return View("PortRequestEdit", new PortRequestResult
-                    {
-                        Order = order,
-                        PortRequest = portRequest,
-                        PhoneNumbers = numbers,
-                        Message = $"Failed to add Ported Phone Number {port?.PortedDialedNumber}."
-                    });
-                }
             }
-            else
-            {
-                return View("PortRequestEdit", new PortRequestResult
-                {
-                    Order = order,
-                    PortRequest = portRequest,
-                    PhoneNumbers = numbers,
-                    Message = $"Failed to parse {dialedNumber} as a Phone Number."
-                });
-            }
-
         }
-        else if (portRequest is null)
-        {
-            return Redirect("/Home/PortRequests");
-        }
-        else
-        {
-            var order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == portRequest.OrderId);
-            var fromDb = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == portRequest.OrderId);
 
-            portRequest.PortRequestId = fromDb.PortRequestId;
-
-            // If the address has changed update it.
-            if (portRequest.Address != fromDb.Address)
-            {
-                // Format the address information
-                Log.Information($"[Checkout] Parsing address data from {portRequest.Address}");
-                var addressParts = portRequest.Address.Split(", ");
-                if (addressParts.Length > 4)
-                {
-                    portRequest.Address = addressParts[0];
-                    portRequest.City = addressParts[1];
-                    portRequest.State = addressParts[2];
-                    portRequest.Zip = addressParts[3];
-                    Log.Information($"[Checkout] Address: {portRequest.Address} City: {portRequest.City} State: {portRequest.State} Zip: {portRequest.Zip}");
-                }
-                else
-                {
-                    Log.Error($"[Checkout] Failed automatic address formating.");
-
-                    portRequest = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == portRequest.OrderId);
-                    var numbersFailed = await _context.PortedPhoneNumbers.Where(x => x.OrderId == portRequest.OrderId).ToListAsync();
-
-                    return View("PortRequestEdit", new PortRequestResult
-                    {
-                        Order = order,
-                        PortRequest = portRequest,
-                        PhoneNumbers = numbersFailed,
-                        Message = "Failed to update this Port Request. 😠 The address could not be parsed, please file a bug on Github.",
-                        AlertType = "alert-danger"
-                    });
-                }
-            }
-
-            _context.PortRequests.Update(portRequest);
-            await _context.SaveChangesAsync();
-
-            portRequest = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == portRequest.OrderId);
-            var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == portRequest.OrderId).AsNoTracking().ToListAsync();
-
-            return View("PortRequestEdit", new PortRequestResult
-            {
-                Order = order,
-                PortRequest = portRequest,
-                PhoneNumbers = numbers,
-                Message = "Successfully updated this Port Request! 🥳",
-                AlertType = "alert-success"
-            });
-        }
+        return Redirect("/Home/PortRequests");
     }
 
     /// <summary>

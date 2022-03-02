@@ -110,7 +110,16 @@ public class HomeController : Controller
             var products = await _context.Products.ToListAsync();
             var checkExists = await _context.ProductShipments.AsNoTracking().FirstOrDefaultAsync(x => x.ProductShipmentId == ProductShipmentId);
 
-            return View("Shipments", new InventoryResult { Products = products, ProductShipments = new List<ProductShipment> { checkExists }, Shipment = checkExists });
+            if (checkExists is not null)
+            {
+                return View("Shipments", new InventoryResult { Products = products, ProductShipments = new List<ProductShipment> { checkExists }, Shipment = checkExists });
+            }
+            else
+            {
+                var shipments = await _context.ProductShipments.AsNoTracking().ToListAsync();
+
+                return View("Shipments", new InventoryResult { Products = products, ProductShipments = shipments });
+            }
         }
     }
 
@@ -136,7 +145,7 @@ public class HomeController : Controller
                 {
                     shipment.Name = products.Where(x => x.ProductId == shipment.ProductId).FirstOrDefault()?.Name;
                 }
-                _context.ProductShipments.Add(checkExists);
+                _context.ProductShipments.Add(shipment);
                 await _context.SaveChangesAsync();
             }
             else
@@ -203,7 +212,7 @@ public class HomeController : Controller
         {
             var products = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == ProductId);
 
-            return View("Products", new InventoryResult { Products = new List<Product> { products }, Product = products });
+            return View("Products", new InventoryResult { Products = new List<Product> { products ?? new() }, Product = products ?? new() });
         }
     }
 
@@ -271,7 +280,7 @@ public class HomeController : Controller
             // Show all orders
             var result = await _context.Coupons.Where(x => x.CouponId == couponId).FirstOrDefaultAsync();
 
-            return View("Coupons", new CouponResult { Coupon = result, Coupons = new List<Coupon> { result } });
+            return View("Coupons", new CouponResult { Coupon = result ?? new(), Coupons = new List<Coupon> { result ?? new Coupon() } });
         }
     }
 
@@ -290,8 +299,11 @@ public class HomeController : Controller
         {
             var result = await _context.Coupons.FirstOrDefaultAsync(x => x.CouponId == couponId);
 
-            _context.Coupons.Remove(result);
-            await _context.SaveChangesAsync();
+            if (result is not null)
+            {
+                _context.Coupons.Remove(result);
+                await _context.SaveChangesAsync();
+            }
 
             var results = await _context.Coupons.ToListAsync();
 
@@ -348,31 +360,34 @@ public class HomeController : Controller
     {
         var email = await _context.SentEmails.FirstOrDefaultAsync(x => x.EmailId == emailId);
 
-        email.DoNotSend = false;
-        email.Completed = false;
-
-        var emailToUpdate = await _context.SentEmails.FirstOrDefaultAsync(x => x.EmailId == email.EmailId);
-        _context.Entry(emailToUpdate).CurrentValues.SetValues(email);
-        await _context.SaveChangesAsync();
-
-        var order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId);
-        if (order is not null)
+        if (email is not null)
         {
-            order.BackgroundWorkCompleted = false;
-            var orderToUpdate = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId);
-            _context.Entry(orderToUpdate).CurrentValues.SetValues(order);
+            email.DoNotSend = false;
+            email.Completed = false;
+
+            var emailToUpdate = await _context.SentEmails.FirstOrDefaultAsync(x => x.EmailId == email.EmailId);
+            _context.Entry(emailToUpdate!).CurrentValues.SetValues(email);
             await _context.SaveChangesAsync();
-        }
-        else
-        {
-            var checkSending = await SendEmail.SendEmailAsync(email, _emailUsername, _emailPassword).ConfigureAwait(false);
 
-            if (checkSending)
+            var order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId);
+            if (order is not null)
             {
-                email.Completed = true;
-                emailToUpdate = await _context.SentEmails.FirstOrDefaultAsync(x => x.EmailId == email.EmailId);
-                _context.Entry(emailToUpdate).CurrentValues.SetValues(email);
+                order.BackgroundWorkCompleted = false;
+                var orderToUpdate = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId);
+                _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                 await _context.SaveChangesAsync();
+            }
+            else
+            {
+                var checkSending = await SendEmail.SendEmailAsync(email, _emailUsername, _emailPassword).ConfigureAwait(false);
+
+                if (checkSending)
+                {
+                    email.Completed = true;
+                    emailToUpdate = await _context.SentEmails.FirstOrDefaultAsync(x => x.EmailId == email.EmailId);
+                    _context.Entry(emailToUpdate!).CurrentValues.SetValues(email);
+                    await _context.SaveChangesAsync();
+                }
             }
         }
 
@@ -386,19 +401,21 @@ public class HomeController : Controller
     {
         if (cycle > 0 && cycle < 24 && !string.IsNullOrWhiteSpace(ingestedFrom) && (enabled == "Enabled" || enabled == "Disabled"))
         {
-            var update = await _context.IngestCycles.FirstOrDefaultAsync(x => x.IngestedFrom.Contains(ingestedFrom));
-            var ingestToUpdate = await _context.IngestCycles.FirstOrDefaultAsync(x => x.IngestCycleId == update.IngestCycleId);
+            var update = await _context.IngestCycles.FirstOrDefaultAsync(x => x.IngestedFrom != null && x.IngestedFrom.Contains(ingestedFrom));
 
             if (update is not null)
             {
+                var ingestToUpdate = await _context.IngestCycles.FirstOrDefaultAsync(x => x.IngestCycleId == update.IngestCycleId);
+
                 update.CycleTime = DateTime.Now.AddHours(cycle) - DateTime.Now;
                 update.Enabled = enabled == "Enabled";
                 update.RunNow = runNow == "true";
                 update.LastUpdate = DateTime.Now;
 
-                _context.Entry(ingestToUpdate).CurrentValues.SetValues(update);
+                _context.Entry(ingestToUpdate!).CurrentValues.SetValues(update);
                 await _context.SaveChangesAsync();
             }
+            // Create new
             else
             {
                 update = new IngestCycle
@@ -410,7 +427,7 @@ public class HomeController : Controller
                     LastUpdate = DateTime.Now
                 };
 
-                _context.Entry(ingestToUpdate).CurrentValues.SetValues(update);
+                _context.Entry(update).CurrentValues.SetValues(update);
                 await _context.SaveChangesAsync();
             }
         }
@@ -437,7 +454,7 @@ public class HomeController : Controller
         }
 
         // Clean up the query.
-        query = query?.Trim();
+        query = query.Trim();
 
         // Parse the query.
         var converted = new List<char>();

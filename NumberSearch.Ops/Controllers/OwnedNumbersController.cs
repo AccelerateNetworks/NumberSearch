@@ -50,16 +50,19 @@ public class OwnedNumbersController : Controller
         else
         {
             var order = await _context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == number.DialedNumber);
-            order.Notes = number.Notes;
-            order.OwnedBy = number.OwnedBy;
-            order.BillingClientId = number.BillingClientId;
-            order.Active = number.Active;
-            order.SPID = order.SPID;
-            order.SPIDName = order.SPIDName;
+            if (order is not null)
+            {
+                order.Notes = number.Notes;
+                order.OwnedBy = number.OwnedBy;
+                order.BillingClientId = number.BillingClientId;
+                order.Active = number.Active;
+                order.SPID = order.SPID;
+                order.SPIDName = order.SPIDName;
 
-            var orderToUpdate = await _context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == number.DialedNumber);
-            _context.Entry(orderToUpdate).CurrentValues.SetValues(order);
-            await _context.SaveChangesAsync();
+                var orderToUpdate = await _context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == number.DialedNumber);
+                _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
+                await _context.SaveChangesAsync();
+            }
 
             return View("OwnedNumberEdit", order);
         }
