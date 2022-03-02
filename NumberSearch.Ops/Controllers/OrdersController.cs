@@ -463,7 +463,7 @@ public class OrdersController : Controller
                         order.E911ServiceNumber = serviceNumber;
                         Log.Information($"[RegisterE911] E911 Service Number: {order.E911ServiceNumber}");
 
-                        _context.Entry(orderToUpdate).CurrentValues.SetValues(order);
+                        _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                         await _context.SaveChangesAsync();
 
                         // The order failed to update with the new e911 service number.
@@ -1558,33 +1558,32 @@ public class OrdersController : Controller
                 var products = new List<Product>();
                 foreach (var item in productOrders)
                 {
-                    if (item is not null && item.ProductId is not null && item?.ProductId != Guid.Empty)
+                    if (item is not null && item.ProductId is not null && item.ProductId != Guid.Empty)
                     {
                         var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == item.ProductId);
                         if (product is not null)
                         {
                             products.Add(product);
-                        }
 
-                        // If items already exist, do not create them twice.
-                        if (!productItems.Any())
-                        {
-                            // Create the product items here to track the serial numbers and condition of the hardware.
-                            for (var i = 0; i < item.Quantity; i++)
+                            // If items already exist, do not create them twice.
+                            if (!productItems.Any() && item?.Quantity is not null && item.Quantity > 0)
                             {
-                                var productItem = new ProductItem
+                                // Create the product items here to track the serial numbers and condition of the hardware.
+                                for (var i = 0; i < item.Quantity; i++)
                                 {
-                                    ProductId = product.ProductId,
-                                    DateCreated = DateTime.Now,
-                                    DateUpdated = DateTime.Now,
-                                    OrderId = order.OrderId,
-                                    ProductItemId = Guid.NewGuid(),
-                                };
+                                    var productItem = new ProductItem
+                                    {
+                                        ProductId = product.ProductId,
+                                        DateCreated = DateTime.Now,
+                                        DateUpdated = DateTime.Now,
+                                        OrderId = order.OrderId,
+                                        ProductItemId = Guid.NewGuid(),
+                                    };
 
-                                _context.ProductItems.Add(productItem);
+                                    _context.ProductItems.Add(productItem);
+                                }
                             }
                         }
-
                     }
                 }
 
@@ -1706,7 +1705,7 @@ public class OrdersController : Controller
                     PurchasedPhoneNumbers = purchasedPhoneNumbers
                 };
 
-                if (cart.ProductOrders.Any())
+                if (cart is not null && cart.ProductOrders.Any())
                 {
                     try
                     {
@@ -1894,7 +1893,7 @@ public class OrdersController : Controller
                         }
 
                         // Handle hardware installation senarios, if hardware is in the order.
-                        if (cart?.Products is not null && cart.Products.Any())
+                        if (cart.Products.Any())
                         {
                             if (order.OnsiteInstallation)
                             {
@@ -2059,7 +2058,7 @@ public class OrdersController : Controller
                                     order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
                                     order.BillingInvoiceReoccuringId = createNewReoccuringInvoice.id.ToString(CultureInfo.CurrentCulture);
 
-                                    _context.Entry(orderToUpdate).CurrentValues.SetValues(order);
+                                    _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
                                     var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
@@ -2105,7 +2104,7 @@ public class OrdersController : Controller
                                     order.BillingClientId = createNewReoccuringInvoice.client_id.ToString(CultureInfo.CurrentCulture);
                                     order.BillingInvoiceReoccuringId = createNewReoccuringInvoice.id.ToString(CultureInfo.CurrentCulture);
 
-                                    _context.Entry(orderToUpdate).CurrentValues.SetValues(order);
+                                    _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
                                     var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewReoccuringInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
@@ -2146,7 +2145,7 @@ public class OrdersController : Controller
                                     order.BillingClientId = createNewOneTimeInvoice.client_id.ToString(CultureInfo.CurrentCulture);
                                     order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
 
-                                    _context.Entry(orderToUpdate).CurrentValues.SetValues(order);
+                                    _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
                                     var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
@@ -2164,7 +2163,7 @@ public class OrdersController : Controller
                                 }
                             }
 
-                            _context.Entry(orderToUpdate).CurrentValues.SetValues(order);
+                            _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                             await _context.SaveChangesAsync();
 
                             return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Successfully deleted the existing Invoices and created new Invoices for this quote! 🥳", AlertType = "alert-success" });
@@ -2197,7 +2196,7 @@ public class OrdersController : Controller
                                     order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
                                     order.BillingInvoiceReoccuringId = createNewReoccuringInvoice.id.ToString(CultureInfo.CurrentCulture);
 
-                                    _context.Entry(orderToUpdate).CurrentValues.SetValues(order);
+                                    _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
                                     var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
@@ -2241,7 +2240,7 @@ public class OrdersController : Controller
                                     order.BillingClientId = createNewReoccuringInvoice.client_id.ToString(CultureInfo.CurrentCulture);
                                     order.BillingInvoiceReoccuringId = createNewReoccuringInvoice.id.ToString(CultureInfo.CurrentCulture);
 
-                                    _context.Entry(orderToUpdate).CurrentValues.SetValues(order);
+                                    _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
                                     var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewReoccuringInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
@@ -2279,7 +2278,7 @@ public class OrdersController : Controller
                                     order.BillingClientId = createNewOneTimeInvoice.client_id.ToString(CultureInfo.CurrentCulture);
                                     order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
 
-                                    _context.Entry(orderToUpdate).CurrentValues.SetValues(order);
+                                    _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
                                     var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
@@ -2297,7 +2296,7 @@ public class OrdersController : Controller
                                 }
                             }
 
-                            _context.Entry(orderToUpdate).CurrentValues.SetValues(order);
+                            _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                             await _context.SaveChangesAsync();
 
                             return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Successfully deleted the existing Invoices and created new Invoices for this order! 🥳", AlertType = "alert-success" });
@@ -2310,7 +2309,7 @@ public class OrdersController : Controller
                 }
                 else
                 {
-                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to regenerate the invoices for {order.OrderId}. Either the order could not be found or there are no Product Orders assocated with this Order. 🤔", AlertType = "alert-danger" });
+                    return View("OrderEdit", new EditOrderResult { Order = order, Message = $"Failed to regenerate the invoices for {order.OrderId}. Either the order could not be found or there are no Product Orders assocated with this Order. 🤔", AlertType = "alert-danger" });
                 }
             }
         }
