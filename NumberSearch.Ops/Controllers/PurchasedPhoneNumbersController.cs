@@ -59,7 +59,7 @@ public class PurchasedPhoneNumbersController : Controller
         {
             var order = await _context.PurchasedPhoneNumbers.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
 
-            return View("NumberOrders", new List<PurchasedPhoneNumber> { order });
+            return View("NumberOrders", new List<PurchasedPhoneNumber> { order ?? new() });
         }
     }
 

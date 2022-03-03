@@ -6,6 +6,6 @@ namespace NumberSearch.Ops.Models;
 
 public class CreateProductShipment
 {
-    public IEnumerable<Product> Products { get; set; }
-    public ProductShipment Shipment { get; set; }
+    public IEnumerable<Product>? Products { get; set; }
+    public ProductShipment? Shipment { get; set; }
 }

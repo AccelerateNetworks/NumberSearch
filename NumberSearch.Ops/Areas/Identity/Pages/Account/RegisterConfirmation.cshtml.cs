@@ -13,21 +13,19 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account
     public class RegisterConfirmationModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly IEmailSender _sender;
 
-        public RegisterConfirmationModel(UserManager<IdentityUser> userManager, IEmailSender sender)
+        public RegisterConfirmationModel(UserManager<IdentityUser> userManager)
         {
             _userManager = userManager;
-            _sender = sender;
         }
 
-        public string Email { get; set; }
+        public string Email { get; set; } = null!;
 
         public bool DisplayConfirmAccountLink { get; set; }
 
-        public string EmailConfirmationUrl { get; set; }
+        public string EmailConfirmationUrl { get; set; } = null!;
 
-        public async Task<IActionResult> OnGetAsync(string email, string returnUrl = null)
+        public async Task<IActionResult> OnGetAsync(string email, string returnUrl = null!)
         {
             if (email == null)
             {
@@ -51,8 +49,8 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account
                 EmailConfirmationUrl = Url.Page(
                     "/Account/ConfirmEmail",
                     pageHandler: null,
-                    values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
-                    protocol: Request.Scheme);
+                    values: new { area = "Identity", userId, code, returnUrl },
+                    protocol: Request.Scheme)!;
             }
 
             return Page();

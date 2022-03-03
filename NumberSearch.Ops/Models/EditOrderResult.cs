@@ -4,10 +4,10 @@ namespace NumberSearch.Ops.Models
 {
     public class EditOrderResult
     {
-        public Order Order { get; set; }
-        public Cart Cart { get; set; }
-        public ProductItem[] ProductItems { get; set; }
-        public string Message { get; set; }
-        public string AlertType { get; set; }
+        public Order? Order { get; set; }
+        public Cart? Cart { get; set; }
+        public ProductItem[]? ProductItems { get; set; }
+        public string? Message { get; set; }
+        public string? AlertType { get; set; }
     }
 }

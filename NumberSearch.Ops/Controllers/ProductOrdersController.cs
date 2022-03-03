@@ -17,14 +17,12 @@ namespace NumberSearch.Ops.Controllers;
 public class ProductOrdersController : Controller
 {
     private readonly numberSearchContext _context;
-    private readonly UserManager<IdentityUser> _userManager;
     private readonly IConfiguration _configuration;
     private readonly string _postgresql;
 
-    public ProductOrdersController(numberSearchContext context, UserManager<IdentityUser> userManager, IConfiguration config)
+    public ProductOrdersController(numberSearchContext context, IConfiguration config)
     {
         _context = context;
-        _userManager = userManager;
         _configuration = config;
         _postgresql = _configuration.GetConnectionString("PostgresqlProd");
     }
@@ -105,7 +103,7 @@ public class ProductOrdersController : Controller
             {
                 var checkNumber = PhoneNumbersNA.PhoneNumber.TryParse(productOrder.DialedNumber, out var number);
 
-                if (checkNumber)
+                if (checkNumber && number is not null)
                 {
                     var checkExists = await _context.ProductOrders.Where(x => x.OrderId == productOrder.OrderId && x.DialedNumber == number.DialedNumber).FirstOrDefaultAsync();
 
@@ -142,7 +140,7 @@ public class ProductOrdersController : Controller
             {
                 var checkNumber = PhoneNumbersNA.PhoneNumber.TryParse(productOrder.PortedDialedNumber, out var number);
 
-                if (checkNumber)
+                if (checkNumber && number is not null)
                 {
                     var checkExists = await _context.ProductOrders.Where(x => x.OrderId == productOrder.OrderId && x.PortedDialedNumber == number.DialedNumber).FirstOrDefaultAsync();
 
@@ -150,7 +148,7 @@ public class ProductOrdersController : Controller
                     {
                         var portRequestsController = new PortRequestsController(_configuration, _context);
 
-                        var port = await portRequestsController.VerifyPortablityAsync(number.DialedNumber);
+                        var port = await portRequestsController.VerifyPortablityAsync(number?.DialedNumber ?? string.Empty);
 
                         if (port.Portable)
                         {
@@ -166,7 +164,7 @@ public class ProductOrdersController : Controller
                             await _context.SaveChangesAsync();
                         }
 
-                        productOrder.PortedDialedNumber = number.DialedNumber;
+                        productOrder.PortedDialedNumber = number?.DialedNumber;
                         productOrder.PortedPhoneNumberId = port.PortedPhoneNumberId;
                         productOrder.Quantity = 1;
                         _context.Add(productOrder);
@@ -299,11 +297,14 @@ public class ProductOrdersController : Controller
     public async Task<IActionResult> DeleteConfirmed(Guid id)
     {
         var productOrder = await _context.ProductOrders.FindAsync(id);
-        _context.ProductOrders.Remove(productOrder);
-        await _context.SaveChangesAsync();
+        if (productOrder is not null)
+        {
+            _context.ProductOrders.Remove(productOrder);
+            await _context.SaveChangesAsync();
+        }
 
         // Delete the child items as well as the parent product order.
-        if (!string.IsNullOrWhiteSpace(productOrder.DialedNumber))
+        if (productOrder is not null && !string.IsNullOrWhiteSpace(productOrder.DialedNumber))
         {
             var purchasedNumber = await DataAccess.PurchasedPhoneNumber.GetByDialedNumberAndOrderIdAsync(productOrder.DialedNumber, productOrder.OrderId, _postgresql);
 
@@ -312,7 +313,7 @@ public class ProductOrdersController : Controller
                 var checkDelete = purchasedNumber.DeleteAsync(_postgresql);
             }
         }
-        else if (!string.IsNullOrWhiteSpace(productOrder.PortedDialedNumber))
+        else if (productOrder is not null && !string.IsNullOrWhiteSpace(productOrder.PortedDialedNumber))
         {
             var portedNumbers = await DataAccess.PortedPhoneNumber.GetByOrderIdAsync(productOrder.OrderId, _postgresql);
             var portedNumber = portedNumbers.Where(x => x.PortedDialedNumber == productOrder.PortedDialedNumber).FirstOrDefault();
@@ -323,7 +324,7 @@ public class ProductOrdersController : Controller
             }
         }
 
-        return Redirect($"/Home/Order/{productOrder.OrderId}");
+        return Redirect($"/Home/Order/{productOrder?.OrderId}");
     }
 
     private bool ProductOrderExists(Guid id)

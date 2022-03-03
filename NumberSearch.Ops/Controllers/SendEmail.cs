@@ -52,7 +52,7 @@ public class SendEmail
             outboundMessage.Cc.Add(ordersInbox);
             outboundMessage.To.Add(recipient);
 
-            if (!string.IsNullOrWhiteSpace(email.SalesEmailAddress) && email.SalesEmailAddress.Contains("@"))
+            if (!string.IsNullOrWhiteSpace(email.SalesEmailAddress) && email.SalesEmailAddress.Contains('@'))
             {
                 var sales = MailboxAddress.Parse(email.SalesEmailAddress);
                 outboundMessage.Cc.Add(sales);

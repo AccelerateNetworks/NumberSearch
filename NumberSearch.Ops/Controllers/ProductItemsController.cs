@@ -64,28 +64,32 @@ namespace NumberSearch.Ops.Controllers
             if (shipmentId is not null)
             {
                 var shipment = await _context.ProductShipments.FirstOrDefaultAsync(x => x.ProductShipmentId == shipmentId);
-                var countExistingItems = await _context.ProductItems.Where(x => x.ProductShipmentId == shipment.ProductShipmentId).CountAsync();
-                var itemsToCreate = countExistingItems != shipment.Quantity ? shipment.Quantity - countExistingItems : 0;
 
-                if (itemsToCreate > 0)
+                if (shipment is not null)
                 {
-                    for (var i = 0; i < shipment.Quantity; i++)
+                    var countExistingItems = await _context.ProductItems.Where(x => x.ProductShipmentId == shipment.ProductShipmentId).CountAsync();
+                    var itemsToCreate = countExistingItems != shipment.Quantity ? shipment.Quantity - countExistingItems : 0;
+
+                    if (itemsToCreate > 0)
                     {
-                        var item = new ProductItem
+                        for (var i = 0; i < shipment!.Quantity; i++)
                         {
-                            ProductShipmentId = shipment.ProductShipmentId,
-                            OrderId = shipment.OrderId,
-                            ProductId = shipment?.ProductId ?? Guid.Empty,
-                            ProductItemId = Guid.NewGuid(),
-                        };
+                            var item = new ProductItem
+                            {
+                                ProductShipmentId = shipment.ProductShipmentId,
+                                OrderId = shipment.OrderId,
+                                ProductId = shipment?.ProductId ?? Guid.Empty,
+                                ProductItemId = Guid.NewGuid(),
+                            };
 
-                        _context.ProductItems.Add(item);
+                            _context.ProductItems.Add(item);
+                        }
+
+                        _context.SaveChanges();
                     }
-
-                    _context.SaveChanges();
                 }
 
-                return Redirect($"/ProductShipments/Edit/{shipment.ProductShipmentId}");
+                return Redirect($"/ProductShipments/Edit/{shipmentId}");
             }
             else
             {
@@ -192,12 +196,17 @@ namespace NumberSearch.Ops.Controllers
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
             var productItem = await _context.ProductItems.FindAsync(id);
-            _context.ProductItems.Remove(productItem);
-            await _context.SaveChangesAsync();
-            if (productItem?.OrderId is not null)
+
+            if (productItem is not null)
             {
-                return Redirect($"/Home/Order/{productItem?.OrderId}");
+                _context.ProductItems.Remove(productItem);
+                await _context.SaveChangesAsync();
+                if (productItem?.OrderId is not null)
+                {
+                    return Redirect($"/Home/Order/{productItem?.OrderId}");
+                }
             }
+
             return RedirectToAction(nameof(Index));
         }
 

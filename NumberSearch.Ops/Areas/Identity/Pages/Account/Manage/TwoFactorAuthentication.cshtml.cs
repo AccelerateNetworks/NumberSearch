@@ -11,20 +11,15 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
 {
     public class TwoFactorAuthenticationModel : PageModel
     {
-        private const string AuthenicatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}";
-
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly ILogger<TwoFactorAuthenticationModel> _logger;
 
         public TwoFactorAuthenticationModel(
             UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
-            ILogger<TwoFactorAuthenticationModel> logger)
+            SignInManager<IdentityUser> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _logger = logger;
         }
 
         public bool HasAuthenticator { get; set; }
@@ -37,7 +32,7 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
         public bool IsMachineRemembered { get; set; }
 
         [TempData]
-        public string StatusMessage { get; set; }
+        public string StatusMessage { get; set; } = null!;
 
         public async Task<IActionResult> OnGet()
         {

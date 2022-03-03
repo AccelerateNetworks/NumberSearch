@@ -16,37 +16,34 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
     public partial class EmailModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IEmailSender _emailSender;
 
         public EmailModel(
             UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
             IEmailSender emailSender)
         {
             _userManager = userManager;
-            _signInManager = signInManager;
             _emailSender = emailSender;
         }
 
-        public string Username { get; set; }
+        public string Username { get; set; } = null!;
 
-        public string Email { get; set; }
+        public string Email { get; set; } = null!;
 
         public bool IsEmailConfirmed { get; set; }
 
         [TempData]
-        public string StatusMessage { get; set; }
+        public string StatusMessage { get; set; } = null!;
 
         [BindProperty]
-        public InputModel Input { get; set; }
+        public InputModel Input { get; set; } = null!;
 
         public class InputModel
         {
             [Required]
             [EmailAddress]
             [Display(Name = "New email")]
-            public string NewEmail { get; set; }
+            public string NewEmail { get; set; } = null!;
         }
 
         private async Task LoadAsync(IdentityUser user)
@@ -96,12 +93,12 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
                 var callbackUrl = Url.Page(
                     "/Account/ConfirmEmailChange",
                     pageHandler: null,
-                    values: new { userId = userId, email = Input.NewEmail, code = code },
+                    values: new { userId, Input.NewEmail, code },
                     protocol: Request.Scheme);
                 await _emailSender.SendEmailAsync(
                     Input.NewEmail,
                     "Confirm your email",
-                    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.").ConfigureAwait(false);
+                    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl ?? string.Empty)}'>clicking here</a>.").ConfigureAwait(false);
 
                 StatusMessage = "Confirmation link to change email sent. Please check your email.";
                 return RedirectToPage();
@@ -132,12 +129,12 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
             var callbackUrl = Url.Page(
                 "/Account/ConfirmEmail",
                 pageHandler: null,
-                values: new { area = "Identity", userId = userId, code = code },
+                values: new { area = "Identity", userId, code },
                 protocol: Request.Scheme);
             await _emailSender.SendEmailAsync(
                 email,
                 "Confirm your email",
-                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.").ConfigureAwait(false);
+                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl ?? string.Empty)}'>clicking here</a>.").ConfigureAwait(false);
 
             StatusMessage = "Verification email sent. Please check your email.";
             return RedirectToPage();

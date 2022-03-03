@@ -154,8 +154,11 @@ public class ProductsController : Controller
     public async Task<IActionResult> DeleteConfirmed(Guid id)
     {
         var product = await _context.Products.FindAsync(id);
-        _context.Products.Remove(product);
-        await _context.SaveChangesAsync();
+        if (product is not null)
+        {
+            _context.Products.Remove(product);
+            await _context.SaveChangesAsync();
+        }
         return RedirectToAction(nameof(Index));
     }
 

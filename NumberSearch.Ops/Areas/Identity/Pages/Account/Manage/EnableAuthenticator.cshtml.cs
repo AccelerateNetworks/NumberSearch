@@ -31,18 +31,18 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
             _urlEncoder = urlEncoder;
         }
 
-        public string SharedKey { get; set; }
+        public string SharedKey { get; set; } = null!;
 
-        public string AuthenticatorUri { get; set; }
-
-        [TempData]
-        public string[] RecoveryCodes { get; set; }
+        public string AuthenticatorUri { get; set; } = null!;
 
         [TempData]
-        public string StatusMessage { get; set; }
+        public string[] RecoveryCodes { get; set; } = null!;
+
+        [TempData]
+        public string StatusMessage { get; set; } = null!;
 
         [BindProperty]
-        public InputModel Input { get; set; }
+        public InputModel Input { get; set; } = null!;
 
         public class InputModel
         {
@@ -50,7 +50,7 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
             [StringLength(7, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
             [DataType(DataType.Text)]
             [Display(Name = "Verification Code")]
-            public string Code { get; set; }
+            public string Code { get; set; } = null!;
         }
 
         public async Task<IActionResult> OnGetAsync()
@@ -127,18 +127,18 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
             AuthenticatorUri = GenerateQrCodeUri(email, unformattedKey);
         }
 
-        private string FormatKey(string unformattedKey)
+        private static string FormatKey(string unformattedKey)
         {
             var result = new StringBuilder();
             int currentPosition = 0;
             while (currentPosition + 4 < unformattedKey.Length)
             {
-                result.Append(unformattedKey.Substring(currentPosition, 4)).Append(" ");
+                result.Append(unformattedKey.AsSpan(currentPosition, 4)).Append(' ');
                 currentPosition += 4;
             }
             if (currentPosition < unformattedKey.Length)
             {
-                result.Append(unformattedKey.Substring(currentPosition));
+                result.Append(unformattedKey[currentPosition..]);
             }
 
             return result.ToString().ToLowerInvariant();

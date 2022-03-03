@@ -27,5 +27,5 @@ public partial class PortedPhoneNumber
     [NotMapped]
     public bool Portable { get; set; }
     [NotMapped]
-    public LrnBulkCnam LrnLookup { get; set; }
+    public LrnBulkCnam? LrnLookup { get; set; }
 }

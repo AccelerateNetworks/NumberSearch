@@ -6,9 +6,9 @@ namespace NumberSearch.Ops.Models;
 
 public class ProductOrderResult
 {
-    public ProductOrder ProductOrder { get; set; }
-    public List<ProductOrder> ProductOrders { get; set; }
-    public Product[] Products { get; set; }
-    public Service[] Services { get; set; }
-    public Coupon[] Coupons { get; set; }
+    public ProductOrder? ProductOrder { get; set; }
+    public List<ProductOrder>? ProductOrders { get; set; }
+    public Product[]? Products { get; set; }
+    public Service[]? Services { get; set; }
+    public Coupon[]? Coupons { get; set; }
 }

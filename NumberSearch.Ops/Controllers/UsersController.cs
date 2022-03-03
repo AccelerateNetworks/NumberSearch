@@ -41,14 +41,14 @@ namespace NumberSearch.Ops.Controllers
 
         public class UserRolesViewModel
         {
-            public IdentityUser User { get; set; }
-            public IEnumerable<string> Roles { get; set; }
+            public IdentityUser User { get; set; } = null!;
+            public IEnumerable<string> Roles { get; set; } = null!;
         }
 
         public class ManageUserRolesViewModel
         {
-            public string RoleId { get; set; }
-            public string RoleName { get; set; }
+            public string RoleId { get; set; } = null!;
+            public string RoleName { get; set; } = null!;
             public bool Selected { get; set; }
         }
 

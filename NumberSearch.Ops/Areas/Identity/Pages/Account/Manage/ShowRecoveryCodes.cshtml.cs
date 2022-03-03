@@ -12,10 +12,10 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
     public class ShowRecoveryCodesModel : PageModel
     {
         [TempData]
-        public string[] RecoveryCodes { get; set; }
+        public string[] RecoveryCodes { get; set; } = null!;
 
         [TempData]
-        public string StatusMessage { get; set; }
+        public string StatusMessage { get; set; } = null!;
 
         public IActionResult OnGet()
         {

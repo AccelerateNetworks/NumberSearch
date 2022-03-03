@@ -6,7 +6,7 @@ namespace NumberSearch.Ops.Models
 {
     public class EditCarrier
     {
-        public IEnumerable<PhoneNumberLookup> Lookups { get; set; }
-        public Carrier Carrier { get; set; }
+        public IEnumerable<PhoneNumberLookup>? Lookups { get; set; }
+        public Carrier? Carrier { get; set; }
     }
 }

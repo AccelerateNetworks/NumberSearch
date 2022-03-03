@@ -60,25 +60,25 @@ public class ProductShipmentsController : Controller
         {
             var order = await _context.Orders.FirstOrDefaultAsync(m => m.OrderId == orderId);
 
-            return View(new Ops.Models.CreateProductShipment
+            if (order is not null)
             {
-                Products = products,
-                Shipment = new ProductShipment
+                return View(new Ops.Models.CreateProductShipment
                 {
-                    OrderId = order.OrderId,
-                    BillingClientId = order.BillingClientId,
-                    ShipmentType = "Assigned"
-                }
-            });
-        }
-        else
-        {
-            return View(new Ops.Models.CreateProductShipment
-            {
-                Products = products
-            });
+                    Products = products,
+                    Shipment = new ProductShipment
+                    {
+                        OrderId = order.OrderId,
+                        BillingClientId = order.BillingClientId,
+                        ShipmentType = "Assigned"
+                    }
+                });
+            }
         }
 
+        return View(new Ops.Models.CreateProductShipment
+        {
+            Products = products
+        });
     }
 
     // POST: ProductShipments/Create
@@ -92,27 +92,32 @@ public class ProductShipmentsController : Controller
         if (ModelState.IsValid)
         {
             var productShipment = productShipmentContainer.Shipment;
-            productShipment.ProductShipmentId = Guid.NewGuid();
-            productShipment.DateCreated = DateTime.Now;
-            var products = await _context.Products.ToListAsync();
 
-            if (string.IsNullOrWhiteSpace(productShipment.Name))
+            if (productShipment is not null)
             {
-                productShipment.Name = products.Where(x => x.ProductId == productShipment.ProductId).FirstOrDefault().Name;
+                productShipment.ProductShipmentId = Guid.NewGuid();
+                productShipment.DateCreated = DateTime.Now;
+                var products = await _context.Products.ToListAsync();
+
+                if (string.IsNullOrWhiteSpace(productShipment.Name))
+                {
+                    productShipment.Name = products.Where(x => x.ProductId == productShipment.ProductId).FirstOrDefault()?.Name;
+                }
+
+                // Update all product inventory counts when a shipment is added or updated.
+                foreach (var product in products)
+                {
+                    var relatedShipments = await _context.ProductShipments.Where(x => x.ProductId == product.ProductId).ToListAsync();
+                    var instockItems = relatedShipments.Where(x => x.ShipmentType == "Instock").Sum(x => x.Quantity);
+                    var assignedItems = relatedShipments.Where(x => x.ShipmentType == "Assigned").Sum(x => x.Quantity);
+                    product.QuantityAvailable = instockItems - assignedItems;
+                    _context.Update(product);
+                }
+
+                _context.Add(productShipment);
+                await _context.SaveChangesAsync();
             }
 
-            // Update all product inventory counts when a shipment is added or updated.
-            foreach (var product in products)
-            {
-                var relatedShipments = await _context.ProductShipments.Where(x => x.ProductId == product.ProductId).ToListAsync();
-                var instockItems = relatedShipments.Where(x => x.ShipmentType == "Instock").Sum(x => x.Quantity);
-                var assignedItems = relatedShipments.Where(x => x.ShipmentType == "Assigned").Sum(x => x.Quantity);
-                product.QuantityAvailable = instockItems - assignedItems;
-                _context.Update(product);
-            }
-
-            _context.Add(productShipment);
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
         return View(productShipmentContainer.Shipment);
@@ -147,7 +152,7 @@ public class ProductShipmentsController : Controller
     {
         var productShipment = editProductShipment.Shipment;
 
-        if (id != productShipment.ProductShipmentId)
+        if (productShipment is null || id != productShipment.ProductShipmentId)
         {
             return NotFound();
         }
@@ -162,7 +167,7 @@ public class ProductShipmentsController : Controller
 
                 if (string.IsNullOrWhiteSpace(productShipment.Name))
                 {
-                    productShipment.Name = products.Where(x => x.ProductId == productShipment.ProductId).FirstOrDefault().Name;
+                    productShipment.Name = products.Where(x => x.ProductId == productShipment.ProductId).FirstOrDefault()?.Name;
                 }
 
                 // Update all product inventory counts when a shipment is added or updated.
@@ -222,8 +227,12 @@ public class ProductShipmentsController : Controller
     public async Task<IActionResult> DeleteConfirmed(Guid id)
     {
         var productShipment = await _context.ProductShipments.FindAsync(id);
-        _context.ProductShipments.Remove(productShipment);
-        await _context.SaveChangesAsync();
+
+        if (productShipment is not null)
+        {
+            _context.ProductShipments.Remove(productShipment);
+            await _context.SaveChangesAsync();
+        }
 
         var products = await _context.Products.ToListAsync();
 

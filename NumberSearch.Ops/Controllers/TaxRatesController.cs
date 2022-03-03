@@ -90,54 +90,67 @@ namespace NumberSearch.Ops.Controllers
                         }
                     }
 
-                    var rateName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(specificTaxRate.rate.name.ToLowerInvariant());
-                    var taxRateName = $"{rateName}, WA - {specificTaxRate.loccode}";
-                    var taxRateValue = specificTaxRate.rate1 * 100M;
-
-                    var existingTaxRates = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                    var billingTaxRate = existingTaxRates.data.Where(x => x.name == taxRateName).FirstOrDefault();
-                    if (billingTaxRate is null)
+                    if (specificTaxRate is not null)
                     {
-                        billingTaxRate = new TaxRateDatum
+                        var rateName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(specificTaxRate.rate.name.ToLowerInvariant());
+                        var taxRateName = $"{rateName}, WA - {specificTaxRate.loccode}";
+                        var taxRateValue = specificTaxRate.rate1 * 100M;
+
+                        var existingTaxRates = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                        var billingTaxRate = existingTaxRates.data.Where(x => x.name == taxRateName).FirstOrDefault();
+
+                        if (billingTaxRate is null)
                         {
-                            name = taxRateName,
-                            rate = taxRateValue
-                        };
+                            billingTaxRate = new TaxRateDatum
+                            {
+                                name = taxRateName,
+                                rate = taxRateValue
+                            };
 
-                        var checkCreate = await billingTaxRate.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                            var checkCreate = await billingTaxRate.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
 
-                        var result = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                            var result = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
 
-                        return View("TaxRates", new TaxRateResult
+                            return View("TaxRates", new TaxRateResult
+                            {
+                                Address = location.Address ?? string.Empty,
+                                City = location.City ?? string.Empty,
+                                Zip = location.Zip ?? string.Empty,
+                                Rates = result,
+                                Message = $"{taxRateName} has been created."
+                            });
+                        }
+                        else
                         {
-                            Address = location.Address ?? string.Empty,
-                            City = location.City ?? string.Empty,
-                            Zip = location.Zip ?? string.Empty,
-                            Rates = result,
-                            Message = $"{taxRateName} has been created."
-                        });
+                            var unchanged = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
+
+                            return View("TaxRates", new TaxRateResult
+                            {
+                                Address = location.Address ?? string.Empty,
+                                City = location.City ?? string.Empty,
+                                Zip = location.Zip ?? string.Empty,
+                                Rates = unchanged,
+                                Message = $"{taxRateName} already exists."
+                            });
+                        }
                     }
-                    else
+
+                    return View("TaxRates", new TaxRateResult
                     {
-                        var unchanged = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
-
-                        return View("TaxRates", new TaxRateResult
-                        {
-                            Address = location.Address ?? string.Empty,
-                            City = location.City ?? string.Empty,
-                            Zip = location.Zip ?? string.Empty,
-                            Rates = unchanged,
-                            Message = $"{taxRateName} already exists."
-                        });
-                    }
+                        Address = location.Address ?? string.Empty,
+                        City = location.City ?? string.Empty,
+                        Zip = location.Zip ?? string.Empty,
+                        Rates = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false),
+                        Message = $"Failed to create a Tax Rate for {location.Address}, {location.City}, {location.Zip}."
+                    });
                 }
                 catch (Exception ex)
                 {
                     Log.Fatal($"[Checkout] Failed to get the Sale Tax rate for {location.Address}, {location.City}, {location.Zip}.");
                     Log.Fatal(ex.Message);
                     Log.Fatal(ex.StackTrace);
-                    Log.Fatal(ex.InnerException.Message);
-                    Log.Fatal(ex.InnerException.StackTrace);
+                    Log.Fatal(ex.InnerException?.Message);
+                    Log.Fatal(ex.InnerException?.StackTrace);
 
                     var result = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
 

@@ -8,16 +8,16 @@ namespace NumberSearch.Ops
 {
     public class Cart
     {
-        public IEnumerable<PhoneNumber> PhoneNumbers { get; set; }
-        public IEnumerable<Product> Products { get; set; }
-        public IEnumerable<Service> Services { get; set; }
-        public IEnumerable<ProductOrder> ProductOrders { get; set; }
-        public IEnumerable<PortedPhoneNumber> PortedPhoneNumbers { get; set; }
-        public IEnumerable<VerifiedPhoneNumber> VerifiedPhoneNumbers { get; set; }
-        public IEnumerable<PurchasedPhoneNumber> PurchasedPhoneNumbers { get; set; }
-        public IEnumerable<Coupon> Coupons { get; set; }
+        public IEnumerable<PhoneNumber>? PhoneNumbers { get; set; }
+        public IEnumerable<Product>? Products { get; set; }
+        public IEnumerable<Service>? Services { get; set; }
+        public IEnumerable<ProductOrder>? ProductOrders { get; set; }
+        public IEnumerable<PortedPhoneNumber>? PortedPhoneNumbers { get; set; }
+        public IEnumerable<VerifiedPhoneNumber>? VerifiedPhoneNumbers { get; set; }
+        public IEnumerable<PurchasedPhoneNumber>? PurchasedPhoneNumbers { get; set; }
+        public IEnumerable<Coupon>? Coupons { get; set; }
 
-        public Order Order { get; set; }
+        public Order? Order { get; set; }
 
         enum CartKey
         {
@@ -43,8 +43,8 @@ namespace NumberSearch.Ops
             productOrder ??= new ProductOrder();
 
             // We're using dictionaries here to prevent duplicates.
-            var phoneNumbers = this.PhoneNumbersToDictionary();
-            var productOrders = this.ProductOrdersToDictionary();
+            var phoneNumbers = PhoneNumbersToDictionary();
+            var productOrders = ProductOrdersToDictionary();
 
             // If it's a valid phone number make sure the keys match.
             if (phoneNumber?.DialedNumber?.Length == 10 && phoneNumber.DialedNumber == productOrder?.DialedNumber)
@@ -74,16 +74,16 @@ namespace NumberSearch.Ops
             productOrder ??= new ProductOrder();
 
             // We're using dictionaries here to prevent duplicates.
-            var portedPhoneNumbers = this.PortedPhoneNumbersToDictionary();
-            var productOrders = this.ProductOrdersToDictionary();
+            var portedPhoneNumbers = PortedPhoneNumbersToDictionary();
+            var productOrders = ProductOrdersToDictionary();
 
             // If it's a valid phone number make sure the keys match.
-            if (portedPhoneNumber?.PortedPhoneNumberId is not null && portedPhoneNumber.PortedPhoneNumberId == productOrder?.PortedPhoneNumberId)
+            if (portedPhoneNumber?.PortedPhoneNumberId is not null && productOrder?.PortedPhoneNumberId is not null && portedPhoneNumber.PortedPhoneNumberId == productOrder?.PortedPhoneNumberId)
             {
                 portedPhoneNumbers[portedPhoneNumber.PortedPhoneNumberId.ToString()] = portedPhoneNumber;
                 PortedPhoneNumbers = portedPhoneNumbers.Values;
 
-                productOrders[productOrder.PortedPhoneNumberId.ToString()] = productOrder;
+                productOrders[productOrder.PortedPhoneNumberId.ToString()!] = productOrder;
                 ProductOrders = productOrders.Values;
 
                 return true;
@@ -106,16 +106,16 @@ namespace NumberSearch.Ops
             productOrder ??= new ProductOrder();
 
             // We're using dictionaries here to prevent duplicates.
-            var verifiedPhoneNumbers = this.VerifiedPhoneNumbersToDictionary();
-            var productOrders = this.ProductOrdersToDictionary();
+            var verifiedPhoneNumbers = VerifiedPhoneNumbersToDictionary();
+            var productOrders = ProductOrdersToDictionary();
 
             // If it's a valid phone number make sure the keys match.
-            if (verifiedPhoneNumber?.VerifiedPhoneNumberId is not null && verifiedPhoneNumber.VerifiedPhoneNumberId == productOrder?.VerifiedPhoneNumberId)
+            if (verifiedPhoneNumber?.VerifiedPhoneNumberId is not null && productOrder?.VerifiedPhoneNumberId is not null && verifiedPhoneNumber.VerifiedPhoneNumberId == productOrder?.VerifiedPhoneNumberId)
             {
                 verifiedPhoneNumbers[verifiedPhoneNumber.VerifiedPhoneNumberId.ToString()] = verifiedPhoneNumber;
                 VerifiedPhoneNumbers = verifiedPhoneNumbers.Values;
 
-                productOrders[productOrder.VerifiedPhoneNumberId.ToString()] = productOrder;
+                productOrders[productOrder.VerifiedPhoneNumberId.ToString()!] = productOrder;
                 ProductOrders = productOrders.Values;
 
                 return true;
@@ -134,15 +134,15 @@ namespace NumberSearch.Ops
         /// <returns></returns>
         public bool AddProduct(Product product, ProductOrder productOrder)
         {
-            var products = this.ProductsToDictionary();
-            var productOrders = this.ProductOrdersToDictionary();
+            var products = ProductsToDictionary();
+            var productOrders = ProductOrdersToDictionary();
 
-            if (!string.IsNullOrWhiteSpace(product?.Name) && product?.ProductId == productOrder?.ProductId)
+            if (product is not null && productOrder is not null && productOrder.ProductId is not null && !string.IsNullOrWhiteSpace(product?.Name) && product?.ProductId == productOrder?.ProductId)
             {
-                products[product.ProductId.ToString()] = product;
+                products[product!.ProductId.ToString()] = product;
                 Products = products.Values;
 
-                productOrders[productOrder.ProductId.ToString()] = productOrder;
+                productOrders[productOrder!.ProductId.ToString()!] = productOrder;
                 ProductOrders = productOrders.Values;
 
                 return true;
@@ -164,12 +164,12 @@ namespace NumberSearch.Ops
             var services = this.ServicesToDictionary();
             var productOrders = this.ProductOrdersToDictionary();
 
-            if (!string.IsNullOrWhiteSpace(service?.Name) && service?.ServiceId == productOrder?.ServiceId)
+            if (service is not null && productOrder is not null && productOrder.ServiceId is not null && !string.IsNullOrWhiteSpace(service?.Name) && service?.ServiceId == productOrder?.ServiceId)
             {
-                services[service.ServiceId.ToString()] = service;
+                services[service!.ServiceId.ToString()] = service;
                 Services = services.Values;
 
-                productOrders[productOrder.ServiceId.ToString()] = productOrder;
+                productOrders[productOrder!.ServiceId.ToString()!] = productOrder;
                 ProductOrders = productOrders.Values;
 
                 return true;
@@ -188,15 +188,15 @@ namespace NumberSearch.Ops
         /// <returns></returns>
         public bool AddCoupon(Coupon coupon, ProductOrder productOrder)
         {
-            var coupons = this.CouponsToDictionary();
-            var productOrders = this.ProductOrdersToDictionary();
+            var coupons = CouponsToDictionary();
+            var productOrders = ProductOrdersToDictionary();
 
-            if (!string.IsNullOrWhiteSpace(coupon?.Name) && coupon?.CouponId == productOrder?.CouponId)
+            if (coupon is not null && productOrder is not null && productOrder.CouponId is not null && !string.IsNullOrWhiteSpace(coupon?.Name) && coupon?.CouponId == productOrder?.CouponId)
             {
-                coupons[coupon.CouponId.ToString()] = coupon;
+                coupons[coupon!.CouponId.ToString()] = coupon;
                 Coupons = coupons.Values;
 
-                productOrders[productOrder.CouponId.ToString()] = productOrder;
+                productOrders[productOrder!.CouponId.ToString()!] = productOrder;
                 ProductOrders = productOrders.Values;
 
                 return true;
@@ -218,8 +218,8 @@ namespace NumberSearch.Ops
             phoneNumber ??= new PhoneNumber();
             productOrder ??= new ProductOrder();
 
-            var phoneNumbers = this.PhoneNumbersToDictionary();
-            var productOrders = this.ProductOrdersToDictionary();
+            var phoneNumbers = PhoneNumbersToDictionary();
+            var productOrders = ProductOrdersToDictionary();
 
             if (phoneNumber?.DialedNumber?.Length == 10 && phoneNumber.DialedNumber == productOrder?.DialedNumber)
             {
@@ -255,13 +255,13 @@ namespace NumberSearch.Ops
             portedPhoneNumber ??= new PortedPhoneNumber();
             productOrder ??= new ProductOrder();
 
-            var portedPhoneNumbers = this.PortedPhoneNumbersToDictionary();
-            var productOrders = this.ProductOrdersToDictionary();
+            var portedPhoneNumbers = PortedPhoneNumbersToDictionary();
+            var productOrders = ProductOrdersToDictionary();
 
-            if (portedPhoneNumber?.PortedPhoneNumberId is not null && portedPhoneNumber.PortedPhoneNumberId == productOrder?.PortedPhoneNumberId)
+            if (productOrder.PortedPhoneNumberId is not null && portedPhoneNumber.PortedPhoneNumberId == productOrder?.PortedPhoneNumberId)
             {
                 var checkRemovePortedPhoneNumber = portedPhoneNumbers.Remove(portedPhoneNumber.PortedPhoneNumberId.ToString());
-                var checkRemoveProductOrder = productOrders.Remove(productOrder.PortedPhoneNumberId.ToString());
+                var checkRemoveProductOrder = productOrders.Remove(productOrder.PortedPhoneNumberId.ToString()!);
 
                 if (checkRemovePortedPhoneNumber && checkRemoveProductOrder)
                 {
@@ -292,13 +292,13 @@ namespace NumberSearch.Ops
             verifiedPhoneNumber ??= new VerifiedPhoneNumber();
             productOrder ??= new ProductOrder();
 
-            var verifedPhoneNumbers = this.VerifiedPhoneNumbersToDictionary();
-            var productOrders = this.ProductOrdersToDictionary();
+            var verifedPhoneNumbers = VerifiedPhoneNumbersToDictionary();
+            var productOrders = ProductOrdersToDictionary();
 
-            if (verifiedPhoneNumber?.VerifiedPhoneNumberId is not null && verifiedPhoneNumber.VerifiedPhoneNumberId == productOrder?.VerifiedPhoneNumberId)
+            if (productOrder.VerifiedPhoneNumberId is not null && verifiedPhoneNumber.VerifiedPhoneNumberId == productOrder?.VerifiedPhoneNumberId)
             {
                 var checkRemovePortedPhoneNumber = verifedPhoneNumbers.Remove(verifiedPhoneNumber.VerifiedPhoneNumberId.ToString());
-                var checkRemoveProductOrder = productOrders.Remove(productOrder.VerifiedPhoneNumberId.ToString());
+                var checkRemoveProductOrder = productOrders.Remove(productOrder.VerifiedPhoneNumberId.ToString()!);
 
                 if (checkRemovePortedPhoneNumber && checkRemoveProductOrder)
                 {
@@ -330,13 +330,13 @@ namespace NumberSearch.Ops
             product ??= new Product();
             productOrder ??= new ProductOrder();
 
-            var products = this.ProductsToDictionary();
-            var productOrders = this.ProductOrdersToDictionary();
+            var products = ProductsToDictionary();
+            var productOrders = ProductOrdersToDictionary();
 
-            if (product.ProductId == productOrder?.ProductId)
+            if (productOrder.ProductId is not null && product.ProductId == productOrder?.ProductId)
             {
                 var checkRemoveProduct = products.Remove(product.ProductId.ToString());
-                var checkRemoveProductorder = productOrders.Remove(productOrder.ProductId.ToString());
+                var checkRemoveProductorder = productOrders.Remove(productOrder.ProductId.ToString()!);
 
                 if (checkRemoveProduct && checkRemoveProductorder)
                 {
@@ -367,13 +367,13 @@ namespace NumberSearch.Ops
             service ??= new Service();
             productOrder ??= new ProductOrder();
 
-            var services = this.ServicesToDictionary();
-            var productOrders = this.ProductOrdersToDictionary();
+            var services = ServicesToDictionary();
+            var productOrders = ProductOrdersToDictionary();
 
-            if (service.ServiceId == productOrder?.ServiceId)
+            if (productOrder.ServiceId is not null && service.ServiceId == productOrder?.ServiceId)
             {
                 var checkRemoveService = services.Remove(service.ServiceId.ToString());
-                var checkRemoveProductorder = productOrders.Remove(productOrder.ServiceId.ToString());
+                var checkRemoveProductorder = productOrders.Remove(productOrder.ServiceId.ToString()!);
 
                 if (checkRemoveService && checkRemoveProductorder)
                 {
@@ -404,13 +404,13 @@ namespace NumberSearch.Ops
             coupon ??= new Coupon();
             productOrder ??= new ProductOrder();
 
-            var coupons = this.CouponsToDictionary();
-            var productOrders = this.ProductOrdersToDictionary();
+            var coupons = CouponsToDictionary();
+            var productOrders = ProductOrdersToDictionary();
 
-            if (coupon.CouponId == productOrder?.CouponId)
+            if (productOrder.CouponId is not null && coupon.CouponId == productOrder?.CouponId)
             {
                 var checkRemoveService = coupons.Remove(coupon.CouponId.ToString());
-                var checkRemoveProductorder = productOrders.Remove(productOrder.CouponId.ToString());
+                var checkRemoveProductorder = productOrders.Remove(productOrder.CouponId.ToString()!);
 
                 if (checkRemoveService && checkRemoveProductorder)
                 {
@@ -490,37 +490,37 @@ namespace NumberSearch.Ops
 
         public Dictionary<string, PhoneNumber> PhoneNumbersToDictionary()
         {
-            return PhoneNumbers.ToDictionary(x => x.DialedNumber, x => x);
+            return PhoneNumbers is null ? new Dictionary<string, PhoneNumber>() : PhoneNumbers.ToDictionary(x => x.DialedNumber, x => x);
         }
 
         public Dictionary<string, PortedPhoneNumber> PortedPhoneNumbersToDictionary()
         {
-            return PortedPhoneNumbers.ToDictionary(x => x.PortedPhoneNumberId.ToString(), x => x);
+            return PortedPhoneNumbers is null ? new Dictionary<string, PortedPhoneNumber>() : PortedPhoneNumbers.ToDictionary(x => x.PortedPhoneNumberId.ToString(), x => x);
         }
 
         public Dictionary<string, VerifiedPhoneNumber> VerifiedPhoneNumbersToDictionary()
         {
-            return VerifiedPhoneNumbers.ToDictionary(x => x.VerifiedPhoneNumberId.ToString(), x => x);
+            return VerifiedPhoneNumbers is null ? new Dictionary<string, VerifiedPhoneNumber>() : VerifiedPhoneNumbers.ToDictionary(x => x.VerifiedPhoneNumberId.ToString(), x => x);
         }
 
         public Dictionary<string, PurchasedPhoneNumber> PurchasedPhoneNumbersToDictionary()
         {
-            return PurchasedPhoneNumbers.ToDictionary(x => x.DialedNumber, x => x);
+            return PurchasedPhoneNumbers is null ? new Dictionary<string, PurchasedPhoneNumber>() : PurchasedPhoneNumbers.ToDictionary(x => !string.IsNullOrWhiteSpace(x.DialedNumber) ? x.DialedNumber : string.Empty, x => x);
         }
 
         public Dictionary<string, Product> ProductsToDictionary()
         {
-            return Products.ToDictionary(x => x.ProductId.ToString(), x => x);
+            return Products is null ? new Dictionary<string, Product>() : Products.ToDictionary(x => x.ProductId.ToString(), x => x);
         }
 
         public Dictionary<string, Service> ServicesToDictionary()
         {
-            return Services.ToDictionary(x => x.ServiceId.ToString(), x => x);
+            return Services is null ? new Dictionary<string, Service>() : Services.ToDictionary(x => x.ServiceId.ToString(), x => x);
         }
 
         public Dictionary<string, Coupon> CouponsToDictionary()
         {
-            return Coupons.ToDictionary(x => x.CouponId.ToString(), x => x);
+            return Coupons is null ? new Dictionary<string, Coupon>() : Coupons.ToDictionary(x => x.CouponId.ToString(), x => x);
         }
     }
 }
