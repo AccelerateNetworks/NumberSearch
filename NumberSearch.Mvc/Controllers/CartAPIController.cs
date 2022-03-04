@@ -1137,7 +1137,7 @@ namespace NumberSearch.Mvc.Controllers
 
                     return Ok(couponName.ToString());
                 }
-                else if (coupon.Type == "Number" && cart.PortedPhoneNumbers.Any())
+                else if (coupon.Type == "Number" && cart.PhoneNumbers.Any())
                 {
                     var checkAdd = cart.AddCoupon(coupon, productOrder);
                     var checkSet = cart.SetToSession(_httpContext.Session);
