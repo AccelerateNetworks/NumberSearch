@@ -50,54 +50,56 @@ app.MapGet("/Conversations", async (string primary, MessagingContext db) =>
         return Results.BadRequest("Primary number couldn't be parsed as a valid NANP (North American Number Plan) number.");
     }
 
-    var messages = await db.Messages
-                            .Where(x => x.ToFromCompound.Contains(primaryNumber.DialedNumber))
-                            .OrderByDescending(x => x.DateRecievedUTC)
-                            .ToListAsync();
-
-    if (messages is not null && messages.Any())
+    if (primaryNumber is not null && !string.IsNullOrWhiteSpace(primaryNumber.DialedNumber))
     {
-        var uniqueCompoundKeys = messages
-                                    .DistinctBy(x => x.ToFromCompound)
-                                    .OrderByDescending(x => x.DateRecievedUTC)
-                                    .ToList();
+        var messages = await db.Messages
+                        .Where(x => x.ToFromCompound.Contains(primaryNumber.DialedNumber))
+                        .OrderByDescending(x => x.DateRecievedUTC)
+                        .ToListAsync();
 
-        var recordsToRemove = new List<MessageRecord>();
-
-        foreach (var record in uniqueCompoundKeys)
+        if (messages is not null && messages.Any())
         {
-            var reverseToAndFrom = $"{record.To},{record.From}";
+            var uniqueCompoundKeys = messages
+                                        .DistinctBy(x => x.ToFromCompound)
+                                        .OrderByDescending(x => x.DateRecievedUTC)
+                                        .ToList();
 
-            var reverseMatch = uniqueCompoundKeys.Where(x => x.ToFromCompound.Contains(reverseToAndFrom)).FirstOrDefault();
+            var recordsToRemove = new List<MessageRecord>();
 
-            if (reverseMatch is not null)
+            foreach (var record in uniqueCompoundKeys)
             {
-                // Remove the older record.
-                if (DateTime.Compare(reverseMatch.DateRecievedUTC, record.DateRecievedUTC) > 0)
+                var reverseToAndFrom = $"{record.To},{record.From}";
+
+                var reverseMatch = uniqueCompoundKeys.Where(x => x.ToFromCompound.Contains(reverseToAndFrom)).FirstOrDefault();
+
+                if (reverseMatch is not null)
                 {
-                    recordsToRemove.Add(record);
-                }
-                else
-                {
-                    recordsToRemove.Add(reverseMatch);
+                    // Remove the older record.
+                    if (DateTime.Compare(reverseMatch.DateRecievedUTC, record.DateRecievedUTC) > 0)
+                    {
+                        recordsToRemove.Add(record);
+                    }
+                    else
+                    {
+                        recordsToRemove.Add(reverseMatch);
+                    }
                 }
             }
-        }
 
-        if (recordsToRemove.Any())
-        {
-            foreach (var item in recordsToRemove)
+            if (recordsToRemove.Any())
             {
-                uniqueCompoundKeys.Remove(item);
+                foreach (var item in recordsToRemove)
+                {
+                    uniqueCompoundKeys.Remove(item);
+                }
             }
+
+            return Results.Ok(uniqueCompoundKeys);
         }
 
-        return Results.Ok(uniqueCompoundKeys);
     }
-    else
-    {
-        return Results.NotFound();
-    }
+
+    return Results.NotFound();
 });
 
 app.MapGet("/Thread", async (string primary, string contacts, MessagingContext db) =>
@@ -117,7 +119,7 @@ app.MapGet("/Thread", async (string primary, string contacts, MessagingContext d
 
     var combined = new List<MessageRecord>();
 
-    var outgoingCompoundKey = $"{primaryNumber.DialedNumber},{string.Join(',', contactNumbers.Select(x => x.DialedNumber))}";
+    var outgoingCompoundKey = $"{primaryNumber?.DialedNumber},{string.Join(',', contactNumbers.Select(x => x.DialedNumber))}";
 
     var outgoing = await db.Messages.Where(x => x.ToFromCompound == outgoingCompoundKey).ToListAsync();
     if (outgoing is not null && outgoing.Any())
@@ -129,7 +131,7 @@ app.MapGet("/Thread", async (string primary, string contacts, MessagingContext d
 
     foreach (var contact in contactNumbers)
     {
-        incomingCompoundKeys.Add($"{contact.DialedNumber},{string.Join(',', contactNumbers.Append(primaryNumber).Where(x => x.DialedNumber != contact.DialedNumber).Select(x => x.DialedNumber))}");
+        incomingCompoundKeys.Add($"{contact.DialedNumber},{string.Join(',', contactNumbers.Append(primaryNumber).Where(x => x!.DialedNumber != contact.DialedNumber).Select(x => x!.DialedNumber))}");
     }
 
     foreach (var key in incomingCompoundKeys)
@@ -341,11 +343,11 @@ app.MapPost("/Message/Outbound/BulkVS", async ([Microsoft.AspNetCore.Mvc.FromBod
 
         foreach (var result in sendMessage.Results)
         {
-            if (result.Status == "SUCCESS")
+            if (result.Status == "SUCCESS" && !string.IsNullOrWhiteSpace(result.To))
             {
                 var checkNumber = PhoneNumbersNA.PhoneNumber.TryParse(result.To, out var parsedNumber);
 
-                if (checkNumber)
+                if (checkNumber && parsedNumber is not null && !string.IsNullOrWhiteSpace(parsedNumber.DialedNumber))
                 {
                     success.Add(parsedNumber.DialedNumber);
                 }
@@ -359,9 +361,9 @@ app.MapPost("/Message/Outbound/BulkVS", async ([Microsoft.AspNetCore.Mvc.FromBod
             }
             else
             {
-                var checkNumber = PhoneNumbersNA.PhoneNumber.TryParse(result.To, out var parsedNumber);
+                var checkNumber = PhoneNumbersNA.PhoneNumber.TryParse(result.To!, out var parsedNumber);
 
-                if (checkNumber)
+                if (checkNumber && parsedNumber is not null && !string.IsNullOrWhiteSpace(parsedNumber.DialedNumber))
                 {
                     failure.Add(parsedNumber.DialedNumber);
                 }
@@ -448,12 +450,15 @@ namespace Models
             bool FromParsed = false;
             bool ToParsed = false;
 
-            var checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(From, out var fromPhoneNumber);
-            if (checkFrom)
+            if (!string.IsNullOrWhiteSpace(From))
             {
-                FromPhoneNumber = fromPhoneNumber;
-                From = fromPhoneNumber.DialedNumber;
-                FromParsed = true;
+                var checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(From, out var fromPhoneNumber);
+                if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
+                {
+                    FromPhoneNumber = fromPhoneNumber;
+                    From = fromPhoneNumber.DialedNumber;
+                    FromParsed = true;
+                }
             }
 
             if (To is not null && To.Any())
@@ -468,14 +473,14 @@ namespace Models
                 {
                     var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
 
-                    if (checkTo)
+                    if (checkTo && toPhoneNumber is not null)
                     {
                         ToPhoneNumbers.Add(toPhoneNumber);
                     }
                 }
 
                 // This will drop the numbers that couldn't be parsed.
-                To = ToPhoneNumbers.Select(x => x.DialedNumber).ToArray();
+                To = ToPhoneNumbers is not null && ToPhoneNumbers.Any() ? ToPhoneNumbers.Select(x => x.DialedNumber!).ToArray() : Array.Empty<string>();
                 ToParsed = true;
             }
 
@@ -525,15 +530,15 @@ namespace Models
             bool FromParsed = false;
             bool ToParsed = false;
 
-            var checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(Source, out var fromPhoneNumber);
-            if (checkFrom)
+            var checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(Source ?? string.Empty, out var fromPhoneNumber);
+            if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
             {
                 FromPhoneNumber = fromPhoneNumber;
                 Source = fromPhoneNumber.DialedNumber;
                 FromParsed = true;
             }
 
-            var To = PhoneNumbersNA.Parse.AsDialedNumbers(Destination);
+            var To = PhoneNumbersNA.Parse.AsDialedNumbers(Destination ?? string.Empty);
 
             if (To.Any())
             {
@@ -547,7 +552,7 @@ namespace Models
                 {
                     var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
 
-                    if (checkTo)
+                    if (checkTo && toPhoneNumber is not null)
                     {
                         ToPhoneNumbers.Add(toPhoneNumber);
                     }
@@ -600,15 +605,15 @@ namespace Models
             bool FromParsed = false;
             bool ToParsed = false;
 
-            var checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(Source, out var fromPhoneNumber);
-            if (checkFrom)
+            var checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(Source ?? string.Empty, out var fromPhoneNumber);
+            if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
             {
                 FromPhoneNumber = fromPhoneNumber;
                 Source = fromPhoneNumber.DialedNumber;
                 FromParsed = true;
             }
 
-            var To = PhoneNumbersNA.Parse.AsDialedNumbers(Destination);
+            var To = PhoneNumbersNA.Parse.AsDialedNumbers(Destination ?? string.Empty);
 
             if (To.Any())
             {
@@ -622,7 +627,7 @@ namespace Models
                 {
                     var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
 
-                    if (checkTo)
+                    if (checkTo && toPhoneNumber is not null)
                     {
                         ToPhoneNumbers.Add(toPhoneNumber);
                     }

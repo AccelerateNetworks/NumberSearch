@@ -326,6 +326,7 @@ namespace NumberSearch.Mvc.Controllers
                             var onetimeItems = new List<Invoice_Items>();
                             var reoccuringItems = new List<Invoice_Items>();
                             var totalCost = 0;
+                            var totalNumberPurchasingCost = 0;
 
                             // Create a single PIN for this order.
                             var random = new Random();
@@ -358,7 +359,7 @@ namespace NumberSearch.Mvc.Controllers
 
                                 var checkPurchaseOrder = await purchsedNumber.PostAsync(_postgresql).ConfigureAwait(false);
 
-                                totalCost += cost;
+                                totalNumberPurchasingCost += cost;
 
                                 onetimeItems.Add(new Invoice_Items
                                 {
@@ -368,6 +369,8 @@ namespace NumberSearch.Mvc.Controllers
                                     qty = 1
                                 });
                             }
+
+                            totalCost += totalNumberPurchasingCost;
 
                             var totalPortingCost = 0;
                             var emailSubject = string.Empty;
@@ -478,7 +481,6 @@ namespace NumberSearch.Mvc.Controllers
                                     {
                                         if (coupon.Type == "Port")
                                         {
-
                                             totalCost -= totalPortingCost;
                                             onetimeItems.Add(new Invoice_Items
                                             {
@@ -511,6 +513,17 @@ namespace NumberSearch.Mvc.Controllers
                                                     qty = 1
                                                 });
                                             }
+                                        }
+                                        else if (coupon.Type == "Number")
+                                        {
+                                            totalCost -= totalNumberPurchasingCost;
+                                            onetimeItems.Add(new Invoice_Items
+                                            {
+                                                product_key = coupon.Name,
+                                                notes = coupon.Description,
+                                                cost = totalNumberPurchasingCost * -1,
+                                                qty = 1
+                                            });
                                         }
                                         else
                                         {

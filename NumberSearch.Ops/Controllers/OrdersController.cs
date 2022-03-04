@@ -1755,6 +1755,8 @@ public class OrdersController : Controller
                             }
                         }
 
+                        var totalNumberPurchasingCost = 0;
+
                         foreach (var nto in cart.PurchasedPhoneNumbers)
                         {
                             var cost = nto.NumberType == "Executive" ? 200 : nto.NumberType == "Premium" ? 40 : nto.NumberType == "Standard" ? 20 : 20;
@@ -1766,6 +1768,8 @@ public class OrdersController : Controller
                                 cost = cost,
                                 qty = 1
                             });
+
+                            totalNumberPurchasingCost += cost;
                         }
 
                         var totalPortingCost = 0;
@@ -1875,6 +1879,17 @@ public class OrdersController : Controller
                                             product_key = coupon.Name,
                                             notes = coupon.Description,
                                             cost = 60 * -1,
+                                            qty = 1
+                                        });
+                                    }
+                                    else if (coupon.Type == "Number")
+                                    {
+                                        totalCost -= totalNumberPurchasingCost;
+                                        onetimeItems.Add(new Invoice_Items
+                                        {
+                                            product_key = coupon.Name,
+                                            notes = coupon.Description,
+                                            cost = totalNumberPurchasingCost * -1,
                                             qty = 1
                                         });
                                     }

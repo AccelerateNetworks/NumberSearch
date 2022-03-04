@@ -14,9 +14,9 @@ namespace NumberSearch.Tests
 {
     public class Functional : IClassFixture<WebApplicationFactory<Startup>>
     {
-        private readonly Guid token;
-        private readonly ITestOutputHelper output;
-        private readonly IConfiguration configuration;
+        //private readonly Guid token;
+        //private readonly ITestOutputHelper output;
+        //private readonly IConfiguration configuration;
         protected readonly HttpClient _client;
 
         // Disabled because while this works fine locally, it breaks the pipeline.
