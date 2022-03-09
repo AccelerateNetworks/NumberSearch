@@ -582,19 +582,14 @@ namespace NumberSearch.Mvc.Controllers
         private readonly Guid _teleToken;
         private readonly string _postgresql;
         private readonly string _apiKey;
-        private readonly string _apiSecret;
         private readonly string _fpcusername;
         private readonly string _fpcpassword;
-        private readonly string _invoiceNinjaToken;
-        private readonly string _emailOrders;
         private readonly string _bulkVSusername;
         private readonly string _bulkVSpassword;
-        private readonly string _data247username;
-        private readonly string _data247password;
         private readonly string _call48Username;
         private readonly string _call48Password;
         private readonly string _peerlessApiKey;
-        private HttpContext _httpContext;
+        private readonly HttpContext _httpContext;
 
         public CartServices(IConfiguration config, HttpContext httpContext)
         {
@@ -602,15 +597,10 @@ namespace NumberSearch.Mvc.Controllers
             _teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
             _postgresql = _configuration.GetConnectionString("PostgresqlProd");
             _apiKey = config.GetConnectionString("BulkVSAPIKEY");
-            _apiSecret = config.GetConnectionString("BulkVSAPISecret");
             _bulkVSusername = config.GetConnectionString("BulkVSUsername");
             _bulkVSpassword = config.GetConnectionString("BulkVSPassword");
             _fpcusername = config.GetConnectionString("PComNetUsername");
             _fpcpassword = config.GetConnectionString("PComNetPassword");
-            _invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
-            _emailOrders = config.GetConnectionString("EmailOrders");
-            _data247username = config.GetConnectionString("Data247Username");
-            _data247password = config.GetConnectionString("Data247Password");
             _call48Username = config.GetConnectionString("Call48Username");
             _call48Password = config.GetConnectionString("Call48Password");
             _peerlessApiKey = config.GetConnectionString("PeerlessAPIKey");
@@ -856,7 +846,7 @@ namespace NumberSearch.Mvc.Controllers
             var cart = Cart.GetFromSession(_httpContext.Session);
 
             // Prevent the user from adding ported numbers that are both wireless and not wireless to the same order.
-            if (cart.PortedPhoneNumbers.Any())
+            if (cart.PortedPhoneNumbers is not null && cart.PortedPhoneNumbers.Any())
             {
                 var wirelessCount = cart.PortedPhoneNumbers.Count(x => x.Wireless == true);
                 var nonWirelessCount = cart.PortedPhoneNumbers.Count(x => x.Wireless == false);
@@ -876,12 +866,12 @@ namespace NumberSearch.Mvc.Controllers
 
             var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), PortedDialedNumber = portedPhoneNumber?.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber?.PortedPhoneNumberId, Quantity = 1 };
 
-            var checkAdd = cart.AddPortedPhoneNumber(portedPhoneNumber, productOrder);
+            var checkAdd = cart.AddPortedPhoneNumber(portedPhoneNumber!, productOrder);
             var checkSet = cart.SetToSession(_httpContext.Session);
 
             if (checkAdd && checkSet)
             {
-                return Ok(portedPhoneNumber.PortedDialedNumber);
+                return Ok(portedPhoneNumber!.PortedDialedNumber);
             }
             else
             {
@@ -898,7 +888,7 @@ namespace NumberSearch.Mvc.Controllers
 
             var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedPhoneNumber, out var phoneNumber);
 
-            if (checkParse)
+            if (checkParse && phoneNumber is not null)
             {
                 try
                 {
@@ -1043,7 +1033,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 var e911Id = new Guid("1b3ae0e0-e308-4f99-88e1-b9c220bc02d5");
                 var e911fee = await Service.GetAsync(e911Id, _postgresql).ConfigureAwait(false);
-                var e911ProductOrder = cart.ProductOrders.Where(x => x.ServiceId == e911Id).FirstOrDefault();
+                var e911ProductOrder = cart.ProductOrders?.Where(x => x.ServiceId == e911Id).FirstOrDefault();
                 // If there are already E911 fees in the cart.
                 if (e911ProductOrder is not null)
                 {
@@ -1052,20 +1042,20 @@ namespace NumberSearch.Mvc.Controllers
                     {
                         var totalE911FeeItems = 0;
 
-                        var lines = cart.Services.Where(x => x.ServiceId == stdSeat).FirstOrDefault();
+                        var lines = cart.Services?.Where(x => x.ServiceId == stdSeat).FirstOrDefault();
 
                         if (lines is not null)
                         {
-                            var lineQuantity = cart.ProductOrders.Where(x => x.ServiceId == lines.ServiceId).FirstOrDefault();
-                            totalE911FeeItems += lineQuantity.Quantity;
+                            var lineQuantity = cart.ProductOrders?.Where(x => x.ServiceId == lines.ServiceId).FirstOrDefault();
+                            totalE911FeeItems += lineQuantity?.Quantity ?? 0;
                         }
 
-                        var seats = cart.Services.Where(x => x.ServiceId == concurrentSeat).FirstOrDefault();
+                        var seats = cart.Services?.Where(x => x.ServiceId == concurrentSeat).FirstOrDefault();
 
                         if (seats is not null)
                         {
-                            var seatsQuantity = cart.ProductOrders.Where(x => x.ServiceId == seats.ServiceId).FirstOrDefault();
-                            totalE911FeeItems += seatsQuantity.Quantity;
+                            var seatsQuantity = cart.ProductOrders?.Where(x => x.ServiceId == seats.ServiceId).FirstOrDefault();
+                            totalE911FeeItems += seatsQuantity?.Quantity ?? 0;
                         }
 
                         e911ProductOrder = new ProductOrder
@@ -1123,21 +1113,21 @@ namespace NumberSearch.Mvc.Controllers
                 await _httpContext.Session.LoadAsync().ConfigureAwait(false);
                 var cart = Cart.GetFromSession(_httpContext.Session);
 
-                if (coupon.Type == "Install" && cart.Products.Any())
+                if (coupon.Type == "Install" && cart.Products is not null && cart.Products.Any())
                 {
                     var checkAdd = cart.AddCoupon(coupon, productOrder);
                     var checkSet = cart.SetToSession(_httpContext.Session);
 
                     return Ok(couponName.ToString());
                 }
-                else if (coupon.Type == "Port" && cart.PortedPhoneNumbers.Any())
+                else if (coupon.Type == "Port" && cart.PortedPhoneNumbers is not null && cart.PortedPhoneNumbers.Any())
                 {
                     var checkAdd = cart.AddCoupon(coupon, productOrder);
                     var checkSet = cart.SetToSession(_httpContext.Session);
 
                     return Ok(couponName.ToString());
                 }
-                else if (coupon.Type == "Number" && cart.PhoneNumbers.Any())
+                else if (coupon.Type == "Number" && cart.PhoneNumbers is not null && cart.PhoneNumbers.Any())
                 {
                     var checkAdd = cart.AddCoupon(coupon, productOrder);
                     var checkSet = cart.SetToSession(_httpContext.Session);
@@ -1186,15 +1176,15 @@ namespace NumberSearch.Mvc.Controllers
             await _httpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(_httpContext.Session);
 
-            var portedPhoneNumber = cart.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == dialedPhoneNumber).FirstOrDefault();
+            var portedPhoneNumber = cart.PortedPhoneNumbers?.Where(x => x.PortedDialedNumber == dialedPhoneNumber).FirstOrDefault();
 
             if (portedPhoneNumber is not null)
             {
-                var productOrder = cart.ProductOrders.Where(x => x.PortedPhoneNumberId == portedPhoneNumber.PortedPhoneNumberId).FirstOrDefault();
+                var productOrder = cart.ProductOrders?.Where(x => x.PortedPhoneNumberId == portedPhoneNumber.PortedPhoneNumberId).FirstOrDefault();
 
                 var newProductOrder = new ProductOrder { PortedDialedNumber = portedPhoneNumber?.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber?.PortedPhoneNumberId, Quantity = 1 };
 
-                var checkRemove = cart.RemovePortedPhoneNumber(portedPhoneNumber, productOrder ?? newProductOrder);
+                var checkRemove = cart.RemovePortedPhoneNumber(portedPhoneNumber!, productOrder ?? newProductOrder);
                 var checkSet = cart.SetToSession(_httpContext.Session);
 
                 if (checkRemove && checkSet)
@@ -1224,10 +1214,10 @@ namespace NumberSearch.Mvc.Controllers
             await _httpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(_httpContext.Session);
 
-            var verifedPhoneNumber = cart.VerifiedPhoneNumbers.Where(x => x.VerifiedDialedNumber == dialedPhoneNumber).FirstOrDefault();
+            var verifedPhoneNumber = cart.VerifiedPhoneNumbers?.Where(x => x.VerifiedDialedNumber == dialedPhoneNumber).FirstOrDefault();
             if (verifedPhoneNumber is not null)
             {
-                var productOrder = cart.ProductOrders.Where(x => x.VerifiedPhoneNumberId == verifedPhoneNumber.VerifiedPhoneNumberId).FirstOrDefault();
+                var productOrder = cart.ProductOrders?.Where(x => x.VerifiedPhoneNumberId == verifedPhoneNumber.VerifiedPhoneNumberId).FirstOrDefault();
                 var newProductOrder = new ProductOrder { VerifiedPhoneNumberId = verifedPhoneNumber.VerifiedPhoneNumberId, Quantity = 1 };
 
                 var checkRemove = cart.RemoveVerifiedPhoneNumber(verifedPhoneNumber, productOrder ?? newProductOrder);

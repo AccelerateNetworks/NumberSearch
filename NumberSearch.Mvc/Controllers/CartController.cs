@@ -59,7 +59,7 @@ namespace NumberSearch.Mvc.Controllers
                 var products = await Product.GetAllAsync(_postgresql);
                 var productToUpdate = products.FirstOrDefault(x => x.Name == product);
 
-                if (productToUpdate is not null)
+                if (productToUpdate is not null && cart.ProductOrders is not null)
                 {
                     var toRemove = cart.ProductOrders.Where(x => x.ProductId == productToUpdate.ProductId).FirstOrDefault();
 
@@ -113,15 +113,17 @@ namespace NumberSearch.Mvc.Controllers
             await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            if (cart is not null && cart.ProductOrders.Count() == 0)
+            if (cart is not null && cart.ProductOrders is not null && cart.ProductOrders.Any())
             {
                 return View("Index", new CartResult { Cart = cart });
             }
+            else if (cart is not null && cart.Order is not null)
+            {
+                // Create a GUID for an order to prevent multiple order submissions from repeated button clicking.
+                cart.Order.OrderId = Guid.NewGuid();
 
-            // Create a GUID for an order to prevent multiple order submissions from repeated button clicking.
-            cart.Order.OrderId = Guid.NewGuid();
-
-            var checkSet = cart.SetToSession(HttpContext.Session);
+                _ = cart.SetToSession(HttpContext.Session);
+            }
 
             return View("Order", cart);
         }
@@ -195,7 +197,7 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
 
-                    var checkSet = cart.SetToSession(HttpContext.Session);
+                    _ = cart.SetToSession(HttpContext.Session);
 
                     return View("Success", new OrderWithPorts
                     {
@@ -332,42 +334,49 @@ namespace NumberSearch.Mvc.Controllers
                             var random = new Random();
                             var pin = random.Next(100000, 99999999);
 
-                            foreach (var nto in cart.PhoneNumbers)
+                            if (cart is not null && cart.PhoneNumbers is not null)
                             {
-                                var productOrder = cart.ProductOrders.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
-                                var numberToBePurchased = cart.PhoneNumbers.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
-                                productOrder.OrderId = order.OrderId;
-
-                                var cost = nto.NumberType == "Executive" ? 200 : nto.NumberType == "Premium" ? 40 : nto.NumberType == "Standard" ? 20 : 20;
-
-                                var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
-                                var purchsedNumber = new PurchasedPhoneNumber
+                                foreach (var nto in cart.PhoneNumbers)
                                 {
-                                    Completed = false,
-                                    DateIngested = numberToBePurchased.DateIngested,
-                                    DateOrdered = DateTime.Now,
-                                    NPA = numberToBePurchased.NPA,
-                                    NXX = numberToBePurchased.NXX,
-                                    XXXX = numberToBePurchased.XXXX,
-                                    DialedNumber = numberToBePurchased.DialedNumber,
-                                    IngestedFrom = numberToBePurchased.IngestedFrom,
-                                    NumberType = numberToBePurchased.NumberType,
-                                    OrderId = order.OrderId,
-                                    OrderResponse = string.Empty,
-                                    PIN = pin.ToString()
-                                };
+                                    var productOrder = cart.ProductOrders.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
+                                    var numberToBePurchased = cart.PhoneNumbers.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
 
-                                var checkPurchaseOrder = await purchsedNumber.PostAsync(_postgresql).ConfigureAwait(false);
+                                    if (productOrder is not null && numberToBePurchased is not null)
+                                    {
+                                        productOrder.OrderId = order.OrderId;
 
-                                totalNumberPurchasingCost += cost;
+                                        var cost = nto.NumberType == "Executive" ? 200 : nto.NumberType == "Premium" ? 40 : nto.NumberType == "Standard" ? 20 : 20;
 
-                                onetimeItems.Add(new Invoice_Items
-                                {
-                                    product_key = nto.DialedNumber,
-                                    notes = $"{nto.NumberType} Phone Number",
-                                    cost = cost,
-                                    qty = 1
-                                });
+                                        var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                        var purchsedNumber = new PurchasedPhoneNumber
+                                        {
+                                            Completed = false,
+                                            DateIngested = numberToBePurchased.DateIngested,
+                                            DateOrdered = DateTime.Now,
+                                            NPA = numberToBePurchased.NPA,
+                                            NXX = numberToBePurchased.NXX,
+                                            XXXX = numberToBePurchased.XXXX,
+                                            DialedNumber = numberToBePurchased.DialedNumber,
+                                            IngestedFrom = numberToBePurchased.IngestedFrom,
+                                            NumberType = numberToBePurchased.NumberType,
+                                            OrderId = order.OrderId,
+                                            OrderResponse = string.Empty,
+                                            PIN = pin.ToString()
+                                        };
+
+                                        var checkPurchaseOrder = await purchsedNumber.PostAsync(_postgresql).ConfigureAwait(false);
+
+                                        totalNumberPurchasingCost += cost;
+
+                                        onetimeItems.Add(new Invoice_Items
+                                        {
+                                            product_key = nto.DialedNumber,
+                                            notes = $"{nto.NumberType} Phone Number",
+                                            cost = cost,
+                                            qty = 1
+                                        });
+                                    }
+                                }
                             }
 
                             totalCost += totalNumberPurchasingCost;
@@ -375,131 +384,155 @@ namespace NumberSearch.Mvc.Controllers
                             var totalPortingCost = 0;
                             var emailSubject = string.Empty;
 
-                            foreach (var productOrder in cart.ProductOrders)
+                            if (cart is not null && cart.ProductOrders is not null)
                             {
-                                productOrder.OrderId = order.OrderId;
-
-                                if (!string.IsNullOrWhiteSpace(productOrder.DialedNumber))
+                                foreach (var productOrder in cart.ProductOrders)
                                 {
-                                    emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? productOrder.DialedNumber : emailSubject;
-                                }
+                                    productOrder.OrderId = order.OrderId;
 
-                                if (productOrder.PortedPhoneNumberId is not null)
-                                {
-                                    var ported = cart.PortedPhoneNumbers.Where(x => x.PortedPhoneNumberId == productOrder.PortedPhoneNumberId).FirstOrDefault();
-
-                                    var calculatedCost = 20;
-
-                                    if (ported != null)
+                                    if (!string.IsNullOrWhiteSpace(productOrder.DialedNumber))
                                     {
-                                        totalCost += calculatedCost;
-                                        onetimeItems.Add(new Invoice_Items
-                                        {
-                                            product_key = ported.PortedDialedNumber,
-                                            notes = $"Phone Number to Port to our Network",
-                                            cost = calculatedCost,
-                                            qty = 1
-                                        });
+                                        emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? productOrder.DialedNumber : emailSubject;
                                     }
 
-                                    totalPortingCost += calculatedCost;
-
-                                    emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? productOrder.PortedDialedNumber : emailSubject;
-
-                                    var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
-                                }
-
-                                if (productOrder.VerifiedPhoneNumberId is not null)
-                                {
-                                    var verfied = cart.VerifiedPhoneNumbers.Where(x => x.VerifiedPhoneNumberId == productOrder.VerifiedPhoneNumberId).FirstOrDefault();
-
-                                    if (verfied != null)
+                                    if (productOrder.PortedPhoneNumberId is not null)
                                     {
-                                        totalCost += 10;
-                                        onetimeItems.Add(new Invoice_Items
+                                        var ported = cart.PortedPhoneNumbers?.Where(x => x.PortedPhoneNumberId == productOrder.PortedPhoneNumberId).FirstOrDefault();
+
+                                        var calculatedCost = 20;
+
+                                        if (ported != null)
                                         {
-                                            product_key = verfied.VerifiedDialedNumber,
-                                            notes = $"Phone Number to Verify Daily",
-                                            cost = 10,
-                                            qty = 1
-                                        });
-                                    }
-
-                                    emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? verfied.VerifiedDialedNumber : emailSubject;
-
-                                    var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
-                                }
-
-                                if (productOrder.ProductId != Guid.Empty)
-                                {
-                                    var product = cart.Products.Where(x => x.ProductId == productOrder.ProductId).FirstOrDefault();
-
-                                    if (product != null)
-                                    {
-                                        totalCost += product.Price;
-                                        onetimeItems.Add(new Invoice_Items
-                                        {
-                                            product_key = product.Name,
-                                            notes = $"{product.Description}",
-                                            cost = product.Price,
-                                            qty = productOrder.Quantity
-                                        });
-                                    }
-
-                                    emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? product.Name : emailSubject;
-
-                                    var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
-                                }
-
-                                if (productOrder.ServiceId != Guid.Empty)
-                                {
-                                    var service = cart.Services.Where(x => x.ServiceId == productOrder.ServiceId).FirstOrDefault();
-
-                                    if (service != null)
-                                    {
-                                        totalCost += service.Price;
-                                        reoccuringItems.Add(new Invoice_Items
-                                        {
-                                            product_key = service.Name,
-                                            notes = $"{service.Description}",
-                                            cost = service.Price,
-                                            qty = productOrder.Quantity
-                                        });
-                                    }
-
-                                    emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? service.Name : emailSubject;
-
-                                    var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
-                                }
-
-                                // Apply coupon discounts
-                                if (productOrder.CouponId is not null)
-                                {
-                                    var coupon = cart.Coupons.Where(x => x.CouponId == productOrder.CouponId).FirstOrDefault();
-
-                                    if (coupon is not null)
-                                    {
-                                        if (coupon.Type == "Port")
-                                        {
-                                            totalCost -= totalPortingCost;
+                                            totalCost += calculatedCost;
                                             onetimeItems.Add(new Invoice_Items
                                             {
-                                                product_key = coupon.Name,
-                                                notes = coupon.Description,
-                                                cost = totalPortingCost * -1,
+                                                product_key = ported.PortedDialedNumber,
+                                                notes = $"Phone Number to Port to our Network",
+                                                cost = calculatedCost,
                                                 qty = 1
                                             });
                                         }
-                                        else if (coupon.Type == "Install")
+
+                                        totalPortingCost += calculatedCost;
+
+                                        emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? productOrder.PortedDialedNumber : emailSubject;
+
+                                        var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                    }
+
+                                    if (productOrder.VerifiedPhoneNumberId is not null)
+                                    {
+                                        var verfied = cart.VerifiedPhoneNumbers?.Where(x => x.VerifiedPhoneNumberId == productOrder.VerifiedPhoneNumberId).FirstOrDefault();
+
+                                        if (verfied != null)
                                         {
-                                            // If they have selected onsite installation this coupon removes a $60 charge.
-                                            if (order.OnsiteInstallation)
+                                            totalCost += 10;
+                                            onetimeItems.Add(new Invoice_Items
                                             {
+                                                product_key = verfied.VerifiedDialedNumber,
+                                                notes = $"Phone Number to Verify Daily",
+                                                cost = 10,
+                                                qty = 1
+                                            });
+                                        }
+
+                                        emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? verfied?.VerifiedDialedNumber : emailSubject;
+
+                                        var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                    }
+
+                                    if (productOrder.ProductId != Guid.Empty)
+                                    {
+                                        var product = cart.Products?.Where(x => x.ProductId == productOrder.ProductId).FirstOrDefault();
+
+                                        if (product != null)
+                                        {
+                                            totalCost += product.Price;
+                                            onetimeItems.Add(new Invoice_Items
+                                            {
+                                                product_key = product.Name,
+                                                notes = $"{product.Description}",
+                                                cost = product.Price,
+                                                qty = productOrder.Quantity
+                                            });
+                                        }
+
+                                        emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? product?.Name : emailSubject;
+
+                                        var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                    }
+
+                                    if (productOrder.ServiceId != Guid.Empty)
+                                    {
+                                        var service = cart.Services?.Where(x => x.ServiceId == productOrder.ServiceId).FirstOrDefault();
+
+                                        if (service != null)
+                                        {
+                                            totalCost += service.Price;
+                                            reoccuringItems.Add(new Invoice_Items
+                                            {
+                                                product_key = service.Name,
+                                                notes = $"{service.Description}",
+                                                cost = service.Price,
+                                                qty = productOrder.Quantity
+                                            });
+                                        }
+
+                                        emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? service?.Name : emailSubject;
+
+                                        var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                    }
+
+                                    // Apply coupon discounts
+                                    if (productOrder.CouponId is not null)
+                                    {
+                                        var coupon = cart.Coupons?.Where(x => x.CouponId == productOrder.CouponId).FirstOrDefault();
+
+                                        if (coupon is not null)
+                                        {
+                                            if (coupon.Type == "Port")
+                                            {
+                                                totalCost -= totalPortingCost;
                                                 onetimeItems.Add(new Invoice_Items
                                                 {
                                                     product_key = coupon.Name,
                                                     notes = coupon.Description,
-                                                    cost = 60 * -1,
+                                                    cost = totalPortingCost * -1,
+                                                    qty = 1
+                                                });
+                                            }
+                                            else if (coupon.Type == "Install")
+                                            {
+                                                // If they have selected onsite installation this coupon removes a $60 charge.
+                                                if (order.OnsiteInstallation)
+                                                {
+                                                    onetimeItems.Add(new Invoice_Items
+                                                    {
+                                                        product_key = coupon.Name,
+                                                        notes = coupon.Description,
+                                                        cost = 60 * -1,
+                                                        qty = 1
+                                                    });
+                                                }
+                                                else
+                                                {
+                                                    onetimeItems.Add(new Invoice_Items
+                                                    {
+                                                        product_key = coupon.Name,
+                                                        notes = coupon.Description,
+                                                        cost = 0,
+                                                        qty = 1
+                                                    });
+                                                }
+                                            }
+                                            else if (coupon.Type == "Number")
+                                            {
+                                                totalCost -= totalNumberPurchasingCost;
+                                                onetimeItems.Add(new Invoice_Items
+                                                {
+                                                    product_key = coupon.Name,
+                                                    notes = coupon.Description,
+                                                    cost = totalNumberPurchasingCost * -1,
                                                     qty = 1
                                                 });
                                             }
@@ -509,35 +542,14 @@ namespace NumberSearch.Mvc.Controllers
                                                 {
                                                     product_key = coupon.Name,
                                                     notes = coupon.Description,
-                                                    cost = 0,
+                                                    cost = coupon.Value * -1,
                                                     qty = 1
                                                 });
                                             }
                                         }
-                                        else if (coupon.Type == "Number")
-                                        {
-                                            totalCost -= totalNumberPurchasingCost;
-                                            onetimeItems.Add(new Invoice_Items
-                                            {
-                                                product_key = coupon.Name,
-                                                notes = coupon.Description,
-                                                cost = totalNumberPurchasingCost * -1,
-                                                qty = 1
-                                            });
-                                        }
-                                        else
-                                        {
-                                            onetimeItems.Add(new Invoice_Items
-                                            {
-                                                product_key = coupon.Name,
-                                                notes = coupon.Description,
-                                                cost = coupon.Value * -1,
-                                                qty = 1
-                                            });
-                                        }
-                                    }
 
-                                    var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                        var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                    }
                                 }
                             }
 
@@ -566,28 +578,34 @@ namespace NumberSearch.Mvc.Controllers
                                 }
                             }
 
-                            // Associate the ported numbers with this order.
-                            foreach (var portedNumber in cart.PortedPhoneNumbers)
+                            if (cart is not null && cart.PortedPhoneNumbers is not null)
                             {
-                                portedNumber.OrderId = order.OrderId;
+                                // Associate the ported numbers with this order.
+                                foreach (var portedNumber in cart.PortedPhoneNumbers)
+                                {
+                                    portedNumber.OrderId = order.OrderId;
 
-                                var checkPort = await portedNumber.PostAsync(_postgresql).ConfigureAwait(false);
+                                    var checkPort = await portedNumber.PostAsync(_postgresql).ConfigureAwait(false);
 
-                                Log.Information($"[Checkout] Saved port request for number {portedNumber.PortedDialedNumber}.");
+                                    Log.Information($"[Checkout] Saved port request for number {portedNumber.PortedDialedNumber}.");
+                                }
                             }
 
-                            // Associate the verified numbers with this order.
-                            foreach (var verifiedNumber in cart.VerifiedPhoneNumbers)
+                            if (cart is not null && cart.VerifiedPhoneNumbers is not null)
                             {
-                                verifiedNumber.OrderId = order.OrderId;
+                                // Associate the verified numbers with this order.
+                                foreach (var verifiedNumber in cart.VerifiedPhoneNumbers)
+                                {
+                                    verifiedNumber.OrderId = order.OrderId;
 
-                                var checkVerified = await verifiedNumber.PostAsync(_postgresql).ConfigureAwait(false);
+                                    var checkVerified = await verifiedNumber.PostAsync(_postgresql).ConfigureAwait(false);
 
-                                Log.Information($"[Checkout] Saved Verified Number {verifiedNumber.VerifiedDialedNumber} to the Database.");
+                                    Log.Information($"[Checkout] Saved Verified Number {verifiedNumber.VerifiedDialedNumber} to the Database.");
+                                }
                             }
 
                             // Handle the tax information for the invoice and fall back to simplier queries if we get failures.
-                            SalesTax specificTaxRate = null;
+                            SalesTax specificTaxRate = null!;
                             try
                             {
                                 // Use our own API
@@ -613,7 +631,7 @@ namespace NumberSearch.Mvc.Controllers
 
                             var billingTaxRate = new TaxRateDatum();
 
-                            if (!(specificTaxRate is null) && !(specificTaxRate.rate is null))
+                            if (specificTaxRate is not null && specificTaxRate.rate is not null)
                             {
                                 var rateName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(specificTaxRate.rate.name.ToLowerInvariant());
                                 var taxRateName = $"{rateName}, WA - {specificTaxRate.loccode}";
@@ -1082,7 +1100,7 @@ Accelerate Networks
 206-858-8757 (call or text)";
 
                                         // This order is just for purchasing phone numbers.
-                                        if (cart.PhoneNumbers.Count() == cart.ProductOrders.Count())
+                                        if (cart is not null && cart.PhoneNumbers is not null && cart.ProductOrders is not null && cart.PhoneNumbers.Count() == cart.ProductOrders.Count())
                                         {
                                             var formattedNumbers = string.Empty;
 
@@ -1100,17 +1118,17 @@ Accelerate Networks
 
                                             if (cart.PhoneNumbers.Count() > 1)
                                             {
-                                                confirmationEmail.Subject = $"Order for {cart.PhoneNumbers.FirstOrDefault().DialedNumber} is complete!";
+                                                confirmationEmail.Subject = $"Order for {cart.PhoneNumbers.FirstOrDefault()?.DialedNumber} is complete!";
                                                 confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />  
-The order for {cart.PhoneNumbers.FirstOrDefault().DialedNumber} is ready, let us know if you would like this number to forward to another phone number immediately.
+The order for {cart.PhoneNumbers.FirstOrDefault()?.DialedNumber} is ready, let us know if you would like this number to forward to another phone number immediately.
 <br />
 <br />  
 To port these numbers to another provider, please pay <a href='{oneTimeLink}'>this invoice</a> and submit a port out request with your new provider using the following information:
 <br />
 <br />  
-Account number: {cart.PhoneNumbers.FirstOrDefault().DialedNumber}
+Account number: {cart.PhoneNumbers.FirstOrDefault()?.DialedNumber}
 <br />  
 Business Name: {order.BusinessName}
 <br />  
@@ -1136,17 +1154,17 @@ Accelerate Networks
                                             else
                                             {
 
-                                                confirmationEmail.Subject = $"Order for {cart.PhoneNumbers.FirstOrDefault().DialedNumber} is complete!";
+                                                confirmationEmail.Subject = $"Order for {cart.PhoneNumbers.FirstOrDefault()?.DialedNumber} is complete!";
                                                 confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />  
-The order for {cart.PhoneNumbers.FirstOrDefault().DialedNumber} is ready, let us know if you would like this number to forward to another phone number immediately.
+The order for {cart.PhoneNumbers.FirstOrDefault()?.DialedNumber} is ready, let us know if you would like this number to forward to another phone number immediately.
 <br />
 <br />  
 To port this number to another provider, please pay <a href='{oneTimeLink}'>this invoice</a> and submit a port out request with your new provider using the following information:
 <br />
 <br />  
-Account number: {cart.PhoneNumbers.FirstOrDefault().DialedNumber}
+Account number: {cart.PhoneNumbers.FirstOrDefault()?.DialedNumber}
 <br />  
 Business Name: {order.BusinessName}
 <br />  
@@ -1229,7 +1247,7 @@ Accelerate Networks
                             order.BackgroundWorkCompleted = false;
                             var checkOrderUpdate = order.PutAsync(_postgresql).ConfigureAwait(false);
 
-                            if (cart.PortedPhoneNumbers.Any())
+                            if (cart is not null && cart.PortedPhoneNumbers is not null && cart.PortedPhoneNumbers.Any())
                             {
                                 HttpContext.Session.Clear();
 
@@ -1257,11 +1275,11 @@ Accelerate Networks
                         // Reset the session and clear the Cart.
                         HttpContext.Session.Clear();
 
-                        return Redirect($"/Cart/Order/{cart.Order.OrderId}");
+                        return Redirect($"/Cart/Order/{cart?.Order?.OrderId}");
                     }
                 }
 
-                if (cart.PortedPhoneNumbers.Any())
+                if (cart is not null && cart.Order is not null && cart.PortedPhoneNumbers is not null && cart.PortedPhoneNumbers.Any())
                 {
                     return View("Success", new OrderWithPorts
                     {

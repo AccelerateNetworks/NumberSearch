@@ -30,7 +30,7 @@ namespace NumberSearch.Mvc.Controllers
         {
             configuration = config;
             _postgresql = configuration.GetConnectionString("PostgresqlProd");
-            var checkTeli = Guid.TryParse(configuration.GetConnectionString("TeleAPI"), out _teleToken);
+            _ = Guid.TryParse(configuration.GetConnectionString("TeleAPI"), out _teleToken);
             _bulkVSAPIKey = config.GetConnectionString("BulkVSAPIKEY");
             _azureStorage = config.GetConnectionString("AzureStorageAccount");
         }
@@ -49,10 +49,7 @@ namespace NumberSearch.Mvc.Controllers
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            // Clean up the query.
-            Query = Query?.Trim().ToLowerInvariant();
-
-            if (Query is null || Query.Length == 0)
+            if (string.IsNullOrWhiteSpace(Query))
             {
                 return View("Index", new PortingResults
                 {
@@ -62,9 +59,12 @@ namespace NumberSearch.Mvc.Controllers
                 });
             }
 
+            // Clean up the query.
+            Query = Query.Trim().ToLowerInvariant();
+
             var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(Query, out var phoneNumber);
 
-            if (checkParse)
+            if (checkParse && phoneNumber is not null)
             {
                 try
                 {
@@ -199,7 +199,7 @@ namespace NumberSearch.Mvc.Controllers
 
             var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(Query, out var phoneNumber);
 
-            if (checkParse)
+            if (checkParse && phoneNumber is not null)
             {
                 var portable = await LnpCheck.IsPortableAsync(phoneNumber.DialedNumber, _teleToken).ConfigureAwait(false);
 
@@ -286,7 +286,7 @@ namespace NumberSearch.Mvc.Controllers
                     var fileName = $"{Guid.NewGuid()}{fileExtension}";
 
                     // Create a BlobServiceClient object which will be used to create a container client
-                    BlobServiceClient blobServiceClient = new BlobServiceClient(_azureStorage);
+                    BlobServiceClient blobServiceClient = new(_azureStorage);
 
                     //Create a unique name for the container
                     string containerName = portRequest.OrderId.ToString();
@@ -339,13 +339,13 @@ namespace NumberSearch.Mvc.Controllers
             else
             {
                 Log.Error($"[Port Request] No address information submitted.");
-                return RedirectToAction("Cart", "Order", portRequest.OrderId);
+                return RedirectToAction("Cart", "Order", portRequest?.OrderId);
             }
 
             // Save the rest of the data to the DB.
             var checkPortRequest = await portRequest.PostAsync(_postgresql).ConfigureAwait(false);
 
-            if (checkPortRequest)
+            if (checkPortRequest && order is not null)
             {
                 // Associate the ported numbers with their porting information.
                 portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
@@ -383,7 +383,7 @@ Accelerate Networks
 <br />
 206-858-8757 (call or text)",
                     OrderId = order.OrderId,
-                    Subject = $"Porting information added for {portedNumbers.FirstOrDefault().PortedDialedNumber}"
+                    Subject = $"Porting information added for {portedNumbers.FirstOrDefault()?.PortedDialedNumber}"
                 };
 
                 var checkSave = await confirmationEmail.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);

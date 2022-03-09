@@ -6,10 +6,10 @@ namespace NumberSearch.Mvc
 {
     public class HardwareResult
     {
-        public Cart Cart { get; set; }
+        public Cart? Cart { get; set; }
 
-        public Product[] Phones { get; set; }
+        public Product[]? Phones { get; set; }
 
-        public Product[] Accessories { get; set; }
+        public Product[]? Accessories { get; set; }
     }
 }

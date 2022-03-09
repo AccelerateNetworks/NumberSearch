@@ -36,7 +36,7 @@ namespace NumberSearch.Mvc.Controllers
 
             var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(Query, out var phoneNumber);
 
-            if (checkParse)
+            if (checkParse && phoneNumber is not null)
             {
                 try
                 {
@@ -122,7 +122,7 @@ namespace NumberSearch.Mvc.Controllers
 
                     Log.Error($"[VerifedNumber] Failed to find number {phoneNumber.DialedNumber}");
                     Log.Error(ex.Message);
-                    Log.Error(ex.InnerException.Message);
+                    Log.Error(ex.InnerException?.Message);
 
                     return View("Index", new PortNotifierResults
                     {

@@ -115,7 +115,7 @@ namespace NumberSearch.Mvc.Controllers
                 // Add all the numbers to the cart.
                 foreach (var portableNumber in portableNumbers)
                 {
-                    var portedNumber = cart.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == portableNumber.PortedDialedNumber).FirstOrDefault();
+                    var portedNumber = cart.PortedPhoneNumbers?.Where(x => x.PortedDialedNumber == portableNumber.PortedDialedNumber).FirstOrDefault();
 
                     if (portedNumber is null)
                     {
@@ -127,7 +127,7 @@ namespace NumberSearch.Mvc.Controllers
 
                 foreach (var wirelessNumber in wirelessPortable)
                 {
-                    var portedNumber = cart.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == wirelessNumber.PortedDialedNumber).FirstOrDefault();
+                    var portedNumber = cart.PortedPhoneNumbers?.Where(x => x.PortedDialedNumber == wirelessNumber.PortedDialedNumber).FirstOrDefault();
 
                     if (portedNumber is null)
                     {
@@ -377,7 +377,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 lookup.CarrierId = carrier.CarrierId;
             }
-            var checkLog = await lookup.PostAsync(_postgresql).ConfigureAwait(false);
+            _ = await lookup.PostAsync(_postgresql).ConfigureAwait(false);
 
             return checkNumber;
         }
