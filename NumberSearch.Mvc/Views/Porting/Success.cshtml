@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Added Porting Information";
-    var orderDate = Model.Order.DateSubmitted.ToLocalTime().ToShortDateString() + "!";
+    var orderDate = Model?.Order?.DateSubmitted.ToLocalTime().ToShortDateString() + "!";
 }
 
 
@@ -13,10 +13,10 @@
     </div>
     <br />
     <div class="alert alert-success" role="alert">
-        Additional porting information for Order Id @Model.Order.OrderId has been submitted on @orderDate
+        Additional porting information for Order Id @Model?.Order?.OrderId has been submitted on @orderDate
     </div>
     <div class="alert alert-info" role="alert">
-        A confirmation email will be sent to @Model.Order.Email shortly.
+        A confirmation email will be sent to @Model?.Order?.Email shortly.
     </div>
     <div class="jumbotron shadow pb-5">
         <h1 class="display-4">Need help? Contact us!</h1>

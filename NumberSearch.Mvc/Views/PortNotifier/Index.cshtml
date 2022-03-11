@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var alreadyInCart = Model?.Cart?.VerifiedPhoneNumbers.ToDictionary(x => x?.VerifiedDialedNumber, x => x);
+    var alreadyInCart = Model?.Cart?.VerifiedPhoneNumbers?.ToDictionary(x => x.VerifiedDialedNumber, x => x);
 }
 
 <div class="container">
@@ -51,23 +51,24 @@
             <div class="table-responsive">
                 <table class="table table-striped table-borderless table-hover">
                     <tbody>
-                        @{
+                        @if (Model?.VerifiedPhoneNumber is not null)
+                        {
                             var location = $"{Model.VerifiedPhoneNumber?.City ?? "Unknown City"}, {Model.VerifiedPhoneNumber?.Province ?? "Unknown State"}";
-                            var formattedNumber = $"({Model.VerifiedPhoneNumber.NPA}) {Model.VerifiedPhoneNumber.NXX}-{Model.VerifiedPhoneNumber.XXXX.ToString("0000")}";
-                            var number = Model.VerifiedPhoneNumber.VerifiedDialedNumber;
+                            var formattedNumber = $"({Model.VerifiedPhoneNumber?.NPA}) {Model.VerifiedPhoneNumber?.NXX}-{Model.VerifiedPhoneNumber?.XXXX.ToString("0000")}";
+                            var number = Model.VerifiedPhoneNumber?.VerifiedDialedNumber;
                             <tr>
                                 <td scope="row"><h4>@formattedNumber</h4></td>
                                 <td class="d-none d-sm-table-cell">@Html.Raw(number)</td>
                                 <td class="d-none d-sm-table-cell">@location</td>
                                 <td>
                                     @{
-                                        if (alreadyInCart.TryGetValue(Model.VerifiedPhoneNumber.VerifiedDialedNumber, out var _))
+                                        if (alreadyInCart is not null && Model.VerifiedPhoneNumber is not null && alreadyInCart.TryGetValue(Model.VerifiedPhoneNumber.VerifiedDialedNumber, out var _))
                                         {
                                             <button onclick="RemoveFromCart('VerifiedPhoneNumber', '@Model.VerifiedPhoneNumber.VerifiedDialedNumber', 1, this)" class="btn btn-outline-danger">Remove</button>
                                         }
                                         else
                                         {
-                                            <button onclick="AddToCart('VerifiedPhoneNumber', '@Model.VerifiedPhoneNumber.VerifiedDialedNumber', 1, this)" class="btn btn-outline-primary">Add to Cart</button>
+                                            <button onclick="AddToCart('VerifiedPhoneNumber', '@Model.VerifiedPhoneNumber?.VerifiedDialedNumber', 1, this)" class="btn btn-outline-primary">Add to Cart</button>
                                         }
                                     }
                                 </td>

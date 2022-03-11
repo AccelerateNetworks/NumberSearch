@@ -17,7 +17,7 @@
 <div class="p-5">
     <div class="container">
         <ul class="nav nav-tabs" id="myTab" role="tablist">
-            @if (!Model.Phones.Any())
+            @if (Model.Phones is not null && !Model.Phones.Any())
             {
                 <li class="nav-item" role="presentation">
                     <a class="nav-link" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Phones</a>
@@ -38,18 +38,19 @@
         </ul>
         <br />
         <div class="tab-content" id="myTabContent">
-            @if (!Model.Phones.Any())
+            @if (Model.Phones is not null && !Model.Phones.Any())
             {
                 <div class="tab-pane fade" id="home" role="tabpanel" aria-labelledby="home-tab">
                     <div class="row row-cols-1 row-cols-md-3">
-                        @{
-                            var inCart = Model?.Cart?.ProductOrders;
+                        @if (Model?.Cart?.ProductOrders is not null && Model?.Phones is not null)
+                        {
+                            var inCart = Model.Cart.ProductOrders;
                             var products = Model.Phones;
-                            foreach (var product in products?.Where(x => x.Public is true).OrderBy(x => x.DisplayPriority))
+                            foreach (var product in products.Where(x => x.Public is true).OrderBy(x => x.DisplayPriority))
                             {
                                 var quantity = 0;
                                 var quantityCount = inCart?.Where(x => x.ProductId == product.ProductId).FirstOrDefault();
-                                if ((quantityCount is not null) && (quantityCount.Quantity > 0))
+                                if (quantityCount is not null && quantityCount.Quantity > 0)
                                 {
                                     quantity = quantityCount.Quantity;
                                 }
@@ -107,12 +108,15 @@
                 </div>
                 <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
                     <div class="row row-cols-1 row-cols-md-3">
-                        @{
-                            foreach (var product in Model.Accessories?.Where(x => x.Public is true).OrderBy(x => x.DisplayPriority))
+                        @if (Model?.Cart?.ProductOrders is not null && Model?.Accessories is not null)
+                        {
+                            var inCart = Model.Cart.ProductOrders;
+
+                            foreach (var product in Model.Accessories.Where(x => x.Public is true).OrderBy(x => x.DisplayPriority))
                             {
                                 var quantity = 0;
                                 var quantityCount = inCart?.Where(x => x.ProductId == product.ProductId).FirstOrDefault();
-                                if ((quantityCount is not null) && (quantityCount.Quantity > 0))
+                                if (quantityCount is not null && quantityCount.Quantity > 0)
                                 {
                                     quantity = quantityCount.Quantity;
                                 }
@@ -173,10 +177,11 @@
             {
                 <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
                     <div class="row row-cols-1 row-cols-md-3">
-                        @{
-                            var inCart = Model?.Cart?.ProductOrders;
+                        @if (Model?.Cart?.ProductOrders is not null && Model?.Phones is not null)
+                        {
+                            var inCart = Model.Cart.ProductOrders;
                             var products = Model.Phones;
-                            foreach (var product in products?.Where(x => x.Public is true).OrderBy(x => x.DisplayPriority))
+                            foreach (var product in products.Where(x => x.Public is true).OrderBy(x => x.DisplayPriority))
                             {
                                 var quantity = 0;
                                 var quantityCount = inCart?.Where(x => x.ProductId == product.ProductId).FirstOrDefault();
@@ -238,12 +243,15 @@
                 </div>
                 <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
                     <div class="row row-cols-1 row-cols-md-3">
-                        @{
-                            foreach (var product in Model.Accessories?.Where(x => x.Public is true).OrderBy(x => x.DisplayPriority))
+                        @if (Model?.Cart?.ProductOrders is not null && Model?.Accessories is not null)
+                        {
+                            var inCart = Model.Cart.ProductOrders;
+
+                            foreach (var product in Model.Accessories.Where(x => x.Public is true).OrderBy(x => x.DisplayPriority))
                             {
                                 var quantity = 0;
                                 var quantityCount = inCart?.Where(x => x.ProductId == product.ProductId).FirstOrDefault();
-                                if ((quantityCount is not null) && (quantityCount.Quantity > 0))
+                                if (quantityCount is not null && quantityCount.Quantity > 0)
                                 {
                                     quantity = quantityCount.Quantity;
                                 }

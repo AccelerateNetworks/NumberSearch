@@ -47,8 +47,9 @@
                 </tr>
             </thead>
             <tbody>
-                @{
-                    foreach (var product in Model?.Phones)
+                @if (Model?.Phones is not null)
+                {
+                    foreach (var product in Model.Phones)
                     {
                         <tr>
                             <td>

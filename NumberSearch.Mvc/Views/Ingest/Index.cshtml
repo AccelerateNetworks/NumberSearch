@@ -9,67 +9,58 @@
 
 <script type="text/javascript">
     @{
-        var graphData = Model?.Ingests.Where(x => x.StartDate > DateTime.Now.AddHours(-12)).OrderBy(x => x.StartDate).ToArray();
-        var commaString = string.Empty;
-        foreach (var ingest in graphData)
+        if (Model?.Ingests is not null)
         {
-            commaString += $"{ingest.NumbersRetrived}, ";
-        }
-        @Html.Raw($"var numbersRetrivedArr = [{commaString}];");
-      }
+            var graphData = Model.Ingests.Where(x => x.StartDate > DateTime.Now.AddHours(-12)).OrderBy(x => x.StartDate).ToArray();
+            var commaString = string.Empty;
+            foreach (var ingest in graphData)
+            {
+                commaString += $"{ingest.NumbersRetrived}, ";
+            }
+            @Html.Raw($"var numbersRetrivedArr = [{commaString}];")
 
-    @{
-        commaString = string.Empty;
-        foreach (var ingest in graphData)
-        {
-            commaString += $"{ingest.IngestedNew}, ";
-        }
-        @Html.Raw($"var ingestedNewArr = [{commaString}];");
-    }
+            commaString = string.Empty;
+            foreach (var ingest in graphData)
+            {
+                commaString += $"{ingest.IngestedNew}, ";
+            }
+            @Html.Raw($"var ingestedNewArr = [{commaString}];")
 
-    @{
-        commaString = string.Empty;
-        foreach (var ingest in graphData)
-        {
-            commaString += $"{ingest.FailedToIngest}, ";
-        }
-        @Html.Raw($"var failedToIngestArr = [{commaString}];");
-    }
+            commaString = string.Empty;
+            foreach (var ingest in graphData)
+            {
+                commaString += $"{ingest.FailedToIngest}, ";
+            }
+            @Html.Raw($"var failedToIngestArr = [{commaString}];")
 
-    @{
-        commaString = string.Empty;
-        foreach (var ingest in graphData)
-        {
-            commaString += $"{ingest.UpdatedExisting}, ";
-        }
-        @Html.Raw($"var updatedExisting = [{commaString}];");
-    }
+            commaString = string.Empty;
+            foreach (var ingest in graphData)
+            {
+                commaString += $"{ingest.UpdatedExisting}, ";
+            }
+            @Html.Raw($"var updatedExisting = [{commaString}];")
 
-    @{
-        commaString = string.Empty;
-        foreach (var ingest in graphData)
-        {
-            commaString += $"{ingest.Unchanged}, ";
-        }
-        @Html.Raw($"var unchangedArr = [{commaString}];");
-    }
+            commaString = string.Empty;
+            foreach (var ingest in graphData)
+            {
+                commaString += $"{ingest.Unchanged}, ";
+            }
+            @Html.Raw($"var unchangedArr = [{commaString}];")
 
-    @{
-        commaString = string.Empty;
-        foreach (var ingest in graphData)
-        {
-            commaString += $"{ingest.Removed}, ";
-        }
-        @Html.Raw($"var removedArr = [{commaString}];");
-    }
+            commaString = string.Empty;
+            foreach (var ingest in graphData)
+            {
+                commaString += $"{ingest.Removed}, ";
+            }
+            @Html.Raw($"var removedArr = [{commaString}];")
 
-        @{
-        commaString = string.Empty;
-        foreach (var ingest in graphData)
-        {
-            commaString += $"\"{ingest.StartDate.ToString("h:mm tt")}\", ";
+            commaString = string.Empty;
+            foreach (var ingest in graphData)
+            {
+                commaString += $"\"{ingest.StartDate.ToString("h:mm tt")}\", ";
+            }
+            @Html.Raw($"var dateArr = [{commaString}];")
         }
-        @Html.Raw($"var dateArr = [{commaString}];");
     }
 
     const numIngests = Array.from({
@@ -154,13 +145,13 @@
     <canvas id="myChart" width="400" height="200" class="pb-5"></canvas>
 
     @{
-        if (Model != null && Model?.Ingests.Count() > 0)
+        if (Model is not null && Model?.Ingests is not null && Model.Ingests.Any() && Model?.PriorityAreaCodes is not null)
         {
             @*var total = $"{Model.Ingests.Count()} ingests have been performed!";
                 <div class="alert alert-success" role="alert">
-                    @total
+                @total
                 </div>*@
-            var timeAgo = DateTime.Now - Model?.Ingests.FirstOrDefault()?.StartDate;
+            var timeAgo = DateTime.Now - Model.Ingests.FirstOrDefault()?.StartDate;
             var last = $"Last ingest performed {timeAgo.GetValueOrDefault().Minutes} Minutes ago.";
             var oneHour = DateTime.Now - DateTime.Now.AddHours(-1);
             if (timeAgo > oneHour)
@@ -177,7 +168,7 @@
             }
 
             var statusSymbol = "✔️";
-            foreach (var code in Model?.PriorityAreaCodes)
+            foreach (var code in Model.PriorityAreaCodes)
             {
                 if (code.Item2 < 10)
                 {
@@ -231,7 +222,7 @@
                                 @{
                                     var executivePortion = Model?.TotalExecutiveNumbers * 100M / Model?.TotalPhoneNumbers;
                                 }
-                                @executivePortion.Value.ToString("F") %
+                                @executivePortion!.Value.ToString("F") %
                             </td>
                         </tr>
                         <tr>
@@ -245,7 +236,7 @@
                                 @{
                                     var premiumPortion = Model?.TotalPremiumNumbers * 100M / Model?.TotalPhoneNumbers;
                                 }
-                                @premiumPortion.Value.ToString("F") %
+                                @premiumPortion!.Value.ToString("F") %
                             </td>
                         </tr>
                         <tr>
@@ -259,7 +250,7 @@
                                 @{
                                     var standardPortion = Model?.TotalStandardNumbers * 100M / Model?.TotalPhoneNumbers;
                                 }
-                                @standardPortion.Value.ToString("F") %
+                                @standardPortion!.Value.ToString("F") %
                             </td>
                         </tr>
                     </tbody>
@@ -270,8 +261,9 @@
                     <thead>
                         <tr>
                             <th>Priority Area Codes</th>
-                            @{
-                                foreach (var code in Model?.PriorityAreaCodes)
+                            @if (Model?.PriorityAreaCodes is not null)
+                            {
+                                foreach (var code in Model.PriorityAreaCodes)
                                 {
                                     <th>
                                         (@code.Item1)
@@ -283,8 +275,9 @@
                     <tbody>
                         <tr>
                             <td>Count</td>
-                            @{
-                                foreach (var code in Model?.PriorityAreaCodes)
+                            @if (Model?.PriorityAreaCodes is not null)
+                            {
+                                foreach (var code in Model.PriorityAreaCodes)
                                 {
                                     <td>
                                         @code.Item2
@@ -320,15 +313,16 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @{
+                        @if (Model is not null && Model?.Ingests is not null && Model?.CurrentState is not null)
+                        {
                             var oneDayAgo = DateTime.Now.AddDays(-1);
-                            var providers = Model?.Ingests.Select(x => x.IngestedFrom).Distinct();
+                            var providers = Model.Ingests.Select(x => x.IngestedFrom).Distinct();
 
                             foreach (var provider in providers)
                             {
-                                var ingests = Model?.Ingests.Where(x => x.IngestedFrom == provider && x.EndDate >= oneDayAgo);
-                                var ingestsSeven = Model?.Ingests.Where(x => x.IngestedFrom == provider && x.EndDate >= DateTime.Now.AddDays(-7));
-                                var currentCount = Model?.CurrentState.Where(x => x.Item1 == provider);
+                                var ingests = Model!.Ingests.Where(x => x.IngestedFrom == provider && x.EndDate >= oneDayAgo);
+                                var ingestsSeven = Model!.Ingests.Where(x => x.IngestedFrom == provider && x.EndDate >= DateTime.Now.AddDays(-7));
+                                var currentCount = Model!.CurrentState.Where(x => x.Item1 == provider);
                                 <tr>
                                     <td>
                                         @provider
@@ -338,7 +332,7 @@
                                             var portion = currentCount.FirstOrDefault().Item2 * 100M / Model?.TotalPhoneNumbers;
                                         }
                                         @currentCount.FirstOrDefault().Item2
-                                        (@portion.Value.ToString("F") %)
+                                        (@portion!.Value.ToString("F") %)
                                     </td>
                                     <td>
                                         @{
@@ -384,7 +378,7 @@
                                     <td>
                                         @{
                                             var churn = ingests.Count() > 0 ? ingests?.Average(x => x.Removed) : 0;
-                                            var formattedChurn = $"{churn.Value.ToString("F")} Numbers Removed";
+                                            var formattedChurn = $"{churn!.Value.ToString("F")} Numbers Removed";
                                         }
                                         @formattedChurn
                                     </td>
@@ -414,7 +408,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @{
+                        @if (Model?.Ingests is not null)
+                        {
                             foreach (var ingest in Model.Ingests.Take(31))
                             {
                                 var timeElapsed = ingest.StartDate - ingest.EndDate;
@@ -423,7 +418,7 @@
                                         if (ingest?.IngestedFrom == "All")
                                         {
                                             <td class="table-success">@ingest?.IngestedFrom</td>
-                                            <td class="table-success">@ingest.NumbersRetrived</td>
+                                            <td class="table-success">@ingest!.NumbersRetrived</td>
                                             <td class="table-success">@ingest.IngestedNew</td>
                                             <td class="table-success">@ingest.FailedToIngest</td>
                                             <td class="table-success">@ingest.UpdatedExisting</td>
@@ -436,7 +431,7 @@
                                         else
                                         {
                                             <td>@ingest?.IngestedFrom</td>
-                                            <td>@ingest.NumbersRetrived</td>
+                                            <td>@ingest!.NumbersRetrived</td>
                                             <td>@ingest.IngestedNew</td>
                                             <td>@ingest.FailedToIngest</td>
                                             <td>@ingest.UpdatedExisting</td>

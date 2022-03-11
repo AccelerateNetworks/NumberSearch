@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var alreadyInCart = Model?.Cart?.PortedPhoneNumbers.ToDictionary(x => x?.PortedDialedNumber, x => x);
+    var alreadyInCart = Model?.Cart?.PortedPhoneNumbers?.ToDictionary(x => x.PortedDialedNumber, x => x);
 
     var searchText = string.Empty;
     if (Model?.Query != null)
@@ -54,10 +54,11 @@
                 <div class="table-responsive shadow-sm mt-3 mb-5">
                     <table class="table table-striped table-borderless table-hover">
                         <tbody>
-                            @{
+                            @if (Model?.PortedPhoneNumber is not null)
+                            {
                                 var location = $"{Model.PortedPhoneNumber?.City ?? "Unknown City"}, {Model.PortedPhoneNumber?.State ?? "Unknown State"}";
-                                var formattedNumber = $"({Model.PortedPhoneNumber.NPA}) {Model.PortedPhoneNumber.NXX}-{Model.PortedPhoneNumber.XXXX.ToString("0000")}";
-                                var number = Model.PortedPhoneNumber.PortedDialedNumber;
+                                var formattedNumber = $"({Model.PortedPhoneNumber?.NPA}) {Model.PortedPhoneNumber?.NXX}-{Model.PortedPhoneNumber?.XXXX.ToString("0000")}";
+                                var number = Model?.PortedPhoneNumber?.PortedDialedNumber;
                                 <tr>
                                     <td scope="row"><h4>@formattedNumber</h4></td>
                                     <td class="d-none d-sm-table-cell">@Html.Raw(number)</td>
@@ -65,13 +66,13 @@
                                     <td></td>
                                     <td>
                                         @{
-                                            if (alreadyInCart.TryGetValue(Model.PortedPhoneNumber.PortedDialedNumber, out var _))
+                                            if (alreadyInCart is not null && Model?.PortedPhoneNumber is not null && alreadyInCart.TryGetValue(Model.PortedPhoneNumber.PortedDialedNumber, out var _))
                                             {
                                                 <button onclick="RemoveFromCart('PortedPhoneNumber', '@Model.PortedPhoneNumber.PortedDialedNumber', 1, this)" class="btn btn-outline-danger">Remove</button>
                                             }
                                             else
                                             {
-                                                <button onclick="AddToCart('PortedPhoneNumber', '@Model.PortedPhoneNumber.PortedDialedNumber', 1, this)" class="btn btn-outline-primary">Add to Cart</button>
+                                                <button onclick="AddToCart('PortedPhoneNumber', '@Model?.PortedPhoneNumber?.PortedDialedNumber', 1, this)" class="btn btn-outline-primary">Add to Cart</button>
                                             }
                                         }
                                     </td>

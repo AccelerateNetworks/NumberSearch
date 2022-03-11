@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Order Complete";
-    var orderDate = Model.Order.DateSubmitted.ToLocalTime().ToShortDateString() + "!";
+    var orderDate = $"{Model?.Order?.DateSubmitted.ToLocalTime().ToShortDateString()}!";
 }
 
 @*https://stackoverflow.com/questions/48613992/bootstrap-4-file-input-doesnt-show-the-file-name*@
@@ -139,8 +139,9 @@
                     <div class="col-md-4 mb-3">
                         <label for="billingPhone">Current Billing Phone Number</label>
                         <select asp-for="PortRequest.BillingPhone" class="custom-select d-block w-100" id="billingPhone" title="Also known as the BTN. This is the number that is normally provided on a copy of your bill or statement in the upper right corner or is the first number listed on the bill." required>
-                            @{
-                                foreach (var number in Model?.PhoneNumbers)
+                            @if (Model?.PhoneNumbers is not null)
+                            {
+                                foreach (var number in Model.PhoneNumbers)
                                 {
                                     if (Model?.PortRequest?.BillingPhone == number.PortedDialedNumber)
                                     {
@@ -345,8 +346,9 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="locationType">Numbers to Port</label>
-                        @{
-                            foreach (var number in Model?.PhoneNumbers)
+                        @if (Model?.PhoneNumbers is not null)
+                        {
+                            foreach (var number in Model.PhoneNumbers)
                             {
                                 <h4>@number.PortedDialedNumber</h4>
                             }
@@ -354,7 +356,7 @@
                     </div>
                 </div>
 
-            
+
 
                 <hr class="mb-4">
                 <button class="btn btn-primary btn-lg btn-block shadow" type="submit" value="Submit">Request A Port</button>
@@ -369,10 +371,10 @@
             </div>
             <br />
             <div class="alert alert-success" role="alert">
-                Your order has been submitted on @orderDate You can <a href="https://acceleratenetworks.com/cart/order/@Model.Order.OrderId">review it here</a>.
+                Your order has been submitted on @orderDate You can <a href="https://acceleratenetworks.com/cart/order/@Model?.Order?.OrderId">review it here</a>.
             </div>
             <div class="alert alert-info" role="alert">
-                A confirmation email will be sent to @Model.Order.Email shortly.
+                A confirmation email will be sent to @Model?.Order?.Email shortly.
             </div>
             if (!string.IsNullOrWhiteSpace(Model?.Order?.UpfrontInvoiceLink))
             {

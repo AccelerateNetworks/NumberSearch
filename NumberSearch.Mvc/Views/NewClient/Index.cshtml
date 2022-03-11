@@ -178,7 +178,7 @@
                         <tbody id="regextstable">
                             @if (Model?.NewClient?.ExtensionRegistrations is not null)
                             {
-                                foreach (var number in Model?.NewClient?.ExtensionRegistrations)
+                                foreach (var number in Model.NewClient.ExtensionRegistrations)
                                 {
                                     <tr id='@number.ExtensionRegistrationId'>
                                         <td>@number?.ExtensionNumber</td>
@@ -187,7 +187,7 @@
                                         <td>@number?.ModelOfPhone</td>
                                         <td>@number?.OutboundCallerId</td>
                                         <td>
-                                            <button type="button" onclick='RemoveExtensionRegistration("@Model?.NewClient?.NewClientId", "@number.ExtensionRegistrationId", this)' class="btn btn-outline-danger">
+                                            <button type="button" onclick='RemoveExtensionRegistration("@Model?.NewClient?.NewClientId", "@number?.ExtensionRegistrationId", this)' class="btn btn-outline-danger">
                                                 <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                 Remove
                                             </button>
@@ -207,16 +207,16 @@
                         <datalist id="model-list">
                             @{
 
-                                if (orderedPhones is null || orderedPhones.Length < 1)
+                                if ((orderedPhones is null || orderedPhones.Length < 1) && Model?.Products is not null)
                                 {
-                                    foreach (var product in Model?.Products)
+                                    foreach (var product in Model.Products)
                                     {
                                         <option value="@product.Name">@product.Name</option>
                                     }
                                 }
                                 else
                                 {
-                                    foreach (var item in orderedPhones)
+                                    foreach (var item in orderedPhones!)
                                     {
                                         var productName = Model?.Products?.Where(x => x.ProductId == item.ProductId).FirstOrDefault()?.Name;
                                         <option value="@productName">@productName</option>
@@ -227,8 +227,9 @@
                         </datalist>
                         <input type="text" class="form-control" id="callerId" list="callerId-list" placeholder="Outbound Caller Id">
                         <datalist id="callerId-list">
-                            @{
-                                foreach (var number in Model?.PhoneNumbers)
+                            @if (Model?.PhoneNumbers is not null)
+                            {
+                                foreach (var number in Model.PhoneNumbers)
                                 {
                                     <option value="@number">@number</option>
                                 }
@@ -252,7 +253,7 @@
                 <div class="input-group">
                     <div class="btn-group btn-group-toggle" data-toggle="buttons">
                         @{
-                            if (Model.NewClient.PhoneMenu)
+                            if (Model?.NewClient?.PhoneMenu is not null && Model.NewClient.PhoneMenu)
                             {
                                 <label class="btn btn-outline-secondary">
                                     <input asp-for="NewClient.PhoneMenu" type="radio" id="pmoption1" value="true" checked> Phone Menu
@@ -297,14 +298,14 @@
                         <tbody id="menuopttable">
                             @if (Model?.NewClient?.NumberDescriptions is not null)
                             {
-                                foreach (var number in Model?.NewClient?.PhoneMenuOptions)
+                                foreach (var number in Model.NewClient.PhoneMenuOptions)
                                 {
                                     <tr>
                                         <td>@number?.MenuOption</td>
                                         <td>@number?.Destination</td>
                                         <td>@number?.Description</td>
                                         <td>
-                                            <button type="button" onclick='RemovePhoneMenuOption("@Model?.NewClient?.NewClientId", "@number.PhoneMenuOptionId", this)' class="btn btn-outline-danger">
+                                            <button type="button" onclick='RemovePhoneMenuOption("@Model?.NewClient?.NewClientId", "@number?.PhoneMenuOptionId", this)' class="btn btn-outline-danger">
                                                 <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                 Remove
                                             </button>
@@ -362,14 +363,14 @@
                         <tbody id="numdestable">
                             @if (Model?.NewClient?.NumberDescriptions is not null)
                             {
-                                foreach (var number in Model?.NewClient?.NumberDescriptions)
+                                foreach (var number in Model.NewClient.NumberDescriptions)
                                 {
                                     <tr>
                                         <td>@number?.PhoneNumber</td>
                                         <td>@number?.Description</td>
                                         <td>@number?.Prefix</td>
                                         <td>
-                                            <button type="button" onclick='RemoveNumberDescription("@Model?.NewClient?.NewClientId", "@number.NumberDescriptionId", this)' class="btn btn-outline-danger">
+                                            <button type="button" onclick='RemoveNumberDescription("@Model?.NewClient?.NewClientId", "@number?.NumberDescriptionId", this)' class="btn btn-outline-danger">
                                                 <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                 Remove
                                             </button>
@@ -384,8 +385,9 @@
                     <div class="input-group">
                         <input type="text" class="form-control" id="phoneNumber" list="phoneNumber-list" placeholder="Phone Number">
                         <datalist id="phoneNumber-list">
-                            @{
-                                foreach (var number in Model?.PhoneNumbers)
+                            @if (Model?.PhoneNumbers is not null)
+                            {
+                                foreach (var number in Model.PhoneNumbers)
                                 {
                                     <option value="@number">@number</option>
                                 }
@@ -410,7 +412,7 @@
                     <div class="form-group">
                         <div class="btn-group btn-group-toggle" data-toggle="buttons">
                             @{
-                                if (Model.NewClient.TextingService)
+                                if (Model?.NewClient?.TextingService is not null && Model.NewClient.TextingService)
                                 {
                                     <label class="btn btn-outline-secondary">
                                         <input asp-for="NewClient.TextingService" type="radio" id="tsoption1" value="true" checked> Texting Service
