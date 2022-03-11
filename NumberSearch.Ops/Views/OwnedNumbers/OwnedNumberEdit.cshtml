@@ -36,7 +36,7 @@
         }
     }
 </div>
-<form action="/Home/OwnedNumbers/@Model.DialedNumber" method="post" class="needs-validation">
+<form action="/Home/OwnedNumbers/@Model?.DialedNumber" method="post" class="needs-validation">
     @Html.AntiForgeryToken()
     <div class="row">
         <div class="col-md-6 mb-3">

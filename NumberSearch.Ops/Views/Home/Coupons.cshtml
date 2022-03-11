@@ -16,26 +16,26 @@
     <div class="row">
         <div class="col mb-3" hidden>
             <label for="productId">Coupon Id</label>
-            <input asp-for="Coupon.CouponId" type="text" class="form-control" id="productId" readonly />
+            <input asp-for="Coupon!.CouponId" type="text" class="form-control" id="productId" readonly />
         </div>
         <div class="col mb-3">
             <label for="name">Name</label>
-            <input asp-for="Coupon.Name" type="text" class="form-control" id="name" placeholder="FreePhones" required>
+            <input asp-for="Coupon!.Name" type="text" class="form-control" id="name" placeholder="FreePhones" required>
         </div>
         <div class="col mb-3">
             <label for="description">Description</label>
-            <input asp-for="Coupon.Description" type="text" class="form-control" id="description" placeholder="Please charge the customer money for doing work." required>
+            <input asp-for="Coupon!.Description" type="text" class="form-control" id="description" placeholder="Please charge the customer money for doing work." required>
         </div>
         <div class="col mb-3">
             <label for="description">Type</label>
-            <input asp-for="Coupon.Type" type="text" class="form-control" id="type" placeholder="What type of coupon is this?" required>
+            <input asp-for="Coupon!.Type" type="text" class="form-control" id="type" placeholder="What type of coupon is this?" required>
         </div>
         <div class="col mb-3">
             <label for="description">Value</label>
-            <input asp-for="Coupon.Value" type="number" class="form-control" id="value" required>
+            <input asp-for="Coupon!.Value" type="number" class="form-control" id="value" required>
         </div>
         <div class="col mb-3 form-check">
-            <input asp-for="Coupon.Public" type="checkbox" class="form-check-input" id="public">
+            <input asp-for="Coupon!.Public" type="checkbox" class="form-check-input" id="public">
             <label for="public" class="form-check-label">Publicly Visible</label>
         </div>
     </div>
@@ -71,8 +71,9 @@
             </tr>
         </thead>
         <tbody>
-            @{
-                foreach (var coupon in Model?.Coupons)
+            @if (Model?.Coupons is not null)
+            {
+                foreach (var coupon in Model.Coupons)
                 {
                     <tr>
                         <td>

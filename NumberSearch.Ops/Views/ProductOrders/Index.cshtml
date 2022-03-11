@@ -6,7 +6,7 @@
 
 <div class="d-flex justify-content-between align-items-center">
     <h1 class="display-4 p-3">🎁 Product Orders</h1>
-    <a asp-action="Create" asp-route-orderId="@Model?.ProductOrders.FirstOrDefault()?.OrderId" class="btn btn-lg btn-success">Create New</a>
+    <a asp-action="Create" asp-route-orderId="@Model?.ProductOrders?.FirstOrDefault()?.OrderId" class="btn btn-lg btn-success">Create New</a>
 </div>
 <div class="table-responsive">
     <table class="table table-striped table-borderless table-hover" id="table">
@@ -30,8 +30,9 @@
             </tr>
         </thead>
         <tbody>
-            @{
-                foreach (var item in Model?.ProductOrders)
+            @if (Model?.ProductOrders is not null)
+            {
+                foreach (var item in Model.ProductOrders)
                 {
                     <tr>
                         <td>
@@ -83,9 +84,9 @@
                         </td>
                         <td>
                             <div class="btn-group" role="group" aria-label="Basic example">
-                                <a asp-action="Edit" asp-route-id="@item.ProductOrderId" class="btn btn-warning">Edit</a>
-                                <a asp-action="Details" asp-route-id="@item.ProductOrderId" class="btn btn-primary">Details</a>
-                                <a asp-action="Delete" asp-route-id="@item.ProductOrderId" class="btn btn-danger">Delete</a>
+                                <a asp-action="Edit" asp-route-id="@item?.ProductOrderId" class="btn btn-warning">Edit</a>
+                                <a asp-action="Details" asp-route-id="@item?.ProductOrderId" class="btn btn-primary">Details</a>
+                                <a asp-action="Delete" asp-route-id="@item?.ProductOrderId" class="btn btn-danger">Delete</a>
                             </div>
                         </td>
                     </tr>

@@ -284,50 +284,53 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var number in Model?.PhoneNumbers)
+                    @if (Model?.PhoneNumbers is not null)
                     {
-                        var statusText = number?.RequestStatus?.ToString() ?? "No Status";
-                        var focText = number?.DateFirmOrderCommitment?.ToString() ?? "Not Set";
-                        <tr>
-                            <td>
-                                @{
-                                    if (Model?.PortRequest?.VendorSubmittedTo == "TeliMessage")
-                                    {
-                                        <a href="https://control.teli.net/lnp/view?request_id=@number?.ExternalPortRequestId" target="_blank" rel="noopener noreferrer" class="btn btn-info text-light">
-                                            Teli @number?.ExternalPortRequestId
-                                        </a>
+                        foreach (var number in Model.PhoneNumbers)
+                        {
+                            var statusText = number?.RequestStatus?.ToString() ?? "No Status";
+                            var focText = number?.DateFirmOrderCommitment?.ToString() ?? "Not Set";
+                            <tr>
+                                <td>
+                                    @{
+                                        if (Model?.PortRequest?.VendorSubmittedTo == "TeliMessage")
+                                        {
+                                            <a href="https://control.teli.net/lnp/view?request_id=@number?.ExternalPortRequestId" target="_blank" rel="noopener noreferrer" class="btn btn-info text-light">
+                                                Teli @number?.ExternalPortRequestId
+                                            </a>
+                                        }
+                                        else if (Model?.PortRequest?.VendorSubmittedTo == "BulkVS")
+                                        {
+                                            <a href="https://portal.bulkvs.com/" target="_blank" rel="noopener noreferrer" class="btn btn-info text-light">
+                                                BulkVS @number?.ExternalPortRequestId
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            @number?.ExternalPortRequestId
+                                        }
                                     }
-                                    else if (Model?.PortRequest?.VendorSubmittedTo == "BulkVS")
-                                    {
-                                        <a href="https://portal.bulkvs.com/" target="_blank" rel="noopener noreferrer" class="btn btn-info text-light">
-                                            BulkVS @number?.ExternalPortRequestId
-                                        </a>
+                                </td>
+                                <td>
+                                    <h4>@number?.PortedDialedNumber</h4>
+                                </td>
+                                <td>
+                                    @statusText
+                                </td>
+                                <td>
+                                    @focText
+                                </td>
+                                <td>
+                                    @{
+                                        if (string.IsNullOrWhiteSpace(number?.ExternalPortRequestId))
+                                        {
+                                            <a class="btn btn-danger text-white" href="/Home/PortRequests/@Model?.Order?.OrderId/@number?.PortedDialedNumber">Remove</a>
+                                        }
                                     }
-                                    else
-                                    {
-                                        @number?.ExternalPortRequestId
-                                    }
-                                }
-                            </td>
-                            <td>
-                                <h4>@number?.PortedDialedNumber</h4>
-                            </td>
-                            <td>
-                                @statusText
-                            </td>
-                            <td>
-                                @focText
-                            </td>
-                            <td>
-                                @{
-                                    if (string.IsNullOrWhiteSpace(number?.ExternalPortRequestId))
-                                    {
-                                        <a class="btn btn-danger text-white" href="/Home/PortRequests/@Model?.Order?.OrderId/@number?.PortedDialedNumber">Remove</a>
-                                    }
-                                }
-                            </td>
-                            <td>@number?.RawResponse</td>
-                        </tr>
+                                </td>
+                                <td>@number?.RawResponse</td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>

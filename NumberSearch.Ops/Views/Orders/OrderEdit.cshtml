@@ -130,7 +130,7 @@
     <h4 class="mb-3 mt-3">
         Order Information
         <span class="badge bg-info rounded-pill">
-            @Model.Order.DateSubmitted
+            @Model?.Order?.DateSubmitted
         </span>
         @if (Model?.Order?.MergedOrderId is not null)
         {
@@ -310,15 +310,15 @@
         </div>
         <div class="col">
             <div class="d-grid gap-2">
-                <a href="/Home/Order/@Model.Order.OrderId/Delete" class="btn btn-danger btn-block">Delete</a>
+                <a href="/Home/Order/@Model?.Order?.OrderId/Delete" class="btn btn-danger btn-block">Delete</a>
             </div>
         </div>
         <div class="col">
-            <a href="/Home/Order/@Model.Order.OrderId/Delete" class="btn btn-danger btn-block" hidden>Delete</a>
+            <a href="/Home/Order/@Model?.Order?.OrderId/Delete" class="btn btn-danger btn-block" hidden>Delete</a>
         </div>
     </div>
 </form>
-<form action="/Home/Order/@Model.Order.OrderId/RegisterE911/" method="post">
+<form action="/Home/Order/@Model?.Order?.OrderId/RegisterE911/" method="post">
     <h4 class="mb-3">E911 Registration</h4>
     <div class="row">
         <div class="col-md-6 mb-3">
@@ -326,8 +326,8 @@
             <input list="e911numbers" name="serviceNumber" class="form-select mr-sm-2" id="e911" />
             <datalist id="e911numbers">
                 @{
-                    var ported = Model?.Cart?.PortedPhoneNumbers.Select(x => x.PortedDialedNumber).ToArray();
-                    var purchased = Model?.Cart?.PurchasedPhoneNumbers.Select(x => x.DialedNumber).ToArray();
+                    var ported = Model?.Cart?.PortedPhoneNumbers?.Select(x => x.PortedDialedNumber).ToArray() ?? Array.Empty<string>();
+                    var purchased = Model?.Cart?.PurchasedPhoneNumbers?.Select(x => x.DialedNumber).ToArray() ?? Array.Empty<string>();
                     foreach (var item in ported.Union(purchased).ToArray())
                     {
                         <option value="@item"></option>
@@ -366,7 +366,13 @@
 </form>
 @{
     var productOrders = Model?.Cart?.ProductOrdersToDictionary();
-    if (Model?.Cart?.PhoneNumbers.Count() > 0 || Model?.Cart?.Products.Count() > 0 || Model?.Cart?.Services.Count() > 0 || Model?.Cart?.PortedPhoneNumbers.Count() > 0 || Model?.Cart?.VerifiedPhoneNumbers.Count() > 0 || Model?.Cart?.PurchasedPhoneNumbers.Count() > 0)
+    if (Model?.Cart is not null
+        && ((Model?.Cart?.PhoneNumbers is not null && Model.Cart.PhoneNumbers.Any())
+        || (Model?.Cart?.Products is not null && Model.Cart.Products.Any())
+        || (Model?.Cart?.Services is not null && Model.Cart.Services.Any())
+        || (Model?.Cart?.PortedPhoneNumbers is not null && Model.Cart.PortedPhoneNumbers.Any())
+        || (Model?.Cart?.VerifiedPhoneNumbers is not null && Model.Cart.VerifiedPhoneNumbers.Any())
+        || (Model?.Cart?.PurchasedPhoneNumbers is not null && Model.Cart.PurchasedPhoneNumbers.Any())))
     {
         <h4 class="mb-3">Product Orders</h4>
         <div class="row mt-3">
@@ -385,72 +391,24 @@
                         </thead>
                         <tbody>
                             @{
-                                foreach (var item in Model?.Cart?.PhoneNumbers)
+                                if (Model?.Cart?.PhoneNumbers is not null && productOrders is not null)
                                 {
-                                    var productOrder = productOrders[item?.DialedNumber.ToString()];
-                                    var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
-                                    var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
-                                    var number = item.DialedNumber;
-                                    <tr>
-                                        <td scope="row"><h4>@formattedNumber</h4></td>
-                                        <td>@Html.Raw(number)</td>
-                                        <td>@location</td>
-                                        @{
-                                            if (item.NumberType == "Executive")
-                                            {
-                                                <td>$200</td>
-                                            }
-                                            else if (item.NumberType == "Premium")
-                                            {
-                                                <td>$40</td>
-                                            }
-                                            else
-                                            {
-                                                <td>$20</td>
-                                            }
-                                        }
-                                        <td>
-                                            <div class="btn-group">
-                                                <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-warning">
-                                                    Edit
-                                                </a>
-                                                <a href="/ProductOrders/Delete/@productOrder.ProductOrderId" class="btn btn-outline-danger">
-                                                    Delete
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                }
-                                foreach (var item in Model?.Cart?.PurchasedPhoneNumbers)
-                                {
-                                    var checkFind = productOrders.TryGetValue(item?.DialedNumber.ToString(), out var productOrder);
-                                    if (checkFind)
+                                    foreach (var item in Model.Cart.PhoneNumbers)
                                     {
-                                        var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX?.ToString("0000")}";
-                                        var number = item.DialedNumber;
+                                        var productOrder = productOrders[item.DialedNumber.ToString()];
+                                        var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
+                                        var formattedNumber = $"({item?.NPA}) {item?.NXX}-{item?.XXXX.ToString("0000")}";
+                                        var number = item?.DialedNumber;
                                         <tr>
                                             <td scope="row"><h4>@formattedNumber</h4></td>
-                                            <td>1</td>
+                                            <td>@Html.Raw(number)</td>
+                                            <td>@location</td>
                                             @{
-                                                if (item.NumberType == "Executive")
+                                                if (item?.NumberType == "Executive")
                                                 {
                                                     <td>$200</td>
                                                 }
-                                                else if (item.NumberType == "Premium")
-                                                {
-                                                    <td>$40</td>
-                                                }
-                                                else
-                                                {
-                                                    <td>$20</td>
-                                                }
-                                            }
-                                            @{
-                                                if (item.NumberType == "Executive")
-                                                {
-                                                    <td>$200</td>
-                                                }
-                                                else if (item.NumberType == "Premium")
+                                                else if (item?.NumberType == "Premium")
                                                 {
                                                     <td>$40</td>
                                                 }
@@ -472,19 +430,75 @@
                                         </tr>
                                     }
                                 }
-                            }
-                            @{
-                                var freePortedNumbers = Model?.Cart.Services.Count();
 
-                                foreach (var item in Model?.Cart?.PortedPhoneNumbers.ToArray())
+                                if (Model?.Cart?.PurchasedPhoneNumbers is not null && productOrders is not null)
+                                {
+                                    foreach (var item in Model.Cart.PurchasedPhoneNumbers)
+                                    {
+                                        var checkFind = productOrders.TryGetValue(item.DialedNumber!.ToString(), out var productOrder);
+                                        if (checkFind)
+                                        {
+                                            var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX?.ToString("0000")}";
+                                            var number = item.DialedNumber;
+                                            <tr>
+                                                <td scope="row"><h4>@formattedNumber</h4></td>
+                                                <td>1</td>
+                                                @{
+                                                    if (item.NumberType == "Executive")
+                                                    {
+                                                        <td>$200</td>
+                                                    }
+                                                    else if (item.NumberType == "Premium")
+                                                    {
+                                                        <td>$40</td>
+                                                    }
+                                                    else
+                                                    {
+                                                        <td>$20</td>
+                                                    }
+                                                }
+                                                @{
+                                                    if (item.NumberType == "Executive")
+                                                    {
+                                                        <td>$200</td>
+                                                    }
+                                                    else if (item.NumberType == "Premium")
+                                                    {
+                                                        <td>$40</td>
+                                                    }
+                                                    else
+                                                    {
+                                                        <td>$20</td>
+                                                    }
+                                                }
+                                                <td>
+                                                    <div class="btn-group">
+                                                        <a href="/ProductOrders/Edit/@productOrder?.ProductOrderId" class="btn btn-outline-warning">
+                                                            Edit
+                                                        </a>
+                                                        <a href="/ProductOrders/Delete/@productOrder?.ProductOrderId" class="btn btn-outline-danger">
+                                                            Delete
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                }
+                            }
+                            @if (Model?.Cart?.PortedPhoneNumbers is not null)
+                            {
+                                var freePortedNumbers = Model?.Cart?.Services?.Count();
+
+                                foreach (var item in Model!.Cart.PortedPhoneNumbers.ToArray())
                                 {
                                     var calculatedCost = 20;
 
-                                    var productOrder = Model?.Cart.ProductOrders.Where(x => x.PortedDialedNumber == item.PortedDialedNumber).FirstOrDefault();
+                                    var productOrder = Model.Cart.ProductOrders?.Where(x => x.PortedDialedNumber == item.PortedDialedNumber).FirstOrDefault();
 
                                     var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
-                                    var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
-                                    var number = item.PortedDialedNumber;
+                                    var formattedNumber = $"({item?.NPA}) {item?.NXX}-{item?.XXXX.ToString("0000")}";
+                                    var number = item?.PortedDialedNumber;
                                     <tr>
                                         <td scope="row"><h4>@formattedNumber</h4></td>
                                         <td>@Html.Raw(number)</td>
@@ -503,13 +517,14 @@
                                     </tr>
                                 }
                             }
-                            @{
-                                foreach (var item in Model?.Cart?.VerifiedPhoneNumbers)
+                            @if (Model?.Cart?.VerifiedPhoneNumbers is not null && productOrders is not null)
+                            {
+                                foreach (var item in Model.Cart.VerifiedPhoneNumbers)
                                 {
-                                    var productOrder = productOrders[item?.VerifiedPhoneNumberId.ToString()];
+                                    var productOrder = productOrders[item.VerifiedPhoneNumberId.ToString()];
                                     var location = $"{item?.City ?? "Unknown City"}, {item?.Province ?? "Unknown State"}";
-                                    var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
-                                    var number = item.VerifiedDialedNumber;
+                                    var formattedNumber = $"({item?.NPA}) {item?.NXX}-{item?.XXXX.ToString("0000")}";
+                                    var number = item?.VerifiedDialedNumber;
                                     <tr>
                                         <td scope="row"><h4>@formattedNumber</h4></td>
                                         <td>@Html.Raw(number)</td>
@@ -528,10 +543,11 @@
                                     </tr>
                                 }
                             }
-                            @{
-                                foreach (var item in Model?.Cart?.Products)
+                            @if (Model?.Cart?.Products is not null && productOrders is not null)
+                            {
+                                foreach (var item in Model.Cart.Products)
                                 {
-                                    var productOrder = productOrders[item?.ProductId.ToString()];
+                                    var productOrder = productOrders[item.ProductId.ToString()];
                                     var checkPrice = int.TryParse(item.Price, out var price);
                                     var localTotal = productOrder.Quantity * price;
                                     <tr>
@@ -561,10 +577,11 @@
                                     </tr>
                                 }
                             }
-                            @{
-                                foreach (var item in Model?.Cart?.Services)
+                            @if (Model?.Cart?.Services is not null && productOrders is not null)
+                            {
+                                foreach (var item in Model.Cart.Services)
                                 {
-                                    var productOrder = productOrders[item?.ServiceId.ToString()];
+                                    var productOrder = productOrders[item.ServiceId.ToString()];
                                     var checkPrice = int.TryParse(item.Price, out var price);
                                     var localTotal = productOrder.Quantity * price;
                                     <tr>
@@ -594,10 +611,11 @@
                                     </tr>
                                 }
                             }
-                            @{
-                                foreach (var item in Model?.Cart?.Coupons)
+                            @if (Model?.Cart?.Coupons is not null && productOrders is not null)
+                            {
+                                foreach (var item in Model.Cart.Coupons)
                                 {
-                                    var productOrder = productOrders[item?.CouponId.ToString()];
+                                    var productOrder = productOrders[item.CouponId.ToString()];
                                     <tr>
                                         <td scope="row"><h4>@item.Name</h4></td>
                                         <td>Discount</td>
@@ -631,7 +649,7 @@
             </div>
             <div class="col">
                 <div class="d-grid gap-2">
-                    <a href="/Home/Order/@Model.Order.OrderId/NewInvoices" class="btn btn-outline-warning btn-block">
+                    <a href="/Home/Order/@Model?.Order?.OrderId/NewInvoices" class="btn btn-outline-warning btn-block">
                         Regenerate Invoices
                     </a>
                 </div>
@@ -654,7 +672,7 @@
             </div>
             <div class="col">
                 <div class="d-grid gap-2">
-                    <a href="/Home/Order/@Model.Order.OrderId/NewInvoices" class="btn btn-outline-warning invisible btn-block">
+                    <a href="/Home/Order/@Model?.Order?.OrderId/NewInvoices" class="btn btn-outline-warning invisible btn-block">
                         Regenerate Invoices
                     </a>
                 </div>
@@ -686,25 +704,28 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var item in Model?.ProductItems)
+                                @if (Model?.ProductItems is not null)
                                 {
-                                    var productName = Model?.Cart?.Products.Where(x => x.ProductId == item?.ProductId).FirstOrDefault();
-                                    <tr>
-                                        <td><h4>@productName?.Name</h4></td>
-                                        <td>@item?.SerialNumber</td>
-                                        <td>@item?.MACAddress</td>
-                                        <td>@item?.Condition</td>
-                                        <td>@item?.ExternalOrderId</td>
-                                        <td><a href="@item?.ShipmentTrackingLink" target="_blank" rel="noreferrer" class="btn btn-info">Tracking Status</a></td>
-                                        <td>
-                                            <div class="btn-group" role="group" aria-label="Basic example">
-                                                <a href="/Products/Details/@item.ProductId" class="btn btn-outline-primary">Product</a>
-                                                <a href="/ProductItems/Edit/@item.ProductItemId" class="btn btn-warning">Edit</a>
-                                                <a href="/ProductItems/Details/@item.ProductItemId" class="btn btn-primary">Details</a>
-                                                <a href="/ProductItems/Delete/@item.ProductItemId" class="btn btn-danger">Delete</a>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    foreach (var item in Model.ProductItems)
+                                    {
+                                        var productName = Model?.Cart?.Products?.Where(x => x.ProductId == item?.ProductId).FirstOrDefault();
+                                        <tr>
+                                            <td><h4>@productName?.Name</h4></td>
+                                            <td>@item?.SerialNumber</td>
+                                            <td>@item?.MACAddress</td>
+                                            <td>@item?.Condition</td>
+                                            <td>@item?.ExternalOrderId</td>
+                                            <td><a href="@item?.ShipmentTrackingLink" target="_blank" rel="noreferrer" class="btn btn-info">Tracking Status</a></td>
+                                            <td>
+                                                <div class="btn-group" role="group" aria-label="Basic example">
+                                                    <a href="/Products/Details/@item?.ProductId" class="btn btn-outline-primary">Product</a>
+                                                    <a href="/ProductItems/Edit/@item?.ProductItemId" class="btn btn-warning">Edit</a>
+                                                    <a href="/ProductItems/Details/@item?.ProductItemId" class="btn btn-primary">Details</a>
+                                                    <a href="/ProductItems/Delete/@item?.ProductItemId" class="btn btn-danger">Delete</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
                                 }
                             </tbody>
                         </table>

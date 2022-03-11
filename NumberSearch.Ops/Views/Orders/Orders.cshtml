@@ -20,10 +20,11 @@
             </tr>
         </thead>
         <tbody>
-            @{
+            @if (Model?.Orders is not null)
+            {
                 foreach (var order in Model.Orders)
                 {
-                    var businessName = string.IsNullOrWhiteSpace(order.Order.BusinessName) ? "Consumer" : order.Order.BusinessName;
+                    var businessName = string.IsNullOrWhiteSpace(order.Order?.BusinessName) ? "Consumer" : order.Order.BusinessName;
                     var nextStep = "Next Step";
                     var pillColor = "danger";
                     // The order is completed, we're good.
@@ -41,12 +42,12 @@
                     }
                     else if (order?.Order?.Completed is not true)
                     {
-                        if (order.Order.Quote)
+                        if (order?.Order?.Quote is not null && order.Order.Quote)
                         {
                             nextStep = $"⭕ Pending Quote Approval";
                             pillColor = "warning";
                         }
-                        else if (order?.PortRequest is null && order.ProductOrders.Where(x => x.PortedPhoneNumberId.HasValue is true).Any())
+                        else if (order?.PortRequest is null && order?.ProductOrders is not null && order.ProductOrders.Where(x => x.PortedPhoneNumberId.HasValue is true).Any())
                         {
                             nextStep = $"⭕ Get the Porting information from the Customer";
                             pillColor = "danger";
@@ -88,7 +89,7 @@
                     }
 
                     <tr>
-                        <td data-order="@order.Order.DateSubmitted.Ticks">
+                        <td data-order="@order?.Order?.DateSubmitted.Ticks">
                             <h3>
                                 <span class="badge bg-@pillColor">
                                     @nextStep
@@ -96,7 +97,7 @@
                             </h3>
                             <h4 class="d-flex justify-content-between align-items-center mt-3">
                                 <span class="badge bg-info rounded-pill">
-                                    @order.Order.DateSubmitted
+                                    @order?.Order?.DateSubmitted
                                 </span>
                             </h4>
                             <strong>Business Name</strong>
@@ -106,13 +107,13 @@
                                     <a href="/Home/Order/@order?.Order?.OrderId" class="btn btn-danger">
                                         Edit the Order
                                     </a>
-                                    <a href="https://acceleratenetworks.com/cart/order/@order.Order.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                                    <a href="https://acceleratenetworks.com/cart/order/@order?.Order?.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
                                         Customer's View
                                     </a>
                                     <a href="/Home/Emails/@order?.Order?.OrderId" class="btn btn-warning text-light">
                                         Related Emails
                                     </a>
-                                    @if (order.ProductOrders.Where(x => !string.IsNullOrWhiteSpace(x.DialedNumber)).Any())
+                                    @if (order?.ProductOrders is not null && order.ProductOrders.Where(x => !string.IsNullOrWhiteSpace(x.DialedNumber)).Any())
                                     {
                                         <a href="/Home/NumberOrder/@order?.Order?.OrderId" class="btn btn-info text-white">
                                             Related Purchased Numbers
@@ -124,9 +125,9 @@
                                             Related Port Request
                                         </a>
                                     }
-                                    else if (order.ProductOrders.Where(x => x.PortedPhoneNumberId.HasValue).Any())
+                                    else if (order?.ProductOrders is not null && order.ProductOrders.Where(x => x.PortedPhoneNumberId.HasValue).Any())
                                     {
-                                        <a href="https://acceleratenetworks.com/Cart/PortingInformation/@order.Order.OrderId" class="btn btn-dark" target="_blank" rel="noopener noreferrer">
+                                        <a href="https://acceleratenetworks.com/Cart/PortingInformation/@order?.Order?.OrderId" class="btn btn-dark" target="_blank" rel="noopener noreferrer">
                                             Get From Customer
                                         </a>
                                     }
@@ -134,9 +135,9 @@
                             </p>
                             <p>
                                 <div class="btn-group mt-2" role="group" aria-label="Basic example">
-                                    @if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceId))
+                                    @if (!string.IsNullOrWhiteSpace(order?.Order?.BillingInvoiceId))
                                     {
-                                        if (order.Order.Quote)
+                                        if (order?.Order?.Quote is not null && order.Order.Quote)
                                         {
                                             <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
                                                 Upfront Quote
@@ -150,9 +151,9 @@
                                         }
                                     }
 
-                                    @if (!string.IsNullOrWhiteSpace(order.Order.BillingInvoiceReoccuringId))
+                                    @if (!string.IsNullOrWhiteSpace(order?.Order?.BillingInvoiceReoccuringId))
                                     {
-                                        if (order.Order.Quote)
+                                        if (order?.Order?.Quote is not null && order.Order.Quote)
                                         {
                                             <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceReoccuringId/edit" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
                                                 Recurring Quote
@@ -165,7 +166,7 @@
                                             </a>
                                         }
                                     }
-                                    @if (!string.IsNullOrWhiteSpace(order.Order.BillingClientId))
+                                    @if (!string.IsNullOrWhiteSpace(order?.Order?.BillingClientId))
                                     {
                                         <a href="https://billing.acceleratenetworks.com/clients/@order?.Order?.BillingClientId/edit" class="btn btn-info text-white" target="_blank" rel="noopener noreferrer">
                                             Billing Client
@@ -177,27 +178,27 @@
                         <td scope="row">
                             <strong>Customer Name</strong>
                             <p>
-                                @order.Order.FirstName
-                                @order.Order.LastName
+                                @order?.Order?.FirstName
+                                @order?.Order?.LastName
                                 <br />
-                                @order.Order.Email
+                                @order?.Order?.Email
                             </p>
                             <p>
-                                <a href="mailto:@order.Order.Email" class="btn btn-success" target="_blank" rel="noopener noreferrer">
+                                <a href="mailto:@order?.Order?.Email" class="btn btn-success" target="_blank" rel="noopener noreferrer">
                                     Email this Client
                                 </a>
                             </p>
                             <strong>Address</strong>
                             <p>
-                                @order.Order.Address
+                                @order?.Order?.Address
 
-                                @order.Order.Address2
+                                @order?.Order?.Address2
 
-                                @order.Order.City
+                                @order?.Order?.City
 
-                                @order.Order.State
+                                @order?.Order?.State
 
-                                @order.Order.Zip
+                                @order?.Order?.Zip
                             </p>
                             <p>
                                 <a href="https://www.google.com/maps/place/@order?.Order?.Address,+@order?.Order?.City,+@order?.Order?.State+@order?.Order?.Zip/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
@@ -206,7 +207,8 @@
                             </p>
                         </td>
                         <td>
-                            @{
+                            @if (order?.ProductOrders is not null)
+                            {
                                 var purchased = new List<ProductOrder>();
                                 var ported = new List<ProductOrder>();
                                 var services = new List<ProductOrder>();
@@ -282,7 +284,7 @@
                                         @{
                                             foreach (var product in verified)
                                             {
-                                                <a class="btn btn-outline-primary mt-1" href="/Home/NumbersToVerify/@product.OrderId">@Model?.VerifiedPhoneNumbers.Where(x => x.VerifiedPhoneNumberId == product.VerifiedPhoneNumberId).FirstOrDefault().VerifiedDialedNumber</a>
+                                                <a class="btn btn-outline-primary mt-1" href="/Home/NumbersToVerify/@product.OrderId">@Model?.VerifiedPhoneNumbers?.Where(x => x.VerifiedPhoneNumberId == product.VerifiedPhoneNumberId).FirstOrDefault()?.VerifiedDialedNumber</a>
                                             }
                                         }
                                     </p>
@@ -294,7 +296,7 @@
                                         @{
                                             foreach (var product in services)
                                             {
-                                                var serviceOutput = $"<li>{product.Quantity} x {Model.Services.Where(x => x.ServiceId == product.ServiceId).FirstOrDefault()?.Name}</li>";
+                                                var serviceOutput = $"<li>{product.Quantity} x {Model?.Services?.Where(x => x.ServiceId == product.ServiceId).FirstOrDefault()?.Name}</li>";
                                                 @Html.Raw(serviceOutput)
                                             }
                                         }
@@ -307,7 +309,7 @@
                                         @{
                                             foreach (var product in products)
                                             {
-                                                var productOutput = $"<li>{product.Quantity} x {Model.Products.Where(x => x.ProductId == product.ProductId).FirstOrDefault()?.Name}</li>";
+                                                var productOutput = $"<li>{product.Quantity} x {Model?.Products?.Where(x => x.ProductId == product.ProductId).FirstOrDefault()?.Name}</li>";
                                                 @Html.Raw(productOutput)
                                             }
                                         }
@@ -315,7 +317,7 @@
                                 }
                             }
                             @{
-                                if (!string.IsNullOrWhiteSpace(order.Order.CustomerNotes))
+                                if (!string.IsNullOrWhiteSpace(order?.Order?.CustomerNotes))
                                 {
                                     <strong>Customer Notes</strong>
                                     <p>@order.Order.CustomerNotes</p>

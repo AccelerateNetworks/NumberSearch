@@ -30,7 +30,7 @@
                             </a>
                             <h4 class="d-flex justify-content-between align-items-center mt-2">
                                 <span class="badge bg-info rounded-pill">
-                                    @port.DateSubmitted
+                                    @port?.DateSubmitted
                                 </span>
                             </h4>
                             @{
@@ -96,44 +96,44 @@
                         </td>
                         <td scope="col">
                             <strong>Business Contact</strong>
-                            <p>@port.BusinessContact</p>
+                            <p>@port?.BusinessContact</p>
                             <strong>Business Name</strong>
-                            <p>@port.BusinessName</p>
+                            <p>@port?.BusinessName</p>
                             <strong>Address</strong>
                             <p>
-                                @port.Address
+                                @port?.Address
 
-                                @port.Address2
+                                @port?.Address2
 
-                                @port.City
+                                @port?.City
 
-                                @port.State
+                                @port?.State
 
-                                @port.Zip
+                                @port?.Zip
                             </p>
                         </td>
                         <td scope="col">
                             <strong>Billing Phone Number</strong>
-                            <p>@port.BillingPhone</p>
+                            <p>@port?.BillingPhone</p>
                             <strong>Caller Id</strong>
-                            <p>@port.CallerId</p>
+                            <p>@port?.CallerId</p>
                             <strong>Location Type</strong>
-                            <p>@port.LocationType</p>
+                            <p>@port?.LocationType</p>
                             <strong>Partial Port</strong>
-                            <p>@port.PartialPort</p>
+                            <p>@port?.PartialPort</p>
                             <strong>Partial Port Description</strong>
-                            <p>@port.PartialPortDescription</p>
+                            <p>@port?.PartialPortDescription</p>
                             <strong>Provider Account Number</strong>
-                            <p>@port.ProviderAccountNumber</p>
+                            <p>@port?.ProviderAccountNumber</p>
                             <strong>Provider PIN</strong>
-                            <p>@port.ProviderPIN</p>
+                            <p>@port?.ProviderPIN</p>
                             <strong>
                                 Wireless Number
                             </strong>
-                            <p>@port.WirelessNumber</p>
+                            <p>@port?.WirelessNumber</p>
                         </td>
                         <td>
-                            <a class="btn btn-danger text-light" href="/Home/PortRequests/@port.OrderId">Edit</a>
+                            <a class="btn btn-danger text-light" href="/Home/PortRequests/@port?.OrderId">Edit</a>
                             <a href="https://www.google.com/maps/place/@port?.Address,+@port?.City,+@port?.State+@port?.Zip/" class="btn btn-secondary mt-1" target="_blank" rel="noopener noreferrer">
                                 Map
                             </a>

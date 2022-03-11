@@ -22,11 +22,11 @@
     @{
         var productOrders = Model?.Cart?.ProductOrdersToDictionary();
         if (Model?.Cart is not null
-        && (Model.Cart.PhoneNumbers is not null && Model.Cart.PhoneNumbers.Any()
-        || Model.Cart.Products is not null && Model.Cart.Products.Any()
-        || Model.Cart.Services is not null && Model.Cart.Services.Any()
-        || Model.Cart.PortedPhoneNumbers is not null && Model.Cart.PortedPhoneNumbers.Any()
-        || Model.Cart.VerifiedPhoneNumbers is not null && Model.Cart.VerifiedPhoneNumbers.Any()))
+        && ((Model.Cart.PhoneNumbers is not null && Model.Cart.PhoneNumbers.Any())
+        || (Model.Cart.Products is not null && Model.Cart.Products.Any())
+        || (Model.Cart.Services is not null && Model.Cart.Services.Any())
+        || (Model.Cart.PortedPhoneNumbers is not null && Model.Cart.PortedPhoneNumbers.Any())
+        || (Model.Cart.VerifiedPhoneNumbers is not null && Model.Cart.VerifiedPhoneNumbers.Any())))
         {
             <div class="row">
                 <div class="table-responsive shadow-sm">

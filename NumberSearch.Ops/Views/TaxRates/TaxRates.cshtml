@@ -30,7 +30,8 @@
             </tr>
         </thead>
         <tbody>
-            @{
+            @if (Model?.Rates?.data is not null)
+            {
                 foreach (var rate in Model.Rates.data)
                 {
                     <tr>

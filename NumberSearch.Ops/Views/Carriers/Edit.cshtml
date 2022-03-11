@@ -11,51 +11,51 @@
     <div class="col-md-4">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Carrier.CarrierId" />
+            <input type="hidden" asp-for="Carrier!.CarrierId" />
             <div class="form-group">
-                <label asp-for="Carrier.Name" class="control-label"></label>
-                <input asp-for="Carrier.Name" class="form-control" />
-                <span asp-validation-for="Carrier.Name" class="text-danger"></span>
+                <label asp-for="Carrier!.Name" class="control-label"></label>
+                <input asp-for="Carrier!.Name" class="form-control" />
+                <span asp-validation-for="Carrier!.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Carrier.Type" class="control-label"></label>
-                <input asp-for="Carrier.Type" class="form-control" />
-                <span asp-validation-for="Carrier.Type" class="text-danger"></span>
+                <label asp-for="Carrier!.Type" class="control-label"></label>
+                <input asp-for="Carrier!.Type" class="form-control" />
+                <span asp-validation-for="Carrier!.Type" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Carrier.Ocn" class="control-label"></label>
-                <input asp-for="Carrier.Ocn" class="form-control" />
-                <span asp-validation-for="Carrier.Ocn" class="text-danger"></span>
+                <label asp-for="Carrier!.Ocn" class="control-label"></label>
+                <input asp-for="Carrier!.Ocn" class="form-control" />
+                <span asp-validation-for="Carrier!.Ocn" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Carrier.Lec" class="control-label"></label>
-                <input asp-for="Carrier.Lec" class="form-control" />
-                <span asp-validation-for="Carrier.Lec" class="text-danger"></span>
+                <label asp-for="Carrier!.Lec" class="control-label"></label>
+                <input asp-for="Carrier!.Lec" class="form-control" />
+                <span asp-validation-for="Carrier!.Lec" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Carrier.Lectype" class="control-label"></label>
-                <input asp-for="Carrier.Lectype" class="form-control" />
-                <span asp-validation-for="Carrier.Lectype" class="text-danger"></span>
+                <label asp-for="Carrier!.Lectype" class="control-label"></label>
+                <input asp-for="Carrier!.Lectype" class="form-control" />
+                <span asp-validation-for="Carrier!.Lectype" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Carrier.Spid" class="control-label"></label>
-                <input asp-for="Carrier.Spid" class="form-control" />
-                <span asp-validation-for="Carrier.Spid" class="text-danger"></span>
+                <label asp-for="Carrier!.Spid" class="control-label"></label>
+                <input asp-for="Carrier!.Spid" class="form-control" />
+                <span asp-validation-for="Carrier!.Spid" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Carrier.Color" class="control-label"></label>
-                <input asp-for="Carrier.Color" class="form-control" />
-                <span asp-validation-for="Carrier.Color" class="text-danger"></span>
+                <label asp-for="Carrier!.Color" class="control-label"></label>
+                <input asp-for="Carrier!.Color" class="form-control" />
+                <span asp-validation-for="Carrier!.Color" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Carrier.LogoLink" class="control-label"></label>
-                <input asp-for="Carrier.LogoLink" class="form-control" />
-                <span asp-validation-for="Carrier.LogoLink" class="text-danger"></span>
+                <label asp-for="Carrier!.LogoLink" class="control-label"></label>
+                <input asp-for="Carrier!.LogoLink" class="form-control" />
+                <span asp-validation-for="Carrier!.LogoLink" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Carrier.LastUpdated" class="control-label"></label>
-                <input asp-for="Carrier.LastUpdated" class="form-control" type="datetime" readonly />
-                <span asp-validation-for="Carrier.LastUpdated" class="text-danger"></span>
+                <label asp-for="Carrier!.LastUpdated" class="control-label"></label>
+                <input asp-for="Carrier!.LastUpdated" class="form-control" type="datetime" readonly />
+                <span asp-validation-for="Carrier!.LastUpdated" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary mt-3 mb-3" />
@@ -98,41 +98,44 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var product in Model?.Lookups.OrderByDescending(x => x?.DateIngested))
+            @if (Model?.Lookups is not null)
             {
-                <tr>
-                    <td>
-                        @product?.DialedNumber
-                    </td>
-                    <td>
-                        @product?.Lrn
-                    </td>
-                    <td>
-                        @product?.Ocn
-                    </td>
-                    <td>
-                        @product?.Lec
-                    </td>
-                    <td>
-                        @product?.Lectype
-                    </td>
-                    <td>
-                        @product?.Spid
-                    </td>
-                    <td>
-                        @product?.DateIngested
-                    </td>
-                    <td>
-                        @product?.CarrierId
-                    </td>
-                    <td>
-                        <div class="btn-group" role="group" aria-label="Basic example">
-                            <a asp-action="Edit" asp-route-id="@product.PhoneNumberLookupId" class="btn btn-warning">Edit</a>
-                            <a asp-action="Details" asp-route-id="@product.PhoneNumberLookupId" class="btn btn-primary">Details</a>
-                            <a asp-action="Delete" asp-route-id="@product.PhoneNumberLookupId" class="btn btn-danger">Delete</a>
-                        </div>
-                    </td>
-                </tr>
+                foreach (var product in Model.Lookups.OrderByDescending(x => x?.DateIngested))
+                {
+                    <tr>
+                        <td>
+                            @product?.DialedNumber
+                        </td>
+                        <td>
+                            @product?.Lrn
+                        </td>
+                        <td>
+                            @product?.Ocn
+                        </td>
+                        <td>
+                            @product?.Lec
+                        </td>
+                        <td>
+                            @product?.Lectype
+                        </td>
+                        <td>
+                            @product?.Spid
+                        </td>
+                        <td>
+                            @product?.DateIngested
+                        </td>
+                        <td>
+                            @product?.CarrierId
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group" aria-label="Basic example">
+                                <a asp-action="Edit" asp-route-id="@product?.PhoneNumberLookupId" class="btn btn-warning">Edit</a>
+                                <a asp-action="Details" asp-route-id="@product?.PhoneNumberLookupId" class="btn btn-primary">Details</a>
+                                <a asp-action="Delete" asp-route-id="@product?.PhoneNumberLookupId" class="btn btn-danger">Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
             }
         </tbody>
     </table>

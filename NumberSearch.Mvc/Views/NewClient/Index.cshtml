@@ -442,7 +442,7 @@
                     <div class="form-group">
                         <div class="btn-group btn-group-toggle" data-toggle="buttons">
                             @{
-                                if (Model.NewClient.OverheadPaging)
+                                if (Model?.NewClient?.OverheadPaging is not null && Model.NewClient.OverheadPaging)
                                 {
                                     <label class="btn btn-outline-secondary">
                                         <input asp-for="NewClient.OverheadPaging" type="radio" id="opoption1" value="true" checked> Overhead Paging
@@ -474,7 +474,7 @@
                     <div class="form-group">
                         <div class="btn-group btn-group-toggle" data-toggle="buttons">
                             @{
-                                if (Model.NewClient.Intercom)
+                                if (Model?.NewClient?.Intercom is not null && Model.NewClient.Intercom)
                                 {
                                     <label class="btn btn-outline-secondary">
                                         <input asp-for="NewClient.Intercom" type="radio" id="icoption1" value="true" checked> Intercom
@@ -520,13 +520,13 @@
                         <tbody id="intercomtable">
                             @if (Model?.NewClient?.IntercomRegistrations is not null)
                             {
-                                foreach (var number in Model?.NewClient?.IntercomRegistrations)
+                                foreach (var number in Model.NewClient.IntercomRegistrations)
                                 {
                                     <tr>
                                         <td>@number?.ExtensionSendingIntercom</td>
                                         <td>@number?.ExtensionRecievingIntercom</td>
                                         <td>
-                                            <button type="button" onclick='RemoveIntercomRegistration("@Model?.NewClient?.NewClientId", "@number.IntercomRegistrationId", this)' class="btn btn-outline-danger">
+                                            <button type="button" onclick='RemoveIntercomRegistration("@Model?.NewClient?.NewClientId", "@number?.IntercomRegistrationId", this)' class="btn btn-outline-danger">
                                                 <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                 Remove
                                             </button>
@@ -558,7 +558,7 @@
                 <div class="form-group">
                     <div class="btn-group btn-group-toggle" data-toggle="buttons">
                         @{
-                            if (Model.NewClient.SpeedDial)
+                            if (Model?.NewClient?.SpeedDial is not null && Model.NewClient.SpeedDial)
                             {
                                 <label class="btn btn-outline-secondary">
                                     <input asp-for="NewClient.SpeedDial" type="radio" id="sdoption1" value="true" checked> Speed Dial
@@ -598,13 +598,13 @@
                             <tbody id="speeddialtable">
                                 @if (Model?.NewClient?.SpeedDialKeys is not null)
                                 {
-                                    foreach (var number in Model?.NewClient?.SpeedDialKeys)
+                                    foreach (var number in Model.NewClient.SpeedDialKeys)
                                     {
                                         <tr>
                                             <td>@number?.NumberOrExtension</td>
                                             <td>@number?.LabelOrName</td>
                                             <td>
-                                                <button type="button" onclick='RemoveSpeedDialKey("@Model?.NewClient?.NewClientId", "@number.SpeedDialKeyId", this)' class="btn btn-outline-danger">
+                                                <button type="button" onclick='RemoveSpeedDialKey("@Model?.NewClient?.NewClientId", "@number?.SpeedDialKeyId", this)' class="btn btn-outline-danger">
                                                     <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                     Remove
                                                 </button>
@@ -637,7 +637,7 @@
                     <div class="form-group">
                         <div class="btn-group btn-group-toggle" data-toggle="buttons">
                             @{
-                                if (Model.NewClient.CustomHoldMusic)
+                                if (Model?.NewClient?.CustomHoldMusic is not null && Model.NewClient.CustomHoldMusic)
                                 {
                                     <label class="btn btn-outline-secondary">
                                         <input asp-for="NewClient.CustomHoldMusic" type="radio" id="cmoption1" value="true" checked> Custom Music
@@ -690,14 +690,14 @@
                         <tbody id="followMeTable">
                             @if (Model?.NewClient?.FollowMeRegistrations is not null)
                             {
-                                foreach (var number in Model?.NewClient?.FollowMeRegistrations)
+                                foreach (var number in Model.NewClient.FollowMeRegistrations)
                                 {
                                     <tr>
                                         <td>@number?.NumberOrExtension</td>
                                         <td>@number?.CellPhoneNumber</td>
                                         <td>@number?.UnreachablePhoneNumber</td>
                                         <td>
-                                            <button type="button" onclick='RemoveFollowMeRegistration("@Model?.NewClient?.NewClientId", "@number.FollowMeRegistrationId", this)' class="btn btn-outline-danger">
+                                            <button type="button" onclick='RemoveFollowMeRegistration("@Model?.NewClient?.NewClientId", "@number?.FollowMeRegistrationId", this)' class="btn btn-outline-danger">
                                                 <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                 Remove
                                             </button>

@@ -16,53 +16,53 @@
     <div class="row">
         <div class="col mb-3" hidden>
             <label for="productId">Product Id</label>
-            <input asp-for="Product.ProductId" type="text" class="form-control" id="productId" readonly />
+            <input asp-for="Product!.ProductId" type="text" class="form-control" id="productId" readonly />
         </div>
         <div class="col mb-3">
             <label for="name">Name</label>
-            <input asp-for="Product.Name" type="text" class="form-control" id="name" placeholder="BestPhone">
+            <input asp-for="Product!.Name" type="text" class="form-control" id="name" placeholder="BestPhone">
         </div>
         <div class="col mb-3">
             <label for="description">Description</label>
-            <input asp-for="Product.Description" type="text" class="form-control" id="description" placeholder="A cool new product!" required>
+            <input asp-for="Product!.Description" type="text" class="form-control" id="description" placeholder="A cool new product!" required>
         </div>
     </div>
     <div class="row">
         <div class="col mb-3">
             <label for="price">Price</label>
-            <input asp-for="Product.Price" type="number" class="form-control" id="price" placeholder="200">
+            <input asp-for="Product!.Price" type="number" class="form-control" id="price" placeholder="200">
         </div>
         <div class="col mb-3">
             <label for="image">Image Path</label>
-            <input asp-for="Product.Image" type="text" class="form-control" id="image" placeholder="">
+            <input asp-for="Product!.Image" type="text" class="form-control" id="image" placeholder="">
         </div>
         <div class="col mb-3">
             <label for="public">Publicly Visible</label>
-            <input asp-for="Product.Public" type="checkbox" class="form-control" id="public">
+            <input asp-for="Product!.Public" type="checkbox" class="form-control" id="public">
         </div>
     </div>
     <div class="row">
         <div class="col mb-3">
             <label for="price">Support Link</label>
-            <input asp-for="Product.SupportLink" type="text" class="form-control" id="supportLink" placeholder="https://acceleratenetworks.com/Phones/GRP2615">
+            <input asp-for="Product!.SupportLink" type="text" class="form-control" id="supportLink" placeholder="https://acceleratenetworks.com/Phones/GRP2615">
         </div>
         <div class="col mb-3">
             <label for="image">Quantity Available</label>
-            <input asp-for="Product.QuantityAvailable" type="number" class="form-control" id="available" readonly>
+            <input asp-for="Product!.QuantityAvailable" type="number" class="form-control" id="available" readonly>
         </div>
         <div class="col mb-3">
             <label for="image">Display Priority (0 is the highest Priority)</label>
-            <input asp-for="Product.DisplayPriority" type="number" class="form-control" id="displayPriority">
+            <input asp-for="Product!.DisplayPriority" type="number" class="form-control" id="displayPriority">
         </div>
     </div>
     <div class="row">
         <div class="col mb-3">
             <label for="price">Vendor Part Number</label>
-            <input asp-for="Product.VendorPartNumber" type="text" class="form-control" id="vendorPartNumber" placeholder="yea-sip-t54w">
+            <input asp-for="Product!.VendorPartNumber" type="text" class="form-control" id="vendorPartNumber" placeholder="yea-sip-t54w">
         </div>
         <div class="col mb-3">
             <label for="image">Type</label>
-            <select class="custom-select" id="inputGroupSelect01" asp-for="Product.Type" required>
+            <select class="custom-select" id="inputGroupSelect01" asp-for="Product!.Type" required>
                 <option value="Phone" selected>Phone</option>
                 <option value="Accessory">Accessory</option>
             </select>
@@ -104,8 +104,9 @@
             </tr>
         </thead>
         <tbody>
-            @{
-                foreach (var product in Model?.Products?.OrderByDescending(x => x?.Name))
+            @if (Model.Products is not null)
+            {
+                foreach (var product in Model.Products.OrderByDescending(x => x?.Name))
                 {
                     <tr>
                         <td>
@@ -128,8 +129,8 @@
                         </td>
                         <td>
                             <div class="btn-group" role="group" aria-label="Basic example">
-                                <a href="/Home/Product/@product.ProductId" class="btn btn-primary">Edit</a>
-                                <a href="/Home/Product/@product.ProductId/Delete" class="btn btn-danger">Delete</a>
+                                <a href="/Home/Product/@product?.ProductId" class="btn btn-primary">Edit</a>
+                                <a href="/Home/Product/@product?.ProductId/Delete" class="btn btn-danger">Delete</a>
                             </div>
                         </td>
                     </tr>

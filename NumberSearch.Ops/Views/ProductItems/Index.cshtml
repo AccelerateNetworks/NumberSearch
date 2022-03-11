@@ -52,9 +52,9 @@
                         <div class="btn-group" role="group" aria-label="Basic example">
                             <a href="/Home/Order/@item?.OrderId" class="btn btn-outline-primary">Order</a>
                             <a href="/Products/Details/@item?.ProductId" class="btn btn-outline-info">Product</a>
-                            <a asp-action="Edit" asp-route-id="@item.ProductItemId" class="btn btn-warning">Edit</a>
-                            <a asp-action="Details" asp-route-id="@item.ProductItemId" class="btn btn-primary">Details</a>
-                            <a asp-action="Delete" asp-route-id="@item.ProductItemId" class="btn btn-danger">Delete</a>
+                            <a asp-action="Edit" asp-route-id="@item?.ProductItemId" class="btn btn-warning">Edit</a>
+                            <a asp-action="Details" asp-route-id="@item?.ProductItemId" class="btn btn-primary">Details</a>
+                            <a asp-action="Delete" asp-route-id="@item?.ProductItemId" class="btn btn-danger">Delete</a>
                         </div>
                     </td>
                 </tr>

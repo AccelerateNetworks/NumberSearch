@@ -29,8 +29,8 @@
                 </td>
                 <td data-order="@Model?.ModifyDate?.Ticks">
                     @{
-                        var ingestedBadge = Model.IngestedFrom;
-                        switch (Model.IngestedFrom)
+                        var ingestedBadge = Model?.IngestedFrom;
+                        switch (Model?.IngestedFrom)
                         {
                             case "FirstPointCom":
                                 ingestedBadge = "<h4><span class='badge bg-info'>FirstPointCom</span></h4>";
@@ -45,26 +45,26 @@
                     }
                     @Html.Raw(ingestedBadge)
                     <strong>Alert Group</strong>
-                    <p>@Model.AlertGroup</p>
+                    <p>@Model?.AlertGroup</p>
                     <strong>Last Modified</strong>
-                    <p>@Model.ModifyDate</p>
+                    <p>@Model?.ModifyDate</p>
                     <strong>Created</strong>
-                    <p>@Model.CreatedDate</p>
+                    <p>@Model?.CreatedDate</p>
                 </td>
                 <td>
                     <strong>Address</strong>
-                    <p>@Model.Address, @Model.City, @Model.State @Model.Zip </p>
+                    <p>@Model?.Address, @Model?.City, @Model?.State @Model?.Zip </p>
                     @{
-                        if (!(string.IsNullOrWhiteSpace(Model.UnitType)))
+                        if (!(string.IsNullOrWhiteSpace(Model?.UnitType)))
                         {
-                            <p>Unit @Model.UnitNumber</p>
+                            <p>Unit @Model?.UnitNumber</p>
                             <strong>Unit Type</strong>
-                            <p>@Model.UnitType</p>
+                            <p>@Model?.UnitType</p>
                         }
                     }
                 </td>
                 <td>
-                    @Model.Note
+                    @Model?.Note
                 </td>
                 <td>
                     <a href="https://www.google.com/maps/place/@Model?.Address,+@Model?.City,+@Model?.State+@Model?.Zip/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">

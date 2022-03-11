@@ -38,7 +38,7 @@
         </thead>
         <tbody>
             @{
-                foreach (var shipment in Model?.OrderByDescending(x => x.DateCreated))
+                foreach (var shipment in Model.OrderByDescending(x => x.DateCreated))
                 {
                     <tr>
                         <td>

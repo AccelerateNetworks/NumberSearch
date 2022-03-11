@@ -93,7 +93,7 @@
                                     }
                                 }
                                 @{
-                                    if (!(number.EmergencyInformationId is null))
+                                    if (number?.EmergencyInformationId is not null)
                                     {
                                         <a href="/Home/EmergencyInformation/@number.DialedNumber" class="btn btn-info text-light">
                                             Emergency

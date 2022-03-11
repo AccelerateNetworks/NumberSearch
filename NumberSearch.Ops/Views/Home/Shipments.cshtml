@@ -19,11 +19,12 @@
     <div class="row">
         <div class="col mb-3">
             <label for="address">Product Name</label>
-            <input asp-for="Shipment.ProductShipmentId" type="text" value="@Guid.NewGuid()" hidden />
-            <select asp-for="Shipment.ProductId" class="custom-select mr-sm-2" id="name" required>
+            <input asp-for="Shipment!.ProductShipmentId" type="text" value="@Guid.NewGuid()" hidden />
+            <select asp-for="Shipment!.ProductId" class="custom-select mr-sm-2" id="name" required>
                 <option selected>Choose...</option>
-                @{
-                    foreach (var product in Model.Products?.OrderByDescending(x => x.Name))
+                @if (Model.Products is not null)
+                {
+                    foreach (var product in Model.Products.OrderByDescending(x => x.Name))
                     {
                         <option value="@product.ProductId">@product.Name</option>
                     }
@@ -32,21 +33,21 @@
         </div>
         <div class="col mb-3">
             <label for="country">Purchase Price</label>
-            <input asp-for="Shipment.PurchasePrice" type="text" class="form-control" id="purchaseprice" placeholder="$69.69">
+            <input asp-for="Shipment!.PurchasePrice" type="text" class="form-control" id="purchaseprice" placeholder="$69.69">
         </div>
         <div class="col mb-3">
             <label for="zip">Quantity</label>
-            <input asp-for="Shipment.Quantity" type="number" class="form-control" id="quantity" placeholder="1" required>
+            <input asp-for="Shipment!.Quantity" type="number" class="form-control" id="quantity" placeholder="1" required>
         </div>
     </div>
     <div class="row">
         <div class="col mb-3">
             <label for="country">Sourced From</label>
-            <input asp-for="Shipment.ShipmentSource" type="text" class="form-control" id="source" placeholder="ebay">
+            <input asp-for="Shipment!.ShipmentSource" type="text" class="form-control" id="source" placeholder="ebay">
         </div>
         <div class="col mb-3">
             <label for="zip">Shipment Type</label>
-            <select asp-for="Shipment.ShipmentType" class="custom-select mr-sm-2" id="shipmenttype" required>
+            <select asp-for="Shipment!.ShipmentType" class="custom-select mr-sm-2" id="shipmenttype" required>
                 <option selected>Choose...</option>
                 <option value="Ordered">Ordered</option>
                 <option value="Instock">Instock</option>
@@ -86,8 +87,9 @@
             </tr>
         </thead>
         <tbody>
-            @{
-                foreach (var shipment in Model?.ProductShipments?.OrderByDescending(x => x.DateCreated))
+            @if (Model.ProductShipments is not null)
+            {
+                foreach (var shipment in Model.ProductShipments.OrderByDescending(x => x.DateCreated))
                 {
                     <tr>
                         <td>

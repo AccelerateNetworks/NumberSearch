@@ -55,17 +55,18 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @{
-                        var match = Model?.CleanQuery.Replace("*", string.Empty);
-                        foreach (var item in Model?.PhoneNumbers)
+                    @if (Model is not null && Model?.PhoneNumbers is not null)
+                    {
+                        var match = Model?.CleanQuery?.Replace("*", string.Empty);
+                        foreach (var item in Model!.PhoneNumbers)
                         {
                             var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
-                            var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX.ToString("0000")}";
-                            var number = item.DialedNumber;
-                            if (item.DialedNumber.Contains(match))
+                            var formattedNumber = $"({item?.NPA}) {item?.NXX}-{item?.XXXX.ToString("0000")}";
+                            var number = item?.DialedNumber;
+                            if (item!.DialedNumber.Contains(match ?? string.Empty))
                             {
-                                var start = item.DialedNumber.IndexOf(match);
-                                var stop = match.Length;
+                                var start = item.DialedNumber.IndexOf(match!);
+                                var stop = match?.Length ?? 0;
                                 var beginning = item.DialedNumber.Substring(0, start);
                                 var middle = item.DialedNumber.Substring(start, stop);
                                 var end = item.DialedNumber.Substring(start + stop);
@@ -104,12 +105,12 @@
         <form action="/Search">
             <div class="btn-group" role="group" aria-label="pagination">
                 @{
-                    var maxPage = Model.NumberOfResults / 100;
-                    if ((Model.NumberOfResults % 100) > 1)
+                    var maxPage = Model?.NumberOfResults / 100;
+                    if ((Model?.NumberOfResults % 100) > 1)
                     {
                         maxPage += 1;
                     }
-                    if (Model.Page > 1)
+                    if (Model?.Page > 1)
                     {
                         var previousPage = Model.Page - 1;
                         <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Numbers?Query=@Model.Query&Page=@previousPage">Previous</a>
@@ -118,13 +119,13 @@
                     else
                     {
                         <a class="btn btn-outline-secondary disabled">Previous</a>
-                        <a class="btn btn-outline-dark disabled">Page @Model.Page of @maxPage</a>
+                        <a class="btn btn-outline-dark disabled">Page @Model?.Page of @maxPage</a>
                     }
-                    var pageResultsCount = Model.Page * 100;
-                    if (Model.NumberOfResults > pageResultsCount)
+                    var pageResultsCount = Model?.Page * 100;
+                    if (Model?.NumberOfResults > pageResultsCount)
                     {
-                        var nextPage = Model.Page + 1;
-                        <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Numbers?Query=@Model.Query&Page=@nextPage">Next</a>
+                        var nextPage = Model?.Page + 1;
+                        <a class="btn btn-outline-secondary" onclick="displayBusyIndicator(this)" href="/Numbers?Query=@Model?.Query&Page=@nextPage">Next</a>
                     }
                     else
                     {
@@ -134,7 +135,7 @@
             </div>
         </form>
     }
-    else if (Model != null && Model?.PhoneNumbers?.Length == 0)
+    else if (Model is not null && Model?.PhoneNumbers?.Length == 0)
     {
         <div class="alert alert-danger" role="alert">
             No available numbers found!

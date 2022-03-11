@@ -38,7 +38,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var product in Model?.OrderByDescending(x => x?.Name))
+            @foreach (var product in Model.OrderByDescending(x => x?.Name))
             {
                 <tr style="background-color: @product.Color;">
                     <td>
@@ -64,9 +64,9 @@
                     </td>
                     <td>
                         <div class="btn-group" role="group" aria-label="Basic example">
-                            <a asp-action="Edit" asp-route-id="@product.CarrierId" class="btn btn-warning">Edit</a>
-                            <a asp-action="Details" asp-route-id="@product.CarrierId" class="btn btn-primary">Details</a>
-                            <a asp-action="Delete" asp-route-id="@product.CarrierId" class="btn btn-danger">Delete</a>
+                            <a asp-action="Edit" asp-route-id="@product?.CarrierId" class="btn btn-warning">Edit</a>
+                            <a asp-action="Details" asp-route-id="@product?.CarrierId" class="btn btn-primary">Details</a>
+                            <a asp-action="Delete" asp-route-id="@product?.CarrierId" class="btn btn-danger">Delete</a>
                         </div>
                     </td>
                 </tr>

@@ -12,73 +12,76 @@
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="ProductOrder.OrderId" class="control-label"></label>
-                <input asp-for="ProductOrder.OrderId" class="form-control" readonly />
-                <span asp-validation-for="ProductOrder.OrderId" class="text-danger"></span>
+                <label asp-for="ProductOrder!.OrderId" class="control-label"></label>
+                <input asp-for="ProductOrder!.OrderId" class="form-control" readonly />
+                <span asp-validation-for="ProductOrder!.OrderId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ProductOrder.ProductOrderId" class="control-label"></label>
-                <input asp-for="ProductOrder.ProductOrderId" value="@Guid.NewGuid()" class="form-control" readonly />
-                <span asp-validation-for="ProductOrder.ProductOrderId" class="text-danger"></span>
+                <label asp-for="ProductOrder!.ProductOrderId" class="control-label"></label>
+                <input asp-for="ProductOrder!.ProductOrderId" value="@Guid.NewGuid()" class="form-control" readonly />
+                <span asp-validation-for="ProductOrder!.ProductOrderId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ProductOrder.ProductId" class="control-label"></label>
-                <select asp-for="ProductOrder.ProductId" class="form-select mr-sm-2" id="name" required>
+                <label asp-for="ProductOrder!.ProductId" class="control-label"></label>
+                <select asp-for="ProductOrder!.ProductId" class="form-select mr-sm-2" id="name" required>
                     <option selected>Choose...</option>
-                    @{
-                        foreach (var product in Model.Products?.OrderByDescending(x => x.Name))
+                    @if (Model?.Products is not null)
+                    {
+                        foreach (var product in Model.Products.OrderByDescending(x => x.Name))
                         {
                             <option value="@product.ProductId">@product.Name</option>
                         }
                     }
                 </select>
-                <span asp-validation-for="ProductOrder.ProductId" class="text-danger"></span>
+                <span asp-validation-for="ProductOrder!.ProductId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ProductOrder.ServiceId" class="control-label"></label>
-                <select asp-for="ProductOrder.ServiceId" class="form-select mr-sm-2" id="name" required>
+                <label asp-for="ProductOrder!.ServiceId" class="control-label"></label>
+                <select asp-for="ProductOrder!.ServiceId" class="form-select mr-sm-2" id="name" required>
                     <option selected>Choose...</option>
-                    @{
-                        foreach (var product in Model.Services?.OrderByDescending(x => x.Name))
+                    @if (Model?.Services is not null)
+                    {
+                        foreach (var product in Model.Services.OrderByDescending(x => x.Name))
                         {
                             <option value="@product.ServiceId">@product.Name</option>
                         }
                     }
                 </select>
-                <span asp-validation-for="ProductOrder.ServiceId" class="text-danger"></span>
+                <span asp-validation-for="ProductOrder!.ServiceId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ProductOrder.DialedNumber" class="control-label"></label>
-                <input asp-for="ProductOrder.DialedNumber" class="form-control" />
-                <span asp-validation-for="ProductOrder.DialedNumber" class="text-danger"></span>
+                <label asp-for="ProductOrder!.DialedNumber" class="control-label"></label>
+                <input asp-for="ProductOrder!.DialedNumber" class="form-control" />
+                <span asp-validation-for="ProductOrder!.DialedNumber" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ProductOrder.PortedDialedNumber" class="control-label"></label>
-                <input asp-for="ProductOrder.PortedDialedNumber" class="form-control" />
-                <span asp-validation-for="ProductOrder.PortedDialedNumber" class="text-danger"></span>
+                <label asp-for="ProductOrder!.PortedDialedNumber" class="control-label"></label>
+                <input asp-for="ProductOrder!.PortedDialedNumber" class="form-control" />
+                <span asp-validation-for="ProductOrder!.PortedDialedNumber" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ProductOrder.CouponId" class="control-label"></label>
-                <select asp-for="ProductOrder.CouponId" class="form-select mr-sm-2" id="name" required>
+                <label asp-for="ProductOrder!.CouponId" class="control-label"></label>
+                <select asp-for="ProductOrder!.CouponId" class="form-select mr-sm-2" id="name" required>
                     <option selected>Choose...</option>
-                    @{
-                        foreach (var product in Model.Coupons?.OrderByDescending(x => x.Name))
+                    @if (Model?.Coupons is not null)
+                    {
+                        foreach (var product in Model.Coupons.OrderByDescending(x => x.Name))
                         {
                             <option value="@product.CouponId">@product.Name</option>
                         }
                     }
                 </select>
-                <span asp-validation-for="ProductOrder.CouponId" class="text-danger"></span>
+                <span asp-validation-for="ProductOrder!.CouponId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ProductOrder.Quantity" class="control-label"></label>
-                <input type="number" asp-for="ProductOrder.Quantity" class="form-control" />
-                <span asp-validation-for="ProductOrder.Quantity" class="text-danger"></span>
+                <label asp-for="ProductOrder!.Quantity" class="control-label"></label>
+                <input type="number" asp-for="ProductOrder!.Quantity" class="form-control" />
+                <span asp-validation-for="ProductOrder!.Quantity" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ProductOrder.CreateDate" class="control-label"></label>
-                <input asp-for="ProductOrder.CreateDate" class="form-control" readonly />
-                <span asp-validation-for="ProductOrder.CreateDate" class="text-danger"></span>
+                <label asp-for="ProductOrder!.CreateDate" class="control-label"></label>
+                <input asp-for="ProductOrder!.CreateDate" class="form-control" readonly />
+                <span asp-validation-for="ProductOrder!.CreateDate" class="text-danger"></span>
             </div>
             @*            <div class="form-group">
                 <label asp-for="ProductOrder.PortedPhoneNumberId" class="control-label"></label>

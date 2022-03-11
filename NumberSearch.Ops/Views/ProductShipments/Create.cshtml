@@ -12,57 +12,58 @@
         <form asp-action="Create" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Shipment.ProductId" class="control-label"></label>
-                <select asp-for="Shipment.ProductId" class="form-select mr-sm-2" id="name" required>
+                <label asp-for="Shipment!.ProductId" class="control-label"></label>
+                <select asp-for="Shipment!.ProductId" class="form-select mr-sm-2" id="name" required>
                     <option selected>Choose...</option>
-                    @{
-                        foreach (var product in Model.Products?.OrderByDescending(x => x.Name))
+                    @if (Model?.Products is not null)
+                    {
+                        foreach (var product in Model.Products.OrderByDescending(x => x.Name))
                         {
                             <option value="@product.ProductId">@product.Name</option>
                         }
                     }
                 </select>
-                <span asp-validation-for="Shipment.ProductId" class="text-danger"></span>
+                <span asp-validation-for="Shipment!.ProductId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Shipment.OrderId" class="control-label"></label>
-                <input asp-for="Shipment.OrderId" class="form-control" />
-                <span asp-validation-for="Shipment.OrderId" class="text-danger"></span>
+                <label asp-for="Shipment!.OrderId" class="control-label"></label>
+                <input asp-for="Shipment!.OrderId" class="form-control" />
+                <span asp-validation-for="Shipment!.OrderId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Shipment.BillingClientId" class="control-label"></label>
-                <input asp-for="Shipment.BillingClientId" class="form-control" />
-                <span asp-validation-for="Shipment.BillingClientId" class="text-danger"></span>
+                <label asp-for="Shipment!.BillingClientId" class="control-label"></label>
+                <input asp-for="Shipment!.BillingClientId" class="form-control" />
+                <span asp-validation-for="Shipment!.BillingClientId" class="text-danger"></span>
             </div>
             @*<div class="form-group">
-                    <label asp-for="Shipment.Name" class="control-label"></label>
-                    <input asp-for="Shipment.Name" class="form-control" />
-                    <span asp-validation-for="Shipment.Name" class="text-danger"></span>
+                <label asp-for="Shipment.Name" class="control-label"></label>
+                <input asp-for="Shipment.Name" class="form-control" />
+                <span asp-validation-for="Shipment.Name" class="text-danger"></span>
                 </div>*@
             <div class="form-group">
-                <label asp-for="Shipment.ShipmentSource" class="control-label"></label>
-                <input asp-for="Shipment.ShipmentSource" class="form-control" />
-                <span asp-validation-for="Shipment.ShipmentSource" class="text-danger"></span>
+                <label asp-for="Shipment!.ShipmentSource" class="control-label"></label>
+                <input asp-for="Shipment!.ShipmentSource" class="form-control" />
+                <span asp-validation-for="Shipment!.ShipmentSource" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Shipment.PurchasePrice" class="control-label"></label>
-                <input asp-for="Shipment.PurchasePrice" type="number" class="form-control" />
-                <span asp-validation-for="Shipment.PurchasePrice" class="text-danger"></span>
+                <label asp-for="Shipment!.PurchasePrice" class="control-label"></label>
+                <input asp-for="Shipment!.PurchasePrice" type="number" class="form-control" />
+                <span asp-validation-for="Shipment!.PurchasePrice" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Shipment.ShipmentType" class="control-label"></label>
-                <select asp-for="Shipment.ShipmentType" class="form-select mr-sm-2" id="shipmenttype" required>
+                <label asp-for="Shipment!.ShipmentType" class="control-label"></label>
+                <select asp-for="Shipment!.ShipmentType" class="form-select mr-sm-2" id="shipmenttype" required>
                     <option selected>Choose...</option>
                     <option value="Ordered">Ordered</option>
                     <option value="Instock">Instock</option>
                     <option value="Assigned">Assigned</option>
                 </select>
-                <span asp-validation-for="Shipment.ShipmentType" class="text-danger"></span>
+                <span asp-validation-for="Shipment!.ShipmentType" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Shipment.Quantity" class="control-label"></label>
-                <input asp-for="Shipment.Quantity" class="form-control" />
-                <span asp-validation-for="Shipment.Quantity" class="text-danger"></span>
+                <label asp-for="Shipment!.Quantity" class="control-label"></label>
+                <input asp-for="Shipment!.Quantity" class="form-control" />
+                <span asp-validation-for="Shipment!.Quantity" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary mt-3 mb-3" />
@@ -76,5 +77,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}
 }
