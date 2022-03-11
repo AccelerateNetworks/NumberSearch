@@ -113,7 +113,7 @@ namespace NumberSearch.Mvc.Controllers
             await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            if (cart is not null && cart.ProductOrders is not null && cart.ProductOrders.Any())
+            if (cart is not null && cart.ProductOrders is not null && !cart.ProductOrders.Any())
             {
                 return View("Index", new CartResult { Cart = cart });
             }
