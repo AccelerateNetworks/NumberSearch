@@ -119,7 +119,7 @@
                                             Related Purchased Numbers
                                         </a>
                                     }
-                                    @if (order?.PortRequest is not null)
+                                    @if (order?.PortRequest is not null && order?.Order is not null && order.PortRequest.OrderId == order.Order.OrderId)
                                     {
                                         <a href="/Home/PortRequests/@order?.Order?.OrderId" class="btn btn-info text-light">
                                             Related Port Request
