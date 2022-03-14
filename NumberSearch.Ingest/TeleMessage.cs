@@ -27,7 +27,7 @@ namespace NumberSearch.Ingest
             }
 
             var valid = new List<int>();
-            foreach (var npa in results?.data?.ToArray())
+            foreach (var npa in results.data.ToArray())
             {
                 // Valid NPAs are only 3 chars long.
                 if (npa.Length == 3)
@@ -59,7 +59,7 @@ namespace NumberSearch.Ingest
             // Verify that we got a good response.
             if ((results.status == "success") && (results.code == 200))
             {
-                foreach (var result in results?.data?.ToArray())
+                foreach (var result in results.data.ToArray())
                 {
                     // Valid NXXs are only 3 chars long.
                     if (result.Length == 3)
@@ -92,7 +92,7 @@ namespace NumberSearch.Ingest
             {
                 var results = await DidsList.GetAsync($"{npa}{nxx}****", token).ConfigureAwait(false);
 
-                foreach (var result in results?.ToArray())
+                foreach (var result in results.ToArray())
                 {
                     if (result.XXXX > 1)
                     {
@@ -123,7 +123,7 @@ namespace NumberSearch.Ingest
             {
                 var results = await DidsList.GetAsync(npa, token).ConfigureAwait(false);
 
-                foreach (var result in results?.ToArray())
+                foreach (var result in results.ToArray())
                 {
                     if (result.XXXX > 1)
                     {

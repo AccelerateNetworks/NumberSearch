@@ -97,12 +97,12 @@ namespace NumberSearch.Ingest
                     var ownedNumbersCycle = cycles.Where(x => x.IngestedFrom == "OwnedNumbers").FirstOrDefault();
 
                     // Ingest phone numbers from BulkVS.
-                    if (bulkVSCycle != null && (bulkVSCycle.Enabled || bulkVSCycle.RunNow))
+                    if (bulkVSCycle is not null && (bulkVSCycle.Enabled || bulkVSCycle.RunNow))
                     {
                         var lastRun = await IngestStatistics.GetLastIngestAsync("BulkVS", postgresSQL).ConfigureAwait(false);
 
                         // If the last ingest was run to recently do nothing.
-                        if (lastRun != null && (lastRun.StartDate < (start - bulkVSCycle.CycleTime) || bulkVSCycle.RunNow))
+                        if (lastRun is not null && (lastRun.StartDate < (start - bulkVSCycle.CycleTime) || bulkVSCycle.RunNow))
                         {
                             Log.Information($"Last Run of {lastRun?.IngestedFrom} started at {lastRun?.StartDate} and ended at {lastRun?.EndDate}");
 
@@ -136,7 +136,7 @@ namespace NumberSearch.Ingest
 
                             // Remove all of the old numbers from the database.
                             Log.Information("[BulkVS] Removing old numbers from the database.");
-                            var bulkVSCleanUp = await PhoneNumber.DeleteOldByProvider(start, bulkVSCycle.CycleTime, "BulkVS", postgresSQL).ConfigureAwait(false);
+                            var bulkVSCleanUp = await PhoneNumber.DeleteOldByProvider(start, bulkVSCycle!.CycleTime, "BulkVS", postgresSQL).ConfigureAwait(false);
 
                             var combined = new IngestStatistics
                             {
@@ -226,11 +226,11 @@ namespace NumberSearch.Ingest
                     }
 
                     // Ingest phone numbers from FirstPointCom.
-                    if (firstPointComCycle != null && (firstPointComCycle.Enabled || firstPointComCycle.RunNow))
+                    if (firstPointComCycle is not null && (firstPointComCycle.Enabled || firstPointComCycle.RunNow))
                     {
                         var lastRun = await IngestStatistics.GetLastIngestAsync("FirstPointCom", postgresSQL).ConfigureAwait(false);
 
-                        if (lastRun != null && (lastRun.StartDate < (start - firstPointComCycle.CycleTime) || firstPointComCycle.RunNow))
+                        if (lastRun is not null && (lastRun.StartDate < (start - firstPointComCycle.CycleTime) || firstPointComCycle.RunNow))
                         {
                             Log.Information($"Last Run of {lastRun?.IngestedFrom} started at {lastRun?.StartDate} and ended at {lastRun?.EndDate}");
 
@@ -264,7 +264,7 @@ namespace NumberSearch.Ingest
 
                             // Remove all of the old numbers from the database.
                             Log.Information("[FirstPointCom] Removing old FirstPointCom numbers from the database.");
-                            var firstPointComCleanUp = await PhoneNumber.DeleteOldByProvider(start, firstPointComCycle.CycleTime, "FirstPointCom", postgresSQL).ConfigureAwait(false);
+                            var firstPointComCleanUp = await PhoneNumber.DeleteOldByProvider(start, firstPointComCycle!.CycleTime, "FirstPointCom", postgresSQL).ConfigureAwait(false);
 
                             var combined = new IngestStatistics
                             {
@@ -349,11 +349,11 @@ namespace NumberSearch.Ingest
                     }
 
                     // Ingest phone numbers from TeleMessage.
-                    if (teleMessageCycle != null && (teleMessageCycle.Enabled || teleMessageCycle.RunNow))
+                    if (teleMessageCycle is not null && (teleMessageCycle.Enabled || teleMessageCycle.RunNow))
                     {
                         var lastRun = await IngestStatistics.GetLastIngestAsync("TeleMessage", postgresSQL).ConfigureAwait(false);
 
-                        if (lastRun != null && (lastRun.StartDate < (start - teleMessageCycle.CycleTime) || teleMessageCycle.RunNow))
+                        if (lastRun is not null && (lastRun.StartDate < (start - teleMessageCycle.CycleTime) || teleMessageCycle.RunNow))
                         {
                             Log.Information($"Last Run of {lastRun?.IngestedFrom} started at {lastRun?.StartDate} and ended at {lastRun?.EndDate}");
 
@@ -411,7 +411,7 @@ namespace NumberSearch.Ingest
                             // Remove all of the old numbers from the database.
                             // Remove Telemessage records at half the rate that we ingest them by doubling the delete cycle.
                             Log.Information("[TeliMessage] Removing old TeleMessage numbers from the database.");
-                            var teleMessageCleanUp = await PhoneNumber.DeleteOldByProvider(start, teleMessageCycle.CycleTime, "TeleMessage", postgresSQL).ConfigureAwait(false);
+                            var teleMessageCleanUp = await PhoneNumber.DeleteOldByProvider(start, teleMessageCycle!.CycleTime, "TeleMessage", postgresSQL).ConfigureAwait(false);
 
                             var combined = new IngestStatistics
                             {
@@ -760,11 +760,11 @@ namespace NumberSearch.Ingest
                     }
 
                     // Ingest all the phone numbers we own.
-                    if (ownedNumbersCycle != null && (ownedNumbersCycle.Enabled || ownedNumbersCycle.RunNow))
+                    if (ownedNumbersCycle is not null && (ownedNumbersCycle.Enabled || ownedNumbersCycle.RunNow))
                     {
                         var lastRun = await IngestStatistics.GetLastIngestAsync("OwnedNumbers", postgresSQL).ConfigureAwait(false);
 
-                        if (lastRun != null && (lastRun.StartDate < (start - ownedNumbersCycle.CycleTime) || ownedNumbersCycle.RunNow))
+                        if (lastRun is not null && (lastRun.StartDate < (start - ownedNumbersCycle.CycleTime) || ownedNumbersCycle.RunNow))
                         {
                             Log.Debug($"Last Run of {lastRun.IngestedFrom} started at {lastRun.StartDate} and ended at {lastRun.EndDate}");
 
@@ -790,7 +790,7 @@ namespace NumberSearch.Ingest
 
                             await Owned.IngestAsync(config);
 
-                            if (ownedNumbersCycle.RunNow)
+                            if (ownedNumbersCycle!.RunNow)
                             {
                                 ownedNumbersCycle.RunNow = false;
                                 var checkRunNow = ownedNumbersCycle.PutAsync(postgresSQL).ConfigureAwait(false);

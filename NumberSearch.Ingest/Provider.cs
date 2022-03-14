@@ -130,16 +130,19 @@ namespace NumberSearch.Ingest
                 {
                     Log.Information($"[Call48] Ingesting numbers for {state.StateShort}.");
 
-                    foreach (var code in state.AreaCodes)
+                    if (state.AreaCodes is not null && state.AreaCodes.Any())
                     {
-                        try
+                        foreach (var code in state.AreaCodes)
                         {
-                            numbers.AddRange(await Search.GetAsync(state.StateShort, code, credentials.data.token).ConfigureAwait(false));
-                            Log.Information($"[Call48] Found {numbers.Count} Phone Numbers");
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Error($"[Call48] Area code {code} failed @ {DateTime.Now}: {ex.Message}");
+                            try
+                            {
+                                numbers.AddRange(await Search.GetAsync(state.StateShort, code, credentials.data.token).ConfigureAwait(false));
+                                Log.Information($"[Call48] Found {numbers.Count} Phone Numbers");
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error($"[Call48] Area code {code} failed @ {DateTime.Now}: {ex.Message}");
+                            }
                         }
                     }
                 }

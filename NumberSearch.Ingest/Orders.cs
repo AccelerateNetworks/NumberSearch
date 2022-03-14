@@ -42,8 +42,8 @@ namespace NumberSearch.Ingest
         public class OrderStatus
         {
             public Guid OrderId { get; set; }
-            public string Status { get; set; }
-            public string Customer { get; set; }
+            public string? Status { get; set; }
+            public string? Customer { get; set; }
         }
 
         public static async Task<IEnumerable<OrderStatus>> OrdersRequiringPortingInformationAsync(string connectionString)
@@ -56,67 +56,11 @@ namespace NumberSearch.Ingest
 
             foreach (var order in orders)
             {
-                var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, connectionString);
+                var portRequest = portRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefault();
                 var productOrders = await ProductOrder.GetAsync(order.OrderId, connectionString);
-                var businessName = string.IsNullOrWhiteSpace(order.BusinessName) ? "Consumer" : order.BusinessName;
-                var nextStep = "Next Step";
-                // The order is completed, we're good.
-                if (order?.Completed is true)
-                {
-                    nextStep = "🎉 Done, Good Job";
-                }
-                // The order is not completed, and is stale.
-                else if (order?.Completed is not true && order?.DateSubmitted <
-                    DateTime.Now.AddDays(-14))
-                {
-                    nextStep = "⭕ Contact the Customer, the order is Stale";
-                }
-                else if (order?.Completed is not true)
-                {
-                    if (order.Quote)
-                    {
-                        nextStep = $"⭕ Pending Quote Approval";
-                    }
-                    else if (portRequest is null && productOrders.Where(x => x.PortedPhoneNumberId.HasValue is true).Any())
-                    {
-                        nextStep = $"⭕ Get the Porting information from the Customer";
-                        orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
-                    }
-                    else if (portRequest is not null)
-                    {
-                        if (portRequest?.Completed is true)
-                        {
-                            if (order?.OnsiteInstallation is true)
-                            {
-                                nextStep = $"⭕ Install the cusomter's hardware onsite {order?.InstallDate.GetValueOrDefault().ToShortDateString()}";
-                                orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
-                            }
-                            else
-                            {
-                                nextStep = $"⭕ Ship the hardware to the customer for self-install";
-                                orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
-                            }
-                        }
-                        else
-                        {
-                            nextStep = "⭕ Port the Customer's Numbers to our Network";
-                            orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
-                        }
-                    }
-                    else
-                    {
-                        if (order?.OnsiteInstallation is true)
-                        {
-                            nextStep = $"⭕ Install the cusomter's hardware onsite";
-                            orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
-                        }
-                        else
-                        {
-                            nextStep = $"⭕ Ship the hardware to the customer for self-install";
-                            orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
-                        }
-                    }
-                }
+
+                var nextStep = Order.GetStatus(order, productOrders, portRequest);
+                orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
             }
 
             return orderStatuses;

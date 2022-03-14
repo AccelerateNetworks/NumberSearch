@@ -15,14 +15,12 @@ namespace NumberSearch.DataAccess.TeliMesssage
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Mirrors the external API")]
         public TeliResults data { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Mirrors the external API")]
         public class TeliResults
         {
             public IEnumerable<Did> dids { get; set; }
             public int count { get; set; }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Mirrors the external API")]
         public class Did
         {
             public string id { get; set; }

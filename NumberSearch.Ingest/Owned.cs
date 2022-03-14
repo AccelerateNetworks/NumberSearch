@@ -76,7 +76,7 @@ namespace NumberSearch.Ingest
             allNumbers = emergency.ToList();
 
             // If we ingested any owned numbers update the database.
-            var ownedNumberStats = new IngestStatistics();
+            IngestStatistics ownedNumberStats;
             if (allNumbers.Count > 0)
             {
                 Log.Information($"[OwnedNumbers] Submitting {allNumbers.Count} numbers to the database.");
@@ -105,7 +105,7 @@ namespace NumberSearch.Ingest
             try
             {
                 Log.Information("[OwnedNumbers] Looking for LRN changes on owned numbers.");
-                var changedNumbers = await VerifyServiceProvidersAsync(teleToken, bulkVSKey, postgresSQL).ConfigureAwait(false);
+                var changedNumbers = await VerifyServiceProvidersAsync(bulkVSKey, postgresSQL).ConfigureAwait(false);
 
                 if (changedNumbers != null && changedNumbers.Any())
                 {
@@ -128,14 +128,14 @@ namespace NumberSearch.Ingest
             }
 
             // Offer unassigned phone numbers we own for purchase on the website.
-            var unassignedNubmers = await OfferUnassignedNumberForSaleAsync(postgresSQL).ConfigureAwait(false);
+            _ = await OfferUnassignedNumberForSaleAsync(postgresSQL).ConfigureAwait(false);
 
             // Match up owned numbers and their billingClients.
-            var billingClients = await MatchOwnedNumbersToBillingClientsAsync(postgresSQL).ConfigureAwait(false);
+            _ = await MatchOwnedNumbersToBillingClientsAsync(postgresSQL).ConfigureAwait(false);
 
             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
             var lockEntry = await IngestStatistics.GetLockAsync("OwnedNumbers", postgresSQL).ConfigureAwait(false);
-            var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
+            _ = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
 
             // Remove all of the old numbers from the database.
             Log.Information("[OwnedNumbers] Marking numbers that failed to reingest as inactive in the database.");
@@ -177,7 +177,7 @@ namespace NumberSearch.Ingest
                 {
                     var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.DID, out var phoneNumber);
 
-                    if (checkParse)
+                    if (checkParse && phoneNumber is not null)
                     {
                         numbers.Add(new OwnedPhoneNumber
                         {
@@ -205,40 +205,43 @@ namespace NumberSearch.Ingest
 
             var list = new List<OwnedPhoneNumber>();
 
-            foreach (var item in results?.data)
+            if (results?.data is not null)
             {
-                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.number, out var phoneNumber);
-
-                if (checkParse)
+                foreach (var item in results.data)
                 {
-                    var number = new OwnedPhoneNumber
-                    {
-                        DialedNumber = phoneNumber.DialedNumber,
-                        IngestedFrom = "TeleMessage",
-                        Active = true,
-                        DateIngested = DateTime.Now,
-                        Notes = item.note
-                    };
+                    var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.number, out var phoneNumber);
 
-                    // Enabled CNAM on Teli numbers every time they are ingested.
-                    try
+                    if (checkParse && phoneNumber is not null)
                     {
-                        var cnamEnable = await UserDidsCnamEnable.GetAsync(number.DialedNumber, token).ConfigureAwait(false);
-                        var result = await UserDidsGet.GetAsync(number.DialedNumber, token).ConfigureAwait(false);
-                        var lidb = await UserDidsLibdGet.GetAsync(result?.data?.id, token).ConfigureAwait(false);
-                        number.LIDBCNAM = lidb?.data ?? string.Empty;
-                        Log.Information($"[OwnedNumber] [TeleMessage] LIDB CNAM {lidb?.data} for {number.DialedNumber} or did_id {result?.data?.id} is enabled? {cnamEnable.CnamEnabled()}.");
-                    }
-                    catch (FlurlHttpException ex)
-                    {
-                        Log.Fatal($"[OwnedNumber] [TeleMessage] Failed to enable CNAM for {number.DialedNumber}.");
-                        Log.Fatal($"[OwnedNumber] [TeleMessage] {ex.GetResponseStringAsync()}.");
-                    }
+                        var number = new OwnedPhoneNumber
+                        {
+                            DialedNumber = phoneNumber.DialedNumber,
+                            IngestedFrom = "TeleMessage",
+                            Active = true,
+                            DateIngested = DateTime.Now,
+                            Notes = item.note
+                        };
 
-                    list.Add(number);
+                        // Enabled CNAM on Teli numbers every time they are ingested.
+                        try
+                        {
+                            var cnamEnable = await UserDidsCnamEnable.GetAsync(number.DialedNumber, token).ConfigureAwait(false);
+                            var result = await UserDidsGet.GetAsync(number.DialedNumber, token).ConfigureAwait(false);
+                            var lidb = await UserDidsLibdGet.GetAsync(result?.data?.id, token).ConfigureAwait(false);
+                            number.LIDBCNAM = lidb?.data ?? string.Empty;
+                            Log.Information($"[OwnedNumber] [TeleMessage] LIDB CNAM {lidb?.data} for {number.DialedNumber} or did_id {result?.data?.id} is enabled? {cnamEnable.CnamEnabled()}.");
+                        }
+                        catch (FlurlHttpException ex)
+                        {
+                            Log.Fatal($"[OwnedNumber] [TeleMessage] Failed to enable CNAM for {number.DialedNumber}.");
+                            Log.Fatal($"[OwnedNumber] [TeleMessage] {ex.GetResponseStringAsync()}.");
+                        }
+
+                        list.Add(number);
+                    }
                 }
-            }
 
+            }
             Log.Information($"[OwnedNumbers] [TeleMessage] Ingested {list.Count} owned numbers.");
 
             return list;
@@ -322,15 +325,15 @@ namespace NumberSearch.Ingest
 
             foreach (var item in numbers)
             {
-                if (item?.Notes != null && item?.Notes.Trim() == "Unassigned")
+                if (item?.Notes is not null && item?.Notes.Trim() == "Unassigned")
                 {
                     var number = await DataAccess.PhoneNumber.GetAsync(item.DialedNumber, connectionString).ConfigureAwait(false);
 
                     if (number is null)
                     {
-                        var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number.DialedNumber, out var phoneNumber);
+                        var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number?.DialedNumber ?? string.Empty, out var phoneNumber);
 
-                        if (checkParse)
+                        if (checkParse && phoneNumber is not null)
                         {
                             number = new DataAccess.PhoneNumber
                             {
@@ -367,7 +370,7 @@ namespace NumberSearch.Ingest
 
             var typedNumbers = Services.AssignNumberTypes(newUnassigned).ToArray();
             var locations = await Services.AssignRatecenterAndRegionAsync(typedNumbers).ConfigureAwait(false);
-            var unassignedNumberStats = await Services.SubmitPhoneNumbersAsync(locations.ToArray(), connectionString).ConfigureAwait(false);
+            _ = await Services.SubmitPhoneNumbersAsync(locations.ToArray(), connectionString).ConfigureAwait(false);
 
             var end = DateTime.Now;
 
@@ -474,14 +477,14 @@ namespace NumberSearch.Ingest
 
         public class ServiceProviderChanged
         {
-            public string DialedNumber { get; set; }
-            public string OldSPID { get; set; }
-            public string CurrentSPID { get; set; }
-            public string OldSPIDName { get; set; }
-            public string CurrentSPIDName { get; set; }
+            public string? DialedNumber { get; set; }
+            public string? OldSPID { get; set; }
+            public string? CurrentSPID { get; set; }
+            public string? OldSPIDName { get; set; }
+            public string? CurrentSPIDName { get; set; }
         }
 
-        public static async Task<IEnumerable<ServiceProviderChanged>> VerifyServiceProvidersAsync(Guid teleToken, string bulkApiKey, string connectionString)
+        public static async Task<IEnumerable<ServiceProviderChanged>> VerifyServiceProvidersAsync(string bulkApiKey, string connectionString)
         {
             var owned = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
             var serviceProviderChanged = new List<ServiceProviderChanged>();
@@ -490,7 +493,7 @@ namespace NumberSearch.Ingest
             {
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number.DialedNumber, out var phoneNumber);
 
-                if (checkParse)
+                if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
                 {
                     if (phoneNumber.DialedNumber.IsTollfree())
                     {
@@ -555,88 +558,91 @@ namespace NumberSearch.Ingest
 
             var emergencyInformation = await EmergencyInformation.GetAllAsync(connectionString).ConfigureAwait(false);
 
-            foreach (var number in owned)
+            if (owned is not null && owned.Any())
             {
-                try
+                foreach (var number in owned)
                 {
-                    var info = await EmergencyInfo.GetAsync(number.DialedNumber, teleToken).ConfigureAwait(false);
-
-                    if (info?.code == 200)
+                    try
                     {
-                        var checkCreate = DateTime.TryParse(info?.data?.create_dt, out var createdDate);
-                        var checkMod = DateTime.TryParse(info?.data?.modify_dt, out var modDate);
+                        var info = await EmergencyInfo.GetAsync(number.DialedNumber, teleToken).ConfigureAwait(false);
 
-                        var toDb = new EmergencyInformation
+                        if (info?.code == 200)
                         {
-                            Address = info?.data?.address,
-                            AlertGroup = info?.data?.alert_group,
-                            City = info?.data?.city,
-                            CreatedDate = checkCreate ? createdDate : DateTime.Now,
-                            DateIngested = DateTime.Now,
-                            DialedNumber = number.DialedNumber,
-                            FullName = info?.data?.full_name,
-                            IngestedFrom = "TeleMessage",
-                            ModifyDate = checkMod ? modDate : DateTime.Now,
-                            Note = info?.data?.did_note.Trim(),
-                            State = info?.data?.state,
-                            TeliId = info?.data?.did_id,
-                            UnitNumber = info?.data?.unit_number,
-                            UnitType = info?.data?.unit_type,
-                            Zip = info?.data?.zip
-                        };
+                            var checkCreate = DateTime.TryParse(info?.data?.create_dt, out var createdDate);
+                            var checkMod = DateTime.TryParse(info?.data?.modify_dt, out var modDate);
 
-                        var existing = emergencyInformation.Where(x => x.DialedNumber == toDb.DialedNumber).FirstOrDefault();
-
-                        if (existing is null)
-                        {
-                            var checkSubmit = await toDb.PostAsync(connectionString).ConfigureAwait(false);
-
-                            if (checkSubmit)
+                            var toDb = new EmergencyInformation
                             {
-                                Log.Information($"[OwnedNumbers] Added Emergency Information for {number.DialedNumber}.");
+                                Address = info?.data?.address,
+                                AlertGroup = info?.data?.alert_group,
+                                City = info?.data?.city,
+                                CreatedDate = checkCreate ? createdDate : DateTime.Now,
+                                DateIngested = DateTime.Now,
+                                DialedNumber = number.DialedNumber,
+                                FullName = info?.data?.full_name,
+                                IngestedFrom = "TeleMessage",
+                                ModifyDate = checkMod ? modDate : DateTime.Now,
+                                Note = info?.data?.did_note.Trim(),
+                                State = info?.data?.state,
+                                TeliId = info?.data?.did_id,
+                                UnitNumber = info?.data?.unit_number,
+                                UnitType = info?.data?.unit_type,
+                                Zip = info?.data?.zip
+                            };
+
+                            var existing = emergencyInformation.Where(x => x.DialedNumber == toDb.DialedNumber).FirstOrDefault();
+
+                            if (existing is null)
+                            {
+                                var checkSubmit = await toDb.PostAsync(connectionString).ConfigureAwait(false);
+
+                                if (checkSubmit)
+                                {
+                                    Log.Information($"[OwnedNumbers] Added Emergency Information for {number.DialedNumber}.");
+                                }
+                                else
+                                {
+                                    Log.Fatal($"[OwnedNumbers] Failed to add Emergency Information for {number.DialedNumber}.");
+                                }
                             }
                             else
                             {
-                                Log.Fatal($"[OwnedNumbers] Failed to add Emergency Information for {number.DialedNumber}.");
-                            }
-                        }
-                        else
-                        {
-                            var checkSubmit = await toDb.PutAsync(connectionString).ConfigureAwait(false);
+                                var checkSubmit = await toDb.PutAsync(connectionString).ConfigureAwait(false);
 
-                            if (checkSubmit)
-                            {
-                                Log.Information($"[OwnedNumbers] Updated Emergency Information for {number.DialedNumber}.");
-                            }
-                            else
-                            {
-                                Log.Fatal($"[OwnedNumbers] Failed to updated Emergency Information for {number.DialedNumber}.");
+                                if (checkSubmit)
+                                {
+                                    Log.Information($"[OwnedNumbers] Updated Emergency Information for {number.DialedNumber}.");
+                                }
+                                else
+                                {
+                                    Log.Fatal($"[OwnedNumbers] Failed to updated Emergency Information for {number.DialedNumber}.");
+                                }
                             }
                         }
                     }
+                    catch (Exception ex)
+                    {
+                        Log.Information($"[OwnedNumbers] Failed to update Emergency Information for {number.DialedNumber}.");
+                        Log.Information($"[OwnedNumbers] {ex.Message}.");
+                        Log.Information($"[OwnedNumbers] {ex.StackTrace}.");
+                    };
                 }
-                catch (Exception ex)
+
+                var fromDb = await EmergencyInformation.GetAllAsync(connectionString).ConfigureAwait(false);
+
+                foreach (var item in owned)
                 {
-                    Log.Information($"[OwnedNumbers] Failed to update Emergency Information for {number.DialedNumber}.");
-                    Log.Information($"[OwnedNumbers] {ex.Message}.");
-                    Log.Information($"[OwnedNumbers] {ex.StackTrace}.");
-                };
+                    var emergencyInfo = fromDb.Where(x => x.DialedNumber == item.DialedNumber).FirstOrDefault();
+
+                    if (emergencyInfo is not null)
+                    {
+                        item.EmergencyInformationId = emergencyInfo?.EmergencyInformationId;
+                        Log.Information($"[OwnedNumbers] Matched Emergency Information {item.EmergencyInformationId} to {item.DialedNumber}.");
+                    }
+                }
             }
 
-            var fromDb = await EmergencyInformation.GetAllAsync(connectionString).ConfigureAwait(false);
-
-            foreach (var item in owned)
-            {
-                var emergencyInfo = fromDb.Where(x => x.DialedNumber == item.DialedNumber).FirstOrDefault();
-
-                if (emergencyInfo is not null)
-                {
-                    item.EmergencyInformationId = emergencyInfo?.EmergencyInformationId;
-                    Log.Information($"[OwnedNumbers] Matched Emergency Information {item.EmergencyInformationId} to {item.DialedNumber}.");
-                }
-            }
-
-            return owned;
+            return owned ?? new List<OwnedPhoneNumber>();
         }
 
         public static async Task<bool> SendPortingNotificationEmailAsync(IEnumerable<ServiceProviderChanged> changes, string smtpUsername, string smtpPassword, string emailPrimary, string emailCC, string connectionString)

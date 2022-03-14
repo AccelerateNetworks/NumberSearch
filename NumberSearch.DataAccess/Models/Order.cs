@@ -4,6 +4,7 @@ using Npgsql;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess
@@ -160,6 +161,64 @@ namespace NumberSearch.DataAccess
             else
             {
                 return false;
+            }
+        }
+
+        public static string GetStatus(Order order, IEnumerable<ProductOrder> productOrders, PortRequest portRequest)
+        {
+            // The order is completed, we're good.
+            if (order?.Completed is true)
+            {
+                return "🎉 Done, Good Job";
+            }
+            // The order is not completed, and is stale.
+            else if (order?.Completed is not true && order?.DateSubmitted < DateTime.Now.AddDays(-14))
+            {
+                return "⭕ Contact the Customer, the order is Stale";
+            }
+            else if (order?.Completed is not true)
+            {
+                if (order?.Quote is not null && order.Quote)
+                {
+                    return $"⭕ Pending Quote Approval";
+                }
+                else if (portRequest is null && productOrders.Where(x => x.PortedPhoneNumberId.HasValue is true).Any() && order is not null)
+                {
+                    return $"⭕ Get the Porting information from the Customer";
+                }
+                else if (order is not null && portRequest is not null)
+                {
+                    if (portRequest?.Completed is true)
+                    {
+                        if (order.OnsiteInstallation is true && order?.OrderId is not null)
+                        {
+                            return $"⭕ Install the cusomter's hardware onsite {order?.InstallDate.GetValueOrDefault().ToShortDateString()}";
+                        }
+                        else
+                        {
+                            return $"⭕ Ship the hardware to the customer for self-install";
+                        }
+                    }
+                    else
+                    {
+                        return "⭕ Port the Customer's Numbers to our Network";
+                    }
+                }
+                else
+                {
+                    if (order.OnsiteInstallation is true)
+                    {
+                        return $"⭕ Install the cusomter's hardware onsite";
+                    }
+                    else
+                    {
+                        return $"⭕ Ship the hardware to the customer for self-install";
+                    }
+                }
+            }
+            else
+            {
+                return "Scooby Doo";
             }
         }
     }

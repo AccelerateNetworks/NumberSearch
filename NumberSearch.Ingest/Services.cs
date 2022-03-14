@@ -26,7 +26,7 @@ namespace NumberSearch.Ingest
             var Tollfree = "Tollfree";
 
             // Bail early if there's no data.
-            if (numbers is null || !numbers.Any()) { return numbers; }
+            if (numbers is null || !numbers.Any()) { return numbers ?? new List<PhoneNumber>(); }
 
             // Assign a Type based on number of repeating digits.
             foreach (var number in numbers)
@@ -181,44 +181,47 @@ namespace NumberSearch.Ingest
 
             var count = 0;
 
-            ParallelOptions options = new()
+            if (updates is not null && updates.Any())
             {
-                MaxDegreeOfParallelism = Environment.ProcessorCount * 2,
-            };
-
-            // Execute these API requests in parallel.
-            await Parallel.ForEachAsync(updates.Values.ToArray(), options, async (update, token) =>
-            {
-                if (count % 100 == 0 && count != 0)
+                ParallelOptions options = new()
                 {
-                    Log.Information($"Updated {count} of {updates?.Count} Phone Numbers.");
-                }
-                try
+                    MaxDegreeOfParallelism = Environment.ProcessorCount * 2,
+                };
+
+                // Execute these API requests in parallel.
+                await Parallel.ForEachAsync(updates.Values.ToArray(), options, async (update, token) =>
                 {
-                    var result = await update.PutAsync(connectionString).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Log.Fatal(ex.Message);
-                    Log.Fatal(ex.InnerException.ToString());
-                    Log.Fatal($"{update.DialedNumber} {update.NPA} {update.NXX} {update.XXXX} {update.City} {update.State} {update.IngestedFrom} {update.NumberType} {update.DateIngested} {update.Purchased}");
-                }
-                count++;
-            });
+                    if (count % 100 == 0 && count != 0)
+                    {
+                        Log.Information($"Updated {count} of {updates?.Count} Phone Numbers.");
+                    }
+                    try
+                    {
+                        var result = await update.PutAsync(connectionString).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Fatal(ex.Message);
+                        Log.Fatal(ex.InnerException.ToString());
+                        Log.Fatal($"{update.DialedNumber} {update.NPA} {update.NXX} {update.XXXX} {update.City} {update.State} {update.IngestedFrom} {update.NumberType} {update.DateIngested} {update.Purchased}");
+                    }
+                    count++;
+                });
 
-            Log.Information($"Updated {updates?.Count} Phone Numbers");
+                Log.Information($"Updated {updates?.Count} Phone Numbers");
+            }
 
-            var listInserts = inserts.Values.ToList();
+            var listInserts = inserts?.Values.ToList();
 
-            var groups = SplitList(listInserts);
+            var groups = SplitList(listInserts ?? new List<PhoneNumber>());
 
-            foreach (var group in groups?.ToArray())
+            foreach (var group in groups.ToArray())
             {
                 try
                 {
                     var check = await PhoneNumber.BulkPostAsync(group, connectionString).ConfigureAwait(false);
 
-                    if (check) { stats.IngestedNew += group.Count; };
+                    if (check) { stats!.IngestedNew += group.Count; };
 
                     Log.Information($"{stats?.IngestedNew} of {listInserts?.Count} submitted to the database.");
                 }
@@ -261,7 +264,7 @@ namespace NumberSearch.Ingest
 
                 var checkMatch = npaNxxLookup.TryGetValue($"{number.NPA}{number.NXX}", out var match);
 
-                if (checkMatch)
+                if (checkMatch && match is not null)
                 {
                     number.City = match.RateCenter;
                     number.State = match.Region;
