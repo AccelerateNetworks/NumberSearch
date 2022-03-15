@@ -645,7 +645,7 @@ namespace NumberSearch.Mvc.Controllers
             else if (phoneNumber.IngestedFrom == "TeleMessage")
             {
                 // Verify that tele has the number.
-                var doesItStillExist = await DidsList.GetAsync(phoneNumber.DialedNumber, _teleToken).ConfigureAwait(false);
+                var doesItStillExist = await DidsList.GetAsync(phoneNumber.NPA, phoneNumber.NXX, _teleToken).ConfigureAwait(false);
                 var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
                 if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
                 {

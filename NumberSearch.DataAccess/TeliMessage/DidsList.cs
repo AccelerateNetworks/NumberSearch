@@ -42,15 +42,15 @@ namespace NumberSearch.DataAccess.TeliMesssage
             public string per_minute_rate { get; set; }
         }
 
-        public static async Task<DidsList> GetRawAsync(string query, Guid token)
-        {
-            string baseUrl = "https://apiv1.teleapi.net/";
-            string endpoint = "dids/list";
-            string tokenParameter = $"?token={token}";
-            string searchParameter = $"&search={query}";
-            string url = $"{baseUrl}{endpoint}{tokenParameter}{searchParameter}";
-            return await url.GetJsonAsync<DidsList>().ConfigureAwait(false);
-        }
+        //public static async Task<DidsList> GetRawAsync(string query, Guid token)
+        //{
+        //    string baseUrl = "https://apiv1.teleapi.net/";
+        //    string endpoint = "dids/list";
+        //    string tokenParameter = $"?token={token}";
+        //    string searchParameter = $"&search={query}";
+        //    string url = $"{baseUrl}{endpoint}{tokenParameter}{searchParameter}";
+        //    return await url.GetJsonAsync<DidsList>().ConfigureAwait(false);
+        //}
 
         public static async Task<DidsList> GetRawAsync(int npa, Guid token)
         {
@@ -59,6 +59,17 @@ namespace NumberSearch.DataAccess.TeliMesssage
             string tokenParameter = $"?token={token}";
             string npaParameter = $"&npa={npa}";
             string url = $"{baseUrl}{endpoint}{tokenParameter}{npaParameter}";
+            return await url.GetJsonAsync<DidsList>().ConfigureAwait(false);
+        }
+
+        public static async Task<DidsList> GetRawAsync(int npa, int nxx, Guid token)
+        {
+            string baseUrl = "https://apiv1.teleapi.net/";
+            string endpoint = "dids/list";
+            string tokenParameter = $"?token={token}";
+            string npaParameter = $"&npa={npa}";
+            string nxxParameter = $"&nxx={nxx}";
+            string url = $"{baseUrl}{endpoint}{tokenParameter}{npaParameter}{nxxParameter}";
             return await url.GetJsonAsync<DidsList>().ConfigureAwait(false);
         }
 
@@ -108,9 +119,9 @@ namespace NumberSearch.DataAccess.TeliMesssage
         }
 
 
-        public static async Task<IEnumerable<PhoneNumber>> GetAsync(string query, Guid token)
+        public static async Task<IEnumerable<PhoneNumber>> GetAsync(int npa, int nxx, Guid token)
         {
-            var results = await GetRawAsync(query, token).ConfigureAwait(false);
+            var results = await GetRawAsync(npa, nxx, token).ConfigureAwait(false);
 
             var list = new List<PhoneNumber>();
 

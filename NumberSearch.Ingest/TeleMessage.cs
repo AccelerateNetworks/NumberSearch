@@ -90,7 +90,7 @@ namespace NumberSearch.Ingest
 
             try
             {
-                var results = await DidsList.GetAsync($"{npa}{nxx}****", token).ConfigureAwait(false);
+                var results = await DidsList.GetAsync(npa, nxx, token).ConfigureAwait(false);
 
                 foreach (var result in results.ToArray())
                 {

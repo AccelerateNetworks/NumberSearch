@@ -68,6 +68,23 @@ namespace NumberSearch.DataAccess
         }
 
         /// <summary>
+        /// Get all phone numbers in an area code.
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<PhoneNumber>> GetAllByAreaCodeAsync(int NPA, string connectionString)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<PhoneNumber>("SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\", \"Purchased\" FROM public.\"PhoneNumbers\" WHERE \"NPA\" = @NPA",
+                new { NPA })
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        /// <summary>
         /// Find a single phone number based on the complete number.
         /// </summary>
         /// <param name="dialedNumber"></param>
