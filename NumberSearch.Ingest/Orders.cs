@@ -46,9 +46,8 @@ namespace NumberSearch.Ingest
             public string? Customer { get; set; }
         }
 
-        public static async Task<IEnumerable<OrderStatus>> OrdersRequiringPortingInformationAsync(string connectionString)
+        public static async Task<IEnumerable<OrderStatus>> IncompleteOrderRemindersAsync(string connectionString)
         {
-
             var orders = await Order.GetAllAsync(connectionString);
             var portRequests = await PortRequest.GetAllAsync(connectionString);
 
@@ -57,10 +56,16 @@ namespace NumberSearch.Ingest
             foreach (var order in orders)
             {
                 var portRequest = portRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefault();
+
                 var productOrders = await ProductOrder.GetAsync(order.OrderId, connectionString);
 
                 var nextStep = Order.GetStatus(order, productOrders, portRequest);
-                orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
+
+                // If the order isn't complete and is not a quote add it to the reminders list.
+                if (order.Completed is not true && order.Quote is not true)
+                {
+                    orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
+                }
             }
 
             return orderStatuses;

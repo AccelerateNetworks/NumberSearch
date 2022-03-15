@@ -1393,6 +1393,15 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task GetPhoneNumbersByAreaCodeAsync()
+        {
+            var result = await PhoneNumber.GetAllByAreaCodeAsync(206, postgresql);
+
+            Assert.True(result.Any());
+            output.WriteLine(result.Count().ToString());
+        }
+
+        [Fact]
         public async Task GetVerifiedNumbersAsync()
         {
             var results = await VerifiedPhoneNumber.GetAllAsync(postgresql).ConfigureAwait(false);

@@ -113,7 +113,7 @@ namespace NumberSearch.Ingest
                     var checkSend = await SendPortingNotificationEmailAsync(changedNumbers, smtpUsername, smtpPassword, emailDan, emailOrders, postgresSQL).ConfigureAwait(false);
                 }
 
-                var orderStatuses = await Orders.OrdersRequiringPortingInformationAsync(postgresSQL).ConfigureAwait(false);
+                var orderStatuses = await Orders.IncompleteOrderRemindersAsync(postgresSQL).ConfigureAwait(false);
 
                 if (orderStatuses != null && orderStatuses.Any())
                 {
