@@ -52,7 +52,7 @@
                             nextStep = $"⭕ Get the Porting information from the Customer";
                             pillColor = "danger";
                         }
-                        else if (order?.PortRequest is not null)
+                        else if (order?.PortRequest is not null && order?.PortRequest.OrderId == order?.Order?.OrderId)
                         {
                             if (order?.PortRequest?.Completed is true)
                             {
