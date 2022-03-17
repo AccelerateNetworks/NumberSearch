@@ -748,6 +748,13 @@ namespace NumberSearch.Ingest
                                 Priority = true
                             };
 
+                            // Remove stale priority numbers
+                            foreach (var code in AreaCode.Priority)
+                            {
+                                var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, new TimeSpan(priortyIngestCycleTime), code, lastRun.IngestedFrom, postgresSQL).ConfigureAwait(false);
+                                combined.Removed += removedNumbers.Removed;
+                            }
+
                             if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
                             {
                                 Log.Information("[Peerless] Completed the priority ingest process.");
@@ -812,7 +819,7 @@ namespace NumberSearch.Ingest
                         await Orders.UpdateOrdersAsync(config);
 
                         // Verify that all the Executive numbers are still purchasable for the priority area codes.
-                        await Provider.VerifyAddToCartAsync(AreaCode.Priority, "Executive", postgresSQL, bulkVSusername, bulkVSpassword, 
+                        await Provider.VerifyAddToCartAsync(AreaCode.Priority, "Executive", postgresSQL, bulkVSusername, bulkVSpassword,
                             teleToken, username, password, call48Username, call48Password, peerlessApiKey);
                     }
 
