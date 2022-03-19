@@ -39,7 +39,7 @@
     }
 </script>
 
-<h1 class="display-4 p-3">🚢 Port Requests</h1>
+<h1 class="display-4 p-3">🚢 Port Request</h1>
 @if (!string.IsNullOrWhiteSpace(Model?.Message))
 {
     if (string.IsNullOrWhiteSpace(Model?.AlertType))
@@ -57,71 +57,117 @@
     }
 }
 <div class="pb-3">
-    @if (Model?.PortRequest?.OrderId is not null)
-    {
-        <a href="https://acceleratenetworks.com/cart/order/@Model?.Order?.OrderId" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
-            Customer's View
-        </a>
-    }
-    <a href="/Home/Emails/@Model?.PortRequest?.OrderId" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
-        Related Emails
-    </a>
-    @if (Model?.PortRequest is null)
-    {
-        <div class="alert alert-danger mt-3" role="alert">
-            This port request has not yet been submitted by the customer. <a href="https://acceleratenetworks.com/Cart/PortingInformation/{@Model?.Order?.OrderId}" target="_blank" rel="noopener noreferrer">Please make them fill out this form.</a>
-        </div>
-    }
-    @if (!string.IsNullOrWhiteSpace(Model?.PortRequest?.BillImagePath))
-    {
-        <a class="btn btn-outline-success" href="/Home/BillImage/@Model?.Order?.OrderId" target="_blank">Losing Carrier Bill</a>
-    }
-</div>
-<form action="/Home/PortRequests/@Model?.PortRequest?.OrderId" method="post" class="needs-validation mb-3">
-    @Html.AntiForgeryToken()
-    <input asp-for="PortRequest.OrderId" type="text" value="@Model?.Order?.OrderId" hidden />
     <div class="row">
-        <div class="col-md-4 mb-3">
-            <label for="teliId">Request Status</label>
-            <input type="text" value="@Model?.PortRequest?.RequestStatus" class="form-control" id="teliId" readonly
-                   title="The status of the Port Request in Teli's system.">
-        </div>
-        <div class="col-md-4 mb-3">
-            <label for="teliId">Status Last Updated</label>
-            <input type="text" value="@Model?.PortRequest?.DateUpdated" class="form-control" id="teliId" readonly
-                   title="The status of the Port Request in Teli's system.">
-        </div>
-        <div class="col-md-4 mb-3">
-            <label for="teliId">Completed On</label>
-            <input type="text" value="@Model?.PortRequest?.DateCompleted" class="form-control" id="teliId" readonly
-                   title="The status of the Port Request in Teli's system.">
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-4 mb-3">
-            <label for="vendor">Vendor Submitted To</label>
-            <input asp-for="PortRequest.VendorSubmittedTo" type="text" value="@Model?.PortRequest?.VendorSubmittedTo" class="form-control" id="teliId" placeholder="Unsubmitted" readonly
-                   title="The vendor this Port Request was submitted to.">
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-4 mb-3">
-            <label for="billingPhone">Current Billing Phone Number</label>
-            <input asp-for="PortRequest.BillingPhone" type="text" value="@Model?.PortRequest?.BillingPhone" class="form-control" id="billingPhone" placeholder="2061234567" required
-                   title="Also known as the BTN. This is the number that is normally provided on a copy of your bill or statement in the upper right corner or is the first number listed on the bill.">
-        </div>
-        <div class="col-md-4 mb-3">
-            <label for="accountNumber">Current Account Number</label>
-            <input asp-for="PortRequest.ProviderAccountNumber" type="text" value="@Model?.PortRequest?.ProviderAccountNumber" class="form-control" id="accountNumber" placeholder="1234567891011" title="The account number is usually found on the invoice or a copy of a bill from your current provider." required>
-            <div class="invalid-feedback">
-                Please enter your account number.
+        <div class="col">
+            <div class="d-grid gap-2">
+                <a href="/Home/Order/@Model?.Order?.OrderId" class="btn btn-danger">
+                    Edit the Order
+                </a>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <label for="pin">Account PIN or Password <span class="text-muted">(Optional)</span></label>
-            <input asp-for="PortRequest.ProviderPIN" type="text" value="@Model?.PortRequest?.ProviderPIN" class="form-control" id="pin" placeholder="1234" title="The PIN or password for the existing account.">
-            <div class="invalid-feedback">
-                Valid PIN is required.
+        @if (Model?.PortRequest?.OrderId is not null)
+        {
+            <div class="col">
+                <div class="d-grid gap-2">
+                    <a href="https://acceleratenetworks.com/cart/order/@Model?.Order?.OrderId" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                        Customer's View
+                    </a>
+                </div>
+            </div>
+        }
+        <div class="col">
+            <div class="d-grid gap-2">
+                <a href="/Home/Emails/@Model?.PortRequest?.OrderId" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+                    Related Emails
+                </a>
+            </div>
+        </div>
+        @if (Model?.PortRequest is null)
+        {
+            <div class="col">
+                <div class="d-grid gap-2">
+                    <div class="alert alert-danger mt-3" role="alert">
+                        This port request has not yet been submitted by the customer. <a href="https://acceleratenetworks.com/Cart/PortingInformation/{@Model?.Order?.OrderId}" target="_blank" rel="noopener noreferrer">Please make them fill out this form.</a>
+                    </div>
+                </div>
+            </div>
+        }
+        @if (!string.IsNullOrWhiteSpace(Model?.PortRequest?.BillImagePath))
+        {
+            <div class="col">
+                <div class="d-grid gap-2">
+                    <a class="btn btn-outline-success" href="/Home/BillImage/@Model?.Order?.OrderId" target="_blank">Losing Carrier Bill</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<form action="/Home/PortRequests/@Model?.PortRequest?.OrderId" method="post" class="needs-validation">
+    @Html.AntiForgeryToken()
+    <input asp-for="PortRequest.OrderId" type="text" value="@Model?.Order?.OrderId" hidden />
+    <h4 class="mb-3 mt-3">
+        Port Request Information
+    </h4>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-floating mb-3">
+                <input type="text" value="@Model?.PortRequest?.RequestStatus" class="form-control" id="teliId" readonly
+                       title="The status of the Port Request in Teli's system.">
+                <label for="teliId">Request Status</label>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-floating mb-3">
+                <input type="text" value="@Model?.PortRequest?.DateUpdated" class="form-control" id="teliId" readonly
+                       title="The status of the Port Request in Teli's system.">
+                <label for="teliId">Status Last Updated</label>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-floating mb-3">
+                <input type="text" value="@Model?.PortRequest?.DateCompleted" class="form-control" id="teliId" readonly
+                       title="The status of the Port Request in Teli's system.">
+                <label for="teliId">Completed On</label>
+            </div>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-floating mb-3">
+                <input asp-for="PortRequest.VendorSubmittedTo" type="text" value="@Model?.PortRequest?.VendorSubmittedTo" class="form-control" id="teliId" placeholder="Unsubmitted" readonly
+                       title="The vendor this Port Request was submitted to.">
+                <label for="vendor">Vendor Submitted To</label>
+            </div>
+        </div>
+    </div>
+    <h4 class="mb-3 mt-3">
+        Old Carrier Billing Information
+    </h4>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-floating mb-3">
+                <input asp-for="PortRequest.BillingPhone" type="text" value="@Model?.PortRequest?.BillingPhone" class="form-control" id="billingPhone" placeholder="2061234567" required
+                       title="Also known as the BTN. This is the number that is normally provided on a copy of your bill or statement in the upper right corner or is the first number listed on the bill.">
+                <label for="billingPhone">Current Billing Phone Number</label>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-floating mb-3">
+                <input asp-for="PortRequest.ProviderAccountNumber" type="text" value="@Model?.PortRequest?.ProviderAccountNumber" class="form-control" id="accountNumber" placeholder="1234567891011" title="The account number is usually found on the invoice or a copy of a bill from your current provider." required>
+                <div class="invalid-feedback">
+                    Please enter your account number.
+                </div>
+                <label for="accountNumber">Current Account Number</label>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-floating mb-3">
+                <input asp-for="PortRequest.ProviderPIN" type="text" value="@Model?.PortRequest?.ProviderPIN" class="form-control" id="pin" placeholder="1234" title="The PIN or password for the existing account.">
+                <div class="invalid-feedback">
+                    Valid PIN is required.
+                </div>
+                <label for="pin">Account PIN or Password <span class="text-muted">(Optional)</span></label>
             </div>
         </div>
     </div>
@@ -151,116 +197,126 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4 mb-3 business">
-            <label for="partialPort">Business Contact</label>
-            @{
-                var contactName = string.IsNullOrWhiteSpace(Model?.PortRequest?.BusinessContact) ? $"{Model?.Order?.FirstName} {Model?.Order?.LastName}" : Model?.PortRequest?.BusinessContact;
-            }
-            <input asp-for="PortRequest.BusinessContact" type="text" value="@contactName" class="form-control" id="businessContact" placeholder="Alexander Graham-Bell" title="This is the name of the owner or contact who will be submitting the port order.">
+        <div class="col-md-4 business">
+            <div class="form-floating mb-3">
+                @{
+                    var contactName = string.IsNullOrWhiteSpace(Model?.PortRequest?.BusinessContact) ? $"{Model?.Order?.FirstName} {Model?.Order?.LastName}" : Model?.PortRequest?.BusinessContact;
+                }
+                <input asp-for="PortRequest.BusinessContact" type="text" value="@contactName" class="form-control" id="businessContact" placeholder="Alexander Graham-Bell" title="This is the name of the owner or contact who will be submitting the port order.">
+                <label for="partialPort">Business Contact</label>
+            </div>
         </div>
-        <div class="col-md-4 mb-3 business">
-            <label for="partialPortDescription">Business Name</label>
-            @{
-                var businessName = string.IsNullOrWhiteSpace(Model?.PortRequest?.BusinessName) ? Model?.Order?.BusinessName : Model?.PortRequest?.BusinessName;
-            }
-            <input asp-for="PortRequest.BusinessName" type="text" value="@businessName" class="form-control" id="businessName" placeholder="American Telegraf and Telephone Company" title="Name of the business associated with the numbers being ported.">
+        <div class="col-md-4 business">
+            <div class="form-floating mb-3">
+                @{
+                    var businessName = string.IsNullOrWhiteSpace(Model?.PortRequest?.BusinessName) ? Model?.Order?.BusinessName : Model?.PortRequest?.BusinessName;
+                }
+                <input asp-for="PortRequest.BusinessName" type="text" value="@businessName" class="form-control" id="businessName" placeholder="American Telegraf and Telephone Company" title="Name of the business associated with the numbers being ported.">
+                <label for="partialPortDescription">Business Name</label>
+            </div>
         </div>
-
-        <div class="col-md-4 mb-3 residential">
-            <label for="partialPort">First Name</label>
-            @{
-                var firstName = string.IsNullOrWhiteSpace(Model?.PortRequest?.ResidentialFirstName) ? Model?.Order?.FirstName : Model?.PortRequest?.ResidentialFirstName;
-            }
-            <input asp-for="PortRequest.ResidentialFirstName" type="text" value="@firstName" class="form-control" id="residentalFirstName" placeholder="Alexander" title="The first name of the person currently being billed for this phone number.">
+        <div class="col-md-4 residential">
+            <div class="form-floating mb-3">
+                @{
+                    var firstName = string.IsNullOrWhiteSpace(Model?.PortRequest?.ResidentialFirstName) ? Model?.Order?.FirstName : Model?.PortRequest?.ResidentialFirstName;
+                }
+                <input asp-for="PortRequest.ResidentialFirstName" type="text" value="@firstName" class="form-control" id="residentalFirstName" placeholder="Alexander" title="The first name of the person currently being billed for this phone number.">
+                <label for="partialPort">First Name</label>
+            </div>
         </div>
-        <div class="col-md-4 mb-3 residential">
-            <label for="partialPortDescription">Last Name</label>
-            @{
-                var lastName = string.IsNullOrWhiteSpace(Model?.PortRequest?.ResidentialLastName) ? Model?.Order?.LastName : Model?.PortRequest?.ResidentialLastName;
-            }
-            <input asp-for="PortRequest.ResidentialLastName" type="text" value="@lastName" class="form-control" id="residentalLastName" placeholder="Graham-Bell" title="The last name of the person currently being billed for this phone number.">
+        <div class="col-md-4 residential">
+            <div class="form-floating mb-3">
+                @{
+                    var lastName = string.IsNullOrWhiteSpace(Model?.PortRequest?.ResidentialLastName) ? Model?.Order?.LastName : Model?.PortRequest?.ResidentialLastName;
+                }
+                <input asp-for="PortRequest.ResidentialLastName" type="text" value="@lastName" class="form-control" id="residentalLastName" placeholder="Graham-Bell" title="The last name of the person currently being billed for this phone number.">
+                <label for="partialPortDescription">Last Name</label>
+            </div>
         </div>
     </div>
 
-    <div class="mb-3" id="searchForm">
-        <label for="address">Service Address</label>
+    <div class="form-floating mb-3" id="searchForm">
         <input asp-for="PortRequest.Address" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" list="addressOptions" autocomplete="off" required>
         <datalist id="addressOptions">
         </datalist>
         <small class="text-muted">
             Enter the shipping address for this order, or the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
         </small>
+        <label for="address">Service Address</label>
     </div>
 
-    <div class="mb-3">
-        <label for="address2">Service Address 2 <span class="text-muted">(Optional)</span></label>
-        @*        @{
-            var address2 = string.IsNullOrWhiteSpace(Model?.PortRequest?.Address2) ? Model?.Order?.Address2 : Model?.PortRequest?.Address2;
-            }*@
+    <div class="form-floating mb-3">
         <input asp-for="PortRequest.Address2" type="text" class="form-control" id="address2" title="The city of the service address listed above." placeholder="Apartment or suite">
+        <label for="address2">Service Address 2 <span class="text-muted">(Optional)</span></label>
     </div>
 
     @if (!string.IsNullOrWhiteSpace(Model?.PortRequest?.City))
     {
         <div class="row">
-            <div class="col-md-4 mb-3">
-                <label for="unitType">City</label>
-                <input asp-for="PortRequest.City" type="text" class="form-control" id="address2" readonly>
-
+            <div class="col">
+                <div class="form-floating mb-3">
+                    <input asp-for="PortRequest.City" type="text" class="form-control" id="address2" readonly>
+                    <label for="unitType">City</label>
+                </div>
             </div>
-            <div class="col-md-4 mb-3">
-                <label for="address2">State</label>
-                <input asp-for="PortRequest.State" type="text" class="form-control" id="address2" readonly>
+            <div class="col">
+                <div class="form-floating mb-3">
+                    <input asp-for="PortRequest.State" type="text" class="form-control" id="address2" readonly>
+                    <label for="address2">State</label>
+                </div>
             </div>
-            <div class="col-md-4 mb-3">
-                <label for="address2">Zip</label>
-                <input asp-for="PortRequest.Zip" type="text" class="form-control" id="address2" readonly>
+            <div class="col">
+                <div class="form-floating mb-3">
+                    <input asp-for="PortRequest.Zip" type="text" class="form-control" id="address2" readonly>
+                    <label for="address2">Zip</label>
+                </div>
             </div>
         </div>
     }
+    <h4 class="mb-3 mt-3">
+        Customer Information
+    </h4>
     <div class="row">
-
-        <div class="col-md-6">
-            <label for="billingPhone">Caller ID <span class="text-muted">(15 Characters Maximum)</span></label>
-            <input asp-for="PortRequest.CallerId" type="text" value="@Model?.PortRequest?.CallerId" class="form-control" id="billingPhone" title="Sets Caller ID (aka CNAM) for all numbers in this port order, 15 character limit. Only letters, numbers, and spaces are allowed." placeholder="Alexander" maxlength="15" pattern="[a-zA-Z0-9\s]+" required>
-            <label><strong id="charCount"></strong></label>
+        <div class="col">
+            <div class="form-floating mb-3">
+                <input asp-for="PortRequest.CallerId" type="text" value="@Model?.PortRequest?.CallerId" class="form-control" id="billingPhone" title="Sets Caller ID (aka CNAM) for all numbers in this port order, 15 character limit. Only letters, numbers, and spaces are allowed." placeholder="Alexander" maxlength="15" pattern="[a-zA-Z0-9\s]+" required>
+                <label><strong id="charCount"></strong></label>
+                <label for="billingPhone">Caller ID <span class="text-muted">(15 Characters Maximum)</span></label>
+            </div>
         </div>
-        <div class="col-md-6">
-            @*<label for="inputGroupFile02">An Image of Your Current Bill</label>
-                <div class="input-group">
-                <div class="custom-file">
-                <input asp-for="PortRequest.BillImage" type="file" class="custom-file-input" id="inputGroupFile02" />
-                <span asp-validation-for="PortRequest.BillImage"></span>
-                <label class="custom-file-label" for="inputGroupFile02">Choose file</label>
-                </div>
-                </div>*@
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-2 mb-3">
-            <div class="form-group">
+        <div class="col">
+            <div class="form-group mb-3">
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" asp-for="PortRequest.PartialPort" role="switch" id="partialPort">
                     <label class="form-check-label" for="flexSwitchCheckDefault">Partial Port</label>
                 </div>
             </div>
         </div>
-        <div class="col-md-10 mb-3" id="partialDescripton">
-            <label for="partialPortDescription">Partial Port Description</label>
-            <input asp-for="PortRequest.PartialPortDescription" type="text" value="@Model?.PortRequest?.PartialPortDescription" class="form-control" id="partialPortDescription" title="Describe what services the old carrier should leave alone. Contact the old carrier to confirm they will leave these services intact.">
+        <div class="col">
+            <div class="form-floating mb-3" id="partialDescripton">
+                <input asp-for="PortRequest.PartialPortDescription" type="text" value="@Model?.PortRequest?.PartialPortDescription" class="form-control" id="partialPortDescription" title="Describe what services the old carrier should leave alone. Contact the old carrier to confirm they will leave these services intact.">
+                <label for="partialPortDescription">Partial Port Description</label>
+            </div>
         </div>
     </div>
-    <hr class="mb-4">
-    <button type="submit" class="btn btn-warning text-light">Update</button>
-    <br />
-    <br />
-    <a href="/Home/PortRequest/@Model?.PortRequest?.OrderId/Delete" class="btn btn-danger">Delete</a>
+    <h4 class="mb-3">Port Request Management</h4>
+    <div class="row">
+        <div class="col">
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-warning text-light">Update</button>
+            </div>
+        </div>
+        <div class="col">
+            <div class="d-grid gap-2">
+                <a href="/Home/PortRequest/@Model?.PortRequest?.OrderId/Delete" class="btn btn-danger">Delete</a>
+            </div>
+        </div>
+    </div>
     <br />
 </form>
+<h4 class="">Numbers to Port</h4>
 <div class="row">
     <div class="col">
-        <label for="locationType">Numbers to Port</label>
         <div class="table-responsive">
             <table class="table table-borderless table-hover table-striped">
                 <thead>
@@ -280,7 +336,6 @@
                         <th>
                             Actions
                         </th>
-                        <th>Vendor Response</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -328,7 +383,6 @@
                                         }
                                     }
                                 </td>
-                                <td>@number?.RawResponse</td>
                             </tr>
                         }
                     }
@@ -347,18 +401,27 @@
         </div>
     </div>
 </form>
-<br />
-<p class="col-sm-12 col-md-9 col-lg-6">When you press the button below finely tuned machine learning (ML) models will act as Artificial Intelligence (AI) and submit it a Port Request to Teli with any Tollfree Phone Numbers in this Port Request. Any Local Phone Numbers in this order will be submitted to BulkVS in one or more separate Port Requests depending on how many underlying carriers there are for the numbers that you are Porting to our network. Safety is not guaranteed.</p>
-<br />
-<form action="/Home/PortRequestUnified/@Model?.PortRequest?.OrderId" method="post">
-    @Html.AntiForgeryToken()
-    <input name="OrderId" value="@Model?.PortRequest?.OrderId" hidden />
-    @if (unSubmitted?.Count() > 0)
-    {
-        <button type="submit" class="btn btn-success btn-lg">Submit to Teli and BulkVS</button>
-    }
-    else
-    {
-        <button type="submit" class="btn btn-outline-success btn-lg" disabled>Submit to Teli and BulkVS</button>
-    }
-</form>
+<h4 class="">Submit Port Request to Vendors</h4>
+<div class="row">
+    <div class="col">
+        <p>When you press the button below finely tuned machine learning (ML) models will act as Artificial Intelligence (AI) and submit it a Port Request to Teli with any Tollfree Phone Numbers in this Port Request. Any Local Phone Numbers in this order will be submitted to BulkVS in one or more separate Port Requests depending on how many underlying carriers there are for the numbers that you are Porting to our network. Safety is not guaranteed.</p>
+    </div>
+    <div class="col">
+        <form action="/Home/PortRequestUnified/@Model?.PortRequest?.OrderId" method="post">
+            @Html.AntiForgeryToken()
+            <input name="OrderId" value="@Model?.PortRequest?.OrderId" hidden />
+            @if (unSubmitted?.Count() > 0)
+            {
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-success btn-lg">Submit to Teli and BulkVS</button>
+                </div>
+            }
+            else
+            {
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-outline-success btn-lg" disabled>Submit to Teli and BulkVS</button>
+                </div>
+            }
+        </form>
+    </div>
+</div>

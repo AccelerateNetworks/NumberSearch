@@ -127,6 +127,7 @@ public class OrdersController : Controller
                 var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
                 var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
                 var productItems = await _context.ProductItems.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToArrayAsync();
+                var portRequest = await _context.PortRequests.AsNoTracking().FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
 
                 var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
                 var products = new List<Product>();
@@ -174,7 +175,7 @@ public class OrdersController : Controller
                     PurchasedPhoneNumbers = purchasedPhoneNumbers
                 };
 
-                return View("OrderEdit", new EditOrderResult { Order = order, ProductItems = productItems, Cart = cart });
+                return View("OrderEdit", new EditOrderResult { Order = order, PortRequest = portRequest, ProductItems = productItems, Cart = cart });
             }
         }
     }
