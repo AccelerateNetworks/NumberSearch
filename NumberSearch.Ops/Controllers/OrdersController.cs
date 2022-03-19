@@ -89,9 +89,6 @@ public class OrdersController : Controller
                     .ToListAsync();
             }
 
-            // Hide merged orders
-            //orders = orders.Where(x => x.MergedOrderId is null);
-
             foreach (var order in orders)
             {
                 var orderProductOrders = productOrders.Where(x => x.OrderId == order.OrderId).ToArray();

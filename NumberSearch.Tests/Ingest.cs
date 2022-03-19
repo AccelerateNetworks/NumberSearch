@@ -57,6 +57,18 @@ namespace NumberSearch.Tests
             invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
         }
 
+        //[Fact]
+        //public async Task TestBulkVSPortStatusUpdates()
+        //{
+        //    await PortRequests.UpdateStatusesBulkVSAsync(configuration);
+        //}
+
+        //[Fact]
+        //public async Task TestTeliPortStatusUpdates()
+        //{
+        //    await PortRequests.UpdateStatusesTeliMessageAsync(configuration);
+        //}
+
         [Fact]
         public void CategorizeNumbers()
         {

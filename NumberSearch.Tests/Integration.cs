@@ -789,27 +789,27 @@ namespace NumberSearch.Tests
             output.WriteLine(JsonSerializer.Serialize(results.FirstOrDefault()));
         }
 
-        [Fact]
-        public async Task BulkVSRESTOrderPostAsyncTestAsync()
-        {
-            // Arrange
-            var order = new OrderTnRequestBody
-            {
-                TN = "13109060901",
-                Lidb = "Accelerate Networks",
-                PortoutPin = "3591344",
-                TrunkGroup = "Primary",
-                Sms = true,
-                Mms = false
-            };
+        //[Fact]
+        //public async Task BulkVSRESTOrderPostAsyncTestAsync()
+        //{
+        //    // Arrange
+        //    var order = new OrderTnRequestBody
+        //    {
+        //        TN = "13109060901",
+        //        Lidb = "Accelerate Networks",
+        //        PortoutPin = "3591344",
+        //        TrunkGroup = "Primary",
+        //        Sms = true,
+        //        Mms = false
+        //    };
 
-            // Act
-            var results = await order.PostAsync(bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+        //    // Act
+        //    var results = await order.PostAsync(bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
 
-            // Assert
-            Assert.NotNull(results);
-            output.WriteLine(JsonSerializer.Serialize(results));
-        }
+        //    // Assert
+        //    Assert.NotNull(results);
+        //    output.WriteLine(JsonSerializer.Serialize(results));
+        //}
 
 
         [Fact]

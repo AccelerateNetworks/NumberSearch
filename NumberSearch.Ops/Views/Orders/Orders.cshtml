@@ -264,7 +264,7 @@
                                         @{
                                             foreach (var product in ported)
                                             {
-                                                var matchingPortedPhoneNumber = Model?.PortedPhoneNumbers?.Where(x => x?.PortedDialedNumber == product?.PortedDialedNumber).FirstOrDefault();
+                                                var matchingPortedPhoneNumber = Model?.PortedPhoneNumbers?.Where(x => x.OrderId == order?.Order?.OrderId && x?.PortedDialedNumber == product?.PortedDialedNumber || x?.PortedPhoneNumberId == product?.PortedPhoneNumberId).FirstOrDefault();
                                                 if (matchingPortedPhoneNumber is not null && matchingPortedPhoneNumber.Completed)
                                                 {
                                                     <a class="btn btn-outline-primary mt-1" href="/Home/PortRequests/@product.OrderId">@product.PortedDialedNumber ✔️</a>
