@@ -70,6 +70,13 @@ namespace NumberSearch.Tests
         //}
 
         [Fact]
+        public async Task TestIncompleteOrderRemindersAsync()
+        {
+            var results = await Orders.IncompleteOrderRemindersAsync(postgresql);
+            output.WriteLine($"Active Orders: {results.Count()}");
+        }
+
+        [Fact]
         public void CategorizeNumbers()
         {
             // Arrange
