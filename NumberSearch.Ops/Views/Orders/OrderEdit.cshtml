@@ -81,7 +81,7 @@
     <div class="col">
         <div class="d-grid gap-2">
             <a href="/Home/Emails/@Model?.Order?.OrderId" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
-                Related Emails
+                View Related Emails
             </a>
         </div>
     </div>
@@ -90,7 +90,7 @@
         {
             <div class="d-grid gap-2">
                 <a href="/Home/PortRequests/@Model?.Order?.OrderId" class="btn btn-info text-white">
-                    Related Port Request
+                    Edit Related Port Request
                 </a>
             </div>
         }
@@ -152,7 +152,7 @@
                 @if (!string.IsNullOrWhiteSpace(Model?.Order?.BillingInvoiceId))
                 {
                     <a href="https://billing.acceleratenetworks.com/invoices/@Model?.Order?.BillingInvoiceId/edit" class="btn btn-outline-primary" target="_blank" rel="noopener noreferrer">
-                        Upfront Billing Invoice
+                        View Upfront Invoice
                     </a>
                 }
             </div>
@@ -162,7 +162,7 @@
                 @if (!string.IsNullOrWhiteSpace(Model?.Order?.BillingInvoiceReoccuringId))
                 {
                     <a href="https://billing.acceleratenetworks.com/invoices/@Model?.Order?.BillingInvoiceReoccuringId/edit" class="btn btn-outline-success" target="_blank" rel="noopener noreferrer">
-                        Recurring Billing Invoice
+                        View Recurring Invoice
                     </a>
                 }
             </div>
@@ -172,7 +172,7 @@
                 @if (!string.IsNullOrWhiteSpace(Model?.Order?.BillingClientId))
                 {
                     <a href="https://billing.acceleratenetworks.com/clients/@Model?.Order?.BillingClientId/edit" class="btn btn-outline-info" target="_blank" rel="noopener noreferrer">
-                        Billing System Client
+                        View Billing System Client
                     </a>
                 }
             </div>
@@ -354,24 +354,27 @@
         </div>
     </div>
 </form>
-<h4 class="mb-3">E911 Registration</h4>
-<div class="row">
-    @if (string.IsNullOrWhiteSpace(Model?.Order?.E911ServiceNumber))
-    {
-        <p>E911 Number Not Set</p>
-    }
-    else
-    {
-        <div class="col">
-            <div class="mb-3">
-                @{
-                    var registeredNumber = Model?.Order?.E911ServiceNumber ?? "E911 Number Not Set";
-                }
-                <p>@registeredNumber @@ @Model?.Order?.UnparsedAddress</p>
+@if ((Model?.Cart?.PurchasedPhoneNumbers is not null && Model.Cart.PurchasedPhoneNumbers.Any()) || (Model?.Cart?.PortedPhoneNumbers is not null && Model.Cart.PortedPhoneNumbers.Any()))
+{
+    <h4 class="mb-3">E911 Registration</h4>
+    <div class="row">
+        @if (string.IsNullOrWhiteSpace(Model?.Order?.E911ServiceNumber))
+        {
+            <p>E911 Number Not Set</p>
+        }
+        else
+        {
+            <div class="col">
+                <div class="mb-3">
+                    @{
+                        var registeredNumber = Model?.Order?.E911ServiceNumber ?? "E911 Number Not Set";
+                    }
+                    <p>@registeredNumber @@ @Model?.Order?.UnparsedAddress</p>
+                </div>
             </div>
-        </div>
-    }
-</div>
+        }
+    </div>
+}
 @{
     var productOrders = Model?.Cart?.ProductOrdersToDictionary();
     if (Model?.Cart is not null
@@ -729,7 +732,14 @@
                                             <td>@item?.MACAddress</td>
                                             <td>@item?.Condition</td>
                                             <td>@item?.ExternalOrderId</td>
-                                            <td><a href="@item?.ShipmentTrackingLink" target="_blank" rel="noreferrer" class="btn btn-info">Tracking Status</a></td>
+                                            @if (!string.IsNullOrWhiteSpace(item?.ShipmentTrackingLink))
+                                            {
+                                                <td><a href="@item?.ShipmentTrackingLink" target="_blank" rel="noreferrer" class="btn btn-info">Tracking Status</a></td>
+                                            }
+                                            else
+                                            {
+                                                <td></td>
+                                            }
                                             <td>
                                                 <div class="btn-group" role="group" aria-label="Basic example">
                                                     <a href="/Products/Details/@item?.ProductId" class="btn btn-outline-primary">Product</a>
