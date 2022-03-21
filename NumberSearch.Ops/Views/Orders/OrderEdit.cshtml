@@ -142,19 +142,19 @@
     <div class="row">
         <div class="col">
             <div class="form-floating mb-3">
-                <input value="@Model?.Order?.BillingInvoiceId" type="text" class="form-control" placeholder="No billing invoice is associated with this order." readonly>
+                <input asp-for="Order.BillingInvoiceId" type="text" class="form-control" placeholder="No billing invoice is associated with this order." >
                 <label for="billingInvoiceId">Upfront Invoice Id</label>
             </div>
         </div>
         <div class="col">
             <div class="form-floating mb-3">
-                <input value="@Model?.Order?.BillingInvoiceReoccuringId" type="text" class="form-control" placeholder="No reoccuring billing invoice is associated with this order." readonly>
+                <input asp-for="Order.BillingInvoiceReoccuringId" type="text" class="form-control" placeholder="No reoccuring billing invoice is associated with this order." >
                 <label for="billingReoccuringInvoiceId">Reoccuring Invoice Id</label>
             </div>
         </div>
         <div class="col">
             <div class="form-floating mb-3">
-                <input value="@Model?.Order?.BillingClientId" type="text" class="form-control" placeholder="No billing client is associated with this order." readonly>
+                <input asp-for="Order.BillingClientId" type="text" class="form-control" placeholder="No billing client is associated with this order." >
                 <label for="billingClientId">Client Id</label>
             </div>
         </div>

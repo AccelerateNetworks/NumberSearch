@@ -285,13 +285,6 @@ public class OrdersController : Controller
                 order.Address2 = $"{order.AddressUnitType} {order.AddressUnitNumber}";
             }
 
-            if (order is not null)
-            {
-                order.BillingClientId = existingOrder?.BillingClientId;
-                order.BillingInvoiceId = existingOrder?.BillingInvoiceId;
-                order.BillingInvoiceReoccuringId = existingOrder?.BillingInvoiceReoccuringId;
-            }
-
             if (order is not null && existingOrder is not null)
             {
                 order.DateSubmitted = existingOrder.DateSubmitted;
