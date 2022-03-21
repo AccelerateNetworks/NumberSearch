@@ -357,8 +357,8 @@
 <form action="/Home/Order/@Model?.Order?.OrderId/RegisterE911/" method="post">
     <h4 class="mb-3">E911 Registration</h4>
     <div class="row">
-        @if (string.IsNullOrWhiteSpace(Model?.Order?.E911ServiceNumber))
-        {
+@*        @if (string.IsNullOrWhiteSpace(Model?.Order?.E911ServiceNumber))
+        {*@
             <div class="col-md-6">
                 <div class="mb-3">
                     <label for="sales">Main Phone Number for Address (Update the Order to Save)</label>
@@ -386,7 +386,7 @@
                     </div>
                 </div>
             </div>
-        }
+@*        }
         else
         {
             <div class="col">
@@ -397,7 +397,7 @@
                     <p>@registeredNumber @@ @Model?.Order?.UnparsedAddress</p>
                 </div>
             </div>
-        }
+        }*@
     </div>
 </form>
 @{

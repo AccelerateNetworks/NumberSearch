@@ -458,12 +458,12 @@ public class OrdersController : Controller
                         if (existingRegistration.code == 200)
                         {
                             // This number is already registered with Teli.
-                            Log.Information($"[RegisterE911] E911 Service number {serviceNumber} is already register with Teli.");
+                            Log.Information($"[RegisterE911] E911 Service number {existingRegistration.data.did_number} is already register with Teli.");
 
                             // Save the number to the order.
-                            if (!string.IsNullOrWhiteSpace(serviceNumber))
+                            if (!string.IsNullOrWhiteSpace(serviceNumber) && existingRegistration.data.did_number == phoneNumber.DialedNumber)
                             {
-                                order.E911ServiceNumber = serviceNumber;
+                                order.E911ServiceNumber = phoneNumber.DialedNumber;
                                 Log.Information($"[RegisterE911] E911 Service Number: {order.E911ServiceNumber}");
 
                                 _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
@@ -521,7 +521,7 @@ public class OrdersController : Controller
                                 PurchasedPhoneNumbers = purchasedPhoneNumbers
                             };
 
-                            return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"The currently selected phone number {phoneNumber.DialedNumber} is already registered for E911 service. 🤔", AlertType = "alert-warning" });
+                            return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"The currently selected phone number {existingRegistration.data.did_number} is already registered for E911 service. 🤔", AlertType = "alert-warning" });
                         }
                         else
                         {
