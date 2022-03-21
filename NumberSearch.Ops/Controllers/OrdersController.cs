@@ -449,71 +449,6 @@ public class OrdersController : Controller
 
                 if (order is not null && order.OrderId == Guid.Parse(orderId))
                 {
-                    if (!string.IsNullOrWhiteSpace(serviceNumber))
-                    {
-                        order.E911ServiceNumber = serviceNumber;
-                        Log.Information($"[RegisterE911] E911 Service Number: {order.E911ServiceNumber}");
-
-                        _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
-                        await _context.SaveChangesAsync();
-
-                        // The order failed to update with the new e911 service number.
-                        Log.Error($"[RegisterE911] Failed to update order {order.OrderId} with E911 service number {order.E911ServiceNumber}");
-                        var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                        var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                        var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                        var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-
-                        var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
-                        var products = new List<Product>();
-                        foreach (var productId in productsToGet)
-                        {
-                            var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == productId);
-                            if (product is not null)
-                            {
-                                products.Add(product);
-                            }
-                        }
-
-                        var servicesToGet = productOrders.Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
-                        var services = new List<Service>();
-                        foreach (var serviceId in servicesToGet)
-                        {
-                            var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == serviceId);
-                            if (service is not null)
-                            {
-                                services.Add(service);
-                            }
-                        }
-
-                        var couponsToGet = productOrders.Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
-                        var coupons = new List<Coupon>();
-                        foreach (var couponId in couponsToGet)
-                        {
-                            var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == couponId);
-                            if (coupon is not null)
-                            {
-                                coupons.Add(coupon);
-                            }
-                        }
-
-                        var cart = new Cart
-                        {
-                            Order = order,
-                            PhoneNumbers = new List<PhoneNumber>(),
-                            ProductOrders = productOrders,
-                            Products = products,
-                            Services = services,
-                            Coupons = coupons,
-                            PortedPhoneNumbers = portedPhoneNumbers,
-                            VerifiedPhoneNumbers = verifiedPhoneNumbers,
-                            PurchasedPhoneNumbers = purchasedPhoneNumbers
-                        };
-
-                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"The currently selected phone number {serviceNumber} could not be added to the order. 🤔", AlertType = "alert-warning" });
-                    }
-
-
                     var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(order.E911ServiceNumber ?? string.Empty, out var phoneNumber);
                     // Register the number with Teli for E911 service.
                     if (phoneNumber is not null && checkParse)
@@ -524,6 +459,17 @@ public class OrdersController : Controller
                         {
                             // This number is already registered with Teli.
                             Log.Information($"[RegisterE911] E911 Service number {order.E911ServiceNumber} is already register with Teli.");
+
+                            // Save the number to the order.
+                            if (!string.IsNullOrWhiteSpace(serviceNumber))
+                            {
+                                order.E911ServiceNumber = serviceNumber;
+                                Log.Information($"[RegisterE911] E911 Service Number: {order.E911ServiceNumber}");
+
+                                _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
+                                await _context.SaveChangesAsync();
+                            }
+
                             var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
                             var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
                             var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
@@ -684,6 +630,16 @@ public class OrdersController : Controller
                                                 if (E911Request is not null && E911Request?.code == 200)
                                                 {
                                                     // Congrats we did it!
+                                                    // Save the number to the order.
+                                                    if (!string.IsNullOrWhiteSpace(serviceNumber))
+                                                    {
+                                                        order.E911ServiceNumber = serviceNumber;
+                                                        Log.Information($"[RegisterE911] E911 Service Number: {order.E911ServiceNumber}");
+
+                                                        _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
+                                                        await _context.SaveChangesAsync();
+                                                    }
+
                                                     var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
                                                     var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
                                                     var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
@@ -1012,6 +968,16 @@ public class OrdersController : Controller
                                         if (E911Request is not null && E911Request?.code == 200)
                                         {
                                             // Congrats we did it!
+                                            // Save the number to the order.
+                                            if (!string.IsNullOrWhiteSpace(serviceNumber))
+                                            {
+                                                order.E911ServiceNumber = serviceNumber;
+                                                Log.Information($"[RegisterE911] E911 Service Number: {order.E911ServiceNumber}");
+
+                                                _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
+                                                await _context.SaveChangesAsync();
+                                            }
+
                                             var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
                                             var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
                                             var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
