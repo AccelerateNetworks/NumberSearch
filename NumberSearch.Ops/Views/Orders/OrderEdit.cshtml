@@ -354,52 +354,24 @@
         </div>
     </div>
 </form>
-<form action="/Home/Order/@Model?.Order?.OrderId/RegisterE911/" method="post">
-    <h4 class="mb-3">E911 Registration</h4>
-    <div class="row">
-@*        @if (string.IsNullOrWhiteSpace(Model?.Order?.E911ServiceNumber))
-        {*@
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label for="sales">Main Phone Number for Address (Update the Order to Save)</label>
-                    <input list="e911numbers" name="serviceNumber" class="form-select mr-sm-2" id="e911" />
-                    <datalist id="e911numbers">
-                        @{
-                            var ported = Model?.Cart?.PortedPhoneNumbers?.Select(x => x.PortedDialedNumber).ToArray() ?? Array.Empty<string>();
-                            var purchased = Model?.Cart?.PurchasedPhoneNumbers?.Select(x => x.DialedNumber).ToArray() ?? Array.Empty<string>();
-                            foreach (var item in ported.Union(purchased).ToArray())
-                            {
-                                <option value="@item"></option>
-                            }
-                        }
-                    </datalist>
-                </div>
+<h4 class="mb-3">E911 Registration</h4>
+<div class="row">
+    @if (string.IsNullOrWhiteSpace(Model?.Order?.E911ServiceNumber))
+    {
+        <p>E911 Number Not Set</p>
+    }
+    else
+    {
+        <div class="col">
+            <div class="mb-3">
+                @{
+                    var registeredNumber = Model?.Order?.E911ServiceNumber ?? "E911 Number Not Set";
+                }
+                <p>@registeredNumber @@ @Model?.Order?.UnparsedAddress</p>
             </div>
-            <div class="col-md-6">
-                <div class="mb-3">
-                    @{
-                        var registeredNumber = Model?.Order?.E911ServiceNumber ?? "E911 Number Not Set";
-                    }
-                    <label for="sales">@registeredNumber @@ @Model?.Order?.UnparsedAddress</label>
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-danger btn-block">Register</button>
-                    </div>
-                </div>
-            </div>
-@*        }
-        else
-        {
-            <div class="col">
-                <div class="mb-3">
-                    @{
-                        var registeredNumber = Model?.Order?.E911ServiceNumber ?? "E911 Number Not Set";
-                    }
-                    <p>@registeredNumber @@ @Model?.Order?.UnparsedAddress</p>
-                </div>
-            </div>
-        }*@
-    </div>
-</form>
+        </div>
+    }
+</div>
 @{
     var productOrders = Model?.Cart?.ProductOrdersToDictionary();
     if (Model?.Cart is not null
@@ -517,6 +489,18 @@
                                                         <a href="/ProductOrders/Delete/@productOrder?.ProductOrderId" class="btn btn-outline-danger">
                                                             Delete
                                                         </a>
+                                                        @if (string.IsNullOrWhiteSpace(Model?.Order?.E911ServiceNumber))
+                                                        {
+                                                            <a href="/Home/Order/@Model?.Order?.OrderId/RegisterE911?serviceNumber=@item?.DialedNumber" class="btn btn-danger">
+                                                                Register for E911
+                                                            </a>
+                                                        }
+                                                        else if (Model?.Order?.E911ServiceNumber == item?.DialedNumber)
+                                                        {
+                                                            <button class="btn btn-danger" disabled>
+                                                                Registered for E911
+                                                            </button>
+                                                        }
                                                     </div>
                                                 </td>
                                             </tr>
@@ -532,7 +516,7 @@
                                 {
                                     var calculatedCost = 20;
 
-                                    var productOrder = Model.Cart.ProductOrders?.Where(x => x.PortedDialedNumber == item.PortedDialedNumber).FirstOrDefault();
+                                    var productOrder = Model!.Cart.ProductOrders?.Where(x => x.PortedDialedNumber == item.PortedDialedNumber).FirstOrDefault();
 
                                     var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
                                     var formattedNumber = $"({item?.NPA}) {item?.NXX}-{item?.XXXX.ToString("0000")}";
@@ -550,6 +534,18 @@
                                                 <a href="/ProductOrders/Delete/@productOrder?.ProductOrderId" class="btn btn-outline-danger">
                                                     Delete
                                                 </a>
+                                                @if (string.IsNullOrWhiteSpace(Model?.Order?.E911ServiceNumber))
+                                                {
+                                                    <a href="/Home/Order/@Model?.Order?.OrderId/RegisterE911?serviceNumber=@item?.PortedDialedNumber" class="btn btn-danger">
+                                                        Register for E911
+                                                    </a>
+                                                }
+                                                else if (Model?.Order?.E911ServiceNumber == item?.PortedDialedNumber)
+                                                {
+                                                    <button class="btn btn-danger" disabled>
+                                                        Registered for E911
+                                                    </button>
+                                                }
                                             </div>
                                         </td>
                                     </tr>
