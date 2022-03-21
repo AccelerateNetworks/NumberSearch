@@ -95,49 +95,36 @@
             </div>
         }
     </div>
-</div>
-<form action="/Home/Order/@Model?.Order?.OrderId" method="post" class="needs-validation">
-    @Html.AntiForgeryToken()
-    <h4 class="mb-3 mt-3">
-        Order Information
-        @if (Model?.Order?.MergedOrderId is not null)
-        {
-            <span class="badge bg-warning rounded-pill">
-                Merged into <a href="/Home/Order/{@Model?.Order?.MergedOrderId}">@Model?.Order?.MergedOrderId</a>
-            </span>
-        }
-    </h4>
-    <div class="row">
-        <div class="col">
-            <div class="form-floating mb-3">
-                <input asp-for="Order.OrderId" type="text" class="form-control" placeholder="" readonly>
-                <label>Order Id</label>
+    <div class="col">
+        <div class="mb-3">
+            <div class="form-check form-switch">
+                <input class="form-check-input" asp-for="Order.BackgroundWorkCompleted" type="checkbox" role="switch" id="backgroundWorkSwitch">
+                <label class="form-check-label" for="backgroundWorkSwitch">Background Work Completed</label>
             </div>
-        </div>
-        <div class="col">
-            <div class="form-floating mb-3">
-                <input asp-for="Order.DateSubmitted" type="text" class="form-control" placeholder="" readonly>
-                <label>Submitted On</label>
+            <div class="form-check form-switch">
+                <input class="form-check-input" asp-for="Order.Quote" type="checkbox" role="switch" id="orderIsQuote">
+                <label class="form-check-label" for="orderIsQuote">Quote</label>
             </div>
-        </div>
-        <div class="col">
-            <div class="mb-3">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" asp-for="Order.BackgroundWorkCompleted" type="checkbox" role="switch" id="backgroundWorkSwitch">
-                    <label class="form-check-label" for="backgroundWorkSwitch">Background Work Completed</label>
-                </div>
-                <div class="form-check form-switch">
-                    <input class="form-check-input" asp-for="Order.Quote" type="checkbox" role="switch" id="orderIsQuote">
-                    <label class="form-check-label" for="orderIsQuote">Quote</label>
-                </div>
 
-                <div class="form-check form-switch">
-                    <input class="form-check-input" asp-for="Order.Completed" type="checkbox" role="switch" id="orderisCompleted">
-                    <label class="form-check-label" for="orderisCompleted">Mark This Order as Completed</label>
-                </div>
+            <div class="form-check form-switch">
+                <input class="form-check-input" asp-for="Order.Completed" type="checkbox" role="switch" id="orderisCompleted">
+                <label class="form-check-label" for="orderisCompleted">Mark This Order as Completed</label>
             </div>
         </div>
     </div>
+    @if (Model?.Order?.MergedOrderId is not null)
+    {
+        <div class="col">
+            <div class="mb-3">
+                <span class="badge bg-warning rounded-pill">
+                    Merged into <a href="/Home/Order/{@Model?.Order?.MergedOrderId}">@Model?.Order?.MergedOrderId</a>
+                </span>
+            </div>
+        </div>
+    }
+</div>
+<form action="/Home/Order/@Model?.Order?.OrderId" method="post" class="needs-validation">
+    @Html.AntiForgeryToken()
     <h4 class="mb-3">Invoice Ninja</h4>
     <div class="row">
         <div class="col">
@@ -205,24 +192,25 @@
                 <label for="lastName">Last name</label>
             </div>
         </div>
-    </div>
-
-    <div class="form-floating mb-3">
-        <input asp-for="Order.BusinessName" type="text" class="form-control" id="businessName" placeholder="American Telegraph and Telephone Company">
-        <label for="email">Business Name (Optional)</label>
-        <div class="invalid-feedback">
-            Please enter a valid business name.
+        <div class="col">
+            <div class="form-floating mb-3">
+                <input asp-for="Order.BusinessName" type="text" class="form-control" id="businessName" placeholder="American Telegraph and Telephone Company">
+                <label for="email">Business Name (Optional)</label>
+                <div class="invalid-feedback">
+                    Please enter a valid business name.
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-floating mb-3">
+                <input asp-for="Order.Email" type="email" class="form-control" id="email" placeholder="you@example.com" required>
+                <label for="email">Email </label>
+                <div class="invalid-feedback">
+                    Please enter a valid email address for shipping updates.
+                </div>
+            </div>
         </div>
     </div>
-
-    <div class="form-floating mb-3">
-        <input asp-for="Order.Email" type="email" class="form-control" id="email" placeholder="you@example.com" required>
-        <label for="email">Email </label>
-        <div class="invalid-feedback">
-            Please enter a valid email address for shipping updates.
-        </div>
-    </div>
-
     <div class="form-floating mb-3" id="searchForm">
         <input asp-for="Order.UnparsedAddress" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" data-toggle="dropdown" required>
         <label for="address">Address</label>
@@ -232,9 +220,8 @@
             Enter the shipping address for this order, or the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
         </small>
     </div>
-
     <div class="row">
-        <div class="col-md-4">
+        <div class="col">
             <div class="form-floating mb-3">
                 <select asp-for="Order.AddressUnitType" class="form-select d-block w-100" id="unitType">
                     <option></option>
@@ -275,7 +262,7 @@
                 </small>
             </div>
         </div>
-        <div class="col-md-8">
+        <div class="col">
             <div class="form-floating mb-3">
                 <input asp-for="Order.AddressUnitNumber" type="text" class="form-control" id="address2" placeholder="307">
                 <label for="address2">Unit Number <span class="text-muted">(Optional)</span></label>
@@ -284,30 +271,29 @@
                 </small>
             </div>
         </div>
-    </div>
-
-    <div class="form-floating mb-3">
-        <input asp-for="Order.Address2" type="text" class="form-control" id="address2" placeholder="Apartment or suite">
-        <label for="address2">Address 2 <span class="text-muted">(Optional)</span></label>
+        <div class="col">
+            <div class="form-floating mb-3">
+                <input asp-for="Order.Address2" type="text" class="form-control" id="address2" placeholder="Apartment or suite">
+                <label for="address2">Address 2 <span class="text-muted">(Optional)</span></label>
+            </div>
+        </div>
     </div>
 
     <h4 class="mb-3">Installation Information</h4>
     <div class="row">
-        <div class="col-md-4 mb-3">
+        <div class="col mb-3">
             <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" asp-for="Order.OnsiteInstallation" role="switch" id="onsiteInstall">
                 <label class="form-check-label" for="onsiteInstall">Onsite Installation</label>
             </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-md-6">
+        <div class="col mb-3">
             <div class="form-floating mb-3">
                 <input asp-for="Order.InstallDate" type="datetime-local" class="form-control" id="installdate">
                 <label for="installdate">Preferred Install Date</label>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col mb-3">
             <div class="form-floating mb-3">
                 <select asp-for="Order.SalesEmail" class="form-select mr-sm-2" id="sales">
                     <option selected>Choose...</option>
@@ -432,7 +418,7 @@
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Quantity</th>
+                                <th>Description</th>
                                 <th>Price</th>
                                 <th>Subtotal</th>
                                 <th>
@@ -451,22 +437,24 @@
                                         var number = item?.DialedNumber;
                                         <tr>
                                             <td scope="row"><h4>@formattedNumber</h4></td>
-                                            <td>@Html.Raw(number)</td>
-                                            <td>@location</td>
+                                            <td>@item?.DialedNumber</td>
                                             @{
+                                                var price = 0;
                                                 if (item?.NumberType == "Executive")
                                                 {
-                                                    <td>$200</td>
+                                                    price = 200;
                                                 }
                                                 else if (item?.NumberType == "Premium")
                                                 {
-                                                    <td>$40</td>
+                                                    price = 40;
                                                 }
                                                 else
                                                 {
-                                                    <td>$20</td>
+                                                    price = 20;
                                                 }
                                             }
+                                            <td>$@price</td>
+                                            <td>$@price</td>
                                             <td>
                                                 <div class="btn-group">
                                                     <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-warning">
@@ -492,7 +480,7 @@
                                             var number = item.DialedNumber;
                                             <tr>
                                                 <td scope="row"><h4>@formattedNumber</h4></td>
-                                                <td>1</td>
+                                                <td>@item?.DialedNumber</td>
                                                 @{
                                                     if (item.NumberType == "Executive")
                                                     {
@@ -551,8 +539,8 @@
                                     var number = item?.PortedDialedNumber;
                                     <tr>
                                         <td scope="row"><h4>@formattedNumber</h4></td>
-                                        <td>@Html.Raw(number)</td>
-                                        <td>@location</td>
+                                        <td>@item?.PortedDialedNumber</td>
+                                        <td>$@calculatedCost</td>
                                         <td>$@calculatedCost</td>
                                         <td>
                                             <div class="btn-group">
@@ -577,8 +565,8 @@
                                     var number = item?.VerifiedDialedNumber;
                                     <tr>
                                         <td scope="row"><h4>@formattedNumber</h4></td>
-                                        <td>@Html.Raw(number)</td>
-                                        <td>@location</td>
+                                        <td>@item?.VerifiedDialedNumber</td>
+                                        <td>$10</td>
                                         <td>$10</td>
                                         <td>
                                             <div class="btn-group">

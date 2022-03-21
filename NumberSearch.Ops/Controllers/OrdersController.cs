@@ -449,7 +449,7 @@ public class OrdersController : Controller
 
                 if (order is not null && order.OrderId == Guid.Parse(orderId))
                 {
-                    var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(order.E911ServiceNumber ?? string.Empty, out var phoneNumber);
+                    var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(serviceNumber ?? string.Empty, out var phoneNumber);
                     // Register the number with Teli for E911 service.
                     if (phoneNumber is not null && checkParse)
                     {
@@ -458,7 +458,7 @@ public class OrdersController : Controller
                         if (existingRegistration.code == 200)
                         {
                             // This number is already registered with Teli.
-                            Log.Information($"[RegisterE911] E911 Service number {order.E911ServiceNumber} is already register with Teli.");
+                            Log.Information($"[RegisterE911] E911 Service number {serviceNumber} is already register with Teli.");
 
                             // Save the number to the order.
                             if (!string.IsNullOrWhiteSpace(serviceNumber))
