@@ -72,6 +72,8 @@
 }
 <form action="/Home/Order/@Model?.Order?.OrderId" method="post" class="needs-validation">
     @Html.AntiForgeryToken()
+    <input asp-for="Order.OrderId" type="text" class="form-control" readonly hidden>
+    <input asp-for="Order.DateSubmitted" type="text" class="form-control" readonly hidden>
     <div class="row">
         <div class="col">
             <div class="d-grid gap-2">
