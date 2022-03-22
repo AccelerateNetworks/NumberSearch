@@ -68,8 +68,15 @@ namespace NumberSearch.Mvc.Controllers
             {
                 if (!string.IsNullOrWhiteSpace(product?.VendorPartNumber))
                 {
-                    var lookup = await VendorProduct.GetAsync(product.VendorPartNumber, _teleDynamicsUsername, _teleDynamicsPassword).ConfigureAwait(false);
-                    product.Vendor = lookup;
+                    try
+                    {
+                        var lookup = await VendorProduct.GetAsync(product.VendorPartNumber, _teleDynamicsUsername, _teleDynamicsPassword).ConfigureAwait(false);
+                        product.Vendor = lookup;
+                    }
+                    catch
+                    {
+
+                    }
                 }
             }
 
