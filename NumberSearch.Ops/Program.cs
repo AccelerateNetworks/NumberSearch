@@ -42,11 +42,10 @@ namespace NumberSearch.Ops
                 .UseSerilog((hostingContext, services, loggerConfiguration) => loggerConfiguration
                     .ReadFrom.Configuration(hostingContext.Configuration)
                     .Enrich.FromLogContext()
-                    .WriteTo.Async(a => a.Console())
-                    .WriteTo.Async(a => a.File($"NumberSearch.Ops_{DateTime.Now:yyyyMMdd}.txt",
+                    .WriteTo.Console()
+                    .WriteTo.File($"NumberSearch.Ops_{DateTime.Now:yyyyMMdd}.txt",
                         rollingInterval: RollingInterval.Day,
                         rollOnFileSizeLimit: true))
-                    .WriteTo.Async(a => a.Debug()))
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseUrls("http://*:5002");

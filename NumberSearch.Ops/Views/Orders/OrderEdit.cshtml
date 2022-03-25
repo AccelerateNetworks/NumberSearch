@@ -459,11 +459,11 @@
                                                 <td scope="row"><h4>@formattedNumber</h4></td>
                                                 <td>@item?.DialedNumber</td>
                                                 @{
-                                                    if (item.NumberType == "Executive")
+                                                    if (item?.NumberType == "Executive")
                                                     {
                                                         <td>$200</td>
                                                     }
-                                                    else if (item.NumberType == "Premium")
+                                                    else if (item?.NumberType == "Premium")
                                                     {
                                                         <td>$40</td>
                                                     }
@@ -473,11 +473,11 @@
                                                     }
                                                 }
                                                 @{
-                                                    if (item.NumberType == "Executive")
+                                                    if (item?.NumberType == "Executive")
                                                     {
                                                         <td>$200</td>
                                                     }
-                                                    else if (item.NumberType == "Premium")
+                                                    else if (item?.NumberType == "Premium")
                                                     {
                                                         <td>$40</td>
                                                     }

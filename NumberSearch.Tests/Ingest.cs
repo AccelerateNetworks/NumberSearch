@@ -69,12 +69,12 @@ namespace NumberSearch.Tests
         //    await PortRequests.UpdateStatusesTeliMessageAsync(configuration);
         //}
 
-        [Fact]
-        public async Task TestIncompleteOrderRemindersAsync()
-        {
-            var results = await Orders.IncompleteOrderRemindersAsync(postgresql);
-            output.WriteLine($"Active Orders: {results.Count()}");
-        }
+        //[Fact]
+        //public async Task TestIncompleteOrderRemindersAsync()
+        //{
+        //    var results = await Orders.IncompleteOrderRemindersAsync(postgresql);
+        //    output.WriteLine($"Active Orders: {results.Count()}");
+        //}
 
         [Fact]
         public void CategorizeNumbers()
