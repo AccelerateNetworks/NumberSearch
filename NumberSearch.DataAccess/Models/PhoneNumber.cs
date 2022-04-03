@@ -2,8 +2,6 @@
 
 using Npgsql;
 
-using NumberSearch.DataAccess.Models;
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -458,28 +456,80 @@ namespace NumberSearch.DataAccess
                 return false;
             }
 
-            var values = new List<string>();
-
-            foreach (var number in numbers?.ToArray())
+            try
             {
-                // If anything is null bail out.
-                if (!(number.NPA < 100 || number.NXX < 100 || number.XXXX < 1 || number.DialedNumber == null || number.City == null || number.State == null || number.IngestedFrom == null || number.NumberType == null))
+                using var connection = new NpgsqlConnection(connectionString);
+                await connection.OpenAsync();
+                using var transaction = await connection.BeginTransactionAsync();
+
+                foreach (var number in numbers.ToArray())
                 {
-                    values.Add($"('{number.DialedNumber}', {number.NPA}, {number.NXX}, {number.XXXX.ToString("0000", new CultureInfo("en-US"))}, '{number.City}', '{number.State}', '{number.IngestedFrom}', '{number.DateIngested}', '{number.NumberType}', '{number.Purchased}')");
+                    // If anything is null, skip it.
+                    if (!(number.NPA < 100 || number.NXX < 100 || number.XXXX < 1 || number.DialedNumber == null || number.City == null || number.State == null || number.IngestedFrom == null || number.NumberType == null))
+                    {
+                        var command = connection.CreateCommand();
+                        command.CommandText =
+                            $"INSERT INTO public.\"PhoneNumbers\"(\"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\", \"Purchased\") VALUES (@DialedNumber, @NPA, @NXX, @XXXX, @City, @State, @IngestedFrom, @DateIngested, @NumberType, @Purchased);";
+
+                        var parameterDialedNumber = command.CreateParameter();
+                        parameterDialedNumber.ParameterName = "@DialedNumber";
+                        command.Parameters.Add(parameterDialedNumber);
+                        parameterDialedNumber.Value = number.DialedNumber;
+
+                        var parameterNPA = command.CreateParameter();
+                        parameterNPA.ParameterName = "@NPA";
+                        command.Parameters.Add(parameterNPA);
+                        parameterNPA.Value = number.NPA;
+
+                        var parameterNXX = command.CreateParameter();
+                        parameterNXX.ParameterName = "@NXX";
+                        command.Parameters.Add(parameterNXX);
+                        parameterNXX.Value = number.NXX;
+
+                        var parameterXXXX = command.CreateParameter();
+                        parameterXXXX.ParameterName = "@XXXX";
+                        command.Parameters.Add(parameterXXXX);
+                        parameterXXXX.Value = number.XXXX;
+
+                        var parameterCity = command.CreateParameter();
+                        parameterCity.ParameterName = "@City";
+                        command.Parameters.Add(parameterCity);
+                        parameterCity.Value = number.City;
+
+                        var parameterState = command.CreateParameter();
+                        parameterState.ParameterName = "@State";
+                        command.Parameters.Add(parameterState);
+                        parameterState.Value = number.State;
+
+                        var parameterIngestedFrom = command.CreateParameter();
+                        parameterIngestedFrom.ParameterName = "@IngestedFrom";
+                        command.Parameters.Add(parameterIngestedFrom);
+                        parameterIngestedFrom.Value = number.IngestedFrom;
+
+                        var parameterDateIngested = command.CreateParameter();
+                        parameterDateIngested.ParameterName = "@DateIngested";
+                        command.Parameters.Add(parameterDateIngested);
+                        parameterDateIngested.Value = number.DateIngested;
+
+                        var parameterNumberType = command.CreateParameter();
+                        parameterNumberType.ParameterName = "@NumberType";
+                        command.Parameters.Add(parameterNumberType);
+                        parameterNumberType.Value = number.NumberType;
+
+                        var parameterPurchased = command.CreateParameter();
+                        parameterPurchased.ParameterName = "@Purchased";
+                        command.Parameters.Add(parameterPurchased);
+                        parameterPurchased.Value = number.Purchased;
+
+                        await command.ExecuteNonQueryAsync();
+                    }
                 }
-            }
 
-            using var connection = new NpgsqlConnection(connectionString);
-
-            string sql = $"INSERT INTO public.\"PhoneNumbers\"(\"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\", \"Purchased\") VALUES {string.Join(", ", values)}";
-
-            var result = await connection.ExecuteAsync(sql).ConfigureAwait(false);
-
-            if (result > 1)
-            {
+                await transaction.CommitAsync();
+                await connection.CloseAsync();
                 return true;
             }
-            else
+            catch
             {
                 return false;
             }

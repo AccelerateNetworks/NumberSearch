@@ -160,5 +160,12 @@ namespace NumberSearch.Tests
         //    // Update the statuses of all the active port requests with BulkVS.
         //    await PortRequests.UpdateStatusesBulkVSAsync(configuration);
         //}
+
+        //[Fact]
+        //public async Task Ingest206FromTeliAsync()
+        //{
+        //    // Update the statuses of all the active port requests with BulkVS.
+        //    _ = await Provider.TeliMessageAsync(token, new int[] { 206 }, postgresql);
+        //}
     }
 }
