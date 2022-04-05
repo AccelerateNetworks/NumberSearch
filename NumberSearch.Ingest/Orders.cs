@@ -147,7 +147,7 @@ namespace NumberSearch.Ingest
                         }
                         catch
                         {
-                            Log.Error($"[OrderUpdates] Failed to find invoice {order.BillingInvoiceId} in the billing system.");
+                            Log.Warning($"[OrderUpdates] Failed to find invoice {order.BillingInvoiceId} in the billing system.");
                         }
                     }
 
@@ -169,7 +169,7 @@ namespace NumberSearch.Ingest
                         }
                         catch
                         {
-                            Log.Error($"[OrderUpdates] Failed to find invoice {order.BillingInvoiceReoccuringId} in the billing system.");
+                            Log.Warning($"[OrderUpdates] Failed to find invoice {order.BillingInvoiceReoccuringId} in the billing system.");
                         }
                     }
 

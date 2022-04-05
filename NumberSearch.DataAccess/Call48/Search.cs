@@ -14,12 +14,12 @@ namespace NumberSearch.DataAccess.Call48
         public int code { get; set; }
         public string message { get; set; }
         public SearchData data { get; set; }
-        public string error { get; set; }
+        public string? error { get; set; }
 
         public class SearchData
         {
             public SearchResult[] result { get; set; }
-            public string loc { get; set; }
+            public string? loc { get; set; }
             public string setup { get; set; }
             public string monthly { get; set; }
             public string uqid { get; set; }
@@ -30,20 +30,20 @@ namespace NumberSearch.DataAccess.Call48
         {
             public int did_id { get; set; }
             public string did_number { get; set; }
-            public string did { get; set; }
+            public int did { get; set; }
             public string number { get; set; }
             public string npa { get; set; }
             public string nxx { get; set; }
             public string xxxx { get; set; }
             public int did_id_type { get; set; }
-            public int state_id { get; set; }
-            public string rate_center_id { get; set; }
+            public int? state_id { get; set; }
+            public string? rate_center_id { get; set; }
             public int did_status_id { get; set; }
             public string ratecenter { get; set; }
             public string state { get; set; }
             public string monthly { get; set; }
             public string setup { get; set; }
-            public string locData { get; set; }
+            public string? locData { get; set; }
         }
 
         /// <summary>

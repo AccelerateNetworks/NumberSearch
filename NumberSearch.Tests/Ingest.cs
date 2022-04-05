@@ -28,6 +28,8 @@ namespace NumberSearch.Tests
         private readonly string postgresql;
         private readonly string peerlessAPIKey;
         private readonly string invoiceNinjaToken;
+        private readonly string call48Username;
+        private readonly string call48Password;
         private readonly IConfiguration configuration;
 
         public FunctionalIngest(ITestOutputHelper output)
@@ -55,6 +57,8 @@ namespace NumberSearch.Tests
             postgresql = config.GetConnectionString("PostgresqlProd");
             peerlessAPIKey = config.GetConnectionString("PeerlessAPIKey");
             invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
+            call48Username = config.GetConnectionString("Call48Username");
+            call48Password = config.GetConnectionString("Call48Password");
         }
 
         //[Fact]
@@ -166,6 +170,13 @@ namespace NumberSearch.Tests
         //{
         //    // Update the statuses of all the active port requests with BulkVS.
         //    _ = await Provider.TeliMessageAsync(token, new int[] { 206 }, postgresql);
+        //}
+
+        //[Fact]
+        //public async Task Call48Get360Test()
+        //{
+        //    // Update the statuses of all the active port requests with BulkVS.
+        //    _ = await Provider.Call48Async(call48Username,call48Password, PhoneNumbersNA.AreaCode.States.ToArray().Where(x => x.State == "Oregon" || x.State == "Washington").ToArray(), postgresql);
         //}
     }
 }
