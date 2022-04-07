@@ -33,5 +33,6 @@ namespace AccelerateNetworks.Operations
         public DateTime? DateCompleted { get; set; }
         public DateTime? DateUpdated { get; set; }
         public string? VendorSubmittedTo { get; set; }
+        public DateTime? TargetDate { get; set; }
     }
 }

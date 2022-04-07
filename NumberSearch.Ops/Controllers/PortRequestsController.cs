@@ -371,8 +371,6 @@ public class PortRequestsController : Controller
 
                 if (fromDb is not null)
                 {
-                    portRequest.PortRequestId = fromDb.PortRequestId;
-
                     // If the address has changed update it.
                     if (portRequest.Address != fromDb.Address)
                     {
@@ -381,11 +379,11 @@ public class PortRequestsController : Controller
                         var addressParts = portRequest.Address?.Split(", ") ?? Array.Empty<string>();
                         if (addressParts.Length > 4)
                         {
-                            portRequest.Address = addressParts[0];
-                            portRequest.City = addressParts[1];
-                            portRequest.State = addressParts[2];
-                            portRequest.Zip = addressParts[3];
-                            Log.Information($"[Checkout] Address: {portRequest.Address} City: {portRequest.City} State: {portRequest.State} Zip: {portRequest.Zip}");
+                            fromDb.Address = addressParts[0];
+                            fromDb.City = addressParts[1];
+                            fromDb.State = addressParts[2];
+                            fromDb.Zip = addressParts[3];
+                            Log.Information($"[Checkout] Address: {fromDb.Address} City: {fromDb.City} State: {fromDb.State} Zip: {fromDb.Zip}");
                         }
                         else
                         {
@@ -409,7 +407,21 @@ public class PortRequestsController : Controller
                         }
                     }
 
-                    _context.PortRequests.Update(portRequest!);
+                    fromDb.TargetDate = portRequest?.TargetDate;
+                    fromDb.BillingPhone = portRequest?.BillingPhone;
+                    fromDb.ProviderAccountNumber = portRequest?.ProviderAccountNumber;
+                    fromDb.ProviderPIN = portRequest?.ProviderPIN;
+                    fromDb.LocationType = portRequest?.LocationType;
+                    fromDb.BusinessContact = portRequest?.BusinessContact;
+                    fromDb.BusinessName = portRequest?.BusinessName;
+                    fromDb.ResidentialFirstName = portRequest?.ResidentialFirstName;
+                    fromDb.ResidentialLastName = portRequest?.ResidentialLastName;
+                    fromDb.Address2 = portRequest?.Address2;
+                    fromDb.CallerId = portRequest?.CallerId;
+                    fromDb.PartialPort = portRequest?.PartialPort ?? fromDb.PartialPort;
+                    fromDb.PartialPortDescription = portRequest?.PartialPortDescription;
+                    fromDb.DateUpdated = DateTime.Now;
+
                     await _context.SaveChangesAsync();
 
                     portRequest = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == portRequest!.OrderId);
@@ -560,22 +572,22 @@ public class PortRequestsController : Controller
                                 {
                                     ReferenceId = string.Empty,
                                     TNList = localTNs,
-                                    BTN = portRequest.BillingPhone,
-                                    SubscriberType = portRequest.LocationType,
-                                    AccountNumber = portRequest.ProviderAccountNumber,
-                                    Pin = portRequest.ProviderPIN,
-                                    Name = string.IsNullOrWhiteSpace(portRequest.BusinessName) ? $"Accelerate Networks" : $"{portRequest.BusinessName}",
-                                    Contact = string.IsNullOrWhiteSpace(portRequest.BusinessContact) ? $"{portRequest.ResidentialFirstName} {portRequest.ResidentialLastName}" : portRequest.BusinessContact,
+                                    BTN = portRequest?.BillingPhone ?? string.Empty,
+                                    SubscriberType = portRequest?.LocationType ?? string.Empty,
+                                    AccountNumber = portRequest?.ProviderAccountNumber ?? string.Empty,
+                                    Pin = portRequest?.ProviderPIN ?? string.Empty,
+                                    Name = string.IsNullOrWhiteSpace(portRequest?.BusinessName) ? $"Accelerate Networks" : $"{portRequest.BusinessName}",
+                                    Contact = string.IsNullOrWhiteSpace(portRequest?.BusinessContact) ? $"{portRequest?.ResidentialFirstName} {portRequest?.ResidentialLastName}" : portRequest.BusinessContact,
                                     StreetNumber = streetNumber,
-                                    StreetName = $"{portRequest.Address[streetNumber.Length..].Trim()} {portRequest.Address2}",
-                                    City = portRequest.City,
+                                    StreetName = $"{portRequest?.Address[streetNumber.Length..].Trim()} {portRequest?.Address2}",
+                                    City = portRequest?.City ?? string.Empty,
                                     State = "WA",
-                                    Zip = portRequest.Zip,
-                                    RDD = DateTime.Now.AddDays(3).ToString("yyyy-MM-dd"),
-                                    Time = "20:00:00",
-                                    PortoutPin = portRequest.ProviderPIN,
+                                    Zip = portRequest?.Zip ?? string.Empty,
+                                    RDD = portRequest?.TargetDate is not null && portRequest?.TargetDate.HasValue is null ? portRequest!.TargetDate.GetValueOrDefault().ToString("yyyy-MM-dd") : DateTime.Now.AddDays(3).ToString("yyyy-MM-dd"),
+                                    Time = portRequest?.TargetDate is not null && portRequest?.TargetDate.HasValue is null ? portRequest!.TargetDate.GetValueOrDefault().ToString("HH:mm:ss") : "20:00:00",
+                                    PortoutPin = portRequest?.ProviderPIN ?? string.Empty,
                                     TrunkGroup = "SFO",
-                                    Lidb = portRequest.CallerId,
+                                    Lidb = portRequest?.CallerId ?? string.Empty,
                                     Sms = false,
                                     Mms = false,
                                     SignLoa = false,
@@ -586,7 +598,7 @@ public class PortRequestsController : Controller
                                 {
                                     var bulkResponse = await bulkVSPortRequest.PutAsync(_bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
 
-                                    if (bulkResponse is not null && !string.IsNullOrWhiteSpace(bulkResponse?.OrderId))
+                                    if (bulkResponse is not null && !string.IsNullOrWhiteSpace(bulkResponse?.OrderId) && portRequest is not null)
                                     {
                                         portRequest.DateSubmitted = DateTime.Now;
                                         portRequest.VendorSubmittedTo = "BulkVS";

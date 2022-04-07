@@ -140,6 +140,22 @@
                 <label for="vendor">Vendor Submitted To</label>
             </div>
         </div>
+        <div class="col-md-4">
+            <div class="form-floating mb-3">
+                @if (string.IsNullOrWhiteSpace(Model?.PortRequest?.RequestStatus))
+                {
+                    <input asp-for="PortRequest.TargetDate" type="datetime-local" asp-format="{0:yyyy-MM-ddTHH:mm}" class="form-control" id="targetDate" placeholder="Unset"
+                       title="The date of the cut over from the old provider.">
+                    <label for="vendor">Requested Due Date (RDD/FOC)</label>
+                }
+                else
+                {
+                    <input asp-for="PortRequest.TargetDate" type="datetime-local" asp-format="{0:yyyy-MM-ddTHH:mm}" class="form-control" id="targetDate" placeholder="Unset"
+                       title="The date of the cut over from the old provider." readonly>
+                    <label for="vendor">Requested Due Date (RDD/FOC)</label>
+                }
+            </div>
+        </div>
     </div>
     <h4 class="mb-3 mt-3">
         Old Carrier Billing Information
