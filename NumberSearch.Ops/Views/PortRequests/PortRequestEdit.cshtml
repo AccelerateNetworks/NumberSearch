@@ -142,18 +142,9 @@
         </div>
         <div class="col-md-4">
             <div class="form-floating mb-3">
-                @if (string.IsNullOrWhiteSpace(Model?.PortRequest?.RequestStatus))
-                {
-                    <input asp-for="PortRequest.TargetDate" type="datetime-local" asp-format="{0:yyyy-MM-ddTHH:mm}" class="form-control" id="targetDate" placeholder="Unset"
+                <input asp-for="PortRequest.TargetDate" type="datetime-local" class="form-control" id="targetDate" min="@DateTime.Now.AddDays(3).ToString(" yyyy-MM-ddThh:mm")" max="@DateTime.Now.AddMonths(3).ToString(" yyyy-MM-ddThh:mm")" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}"
                        title="The date of the cut over from the old provider.">
-                    <label for="vendor">Requested Due Date (RDD/FOC)</label>
-                }
-                else
-                {
-                    <input asp-for="PortRequest.TargetDate" type="datetime-local" asp-format="{0:yyyy-MM-ddTHH:mm}" class="form-control" id="targetDate" placeholder="Unset"
-                       title="The date of the cut over from the old provider." readonly>
-                    <label for="vendor">Requested Due Date (RDD/FOC)</label>
-                }
+                <label for="vendor">Requested Due Date (RDD/FOC)</label>
             </div>
         </div>
     </div>
