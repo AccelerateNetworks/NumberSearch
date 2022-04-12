@@ -3,6 +3,8 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 
+using Flurl.Http;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -647,6 +649,18 @@ public class PortRequestsController : Controller
                                         });
                                     }
                                 }
+                                catch (FlurlHttpException ex)
+                                {
+                                    var response = await ex.GetResponseStringAsync();
+                                    Log.Error(response);
+                                    return View("PortRequestEdit", new PortRequestResult
+                                    {
+                                        Order = order,
+                                        PortRequest = portRequest,
+                                        PhoneNumbers = numbers,
+                                        Message = "Failed to submit port request to BulkVS: " + ex.Message + " " + ex.StackTrace + " " + response
+                                    });
+                                }
                                 catch (Exception ex)
                                 {
                                     Log.Error($"[PortRequest] Failed to submit port request to BulkVS.");
@@ -686,50 +700,72 @@ public class PortRequestsController : Controller
                                 Notify = _emailOrders
                             };
 
-                            var bulkResponse = await bulkVSPortRequest.PutAsync(_bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
-                            Log.Information(JsonSerializer.Serialize(bulkResponse));
-
-                            if (bulkResponse is not null && portRequest is not null && !string.IsNullOrWhiteSpace(bulkResponse?.OrderId))
+                            try
                             {
-                                portRequest.DateSubmitted = DateTime.Now;
-                                portRequest.VendorSubmittedTo = "BulkVS";
-                                _context.PortRequests.Update(portRequest);
-                                await _context.SaveChangesAsync();
 
-                                foreach (var number in localNumbers)
+                                var bulkResponse = await bulkVSPortRequest.PutAsync(_bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
+                                Log.Information(JsonSerializer.Serialize(bulkResponse));
+
+                                if (bulkResponse is not null && portRequest is not null && !string.IsNullOrWhiteSpace(bulkResponse?.OrderId))
                                 {
-                                    number.ExternalPortRequestId = bulkResponse?.OrderId;
-                                    number.RawResponse = JsonSerializer.Serialize(bulkResponse);
-                                    _context.PortedPhoneNumbers.Update(number);
+                                    portRequest.DateSubmitted = DateTime.Now;
+                                    portRequest.VendorSubmittedTo = "BulkVS";
+                                    _context.PortRequests.Update(portRequest);
                                     await _context.SaveChangesAsync();
+
+                                    foreach (var number in localNumbers)
+                                    {
+                                        number.ExternalPortRequestId = bulkResponse?.OrderId;
+                                        number.RawResponse = JsonSerializer.Serialize(bulkResponse);
+                                        _context.PortedPhoneNumbers.Update(number);
+                                        await _context.SaveChangesAsync();
+                                    }
+
+                                    numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+
+                                    // Add a note to handle senarios where the requested FOC is to soon.
+                                    var note = new PortTNNote
+                                    {
+                                        Note = "If the port completion date requested is unavailable please pick the next available date and set the port to complete at 8pm that day."
+                                    };
+
+                                    await note.PostAsync(bulkResponse?.OrderId, _bulkVSusername, _bulkVSpassword);
+
+                                    if (bulkResponse is not null && !string.IsNullOrWhiteSpace(bulkResponse.Description))
+                                    {
+                                        responseMessages.Add($"{bulkResponse.Description} - {bulkResponse.Code}");
+                                    }
                                 }
-
-                                numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-
-                                // Add a note to handle senarios where the requested FOC is to soon.
-                                var note = new PortTNNote
+                                else
                                 {
-                                    Note = "If the port completion date requested is unavailable please pick the next available date and set the port to complete at 8pm that day."
-                                };
+                                    Log.Fatal($"[PortRequest] Failed to submit port request to BulkVS.");
 
-                                await note.PostAsync(bulkResponse?.OrderId, _bulkVSusername, _bulkVSpassword);
-
-                                if (bulkResponse is not null && !string.IsNullOrWhiteSpace(bulkResponse.Description))
-                                {
-                                    responseMessages.Add($"{bulkResponse.Description} - {bulkResponse.Code}");
+                                    return View("PortRequestEdit", new PortRequestResult
+                                    {
+                                        Order = order,
+                                        Message = $"Failed to submit port request to BulkVS. {bulkResponse?.Description} - {bulkResponse?.Code}",
+                                        PortRequest = portRequest ?? new(),
+                                        PhoneNumbers = numbers
+                                    });
                                 }
                             }
-                            else
+                            catch (FlurlHttpException ex)
                             {
-                                Log.Fatal($"[PortRequest] Failed to submit port request to BulkVS.");
-
+                                var response = await ex.GetResponseStringAsync();
+                                Log.Error(response);
                                 return View("PortRequestEdit", new PortRequestResult
                                 {
                                     Order = order,
-                                    Message = $"Failed to submit port request to BulkVS. {bulkResponse?.Description} - {bulkResponse?.Code}",
-                                    PortRequest = portRequest ?? new(),
-                                    PhoneNumbers = numbers
+                                    PortRequest = portRequest,
+                                    PhoneNumbers = numbers,
+                                    Message = "Failed to submit port request to BulkVS: " + ex.Message + " " + ex.StackTrace + " " + response
                                 });
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error($"[PortRequest] Failed to submit port request to BulkVS.");
+                                Log.Error(ex.Message);
+                                Log.Error(ex.StackTrace?.ToString());
                             }
                         }
                     }

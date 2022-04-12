@@ -180,16 +180,7 @@ namespace NumberSearch.DataAccess.BulkVS
             string endpoint = "portTn";
             string route = $"{baseUrl}{endpoint}";
 
-            try
-            {
-                return await route.WithBasicAuth(username, password).PutJsonAsync(this).ReceiveJson<PortTNResponse>();
-            }
-            catch (FlurlHttpException ex)
-            {
-                var response = await ex.GetResponseStringAsync();
-                Log.Error(response);
-                return null;
-            }
+            return await route.WithBasicAuth(username, password).PutJsonAsync(this).ReceiveJson<PortTNResponse>();
         }
 
         public class PortTNResponse
