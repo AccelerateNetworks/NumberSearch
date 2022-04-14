@@ -838,6 +838,13 @@ namespace NumberSearch.Ingest
                     await Task.Delay(10000).ConfigureAwait(false);
                 }
             }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex?.Message);
+                Log.Fatal(ex?.StackTrace);
+                Log.Fatal(ex?.InnerException?.Message);
+                Log.Fatal(ex?.InnerException?.StackTrace);
+            }
             finally
             {
                 // Hopefully we never get here.
