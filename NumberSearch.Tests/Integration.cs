@@ -1007,7 +1007,7 @@ namespace NumberSearch.Tests
             // Act
             var cred = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
 
-            var results = await Search.GetAsync("WA", 206, cred.data.token).ConfigureAwait(false);
+            var results = await Search.GetAsync("OR", 541, cred.data.token).ConfigureAwait(false);
 
             if (results is null || !results.Any())
             {

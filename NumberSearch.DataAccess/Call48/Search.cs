@@ -80,6 +80,8 @@ namespace NumberSearch.DataAccess.Call48
             catch (FlurlHttpException ex)
             {
                 Log.Error($"[Ingest] [Call48] Failed to get numbers for {state} and NPA {npa}.");
+                Log.Error(ex.Message);
+                Log.Error(ex.StackTrace);
                 Log.Error(await ex.GetResponseStringAsync());
                 return null;
             }
