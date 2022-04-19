@@ -527,14 +527,30 @@ namespace NumberSearch.Mvc.Controllers
                                             }
                                             else if (coupon.Type == "Number")
                                             {
-                                                totalCost -= totalNumberPurchasingCost;
-                                                onetimeItems.Add(new Invoice_Items
+                                                if (coupon.Name.Contains("20"))
                                                 {
-                                                    product_key = coupon.Name,
-                                                    notes = coupon.Description,
-                                                    cost = totalNumberPurchasingCost * -1,
-                                                    qty = 1
-                                                });
+                                                    var discountTo20 = cart?.PhoneNumbers is not null && cart.PhoneNumbers.Any() ? cart.PhoneNumbers.Count() * 20 :
+                                                    cart?.PurchasedPhoneNumbers is not null && cart.PurchasedPhoneNumbers.Any() ? cart.PurchasedPhoneNumbers.Count() * 20 : 0;
+                                                    totalCost -= totalNumberPurchasingCost - discountTo20;
+                                                    onetimeItems.Add(new Invoice_Items
+                                                    {
+                                                        product_key = coupon.Name,
+                                                        notes = coupon.Description,
+                                                        cost = (totalNumberPurchasingCost - discountTo20) * -1,
+                                                        qty = 1
+                                                    });
+                                                }
+                                                else
+                                                {
+                                                    totalCost -= totalNumberPurchasingCost;
+                                                    onetimeItems.Add(new Invoice_Items
+                                                    {
+                                                        product_key = coupon.Name,
+                                                        notes = coupon.Description,
+                                                        cost = totalNumberPurchasingCost * -1,
+                                                        qty = 1
+                                                    });
+                                                }
                                             }
                                             else
                                             {

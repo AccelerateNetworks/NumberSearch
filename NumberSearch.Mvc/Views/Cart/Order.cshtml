@@ -22,7 +22,7 @@
         var suffix = '&maxSuggestions=5&countryCode=USA,CAN&f=pjson';
         fetch(`${route}${textBox.value}${suffix}`)
             .then(
-                function (response) {
+                function(response) {
                     if (response.status !== 200) {
                         console.log('Looks like there was a problem. Status Code: ' +
                             response.status);
@@ -30,7 +30,7 @@
                     }
 
                     // Examine the text in the response
-                    response.json().then(function (data) {
+                    response.json().then(function(data) {
                         var options = '';
                         var longestResult = 0;
                         if (data.suggestions != undefined) {
@@ -53,7 +53,7 @@
                     });
                 }
             )
-            .catch(function (err) {
+            .catch(function(err) {
                 console.log('Fetch Error :-S', err);
             });
     }
@@ -444,8 +444,18 @@
                             }
                             else if (coupon.Type == "Number")
                             {
-                                localTotal = numbersTotal;
-                                couponTotal += localTotal * -1;
+                                if (coupon.Name.Contains("20"))
+                                {
+                                    var discountTo20 = numbers is not null && numbers.Any() ? numbers.Length * 20 : 
+                                                        purchased is not null && purchased.Any() ? purchased.Length * 20 : 0;
+                                    localTotal = numbersTotal - discountTo20;
+                                    couponTotal += localTotal * -1;
+                                }
+                                else
+                                {
+                                    localTotal = numbersTotal;
+                                    couponTotal += localTotal * -1;
+                                }
                             }
                             else
                             {
@@ -600,7 +610,7 @@
                             "Trailer",
                             "Unit",
                             "Upper",
-                            };
+                                                };
 
                                 foreach (var unitType in unitTypes)
                                 {
@@ -719,7 +729,7 @@
                     {
                         <hr class="mb-4">
                         @*<input type="text" hidden name="AddPortingInfo" value="true" />
-                            <button asp-controller="Cart" asp-action="PortingInformation" asp-route-id="@Model?.Order?.OrderId" class="btn btn-primary btn-lg btn-block" type="submit" value="Submit">Add Porting Information</button>*@
+                <button asp-controller="Cart" asp-action="PortingInformation" asp-route-id="@Model?.Order?.OrderId" class="btn btn-primary btn-lg btn-block" type="submit" value="Submit">Add Porting Information</button>*@
                         <a asp-controller="Cart" asp-action="PortingInformation" asp-route-id="@Model?.Order?.OrderId" class="btn btn-primary btn-lg btn-block shadow">Add Porting Information</a>
                     }
                     else if (Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted == DateTime.MinValue)

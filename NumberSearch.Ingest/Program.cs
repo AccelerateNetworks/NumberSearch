@@ -1,16 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-using NpgsqlTypes;
-
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.Models;
 
 using Serilog;
-using Serilog.Sinks.PostgreSQL;
-using Serilog.Sinks.PostgreSQL.ColumnWriters;
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -43,20 +38,8 @@ namespace NumberSearch.Ingest
             var emailDan = config.GetConnectionString("EmailDan");
             var emailTom = config.GetConnectionString("EmailTom");
 
-            IDictionary<string, ColumnWriterBase> columnWriters = new Dictionary<string, ColumnWriterBase>
-            {
-                { "message", new RenderedMessageColumnWriter(NpgsqlDbType.Text) },
-                { "message_template", new MessageTemplateColumnWriter(NpgsqlDbType.Text) },
-                { "level", new LevelColumnWriter(true, NpgsqlDbType.Varchar) },
-                { "raise_date", new TimestampColumnWriter(NpgsqlDbType.TimestampTz) },
-                { "exception", new ExceptionColumnWriter(NpgsqlDbType.Text) },
-                { "properties", new LogEventSerializedColumnWriter(NpgsqlDbType.Jsonb) },
-                { "props_test", new PropertiesColumnWriter(NpgsqlDbType.Jsonb) },
-                { "machine_name", new SinglePropertyColumnWriter("MachineName", PropertyWriteMethod.ToString, NpgsqlDbType.Text, "l") }
-            };
-
             Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console()
+                //.WriteTo.Console()
                 //.WriteTo.Debug()
                 .WriteTo.File(
                     $"{DateTime.Now:yyyyMMdd}_NumberSearch.Ingest.txt",
@@ -65,7 +48,6 @@ namespace NumberSearch.Ingest
                     shared: true,
                     flushToDiskInterval: new TimeSpan(1800000)
                 )
-                .WriteTo.PostgreSQL(postgresSQL, "Ingest", columnWriters, useCopy: true, needAutoCreateSchema: true, needAutoCreateTable: true, schemaName: "Logs", period: new TimeSpan(0, 0, 30))
                 .CreateLogger();
 
             Log.Information($"[Heartbeat] Ingest scheduling loop is starting. {Environment.ProcessorCount} threads detected.");

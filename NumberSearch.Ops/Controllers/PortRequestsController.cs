@@ -524,6 +524,18 @@ public class PortRequestsController : Controller
                             numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == portRequest.OrderId).ToListAsync();
                         }
                     }
+                    catch (FlurlHttpException ex)
+                    {
+                        var response = await ex.GetResponseStringAsync();
+                        Log.Error(response);
+                        return View("PortRequestEdit", new PortRequestResult
+                        {
+                            Order = order,
+                            PortRequest = portRequest,
+                            PhoneNumbers = numbers,
+                            Message = "Failed to submit port request to Teli: " + ex.Message + " " + response
+                        });
+                    }
                     catch (Exception ex)
                     {
                         Log.Fatal($"[PortRequest] Failed to submit port request to Teli.");
@@ -658,7 +670,7 @@ public class PortRequestsController : Controller
                                         Order = order,
                                         PortRequest = portRequest,
                                         PhoneNumbers = numbers,
-                                        Message = "Failed to submit port request to BulkVS: " + ex.Message + " " + ex.StackTrace + " " + response
+                                        Message = "Failed to submit port request to BulkVS: " + ex.Message + " " + response
                                     });
                                 }
                                 catch (Exception ex)
@@ -758,7 +770,7 @@ public class PortRequestsController : Controller
                                     Order = order,
                                     PortRequest = portRequest,
                                     PhoneNumbers = numbers,
-                                    Message = "Failed to submit port request to BulkVS: " + ex.Message + " " + ex.StackTrace + " " + response
+                                    Message = "Failed to submit port request to BulkVS: " + ex.Message + " " + response
                                 });
                             }
                             catch (Exception ex)
