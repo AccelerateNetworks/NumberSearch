@@ -991,9 +991,6 @@ namespace NumberSearch.Tests
             foreach (var number in results.data.result)
             {
                 Assert.False(string.IsNullOrWhiteSpace(number.number));
-                Assert.False(string.IsNullOrWhiteSpace(number.npa));
-                Assert.False(string.IsNullOrWhiteSpace(number.nxx));
-                Assert.False(string.IsNullOrWhiteSpace(number.xxxx));
                 Assert.True(number.state == "WA");
                 Assert.False(string.IsNullOrWhiteSpace(number.ratecenter));
                 output.WriteLine(JsonSerializer.Serialize(number));
