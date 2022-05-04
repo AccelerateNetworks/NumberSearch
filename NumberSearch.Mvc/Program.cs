@@ -23,6 +23,10 @@ namespace NumberSearch.Mvc
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .Enrich.FromLogContext()
                 .WriteTo.Console()
+                .WriteTo.File($"NumberSearch.Mvc_{DateTime.Now:yyyyMMdd}.txt",
+                                                rollingInterval: RollingInterval.Day,
+                                                rollOnFileSizeLimit: true,
+                                                shared: true)
                 .CreateLogger();
 
             try
@@ -50,39 +54,12 @@ namespace NumberSearch.Mvc
 
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args)
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+        .UseSerilog()
+        .ConfigureWebHostDefaults(webBuilder =>
         {
-            IDictionary<string, ColumnWriterBase> columnWriters = new Dictionary<string, ColumnWriterBase>
-            {
-                { "message", new RenderedMessageColumnWriter(NpgsqlDbType.Text) },
-                { "message_template", new MessageTemplateColumnWriter(NpgsqlDbType.Text) },
-                { "level", new LevelColumnWriter(true, NpgsqlDbType.Varchar) },
-                { "raise_date", new TimestampColumnWriter(NpgsqlDbType.TimestampTz) },
-                { "exception", new ExceptionColumnWriter(NpgsqlDbType.Text) },
-                { "properties", new LogEventSerializedColumnWriter(NpgsqlDbType.Jsonb) },
-                { "props_test", new PropertiesColumnWriter(NpgsqlDbType.Jsonb) },
-                { "machine_name", new SinglePropertyColumnWriter("MachineName", PropertyWriteMethod.ToString, NpgsqlDbType.Text, "l") }
-            };
-
-            return Host.CreateDefaultBuilder(args)
-                            .UseSerilog((hostingContext, services, loggerConfiguration) => loggerConfiguration
-                                .ReadFrom.Configuration(hostingContext.Configuration)
-                                .Enrich.FromLogContext()
-                                .WriteTo.File($"NumberSearch.Mvc_{DateTime.Now:yyyyMMdd}.txt",
-                                                rollingInterval: RollingInterval.Day,
-                                                rollOnFileSizeLimit: true)
-                                .WriteTo.PostgreSQL(hostingContext.Configuration.GetConnectionString("PostgresqlProd"),
-                                "Mvc",
-                                columnWriters,
-                                useCopy: true,
-                                needAutoCreateSchema: true,
-                                needAutoCreateTable: true,
-                                schemaName: "Logs",
-                                period: new TimeSpan(0, 0, 30)))
-                                .ConfigureWebHostDefaults(webBuilder =>
-                                {
-                                    webBuilder.UseStartup<Startup>();
-                                });
-        }
+            webBuilder.UseStartup<Startup>();
+        });
     }
 }
