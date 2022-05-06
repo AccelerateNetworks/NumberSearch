@@ -37,6 +37,7 @@ namespace NumberSearch.Tests
         private readonly string _teleDynamicsPassword;
         private readonly string _call48Username;
         private readonly string _call48Password;
+        private readonly string _callWithUsAPIkey;
         private readonly IConfiguration configuration;
 
         public Integration(ITestOutputHelper output)
@@ -66,6 +67,7 @@ namespace NumberSearch.Tests
             _teleDynamicsPassword = config.GetConnectionString("TeleDynamicsPassword");
             _call48Username = config.GetConnectionString("Call48Username");
             _call48Password = config.GetConnectionString("Call48Password");
+            _callWithUsAPIkey = config.GetConnectionString("CallWithUsAPIKEY");
         }
 
         [Fact]
@@ -454,6 +456,21 @@ namespace NumberSearch.Tests
 
             // Assert        
             Assert.Null(result);
+        }
+
+
+        [Fact]
+        public async Task CallWithUsLRNLookupAsync()
+        {
+            // Arrange
+            string canadaNumber = "6042400507";
+
+            // Act
+            var result = await DataAccess.CallWithUs.LRNLookup.GetAsync(canadaNumber, _callWithUsAPIkey).ConfigureAwait(false);
+
+            // Assert        
+            Assert.NotNull(result);
+            output.WriteLine(JsonSerializer.Serialize(result));
         }
 
         [Fact]
