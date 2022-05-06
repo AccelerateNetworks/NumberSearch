@@ -59,7 +59,7 @@ namespace NumberSearch.Ingest
             var peerlessPriortyTimer = new Stopwatch();
             var orderUpdatesTimer = new Stopwatch();
             // 20 Minutes in miliseconds
-            var priortyIngestCycleTime = 1200000;
+            var priortyIngestCycleTime = 3600000;
 
             try
             {
