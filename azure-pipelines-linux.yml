@@ -37,6 +37,7 @@ variables:
   ConnectionStrings.TeleDynamicsPassword: $(TeleDynamicsPassword)
   ConnectionStrings.Call48Username: $(Call48Username)
   ConnectionStrings.Call48Password: $(Call48Password)
+  ConnectionStrings.CallWithUsAPIKEY: $(CallWithUsAPIKEY)
   ApplicationInsights.InstrumentationKey: $(AIInstrumentationKey)
   ApplicationInsights.ConnectionString: $(AIConnectionString)
 
