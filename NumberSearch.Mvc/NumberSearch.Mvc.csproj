@@ -21,7 +21,7 @@
 		<None Remove="NumberSearch.Mvc_2020112420201124.txt" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="AsyncFixer" Version="1.5.1">
+		<PackageReference Include="AsyncFixer" Version="1.6.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
@@ -29,7 +29,7 @@
 		<PackageReference Include="Ical.Net" Version="4.2.0" />
 		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.20.0" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-		<PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.1.46">
+		<PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.2.32">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
