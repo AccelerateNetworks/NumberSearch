@@ -9,6 +9,7 @@
 		<Nullable>enable</Nullable>
 		<ApplicationInsightsResourceId>/subscriptions/dd4e7397-befc-4010-84b2-7a6deffd4709/resourceGroups/NumberSearch.Mvc-1/providers/microsoft.insights/components/NumberSearch</ApplicationInsightsResourceId>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 	</PropertyGroup>
 	<ItemGroup>
 		<Compile Remove="Services\**" />
@@ -217,13 +218,13 @@
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\GBX20-400.webp">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\GBX20-front-400.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\GDS3710-400.webp">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\GRP2612front-400.jpg">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -250,7 +251,7 @@
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\GRP2616-400.webp">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\GS-DP752-400.jpg">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -286,10 +287,10 @@
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\GXP2200EXT-400.webp">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\GXV3350-400.webp">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\headthumb.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -373,10 +374,10 @@
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\yealink-t46s-400.webp">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\yealink-t53w-400.webp">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\yealinkcp930w-400.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
