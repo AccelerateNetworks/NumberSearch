@@ -5,6 +5,7 @@
     <IsPackable>false</IsPackable>
     <UserSecretsId>40f816f3-0a65-4523-a9be-4bbef0716720</UserSecretsId>
     <LangVersion>latest</LangVersion>
+	  <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.5" />
