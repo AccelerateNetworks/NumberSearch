@@ -38,6 +38,7 @@ namespace NumberSearch.Tests
         private readonly string _call48Username;
         private readonly string _call48Password;
         private readonly string _callWithUsAPIkey;
+        private readonly string _peerlessApiKey;
         private readonly IConfiguration configuration;
 
         public Integration(ITestOutputHelper output)
@@ -69,6 +70,7 @@ namespace NumberSearch.Tests
             _call48Username = config.GetConnectionString("Call48Username");
             _call48Password = config.GetConnectionString("Call48Password");
             _callWithUsAPIkey = config.GetConnectionString("CallWithUsAPIKEY");
+            _peerlessApiKey = config.GetConnectionString("PeerlessAPIKey");
         }
 
         [Fact]
@@ -622,33 +624,47 @@ namespace NumberSearch.Tests
         //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
         //}
 
+        [Fact]
+        public async Task PeerlessGetPhoneNumbersTestAsync()
+        {
+            // Arrange
+            string npa = "206";
+
+            // Act
+            var results = await DidFind.GetByNPAAsync(npa, _peerlessApiKey).ConfigureAwait(false);
+
+            // Assert
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            int count = 0;
+
+            foreach (var result in results.ToArray())
+            {
+                output.WriteLine(result.DialedNumber);
+                Assert.True(result.NPA > 99);
+                Assert.True(result.NXX > 99);
+                Assert.True(result.XXXX > 1);
+                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+                Assert.False(string.IsNullOrWhiteSpace(result.City));
+                Assert.False(string.IsNullOrWhiteSpace(result.State));
+                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+                count++;
+            }
+            output.WriteLine($"{count} Results Reviewed");
+        }
+
         //[Fact]
-        //public async Task PeerlessGetPhoneNumbersTestAsync()
+        //public async Task PeerlessGetNXXsTestAsync()
         //{
         //    // Arrange
-        //    string npa = "206";
+        //    var npa = 206;
 
         //    // Act
-        //    var results = await DidFind.GetByNPAAsync(npa, peerlessAPIKey).ConfigureAwait(false);
+        //    var results = await Lerg.GetAsync(npa, _peerlessApiKey).ConfigureAwait(false);
 
         //    // Assert
         //    Assert.NotNull(results);
-        //    Assert.NotEmpty(results);
-        //    int count = 0;
-
-        //    foreach (var result in results.ToArray())
-        //    {
-        //        output.WriteLine(result.DialedNumber);
-        //        Assert.True(result.NPA > 99);
-        //        Assert.True(result.NXX > 99);
-        //        Assert.True(result.XXXX > 1);
-        //        Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-        //        Assert.False(string.IsNullOrWhiteSpace(result.City));
-        //        Assert.False(string.IsNullOrWhiteSpace(result.State));
-        //        Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
-        //        count++;
-        //    }
-        //    output.WriteLine($"{count} Results Reviewed");
+        //    output.WriteLine(JsonSerializer.Serialize(results));
         //}
 
         //[Fact]
