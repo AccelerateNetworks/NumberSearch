@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess.InvoiceNinja;
-using NumberSearch.DataAccess.TeliMesssage;
+using NumberSearch.DataAccess.TeliMessage;
 using NumberSearch.Ops.Models;
 
 using Serilog;

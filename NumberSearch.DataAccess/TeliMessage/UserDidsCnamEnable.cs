@@ -3,7 +3,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace NumberSearch.DataAccess.TeliMesssage
+namespace NumberSearch.DataAccess.TeliMessage
 {
     // TODO: This is a mess. We need to clean this up and correctly model the API interface.
     public class UserDidsCnamEnable

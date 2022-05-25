@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
-using NumberSearch.DataAccess.TeliMesssage;
+using NumberSearch.DataAccess.TeliMessage;
 using NumberSearch.Mvc.Models;
 
 using PhoneNumbersNA;
@@ -24,6 +24,7 @@ namespace NumberSearch.Mvc.Controllers
         private readonly Guid _teleToken;
         private readonly string _postgresql;
         private readonly string _bulkVSKey;
+        private readonly string _callWithUsAPIkey;
 
         public LookupController(IConfiguration config)
         {
@@ -31,6 +32,7 @@ namespace NumberSearch.Mvc.Controllers
             _teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
             _postgresql = _configuration.GetConnectionString("PostgresqlProd");
             _bulkVSKey = config.GetConnectionString("BulkVSAPIKEY");
+            _callWithUsAPIkey = config.GetConnectionString("CallWithUsAPIKEY");
         }
 
         [HttpGet]
@@ -278,8 +280,31 @@ namespace NumberSearch.Mvc.Controllers
                         };
                     }
 
+                    LrnBulkCnam checkNumber;
+
                     // Lookup the number.
-                    var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber, _bulkVSKey).ConfigureAwait(false);
+                    if (phoneNumber.Type is NumberType.Canada)
+                    {
+                        var canada = await DataAccess.CallWithUs.LRNLookup.GetAsync(phoneNumber.DialedNumber, _callWithUsAPIkey).ConfigureAwait(false);
+
+                        checkNumber = new LrnBulkCnam
+                        {
+                            lata = canada.LATA,
+                            lrn = canada.LRN,
+                            jurisdiction = canada.State,
+                            ocn = canada.OCN,
+                            ratecenter = canada.Ratecenter,
+                            tn = $"1{phoneNumber.DialedNumber}",
+                            lec = canada.Company,
+                            lectype = canada.Prefix_Type,
+                            city = canada.Ratecenter,
+                            province = canada.State
+                        };
+                    }
+                    else
+                    {
+                        checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber, _bulkVSKey).ConfigureAwait(false);
+                    }
 
                     // Determine if the number is a wireless number.
                     bool wireless = false;
@@ -365,7 +390,28 @@ namespace NumberSearch.Mvc.Controllers
 
         public async Task<LrnBulkCnam> InvestigateAsync(string number)
         {
-            var checkNumber = await LrnBulkCnam.GetAsync(number, _bulkVSKey).ConfigureAwait(false);
+            LrnBulkCnam checkNumber;
+
+            if (number.IsCanadian())
+            {
+                var canada = await DataAccess.CallWithUs.LRNLookup.GetAsync(number, _callWithUsAPIkey).ConfigureAwait(false);
+
+                checkNumber = new LrnBulkCnam
+                {
+                    lata = canada.LATA,
+                    lrn = canada.LRN,
+                    jurisdiction = canada.State,
+                    ocn = canada.OCN,
+                    ratecenter = canada.Ratecenter,
+                    tn = number,
+                    lec = canada.Company,
+                    lectype = canada.Prefix_Type,
+                };
+            }
+            else
+            {
+                checkNumber = await LrnBulkCnam.GetAsync(number, _bulkVSKey).ConfigureAwait(false);
+            }
 
             var numberName = await CnamBulkVs.GetAsync(number, _bulkVSKey);
             checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName?.name;

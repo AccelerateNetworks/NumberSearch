@@ -3,7 +3,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace NumberSearch.DataAccess.TeliMesssage
+namespace NumberSearch.DataAccess.TeliMessage
 {
     /// <summary>
     /// Models https://apidocs.teleapi.net/api/order-phone-numbers/order-single-number

@@ -3,7 +3,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace NumberSearch.DataAccess
+namespace NumberSearch.DataAccess.TeliMessage
 {
     public class LrnLookup
     {

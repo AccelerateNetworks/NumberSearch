@@ -9,7 +9,7 @@ using NumberSearch.DataAccess.LCGuide;
 using NumberSearch.DataAccess.Models;
 using NumberSearch.DataAccess.Peerless;
 using NumberSearch.DataAccess.TeleDynamics;
-using NumberSearch.DataAccess.TeliMesssage;
+using NumberSearch.DataAccess.TeliMessage;
 
 using ServiceReference;
 

@@ -8,7 +8,7 @@ using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Call48;
 using NumberSearch.DataAccess.Peerless;
-using NumberSearch.DataAccess.TeliMesssage;
+using NumberSearch.DataAccess.TeliMessage;
 
 using Serilog;
 
