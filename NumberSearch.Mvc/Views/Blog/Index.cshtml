@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = "Privacy Policy";
+}
+@model List<WriteAs.NET.Client.Models.Post>
+<br />
+<div class="container">
+    <br />
+    <div class="pricing-header mx-auto mb-4 text-center">
+        <h1 class="display-4">Blog</h1>
+    </div>
+    <br />
+    @if (Model is not null && Model.Any())
+    {
+        foreach (var post in Model!)
+        {
+            var content = Markdig.Markdown.ToHtml(post.Body);
+            <div class="row">
+                <div class="col mb-3">
+                    @Html.Raw(content)
+                </div>
+            </div>
+        }
+    }
+</div>
