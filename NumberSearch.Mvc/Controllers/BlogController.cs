@@ -5,11 +5,7 @@ using Microsoft.Extensions.Configuration;
 
 using Npgsql;
 
-using NumberSearch.DataAccess;
-
-using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 using WriteAs.NET;
@@ -34,6 +30,7 @@ namespace NumberSearch.Mvc.Controllers
         {
             using var connection = new NpgsqlConnection(_postgresql);
 
+            // Grab the posts from the database.
             var posts = await connection
                 .QueryAsync<WriteAs.NET.Client.Models.Post>("SELECT \"Id\", \"Slug\", \"Appearance\", \"Language\", \"Rtl\", \"CreateDate\", \"LastUpdatedDate\", \"Title\", \"Body\", \"Views\" " +
                 "FROM public.\"WriteAsPosts\"")
@@ -41,6 +38,7 @@ namespace NumberSearch.Mvc.Controllers
 
             if (posts is null || !posts.Any())
             {
+                // If there are no post repopulate the database from the API.
                 var client = new WriteAsClient("https://write.as/");
                 var allPosts = await client.GetAllPosts("acceleratenetworks");
 
