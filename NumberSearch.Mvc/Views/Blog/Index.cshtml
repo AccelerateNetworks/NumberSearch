@@ -2,23 +2,35 @@
     ViewData["Title"] = "Privacy Policy";
 }
 @model List<WriteAs.NET.Client.Models.Post>
-<br />
-<div class="container">
-    <br />
-    <div class="pricing-header mx-auto mb-4 text-center">
-        <h1 class="display-4">Blog</h1>
-    </div>
-    <br />
-    @if (Model is not null && Model.Any())
-    {
-        foreach (var post in Model!)
-        {
-            var content = Markdig.Markdown.ToHtml(post.Body);
-            <div class="row">
-                <div class="col mb-3">
-                    @Html.Raw(content)
-                </div>
+
+<section class="text-light p-5" style="background-color: #3279B2">
+    <div class="container py-5 py-md-6 py-lg-7 mb-7 text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-md-11">
+                <h1 class="display-3 text-light">Learn about our Services</h1>
+                <p class="lead text-white">Your questions, answered right here.</p>
             </div>
+        </div>
+    </div>
+</section>
+<div class="pt-5">
+    <div class="container">
+        @if (Model is not null && Model.Any())
+        {
+            foreach (var post in Model!)
+            {
+                var content = Markdig.Markdown.ToHtml(post.Body);
+                content = content.Replace("<img", "<img class=\"img-fluid\"");
+                <div class="row">
+                    <div class="col mb-5">
+                        <h1>@post.Title</h1>
+                        <hr>
+                        <p>@post.LastUpdatedDate.ToShortDateString()</p>
+                        @Html.Raw(content)
+                        <hr>
+                    </div>
+                </div>
+            }
         }
-    }
+    </div>
 </div>
