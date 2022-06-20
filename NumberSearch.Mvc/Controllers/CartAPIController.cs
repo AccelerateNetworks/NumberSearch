@@ -1097,11 +1097,15 @@ namespace NumberSearch.Mvc.Controllers
                 return BadRequest(ModelState);
             }
 
-            couponName = couponName.Trim();
+            // Remove leading and trailing whitespace and convert to lowercase.
+            var input = couponName.Trim().ToLowerInvariant();
+
+            // Drop everything that's not a letter or number.
+            input = new string(input.Where(c => char.IsLetterOrDigit(c)).ToArray());
 
             var coupons = await Coupon.GetAllAsync(_postgresql).ConfigureAwait(false);
 
-            var coupon = coupons.Where(x => x.Name.Replace(" ", string.Empty).ToLowerInvariant() == couponName.Replace(" ", string.Empty).ToLowerInvariant()).FirstOrDefault();
+            var coupon = coupons.FirstOrDefault(x => x.Name.Replace(" ", string.Empty).ToLowerInvariant().Contains(input));
 
             if (coupon is null)
             {
