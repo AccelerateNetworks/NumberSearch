@@ -275,7 +275,7 @@ public class PortRequestsController : Controller
                         }
                     }
 
-                    var numbers = await _context.PortedPhoneNumbers.AsNoTracking().ToListAsync();
+                    var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
 
                     return View("PortRequestEdit", new PortRequestResult
                     {

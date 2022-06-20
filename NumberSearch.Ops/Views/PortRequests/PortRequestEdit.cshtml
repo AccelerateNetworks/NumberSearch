@@ -384,7 +384,7 @@
                                 </td>
                                 <td>
                                     @{
-                                        if (string.IsNullOrWhiteSpace(number?.ExternalPortRequestId))
+                                        if (string.IsNullOrWhiteSpace(number?.ExternalPortRequestId) || number?.RequestStatus == "EXCEPTION")
                                         {
                                             <a class="btn btn-danger text-white" href="/Home/PortRequests/@Model?.Order?.OrderId/@number?.PortedDialedNumber">Remove</a>
                                         }
