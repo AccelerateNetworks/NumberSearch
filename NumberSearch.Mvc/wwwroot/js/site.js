@@ -30,7 +30,7 @@ function AddToCart(type, id, quantity, element) {
     if (quantity.length === 0) {
         quantity = 1;
     }
-    id = id.trim();
+    id = `${id}`.trim();
     var removeButton = `<button onclick="RemoveFromCart('${type}', '${id}', ${quantity}, this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>`;
     var cart = $('#headerCart');
     var cartButton = $('#cartButton');
