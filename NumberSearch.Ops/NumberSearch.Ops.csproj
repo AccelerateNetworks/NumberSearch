@@ -13,8 +13,8 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Azure.Storage.Blobs" Version="12.12.0" />
-		<PackageReference Include="CsvHelper" Version="27.2.1" />
+		<PackageReference Include="Azure.Storage.Blobs" Version="12.13.0" />
+		<PackageReference Include="CsvHelper" Version="28.0.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.6" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.6" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
