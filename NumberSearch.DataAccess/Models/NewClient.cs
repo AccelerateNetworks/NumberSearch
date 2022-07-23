@@ -37,7 +37,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<NewClient> GetAsync(Guid newClientId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QuerySingleOrDefaultAsync<NewClient>("SELECT \"NewClientId\", \"OrderId\", \"BillingClientId\", \"PhoneMenu\", \"PhonesToRingOrMenuDescription\", \"BusinessHours\", \"AfterHoursVoicemail\", \"TextingService\", \"TextingServiceName\", \"OverheadPaging\", \"OverheadPagingDescription\", \"Intercom\", \"CustomHoldMusic\", \"HoldMusicDescription\", \"PhoneOfflineInstructions\", \"DateUpdated\", \"SpeedDial\", \"IntercomDescription\" FROM public.\"NewClients\" " +
@@ -49,7 +49,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<NewClient> GetByOrderIdAsync(Guid orderId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QuerySingleOrDefaultAsync<NewClient>("SELECT \"NewClientId\", \"OrderId\", \"BillingClientId\", \"PhoneMenu\", \"PhonesToRingOrMenuDescription\", \"BusinessHours\", \"AfterHoursVoicemail\", \"TextingService\", \"TextingServiceName\", \"OverheadPaging\", \"OverheadPagingDescription\", \"Intercom\", \"CustomHoldMusic\", \"HoldMusicDescription\", \"PhoneOfflineInstructions\", \"DateUpdated\", \"SpeedDial\", \"IntercomDescription\" FROM public.\"NewClients\" " +
@@ -61,7 +61,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> PostAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"NewClients\" ( \"NewClientId\", \"OrderId\", \"BillingClientId\", \"PhoneMenu\", \"PhonesToRingOrMenuDescription\", \"BusinessHours\", \"AfterHoursVoicemail\", \"TextingService\", \"TextingServiceName\", \"OverheadPaging\", \"OverheadPagingDescription\", \"Intercom\", \"CustomHoldMusic\", \"HoldMusicDescription\", \"PhoneOfflineInstructions\", \"DateUpdated\", \"SpeedDial\", \"IntercomDescription\") " +
@@ -81,7 +81,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> PutAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"NewClients\" SET \"BillingClientId\" = @BillingClientId, \"PhoneMenu\" = @PhoneMenu, \"PhonesToRingOrMenuDescription\" = @PhonesToRingOrMenuDescription, \"BusinessHours\" = @BusinessHours, \"AfterHoursVoicemail\" = @AfterHoursVoicemail, \"TextingService\" = @TextingService, \"TextingServiceName\" = @TextingServiceName, \"OverheadPaging\" = @OverheadPaging, \"OverheadPagingDescription\" = @OverheadPagingDescription, \"Intercom\" = @Intercom, \"CustomHoldMusic\" = @CustomHoldMusic, \"HoldMusicDescription\" = @HoldMusicDescription, \"PhoneOfflineInstructions\" = @PhoneOfflineInstructions, \"DateUpdated\" = @DateUpdated, \"SpeedDial\" = @SpeedDial, \"IntercomDescription\" = @IntercomDescription " +
@@ -113,7 +113,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<ExtensionRegistration[]> GetByNewClientAsync(Guid newClientId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<ExtensionRegistration>("SELECT \"ExtensionRegistrationId\", \"NewClientId\", \"ExtensionNumber\", \"NameOrLocation\", \"Email\", \"ModelOfPhone\", \"OutboundCallerId\", \"DateUpdated\" FROM public.\"ExtensionRegistrations\" " +
@@ -125,7 +125,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> PostAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"ExtensionRegistrations\" ( \"ExtensionRegistrationId\", \"NewClientId\", \"ExtensionNumber\", \"NameOrLocation\", \"Email\", \"ModelOfPhone\", \"OutboundCallerId\", \"DateUpdated\" ) " +
@@ -145,7 +145,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> DeleteAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"ExtensionRegistrations\" WHERE \"ExtensionRegistrationId\" = @ExtensionRegistrationId",
@@ -174,7 +174,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<NumberDescription[]> GetByNewClientAsync(Guid newClientId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<NumberDescription>("SELECT \"NumberDescriptionId\", \"NewClientId\", \"PhoneNumber\", \"Description\", \"Prefix\", \"DateUpdated\" FROM public.\"NumberDescriptions\" " +
@@ -186,7 +186,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> PostAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"NumberDescriptions\" ( \"NumberDescriptionId\", \"NewClientId\", \"PhoneNumber\", \"Description\", \"Prefix\", \"DateUpdated\" ) " +
@@ -206,7 +206,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> DeleteAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"NumberDescriptions\" WHERE \"NumberDescriptionId\" = @NumberDescriptionId",
@@ -234,7 +234,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<IntercomRegistration[]> GetByNewClientAsync(Guid newClientId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<IntercomRegistration>("SELECT \"IntercomRegistrationId\", \"NewClientId\", \"ExtensionSendingIntercom\", \"ExtensionRecievingIntercom\", \"DateUpdated\" FROM public.\"IntercomRegistrations\" " +
@@ -246,7 +246,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> PostAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"IntercomRegistrations\" ( \"IntercomRegistrationId\", \"NewClientId\", \"ExtensionSendingIntercom\", \"ExtensionRecievingIntercom\", \"DateUpdated\" ) " +
@@ -266,7 +266,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> DeleteAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"IntercomRegistrations\" WHERE \"IntercomRegistrationId\" = @IntercomRegistrationId",
@@ -294,7 +294,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<SpeedDialKey[]> GetByNewClientAsync(Guid newClientId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<SpeedDialKey>("SELECT \"SpeedDialKeyId\", \"NewClientId\", \"NumberOrExtension\", \"LabelOrName\", \"DateUpdated\" FROM public.\"SpeedDialKeys\" " +
@@ -306,7 +306,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> PostAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"SpeedDialKeys\" ( \"SpeedDialKeyId\", \"NewClientId\", \"NumberOrExtension\", \"LabelOrName\", \"DateUpdated\" ) " +
@@ -326,7 +326,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> DeleteAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"SpeedDialKeys\" WHERE \"SpeedDialKeyId\" = @SpeedDialKeyId",
@@ -355,7 +355,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<PhoneMenuOption[]> GetByNewClientAsync(Guid newClientId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<PhoneMenuOption>("SELECT \"PhoneMenuOptionId\", \"NewClientId\", \"MenuOption\", \"Destination\", \"Description\", \"DateUpdated\" FROM public.\"PhoneMenuOptions\" " +
@@ -367,7 +367,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> PostAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"PhoneMenuOptions\" (\"PhoneMenuOptionId\", \"NewClientId\", \"MenuOption\", \"Destination\", \"Description\", \"DateUpdated\") " +
@@ -387,7 +387,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> DeleteAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"PhoneMenuOptions\" WHERE \"PhoneMenuOptionId\" = @PhoneMenuOptionId",
@@ -416,7 +416,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<FollowMeRegistration[]> GetByNewClientAsync(Guid newClientId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<FollowMeRegistration>("SELECT \"FollowMeRegistrationId\", \"NewClientId\", \"NumberOrExtension\", \"CellPhoneNumber\", \"UnreachablePhoneNumber\", \"DateUpdated\" FROM public.\"FollowMeRegistrations\" " +
@@ -428,7 +428,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> PostAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"FollowMeRegistrations\" ( \"FollowMeRegistrationId\", \"NewClientId\", \"NumberOrExtension\", \"CellPhoneNumber\", \"UnreachablePhoneNumber\", \"DateUpdated\" ) " +
@@ -448,7 +448,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> DeleteAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"FollowMeRegistrations\" WHERE \"FollowMeRegistrationId\" = @FollowMeRegistrationId",

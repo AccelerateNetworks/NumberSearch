@@ -29,7 +29,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<ProductShipment> GetByIdAsync(Guid productShipmentId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryFirstOrDefaultAsync<ProductShipment>("SELECT \"ProductShipmentId\", \"ProductId\", \"OrderId\", \"BillingClientId\", \"Name\", \"ShipmentSource\", \"PurchasePrice\", \"ShipmentType\", \"Quantity\", \"DateCreated\" " +
@@ -49,7 +49,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<IEnumerable<ProductShipment>> GetByProductIdAsync(Guid productId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<ProductShipment>("SELECT \"ProductShipmentId\", \"ProductId\", \"OrderId\", \"BillingClientId\", \"Name\", \"ShipmentSource\", \"PurchasePrice\", \"ShipmentType\", \"Quantity\", \"DateCreated\" " +
@@ -69,7 +69,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<IEnumerable<ProductShipment>> GetByOrderIdAsync(Guid orderId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<ProductShipment>("SELECT \"ProductShipmentId\", \"ProductId\", \"OrderId\", \"BillingClientId\", \"Name\", \"ShipmentSource\", \"PurchasePrice\", \"ShipmentType\", \"Quantity\", \"DateCreated\" " +
@@ -83,7 +83,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<IEnumerable<ProductShipment>> GetAllAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<ProductShipment>("SELECT \"ProductShipmentId\", \"ProductId\", \"OrderId\", \"BillingClientId\", \"Name\", \"ShipmentSource\", \"PurchasePrice\", \"ShipmentType\", \"Quantity\", \"DateCreated\" " +
@@ -100,7 +100,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public async Task<bool> PostAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"ProductShipments\"(\"ProductShipmentId\", \"ProductId\", \"OrderId\", \"BillingClientId\", \"Name\", \"ShipmentSource\", \"PurchasePrice\", \"ShipmentType\", \"Quantity\", \"DateCreated\") " +
@@ -125,7 +125,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public async Task<bool> PutAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"ProductShipments\" SET \"ProductId\" = @ProductId, \"OrderId\" = @OrderId, \"BillingClientId\" = @BillingClientId, \"Name\" = @Name, \"ShipmentSource\" = @ShipmentSource, \"PurchasePrice\" = @PurchasePrice, \"ShipmentType\" = @ShipmentType, \"Quantity\" = @Quantity, \"DateCreated\" = @DateCreated " +
@@ -151,7 +151,7 @@ namespace NumberSearch.DataAccess
                 return false;
             }
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"ProductShipments\" WHERE \"ProductShipmentId\" = @ProductShipmentId",

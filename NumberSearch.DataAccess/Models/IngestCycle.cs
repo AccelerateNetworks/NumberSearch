@@ -20,7 +20,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<IEnumerable<IngestCycle>> GetAllAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<IngestCycle>("SELECT \"IngestCycleId\", \"IngestedFrom\", \"CycleTime\", \"LastUpdate\", \"Enabled\", \"RunNow\" FROM public.\"IngestCycles\"")
@@ -31,7 +31,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> PostAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"IngestCycles\" (\"IngestedFrom\", \"CycleTime\", \"LastUpdate\", \"Enabled\", \"RunNow\") VALUES( @IngestedFrom, @CycleTime, @LastUpdate, @Enabled, @RunNow)",
@@ -55,7 +55,7 @@ namespace NumberSearch.DataAccess
                 return false;
             }
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"IngestCycles\" SET \"IngestedFrom\" = @IngestedFrom, \"CycleTime\" = @CycleTime, \"LastUpdate\" = @LastUpdate, \"Enabled\" = @Enabled, \"RunNow\" = @RunNow WHERE \"IngestCycleId\" = @IngestCycleId",
@@ -79,7 +79,7 @@ namespace NumberSearch.DataAccess
                 return false;
             }
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"IngestCycles\" WHERE \"IngestCycleId\" = @IngestCycleId", new { IngestCycleId })

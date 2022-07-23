@@ -29,7 +29,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<IEnumerable<EmergencyInformation>> GetAllAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             return await connection
                 .QueryAsync<EmergencyInformation>("SELECT \"EmergencyInformationId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"TeliId\", \"FullName\", \"Address\", \"City\", \"State\", \"Zip\", \"UnitType\", \"UnitNumber\", \"CreatedDate\", \"ModifyDate\", \"AlertGroup\", \"Note\" FROM public.\"EmergencyInformation\"")
@@ -38,7 +38,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<EmergencyInformation> GetByIdAsync(Guid emergencyinformationId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             return await connection
                 .QueryFirstOrDefaultAsync<EmergencyInformation>("SELECT \"EmergencyInformationId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"TeliId\", \"FullName\", \"Address\", \"City\", \"State\", \"Zip\", \"UnitType\", \"UnitNumber\", \"CreatedDate\", \"ModifyDate\", \"AlertGroup\", \"Note\" FROM public.\"EmergencyInformation\" " +
@@ -48,7 +48,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<IEnumerable<EmergencyInformation>> GetByDialedNumberAsync(string dialedNumber, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             return await connection
                 .QueryAsync<EmergencyInformation>("SELECT \"EmergencyInformationId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"TeliId\", \"FullName\", \"Address\", \"City\", \"State\", \"Zip\", \"UnitType\", \"UnitNumber\", \"CreatedDate\", \"ModifyDate\", \"AlertGroup\", \"Note\" FROM public.\"EmergencyInformation\" WHERE \"DialedNumber\" = @dialedNumber", new { dialedNumber })
@@ -57,7 +57,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> PostAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"EmergencyInformation\" (\"EmergencyInformationId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"TeliId\", \"FullName\", \"Address\", \"City\", \"State\", \"Zip\", \"UnitType\", \"UnitNumber\", \"CreatedDate\", \"ModifyDate\", \"AlertGroup\", \"Note\") " +
@@ -77,7 +77,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> PutAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"EmergencyInformation\" SET \"DialedNumber\" = @DialedNumber, \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"TeliId\" = @TeliId, \"FullName\" = @FullName, \"Address\" = @Address, \"City\" = @City, \"State\" = @State, \"Zip\" = @Zip, \"UnitType\" = @UnitType, \"UnitNumber\" = @UnitNumber, \"CreatedDate\" = @CreatedDate, \"ModifyDate\" = @ModifyDate, \"AlertGroup\" = @AlertGroup, \"Note\" = @Note WHERE \"EmergencyInformationId\" = @EmergencyInformationId",
@@ -101,7 +101,7 @@ namespace NumberSearch.DataAccess
                 return false;
             }
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"EmergencyInformation\" WHERE \"EmergencyInformationId\" = @EmergencyInformationId",

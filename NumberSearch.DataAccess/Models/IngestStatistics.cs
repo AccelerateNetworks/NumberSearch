@@ -34,7 +34,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<IEnumerable<IngestStatistics>> GetAllAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<IngestStatistics>("SELECT \"Id\", \"NumbersRetrived\", \"IngestedNew\", \"FailedToIngest\", \"UpdatedExisting\", \"Unchanged\", \"Removed\", \"IngestedFrom\", \"StartDate\", \"EndDate\", \"Lock\", \"Priority\" FROM public.\"Ingests\" ORDER BY \"StartDate\" DESC LIMIT 100")
@@ -45,7 +45,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<IngestStatistics> GetLastIngestAsync(string ingestedFrom, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryFirstOrDefaultAsync<IngestStatistics>("SELECT \"Id\", \"NumbersRetrived\", \"IngestedNew\", \"FailedToIngest\", \"UpdatedExisting\", \"Unchanged\", \"Removed\", \"IngestedFrom\", \"StartDate\", \"EndDate\", \"Lock\", \"Priority\" FROM public.\"Ingests\" WHERE \"IngestedFrom\" = @ingestedFrom AND \"Priority\" = false ORDER BY \"StartDate\" DESC LIMIT 1",
@@ -57,7 +57,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<IngestStatistics> GetLockAsync(string ingestedFrom, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryFirstOrDefaultAsync<IngestStatistics>("SELECT \"Id\", \"NumbersRetrived\", \"IngestedNew\", \"FailedToIngest\", \"UpdatedExisting\", \"Unchanged\", \"Removed\", \"IngestedFrom\", \"StartDate\", \"EndDate\", \"Lock\", \"Priority\" FROM public.\"Ingests\" WHERE \"IngestedFrom\" = @ingestedFrom AND \"Lock\" = true ORDER BY \"StartDate\" DESC LIMIT 1",
@@ -69,7 +69,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> PostAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"Ingests\"( \"NumbersRetrived\", \"IngestedNew\", \"FailedToIngest\", \"UpdatedExisting\", \"Unchanged\", \"Removed\", \"IngestedFrom\", \"StartDate\", \"EndDate\", \"Lock\", \"Priority\") " +
@@ -93,7 +93,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public async Task<bool> PutAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"Ingests\" SET \"Id\" = @Id, \"NumbersRetrived\" = @NumbersRetrived, \"IngestedNew\" = @IngestedNew, \"FailedToIngest\" = @FailedToIngest, \"UpdatedExisting\" = @UpdatedExisting, \"Unchanged\" = @Unchanged, \"Removed\" = @Removed, \"IngestedFrom\" = @IngestedFrom, \"StartDate\" = @StartDate, \"EndDate\" = @EndDate, \"Lock\" = @Lock, \"Priority\" = @Priority WHERE \"Id\" = @Id",
@@ -112,7 +112,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> DeleteAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             if (!Id.HasValue)
             {

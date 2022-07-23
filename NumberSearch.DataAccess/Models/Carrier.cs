@@ -25,7 +25,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<Carrier> GetByOCNAsync(string ocn, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryFirstOrDefaultAsync<Carrier>("SELECT \"CarrierId\", \"OCN\", \"LEC\", \"LECType\", \"SPID\", \"Name\", \"Type\", \"Ratecenter\", \"Color\", \"LogoLink\", \"LastUpdated\" FROM public.\"Carriers\" WHERE \"OCN\" = @OCN",

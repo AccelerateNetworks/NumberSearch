@@ -25,7 +25,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<Coupon> GetByIdAsync(Guid couponId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryFirstOrDefaultAsync<Coupon>("SELECT \"CouponId\", \"Name\", \"Description\", \"Public\", \"Type\", \"Value\" FROM public.\"Coupons\" " +
@@ -43,7 +43,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<IEnumerable<Coupon>> GetAllAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<Coupon>("SELECT \"CouponId\", \"Name\", \"Description\", \"Public\", \"Type\", \"Value\"  FROM public.\"Coupons\"")
@@ -59,7 +59,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public async Task<bool> PostAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"Coupons\"(\"CouponId\", \"Name\", \"Description\", \"Public\", \"Type\", \"Value\" ) " +
@@ -84,7 +84,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public async Task<bool> PutAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"Coupons\" SET \"Name\" = @Name, \"Description\" = @Description, \"Public\" = @Public, \"Type\" = @Type, \"Value\" = @Value " +
@@ -110,7 +110,7 @@ namespace NumberSearch.DataAccess
             //    return false;
             //}
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"Coupons\" WHERE \"CouponId\" = @CouponId",

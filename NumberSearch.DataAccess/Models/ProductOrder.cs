@@ -25,7 +25,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<IEnumerable<ProductOrder>> GetAllAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<ProductOrder>
@@ -43,7 +43,7 @@ namespace NumberSearch.DataAccess
         /// <returns> A list of product related to an order. </returns>
         public static async Task<IEnumerable<ProductOrder>> GetAsync(Guid OrderId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<ProductOrder>("SELECT \"ProductOrderId\", \"OrderId\", \"ProductId\", \"ServiceId\", \"DialedNumber\", \"PortedDialedNumber\", \"Quantity\", \"CreateDate\", \"PortedPhoneNumberId\", \"VerifiedPhoneNumberId\", \"CouponId\" FROM public.\"ProductOrders\" " +
@@ -61,7 +61,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public async Task<bool> PostAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             // Set the creation date to now.
             CreateDate = DateTime.Now;
@@ -84,7 +84,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> PutAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"ProductOrders\" " +
@@ -115,7 +115,7 @@ namespace NumberSearch.DataAccess
                 return false;
             }
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"ProductOrders\" WHERE \"OrderId\" = @OrderId",
@@ -144,7 +144,7 @@ namespace NumberSearch.DataAccess
                 return false;
             }
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"ProductOrders\" WHERE \"ProductOrderId\" = @ProductOrderId",

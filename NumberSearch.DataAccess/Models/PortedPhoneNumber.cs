@@ -41,7 +41,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<IEnumerable<PortedPhoneNumber>> GetAllAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\", \"Wireless\", \"RequestStatus\", \"DateFirmOrderCommitment\", \"PortedPhoneNumberId\", \"ExternalPortRequestId\", \"Completed\", \"RawResponse\" " +
@@ -59,7 +59,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<IEnumerable<PortedPhoneNumber>> GetByOrderIdAsync(Guid orderId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\", \"Wireless\", \"RequestStatus\", \"DateFirmOrderCommitment\", \"PortedPhoneNumberId\", \"ExternalPortRequestId\", \"Completed\", \"RawResponse\" " +
@@ -78,7 +78,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<IEnumerable<PortedPhoneNumber>> GetByPortRequestIdAsync(Guid portRequestId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\", \"Wireless\", \"RequestStatus\", \"DateFirmOrderCommitment\", \"PortedPhoneNumberId\", \"ExternalPortRequestId\", \"Completed\", \"RawResponse\" " +
@@ -97,7 +97,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<IEnumerable<PortedPhoneNumber>> GetByExternalIdAsync(string externalPortRequestId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\", \"Wireless\", \"RequestStatus\", \"DateFirmOrderCommitment\", \"PortedPhoneNumberId\", \"ExternalPortRequestId\", \"Completed\", \"RawResponse\" " +
@@ -116,7 +116,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<IEnumerable<PortedPhoneNumber>> GetByDialedNumberAsync(string dialedNumber, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\", \"Wireless\", \"RequestStatus\", \"DateFirmOrderCommitment\", \"PortedPhoneNumberId\", \"ExternalPortRequestId\", \"Completed\", \"RawResponse\" " +
@@ -135,7 +135,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<PortedPhoneNumber> GetByIdAsync(Guid PortedPhoneNumberId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryFirstOrDefaultAsync<PortedPhoneNumber>("SELECT \"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\", \"Wireless\", \"RequestStatus\", \"DateFirmOrderCommitment\", \"PortedPhoneNumberId\", \"ExternalPortRequestId\", \"Completed\", \"RawResponse\" " +
@@ -148,7 +148,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> PutAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"PortedPhoneNumbers\" SET \"City\" = @City, \"State\" = @State, \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"PortRequestId\" = @PortRequestId, \"OrderId\" = @OrderId, \"Wireless\" = @Wireless, \"RequestStatus\" = @RequestStatus, \"DateFirmOrderCommitment\" = @DateFirmOrderCommitment, \"ExternalPortRequestId\" = @ExternalPortRequestId, \"Completed\" = @Completed, \"RawResponse\" = @RawResponse " +
@@ -182,7 +182,7 @@ namespace NumberSearch.DataAccess
             City = string.IsNullOrWhiteSpace(City) ? "Unknown" : City;
             State = string.IsNullOrWhiteSpace(State) ? "Unknown" : State;
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"PortedPhoneNumbers\"(\"PortedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"PortRequestId\", \"OrderId\", \"Wireless\", \"RequestStatus\", \"DateFirmOrderCommitment\", \"PortedPhoneNumberId\", \"ExternalPortRequestId\", \"Completed\", \"RawResponse\") " +
@@ -208,7 +208,7 @@ namespace NumberSearch.DataAccess
                 return false;
             }
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"PortedPhoneNumbers\" WHERE \"PortedPhoneNumberId\" = @PortedPhoneNumberId",

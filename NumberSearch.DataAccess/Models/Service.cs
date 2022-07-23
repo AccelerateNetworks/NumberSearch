@@ -23,7 +23,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<Service> GetAsync(Guid serviceId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryFirstOrDefaultAsync<Service>("SELECT \"ServiceId\", \"Name\", \"Price\", \"Description\" FROM public.\"Services\" " +
@@ -42,7 +42,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<IEnumerable<Service>> GetAsync(string name, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<Service>("SELECT \"ServiceId\", \"Name\", \"Price\", \"Description\" FROM public.\"Services\" " +
@@ -55,7 +55,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<IEnumerable<Service>> GetAllAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<Service>("SELECT \"ServiceId\", \"Name\", \"Price\", \"Description\" FROM public.\"Services\"")
@@ -71,7 +71,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public async Task<bool> PostAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"Services\"(\"Name\", \"Price\", \"Description\") " +

@@ -43,7 +43,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<IEnumerable<VerifiedPhoneNumber>> GetAllAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<VerifiedPhoneNumber>("SELECT \"VerifiedPhoneNumberId\", \"VerifiedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"IngestedFrom\", \"DateIngested\", \"OrderId\", \"Wireless\", \"NumberType\", \"LocalRoutingNumber\", \"OperatingCompanyNumber\", \"City\", \"LocalAccessTransportArea\", \"RateCenter\", \"Province\", \"Jurisdiction\", \"Local\", \"LocalExchangeCarrier\", \"LocalExchangeCarrierType\", \"ServiceProfileIdentifier\", \"Activation\", \"LIDBName\", \"LastPorted\", \"DateToExpire\" FROM public.\"VerifiedPhoneNumbers\"")
@@ -60,7 +60,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<IEnumerable<VerifiedPhoneNumber>> GetByOrderIdAsync(Guid orderId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<VerifiedPhoneNumber>("SELECT \"VerifiedPhoneNumberId\", \"VerifiedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"IngestedFrom\", \"DateIngested\", \"OrderId\", \"Wireless\", \"NumberType\", \"LocalRoutingNumber\", \"OperatingCompanyNumber\", \"City\", \"LocalAccessTransportArea\", \"RateCenter\", \"Province\", \"Jurisdiction\", \"Local\", \"LocalExchangeCarrier\", \"LocalExchangeCarrierType\", \"ServiceProfileIdentifier\", \"Activation\", \"LIDBName\", \"LastPorted\", \"DateToExpire\" FROM public.\"VerifiedPhoneNumbers\" " +
@@ -72,7 +72,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> PutAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"VerifiedPhoneNumbers\" SET \"NPA\" = @NPA, \"NXX\" = @NXX, \"XXXX\" = @XXXX, \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"OrderId\" = @OrderId, \"Wireless\" = @Wireless, \"NumberType\" = @NumberType, \"LocalRoutingNumber\" = @LocalRoutingNumber, \"OperatingCompanyNumber\" = @OperatingCompanyNumber, \"City\" = @City, \"LocalAccessTransportArea\" = @LocalAccessTransportArea, \"RateCenter\" = @RateCenter, \"Province\" = @Province, \"Jurisdiction\" = @Jurisdiction, \"Local\" = @Local, \"LocalExchangeCarrier\" = @LocalExchangeCarrier, \"LocalExchangeCarrierType\" = @LocalExchangeCarrierType, \"ServiceProfileIdentifier\" = @ServiceProfileIdentifier, \"Activation\" = @Activation, \"LIDBName\" = @LIDBName, \"LastPorted\" = @LastPorted, \"DateToExpire\" = @DateToExpire WHERE \"VerifiedPhoneNumberId\" = @VerifiedPhoneNumberId",
@@ -102,7 +102,7 @@ namespace NumberSearch.DataAccess
                 return false;
             }
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"VerifiedPhoneNumbers\" (\"VerifiedPhoneNumberId\", \"VerifiedDialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"IngestedFrom\", \"DateIngested\", \"OrderId\", \"Wireless\", \"NumberType\", \"LocalRoutingNumber\", \"OperatingCompanyNumber\", \"City\", \"LocalAccessTransportArea\", \"RateCenter\", \"Province\", \"Jurisdiction\", \"Local\", \"LocalExchangeCarrier\", \"LocalExchangeCarrierType\", \"ServiceProfileIdentifier\", \"Activation\", \"LIDBName\", \"LastPorted\", \"DateToExpire\") " +
@@ -128,7 +128,7 @@ namespace NumberSearch.DataAccess
                 return false;
             }
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"VerifiedPhoneNumbers\" WHERE \"VerifiedPhoneNumberId\" = @VerifiedPhoneNumberId",

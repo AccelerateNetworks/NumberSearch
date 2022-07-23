@@ -18,7 +18,7 @@ namespace NumberSearch.DataAccess.Models
         {
             var start = DateTime.Now;
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var ingest = await connection
                 .ExecuteAsync("DELETE FROM \"Logs\".\"Ingest\" " +

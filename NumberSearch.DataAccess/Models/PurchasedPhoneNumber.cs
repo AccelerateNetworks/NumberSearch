@@ -31,7 +31,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<IEnumerable<PurchasedPhoneNumber>> GetAllAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<PurchasedPhoneNumber>("SELECT \"PurchasedPhoneNumberId\", \"OrderId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"DateOrdered\", \"OrderResponse\", \"Completed\", \"NPA\", \"NXX\", \"XXXX\", \"NumberType\", \"PIN\" FROM public.\"PurchasedPhoneNumbers\"")
@@ -47,7 +47,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<PurchasedPhoneNumber> GetByDialedNumberAndOrderIdAsync(string dialedNumber, Guid orderId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryFirstOrDefaultAsync<PurchasedPhoneNumber>("SELECT \"PurchasedPhoneNumberId\", \"OrderId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"DateOrdered\", \"OrderResponse\", \"Completed\", \"NPA\", \"NXX\", \"XXXX\", \"NumberType\", \"PIN\" FROM public.\"PurchasedPhoneNumbers\" WHERE \"DialedNumber\" = @dialedNumber AND \"OrderId\" = @orderId ", new { dialedNumber, orderId })
@@ -58,7 +58,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<IEnumerable<PurchasedPhoneNumber>> GetByOrderIdAsync(Guid orderId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<PurchasedPhoneNumber>("SELECT \"PurchasedPhoneNumberId\", \"OrderId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"DateOrdered\", \"OrderResponse\", \"Completed\", \"NPA\", \"NXX\", \"XXXX\", \"NumberType\", \"PIN\" FROM public.\"PurchasedPhoneNumbers\" WHERE \"OrderId\" = @orderId ", new { orderId })
@@ -74,7 +74,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<PurchasedPhoneNumber> GetByDialedNumberAsync(string dialedNumber, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryFirstOrDefaultAsync<PurchasedPhoneNumber>("SELECT \"PurchasedPhoneNumberId\", \"OrderId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"DateOrdered\", \"OrderResponse\", \"Completed\", \"NPA\", \"NXX\", \"XXXX\", \"NumberType\", \"PIN\" FROM public.\"PurchasedPhoneNumbers\" WHERE \"DialedNumber\" = @dialedNumber", new { dialedNumber })
@@ -90,7 +90,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public async Task<bool> PostAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             // Set the creation date to now.
             DateOrdered = DateTime.Now;
@@ -117,7 +117,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public async Task<bool> PutAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"PurchasedPhoneNumbers\" SET \"OrderId\" = @OrderId, \"DialedNumber\" = @DialedNumber, \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"DateOrdered\" = @DateOrdered, \"OrderResponse\" = @OrderResponse, \"Completed\" = @Completed, \"NPA\" = @NPA, \"NXX\" = @NXX, \"XXXX\" = @XXXX, \"NumberType\"= @NumberType, \"PIN\" = @PIN " +
@@ -147,7 +147,7 @@ namespace NumberSearch.DataAccess
                 return false;
             }
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"PurchasedPhoneNumbers\" WHERE \"PurchasedPhoneNumberId\" = @PurchasedPhoneNumberId",

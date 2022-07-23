@@ -34,7 +34,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<Product> GetByIdAsync(Guid productId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryFirstOrDefaultAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\", \"Public\", \"QuantityAvailable\", \"SupportLink\", \"DisplayPriority\", \"VendorPartNumber\", \"Type\" FROM public.\"Products\" " +
@@ -53,7 +53,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<IEnumerable<Product>> GetAsync(string name, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\", \"Public\", \"QuantityAvailable\", \"SupportLink\", \"DisplayPriority\", \"VendorPartNumber\", \"Type\"  FROM public.\"Products\" " +
@@ -66,7 +66,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<IEnumerable<Product>> GetAllAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\", \"Public\", \"QuantityAvailable\", \"SupportLink\", \"DisplayPriority\", \"VendorPartNumber\", \"Type\" FROM public.\"Products\"")
@@ -82,7 +82,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public async Task<bool> PostAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"Products\"(\"Name\", \"Price\", \"Description\", \"Image\", \"Public\", \"QuantityAvailable\", \"SupportLink\", \"DisplayPriority\", \"VendorPartNumber\", \"Type\") " +
@@ -107,7 +107,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public async Task<bool> PutAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"Products\" " +
@@ -134,7 +134,7 @@ namespace NumberSearch.DataAccess
                 return false;
             }
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"Products\" WHERE \"ProductId\" = @ProductId",

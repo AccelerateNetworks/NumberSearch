@@ -30,7 +30,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<IEnumerable<OwnedPhoneNumber>> GetAllAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<OwnedPhoneNumber>("SELECT \"OwnedPhoneNumberId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"Active\", \"BillingClientId\", \"OwnedBy\", \"Notes\", \"SPID\", \"SPIDName\", \"LIDBCNAM\", \"EmergencyInformationId\" FROM public.\"OwnedPhoneNumbers\"")
@@ -46,7 +46,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<OwnedPhoneNumber> GetByDialedNumberAsync(string dialedNumber, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryFirstOrDefaultAsync<OwnedPhoneNumber>("SELECT \"OwnedPhoneNumberId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"Active\", \"BillingClientId\", \"OwnedBy\", \"Notes\", \"SPID\", \"SPIDName\", \"LIDBCNAM\", \"EmergencyInformationId\" FROM public.\"OwnedPhoneNumbers\" WHERE \"DialedNumber\" = @dialedNumber", new { dialedNumber })
@@ -62,7 +62,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public async Task<bool> PostAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             // Set the creation date to now.
             DateIngested = DateTime.Now;
@@ -89,7 +89,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public async Task<bool> PutAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             // Set the creation date to now.
             DateIngested = DateTime.Now;
@@ -121,7 +121,7 @@ namespace NumberSearch.DataAccess
                 return false;
             }
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"OwnedPhoneNumbers\" WHERE \"OwnedPhoneNumberId\" = @OwnedPhoneNumberId",

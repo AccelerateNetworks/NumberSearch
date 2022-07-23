@@ -43,7 +43,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<Order> GetByIdAsync(Guid orderId, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryFirstOrDefaultAsync<Order>("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\", \"BusinessName\", \"CustomerNotes\", \"BillingClientId\", \"BillingInvoiceId\", \"Quote\", \"BillingInvoiceReoccuringId\", \"SalesEmail\", \"BackgroundWorkCompleted\", \"Completed\", \"InstallDate\", \"UpfrontInvoiceLink\", \"ReoccuringInvoiceLink\", \"OnsiteInstallation\", \"AddressUnitType\", \"AddressUnitNumber\", \"UnparsedAddress\", \"MergedOrderId\", \"E911ServiceNumber\" FROM public.\"Orders\" " +
@@ -57,7 +57,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<IEnumerable<Order>> GetByEmailAsync(string email, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<Order>("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\", \"BusinessName\", \"CustomerNotes\", \"BillingClientId\", \"BillingInvoiceId\", \"Quote\", \"BillingInvoiceReoccuringId\", \"SalesEmail\", \"BackgroundWorkCompleted\", \"Completed\", \"InstallDate\", \"UpfrontInvoiceLink\", \"ReoccuringInvoiceLink\", \"OnsiteInstallation\", \"AddressUnitType\", \"AddressUnitNumber\", \"UnparsedAddress\", \"MergedOrderId\", \"E911ServiceNumber\" FROM public.\"Orders\" " +
@@ -71,7 +71,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<IEnumerable<Order>> GetAllAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<Order>
@@ -85,7 +85,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<IEnumerable<Order>> GetByBackGroundworkNotCompletedAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<Order>
@@ -100,7 +100,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> PostAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"Orders\"(\"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\", \"BusinessName\", \"CustomerNotes\", \"BillingClientId\", \"BillingInvoiceId\", \"Quote\", \"BillingInvoiceReoccuringId\", \"SalesEmail\", \"BackgroundWorkCompleted\", \"Completed\", \"InstallDate\", \"UpfrontInvoiceLink\", \"ReoccuringInvoiceLink\", \"OnsiteInstallation\", \"AddressUnitType\", \"AddressUnitNumber\", \"UnparsedAddress\", \"MergedOrderId\", \"E911ServiceNumber\" ) " +
@@ -120,7 +120,7 @@ namespace NumberSearch.DataAccess
 
         public async Task<bool> PutAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"Orders\" " +
@@ -147,7 +147,7 @@ namespace NumberSearch.DataAccess
                 return false;
             }
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"Orders\" WHERE \"OrderId\" = @OrderId",
