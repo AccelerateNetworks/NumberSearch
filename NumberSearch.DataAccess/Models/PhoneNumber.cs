@@ -40,7 +40,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<IEnumerable<PhoneNumber>> GetAllAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<PhoneNumber>("SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\", \"Purchased\" FROM public.\"PhoneNumbers\"")
@@ -56,7 +56,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<IEnumerable<string>> GetAllNumbersAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<string>("SELECT \"DialedNumber\" FROM public.\"PhoneNumbers\"")
@@ -72,7 +72,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<IEnumerable<PhoneNumber>> GetAllByAreaCodeAsync(int NPA, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<PhoneNumber>("SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\", \"Purchased\" FROM public.\"PhoneNumbers\" WHERE \"NPA\" = @NPA",
@@ -90,7 +90,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public static async Task<PhoneNumber> GetAsync(string dialedNumber, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QuerySingleOrDefaultAsync<PhoneNumber>("SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\", \"Purchased\" FROM public.\"PhoneNumbers\" " +
@@ -111,7 +111,7 @@ namespace NumberSearch.DataAccess
             // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
             query = query?.Trim()?.Replace('*', '_');
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<PhoneNumber>("SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\", \"Purchased\" FROM public.\"PhoneNumbers\" " +
@@ -134,7 +134,7 @@ namespace NumberSearch.DataAccess
             // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
             query = query?.Trim()?.Replace('*', '_');
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<PhoneNumber>("SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\", \"Purchased\" FROM public.\"PhoneNumbers\" " +
@@ -158,7 +158,7 @@ namespace NumberSearch.DataAccess
             // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
             query = query?.Trim()?.Replace('*', '_');
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<PhoneNumber>("SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\", \"Purchased\" FROM public.\"PhoneNumbers\" " +
@@ -182,7 +182,7 @@ namespace NumberSearch.DataAccess
             // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
             query = query?.Trim()?.Replace('*', '_');
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<PhoneNumber>("SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\", \"Purchased\" FROM public.\"PhoneNumbers\" " +
@@ -200,7 +200,7 @@ namespace NumberSearch.DataAccess
             // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
             query = query?.Trim()?.Replace('*', '_');
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<PhoneNumber>("SELECT \"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\", \"Purchased\" FROM public.\"PhoneNumbers\" " +
@@ -216,7 +216,7 @@ namespace NumberSearch.DataAccess
             // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
             query = query?.Trim()?.Replace('*', '_');
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryFirstOrDefaultAsync<int>("SELECT COUNT(*) FROM public.\"PhoneNumbers\" " +
@@ -232,7 +232,7 @@ namespace NumberSearch.DataAccess
             // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
             query = query?.Trim()?.Replace('*', '_');
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryFirstOrDefaultAsync<int>("SELECT COUNT(*) FROM public.\"PhoneNumbers\" " +
@@ -248,7 +248,7 @@ namespace NumberSearch.DataAccess
             // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
             query = query?.Trim()?.Replace('*', '_');
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryAsync<string>("SELECT DISTINCT \"City\" FROM public.\"PhoneNumbers\" " +
@@ -261,7 +261,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<int> GetCountByProvider(string ingestedFrom, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryFirstOrDefaultAsync<int>("SELECT COUNT(*) AS Count FROM public.\"PhoneNumbers\" WHERE \"IngestedFrom\" = @ingestedFrom",
@@ -273,7 +273,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<int> GetCountByNumberType(string numberType, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryFirstOrDefaultAsync<int>("SELECT COUNT(*) AS Count FROM public.\"PhoneNumbers\" WHERE \"NumberType\" = @numberType",
@@ -285,7 +285,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<int> GetCountByAreaCode(int NPA, string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryFirstOrDefaultAsync<int>("SELECT COUNT(*) AS Count FROM public.\"PhoneNumbers\" WHERE \"NPA\" = @NPA",
@@ -297,7 +297,7 @@ namespace NumberSearch.DataAccess
 
         public static async Task<int> GetTotal(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .QueryFirstOrDefaultAsync<int>("SELECT COUNT(*) AS Count FROM public.\"PhoneNumbers\"")
@@ -315,7 +315,7 @@ namespace NumberSearch.DataAccess
         {
             var start = DateTime.Now;
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"PhoneNumbers\" " +
@@ -339,7 +339,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public async Task<bool> DeleteAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"PhoneNumbers\" " +
@@ -367,7 +367,7 @@ namespace NumberSearch.DataAccess
         {
             var start = DateTime.Now;
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"PhoneNumbers\" " +
@@ -393,7 +393,7 @@ namespace NumberSearch.DataAccess
         {
             var start = DateTime.Now;
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"PhoneNumbers\" " +
@@ -424,7 +424,7 @@ namespace NumberSearch.DataAccess
                 return false;
             }
 
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("INSERT INTO public.\"PhoneNumbers\"(\"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\", \"Purchased\") " +
@@ -458,9 +458,9 @@ namespace NumberSearch.DataAccess
 
             try
             {
-                using var connection = new NpgsqlConnection(connectionString);
+                await using var connection = new NpgsqlConnection(connectionString);
                 await connection.OpenAsync();
-                using var transaction = await connection.BeginTransactionAsync();
+                await using var transaction = await connection.BeginTransactionAsync();
 
                 foreach (var number in numbers.ToArray())
                 {
@@ -542,7 +542,7 @@ namespace NumberSearch.DataAccess
         /// <returns></returns>
         public async Task<bool> PutAsync(string connectionString)
         {
-            using var connection = new NpgsqlConnection(connectionString);
+            await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"PhoneNumbers\" SET \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"NumberType\" = @NumberType, \"Purchased\" = @Purchased, \"City\" = @City, \"State\" = @State " +
