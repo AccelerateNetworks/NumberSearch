@@ -42,13 +42,17 @@ namespace NumberSearch.Mvc.Controllers
                 var client = new WriteAsClient("https://write.as/");
                 var allPosts = await client.GetAllPosts("acceleratenetworks");
 
+                // Clear out the table.
+                _ = await connection.ExecuteAsync("TRUNCATE \"WriteAsPosts\"");
+
+                // Ingest the current data.
                 foreach (var post in allPosts)
                 {
                     var result = await connection
-                    .ExecuteAsync("INSERT INTO public.\"WriteAsPosts\"( \"Id\", \"Slug\", \"Appearance\", \"Language\", \"Rtl\", \"CreateDate\", \"LastUpdatedDate\", \"Title\", \"Body\", \"Views\") " +
-                    "VALUES (@Id, @Slug, @Appearance, @Language, @Rtl, @CreateDate, @LastUpdatedDate, @Title, @Body, @Views)",
-                    new { post.Id, post.Slug, post.Appearance, post.Language, post.Rtl, post.CreateDate, post.LastUpdatedDate, post.Title, post.Body, post.Views })
-                    .ConfigureAwait(false);
+                .ExecuteAsync("INSERT INTO public.\"WriteAsPosts\"( \"Id\", \"Slug\", \"Appearance\", \"Language\", \"Rtl\", \"CreateDate\", \"LastUpdatedDate\", \"Title\", \"Body\", \"Views\") " +
+                "VALUES (@Id, @Slug, @Appearance, @Language, @Rtl, @CreateDate, @LastUpdatedDate, @Title, @Body, @Views)",
+                new { post.Id, post.Slug, post.Appearance, post.Language, post.Rtl, post.CreateDate, post.LastUpdatedDate, post.Title, post.Body, post.Views })
+                .ConfigureAwait(false);
                 }
 
                 posts = await connection
