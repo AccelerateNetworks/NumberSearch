@@ -22,7 +22,7 @@
         var suffix = '&maxSuggestions=5&countryCode=USA,CAN&f=pjson';
         fetch(`${route}${textBox.value}${suffix}`)
             .then(
-                function(response) {
+                function (response) {
                     if (response.status !== 200) {
                         console.log('Looks like there was a problem. Status Code: ' +
                             response.status);
@@ -30,7 +30,7 @@
                     }
 
                     // Examine the text in the response
-                    response.json().then(function(data) {
+                    response.json().then(function (data) {
                         var options = '';
                         var longestResult = 0;
                         if (data.suggestions != undefined) {
@@ -53,7 +53,7 @@
                     });
                 }
             )
-            .catch(function(err) {
+            .catch(function (err) {
                 console.log('Fetch Error :-S', err);
             });
     }
@@ -446,14 +446,32 @@
                             {
                                 if (coupon.Name.Contains("20"))
                                 {
-                                    var discountTo20 = numbers is not null && numbers.Any() ? numbers.Length * 20 : 
-                                                        purchased is not null && purchased.Any() ? purchased.Length * 20 : 0;
+                                    var discountTo20 = numbers is not null && numbers.Any() ? numbers.Length * 20 :
+                                    purchased is not null && purchased.Any() ? purchased.Length * 20 : 0;
                                     localTotal = numbersTotal - discountTo20;
                                     couponTotal += localTotal * -1;
                                 }
                                 else
                                 {
                                     localTotal = numbersTotal;
+                                    couponTotal += localTotal * -1;
+                                }
+                            }
+                            else if (coupon.Type == "Service")
+                            {
+                                var servicesToDiscount = services is not null && services.Any() ? services.Where(x => x.Name.Contains("5G")).ToArray() : null;
+                                if (servicesToDiscount is not null)
+                                {
+                                    var partnerDiscount = 0;
+                                    foreach (var service in servicesToDiscount)
+                                    {
+                                        var productOrderToDiscount = productOrders[service!.ServiceId.ToString()];
+                                        if (productOrderToDiscount is not null)
+                                        {
+                                            partnerDiscount += productOrderToDiscount.Quantity * 10;
+                                        }
+                                    }
+                                    localTotal = partnerDiscount;
                                     couponTotal += localTotal * -1;
                                 }
                             }

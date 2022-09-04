@@ -552,6 +552,30 @@ namespace NumberSearch.Mvc.Controllers
                                                     });
                                                 }
                                             }
+                                            else if (coupon.Type == "Service")
+                                            {
+                                                var servicesToDiscount = cart?.Services is not null && cart.Services.Any() ? cart?.Services?.Where(x => x.Name.Contains("5G")).ToArray() : null;
+                                                if (servicesToDiscount is not null)
+                                                {
+                                                    var partnerDiscount = 0;
+                                                    foreach (var service in servicesToDiscount)
+                                                    {
+                                                        var productOrderToDiscount = cart?.ProductOrders?.FirstOrDefault(x => x.ServiceId == service.ServiceId);
+                                                        if (productOrderToDiscount is not null)
+                                                        {
+                                                            partnerDiscount += productOrderToDiscount.Quantity * 10;
+                                                        }
+                                                    }
+                                                    totalCost -= partnerDiscount;
+                                                    reoccuringItems.Add(new Invoice_Items
+                                                    {
+                                                        product_key = coupon.Name,
+                                                        notes = coupon.Description,
+                                                        cost = partnerDiscount * -1,
+                                                        qty = 1
+                                                    });
+                                                }
+                                            }
                                             else
                                             {
                                                 onetimeItems.Add(new Invoice_Items
