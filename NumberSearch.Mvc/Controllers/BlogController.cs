@@ -26,7 +26,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [HttpGet]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
-        public async Task<IActionResult> IndexAsync(string query)
+        public async Task<IActionResult> IndexAsync(string query, bool refresh)
         {
             using var connection = new NpgsqlConnection(_postgresql);
 
@@ -36,7 +36,7 @@ namespace NumberSearch.Mvc.Controllers
                 "FROM public.\"WriteAsPosts\"")
                 .ConfigureAwait(false);
 
-            if (posts is null || !posts.Any())
+            if (posts is null || !posts.Any() || refresh)
             {
                 // If there are no post repopulate the database from the API.
                 var client = new WriteAsClient("https://write.as/");
