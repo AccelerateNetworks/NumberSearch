@@ -461,15 +461,15 @@ namespace NumberSearch.Ops
                     {
                         foreignId = item.VerifiedPhoneNumberId.ToString();
                     }
-                    else if (item.ProductId != System.Guid.Empty)
+                    else if (item.ProductId is not null && item.ProductId != System.Guid.Empty)
                     {
                         foreignId = item.ProductId.ToString();
                     }
-                    else if (item.ServiceId != System.Guid.Empty)
+                    else if (item.ServiceId is not null && item.ServiceId != System.Guid.Empty)
                     {
                         foreignId = item.ServiceId.ToString();
                     }
-                    else if (item.CouponId.HasValue)
+                    else if (item.CouponId is not null && item.CouponId.HasValue)
                     {
                         foreignId = item.CouponId.ToString();
                     }
