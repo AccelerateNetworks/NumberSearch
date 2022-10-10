@@ -48,11 +48,11 @@ namespace NumberSearch.Ingest
             return stats;
         }
 
-        public static async Task<IngestStatistics> PeerlessAsync(int[] areaCodes, string peerlessAPIKey, string connectionString)
+        public static async Task<IngestStatistics> PeerlessAsync(string[] ratecenters, string peerlessAPIKey, string connectionString)
         {
             var start = DateTime.Now;
 
-            var numbers = await Peerless.GetValidNumbersByNPAAsync(areaCodes, peerlessAPIKey).ConfigureAwait(false);
+            var numbers = await Peerless.GetValidNumbersByRateCenterAsync(ratecenters, peerlessAPIKey).ConfigureAwait(false);
 
             var locations = await Services.AssignRatecenterAndRegionAsync(numbers).ConfigureAwait(false);
             numbers = locations.ToArray();

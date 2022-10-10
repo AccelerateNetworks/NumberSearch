@@ -624,7 +624,6 @@ namespace NumberSearch.Ingest
                         }
                     }
 
-
                     // Ingest phone numbers from Peerless.
                     if (peerlessCycle != null && (peerlessCycle.Enabled || peerlessCycle.RunNow))
                     {
@@ -712,7 +711,7 @@ namespace NumberSearch.Ingest
 
                             // Ingest priority numbers from the TeleMessage.
                             Log.Information("[Peerless] Ingesting priority data from Peerless");
-                            var peerlessStats = await Provider.PeerlessAsync(AreaCode.Priority, peerlessApiKey, postgresSQL).ConfigureAwait(false);
+                            var peerlessStats = await Provider.PeerlessAsync(Peerless.PriorityRateCenters, peerlessApiKey, postgresSQL).ConfigureAwait(false);
 
                             var combined = new IngestStatistics
                             {

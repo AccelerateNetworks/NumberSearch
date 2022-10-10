@@ -5,7 +5,7 @@
 
         public static readonly int[] Priority = new int[]
         {
-            206,360,425,503,509,541,564
+            206,253,360,425,503,509,541,564
         };
     }
 }
