@@ -287,7 +287,7 @@ namespace NumberSearch.Ingest
                     {
                         Log.Error($"Faild to ingesting the Ratecenter and Region on {number.DialedNumber}");
                         Log.Error(ex.Message);
-                        Log.Error(ex.StackTrace);
+                        Log.Error(ex.StackTrace ?? "No stack trace found.");
                     }
                 }
             }

@@ -808,7 +808,7 @@ namespace NumberSearch.Ingest
                         catch (Exception ex)
                         {
                             Log.Error(ex.Message);
-                            Log.Error(ex.StackTrace);
+                            Log.Error(ex.StackTrace ?? "No stack trace found.");
                         }
                     }
 
@@ -820,10 +820,10 @@ namespace NumberSearch.Ingest
             }
             catch (Exception ex)
             {
-                Log.Fatal(ex?.Message);
-                Log.Fatal(ex?.StackTrace);
-                Log.Fatal(ex?.InnerException?.Message);
-                Log.Fatal(ex?.InnerException?.StackTrace);
+                Log.Fatal(ex.Message);
+                Log.Fatal(ex.StackTrace ?? "No stack trace found.");
+                Log.Fatal(ex.InnerException?.Message ?? "No inner exception message found.");
+                Log.Fatal(ex.InnerException?.StackTrace ?? "No inner exception stack trace found.");
             }
             finally
             {
@@ -846,7 +846,7 @@ namespace NumberSearch.Ingest
                 var checkSave = await notificationEmail.PostAsync(postgresSQL).ConfigureAwait(false);
 
                 // Save the log.
-                Log.CloseAndFlush();
+                await Log.CloseAndFlushAsync();
             }
         }
     }
