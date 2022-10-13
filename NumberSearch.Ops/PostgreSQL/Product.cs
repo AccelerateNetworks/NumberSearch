@@ -15,5 +15,6 @@ namespace AccelerateNetworks.Operations
         public int? DisplayPriority { get; set; }
         public string? VendorPartNumber { get; set; }
         public string? Type { get; set; }
+        public string? Tags { get; set; }
     }
 }

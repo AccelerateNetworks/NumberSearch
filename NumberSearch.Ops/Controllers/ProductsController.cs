@@ -61,7 +61,7 @@ public class ProductsController : Controller
     [Authorize]
     [ValidateAntiForgeryToken]
     [HttpPost("Products/Create")]
-    public async Task<IActionResult> Create([Bind("ProductId,Name,Price,Description,Image,Public,QuantityAvailable,SupportLink,DisplayPriority,VendorPartNumber,Type")] Product product)
+    public async Task<IActionResult> Create([Bind("ProductId,Name,Price,Description,Image,Public,QuantityAvailable,SupportLink,DisplayPriority,VendorPartNumber,Type,Tags")] Product product)
     {
         if (ModelState.IsValid)
         {
@@ -97,7 +97,7 @@ public class ProductsController : Controller
     [Authorize]
     [ValidateAntiForgeryToken]
     [HttpPost("/Products/Edit/{id}")]
-    public async Task<IActionResult> Edit(Guid id, [Bind("ProductId,Name,Price,Description,Image,Public,QuantityAvailable,SupportLink,DisplayPriority,VendorPartNumber,Type")] Product product)
+    public async Task<IActionResult> Edit(Guid id, [Bind("ProductId,Name,Price,Description,Image,Public,QuantityAvailable,SupportLink,DisplayPriority,VendorPartNumber,Type,Tags")] Product product)
     {
         if (id != product.ProductId)
         {
