@@ -501,8 +501,8 @@ public class PortRequestsController : Controller
                     {
                         var teliResponse = await LnpCreate.GetAsync(portRequest.BillingPhone, portRequest.LocationType, portRequest.BusinessContact,
                             portRequest.BusinessName, portRequest.ResidentialFirstName, portRequest.ResidentialLastName, portRequest.ProviderAccountNumber,
-                            portRequest.Address, portRequest.Address2, portRequest.City, portRequest.State, portRequest.Zip, portRequest.PartialPort,
-                            portRequest.PartialPortDescription, portRequest.WirelessNumber, portRequest.CallerId, portRequest.BillImagePath,
+                            portRequest.Address, portRequest.Address2, portRequest.City, portRequest.State, portRequest.Zip, true,
+                            $"Email Notification to support@acceleratenetworks.com 24 hours or more prior to FOC. {portRequest.PartialPortDescription}", portRequest.WirelessNumber, portRequest.CallerId, portRequest.BillImagePath,
                             tollfreeNumbers.Select(x => x.PortedDialedNumber).ToArray(), _teleToken).ConfigureAwait(false);
 
                         if (teliResponse is not null && !string.IsNullOrWhiteSpace(teliResponse.data.id))
@@ -540,7 +540,7 @@ public class PortRequestsController : Controller
                     {
                         Log.Fatal($"[PortRequest] Failed to submit port request to Teli.");
                         Log.Error(ex.Message);
-                        Log.Error(ex.StackTrace?.ToString());
+                        Log.Error(ex.StackTrace ?? "No stack trace was provided.");
 
                         numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == portRequest.OrderId).AsNoTracking().ToListAsync();
 
