@@ -658,7 +658,7 @@ namespace NumberSearch.Tests
         public async Task PeerlessGetPhoneNumbersByRateCenterTestAsync()
         {
             // Arrange
-            string ratecenter = "BAINBDG IS";
+            string ratecenter = "BREWSTER";
 
             // Act
             var results = await DidFind.GetByRateCenterAsync(ratecenter, _peerlessApiKey).ConfigureAwait(false);

@@ -30,6 +30,7 @@ namespace NumberSearch.DataAccess.Peerless
             string ratecenterParameter = $"?rate_center={ratecenter}";
             string apiKeyParameter = $"&api_key={apiKey}";
             string route = $"{baseUrl}{endpoint}{ratecenterParameter}{apiKeyParameter}";
+            var x = await route.GetStringAsync();
             return await route.GetJsonAsync<IEnumerable<DidFind>>().ConfigureAwait(false);
         }
 
