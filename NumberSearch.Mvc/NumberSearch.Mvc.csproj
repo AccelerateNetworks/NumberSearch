@@ -228,6 +228,9 @@
 		<Content Update="wwwroot\images\scaled\GDS3710-400.webp">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Update="wwwroot\images\scaled\GRP-Wallmount-400.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Update="wwwroot\images\scaled\GRP2612front-400.jpg">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
@@ -275,6 +278,9 @@
 		</Content>
 		<Content Update="wwwroot\images\scaled\gsba-logo.webp">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\scaled\GUV3050-400.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\gxp2135_front-400.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -338,6 +344,12 @@
 		</Content>
 		<Content Update="wwwroot\images\scaled\SNO-PA1image1scaled.jpg">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\scaled\W53H-400.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\scaled\W53P-400.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\YEA-BLT60-400.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
