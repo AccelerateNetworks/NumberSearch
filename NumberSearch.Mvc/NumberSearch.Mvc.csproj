@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk.Web">
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net7.0</TargetFramework>
 		<GenerateProgramFile>true</GenerateProgramFile>
 		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
 		<UserSecretsId>328593cf-cbb9-48e9-8938-e38a44c8291d</UserSecretsId>
@@ -10,6 +10,7 @@
 		<ApplicationInsightsResourceId>/subscriptions/dd4e7397-befc-4010-84b2-7a6deffd4709/resourceGroups/NumberSearch.Mvc-1/providers/microsoft.insights/components/NumberSearch</ApplicationInsightsResourceId>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+		<TieredPGO>true</TieredPGO>
 	</PropertyGroup>
 	<ItemGroup>
 		<Compile Remove="Services\**" />
@@ -36,10 +37,10 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="NetEscapades.AspNetCore.SecurityHeaders" Version="0.17.0" />
-		<PackageReference Include="prometheus-net.AspNetCore" Version="6.0.0" />
+		<PackageReference Include="prometheus-net.AspNetCore" Version="7.0.0" />
 		<PackageReference Include="Serilog.AspNetCore" Version="6.0.1" />
 		<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-		<PackageReference Include="Serilog.Sinks.Postgresql.Alternative" Version="3.4.4" />
+		<PackageReference Include="Serilog.Sinks.Postgresql.Alternative" Version="3.4.5" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
 		<PackageReference Include="WriteAs.NET" Version="1.2.0" />
 	</ItemGroup>

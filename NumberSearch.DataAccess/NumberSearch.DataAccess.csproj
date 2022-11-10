@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net7.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 	</PropertyGroup>
@@ -15,10 +15,10 @@
 	<ItemGroup>
 		<PackageReference Include="Dapper" Version="2.0.123" />
 		<PackageReference Include="Flurl.Http" Version="3.2.4" />
-		<PackageReference Include="MailKit" Version="3.4.1" />
+		<PackageReference Include="MailKit" Version="3.4.2" />
 		<PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.17" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-		<PackageReference Include="MimeKit" Version="3.4.1" />
+		<PackageReference Include="MimeKit" Version="3.4.2" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 		<PackageReference Include="Npgsql" Version="6.0.7" />
 		<PackageReference Include="PhoneNumbersNA" Version="1.0.8" />
