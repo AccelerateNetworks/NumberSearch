@@ -13,13 +13,11 @@ namespace NumberSearch.Mvc.Controllers
     [ApiExplorerSettings(IgnoreApi = true)]
     public class NewClientController : Controller
     {
-        private readonly IConfiguration _configuration;
         private readonly string _postgresql;
 
         public NewClientController(IConfiguration config)
         {
-            _configuration = config;
-            _postgresql = _configuration.GetConnectionString("PostgresqlProd");
+            _postgresql = config.GetConnectionString("PostgresqlProd");
         }
 
         [HttpGet("Cart/Order/{orderId}/NewClient")]

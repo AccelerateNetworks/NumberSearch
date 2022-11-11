@@ -26,14 +26,21 @@ namespace NumberSearch.Ingest
             // Look for order updates in the billing system.
             try
             {
-                // Look for quotes that have been converted to invoices.
-                await UpdateQuoteStatusAsync(invoiceNinjaToken, postgresSQL);
+                if (!string.IsNullOrWhiteSpace(invoiceNinjaToken) && !string.IsNullOrWhiteSpace(postgresSQL))
+                {
+                    // Look for quotes that have been converted to invoices.
+                    await UpdateQuoteStatusAsync(invoiceNinjaToken, postgresSQL);
+                }
+                else
+                {
+                    throw new Exception("The invoice ninja credentials are null.");
+                }
             }
             catch (Exception ex)
             {
                 Log.Fatal("[OrdersUpdate] Failed to look find updates for order in the billing system.");
                 Log.Fatal(ex.Message);
-                Log.Fatal(ex.StackTrace);
+                Log.Fatal(ex?.StackTrace ?? "No stacktrace found.");
             }
 
             Log.Information("[OrdersUpdate] Completed the ingest of data from the billing system.");
@@ -62,9 +69,9 @@ namespace NumberSearch.Ingest
 
                 // If the order isn't complete and is not a quote add it to the reminders list.
                 if (order.Completed is not true
-                    && order.Quote is not true 
-                    && (portRequest is not null 
-                    || (productOrders is not null 
+                    && order.Quote is not true
+                    && (portRequest is not null
+                    || (productOrders is not null
                     && productOrders.Where(x => x.PortedPhoneNumberId.HasValue is true).Any())))
                 {
                     orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });

@@ -27,7 +27,7 @@ namespace NumberSearch.Ingest
         {
             Log.Information("[OwnedNumbers] Ingesting data from OwnedNumbers.");
 
-            var teleToken = Guid.Parse(configuration.GetConnectionString("TeleAPI"));
+            var teleToken = Guid.Parse(configuration.GetConnectionString("TeleAPI") ?? string.Empty);
             var postgresSQL = configuration.GetConnectionString("PostgresqlProd");
             var bulkVSKey = configuration.GetConnectionString("BulkVSAPIKEY");
             var bulkVSusername = configuration.GetConnectionString("BulkVSUsername");
@@ -45,14 +45,17 @@ namespace NumberSearch.Ingest
             // Ingest all owned numbers from the providers.
             try
             {
-                var firstComNumbers = await FirstPointComAsync(username, password).ConfigureAwait(false);
+                if (!string.IsNullOrWhiteSpace(username) && !string.IsNullOrWhiteSpace(password))
+                {
+                    var firstComNumbers = await FirstPointComAsync(username, password).ConfigureAwait(false);
+                    if (firstComNumbers != null)
+                    {
+                        allNumbers.AddRange(firstComNumbers);
+                    };
+                }
+
                 var teleMessageNumbers = await TeleMessageAsync(teleToken).ConfigureAwait(false);
                 var bulkVSNumbers = await TnRecord.GetOwnedAsync(bulkVSusername, bulkVSpassword).ConfigureAwait(false);
-
-                if (firstComNumbers != null)
-                {
-                    allNumbers.AddRange(firstComNumbers);
-                };
 
                 if (teleMessageNumbers != null)
                 {
@@ -68,7 +71,7 @@ namespace NumberSearch.Ingest
             {
                 Log.Fatal("[OwnedNumbers] Failed to retrive owned numbers.");
                 Log.Fatal(ex.Message);
-                Log.Fatal(ex.StackTrace);
+                Log.Fatal(ex?.StackTrace ?? "No stacktrace found.");
             }
 
             // Update emergency info

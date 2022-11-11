@@ -6,6 +6,7 @@
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+		<TieredPGO>true</TieredPGO>
 	</PropertyGroup>
 
 	<ItemGroup>
