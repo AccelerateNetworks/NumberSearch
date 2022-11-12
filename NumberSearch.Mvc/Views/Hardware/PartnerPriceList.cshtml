@@ -77,7 +77,10 @@
                                 @product.QuantityAvailable
                             </td>
                             <td>
-                                @product.Vendor?.Quantity
+                                @{
+                                    var quant = product.Vendor?.Quantity.ToString() ?? "Not Sold by TeleDynamics";
+                                }
+                                @quant
                             </td>
                             <td>
                                 @{

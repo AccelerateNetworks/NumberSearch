@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.TeleDynamics;
+using NumberSearch.Mvc.Models;
 
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,22 +13,22 @@ namespace NumberSearch.Mvc.Controllers
     [ApiExplorerSettings(IgnoreApi = true)]
     public class HardwareController : Controller
     {
-        private readonly IConfiguration configuration;
         private readonly string _teleDynamicsUsername;
         private readonly string _teleDynamicsPassword;
+        private readonly string _postgresql;
 
-        public HardwareController(IConfiguration config)
+        public HardwareController(MvcConfiguration mvcConfiguration)
         {
-            configuration = config;
-            _teleDynamicsUsername = config.GetConnectionString("TeleDynamicsUsername");
-            _teleDynamicsPassword = config.GetConnectionString("TeleDynamicsPassword");
+            _teleDynamicsUsername = mvcConfiguration.TeleDynamicsUsername;
+            _teleDynamicsPassword = mvcConfiguration.TeleDynamicsPassword;
+            _postgresql = mvcConfiguration.PostgresqlProd;
         }
 
         [HttpGet("Hardware")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> IndexAsync()
         {
-            var products = await Product.GetAllAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
 
             var accessories = products.Where(x => x.Type == "Accessory").ToArray();
 
@@ -41,7 +42,7 @@ namespace NumberSearch.Mvc.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> SpecificProductAsync(string product)
         {
-            var products = await Product.GetAsync(product, configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            var products = await Product.GetAsync(product, _postgresql).ConfigureAwait(false);
 
             // If no matching products are found bump them back to the list of all hardware.
             if (!products.Any())
@@ -62,18 +63,20 @@ namespace NumberSearch.Mvc.Controllers
         public async Task<IActionResult> PartnerPriceListAsync()
         {
 
-            var products = await Product.GetAllAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+            var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
+            // If this throws an exception we want it to break the page so a bug can get filed and we can investigate.
+            var lookup = await VendorProduct.GetAllAsync(_teleDynamicsUsername, _teleDynamicsPassword).ConfigureAwait(false);
 
             foreach (var product in products)
             {
                 if (!string.IsNullOrWhiteSpace(product?.VendorPartNumber))
                 {
-                    try
+                    var checkLookup = lookup.TryGetValue(product.VendorPartNumber, out var localVendor);
+                    if (checkLookup)
                     {
-                        var lookup = await VendorProduct.GetAsync(product.VendorPartNumber, _teleDynamicsUsername, _teleDynamicsPassword).ConfigureAwait(false);
-                        product.Vendor = lookup;
+                        product.Vendor = localVendor;
                     }
-                    catch
+                    else
                     {
 
                     }
