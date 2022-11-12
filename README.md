@@ -1,3 +1,5 @@
+[![CodeQL](https://github.com/AccelerateNetworks/NumberSearch/actions/workflows/codeql-analysis.yml/badge.svg?branch=master)](https://github.com/AccelerateNetworks/NumberSearch/actions/workflows/codeql-analysis.yml)
+[![.NET](https://github.com/AccelerateNetworks/NumberSearch/actions/workflows/dotnet.yml/badge.svg)](https://github.com/AccelerateNetworks/NumberSearch/actions/workflows/dotnet.yml)
 # NumberSearch
 NumberSearch is the public facing website for AccelerateNetworks a Seattle-area communication services company. ☎
 
