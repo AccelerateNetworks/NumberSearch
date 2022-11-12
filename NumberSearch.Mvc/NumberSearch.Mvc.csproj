@@ -448,9 +448,6 @@
 		<Content Update="wwwroot\js\site.js">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Update="wwwroot\lib\jquery\dist\jquery.min.js">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
 		<Content Update="wwwroot\qacc-logo.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
@@ -589,6 +586,9 @@
 	</ItemGroup>
 	<ItemGroup>
 		<WCFMetadata Include="Connected Services" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="wwwroot\lib\" />
 	</ItemGroup>
 	<ProjectExtensions>
 		<VisualStudio>
