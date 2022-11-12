@@ -109,60 +109,6 @@
 		<Content Update="wwwroot\js\site.js">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Update="wwwroot\lib\bootstrap\dist\js\bootstrap.js">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\lib\DataTables\DataTables-1.10.21\css\dataTables.bootstrap.css">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\lib\DataTables\DataTables-1.10.21\css\dataTables.bootstrap4.css">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\lib\DataTables\DataTables-1.10.21\css\dataTables.bootstrap4.min.css">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\lib\DataTables\DataTables-1.10.21\css\jquery.dataTables.css">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\lib\DataTables\DataTables-1.10.21\images\sort_asc.png">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\lib\DataTables\DataTables-1.10.21\images\sort_asc_disabled.png">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\lib\DataTables\DataTables-1.10.21\images\sort_both.png">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\lib\DataTables\DataTables-1.10.21\images\sort_desc.png">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\lib\DataTables\DataTables-1.10.21\images\sort_desc_disabled.png">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\lib\DataTables\DataTables-1.10.21\js\dataTables.bootstrap4.js">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\lib\DataTables\DataTables-1.10.21\js\dataTables.bootstrap4.min.js">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\lib\DataTables\DataTables-1.10.21\js\jquery.dataTables.js">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\lib\DataTables\DataTables-1.10.21\js\jquery.dataTables.min.js">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\lib\DataTables\datatables.css">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\lib\DataTables\datatables.js">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\lib\jquery\dist\jquery.js">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\lib\jquery\dist\jquery.min.js">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
 	</ItemGroup>
 
 </Project>
