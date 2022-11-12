@@ -73,7 +73,7 @@ namespace NumberSearch.Mvc.Controllers
                     }
                 }
 
-                var results = await Task.WhenAll(parsedNumbers.Select(x => InvestigateAsync(x)));
+                var results = await Task.WhenAll(parsedNumbers.Select(InvestigateAsync));
 
                 return View("Index", new LookupResults
                 {

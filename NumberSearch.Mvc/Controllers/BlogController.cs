@@ -21,7 +21,15 @@ namespace NumberSearch.Mvc.Controllers
         public BlogController(IConfiguration config)
         {
             configuration = config;
-            _postgresql = configuration.GetConnectionString("PostgresqlProd");
+            var postgres = configuration.GetConnectionString("PostgresqlProd");
+            if (string.IsNullOrWhiteSpace(postgres))
+            {
+                throw new System.Exception("The PostgresqlProd connection string is empty or null.");
+            }
+            else
+            {
+                _postgresql = postgres;
+            }
         }
 
         [HttpGet]

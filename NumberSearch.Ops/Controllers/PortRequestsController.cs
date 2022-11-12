@@ -499,15 +499,15 @@ public class PortRequestsController : Controller
                 {
                     try
                     {
-                        var teliResponse = await LnpCreate.GetAsync(portRequest.BillingPhone, portRequest.LocationType, portRequest.BusinessContact,
-                            portRequest.BusinessName, portRequest.ResidentialFirstName, portRequest.ResidentialLastName, portRequest.ProviderAccountNumber,
-                            portRequest.Address, portRequest.Address2, portRequest.City, portRequest.State, portRequest.Zip, true,
-                            $"Email Notification to support@acceleratenetworks.com 24 hours or more prior to FOC. {portRequest.PartialPortDescription}", portRequest.WirelessNumber, portRequest.CallerId, portRequest.BillImagePath,
+                        var teliResponse = await LnpCreate.GetAsync(portRequest?.BillingPhone ?? string.Empty, portRequest?.LocationType ?? string.Empty, portRequest?.BusinessContact ?? string.Empty,
+                            portRequest?.BusinessName ?? string.Empty, portRequest?.ResidentialFirstName ?? string.Empty, portRequest?.ResidentialLastName ?? string.Empty, portRequest?.ProviderAccountNumber ?? string.Empty,
+                            portRequest?.Address ?? string.Empty, portRequest?.Address2 ?? string.Empty, portRequest?.City ?? string.Empty, portRequest?.State ?? string.Empty, portRequest?.Zip ?? string.Empty, true,
+                            $"Email Notification to support@acceleratenetworks.com 24 hours or more prior to FOC. {portRequest?.PartialPortDescription ?? string.Empty}", portRequest?.WirelessNumber ?? false, portRequest?.CallerId ?? string.Empty, portRequest?.BillImagePath ?? string.Empty,
                             tollfreeNumbers.Select(x => x.PortedDialedNumber).ToArray(), _teleToken).ConfigureAwait(false);
 
-                        if (teliResponse is not null && !string.IsNullOrWhiteSpace(teliResponse.data.id))
+                        if (teliResponse is not null && portRequest is not null && !string.IsNullOrWhiteSpace(teliResponse.data.id))
                         {
-                            portRequest.TeliId = teliResponse.data.id;
+                            portRequest.TeliId = teliResponse?.data?.id ?? "No Id Provided by Teli";
                             portRequest.DateSubmitted = DateTime.Now;
                             portRequest.VendorSubmittedTo = "TeliMessage";
                             _context.PortRequests.Update(portRequest);
@@ -515,7 +515,8 @@ public class PortRequestsController : Controller
 
                             foreach (var number in tollfreeNumbers)
                             {
-                                number.ExternalPortRequestId = teliResponse.data.id;
+                                number.ExternalPortRequestId = teliResponse?.data?.id ?? "No Id Provided by Teli";
+                                number.IngestedFrom = "TeliMessage";
                                 number.RawResponse = JsonSerializer.Serialize(teliResponse);
                                 _context.PortedPhoneNumbers.Update(number);
                                 await _context.SaveChangesAsync();
@@ -624,7 +625,8 @@ public class PortRequestsController : Controller
                                             var updatedNumber = localNumbers.Where(x => $"1{x.PortedDialedNumber}" == number).FirstOrDefault();
                                             if (updatedNumber is not null)
                                             {
-                                                updatedNumber.ExternalPortRequestId = bulkResponse?.OrderId;
+                                                updatedNumber.ExternalPortRequestId = bulkResponse?.OrderId ?? "No Id Provided by BulkVS";
+                                                updatedNumber.IngestedFrom = "BulkVS";
                                                 updatedNumber.RawResponse = JsonSerializer.Serialize(bulkResponse);
                                                 _context.PortedPhoneNumbers.Update(updatedNumber);
                                                 await _context.SaveChangesAsync();

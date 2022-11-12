@@ -29,12 +29,12 @@ public class OrdersController : Controller
     private readonly numberSearchContext _context;
     private readonly UserManager<IdentityUser> _userManager;
 
-    public OrdersController(IConfiguration config,
+    public OrdersController(OpsConfig opsConfig,
         numberSearchContext context,
         UserManager<IdentityUser> userManager)
     {
-        _invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
-        _teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
+        _invoiceNinjaToken = opsConfig.InvoiceNinjaToken;
+        _teleToken = Guid.Parse(opsConfig.TeleAPI);
         _context = context;
         _userManager = userManager;
     }
@@ -61,7 +61,7 @@ public class OrdersController : Controller
             // Show only the relevant Orders to a Sales rep.
             if (User.IsInRole("Sales"))
             {
-                var user = await _userManager.FindByNameAsync(User.Identity?.Name);
+                var user = await _userManager.FindByNameAsync(User.Identity?.Name ?? string.Empty);
 
                 if (user is not null)
                 {

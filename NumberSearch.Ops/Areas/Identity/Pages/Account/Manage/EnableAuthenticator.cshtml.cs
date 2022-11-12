@@ -115,16 +115,16 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
         {
             // Load the authenticator key & QR code URI to display on the form
             var unformattedKey = await _userManager.GetAuthenticatorKeyAsync(user).ConfigureAwait(false);
-            if (string.IsNullOrEmpty(unformattedKey))
+            if (string.IsNullOrWhiteSpace(unformattedKey))
             {
                 await _userManager.ResetAuthenticatorKeyAsync(user).ConfigureAwait(false);
                 unformattedKey = await _userManager.GetAuthenticatorKeyAsync(user).ConfigureAwait(false);
             }
 
-            SharedKey = FormatKey(unformattedKey);
+            SharedKey = FormatKey(unformattedKey!);
 
             var email = await _userManager.GetEmailAsync(user).ConfigureAwait(false);
-            AuthenticatorUri = GenerateQrCodeUri(email, unformattedKey);
+            AuthenticatorUri = GenerateQrCodeUri(email!, unformattedKey);
         }
 
         private static string FormatKey(string unformattedKey)

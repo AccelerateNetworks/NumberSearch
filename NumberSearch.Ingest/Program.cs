@@ -21,22 +21,22 @@ namespace NumberSearch.Ingest
             .AddUserSecrets("328593cf-cbb9-48e9-8938-e38a44c8291d")
             .Build();
 
-            var teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
-            var postgresSQL = config.GetConnectionString("PostgresqlProd");
-            var bulkVSKey = config.GetConnectionString("BulkVSAPIKEY");
-            var bulkVSSecret = config.GetConnectionString("BulkVSAPISecret");
-            var bulkVSusername = config.GetConnectionString("BulkVSUsername");
-            var bulkVSpassword = config.GetConnectionString("BulkVSPassword");
-            var username = config.GetConnectionString("PComNetUsername");
-            var password = config.GetConnectionString("PComNetPassword");
-            var peerlessApiKey = config.GetConnectionString("PeerlessAPIKey");
-            var call48Username = config.GetConnectionString("Call48Username");
-            var call48Password = config.GetConnectionString("Call48Password");
-            var smtpUsername = config.GetConnectionString("SmtpUsername");
-            var smtpPassword = config.GetConnectionString("SmtpPassword");
-            var emailOrders = config.GetConnectionString("EmailOrders");
-            var emailDan = config.GetConnectionString("EmailDan");
-            var emailTom = config.GetConnectionString("EmailTom");
+            var teleToken = string.IsNullOrWhiteSpace(config.GetConnectionString("TeleAPI")) ? throw new Exception("TeliAPI config key is blank.") : Guid.Parse(config.GetConnectionString("TeleAPI") ?? string.Empty);
+            var postgresSQL = string.IsNullOrWhiteSpace(config.GetConnectionString("PostgresqlProd")) ? throw new Exception("PostgresqlProd config key is blank.") : config.GetConnectionString("PostgresqlProd");
+            var bulkVSKey = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSAPIKEY")) ? throw new Exception("BulkVSAPIKEY config key is blank.") : config.GetConnectionString("BulkVSAPIKEY");
+            var bulkVSSecret = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSAPISecret")) ? throw new Exception("BulkVSAPISecret config key is blank.") : config.GetConnectionString("BulkVSAPISecret");
+            var bulkVSusername = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSUsername")) ? throw new Exception("BulkVSUsername config key is blank.") : config.GetConnectionString("BulkVSUsername");
+            var bulkVSpassword = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSPassword")) ? throw new Exception("BulkVSPassword config key is blank.") : config.GetConnectionString("BulkVSPassword");
+            var username = string.IsNullOrWhiteSpace(config.GetConnectionString("PComNetUsername")) ? throw new Exception("PComNetUsername config key is blank.") : config.GetConnectionString("PComNetUsername");
+            var password = string.IsNullOrWhiteSpace(config.GetConnectionString("PComNetPassword")) ? throw new Exception("PComNetPassword config key is blank.") : config.GetConnectionString("PComNetPassword");
+            var peerlessApiKey = string.IsNullOrWhiteSpace(config.GetConnectionString("PeerlessAPIKey")) ? throw new Exception("PeerlessAPIKey config key is blank.") : config.GetConnectionString("PeerlessAPIKey");
+            var call48Username = string.IsNullOrWhiteSpace(config.GetConnectionString("Call48Username")) ? throw new Exception("Call48Username config key is blank.") : config.GetConnectionString("Call48Username");
+            var call48Password = string.IsNullOrWhiteSpace(config.GetConnectionString("Call48Password")) ? throw new Exception("Call48Password config key is blank.") : config.GetConnectionString("Call48Password");
+            var smtpUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("SmtpUsername")) ? throw new Exception("SmtpUsername config key is blank.") : config.GetConnectionString("SmtpUsername");
+            var smtpPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("SmtpPassword")) ? throw new Exception("SmtpPassword config key is blank.") : config.GetConnectionString("SmtpPassword");
+            var emailOrders = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailOrders")) ? throw new Exception("EmailOrders config key is blank.") : config.GetConnectionString("EmailOrders");
+            var emailDan = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailDan")) ? throw new Exception("EmailDan config key is blank.") : config.GetConnectionString("EmailDan");
+            var emailTom = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailTom")) ? throw new Exception("EmailTom config key is blank.") : config.GetConnectionString("EmailTom");
 
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()

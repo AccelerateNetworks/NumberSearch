@@ -5,6 +5,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using NumberSearch.Mvc.Models;
+
 using Prometheus;
 
 using Serilog;
@@ -36,6 +38,10 @@ namespace NumberSearch.Mvc
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            MvcConfiguration mvcConfiguration = new();
+            Configuration.Bind("ConnectionStrings", mvcConfiguration);
+            services.AddSingleton(mvcConfiguration);
+
             services.AddDistributedMemoryCache();
             services.AddResponseCaching();
 

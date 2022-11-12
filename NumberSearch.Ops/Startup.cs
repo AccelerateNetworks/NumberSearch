@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using NumberSearch.Ops.Services;
 using Microsoft.AspNetCore.Authorization;
 using Prometheus;
+using NumberSearch.Ops.Models;
 
 namespace NumberSearch.Ops
 {
@@ -44,6 +45,10 @@ namespace NumberSearch.Ops
             // Use the old timestamp handling. 
             // https://githubmemory.com/repo/npgsql/efcore.pg/issues/2000
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+            OpsConfig opsConfig = new();
+            Configuration.Bind("ConnectionStrings", opsConfig);
+            services.AddSingleton(opsConfig);
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(

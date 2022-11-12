@@ -355,13 +355,13 @@
                             <tr>
                                 <td>
                                     @{
-                                        if (Model?.PortRequest?.VendorSubmittedTo == "TeliMessage")
+                                        if (Model?.PortRequest?.VendorSubmittedTo == "TeliMessage" || number?.IngestedFrom == "TeliMessage" || number?.ExternalPortRequestId?.Length < 7)
                                         {
                                             <a href="https://control.teli.net/lnp/view?request_id=@number?.ExternalPortRequestId" target="_blank" rel="noopener noreferrer" class="btn btn-info text-light">
                                                 Teli @number?.ExternalPortRequestId
                                             </a>
                                         }
-                                        else if (Model?.PortRequest?.VendorSubmittedTo == "BulkVS")
+                                        else if (Model?.PortRequest?.VendorSubmittedTo == "BulkVS" || number?.IngestedFrom == "BulkVS")
                                         {
                                             <a href="https://portal.bulkvs.com/" target="_blank" rel="noopener noreferrer" class="btn btn-info text-light">
                                                 BulkVS @number?.ExternalPortRequestId
