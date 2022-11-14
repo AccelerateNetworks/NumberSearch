@@ -271,28 +271,58 @@ namespace NumberSearch.DataAccess
             return result;
         }
 
-        public static async Task<int> GetCountByNumberType(string numberType, string connectionString)
+        public class CountByProvider
         {
-            await using var connection = new NpgsqlConnection(connectionString);
-
-            var result = await connection
-                .QueryFirstOrDefaultAsync<int>("SELECT COUNT(*) AS Count FROM public.\"PhoneNumbers\" WHERE \"NumberType\" = @numberType",
-                new { numberType })
-                .ConfigureAwait(false);
-
-            return result;
+            public string IngestedFrom { get; set; } = string.Empty;
+            public int Count { get; set; } = 0;
         }
 
-        public static async Task<int> GetCountByAreaCode(int NPA, string connectionString)
+        public static async Task<CountByProvider[]> GetCountAllProvider(string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryFirstOrDefaultAsync<int>("SELECT COUNT(*) AS Count FROM public.\"PhoneNumbers\" WHERE \"NPA\" = @NPA",
-                new { NPA })
+                .QueryAsync<CountByProvider>("SELECT \"IngestedFrom\", COUNT(*) AS Count FROM public.\"PhoneNumbers\" GROUP BY \"IngestedFrom\"", new { })
                 .ConfigureAwait(false);
 
-            return result;
+            return result.ToArray();
+        }
+
+        public class CountNumberType
+        {
+            public string NumberType { get; set; } = string.Empty;
+            public int Count { get; set; } = 0;
+        }
+
+        public static async Task<CountNumberType[]> GetCountAllNumberType(string connectionString)
+        {
+            await using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<CountNumberType>("SELECT \"NumberType\", COUNT(*) AS Count FROM public.\"PhoneNumbers\" GROUP BY \"NumberType\"",
+                new { })
+                .ConfigureAwait(false);
+
+            return result.ToArray();
+        }
+
+        public class CountNPA
+        {
+            public string NPA { get; set; } = string.Empty;
+            public int Count { get; set; } = 0;
+        }
+
+
+        public static async Task<CountNPA[]> GetCountAllAreaCode(string connectionString)
+        {
+            await using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<CountNPA>("SELECT \"NPA\", COUNT(*) AS Count FROM public.\"PhoneNumbers\" GROUP BY \"NPA\"",
+                new { })
+                .ConfigureAwait(false);
+
+            return result.ToArray();
         }
 
         public static async Task<int> GetTotal(string connectionString)

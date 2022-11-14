@@ -37,7 +37,7 @@ namespace NumberSearch.DataAccess
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<IngestStatistics>("SELECT \"Id\", \"NumbersRetrived\", \"IngestedNew\", \"FailedToIngest\", \"UpdatedExisting\", \"Unchanged\", \"Removed\", \"IngestedFrom\", \"StartDate\", \"EndDate\", \"Lock\", \"Priority\" FROM public.\"Ingests\" ORDER BY \"StartDate\" DESC LIMIT 100")
+                .QueryAsync<IngestStatistics>("SELECT \"Id\", \"NumbersRetrived\", \"IngestedNew\", \"FailedToIngest\", \"UpdatedExisting\", \"Unchanged\", \"Removed\", \"IngestedFrom\", \"StartDate\", \"EndDate\", \"Lock\", \"Priority\" FROM public.\"Ingests\" ORDER BY \"StartDate\" DESC LIMIT 200")
                 .ConfigureAwait(false);
 
             return result;

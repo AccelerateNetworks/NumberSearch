@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
-using NumberSearch.DataAccess.Models;
+using NumberSearch.Mvc.Models;
 
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,13 +11,11 @@ namespace NumberSearch.Mvc.Controllers
     [ApiExplorerSettings(IgnoreApi = true)]
     public class IngestController : Controller
     {
-        private readonly IConfiguration _configuration;
         private readonly string _postgresql;
 
-        public IngestController(IConfiguration config)
+        public IngestController(MvcConfiguration mvcConfiguration)
         {
-            _configuration = config;
-            _postgresql = _configuration.GetConnectionString("PostgresqlProd");
+            _postgresql = mvcConfiguration.PostgresqlProd;
         }
 
         [HttpGet]
@@ -27,34 +23,25 @@ namespace NumberSearch.Mvc.Controllers
         public async Task<IActionResult> IndexAsync()
         {
             var ingests = await IngestStatistics.GetAllAsync(_postgresql).ConfigureAwait(false);
-            var currentState = new List<(string, int)>();
-            foreach (var provider in ingests.Select(x => x.IngestedFrom).Distinct())
+            var currentState = await PhoneNumber.GetCountAllProvider(_postgresql).ConfigureAwait(false);
+            var numberTypeCounts = await PhoneNumber.GetCountAllNumberType(_postgresql).ConfigureAwait(false);
+            var numbersByAreaCode = await PhoneNumber.GetCountAllAreaCode(_postgresql).ConfigureAwait(false);
+            var total = 0;
+            foreach (var item in numberTypeCounts)
             {
-                var count = await PhoneNumber.GetCountByProvider(provider, _postgresql).ConfigureAwait(false);
-                currentState.Add((provider, count));
-            }
-
-            var executive = await PhoneNumber.GetCountByNumberType("Executive", _postgresql).ConfigureAwait(false);
-            var premium = await PhoneNumber.GetCountByNumberType("Premium", _postgresql).ConfigureAwait(false);
-            var standard = await PhoneNumber.GetCountByNumberType("Standard", _postgresql).ConfigureAwait(false);
-
-            var total = await PhoneNumber.GetTotal(_postgresql).ConfigureAwait(false);
-            var numbersByAreaCode = new List<(int, int)>();
-
-            foreach (var code in AreaCode.Priority)
-            {
-                numbersByAreaCode.Add((code, await PhoneNumber.GetCountByAreaCode(code, _postgresql).ConfigureAwait(false)));
+                total += item.Count;
             }
 
             return View("Index", new IngestResults
             {
                 Ingests = ingests,
                 CurrentState = currentState,
-                PriorityAreaCodes = numbersByAreaCode,
+                AreaCodes = numbersByAreaCode,
                 TotalPhoneNumbers = total,
-                TotalExecutiveNumbers = executive,
-                TotalPremiumNumbers = premium,
-                TotalStandardNumbers = standard
+                TotalExecutiveNumbers = numberTypeCounts.Where(x => x.NumberType == "Executive").Select(x => x.Count).FirstOrDefault(),
+                TotalPremiumNumbers = numberTypeCounts.Where(x => x.NumberType == "Premium").Select(x => x.Count).FirstOrDefault(),
+                TotalStandardNumbers = numberTypeCounts.Where(x => x.NumberType == "Standard").Select(x => x.Count).FirstOrDefault(),
+                TotalTollFreeNumbers = numberTypeCounts.Where(x => x.NumberType == "Tollfree").Select(x => x.Count).FirstOrDefault(),
             });
         }
     }

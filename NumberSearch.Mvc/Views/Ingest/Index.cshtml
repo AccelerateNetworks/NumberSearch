@@ -63,9 +63,9 @@
         }
     }
 
-    const numIngests = Array.from({
-        length: numbersRetrivedArr
-    }, (_, index) => index + 1);
+                    const numIngests = Array.from({
+            length: numbersRetrivedArr
+        }, (_, index) => index + 1);
 
     const numbersRetrivedObj = {
         name: "NumbersRetrived",
@@ -145,12 +145,12 @@
     <canvas id="myChart" width="400" height="200" class="pb-5"></canvas>
 
     @{
-        if (Model is not null && Model?.Ingests is not null && Model.Ingests.Any() && Model?.PriorityAreaCodes is not null)
+        if (Model is not null && Model?.Ingests is not null && Model.Ingests.Any() && Model?.AreaCodes is not null)
         {
             @*var total = $"{Model.Ingests.Count()} ingests have been performed!";
-                <div class="alert alert-success" role="alert">
-                @total
-                </div>*@
+    <div class="alert alert-success" role="alert">
+    @total
+    </div>*@
             var timeAgo = DateTime.Now - Model.Ingests.FirstOrDefault()?.StartDate;
             var last = $"Last ingest performed {timeAgo.GetValueOrDefault().Minutes} Minutes ago.";
             var oneHour = DateTime.Now - DateTime.Now.AddHours(-1);
@@ -167,22 +167,22 @@
                 </div>
             }
 
-            var statusSymbol = "✔️";
-            foreach (var code in Model.PriorityAreaCodes)
-            {
-                if (code.Item2 < 10)
-                {
-                    statusSymbol = "⚠️";
-                }
-                else if (code.Item2 < 1000)
-                {
-                    statusSymbol = "❌";
-                }
-            }
+            //var statusSymbol = "✔️";
+            //foreach (var code in Model.AreaCodes)
+            //{
+            //    if (code.Count < 10)
+            //    {
+            //        statusSymbol = "⚠️";
+            //    }
+            //    else if (code.Count < 1000)
+            //    {
+            //        statusSymbol = "❌";
+            //    }
+            //}
 
-            <h1 class="display-4 p-2">
-                Provider Health @statusSymbol
-            </h1>
+            //<h1 class="display-4 p-2">
+            //    Provider Health @statusSymbol
+            //</h1>
             <h4>@Model?.TotalPhoneNumbers Phone Numbers Total</h4>
             <div class="table-responsive shadow-sm mt-3">
                 <table class="table table-hover table-striped table-borderless">
@@ -253,6 +253,20 @@
                                 @standardPortion!.Value.ToString("F") %
                             </td>
                         </tr>
+                        <tr>
+                            <td>
+                                Tollfree
+                            </td>
+                            <td>
+                                @Model?.TotalTollFreeNumbers
+                            </td>
+                            <td>
+                                @{
+                                    var tollfreePortion = Model?.TotalTollFreeNumbers * 100M / Model?.TotalPhoneNumbers;
+                                }
+                                @tollfreePortion!.Value.ToString("F") %
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -260,13 +274,13 @@
                 <table class="table table-hover table-striped table-borderless">
                     <thead>
                         <tr>
-                            <th>Priority Area Codes</th>
-                            @if (Model?.PriorityAreaCodes is not null)
+                            <th>Area Code</th>
+                            @if (Model?.AreaCodes is not null)
                             {
-                                foreach (var code in Model.PriorityAreaCodes)
+                                foreach (var code in Model.AreaCodes)
                                 {
                                     <th>
-                                        (@code.Item1)
+                                        (@code.NPA)
                                     </th>
                                 }
                             }
@@ -275,12 +289,12 @@
                     <tbody>
                         <tr>
                             <td>Count</td>
-                            @if (Model?.PriorityAreaCodes is not null)
+                            @if (Model?.AreaCodes is not null)
                             {
-                                foreach (var code in Model.PriorityAreaCodes)
+                                foreach (var code in Model.AreaCodes)
                                 {
                                     <td>
-                                        @code.Item2
+                                        @code.Count
                                     </td>
                                 }
                             }
@@ -322,16 +336,16 @@
                             {
                                 var ingests = Model!.Ingests.Where(x => x.IngestedFrom == provider && x.EndDate >= oneDayAgo);
                                 var ingestsSeven = Model!.Ingests.Where(x => x.IngestedFrom == provider && x.EndDate >= DateTime.Now.AddDays(-7));
-                                var currentCount = Model!.CurrentState.Where(x => x.Item1 == provider);
+                                var currentCount = Model!.CurrentState.Where(x => x.IngestedFrom == provider).FirstOrDefault();
                                 <tr>
                                     <td>
                                         @provider
                                     </td>
                                     <td>
                                         @{
-                                            var portion = currentCount.FirstOrDefault().Item2 * 100M / Model?.TotalPhoneNumbers;
+                                            var portion = currentCount?.Count ?? 0 * 100M / Model?.TotalPhoneNumbers;
                                         }
-                                        @currentCount.FirstOrDefault().Item2
+                                        @currentCount?.Count
                                         (@portion!.Value.ToString("F") %)
                                     </td>
                                     <td>

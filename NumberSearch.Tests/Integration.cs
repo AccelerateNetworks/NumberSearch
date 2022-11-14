@@ -1,6 +1,8 @@
 
 using Microsoft.Extensions.Configuration;
 
+using NuGet.Frameworks;
+
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Call48;
@@ -1451,6 +1453,19 @@ namespace NumberSearch.Tests
 
             Assert.True(result > 0);
             output.WriteLine(result.ToString());
+        }
+
+        [Fact]
+        public async Task GetCountAllPhoneNumbersAsync()
+        {
+            var result = await PhoneNumber.GetCountAllProvider(postgresql);
+
+            Assert.NotNull(result);
+            Assert.NotEmpty(result);
+            foreach (var item in result)
+            {
+                output.WriteLine(JsonSerializer.Serialize(item));
+            }
         }
 
         [Fact]
