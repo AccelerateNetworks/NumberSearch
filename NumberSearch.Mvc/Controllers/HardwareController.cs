@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Configuration;
+
+using NodaTime;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.TeleDynamics;
@@ -60,6 +63,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [HttpGet("Hardware/PartnerPriceList")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
+        [OutputCache(Duration = 30)]
         public async Task<IActionResult> PartnerPriceListAsync()
         {
 

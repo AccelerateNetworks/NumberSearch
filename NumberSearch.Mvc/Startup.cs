@@ -44,6 +44,7 @@ namespace NumberSearch.Mvc
 
             services.AddDistributedMemoryCache();
             services.AddResponseCaching();
+            services.AddOutputCache();
 
             services.AddSession(options =>
             {
@@ -115,8 +116,7 @@ namespace NumberSearch.Mvc
             // https://github.com/prometheus-net/prometheus-net
             app.UseHttpMetrics();
             app.UseResponseCaching();
-
-            // using Microsoft.AspNetCore.Http;
+            app.UseOutputCache();
 
             app.Use(async (context, next) =>
             {

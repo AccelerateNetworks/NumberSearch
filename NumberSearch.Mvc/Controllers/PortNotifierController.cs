@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
+using NumberSearch.Mvc.Models;
 
 using Serilog;
 
@@ -14,13 +14,11 @@ namespace NumberSearch.Mvc.Controllers
     [ApiExplorerSettings(IgnoreApi = true)]
     public class PortNotifierController : Controller
     {
-        private readonly IConfiguration configuration;
         private readonly string _bulkVSAPIKey;
 
-        public PortNotifierController(IConfiguration config)
+        public PortNotifierController(MvcConfiguration mvcConfiguration)
         {
-            configuration = config;
-            _bulkVSAPIKey = config.GetConnectionString("BulkVSAPIKEY");
+            _bulkVSAPIKey = mvcConfiguration.BulkVSAPIKEY;
         }
 
         [HttpGet]
@@ -122,7 +120,7 @@ namespace NumberSearch.Mvc.Controllers
 
                     Log.Error($"[VerifedNumber] Failed to find number {phoneNumber.DialedNumber}");
                     Log.Error(ex.Message);
-                    Log.Error(ex.InnerException?.Message);
+                    Log.Error(ex.InnerException?.Message ?? "No innner exception found.");
 
                     return View("Index", new PortNotifierResults
                     {

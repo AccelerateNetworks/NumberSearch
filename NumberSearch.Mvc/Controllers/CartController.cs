@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.InvoiceNinja;
+using NumberSearch.Mvc.Models;
 
 using Serilog;
 
@@ -22,17 +23,15 @@ namespace NumberSearch.Mvc.Controllers
     [ApiExplorerSettings(IgnoreApi = true)]
     public class CartController : Controller
     {
-        private readonly IConfiguration _configuration;
         private readonly string _postgresql;
         private readonly string _invoiceNinjaToken;
         private readonly string _emailOrders;
 
-        public CartController(IConfiguration config)
+        public CartController(MvcConfiguration mvcConfiguration)
         {
-            _configuration = config;
-            _postgresql = _configuration.GetConnectionString("PostgresqlProd");
-            _invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
-            _emailOrders = config.GetConnectionString("EmailOrders");
+            _postgresql = mvcConfiguration.PostgresqlProd;
+            _invoiceNinjaToken = mvcConfiguration.InvoiceNinjaToken;
+            _emailOrders = mvcConfiguration.EmailOrders;
         }
 
         [HttpGet]

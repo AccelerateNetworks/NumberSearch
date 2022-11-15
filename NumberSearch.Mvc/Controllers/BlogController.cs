@@ -1,9 +1,11 @@
 ﻿using Dapper;
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.OutputCaching;
 
 using Npgsql;
+
+using NumberSearch.Mvc.Models;
 
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,25 +17,16 @@ namespace NumberSearch.Mvc.Controllers
     [ApiExplorerSettings(IgnoreApi = true)]
     public class BlogController : Controller
     {
-        private readonly IConfiguration configuration;
         private readonly string _postgresql;
 
-        public BlogController(IConfiguration config)
+        public BlogController(MvcConfiguration mvcConfiguration)
         {
-            configuration = config;
-            var postgres = configuration.GetConnectionString("PostgresqlProd");
-            if (string.IsNullOrWhiteSpace(postgres))
-            {
-                throw new System.Exception("The PostgresqlProd connection string is empty or null.");
-            }
-            else
-            {
-                _postgresql = postgres;
-            }
+            _postgresql = mvcConfiguration.PostgresqlProd;
         }
 
         [HttpGet]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
+        [OutputCache(Duration = 30)]
         public async Task<IActionResult> IndexAsync(string query, bool refresh)
         {
             using var connection = new NpgsqlConnection(_postgresql);

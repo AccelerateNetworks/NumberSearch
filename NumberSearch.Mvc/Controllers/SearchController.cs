@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
+using NumberSearch.Mvc.Models;
 
 using System.Collections.Generic;
 using System.Linq;
@@ -12,13 +13,13 @@ namespace NumberSearch.Mvc.Controllers
     [ApiExplorerSettings(IgnoreApi = true)]
     public class SearchController : Controller
     {
-        private readonly IConfiguration configuration;
         private readonly string _postgresql;
+        private readonly MvcConfiguration _configuration;
 
-        public SearchController(IConfiguration config)
+        public SearchController(MvcConfiguration mvcConfiguration)
         {
-            configuration = config;
-            _postgresql = configuration.GetConnectionString("PostgresqlProd");
+            _configuration = mvcConfiguration;
+            _postgresql = mvcConfiguration.PostgresqlProd;
         }
 
         /// <summary>
@@ -125,7 +126,7 @@ namespace NumberSearch.Mvc.Controllers
             // The query is a complete phone number and we have no results, perhaps they mean to port it?
             if (cleanedQuery.Length == 10 && !cleanedQuery.Contains('*') && !results.Any())
             {
-                var lookup = new LookupController(configuration);
+                var lookup = new LookupController(_configuration);
 
                 var port = await lookup.VerifyPortablityAsync(cleanedQuery);
 

@@ -20,19 +20,17 @@ namespace NumberSearch.Mvc.Controllers
     [ApiExplorerSettings(IgnoreApi = true)]
     public class LookupController : Controller
     {
-        private readonly IConfiguration _configuration;
         private readonly Guid _teleToken;
         private readonly string _postgresql;
         private readonly string _bulkVSKey;
         private readonly string _callWithUsAPIkey;
 
-        public LookupController(IConfiguration config)
+        public LookupController(MvcConfiguration mvcConfiguration)
         {
-            _configuration = config;
-            _teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
-            _postgresql = _configuration.GetConnectionString("PostgresqlProd");
-            _bulkVSKey = config.GetConnectionString("BulkVSAPIKEY");
-            _callWithUsAPIkey = config.GetConnectionString("CallWithUsAPIKEY");
+            _teleToken = Guid.Parse(mvcConfiguration.TeleAPI);
+            _postgresql = mvcConfiguration.PostgresqlProd;
+            _bulkVSKey = mvcConfiguration.BulkVSAPIKEY;
+            _callWithUsAPIkey = mvcConfiguration.CallWithUsAPIKEY;
         }
 
         [HttpGet]

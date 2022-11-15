@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 
 using NumberSearch.DataAccess;
 using NumberSearch.Mvc.Models;
@@ -19,7 +20,8 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpGet]
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        [ResponseCache(Duration = 30, Location = ResponseCacheLocation.Any)]
+        [OutputCache(Duration = 30)]
         public async Task<IActionResult> IndexAsync()
         {
             var ingests = await IngestStatistics.GetAllAsync(_postgresql).ConfigureAwait(false);

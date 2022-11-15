@@ -15,9 +15,9 @@ namespace NumberSearch.Mvc.Controllers
     {
         private readonly string _postgresql;
 
-        public NewClientController(IConfiguration config)
+        public NewClientController(MvcConfiguration mvcConfiguration)
         {
-            _postgresql = config.GetConnectionString("PostgresqlProd");
+            _postgresql = mvcConfiguration.PostgresqlProd;
         }
 
         [HttpGet("Cart/Order/{orderId}/NewClient")]

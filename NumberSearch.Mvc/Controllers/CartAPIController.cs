@@ -9,6 +9,7 @@ using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Call48;
 using NumberSearch.DataAccess.Peerless;
 using NumberSearch.DataAccess.TeliMessage;
+using NumberSearch.Mvc.Models;
 
 using Serilog;
 
@@ -22,13 +23,13 @@ namespace NumberSearch.Mvc.Controllers
     [ApiController]
     public class CartAPIController : ControllerBase
     {
-        private readonly IConfiguration _configuration;
         private readonly string _postgresql;
+        private readonly MvcConfiguration _configuration;
 
-        public CartAPIController(IConfiguration config)
+        public CartAPIController(MvcConfiguration mvcConfiguration)
         {
-            _configuration = config;
-            _postgresql = _configuration.GetConnectionString("PostgresqlProd");
+            _postgresql = mvcConfiguration.PostgresqlProd;
+            _configuration = mvcConfiguration;
         }
 
         [HttpPost("Add/NewClient/{id}/ExtensionRegistration")]
@@ -578,7 +579,6 @@ namespace NumberSearch.Mvc.Controllers
     [ApiExplorerSettings(IgnoreApi = true)]
     public class CartServices : Controller
     {
-        private readonly IConfiguration _configuration;
         private readonly Guid _teleToken;
         private readonly string _postgresql;
         private readonly string _apiKey;
@@ -591,19 +591,18 @@ namespace NumberSearch.Mvc.Controllers
         private readonly string _peerlessApiKey;
         private readonly HttpContext _httpContext;
 
-        public CartServices(IConfiguration config, HttpContext httpContext)
+        public CartServices(MvcConfiguration mvcConfiguration, HttpContext httpContext)
         {
-            _configuration = config;
-            _teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
-            _postgresql = _configuration.GetConnectionString("PostgresqlProd");
-            _apiKey = config.GetConnectionString("BulkVSAPIKEY");
-            _bulkVSusername = config.GetConnectionString("BulkVSUsername");
-            _bulkVSpassword = config.GetConnectionString("BulkVSPassword");
-            _fpcusername = config.GetConnectionString("PComNetUsername");
-            _fpcpassword = config.GetConnectionString("PComNetPassword");
-            _call48Username = config.GetConnectionString("Call48Username");
-            _call48Password = config.GetConnectionString("Call48Password");
-            _peerlessApiKey = config.GetConnectionString("PeerlessAPIKey");
+            _teleToken = Guid.Parse(mvcConfiguration.TeleAPI);
+            _postgresql = mvcConfiguration.PostgresqlProd;
+            _apiKey = mvcConfiguration.BulkVSAPIKEY;
+            _bulkVSusername = mvcConfiguration.BulkVSUsername;
+            _bulkVSpassword = mvcConfiguration.BulkVSPassword;
+            _fpcusername = mvcConfiguration.PComNetUsername;
+            _fpcpassword = mvcConfiguration.PComNetPassword;
+            _call48Username = mvcConfiguration.Call48Username;
+            _call48Password = mvcConfiguration.Call48Password;
+            _peerlessApiKey = mvcConfiguration.PeerlessAPIKey;
             _httpContext = httpContext;
         }
 
@@ -691,7 +690,7 @@ namespace NumberSearch.Mvc.Controllers
                 var credentials = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
                 var results = await Search.GetLocalNumbersAsync(phoneNumber.State, string.Empty, phoneNumber.NPA.ToString(), phoneNumber.NXX.ToString(), credentials.data.token).ConfigureAwait(false);
                 var matchingNumber = results.data.result.Where(x => x?.did_number is not null && x.did_number.Replace("-", string.Empty) == phoneNumber.DialedNumber).FirstOrDefault();
-                
+
                 if (matchingNumber != null)
                 {
                     results.data.result.Where(x => x.number is not null && x.number.Replace("-", string.Empty) == phoneNumber.DialedNumber).FirstOrDefault();

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Logging;
 
 using System.Diagnostics;
@@ -17,6 +18,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [HttpGet]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
+        [OutputCache(Duration = 30)]
         public IActionResult Index()
         {
             return View();
@@ -25,6 +27,7 @@ namespace NumberSearch.Mvc.Controllers
         [HttpGet("Home/Privacy")]
         [HttpGet("Privacy")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
+        [OutputCache(Duration = 30)]
         public IActionResult Privacy()
         {
             return View();
@@ -40,6 +43,7 @@ namespace NumberSearch.Mvc.Controllers
         [HttpGet("Home/Support")]
         [HttpGet("Support")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
+        [OutputCache(Duration = 30)]
         public IActionResult Support()
         {
             return View();
@@ -48,6 +52,7 @@ namespace NumberSearch.Mvc.Controllers
         [HttpGet("Home/About")]
         [HttpGet("About")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
+        [OutputCache(Duration = 30)]
         public IActionResult About()
         {
             return View();
@@ -56,6 +61,7 @@ namespace NumberSearch.Mvc.Controllers
         [HttpGet("Home/Features")]
         [HttpGet("Features")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
+        [OutputCache(Duration = 30)]
         public IActionResult Features()
         {
             return View();
@@ -63,6 +69,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [HttpGet("releases/android/RELEASE")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
+        [OutputCache(Duration = 30)]
         public IActionResult AndroidReleaseFile()
         {
             return View();

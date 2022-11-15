@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.TeliMessage;
+using NumberSearch.Mvc.Models;
 
 using Serilog;
 
@@ -20,19 +21,19 @@ namespace NumberSearch.Mvc.Controllers
     [ApiExplorerSettings(IgnoreApi = true)]
     public class PortingController : Controller
     {
-        private readonly IConfiguration configuration;
         private readonly string _postgresql;
         private readonly Guid _teleToken;
         private readonly string _bulkVSAPIKey;
         private readonly string _azureStorage;
+        private readonly string _SmtpUsername;
 
-        public PortingController(IConfiguration config)
+        public PortingController(MvcConfiguration mvcConfiguration)
         {
-            configuration = config;
-            _postgresql = configuration.GetConnectionString("PostgresqlProd");
-            _ = Guid.TryParse(configuration.GetConnectionString("TeleAPI"), out _teleToken);
-            _bulkVSAPIKey = config.GetConnectionString("BulkVSAPIKEY");
-            _azureStorage = config.GetConnectionString("AzureStorageAccount");
+            _postgresql = mvcConfiguration.PostgresqlProd;
+            _ = Guid.TryParse(mvcConfiguration.TeleAPI, out _teleToken);
+            _bulkVSAPIKey = mvcConfiguration.BulkVSAPIKEY;
+            _azureStorage = mvcConfiguration.AzureStorageAccount;
+            _SmtpUsername = mvcConfiguration.SmtpUsername;
         }
 
         [HttpGet]
@@ -363,7 +364,7 @@ namespace NumberSearch.Mvc.Controllers
                 var confirmationEmail = new Email
                 {
                     PrimaryEmailAddress = order.Email,
-                    CarbonCopy = configuration.GetConnectionString("SmtpUsername"),
+                    CarbonCopy = _SmtpUsername,
                     MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />
@@ -386,11 +387,11 @@ Accelerate Networks
                     Subject = $"Porting information added for {portedNumbers.FirstOrDefault()?.PortedDialedNumber}"
                 };
 
-                var checkSave = await confirmationEmail.PostAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                var checkSave = await confirmationEmail.PostAsync(_postgresql).ConfigureAwait(false);
 
                 // Trigger the backwork process to run again and send this email.
                 order.BackgroundWorkCompleted = false;
-                var checkOrder = await order.PutAsync(configuration.GetConnectionString("PostgresqlProd")).ConfigureAwait(false);
+                var checkOrder = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
                 // Reset the session and clear the Cart.
                 HttpContext.Session.Clear();
