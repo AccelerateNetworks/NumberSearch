@@ -12,6 +12,7 @@ using NumberSearch.DataAccess.Models;
 using NumberSearch.DataAccess.Peerless;
 using NumberSearch.DataAccess.TeleDynamics;
 using NumberSearch.DataAccess.TeliMessage;
+using NumberSearch.Mvc.Models;
 
 using ServiceReference;
 
@@ -41,7 +42,7 @@ namespace NumberSearch.Tests
         private readonly string _call48Password;
         private readonly string _callWithUsAPIkey;
         private readonly string _peerlessApiKey;
-        private readonly IConfiguration configuration;
+        private readonly MvcConfiguration _configuration;
 
         public Integration(ITestOutputHelper output)
         {
@@ -52,8 +53,9 @@ namespace NumberSearch.Tests
                 .AddJsonFile("appsettings.json")
                 .AddUserSecrets("328593cf-cbb9-48e9-8938-e38a44c8291d")
                 .Build();
-
-            configuration = config;
+            MvcConfiguration mvcConfiguration = new();
+            config.Bind("ConnectionStrings", mvcConfiguration);
+            _configuration = mvcConfiguration;
 
             pComNetCredentials = new Credentials
             {
@@ -396,7 +398,7 @@ namespace NumberSearch.Tests
             //string phoneNumber3 = "8886409088";
 
             // Act
-            var lookup = new NumberSearch.Mvc.Controllers.LookupController(configuration);
+            var lookup = new NumberSearch.Mvc.Controllers.LookupController(_configuration);
             var result = await lookup.VerifyPortablityAsync(phoneNumber1);
 
             // Assert        
