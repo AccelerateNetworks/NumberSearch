@@ -268,9 +268,9 @@ Accelerate Networks
                                 // All of the statuses for all of the numbers.
                                 var numberStatuses = teliStatus?.data?.numbers_data?.Select(x => x?.request_status);
 
-                                var canceled = numberStatuses?.Where(x => x == "canceled");
-                                var rejected = numberStatuses?.Where(x => x == "rejected");
-                                var completed = numberStatuses?.Where(x => x == "completed");
+                                var canceled = numberStatuses?.Where(x => x.ToLower().Contains("canceled"));
+                                var rejected = numberStatuses?.Where(x => x.ToLower().Contains("rejected"));
+                                var completed = numberStatuses?.Where(x => x.ToLower().Contains("completed"));
 
                                 // If all the numbers have been ported.
                                 if ((completed is not null) && (completed.Any()) && (completed?.Count() == numberStatuses?.Count()))
