@@ -34,5 +34,6 @@ namespace AccelerateNetworks.Operations
         public DateTime? DateUpdated { get; set; }
         public string? VendorSubmittedTo { get; set; }
         public DateTime? TargetDate { get; set; }
+        public string? BulkVSId { get; set; }
     }
 }

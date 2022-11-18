@@ -507,7 +507,7 @@ public class PortRequestsController : Controller
 
                         if (teliResponse is not null && portRequest is not null && !string.IsNullOrWhiteSpace(teliResponse.data.id))
                         {
-                            portRequest.TeliId = teliResponse?.data?.id ?? "No Id Provided by Teli";
+                            portRequest.TeliId = string.IsNullOrWhiteSpace(portRequest?.TeliId) ? teliResponse?.data?.id ?? "No Id Provided by Teli" : $"{portRequest?.TeliId}, {teliResponse?.data?.id}";
                             portRequest.DateSubmitted = DateTime.Now;
                             portRequest.VendorSubmittedTo = "TeliMessage";
                             _context.PortRequests.Update(portRequest);
@@ -617,6 +617,7 @@ public class PortRequestsController : Controller
                                     {
                                         portRequest.DateSubmitted = DateTime.Now;
                                         portRequest.VendorSubmittedTo = "BulkVS";
+                                        portRequest.BulkVSId = string.IsNullOrWhiteSpace(portRequest?.BulkVSId) ? bulkResponse.OrderId : $"{portRequest.BulkVSId}, {bulkResponse.OrderId}";
                                         _context.PortRequests.Update(portRequest);
                                         await _context.SaveChangesAsync();
 
@@ -679,7 +680,7 @@ public class PortRequestsController : Controller
                                 {
                                     Log.Error($"[PortRequest] Failed to submit port request to BulkVS.");
                                     Log.Error(ex.Message);
-                                    Log.Error(ex.StackTrace?.ToString());
+                                    Log.Error(ex.StackTrace?.ToString() ?? "No stack trace found.");
                                 }
                             }
                         }
@@ -724,6 +725,7 @@ public class PortRequestsController : Controller
                                 {
                                     portRequest.DateSubmitted = DateTime.Now;
                                     portRequest.VendorSubmittedTo = "BulkVS";
+                                    portRequest.BulkVSId = string.IsNullOrWhiteSpace(portRequest?.BulkVSId) ? bulkResponse.OrderId : $"{portRequest.BulkVSId}, {bulkResponse.OrderId}";
                                     _context.PortRequests.Update(portRequest);
                                     await _context.SaveChangesAsync();
 
