@@ -4,91 +4,81 @@
 @{
     ViewData["Title"] = "Log in";
 }
-<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 mt-4">
+<div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 mt-4">
     <div class="col mb-4">
         <form id="account" method="post">
-            <h1>@ViewData["Title"]</h1>
-            <h4>Use a local account to log in.</h4>
-            <hr />
+@*                     <h1>Sign in to Ops</h1>
+          <h4>Use a local account to log in.</h4>
+                   <hr />*@
             <div asp-validation-summary="All" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Input.Email"></label>
+            <div class="mb-3">
+                <label asp-for="Input.Email" class="form-label"></label>
                 <input asp-for="Input.Email" class="form-control" />
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
+                <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Register as a new user</a>
+
             </div>
-            <div class="form-group">
-                <label asp-for="Input.Password"></label>
+            <div class="mb-3">
+                <label asp-for="Input.Password" class="form-label"></label>
                 <input asp-for="Input.Password" class="form-control" />
                 <span asp-validation-for="Input.Password" class="text-danger"></span>
+                <a id="forgot-password" asp-page="./ForgotPassword">Forgot your password?</a>
             </div>
-            <div class="form-group">
-                <div class="checkbox">
-                    <label asp-for="Input.RememberMe">
-                        <input asp-for="Input.RememberMe" />
-                        @Html.DisplayNameFor(m => m.Input.RememberMe)
-                    </label>
-                </div>
+            <div class="mb-3 form-check">
+                <label asp-for="Input.RememberMe" class="form-check-label">
+                    <input asp-for="Input.RememberMe" class="form-check-input" />
+                    @Html.DisplayNameFor(m => m.Input.RememberMe)
+                </label>
             </div>
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary">Log in</button>
-            </div>
-            <div class="form-group">
-                <p>
-                    <a id="forgot-password" asp-page="./ForgotPassword">Forgot your password?</a>
-                </p>
-                <p>
-                    @*Prevent new registrations*@
-                    <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Register as a new user</a>
-                </p>
-                <p>
-                    @*<a id="resend-confirmation" asp-page="./ResendEmailConfirmation">Resend email confirmation</a>*@
-                </p>
+            @*<a id="resend-confirmation" asp-page="./ResendEmailConfirmation">Resend email confirmation</a>*@
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Sign in</button>
             </div>
         </form>
     </div>
-    <div class="col mb-4">
+    <div class="col mb-4 d-none d-md-block">
         <a href="https://billing.acceleratenetworks.com" target="_blank" rel="noreferrer">
             <div class="card bg-light text-white shadow">
                 <img src="/images/scaled/billing.acceleratenetworks.com_login(iPhone X).webp" class="card-img" alt="...">
             </div>
         </a>
     </div>
-    <div class="col mb-4">
+    <div class="col mb-4 d-none d-md-block">
         <a href="https://acceleratenetworks.com/Lookup" target="_blank" rel="noreferrer">
             <div class="card bg-light text-white shadow">
                 <img src="/images/scaled/acceleratenetworks.com_Lookup(iPhone X).webp" class="card-img" alt="...">
             </div>
         </a>
     </div>
-    <div class="col mb-4">
+    <div class="col mb-4 d-none d-md-block">
         <a href="https://acceleratenetworks.sip.callpipe.com" target="_blank" rel="noreferrer">
             <div class="card bg-light text-white shadow">
                 <img src="/images/scaled/acceleratenetworks.sip.callpipe.com_(iPhone X).webp" class="card-img" alt="...">
             </div>
         </a>
     </div>
-    <div class="col mb-4">
+    <div class="col mb-4 d-none d-md-block">
         <a href="https://accelerate.voicecontrols.net/login" target="_blank" rel="noreferrer">
             <div class="card bg-light text-white shadow">
                 <img src="/images/scaled/accelerate.voicecontrols.net_login(iPhone X).webp" class="card-img" alt="...">
             </div>
         </a>
     </div>
-    <div class="col mb-4">
+    <div class="col mb-4 d-none d-md-block">
         <a href="https://acceleratenetworks.app.erxes.io" target="_blank" rel="noreferrer">
             <div class="card bg-light text-white shadow">
                 <img src="/images/scaled/acceleratenetworks.app.erxes.io_(iPhone X).webp" class="card-img" alt="...">
             </div>
         </a>
     </div>
-    <div class="col mb-4">
+    <div class="col mb-4 d-none d-md-block">
         <a href="https://mail.seattlemesh.net" target="_blank" rel="noreferrer">
             <div class="card bg-light text-white shadow">
                 <img src="/images/scaled/mail.seattlemesh.net_(iPhone X).webp" class="card-img" alt="...">
             </div>
         </a>
     </div>
-    <div class="col mb-4">
+    <div class="col mb-4 d-none d-md-block">
         <a href="https://cloud.aidanis.online/login" target="_blank" rel="noreferrer">
             <div class="card bg-light text-white shadow">
                 <img src="/images/scaled/cloud.aidanis.online_login(iPhone X).webp" class="card-img" alt="...">

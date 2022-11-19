@@ -32,29 +32,26 @@
                     if (order?.Order?.Completed is not true
                     && order?.Order?.DateSubmitted < DateTime.Now.AddDays(-14))
                     {
-                        nextStep = "⭕ Contact the Customer, the order is Stale";
+                        nextStep = "⭕ Stale";
                         pillColor = "warning";
                     }
                     else if (order?.Order?.Completed is not true && order?.Order?.Quote is not null && order.Order.Quote)
                     {
-                        nextStep = $"⭕ Pending Quote Approval";
+                        nextStep = $"⭕ Pending Quote";
                         pillColor = "warning";
                     }
 
                     <tr>
                         <td data-order="@order?.Order?.DateSubmitted.Ticks">
-                            <h3>@businessName <span class="text-muted">@order?.Order?.DateSubmitted</span></h3>
                             <h3>
-                                <span class="badge bg-@pillColor">
+                                <a href="/Home/Order/@order?.Order?.OrderId" class="link-dark">
+                                    @businessName
+                                </a>
+                            </h3>
+                            <p class="text-muted">
+                                @order?.Order?.DateSubmitted.ToString("MM/dd hh:mm tt") <span class="badge bg-@pillColor">
                                     @nextStep
                                 </span>
-                            </h3>
-                            <p>
-                                <div class="btn-group" role="group" aria-label="Basic example">
-                                    <a href="/Home/Order/@order?.Order?.OrderId" class="btn btn-danger">
-                                        Edit the Order
-                                    </a>
-                                </div>
                             </p>
                             <p>
                                 <div class="btn-group mt-2" role="group" aria-label="Basic example">
@@ -97,9 +94,7 @@
                             <p>
                                 @order?.Order?.FirstName
                                 @order?.Order?.LastName
-                            </p>
-                            <p>
-                                <a href="mailto:@order?.Order?.Email" class="btn btn-outline-success" target="_blank" rel="noopener noreferrer">
+                                <a href="mailto:@order?.Order?.Email" target="_blank" rel="noopener noreferrer">
                                     @order?.Order?.Email
                                 </a>
                             </p>
