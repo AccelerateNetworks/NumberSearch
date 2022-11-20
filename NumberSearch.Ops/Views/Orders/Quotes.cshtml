@@ -4,7 +4,7 @@
     ViewData["Title"] = "Quotes";
 }
 <h1 class="display-4 p-3">🛒 Quotes</h1>
-<div class="table-responsive">
+<div class="table-responsive d-none d-md-block">
     <table class="table table-striped table-borderless table-hover" id="table">
         <thead>
             <tr>
@@ -230,6 +230,102 @@
                                     <p>@order.Order.CustomerNotes</p>
                                 }
                             }
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+<div class="table-responsive d-md-none">
+    <table class="table table-striped table-borderless table-hover" id="table">
+        <tbody>
+            @if (Model?.Orders is not null)
+            {
+                foreach (var order in Model.Orders)
+                {
+                    var businessName = string.IsNullOrWhiteSpace(order.Order?.BusinessName) ? $"{order.Order?.FirstName} {order?.Order?.LastName}" : order.Order.BusinessName;
+                    var nextStep = "Next Step";
+                    var pillColor = "danger";
+                    // The order is completed, we're good.
+                    if (order?.Order?.Completed is true)
+                    {
+                        nextStep = "🎉 Done";
+                        pillColor = "success";
+                    }
+                    // The order is not completed, and is stale.
+                    else if (order?.Order?.Completed is not true && order?.Order?.DateSubmitted <
+                    DateTime.Now.AddDays(-14))
+                    {
+                        nextStep = "⭕ Stale";
+                        pillColor = "warning";
+                    }
+                    else if (order?.Order?.Completed is not true)
+                    {
+                        if (order?.Order?.Quote is not null && order.Order.Quote)
+                        {
+                            nextStep = $"⭕ Pending Quote";
+                            pillColor = "warning";
+                        }
+                        else if (order?.PortRequest is null && order?.ProductOrders is not null && order.ProductOrders.Where(x => x.PortedPhoneNumberId.HasValue is true).Any())
+                        {
+                            nextStep = $"⭕ Need Port";
+                            pillColor = "danger";
+                        }
+                        else if (order?.PortRequest is not null && order?.PortRequest.OrderId == order?.Order?.OrderId)
+                        {
+                            if (order?.PortRequest?.Completed is true)
+                            {
+                                if (order?.Order?.OnsiteInstallation is true)
+                                {
+                                    nextStep = $"⭕ Install {order?.Order?.InstallDate.GetValueOrDefault().ToShortDateString()}";
+                                    pillColor = "info";
+                                }
+                                else
+                                {
+                                    nextStep = $"⭕ Ship";
+                                    pillColor = "info";
+                                }
+                            }
+                            else
+                            {
+                                nextStep = "⭕ Port";
+                                pillColor = "danger";
+                            }
+                        }
+                        else
+                        {
+                            if (order?.Order?.OnsiteInstallation is true)
+                            {
+                                nextStep = $"⭕ Install";
+                                pillColor = "info";
+                            }
+                            else
+                            {
+                                nextStep = $"⭕ Ship";
+                                pillColor = "info";
+                            }
+                        }
+                    }
+                    <tr>
+                        <td data-order="@order?.Order?.DateSubmitted.Ticks">
+                            <h3>
+                                <a href="/Home/Order/@order?.Order?.OrderId" class="link-dark">
+                                    @businessName
+                                </a>
+                            </h3>
+                            <p class="text-muted">
+                                @order?.Order?.DateSubmitted.ToString("MM/dd hh:mm tt") <span class="badge bg-@pillColor">
+                                    @nextStep
+                                </span>
+                            </p>
+                            <p>
+                                @order?.Order?.FirstName
+                                @order?.Order?.LastName
+                                <a href="mailto:@order?.Order?.Email" target="_blank" rel="noopener noreferrer">
+                                    @order?.Order?.Email
+                                </a>
+                            </p>
                         </td>
                     </tr>
                 }
