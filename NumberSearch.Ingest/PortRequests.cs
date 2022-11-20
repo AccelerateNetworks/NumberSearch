@@ -254,10 +254,10 @@ Accelerate Networks
 
             if (portRequests is not null && portRequests.Any())
             {
-                foreach (var request in portRequests.Where(x => (x?.VendorSubmittedTo == "TeliMessage" && x?.Completed is not true && x.DateSubmitted > DateTime.Now.AddYears(-1))
+                foreach (var request in portRequests.Where(x => (x?.VendorSubmittedTo == "TeliMessage" && !string.IsNullOrWhiteSpace(x?.TeliId) && x?.Completed is not true && x.DateSubmitted > DateTime.Now.AddYears(-1))
                 || (!string.IsNullOrWhiteSpace(x?.TeliId) && x?.Completed is not true && x.DateSubmitted > DateTime.Now.AddYears(-1))).ToArray())
                 {
-                    if (request is not null)
+                    if (request is not null && !string.IsNullOrWhiteSpace(request?.TeliId))
                     {
                         var ids = request.TeliId.Split(',');
 
