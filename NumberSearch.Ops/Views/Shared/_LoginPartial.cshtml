@@ -4,19 +4,13 @@
 
 @if (SignInManager.IsSignedIn(User))
 {
-    <ul class="nav">
-        <a class="nav-link d-none d-sm-block" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User?.Identity?.Name!</a>
-        <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Orders")">
-            <button type="submit" class="nav-link btn">Logout</button>
-        </form>
-    </ul>
-
+    <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User?.Identity?.Name!</a>
+    <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Orders")">
+        <button type="submit" class="nav-link text-dark btn">Logout</button>
+    </form>
 }
 else
 {
-    <ul class="nav">
-        <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">Register</a>
-        <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Login</a>
-    </ul>
-
+    <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
+    <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
 }

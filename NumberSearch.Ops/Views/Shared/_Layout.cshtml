@@ -9,137 +9,106 @@
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
-    <nav class="navbar navbar-dark sticky-top bg-light flex-md-nowrap p-0">
-        <a class="navbar-brand col-sm-3 col-md-2 mr-0 p-3" href="/">
-            <img src="~/images/scaled/accelerate.png" alt="Accelerate Networks" class="img-fluid" style="width: 10rem;">
-        </a>
-        <partial name="_LoginPartial" />
-    </nav>
-    <div class="container-fluid">
-        <div class="row">
-            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-white sidebar collapse">
-                <div class="sidebar-sticky pt-3">
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="/Identity/Account/Login">
-                                🗺️   Apps
-                            </a>
-                        </li>
+    <nav class="navbar sticky-top navbar-dark bg-light p-0">
+        <div class="container-fluid">
+            <a class="navbar-brand col-sm-3 col-md-2 mr-0 p-3" href="/">
+                <img src="~/images/scaled/accelerate.png" alt="Accelerate Networks" class="img-fluid" style="width: 10rem;">
+            </a>
+            <button class="navbar-toggler bg-dark" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+                <div class="offcanvas-header">
+                    <a class="offcanvas-title" id="offcanvasNavbarLabel">
+                        <img src="~/images/scaled/accelerate.png" alt="Accelerate Networks" class="img-fluid" style="width: 10rem;">
+                    </a>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                        <a class="nav-link text-dark" href="/Identity/Account/Login">
+                            🗺️   Apps
+                        </a>
                         @if (User.IsInRole("Support") || User.IsInRole("Sales"))
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" " href="/Home/Order">
-                                    🛒   Orders
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="/Home/Quotes">
-                                    ✨   Quotes
-                                </a>
-                            </li>
+                            <a class="nav-link text-dark" " href="/Home/Order">
+                                🛒   Orders
+                            </a>
+                            <a class="nav-link text-dark" href="/Home/Quotes">
+                                ✨   Quotes
+                            </a>
                         }
                         @if (User.IsInRole("Support"))
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="/Home/TaxRates">
-                                    ⚖️   Tax Rates
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="https://acceleratenetworks.com/Hardware/PartnerPriceList" target="_blank">
-                                    🎅   Partner Price List
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="/Home/Emails/">
-                                    📧    Sent Emails
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="/Home/NumberOrders/">
-                                    🧾   Purchased Numbers
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="/Home/PortRequests/">
-                                    🚢   Port Requests
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="/Home/OwnedNumbers/">
-                                    🏢   Owned Numbers
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="/Home/EmergencyInformation">
-                                    🚨   Emergency Information
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="/Products">
-                                    🎁 Hardware
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="/Carriers">
-                                    📯   Carriers
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="/Lookups">
-                                    🥠   Lookups
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="/Numbers/">
-                                    ☎️   Available Numbers
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="/ProductShipments">
-                                    📦 Shipments
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="/Home/Coupons">
-                                    ✨ Coupons
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="/Home/NumbersToVerify/">
-                                    🛎️   Numbers To Verify
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="/ProductItems">
-                                    📦 Product Items
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="/Home/Ingests/">
-                                    💨   Ingest Configuration
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="/Users">
-                                    🧑‍🤝‍🧑   Users
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="/Roles">
-                                    👔   Roles
-                                </a>
-                            </li>
+                            <a class="nav-link text-dark" href="/Home/TaxRates">
+                                ⚖️   Tax Rates
+                            </a>
+                            <a class="nav-link text-dark" href="https://acceleratenetworks.com/Hardware/PartnerPriceList" target="_blank">
+                                🎅   Partner Price List
+                            </a>
+                            <a class="nav-link text-dark" href="/Home/Emails/">
+                                📧    Sent Emails
+                            </a>
+                            <a class="nav-link text-dark" href="/Home/NumberOrders/">
+                                🧾   Purchased Numbers
+                            </a>
+                            <a class="nav-link text-dark" href="/Home/PortRequests/">
+                                🚢   Port Requests
+                            </a>
+                            <a class="nav-link text-dark" href="/Home/OwnedNumbers/">
+                                🏢   Owned Numbers
+                            </a>
+                            <a class="nav-link text-dark" href="/Home/EmergencyInformation">
+                                🚨   Emergency Information
+                            </a>
+                            <a class="nav-link text-dark" href="/Products">
+                                🎁 Hardware
+                            </a>
+                            <a class="nav-link text-dark" href="/Carriers">
+                                📯   Carriers
+                            </a>
+                            <a class="nav-link text-dark" href="/Lookups">
+                                🥠   Lookups
+                            </a>
+                            <a class="nav-link text-dark" href="/Numbers/">
+                                ☎️   Available Numbers
+                            </a>
+                            <a class="nav-link text-dark" href="/ProductShipments">
+                                📦 Shipments
+                            </a>
+                            <a class="nav-link text-dark" href="/Home/Coupons">
+                                ✨ Coupons
+                            </a>
+                            <a class="nav-link text-dark" href="/Home/NumbersToVerify/">
+                                🛎️   Numbers To Verify
+                            </a>
+                            <a class="nav-link text-dark" href="/ProductItems">
+                                📦 Product Items
+                            </a>
+                            <a class="nav-link text-dark" href="/Home/Ingests/">
+                                💨   Ingest Configuration
+                            </a>
+                            <a class="nav-link text-dark" href="/Users">
+                                🧑‍🤝‍🧑   Users
+                            </a>
+                            <a class="nav-link text-dark" href="/Roles">
+                                👔   Roles
+                            </a>
                         }
+                        <hr />
+                        <partial name="_LoginPartial" />
                     </ul>
                 </div>
-            </nav>
-            <main role="main" class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <div class="row">
+            <main role="main" class="col">
                 @RenderBody()
             </main>
         </div>
     </div>
-
     <script src="https://code.jquery.com/jquery-3.6.1.slim.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/dt-1.13.1/datatables.min.css" />
