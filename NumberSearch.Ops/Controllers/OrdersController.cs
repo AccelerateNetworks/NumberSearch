@@ -68,6 +68,7 @@ public class OrdersController : Controller
                     orders = await _context.Orders
                         .Where(x => (x.Quote != true) && (x.SalesEmail == user.Email))
                         .OrderByDescending(x => x.DateSubmitted)
+                        .Take(100)
                         .AsNoTracking()
                         .ToListAsync();
                 }
@@ -76,6 +77,7 @@ public class OrdersController : Controller
                     orders = await _context.Orders
                         .Where(x => x.Quote != true)
                         .OrderByDescending(x => x.DateSubmitted)
+                        .Take(100)
                         .AsNoTracking()
                         .ToListAsync();
                 }
@@ -85,6 +87,7 @@ public class OrdersController : Controller
                 orders = await _context.Orders
                     .Where(x => x.Quote != true)
                     .OrderByDescending(x => x.DateSubmitted)
+                    .Take(100)
                     .AsNoTracking()
                     .ToListAsync();
             }
@@ -205,6 +208,7 @@ public class OrdersController : Controller
                 orders = await _context.Orders
                     .Where(x => x.Quote && (x.SalesEmail == user.Email))
                     .OrderByDescending(x => x.DateSubmitted)
+                    .Take(100)
                     .AsNoTracking()
                     .ToListAsync();
             }
@@ -213,6 +217,7 @@ public class OrdersController : Controller
                 orders = await _context.Orders.Where(x => x.Quote)
                     .OrderByDescending(x => x.DateSubmitted)
                     .AsNoTracking()
+                    .Take(100)
                     .ToListAsync();
             }
         }
@@ -221,6 +226,7 @@ public class OrdersController : Controller
             orders = await _context.Orders.Where(x => x.Quote)
                     .OrderByDescending(x => x.DateSubmitted)
                     .AsNoTracking()
+                    .Take(100)
                     .ToListAsync();
         }
 

@@ -346,11 +346,11 @@ public class HomeController : Controller
     {
         if (orderId != null && orderId.HasValue)
         {
-            return View("Emails", await _context.SentEmails.Where(x => x.OrderId == orderId).ToListAsync());
+            return View("Emails", await _context.SentEmails.OrderByDescending(x => x.DateSent).Where(x => x.OrderId == orderId).AsNoTracking().ToListAsync());
         }
         else
         {
-            return View("Emails", await _context.SentEmails.ToListAsync());
+            return View("Emails", await _context.SentEmails.OrderByDescending(x => x.DateSent).Take(100).AsNoTracking().ToListAsync());
         }
     }
 

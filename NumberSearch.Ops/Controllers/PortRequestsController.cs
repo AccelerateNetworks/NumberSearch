@@ -170,7 +170,7 @@ public class PortRequestsController : Controller
         }
 
         // Show all orders
-        var portRequests = await _context.PortRequests.OrderByDescending(x => x.DateSubmitted).AsNoTracking().ToListAsync();
+        var portRequests = await _context.PortRequests.OrderByDescending(x => x.DateSubmitted).Take(100).AsNoTracking().ToListAsync();
 
         return View("PortRequests", portRequests);
     }
@@ -781,7 +781,7 @@ public class PortRequestsController : Controller
                             {
                                 Log.Error($"[PortRequest] Failed to submit port request to BulkVS.");
                                 Log.Error(ex.Message);
-                                Log.Error(ex.StackTrace?.ToString());
+                                Log.Error(ex.StackTrace?.ToString() ?? "No stack trace found.");
                             }
                         }
                     }
@@ -789,7 +789,7 @@ public class PortRequestsController : Controller
                     {
                         Log.Error($"[PortRequest] Failed to submit port request to BulkVS.");
                         Log.Error(ex.Message);
-                        Log.Error(ex.StackTrace?.ToString());
+                        Log.Error(ex.StackTrace?.ToString() ?? "No stack trace found.");
 
                         return View("PortRequestEdit", new PortRequestResult
                         {
