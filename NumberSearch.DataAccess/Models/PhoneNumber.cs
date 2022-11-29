@@ -59,7 +59,7 @@ namespace NumberSearch.DataAccess
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<string>("SELECT \"DialedNumber\" FROM public.\"PhoneNumbers\"")
+                .QueryAsync<string>("""SELECT "DialedNumber" FROM public."PhoneNumbers" """)
                 .ConfigureAwait(false);
 
             return result;
