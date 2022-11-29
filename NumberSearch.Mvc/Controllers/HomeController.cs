@@ -18,7 +18,6 @@ namespace NumberSearch.Mvc.Controllers
 
         [HttpGet]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
-        [OutputCache(Duration = 1)]
         public IActionResult Index()
         {
             return View();

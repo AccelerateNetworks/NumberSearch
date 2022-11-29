@@ -288,7 +288,7 @@ namespace NumberSearch.Ingest
                     }
                     else
                     {
-                        Log.Fatal($"[OwnedNumbers] Failed to add {item.DialedNumber} as an owned number.");
+                        Log.Fatal($"[OwnedNumbers] Failed to update {item.DialedNumber} as an owned number.");
                     }
                 }
             }

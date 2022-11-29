@@ -33,9 +33,8 @@ namespace NumberSearch.DataAccess
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<OwnedPhoneNumber>("SELECT \"OwnedPhoneNumberId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"Active\", \"BillingClientId\", \"OwnedBy\", \"Notes\", \"SPID\", \"SPIDName\", \"LIDBCNAM\", \"EmergencyInformationId\" FROM public.\"OwnedPhoneNumbers\"")
+                .QueryAsync<OwnedPhoneNumber>("""SELECT "OwnedPhoneNumberId", "DialedNumber", "IngestedFrom", "DateIngested", "Active", "BillingClientId", "OwnedBy", "Notes", "SPID", "SPIDName", "LIDBCNAM", "EmergencyInformationId" FROM public."OwnedPhoneNumbers" """)
                 .ConfigureAwait(false);
-
             return result;
         }
 
@@ -49,7 +48,7 @@ namespace NumberSearch.DataAccess
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryFirstOrDefaultAsync<OwnedPhoneNumber>("SELECT \"OwnedPhoneNumberId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"Active\", \"BillingClientId\", \"OwnedBy\", \"Notes\", \"SPID\", \"SPIDName\", \"LIDBCNAM\", \"EmergencyInformationId\" FROM public.\"OwnedPhoneNumbers\" WHERE \"DialedNumber\" = @dialedNumber", new { dialedNumber })
+                .QueryFirstOrDefaultAsync<OwnedPhoneNumber>("""SELECT "OwnedPhoneNumberId", "DialedNumber", "IngestedFrom", "DateIngested", "Active", "BillingClientId", "OwnedBy", "Notes", "SPID", "SPIDName", "LIDBCNAM", "EmergencyInformationId" FROM public."OwnedPhoneNumbers" WHERE "DialedNumber" = @dialedNumber""", new { dialedNumber })
                 .ConfigureAwait(false);
 
             return result;
@@ -96,7 +95,7 @@ namespace NumberSearch.DataAccess
 
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"OwnedPhoneNumbers\" SET \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"Active\" = @Active, \"BillingClientId\" = @BillingClientId, \"OwnedBy\" = @OwnedBy, \"Notes\" = @Notes, \"SPID\" = @SPID, \"SPIDName\" = @SPIDName, \"LIDBCNAM\" = @LIDBCNAM, \"EmergencyInformationId\" = @EmergencyInformationId WHERE \"OwnedPhoneNumberId\" = @OwnedPhoneNumberId",
-                new { IngestedFrom, DateIngested, Active, BillingClientId, OwnedBy, Notes, SPID, SPIDName, LIDBCNAM, OwnedPhoneNumberId, EmergencyInformationId })
+                new { IngestedFrom, DateIngested, Active, BillingClientId, OwnedBy, Notes, SPID, SPIDName, LIDBCNAM, EmergencyInformationId, OwnedPhoneNumberId })
                 .ConfigureAwait(false);
 
             if (result == 1)

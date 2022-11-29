@@ -2019,7 +2019,7 @@ namespace NumberSearch.Tests
             var conn = postgresql;
             var ownedPhoneNumber = new OwnedPhoneNumber
             {
-                DialedNumber = "8605530426",
+                DialedNumber = "1115530426",
                 Active = true,
                 BillingClientId = "1",
                 DateIngested = DateTime.Now,
@@ -2036,18 +2036,14 @@ namespace NumberSearch.Tests
 
             Assert.True(checkCreate);
 
-            var results = await OwnedPhoneNumber.GetAllAsync(postgresql).ConfigureAwait(false);
-            var fromDb = results.Where(x => x.IngestedFrom == ownedPhoneNumber.IngestedFrom).FirstOrDefault();
-
+            var fromDb = await OwnedPhoneNumber.GetByDialedNumberAsync(ownedPhoneNumber.DialedNumber, conn);
             Assert.NotNull(fromDb);
             fromDb.Notes = "IntegrationTest";
 
             var checkUpdate = await fromDb.PutAsync(postgresql).ConfigureAwait(false);
-
             Assert.True(checkUpdate);
 
-            results = await OwnedPhoneNumber.GetAllAsync(postgresql).ConfigureAwait(false);
-            var fromDbAgain = results.Where(x => x.IngestedFrom == ownedPhoneNumber.IngestedFrom).FirstOrDefault();
+            var fromDbAgain = await OwnedPhoneNumber.GetByDialedNumberAsync(ownedPhoneNumber.DialedNumber, conn);
 
             // Assert
             Assert.NotNull(fromDb);
