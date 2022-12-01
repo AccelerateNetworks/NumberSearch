@@ -272,91 +272,132 @@ namespace NumberSearch.Ingest
                         if (phoneNumber.IngestedFrom == "BulkVS")
                         {
                             var npanxx = $"{phoneNumber.NPA}{phoneNumber.NXX}";
-                            var doesItStillExist = await OrderTn.GetAsync(phoneNumber.NPA, phoneNumber.NXX, _bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
-                            var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
-                            if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
+                            try
                             {
-                                Log.Information($"[BulkVS] Found {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {npanxx}.");
-                            }
-                            else
-                            {
-                                Log.Warning($"[BulkVS] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {npanxx}.");
+                                var doesItStillExist = await OrderTn.GetAsync(phoneNumber.NPA, phoneNumber.NXX, _bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
+                                var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
+                                if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
+                                {
+                                    Log.Information($"[BulkVS] Found {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {npanxx}.");
+                                }
+                                else
+                                {
+                                    Log.Warning($"[BulkVS] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {npanxx}.");
 
-                                // Remove numbers that are unpurchasable.
-                                var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+                                    // Remove numbers that are unpurchasable.
+                                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error($"{ex.Message}");
+                                Log.Error($"[BulkVS] Failed to query BulkVS for {phoneNumber?.DialedNumber}.");
                             }
 
                         }
                         else if (phoneNumber.IngestedFrom == "TeleMessage")
                         {
                             // Verify that tele has the number.
-                            var doesItStillExist = await DidsList.GetAsync(phoneNumber.NPA, phoneNumber.NXX, _teleToken).ConfigureAwait(false);
-                            var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
-                            if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
+                            try
                             {
-                                Log.Information($"[TeleMessage] Found {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {phoneNumber.DialedNumber}.");
-                            }
-                            else
-                            {
-                                Log.Warning($"[TeleMessage] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {phoneNumber.DialedNumber}.");
+                                var doesItStillExist = await DidsList.GetAsync(phoneNumber.NPA, phoneNumber.NXX, _teleToken).ConfigureAwait(false);
+                                var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
+                                if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
+                                {
+                                    Log.Information($"[TeliMessage] Found {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {phoneNumber.DialedNumber}.");
+                                }
+                                else
+                                {
+                                    Log.Warning($"[TeliMessage] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {phoneNumber.DialedNumber}.");
 
-                                // Remove numbers that are unpurchasable.
-                                var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+                                    // Remove numbers that are unpurchasable.
+                                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error($"{ex.Message}");
+                                Log.Error($"[TeliMessage] Failed to query TeliMessage for {phoneNumber?.DialedNumber}.");
                             }
 
                         }
                         else if (phoneNumber.IngestedFrom == "FirstPointCom")
                         {
                             // Verify that tele has the number.
-                            var results = await NpaNxxFirstPointCom.GetAsync(phoneNumber.NPA.ToString(new CultureInfo("en-US")), phoneNumber.NXX.ToString(new CultureInfo("en-US")), string.Empty, _fpcusername, _fpcpassword).ConfigureAwait(false);
-                            var matchingNumber = results.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
-                            if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
+                            try
                             {
-                                Log.Information($"[FirstPointCom] Found {phoneNumber.DialedNumber} in {results.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
-                            }
-                            else
-                            {
-                                Log.Warning($"[FirstPointCom] Failed to find {phoneNumber.DialedNumber} in {results.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
+                                var results = await NpaNxxFirstPointCom.GetAsync(phoneNumber.NPA.ToString(new CultureInfo("en-US")), phoneNumber.NXX.ToString(new CultureInfo("en-US")), string.Empty, _fpcusername, _fpcpassword).ConfigureAwait(false);
+                                var matchingNumber = results?.Where(x => x?.DialedNumber == phoneNumber?.DialedNumber)?.FirstOrDefault();
+                                if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
+                                {
+                                    Log.Information($"[FirstPointCom] Found {phoneNumber.DialedNumber} in {results?.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
+                                }
+                                else
+                                {
+                                    Log.Warning($"[FirstPointCom] Failed to find {phoneNumber.DialedNumber} in {results?.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
 
-                                // Remove numbers that are unpurchasable.
-                                var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+                                    // Remove numbers that are unpurchasable.
+                                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error($"{ex.Message}");
+                                Log.Error($"[FirstPointCom] Failed to query FirstPointCom for {phoneNumber?.DialedNumber}.");
                             }
                         }
                         else if (phoneNumber.IngestedFrom == "Call48")
                         {
                             // Verify that Call48 has the number.
-                            var credentials = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
-                            var results = await Search.GetLocalNumbersAsync(phoneNumber.State, string.Empty, phoneNumber.NPA.ToString(), phoneNumber.NXX.ToString(), credentials.data.token).ConfigureAwait(false);
-                            var matchingNumber = results.data.result.Where(x => x.did_number.Replace("-", string.Empty) == phoneNumber.DialedNumber).FirstOrDefault();
-                            if (matchingNumber != null && matchingNumber?.did_number.Replace("-", string.Empty) == phoneNumber.DialedNumber)
+                            try
                             {
-                                Log.Information($"[Call48] Found {phoneNumber.DialedNumber} in {results?.data?.result?.Length} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
-                            }
-                            else
-                            {
-                                Log.Warning($"[Call48] Failed to find {phoneNumber.DialedNumber} in {results?.data?.result?.Length} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
+                                var credentials = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
+                                var results = await Search.GetLocalNumbersAsync(phoneNumber.State, string.Empty, phoneNumber.NPA.ToString(), phoneNumber.NXX.ToString(), credentials.data.token).ConfigureAwait(false);
+                                var matchingNumber = results?.data?.result?.Where(x => x?.did_number?.Replace("-", string.Empty) == phoneNumber?.DialedNumber)?.FirstOrDefault();
+                                if (matchingNumber != null && matchingNumber?.did_number?.Replace("-", string.Empty) == phoneNumber?.DialedNumber)
+                                {
+                                    Log.Information($"[Call48] Found {phoneNumber?.DialedNumber} in {results?.data?.result?.Length} results returned for {phoneNumber?.NPA}, {phoneNumber?.NXX}.");
+                                }
+                                else
+                                {
+                                    Log.Warning($"[Call48] Failed to find {phoneNumber?.DialedNumber} in {results?.data?.result?.Length} results returned for {phoneNumber?.NPA}, {phoneNumber?.NXX}.");
 
-                                // Remove numbers that are unpurchasable.
-                                var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+                                    // Remove numbers that are unpurchasable.
+                                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error($"{ex.Message}");
+                                Log.Error($"[Call48] Failed to query Call48 for {phoneNumber?.DialedNumber}.");
                             }
                         }
                         else if (phoneNumber.IngestedFrom == "Peerless")
                         {
                             // Verify that Peerless has the number.
-                            var results = await DidFind.GetByDialedNumberAsync(phoneNumber.NPA.ToString("000"), phoneNumber.NXX.ToString("000"), phoneNumber.XXXX.ToString("0000"), _peerlessApiKey);
-                            // Sometimes Call48 includes dashes in their numbers for no reason.
-                            var matchingNumber = results.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
-                            if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
+                            try
                             {
-                                Log.Information($"[Peerless] Found {phoneNumber.DialedNumber} in {results.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}, {phoneNumber.XXXX}.");
-                            }
-                            else
-                            {
-                                Log.Warning($"[Peerless] Failed to find {phoneNumber.DialedNumber} in {results.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}, {phoneNumber.XXXX}.");
+                                var results = await DidFind.GetByDialedNumberAsync(phoneNumber.NPA.ToString("000"), phoneNumber.NXX.ToString("000"), phoneNumber.XXXX.ToString("0000"), _peerlessApiKey);
+                                // Sometimes Call48 includes dashes in their numbers for no reason.
+                                var matchingNumber = results?.Where(x => x?.DialedNumber == phoneNumber?.DialedNumber)?.FirstOrDefault();
+                                if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
+                                {
+                                    Log.Information($"[Peerless] Found {phoneNumber.DialedNumber} in {results?.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}, {phoneNumber.XXXX}.");
+                                }
+                                else
+                                {
+                                    Log.Warning($"[Peerless] Failed to find {phoneNumber.DialedNumber} in {results?.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}, {phoneNumber.XXXX}.");
 
-                                // Remove numbers that are unpurchasable.
-                                var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+                                    // Remove numbers that are unpurchasable.
+                                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+                                }
                             }
+                            catch (Exception ex)
+                            {
+                                Log.Error($"{ex.Message}");
+                                Log.Error($"[Peerless] Failed to query Peerless for {phoneNumber?.DialedNumber}.");
+                            }
+
                         }
                         else if (phoneNumber.IngestedFrom == "OwnedNumber")
                         {
