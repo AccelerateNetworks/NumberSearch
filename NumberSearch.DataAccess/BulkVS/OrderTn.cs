@@ -39,7 +39,10 @@ namespace NumberSearch.DataAccess.BulkVS
             catch (FlurlHttpException ex)
             {
                 Log.Warning($"[Ingest] [BulkVS] No results found for area code {npa}.");
-                Log.Warning(await ex.GetResponseStringAsync());
+                Log.Warning(ex?.Message);
+                Log.Warning(ex?.StackTrace?.ToString());
+                // Disabled because this is always an empty string in the logs.
+                //Log.Warning(await ex.GetResponseStringAsync());
                 return null;
             }
         }
