@@ -137,48 +137,45 @@ namespace NumberSearch.Ingest
                     Log.Information($"[OrdersUpdate] Verifying Order {order.OrderId} {nameof(order.BillingInvoiceId)} {order.BillingInvoiceId} {nameof(order.BillingInvoiceReoccuringId)} {order.BillingInvoiceReoccuringId}");
 
                     // Handle the upfront invoice
-                    if (int.TryParse(order.BillingInvoiceId, out int upfrontId))
+
+                    try
                     {
-                        try
+                        var upfrontInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, invoiceNinjaToken);
+                        // If we found a matching invoice in the billing system and the quote has been upgraded to an invoice.
+                        if (upfrontInvoice is not null && !string.IsNullOrWhiteSpace(upfrontInvoice.id) && order.BillingInvoiceId != upfrontInvoice.id)
                         {
-                            var upfrontInvoice = await Invoice.GetByIdAsync(upfrontId, invoiceNinjaToken);
-                            // If we found a matching invoice in the billing system and the quote has been upgraded to an invoice.
-                            if (upfrontInvoice is not null && upfrontInvoice.quote_invoice_id > 0 && upfrontId != upfrontInvoice.quote_invoice_id)
-                            {
-                                // Update the order with the new invoiceId.
-                                Log.Information($"[OrderUpdates] Updated Order {order.OrderId} from {nameof(order.BillingInvoiceId)} {order.BillingInvoiceId} to {upfrontInvoice.quote_invoice_id}.");
-                                order.BillingInvoiceId = upfrontInvoice.quote_invoice_id.ToString();
-                                order.BillingClientId = upfrontInvoice.client_id.ToString();
-                                orderUpdated = true;
-                            }
+                            // Update the order with the new invoiceId.
+                            Log.Information($"[OrderUpdates] Updated Order {order.OrderId} from {nameof(order.BillingInvoiceId)} {order.BillingInvoiceId} to {upfrontInvoice.id}.");
+                            order.BillingInvoiceId = upfrontInvoice.id.ToString();
+                            order.BillingClientId = upfrontInvoice.client_id.ToString();
+                            orderUpdated = true;
                         }
-                        catch
-                        {
-                            Log.Warning($"[OrderUpdates] Failed to find invoice {order.BillingInvoiceId} in the billing system.");
-                        }
+                    }
+                    catch
+                    {
+                        Log.Warning($"[OrderUpdates] Failed to find invoice {order.BillingInvoiceId} in the billing system.");
                     }
 
+
                     // Handle the reoccuring invoice.
-                    if (int.TryParse(order.BillingInvoiceReoccuringId, out int reoccuringId))
+                    try
                     {
-                        try
+                        var reoccuringInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceReoccuringId, invoiceNinjaToken);
+                        // If we found a matching invoice in the billing system and the quote has been upgraded to an invoice.
+                        if (reoccuringInvoice is not null && !string.IsNullOrWhiteSpace(reoccuringInvoice.id) && order.BillingInvoiceReoccuringId != reoccuringInvoice.id)
                         {
-                            var reoccuringInvoice = await Invoice.GetByIdAsync(reoccuringId, invoiceNinjaToken);
-                            // If we found a matching invoice in the billing system and the quote has been upgraded to an invoice.
-                            if (reoccuringInvoice is not null && reoccuringInvoice.quote_invoice_id > 0 && reoccuringId != reoccuringInvoice.quote_invoice_id)
-                            {
-                                // Update the order with the new invoiceId.
-                                Log.Information($"[OrderUpdates] Updated Order {order.OrderId} from {nameof(order.BillingInvoiceReoccuringId)} {order.BillingInvoiceReoccuringId} to {reoccuringInvoice.quote_invoice_id}.");
-                                order.BillingInvoiceReoccuringId = reoccuringInvoice.quote_invoice_id.ToString();
-                                order.BillingClientId = reoccuringInvoice.client_id.ToString();
-                                orderUpdated = true;
-                            }
-                        }
-                        catch
-                        {
-                            Log.Warning($"[OrderUpdates] Failed to find invoice {order.BillingInvoiceReoccuringId} in the billing system.");
+                            // Update the order with the new invoiceId.
+                            Log.Information($"[OrderUpdates] Updated Order {order.OrderId} from {nameof(order.BillingInvoiceReoccuringId)} {order.BillingInvoiceReoccuringId} to {reoccuringInvoice.id}.");
+                            order.BillingInvoiceReoccuringId = reoccuringInvoice.id.ToString();
+                            order.BillingClientId = reoccuringInvoice.client_id.ToString();
+                            orderUpdated = true;
                         }
                     }
+                    catch
+                    {
+                        Log.Warning($"[OrderUpdates] Failed to find invoice {order.BillingInvoiceReoccuringId} in the billing system.");
+                    }
+
 
                     // If the billing invoices have been updated (converted from quotes to invoices) then the order is no longer a quote.
                     if (order.Quote && orderUpdated)
@@ -186,30 +183,21 @@ namespace NumberSearch.Ingest
                         Log.Information($"[OrderUpdates] Order {order.OrderId} upgraded from a Quote.");
 
                         // Update the invoice links shown on the order.
-                        if (int.TryParse(order.BillingClientId, out int clientId))
+                        var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(order.BillingClientId, invoiceNinjaToken).ConfigureAwait(false);
+
+                        var oneTimeLink = invoiceLinks.invoices.Where(x => x.id.Contains(order.BillingInvoiceId)).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                        if (!string.IsNullOrWhiteSpace(oneTimeLink))
                         {
-                            var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(clientId, invoiceNinjaToken).ConfigureAwait(false);
-
-                            if (int.TryParse(order.BillingInvoiceId, out upfrontId))
-                            {
-                                var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == upfrontId).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-                                if (!string.IsNullOrWhiteSpace(oneTimeLink))
-                                {
-                                    order.UpfrontInvoiceLink = oneTimeLink;
-                                }
-                            }
-
-                            if (int.TryParse(order.BillingInvoiceReoccuringId, out reoccuringId))
-                            {
-                                var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == reoccuringId).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-                                if (!string.IsNullOrWhiteSpace(reoccuringLink))
-                                {
-                                    order.ReoccuringInvoiceLink = reoccuringLink;
-                                }
-                            }
-
-                            Log.Information($"[OrderUpdates] Order {order.OrderId} updated Invoice links.");
+                            order.UpfrontInvoiceLink = oneTimeLink;
                         }
+
+                        var reoccuringLink = invoiceLinks.invoices.Where(x => x.id.Contains(order.BillingInvoiceReoccuringId)).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                        if (!string.IsNullOrWhiteSpace(reoccuringLink))
+                        {
+                            order.ReoccuringInvoiceLink = reoccuringLink;
+                        }
+
+                        Log.Information($"[OrderUpdates] Order {order.OrderId} updated Invoice links.");
 
                         order.Quote = false;
                     }

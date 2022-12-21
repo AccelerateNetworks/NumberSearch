@@ -2,6 +2,8 @@
 
 using Serilog;
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.InvoiceNinja
@@ -11,26 +13,29 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public InvoiceDatum[] data { get; set; }
         //public InvoiceMeta meta { get; set; }
 
-        public static async Task<Invoice> GetAllAsync(string token)
+        public static async Task<InvoiceDatum[]> GetAllAsync(string token)
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
-            string endpoint = "invoices";
-            string tokenHeader = "X-Ninja-Token";
-            string url = $"{baseUrl}{endpoint}";
+            string endpostring = "invoices";
+            string tokenHeader = "X-Api-Token";
+            string perPageParameter = "?per_page=10000";
+            string url = $"{baseUrl}{endpostring}{perPageParameter}";
 
-            return await url
+            var result = await url
                 .WithHeader(tokenHeader, token)
                 .GetJsonAsync<Invoice>()
                 .ConfigureAwait(false);
+
+            return result.data;
         }
 
-        public static async Task<InvoiceDatum> GetByIdAsync(int invoiceId, string token)
+        public static async Task<InvoiceDatum> GetByIdAsync(string invoiceId, string token)
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
-            string endpoint = "invoices";
-            string tokenHeader = "X-Ninja-Token";
+            string endpostring = "invoices";
+            string tokenHeader = "X-Api-Token";
             string clientIdParameter = $"/{invoiceId}";
-            string url = $"{baseUrl}{endpoint}{clientIdParameter}";
+            string url = $"{baseUrl}{endpostring}{clientIdParameter}";
 
             var result = await url
                 .WithHeader(tokenHeader, token)
@@ -67,72 +72,132 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public string next { get; set; }
     }
 
+    public class Line_Items
+    {
+        public decimal quantity { get; set; }
+        public decimal cost { get; set; }
+        public string product_key { get; set; }
+        public string notes { get; set; }
+        public int discount { get; set; }
+        public string tax_name1 { get; set; }
+        public int tax_rate1 { get; set; }
+        public string tax_name2 { get; set; }
+        public int tax_rate2 { get; set; }
+        public string tax_name3 { get; set; }
+        public int tax_rate3 { get; set; }
+        public string date { get; set; }
+        public string custom_value1 { get; set; }
+        public string custom_value2 { get; set; }
+        public string custom_value3 { get; set; }
+        public string custom_value4 { get; set; }
+        public string type_id { get; set; }
+        public decimal product_cost { get; set; }
+        public bool is_amount_discount { get; set; }
+        public string sort_id { get; set; }
+        public decimal line_total { get; set; }
+        public decimal gross_line_total { get; set; }
+        public decimal tax_amount { get; set; }
+    }
+
+    public class Invitation
+    {
+        public string id { get; set; }
+        public string client_contact_id { get; set; }
+        public string key { get; set; }
+        public string link { get; set; }
+        public string sent_date { get; set; }
+        public string viewed_date { get; set; }
+        public string opened_date { get; set; }
+        public int updated_at { get; set; }
+        public int archived_at { get; set; }
+        public int created_at { get; set; }
+        public string email_status { get; set; }
+        public string email_error { get; set; }
+    }
+
+
     public class InvoiceDatum
     {
-        public string account_key { get; set; }
-        public bool is_owner { get; set; }
-        public int id { get; set; }
+        public string id { get; set; }
+        public string user_id { get; set; }
+        public string project_id { get; set; }
+        public string assigned_user_id { get; set; }
         public float amount { get; set; }
-        public float balance { get; set; }
-        public int client_id { get; set; }
-        public int invoice_status_id { get; set; }
+        public decimal balance { get; set; }
+        public string client_id { get; set; }
+        public string vendor_id { get; set; }
+        public string status_id { get; set; }
+        public string design_id { get; set; }
+        public string recurring_id { get; set; }
+        public int created_at { get; set; }
         public int updated_at { get; set; }
-        public object archived_at { get; set; }
-        public string invoice_number { get; set; }
-        public decimal discount { get; set; }
+        public int archived_at { get; set; }
+        public bool is_deleted { get; set; }
+        public string number { get; set; }
+        public float discount { get; set; }
         public string po_number { get; set; }
-        public string invoice_date { get; set; }
+        public string date { get; set; }
+        public string last_sent_date { get; set; }
+        public string next_send_date { get; set; }
         public string due_date { get; set; }
         public string terms { get; set; }
         public string public_notes { get; set; }
         public string private_notes { get; set; }
-        public bool is_deleted { get; set; }
-        public int invoice_type_id { get; set; }
-        public bool is_recurring { get; set; }
-        public int frequency_id { get; set; }
-        public string start_date { get; set; }
-        public string end_date { get; set; }
-        public string last_sent_date { get; set; }
-        public int recurring_invoice_id { get; set; }
+        public bool uses_inclusive_taxes { get; set; }
         public string tax_name1 { get; set; }
         public decimal tax_rate1 { get; set; }
         public string tax_name2 { get; set; }
         public int tax_rate2 { get; set; }
+        public string tax_name3 { get; set; }
+        public int tax_rate3 { get; set; }
+        public float total_taxes { get; set; }
         public bool is_amount_discount { get; set; }
-        public string invoice_footer { get; set; }
+        public string footer { get; set; }
         public int partial { get; set; }
         public string partial_due_date { get; set; }
+        public string custom_value1 { get; set; }
+        public string custom_value2 { get; set; }
+        public string custom_value3 { get; set; }
+        public string custom_value4 { get; set; }
         public bool has_tasks { get; set; }
-        public bool auto_bill { get; set; }
-        public int auto_bill_id { get; set; }
-        public int custom_value1 { get; set; }
-        public int custom_value2 { get; set; }
-        public bool custom_taxes1 { get; set; }
-        public bool custom_taxes2 { get; set; }
         public bool has_expenses { get; set; }
-        public int quote_invoice_id { get; set; }
-        public string custom_text_value1 { get; set; }
-        public string custom_text_value2 { get; set; }
-        public bool is_quote { get; set; }
-        public bool is_public { get; set; }
-        public string filename { get; set; }
-        public int invoice_design_id { get; set; }
-        public Invoice_Items[] invoice_items { get; set; }
-        public InvoiceInvitations[] invitations { get; set; }
+        public int custom_surcharge1 { get; set; }
+        public int custom_surcharge2 { get; set; }
+        public int custom_surcharge3 { get; set; }
+        public int custom_surcharge4 { get; set; }
+        public int exchange_rate { get; set; }
+        public bool custom_surcharge_tax1 { get; set; }
+        public bool custom_surcharge_tax2 { get; set; }
+        public bool custom_surcharge_tax3 { get; set; }
+        public bool custom_surcharge_tax4 { get; set; }
+        public Line_Items[] line_items { get; set; }
+        public string entity_type { get; set; }
+        public string reminder1_sent { get; set; }
+        public string reminder2_sent { get; set; }
+        public string reminder3_sent { get; set; }
+        public string reminder_last_sent { get; set; }
+        public float paid_to_date { get; set; }
+        public string subscription_id { get; set; }
+        public bool auto_bill_enabled { get; set; }
+        public Invitation[] invitations { get; set; }
+        public object[] documents { get; set; }
 
         public async Task<InvoiceDatum> PostAsync(string token)
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
-            string endpoint = "invoices";
-            string tokenHeader = "X-Ninja-Token";
+            string endpostring = "invoices";
+            string tokenHeader = "X-Api-Token";
+            string requestedHeader = "X-Requested-With";
+            string requestedHeaderValue = "XMLHttpRequest";
             string contentHeader = "Content-Type";
             string contentHeaderValue = "application/json";
-            string url = $"{baseUrl}{endpoint}";
+            string url = $"{baseUrl}{endpostring}";
 
             var result = await url
                 .WithHeader(tokenHeader, token)
+                .WithHeader(requestedHeader, requestedHeaderValue)
                 .WithHeader(contentHeader, contentHeaderValue)
-                .PostJsonAsync(new { client_id = id, tax_name1, tax_rate1, invoice_type_id, is_quote, invoice_items, is_recurring, frequency_id })
+                .PostJsonAsync(new { client_id = id, tax_name1, tax_rate1, entity_type, line_items })
                 .ReceiveJson<InvoiceSingle>()
                 .ConfigureAwait(false);
 
@@ -143,17 +208,17 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public async Task<InvoiceDatum> PutAsync(string token)
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
-            string endpoint = "invoices";
-            string tokenHeader = "X-Ninja-Token";
+            string endpostring = "invoices";
+            string tokenHeader = "X-Api-Token";
             string contentHeader = "Content-Type";
             string contentHeaderValue = "application/json";
             string clientIdParameter = $"/{id}";
-            string url = $"{baseUrl}{endpoint}{clientIdParameter}";
+            string url = $"{baseUrl}{endpostring}{clientIdParameter}";
 
             var result = await url
                 .WithHeader(tokenHeader, token)
                 .WithHeader(contentHeader, contentHeaderValue)
-                .PutJsonAsync(new { id, invoice_items })
+                .PutJsonAsync(new { id, line_items })
                 .ReceiveJson<InvoiceSingle>()
                 .ConfigureAwait(false);
 
@@ -164,12 +229,12 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public async Task<InvoiceDatum> DeleteAsync(string token)
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
-            string endpoint = "invoices";
-            string tokenHeader = "X-Ninja-Token";
+            string endpostring = "invoices";
+            string tokenHeader = "X-Api-Token";
             string contentHeader = "Content-Type";
             string contentHeaderValue = "application/json";
             string clientIdParameter = $"/{id}";
-            string url = $"{baseUrl}{endpoint}{clientIdParameter}?action=delete";
+            string url = $"{baseUrl}{endpostring}{clientIdParameter}?action=delete";
 
             var result = await url
                 .WithHeader(tokenHeader, token)
@@ -185,11 +250,11 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public async Task<bool> SendInvoiceAsync(string token)
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
-            string endpoint = "email_invoice";
-            string tokenHeader = "X-Ninja-Token";
+            string endpostring = "email_invoice";
+            string tokenHeader = "X-Api-Token";
             string contentHeader = "Content-Type";
             string contentHeaderValue = "application/json";
-            string url = $"{baseUrl}{endpoint}";
+            string url = $"{baseUrl}{endpostring}";
 
             var result = await url
                 .WithHeader(tokenHeader, token)
@@ -201,36 +266,6 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             return result.message == "success";
         }
     }
-
-    public class Invoice_Items
-    {
-        public string account_key { get; set; }
-        public bool is_owner { get; set; }
-        public int id { get; set; }
-        public string product_key { get; set; }
-        public int updated_at { get; set; }
-        public object archived_at { get; set; }
-        public string notes { get; set; }
-        public decimal cost { get; set; }
-        public decimal qty { get; set; }
-        public string tax_name1 { get; set; }
-        public int tax_rate1 { get; set; }
-        public string tax_name2 { get; set; }
-        public int tax_rate2 { get; set; }
-        public int invoice_item_type_id { get; set; }
-        public string custom_value1 { get; set; }
-        public string custom_value2 { get; set; }
-        public int discount { get; set; }
-    }
-}
-
-public class InvoiceInvitations
-{
-    public int id { get; set; }
-    public string key { get; set; }
-    public string link { get; set; }
-    public string sent_date { get; set; }
-    public string viewed_date { get; set; }
 }
 
 public class Email_Invoice

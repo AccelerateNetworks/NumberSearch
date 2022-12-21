@@ -1673,48 +1673,38 @@ public class OrdersController : Controller
                     try
                     {
                         // Submit the number orders and track the total cost.
-                        var onetimeItems = new List<Invoice_Items>();
-                        var reoccuringItems = new List<Invoice_Items>();
+                        var onetimeItems = new List<Line_Items>();
+                        var reoccuringItems = new List<Line_Items>();
                         var totalCost = 0;
 
                         // Delete the old invoices in the billing system.
                         if (!string.IsNullOrWhiteSpace(order.BillingInvoiceId))
                         {
-                            var checkParse = int.TryParse(order.BillingInvoiceId, out var oneTimeId);
-
-                            if (checkParse)
+                            try
                             {
-                                try
-                                {
-                                    var existingOneTimeInvoice = await Invoice.GetByIdAsync(oneTimeId, _invoiceNinjaToken);
-                                    var checkDelete = await existingOneTimeInvoice.DeleteAsync(_invoiceNinjaToken);
-                                }
-                                catch (FlurlHttpException ex)
-                                {
-                                    Log.Error($"[Regenerate Invoices] Failed to delete Invoice Id: {oneTimeId} for OrderId: {order.OrderId}");
-                                    Log.Error(await ex.GetResponseStringAsync());
-                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to regenerate the invoices for {order.OrderId}. 😠\r\n{await ex.GetResponseStringAsync()}\r\n{ex.Message}\r\n{ex.StackTrace}", AlertType = "alert-danger" });
-                                }
+                                var existingOneTimeInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
+                                var checkDelete = await existingOneTimeInvoice.DeleteAsync(_invoiceNinjaToken);
+                            }
+                            catch (FlurlHttpException ex)
+                            {
+                                Log.Error($"[Regenerate Invoices] Failed to delete Invoice Id: {order.BillingInvoiceId} for OrderId: {order.OrderId}");
+                                Log.Error(await ex.GetResponseStringAsync());
+                                return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to regenerate the invoices for {order.OrderId}. 😠\r\n{await ex.GetResponseStringAsync()}\r\n{ex.Message}\r\n{ex.StackTrace}", AlertType = "alert-danger" });
                             }
                         }
 
                         if (!string.IsNullOrWhiteSpace(order.BillingInvoiceReoccuringId))
                         {
-                            var checkParse = int.TryParse(order.BillingInvoiceReoccuringId, out var reoccuringId);
-
-                            if (checkParse)
+                            try
                             {
-                                try
-                                {
-                                    var existingReoccuringInvoice = await Invoice.GetByIdAsync(reoccuringId, _invoiceNinjaToken);
-                                    var checkDelete = await existingReoccuringInvoice.DeleteAsync(_invoiceNinjaToken);
-                                }
-                                catch (FlurlHttpException ex)
-                                {
-                                    Log.Error($"[Regenerate Invoices] Failed to delete Invoice Id: {reoccuringId} for OrderId: {order.OrderId}");
-                                    Log.Error(await ex.GetResponseStringAsync());
-                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to regenerate the invoices for {order.OrderId}. 😠\r\n{await ex.GetResponseStringAsync()}\r\n{ex.Message}\r\n{ex.StackTrace}", AlertType = "alert-danger" });
-                                }
+                                var existingReoccuringInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
+                                var checkDelete = await existingReoccuringInvoice.DeleteAsync(_invoiceNinjaToken);
+                            }
+                            catch (FlurlHttpException ex)
+                            {
+                                Log.Error($"[Regenerate Invoices] Failed to delete Invoice Id: {order.BillingInvoiceReoccuringId} for OrderId: {order.OrderId}");
+                                Log.Error(await ex.GetResponseStringAsync());
+                                return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to regenerate the invoices for {order.OrderId}. 😠\r\n{await ex.GetResponseStringAsync()}\r\n{ex.Message}\r\n{ex.StackTrace}", AlertType = "alert-danger" });
                             }
                         }
 
@@ -1724,12 +1714,12 @@ public class OrdersController : Controller
                         {
                             var cost = nto.NumberType == "Executive" ? 200 : nto.NumberType == "Premium" ? 40 : nto.NumberType == "Standard" ? 20 : 20;
 
-                            onetimeItems.Add(new Invoice_Items
+                            onetimeItems.Add(new Line_Items
                             {
                                 product_key = nto.DialedNumber,
                                 notes = $"{nto.NumberType} Phone Number",
                                 cost = cost,
-                                qty = 1
+                                quantity = 1
                             });
 
                             totalNumberPurchasingCost += cost;
@@ -1750,12 +1740,12 @@ public class OrdersController : Controller
                                 if (ported != null)
                                 {
                                     totalCost += calculatedCost;
-                                    onetimeItems.Add(new Invoice_Items
+                                    onetimeItems.Add(new Line_Items
                                     {
                                         product_key = ported.PortedDialedNumber,
                                         notes = $"Phone Number to Port to our Network",
                                         cost = calculatedCost,
-                                        qty = 1
+                                        quantity = 1
                                     });
                                 }
 
@@ -1769,12 +1759,12 @@ public class OrdersController : Controller
                                 if (verfied != null)
                                 {
                                     totalCost += 10;
-                                    onetimeItems.Add(new Invoice_Items
+                                    onetimeItems.Add(new Line_Items
                                     {
                                         product_key = verfied.VerifiedDialedNumber,
                                         notes = $"Phone Number to Verify Daily",
                                         cost = 10,
-                                        qty = 1
+                                        quantity = 1
                                     });
                                 }
                             }
@@ -1787,12 +1777,12 @@ public class OrdersController : Controller
                                 {
                                     _ = int.TryParse(product.Price, out var price);
                                     totalCost += price;
-                                    onetimeItems.Add(new Invoice_Items
+                                    onetimeItems.Add(new Line_Items
                                     {
                                         product_key = product.Name,
                                         notes = $"{product.Description}",
                                         cost = price,
-                                        qty = productOrder.Quantity
+                                        quantity = Convert.ToInt32(productOrder.Quantity)
                                     });
                                 }
                             }
@@ -1805,12 +1795,12 @@ public class OrdersController : Controller
                                 {
                                     _ = int.TryParse(service.Price, out var price);
                                     totalCost += price;
-                                    reoccuringItems.Add(new Invoice_Items
+                                    reoccuringItems.Add(new Line_Items
                                     {
                                         product_key = service.Name,
                                         notes = $"{service.Description}",
                                         cost = price,
-                                        qty = productOrder.Quantity
+                                        quantity = Convert.ToInt32(productOrder.Quantity)
                                     });
                                 }
                             }
@@ -1826,44 +1816,44 @@ public class OrdersController : Controller
                                     {
 
                                         totalCost -= totalPortingCost;
-                                        onetimeItems.Add(new Invoice_Items
+                                        onetimeItems.Add(new Line_Items
                                         {
                                             product_key = coupon.Name,
                                             notes = coupon.Description,
                                             cost = totalPortingCost * -1,
-                                            qty = 1
+                                            quantity = 1
                                         });
                                     }
                                     else if (coupon.Name == "Install")
                                     {
 
-                                        onetimeItems.Add(new Invoice_Items
+                                        onetimeItems.Add(new Line_Items
                                         {
                                             product_key = coupon.Name,
                                             notes = coupon.Description,
                                             cost = 60 * -1,
-                                            qty = 1
+                                            quantity = 1
                                         });
                                     }
                                     else if (coupon.Type == "Number")
                                     {
                                         totalCost -= totalNumberPurchasingCost;
-                                        onetimeItems.Add(new Invoice_Items
+                                        onetimeItems.Add(new Line_Items
                                         {
                                             product_key = coupon.Name,
                                             notes = coupon.Description,
                                             cost = totalNumberPurchasingCost * -1,
-                                            qty = 1
+                                            quantity = 1
                                         });
                                     }
                                     else
                                     {
-                                        onetimeItems.Add(new Invoice_Items
+                                        onetimeItems.Add(new Line_Items
                                         {
                                             product_key = coupon.Name,
                                             notes = coupon.Description,
                                             cost = coupon.Value * -1,
-                                            qty = 1
+                                            quantity = 1
                                         });
                                     }
                                 }
@@ -1875,22 +1865,22 @@ public class OrdersController : Controller
                         {
                             if (order.OnsiteInstallation)
                             {
-                                onetimeItems.Add(new Invoice_Items
+                                onetimeItems.Add(new Line_Items
                                 {
                                     product_key = "Onsite Hardware Installation",
                                     notes = $"We'll come visit you and get all your phones setup.",
                                     cost = 60,
-                                    qty = 1
+                                    quantity = 1
                                 });
                             }
                             else
                             {
-                                onetimeItems.Add(new Invoice_Items
+                                onetimeItems.Add(new Line_Items
                                 {
                                     product_key = "Remote Installation",
                                     notes = $"We'll walk you through getting all your phones setup virtually.",
                                     cost = 0,
-                                    qty = 1
+                                    quantity = 1
                                 });
                             }
                         }
@@ -1984,7 +1974,7 @@ public class OrdersController : Controller
                         var upfrontInvoice = new InvoiceDatum
                         {
                             id = billingClient.id,
-                            invoice_items = onetimeItems.ToArray(),
+                            line_items = onetimeItems.ToArray(),
                             tax_name1 = billingTaxRate.name,
                             tax_rate1 = billingTaxRate.rate
                         };
@@ -1992,24 +1982,20 @@ public class OrdersController : Controller
                         var reoccuringInvoice = new InvoiceDatum
                         {
                             id = billingClient.id,
-                            invoice_items = reoccuringItems.ToArray(),
+                            line_items = reoccuringItems.ToArray(),
                             tax_name1 = billingTaxRate.name,
-                            tax_rate1 = billingTaxRate.rate,
-                            is_recurring = true,
-                            frequency_id = 4
+                            tax_rate1 = billingTaxRate.rate
                         };
 
                         // If they want just a Quote, create a quote in the billing system, not an invoice.
                         if (order.Quote)
                         {
                             // Mark the invoices as quotes.
-                            upfrontInvoice.is_quote = true;
-                            upfrontInvoice.invoice_type_id = 2;
-                            reoccuringInvoice.is_quote = true;
-                            reoccuringInvoice.invoice_type_id = 2;
+                            upfrontInvoice.entity_type = "quote";
+                            reoccuringInvoice.entity_type = "quote";
 
                             // Submit them to the billing system if they have items.
-                            if (upfrontInvoice.invoice_items.Any() && reoccuringInvoice.invoice_items.Any())
+                            if (upfrontInvoice.line_items.Any() && reoccuringInvoice.line_items.Any())
                             {
                                 InvoiceDatum createNewOneTimeInvoice;
                                 InvoiceDatum createNewReoccuringInvoice;
@@ -2059,7 +2045,7 @@ public class OrdersController : Controller
                                     Log.Fatal("[Checkout] Invoices were not successfully created in the billing system.");
                                 }
                             }
-                            else if (reoccuringInvoice.invoice_items.Any())
+                            else if (reoccuringInvoice.line_items.Any())
                             {
                                 // Submit them to the billing system.
                                 InvoiceDatum createNewReoccuringInvoice;
@@ -2100,7 +2086,7 @@ public class OrdersController : Controller
                                     Log.Fatal("[Checkout] Invoices were not successfully created in the billing system.");
                                 }
                             }
-                            else if (upfrontInvoice.invoice_items.Any())
+                            else if (upfrontInvoice.line_items.Any())
                             {
                                 InvoiceDatum createNewOneTimeInvoice;
 
@@ -2149,7 +2135,7 @@ public class OrdersController : Controller
                         else
                         {
                             // Submit them to the billing system if they have items.
-                            if (upfrontInvoice.invoice_items.Any() && reoccuringInvoice.invoice_items.Any())
+                            if (upfrontInvoice.line_items.Any() && reoccuringInvoice.line_items.Any())
                             {
                                 InvoiceDatum createNewOneTimeInvoice;
                                 InvoiceDatum createNewReoccuringInvoice;
@@ -2197,7 +2183,7 @@ public class OrdersController : Controller
                                     Log.Fatal("[Checkout] Invoices were not successfully created in the billing system.");
                                 }
                             }
-                            else if (reoccuringInvoice.invoice_items.Any())
+                            else if (reoccuringInvoice.line_items.Any())
                             {
                                 InvoiceDatum createNewReoccuringInvoice;
 
@@ -2235,7 +2221,7 @@ public class OrdersController : Controller
                                     Log.Fatal("[Checkout] Invoices were not successfully created in the billing system.");
                                 }
                             }
-                            else if (upfrontInvoice.invoice_items.Any())
+                            else if (upfrontInvoice.line_items.Any())
                             {
                                 InvoiceDatum createNewOneTimeInvoice;
 

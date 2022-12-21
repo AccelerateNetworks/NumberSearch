@@ -324,8 +324,8 @@ namespace NumberSearch.Mvc.Controllers
                             order = await Order.GetByIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
 
                             // Submit the number orders and track the total cost.
-                            var onetimeItems = new List<Invoice_Items>();
-                            var reoccuringItems = new List<Invoice_Items>();
+                            var onetimeItems = new List<Line_Items>();
+                            var reoccuringItems = new List<Line_Items>();
                             var totalCost = 0;
                             var totalNumberPurchasingCost = 0;
 
@@ -367,12 +367,12 @@ namespace NumberSearch.Mvc.Controllers
 
                                         totalNumberPurchasingCost += cost;
 
-                                        onetimeItems.Add(new Invoice_Items
+                                        onetimeItems.Add(new Line_Items
                                         {
                                             product_key = nto.DialedNumber,
                                             notes = $"{nto.NumberType} Phone Number",
                                             cost = cost,
-                                            qty = 1
+                                            quantity = 1
                                         });
                                     }
                                 }
@@ -403,12 +403,12 @@ namespace NumberSearch.Mvc.Controllers
                                         if (ported != null)
                                         {
                                             totalCost += calculatedCost;
-                                            onetimeItems.Add(new Invoice_Items
+                                            onetimeItems.Add(new Line_Items
                                             {
                                                 product_key = ported.PortedDialedNumber,
                                                 notes = $"Phone Number to Port to our Network",
                                                 cost = calculatedCost,
-                                                qty = 1
+                                                quantity = 1
                                             });
                                         }
 
@@ -426,12 +426,12 @@ namespace NumberSearch.Mvc.Controllers
                                         if (verfied != null)
                                         {
                                             totalCost += 10;
-                                            onetimeItems.Add(new Invoice_Items
+                                            onetimeItems.Add(new Line_Items
                                             {
                                                 product_key = verfied.VerifiedDialedNumber,
                                                 notes = $"Phone Number to Verify Daily",
                                                 cost = 10,
-                                                qty = 1
+                                                quantity = 1
                                             });
                                         }
 
@@ -447,12 +447,12 @@ namespace NumberSearch.Mvc.Controllers
                                         if (product != null)
                                         {
                                             totalCost += product.Price;
-                                            onetimeItems.Add(new Invoice_Items
+                                            onetimeItems.Add(new Line_Items
                                             {
                                                 product_key = product.Name,
                                                 notes = $"{product.Description}",
                                                 cost = product.Price,
-                                                qty = productOrder.Quantity
+                                                quantity = productOrder.Quantity
                                             });
                                         }
 
@@ -468,12 +468,12 @@ namespace NumberSearch.Mvc.Controllers
                                         if (service != null)
                                         {
                                             totalCost += service.Price;
-                                            reoccuringItems.Add(new Invoice_Items
+                                            reoccuringItems.Add(new Line_Items
                                             {
                                                 product_key = service.Name,
                                                 notes = $"{service.Description}",
                                                 cost = service.Price,
-                                                qty = productOrder.Quantity
+                                                quantity = productOrder.Quantity
                                             });
                                         }
 
@@ -492,12 +492,12 @@ namespace NumberSearch.Mvc.Controllers
                                             if (coupon.Type == "Port")
                                             {
                                                 totalCost -= totalPortingCost;
-                                                onetimeItems.Add(new Invoice_Items
+                                                onetimeItems.Add(new Line_Items
                                                 {
                                                     product_key = coupon.Name,
                                                     notes = coupon.Description,
                                                     cost = totalPortingCost * -1,
-                                                    qty = 1
+                                                    quantity = 1
                                                 });
                                             }
                                             else if (coupon.Type == "Install")
@@ -505,22 +505,22 @@ namespace NumberSearch.Mvc.Controllers
                                                 // If they have selected onsite installation this coupon removes a $60 charge.
                                                 if (order.OnsiteInstallation)
                                                 {
-                                                    onetimeItems.Add(new Invoice_Items
+                                                    onetimeItems.Add(new Line_Items
                                                     {
                                                         product_key = coupon.Name,
                                                         notes = coupon.Description,
                                                         cost = 60 * -1,
-                                                        qty = 1
+                                                        quantity = 1
                                                     });
                                                 }
                                                 else
                                                 {
-                                                    onetimeItems.Add(new Invoice_Items
+                                                    onetimeItems.Add(new Line_Items
                                                     {
                                                         product_key = coupon.Name,
                                                         notes = coupon.Description,
                                                         cost = 0,
-                                                        qty = 1
+                                                        quantity = 1
                                                     });
                                                 }
                                             }
@@ -531,23 +531,23 @@ namespace NumberSearch.Mvc.Controllers
                                                     var discountTo20 = cart?.PhoneNumbers is not null && cart.PhoneNumbers.Any() ? cart.PhoneNumbers.Count() * 20 :
                                                     cart?.PurchasedPhoneNumbers is not null && cart.PurchasedPhoneNumbers.Any() ? cart.PurchasedPhoneNumbers.Count() * 20 : 0;
                                                     totalCost -= totalNumberPurchasingCost - discountTo20;
-                                                    onetimeItems.Add(new Invoice_Items
+                                                    onetimeItems.Add(new Line_Items
                                                     {
                                                         product_key = coupon.Name,
                                                         notes = coupon.Description,
                                                         cost = (totalNumberPurchasingCost - discountTo20) * -1,
-                                                        qty = 1
+                                                        quantity = 1
                                                     });
                                                 }
                                                 else
                                                 {
                                                     totalCost -= totalNumberPurchasingCost;
-                                                    onetimeItems.Add(new Invoice_Items
+                                                    onetimeItems.Add(new Line_Items
                                                     {
                                                         product_key = coupon.Name,
                                                         notes = coupon.Description,
                                                         cost = totalNumberPurchasingCost * -1,
-                                                        qty = 1
+                                                        quantity = 1
                                                     });
                                                 }
                                             }
@@ -566,23 +566,23 @@ namespace NumberSearch.Mvc.Controllers
                                                         }
                                                     }
                                                     totalCost -= partnerDiscount;
-                                                    reoccuringItems.Add(new Invoice_Items
+                                                    reoccuringItems.Add(new Line_Items
                                                     {
                                                         product_key = coupon.Name,
                                                         notes = coupon.Description,
                                                         cost = partnerDiscount * -1,
-                                                        qty = 1
+                                                        quantity = 1
                                                     });
                                                 }
                                             }
                                             else
                                             {
-                                                onetimeItems.Add(new Invoice_Items
+                                                onetimeItems.Add(new Line_Items
                                                 {
                                                     product_key = coupon.Name,
                                                     notes = coupon.Description,
                                                     cost = coupon.Value * -1,
-                                                    qty = 1
+                                                    quantity = 1
                                                 });
                                             }
                                         }
@@ -597,22 +597,22 @@ namespace NumberSearch.Mvc.Controllers
                             {
                                 if (order.OnsiteInstallation)
                                 {
-                                    onetimeItems.Add(new Invoice_Items
+                                    onetimeItems.Add(new Line_Items
                                     {
                                         product_key = "Onsite Hardware Installation",
                                         notes = $"We'll come visit you and get all your phones setup.",
                                         cost = 60,
-                                        qty = 1
+                                        quantity = 1
                                     });
                                 }
                                 else
                                 {
-                                    onetimeItems.Add(new Invoice_Items
+                                    onetimeItems.Add(new Line_Items
                                     {
                                         product_key = "Remote Installation",
                                         notes = $"We'll walk you through getting all your phones setup virtually.",
                                         cost = 0,
-                                        qty = 1
+                                        quantity = 1
                                     });
                                 }
                             }
@@ -756,7 +756,7 @@ Accelerate Networks
                             var upfrontInvoice = new InvoiceDatum
                             {
                                 id = billingClient.id,
-                                invoice_items = onetimeItems.ToArray(),
+                                line_items = onetimeItems.ToArray(),
                                 tax_name1 = billingTaxRate.name,
                                 tax_rate1 = billingTaxRate.rate
                             };
@@ -764,24 +764,20 @@ Accelerate Networks
                             var reoccuringInvoice = new InvoiceDatum
                             {
                                 id = billingClient.id,
-                                invoice_items = reoccuringItems.ToArray(),
+                                line_items = reoccuringItems.ToArray(),
                                 tax_name1 = billingTaxRate.name,
-                                tax_rate1 = billingTaxRate.rate,
-                                is_recurring = true,
-                                frequency_id = 4
+                                tax_rate1 = billingTaxRate.rate
                             };
 
                             // If they want just a Quote, create a quote in the billing system, not an invoice.
                             if (order.Quote)
                             {
                                 // Mark the invoices as quotes.
-                                upfrontInvoice.is_quote = true;
-                                upfrontInvoice.invoice_type_id = 2;
-                                reoccuringInvoice.is_quote = true;
-                                reoccuringInvoice.invoice_type_id = 2;
+                                upfrontInvoice.entity_type = "quote";
+                                reoccuringInvoice.entity_type = "quote";
 
                                 // Submit them to the billing system if they have items.
-                                if (upfrontInvoice.invoice_items.Any() && reoccuringInvoice.invoice_items.Any())
+                                if (upfrontInvoice.line_items.Any() && reoccuringInvoice.line_items.Any())
                                 {
                                     InvoiceDatum createNewOneTimeInvoice;
                                     InvoiceDatum createNewReoccuringInvoice;
@@ -824,7 +820,7 @@ Accelerate Networks
                                             order.UpfrontInvoiceLink = oneTimeLink;
                                         }
 
-                                        confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.invoice_number} and {createNewReoccuringInvoice.invoice_number} from Accelerate Networks";
+                                        confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} and {createNewReoccuringInvoice.number} from Accelerate Networks";
                                         confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
@@ -848,7 +844,7 @@ Accelerate Networks
                                         Log.Fatal("[Checkout] Invoices were not successfully created in the billing system.");
                                     }
                                 }
-                                else if (reoccuringInvoice.invoice_items.Any())
+                                else if (reoccuringInvoice.line_items.Any())
                                 {
                                     // Submit them to the billing system.
                                     InvoiceDatum createNewReoccuringInvoice;
@@ -882,7 +878,7 @@ Accelerate Networks
                                             order.ReoccuringInvoiceLink = reoccuringLink;
                                         }
 
-                                        confirmationEmail.Subject = $"Quote {createNewReoccuringInvoice.invoice_number} from Accelerate Networks";
+                                        confirmationEmail.Subject = $"Quote {createNewReoccuringInvoice.number} from Accelerate Networks";
                                         confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
@@ -906,7 +902,7 @@ Accelerate Networks
                                         Log.Fatal("[Checkout] Invoices were not successfully created in the billing system.");
                                     }
                                 }
-                                else if (upfrontInvoice.invoice_items.Any())
+                                else if (upfrontInvoice.line_items.Any())
                                 {
                                     InvoiceDatum createNewOneTimeInvoice;
 
@@ -939,7 +935,7 @@ Accelerate Networks
                                             order.UpfrontInvoiceLink = oneTimeLink;
                                         }
 
-                                        confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.invoice_number} from Accelerate Networks";
+                                        confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} from Accelerate Networks";
                                         confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
@@ -968,7 +964,7 @@ Accelerate Networks
                             else
                             {
                                 // Submit them to the billing system if they have items.
-                                if (upfrontInvoice.invoice_items.Any() && reoccuringInvoice.invoice_items.Any())
+                                if (upfrontInvoice.line_items.Any() && reoccuringInvoice.line_items.Any())
                                 {
                                     InvoiceDatum createNewOneTimeInvoice;
                                     InvoiceDatum createNewReoccuringInvoice;
@@ -1009,7 +1005,7 @@ Accelerate Networks
                                             order.UpfrontInvoiceLink = oneTimeLink;
                                         }
 
-                                        confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.invoice_number} and {createNewReoccuringInvoice.invoice_number} from Accelerate Networks";
+                                        confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} and {createNewReoccuringInvoice.number} from Accelerate Networks";
                                         confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
@@ -1033,7 +1029,7 @@ Accelerate Networks
                                         Log.Fatal("[Checkout] Invoices were not successfully created in the billing system.");
                                     }
                                 }
-                                else if (reoccuringInvoice.invoice_items.Any())
+                                else if (reoccuringInvoice.line_items.Any())
                                 {
                                     InvoiceDatum createNewReoccuringInvoice;
 
@@ -1064,7 +1060,7 @@ Accelerate Networks
                                             order.ReoccuringInvoiceLink = reoccuringLink;
                                         }
 
-                                        confirmationEmail.Subject = $"Quote {createNewReoccuringInvoice.invoice_number} from Accelerate Networks";
+                                        confirmationEmail.Subject = $"Quote {createNewReoccuringInvoice.number} from Accelerate Networks";
                                         confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
@@ -1088,7 +1084,7 @@ Accelerate Networks
                                         Log.Fatal("[Checkout] Invoices were not successfully created in the billing system.");
                                     }
                                 }
-                                else if (upfrontInvoice.invoice_items.Any())
+                                else if (upfrontInvoice.line_items.Any())
                                 {
                                     InvoiceDatum createNewOneTimeInvoice;
 
@@ -1119,7 +1115,7 @@ Accelerate Networks
                                             order.UpfrontInvoiceLink = oneTimeLink;
                                         }
 
-                                        confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.invoice_number} from Accelerate Networks";
+                                        confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} from Accelerate Networks";
                                         confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            

@@ -13,8 +13,9 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
             string endpoint = "tax_rates";
-            string tokenHeader = "X-Ninja-Token";
-            string url = $"{baseUrl}{endpoint}";
+            string tokenHeader = "X-Api-Token";
+            string perPageParameter = "?per_page=10000";
+            string url = $"{baseUrl}{endpoint}{perPageParameter}";
 
             return await url
                 .WithHeader(tokenHeader, token)
@@ -32,7 +33,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
     {
         public string account_key { get; set; }
         public bool is_owner { get; set; }
-        public int id { get; set; }
+        public string id { get; set; }
         public string name { get; set; }
         public decimal rate { get; set; }
         public bool is_inclusive { get; set; }
@@ -43,7 +44,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
             string endpoint = "tax_rates";
-            string tokenHeader = "X-Ninja-Token";
+            string tokenHeader = "X-Api-Token";
             string contentHeader = "Content-Type";
             string contentHeaderValue = "application/json";
             string url = $"{baseUrl}{endpoint}";

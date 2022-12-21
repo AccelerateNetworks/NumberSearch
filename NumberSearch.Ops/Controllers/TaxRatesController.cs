@@ -26,9 +26,9 @@ namespace NumberSearch.Ops.Controllers
         [HttpGet]
         [Route("/Home/TaxRates")]
         [Route("/Home/TaxRates/{taxRateId}")]
-        public async Task<IActionResult> TaxRates(int? taxRateId)
+        public async Task<IActionResult> TaxRates(string taxRateId)
         {
-            if (taxRateId != null && taxRateId > 0)
+            if (!string.IsNullOrWhiteSpace(taxRateId))
             {
                 var result = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
 
@@ -36,7 +36,7 @@ namespace NumberSearch.Ops.Controllers
                 {
                     Rates = new TaxRate
                     {
-                        data = result.data.Where(x => x.id == taxRateId).ToArray()
+                        data = result.data.Where(x => x.id.Contains(taxRateId)).ToArray()
                     }
                 });
             }

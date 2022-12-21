@@ -97,7 +97,7 @@ namespace NumberSearch.Tests
 
             // Assert        
             Assert.NotNull(result);
-            Assert.NotEmpty(result.data);
+            Assert.NotEmpty(result);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
@@ -105,11 +105,11 @@ namespace NumberSearch.Tests
         public async Task GetBillingInvoiceByIdAsync()
         {
             // Act
-            var result = await Invoice.GetByIdAsync(1661, invoiceNinjaToken);
+            var result = await Invoice.GetByIdAsync("Vyb86loevA", invoiceNinjaToken);
 
             // Assert        
             Assert.NotNull(result);
-            Assert.Equal(1661, result.id);
+            Assert.Equal("Vyb86loevA", result.id);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
@@ -160,7 +160,7 @@ namespace NumberSearch.Tests
         public async Task GetAllBillingClientsByIdAsync()
         {
             // Act
-            var result = await Client.GetByIdWithInoviceLinksAsync(15, invoiceNinjaToken);
+            var result = await Client.GetByIdWithInoviceLinksAsync("kQBeX9AayK", invoiceNinjaToken);
 
             // Assert        
             Assert.NotNull(result);
@@ -213,11 +213,11 @@ namespace NumberSearch.Tests
         public async Task GetBillingClientByIdAsync()
         {
             // Act
-            var result = await Client.GetByIdAsync(96, invoiceNinjaToken);
+            var result = await Client.GetByIdAsync("q9wdLRXajP", invoiceNinjaToken);
 
             // Assert        
             Assert.NotNull(result);
-            Assert.Equal(96, result.id);
+            Assert.Equal("q9wdLRXajP", result.id);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
@@ -359,18 +359,6 @@ namespace NumberSearch.Tests
         //    Assert.NotNull(checkDelete);
         //    Assert.True(checkDelete.is_deleted);
         //}
-
-        [Fact]
-        public async Task GetBillingClientByClientIdAsync()
-        {
-            // Act
-            var result = await Client.GetByClientIdAsync("tf5ohehkafg4xcdrmufsqob4jd6lwymt", invoiceNinjaToken);
-
-            // Assert        
-            Assert.NotNull(result);
-            Assert.NotEmpty(result.data);
-            output.WriteLine(JsonSerializer.Serialize(result));
-        }
 
         [Fact]
         public async Task LRNLookupTestAsync()

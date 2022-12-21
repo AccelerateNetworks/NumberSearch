@@ -591,8 +591,6 @@
 	  <Folder Include="wwwroot\lib\" />
 	</ItemGroup>
 	<ProjectExtensions>
-		<VisualStudio>
-			<UserProperties wwwroot_4lib_4bootstrap_4dist_4css_4bootstrap_1min_1css_1map__JsonSchema="" />
-		</VisualStudio>
+		<VisualStudio><UserProperties /></VisualStudio>
 	</ProjectExtensions>
 </Project>
