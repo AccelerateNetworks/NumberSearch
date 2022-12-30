@@ -2025,10 +2025,10 @@ public class OrdersController : Controller
                                     _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
-                                    var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
+                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
                                     Log.Information(JsonSerializer.Serialize(invoiceLinks));
-                                    var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-                                    var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var reoccuringLink = invoiceLinks.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
                                     if (!string.IsNullOrWhiteSpace(reoccuringLink))
                                     {
@@ -2071,10 +2071,10 @@ public class OrdersController : Controller
                                     _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
-                                    var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewReoccuringInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
+                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccuringInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
                                     Log.Information(JsonSerializer.Serialize(invoiceLinks));
 
-                                    var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var reoccuringLink = invoiceLinks.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
                                     if (!string.IsNullOrWhiteSpace(reoccuringLink))
                                     {
@@ -2112,9 +2112,9 @@ public class OrdersController : Controller
                                     _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
-                                    var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
+                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
                                     Log.Information(JsonSerializer.Serialize(invoiceLinks));
-                                    var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
                                     if (!string.IsNullOrWhiteSpace(oneTimeLink))
                                     {
@@ -2163,10 +2163,10 @@ public class OrdersController : Controller
                                     _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
-                                    var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
+                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
                                     Log.Information(JsonSerializer.Serialize(invoiceLinks));
-                                    var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-                                    var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var reoccuringLink = invoiceLinks.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
                                     if (!string.IsNullOrWhiteSpace(reoccuringLink))
                                     {
@@ -2207,9 +2207,9 @@ public class OrdersController : Controller
                                     _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
-                                    var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewReoccuringInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
+                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccuringInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
                                     Log.Information(JsonSerializer.Serialize(invoiceLinks));
-                                    var reoccuringLink = invoiceLinks.invoices.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var reoccuringLink = invoiceLinks.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
                                     if (!string.IsNullOrWhiteSpace(reoccuringLink))
                                     {
@@ -2245,9 +2245,9 @@ public class OrdersController : Controller
                                     _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
-                                    var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
+                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
                                     Log.Information(JsonSerializer.Serialize(invoiceLinks));
-                                    var oneTimeLink = invoiceLinks.invoices.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
                                     if (!string.IsNullOrWhiteSpace(oneTimeLink))
                                     {

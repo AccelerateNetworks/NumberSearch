@@ -29,6 +29,24 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             return result.data;
         }
 
+        public static async Task<InvoiceDatum[]> GetByClientIdWithInoviceLinksAsync(string clientId, string token)
+        {
+            string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
+            string endpoint = "invoices";
+            string tokenHeader = "X-Api-Token";
+            string clientIdParameter = $"?client_id={clientId}";
+            string perPageParameter = "&per_page=10000";
+            string url = $"{baseUrl}{endpoint}{clientIdParameter}{perPageParameter}";
+
+            var result = await url
+                .WithHeader(tokenHeader, token)
+                .GetJsonAsync<Invoice>()
+                .ConfigureAwait(false);
+
+            // Unwrap the data we want from the single-field parent object.
+            return result.data;
+        }
+
         public static async Task<InvoiceDatum> GetByIdAsync(string invoiceId, string token)
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
@@ -45,6 +63,8 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             // Unwrap the data we want from the single-field parent object.
             return result.data;
         }
+
+
     }
 
     public class InvoiceSingle

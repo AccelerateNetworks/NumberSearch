@@ -114,6 +114,22 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task GetBillingInvoiceByClientIdAsync()
+        {
+            // Act
+            var result = await Invoice.GetByClientIdWithInoviceLinksAsync("7N1aM6ObWm", invoiceNinjaToken);
+
+            // Assert        
+            Assert.NotNull(result);
+            Assert.NotEmpty(result);
+            var element = result.FirstOrDefault();
+            Assert.Equal("7N1aM6ObWm", element.client_id);
+            Assert.False(string.IsNullOrWhiteSpace(result.LastOrDefault().invitations.FirstOrDefault().link));
+            output.WriteLine(result.LastOrDefault().invitations.FirstOrDefault().link);
+            output.WriteLine(JsonSerializer.Serialize(result));
+        }
+
+        [Fact]
         public async Task GetBillingTaxRatesAsync()
         {
             // Act
@@ -153,19 +169,6 @@ namespace NumberSearch.Tests
             // Assert        
             Assert.NotNull(result);
             Assert.NotEmpty(result.data);
-            output.WriteLine(JsonSerializer.Serialize(result));
-        }
-
-        [Fact]
-        public async Task GetAllBillingClientsByIdAsync()
-        {
-            // Act
-            var result = await Client.GetByIdWithInoviceLinksAsync("kQBeX9AayK", invoiceNinjaToken);
-
-            // Assert        
-            Assert.NotNull(result);
-            Assert.False(string.IsNullOrWhiteSpace(result.invoices.LastOrDefault().invitations.FirstOrDefault().link));
-            output.WriteLine(result.invoices.LastOrDefault().invitations.FirstOrDefault().link);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 

@@ -183,15 +183,15 @@ namespace NumberSearch.Ingest
                         Log.Information($"[OrderUpdates] Order {order.OrderId} upgraded from a Quote.");
 
                         // Update the invoice links shown on the order.
-                        var invoiceLinks = await Client.GetByIdWithInoviceLinksAsync(order.BillingClientId, invoiceNinjaToken).ConfigureAwait(false);
+                        var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(order.BillingClientId, invoiceNinjaToken).ConfigureAwait(false);
 
-                        var oneTimeLink = invoiceLinks.invoices.Where(x => x.id.Contains(order.BillingInvoiceId)).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                        var oneTimeLink = invoiceLinks.Where(x => x.id.Contains(order.BillingInvoiceId)).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
                         if (!string.IsNullOrWhiteSpace(oneTimeLink))
                         {
                             order.UpfrontInvoiceLink = oneTimeLink;
                         }
 
-                        var reoccuringLink = invoiceLinks.invoices.Where(x => x.id.Contains(order.BillingInvoiceReoccuringId)).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                        var reoccuringLink = invoiceLinks.Where(x => x.id.Contains(order.BillingInvoiceReoccuringId)).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
                         if (!string.IsNullOrWhiteSpace(reoccuringLink))
                         {
                             order.ReoccuringInvoiceLink = reoccuringLink;

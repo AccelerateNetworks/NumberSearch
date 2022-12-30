@@ -57,24 +57,6 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             // Unwrap the data we want from the single-field parent object.
             return result.data;
         }
-
-        public static async Task<ClientDatum> GetByIdWithInoviceLinksAsync(string clientId, string token)
-        {
-            string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
-            string endpoint = "clients";
-            string tokenHeader = "X-Api-Token";
-            string clientIdParameter = $"/{clientId}";
-            string invitationsParameter = $"?include=invoices.invitations";
-            string url = $"{baseUrl}{endpoint}{clientIdParameter}{invitationsParameter}";
-
-            var result = await url
-                .WithHeader(tokenHeader, token)
-                .GetJsonAsync<ClientSingle>()
-                .ConfigureAwait(false);
-
-            // Unwrap the data we want from the single-field parent object.
-            return result.data;
-        }
     }
 
     /// <summary>
