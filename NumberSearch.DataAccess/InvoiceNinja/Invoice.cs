@@ -1,9 +1,5 @@
 ﻿using Flurl.Http;
 
-using Serilog;
-
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.InvoiceNinja
@@ -142,7 +138,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public string user_id { get; set; }
         public string project_id { get; set; }
         public string assigned_user_id { get; set; }
-        public float amount { get; set; }
+        public decimal amount { get; set; }
         public decimal balance { get; set; }
         public string client_id { get; set; }
         public string vendor_id { get; set; }
@@ -154,7 +150,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public int archived_at { get; set; }
         public bool is_deleted { get; set; }
         public string number { get; set; }
-        public float discount { get; set; }
+        public decimal discount { get; set; }
         public string po_number { get; set; }
         public string date { get; set; }
         public string last_sent_date { get; set; }
@@ -170,7 +166,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public int tax_rate2 { get; set; }
         public string tax_name3 { get; set; }
         public int tax_rate3 { get; set; }
-        public float total_taxes { get; set; }
+        public decimal total_taxes { get; set; }
         public bool is_amount_discount { get; set; }
         public string footer { get; set; }
         public int partial { get; set; }
@@ -205,13 +201,13 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public async Task<InvoiceDatum> PostAsync(string token)
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
-            string endpostring = "invoices";
+            string endpoint = "invoices";
             string tokenHeader = "X-Api-Token";
             string requestedHeader = "X-Requested-With";
             string requestedHeaderValue = "XMLHttpRequest";
             string contentHeader = "Content-Type";
             string contentHeaderValue = "application/json";
-            string url = $"{baseUrl}{endpostring}";
+            string url = $"{baseUrl}{endpoint}";
 
             var result = await url
                 .WithHeader(tokenHeader, token)
@@ -228,12 +224,12 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public async Task<InvoiceDatum> PutAsync(string token)
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
-            string endpostring = "invoices";
+            string endpoint = "invoices";
             string tokenHeader = "X-Api-Token";
             string contentHeader = "Content-Type";
             string contentHeaderValue = "application/json";
             string clientIdParameter = $"/{id}";
-            string url = $"{baseUrl}{endpostring}{clientIdParameter}";
+            string url = $"{baseUrl}{endpoint}{clientIdParameter}";
 
             var result = await url
                 .WithHeader(tokenHeader, token)
@@ -249,12 +245,12 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public async Task<InvoiceDatum> DeleteAsync(string token)
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
-            string endpostring = "invoices";
+            string endpoint = "invoices";
             string tokenHeader = "X-Api-Token";
             string contentHeader = "Content-Type";
             string contentHeaderValue = "application/json";
             string clientIdParameter = $"/{id}";
-            string url = $"{baseUrl}{endpostring}{clientIdParameter}?action=delete";
+            string url = $"{baseUrl}{endpoint}{clientIdParameter}?action=delete";
 
             var result = await url
                 .WithHeader(tokenHeader, token)
@@ -266,29 +262,5 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             // Unwrap the data we want from the single-field parent object.
             return result.data;
         }
-
-        public async Task<bool> SendInvoiceAsync(string token)
-        {
-            string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
-            string endpostring = "email_invoice";
-            string tokenHeader = "X-Api-Token";
-            string contentHeader = "Content-Type";
-            string contentHeaderValue = "application/json";
-            string url = $"{baseUrl}{endpostring}";
-
-            var result = await url
-                .WithHeader(tokenHeader, token)
-                .WithHeader(contentHeader, contentHeaderValue)
-                .PostJsonAsync(new { id })
-                .ReceiveJson<Email_Invoice>()
-                .ConfigureAwait(false);
-
-            return result.message == "success";
-        }
     }
-}
-
-public class Email_Invoice
-{
-    public string message { get; set; }
 }
