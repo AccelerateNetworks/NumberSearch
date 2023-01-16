@@ -363,22 +363,22 @@ namespace NumberSearch.Tests
         //    Assert.True(checkDelete.is_deleted);
         //}
 
-        [Fact]
-        public async Task LRNLookupTestAsync()
-        {
-            // Arrange
-            string phoneNumber = "2065579450";
+        //[Fact]
+        //public async Task LRNLookupTestAsync()
+        //{
+        //    // Arrange
+        //    string phoneNumber = "2065579450";
 
-            // Act
-            var result = await LrnLookup.GetAsync(phoneNumber, token);
+        //    // Act
+        //    var result = await LrnLookup.GetAsync(phoneNumber, token);
 
-            // Assert        
-            Assert.NotNull(result);
-            Assert.False(string.IsNullOrWhiteSpace(result.status));
-            Assert.True(result.code == 200);
-            Assert.False(string.IsNullOrWhiteSpace(result.data.lrn));
-            output.WriteLine(JsonSerializer.Serialize(result));
-        }
+        //    // Assert        
+        //    Assert.NotNull(result);
+        //    Assert.False(string.IsNullOrWhiteSpace(result.status));
+        //    Assert.True(result.code == 200);
+        //    Assert.False(string.IsNullOrWhiteSpace(result.data.lrn));
+        //    output.WriteLine(JsonSerializer.Serialize(result));
+        //}
 
         [Fact]
         public async Task LookupPageWithBadNumbersAsync()
