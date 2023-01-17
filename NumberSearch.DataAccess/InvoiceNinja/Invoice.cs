@@ -25,10 +25,14 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             return result.data;
         }
 
-        public static async Task<InvoiceDatum[]> GetByClientIdWithInoviceLinksAsync(string clientId, string token)
+        public static async Task<InvoiceDatum[]> GetByClientIdWithInoviceLinksAsync(string clientId, string token, bool quote)
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
             string endpoint = "invoices";
+            if (quote)
+            {
+                endpoint = "quotes";
+            }
             string tokenHeader = "X-Api-Token";
             string clientIdParameter = $"?client_id={clientId}";
             string perPageParameter = "&per_page=10000";
@@ -202,6 +206,10 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
             string endpoint = "invoices";
+            if (entity_type.Equals("quote"))
+            {
+                endpoint = "quotes";
+            }
             string tokenHeader = "X-Api-Token";
             string requestedHeader = "X-Requested-With";
             string requestedHeaderValue = "XMLHttpRequest";
@@ -225,6 +233,10 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
             string endpoint = "invoices";
+            if (entity_type.Equals("quote"))
+            {
+                endpoint = "quotes";
+            }
             string tokenHeader = "X-Api-Token";
             string contentHeader = "Content-Type";
             string contentHeaderValue = "application/json";
@@ -246,6 +258,10 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
             string endpoint = "invoices";
+            if (entity_type.Equals("quote"))
+            {
+                endpoint = "quotes";
+            }
             string tokenHeader = "X-Api-Token";
             string contentHeader = "Content-Type";
             string contentHeaderValue = "application/json";

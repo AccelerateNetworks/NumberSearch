@@ -805,7 +805,7 @@ Accelerate Networks
                                         order.BillingInvoiceReoccuringId = createNewReoccuringInvoice.id.ToString(CultureInfo.CurrentCulture);
                                         var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
-                                        var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
+                                        var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, true).ConfigureAwait(false);
                                         Log.Information(JsonSerializer.Serialize(invoiceLinks));
                                         var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
                                         var reoccuringLink = invoiceLinks.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
@@ -868,7 +868,7 @@ Accelerate Networks
                                         order.BillingInvoiceReoccuringId = createNewReoccuringInvoice.id.ToString(CultureInfo.CurrentCulture);
                                         var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
-                                        var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccuringInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
+                                        var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccuringInvoice.client_id, _invoiceNinjaToken, true).ConfigureAwait(false);
                                         Log.Information(JsonSerializer.Serialize(invoiceLinks));
 
                                         var reoccuringLink = invoiceLinks.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
@@ -926,7 +926,7 @@ Accelerate Networks
                                         order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
                                         var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
-                                        var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
+                                        var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, true).ConfigureAwait(false);
                                         Log.Information(JsonSerializer.Serialize(invoiceLinks));
                                         var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
@@ -990,7 +990,7 @@ Accelerate Networks
                                         order.BillingInvoiceReoccuringId = createNewReoccuringInvoice.id.ToString(CultureInfo.CurrentCulture);
                                         var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
-                                        var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
+                                        var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, false).ConfigureAwait(false);
                                         Log.Information(JsonSerializer.Serialize(invoiceLinks));
                                         var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
                                         var reoccuringLink = invoiceLinks.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
@@ -1051,7 +1051,7 @@ Accelerate Networks
                                         order.BillingInvoiceReoccuringId = createNewReoccuringInvoice.id.ToString(CultureInfo.CurrentCulture);
                                         var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
-                                        var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccuringInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
+                                        var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccuringInvoice.client_id, _invoiceNinjaToken, false).ConfigureAwait(false);
                                         Log.Information(JsonSerializer.Serialize(invoiceLinks));
                                         var reoccuringLink = invoiceLinks.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
@@ -1106,7 +1106,7 @@ Accelerate Networks
                                         order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
                                         var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
-                                        var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
+                                        var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, false).ConfigureAwait(false);
                                         Log.Information(JsonSerializer.Serialize(invoiceLinks));
                                         var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
