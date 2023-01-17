@@ -828,7 +828,7 @@ Accelerate Networks
                                         confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
-Thanks for considering Accelerate Networks, take a look at the <a href={reoccuringLink}'>monthly service cost here</a>, and the <a href='{oneTimeLink}'>upfront cost here</a>.
+Thanks for considering Accelerate Networks, take a look at the <a href='{reoccuringLink}'>monthly service cost here</a>, and the <a href='{oneTimeLink}'>upfront cost here</a>.
 <br />
 <br />                                                                            
 Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
@@ -886,7 +886,7 @@ Accelerate Networks
                                         confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
-Thanks for considering Accelerate Networks, take a look at the <a href={reoccuringLink}'>monthly service cost here</a>.
+Thanks for considering Accelerate Networks, take a look at the <a href='{reoccuringLink}'>monthly service cost here</a>.
 <br />
 <br />                                                                            
 Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
@@ -1014,7 +1014,7 @@ Accelerate Networks
                                         confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
-Thanks for choosing Accelerate Networks, take a look at the <a href={reoccuringLink}'>monthly service cost here</a>, and the <a href='{oneTimeLink}'>upfront cost here</a>.
+Thanks for choosing Accelerate Networks, take a look at the <a href='{reoccuringLink}'>monthly service cost here</a>, and the <a href='{oneTimeLink}'>upfront cost here</a>.
 <br />
 <br />                                                                            
 Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
@@ -1069,7 +1069,7 @@ Accelerate Networks
                                         confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
-Thanks for choosing Accelerate Networks, take a look at the <a href={reoccuringLink}'>monthly service cost here</a>.
+Thanks for choosing Accelerate Networks, take a look at the <a href='{reoccuringLink}'>monthly service cost here</a>.
 <br />
 <br />                                                                            
 Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
