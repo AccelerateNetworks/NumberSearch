@@ -63,8 +63,6 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             // Unwrap the data we want from the single-field parent object.
             return result.data;
         }
-
-
     }
 
     public class InvoiceSingle
@@ -134,7 +132,6 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public string email_status { get; set; }
         public string email_error { get; set; }
     }
-
 
     public class InvoiceDatum
     {
@@ -206,7 +203,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
             string endpoint = "invoices";
-            if (entity_type.Equals("quote"))
+            if (entity_type is not null && entity_type.Equals("quote"))
             {
                 endpoint = "quotes";
             }
@@ -233,7 +230,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
             string endpoint = "invoices";
-            if (entity_type.Equals("quote"))
+            if (entity_type is not null && entity_type.Equals("quote"))
             {
                 endpoint = "quotes";
             }
@@ -258,7 +255,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
             string endpoint = "invoices";
-            if (entity_type.Equals("quote"))
+            if (entity_type is not null && entity_type.Equals("quote"))
             {
                 endpoint = "quotes";
             }
@@ -272,6 +269,119 @@ namespace NumberSearch.DataAccess.InvoiceNinja
                 .WithHeader(tokenHeader, token)
                 .WithHeader(contentHeader, contentHeaderValue)
                 .PutAsync()
+                .ReceiveJson<InvoiceSingle>()
+                .ConfigureAwait(false);
+
+            // Unwrap the data we want from the single-field parent object.
+            return result.data;
+        }
+    }
+
+    public class ReccurringInvoice
+    {
+        public ReccurringInvoiceDatum[] data { get; set; }
+
+        public static async Task<ReccurringInvoiceDatum[]> GetByClientIdWithLinksAsync(string clientId, string token)
+        {
+            string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
+            string endpoint = "recurring_invoices";
+            string tokenHeader = "X-Api-Token";
+            string clientIdParameter = $"?client_id={clientId}";
+            string perPageParameter = "&per_page=10000";
+            string url = $"{baseUrl}{endpoint}{clientIdParameter}{perPageParameter}";
+
+            var result = await url
+                .WithHeader(tokenHeader, token)
+                .GetJsonAsync<ReccurringInvoice>()
+                .ConfigureAwait(false);
+
+            // Unwrap the data we want from the single-field parent object.
+            return result.data;
+        }
+    }
+
+    public class ReccurringInvoiceDatum
+    {
+        public string id { get; set; }
+        public string user_id { get; set; }
+        public string project_id { get; set; }
+        public string assigned_user_id { get; set; }
+        public decimal amount { get; set; }
+        public decimal balance { get; set; }
+        public string client_id { get; set; }
+        public string vendor_id { get; set; }
+        public string status_id { get; set; }
+        public string design_id { get; set; }
+        public int created_at { get; set; }
+        public int updated_at { get; set; }
+        public int archived_at { get; set; }
+        public bool is_deleted { get; set; }
+        public string number { get; set; }
+        public decimal discount { get; set; }
+        public string po_number { get; set; }
+        public string date { get; set; }
+        public string last_sent_date { get; set; }
+        public string next_send_date { get; set; }
+        public string due_date { get; set; }
+        public string terms { get; set; }
+        public string public_notes { get; set; }
+        public string private_notes { get; set; }
+        public bool uses_inclusive_taxes { get; set; }
+        public string tax_name1 { get; set; }
+        public decimal tax_rate1 { get; set; }
+        public string tax_name2 { get; set; }
+        public decimal tax_rate2 { get; set; }
+        public string tax_name3 { get; set; }
+        public decimal tax_rate3 { get; set; }
+        public decimal total_taxes { get; set; }
+        public bool is_amount_discount { get; set; }
+        public string footer { get; set; }
+        public decimal partial { get; set; }
+        public string partial_due_date { get; set; }
+        public string custom_value1 { get; set; }
+        public string custom_value2 { get; set; }
+        public string custom_value3 { get; set; }
+        public string custom_value4 { get; set; }
+        public bool has_tasks { get; set; }
+        public bool has_expenses { get; set; }
+        public decimal custom_surcharge1 { get; set; }
+        public decimal custom_surcharge2 { get; set; }
+        public decimal custom_surcharge3 { get; set; }
+        public decimal custom_surcharge4 { get; set; }
+        public decimal exchange_rate { get; set; }
+        public bool custom_surcharge_tax1 { get; set; }
+        public bool custom_surcharge_tax2 { get; set; }
+        public bool custom_surcharge_tax3 { get; set; }
+        public bool custom_surcharge_tax4 { get; set; }
+        public Line_Items[] line_items { get; set; }
+        public string entity_type { get; set; }
+        public string frequency_id { get; set; }
+        public int remaining_cycles { get; set; }
+        public object[] recurring_dates { get; set; }
+        public string auto_bill { get; set; }
+        public bool auto_bill_enabled { get; set; }
+        public string due_date_days { get; set; }
+        public decimal paid_to_date { get; set; }
+        public string subscription_id { get; set; }
+        public Invitation[] invitations { get; set; }
+        public object[] documents { get; set; }
+
+        public async Task<InvoiceDatum> PostAsync(string token)
+        {
+            string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
+            string endpoint = "recurring_invoices";
+            string tokenHeader = "X-Api-Token";
+            string requestedHeader = "X-Requested-With";
+            string requestedHeaderValue = "XMLHttpRequest";
+            string contentHeader = "Content-Type";
+            string contentHeaderValue = "application/json";
+            string url = $"{baseUrl}{endpoint}";
+
+            var result = await url
+                .WithHeader(tokenHeader, token)
+                .WithHeader(requestedHeader, requestedHeaderValue)
+                .WithHeader(contentHeader, contentHeaderValue)
+                .PostJsonAsync(new { client_id, tax_name1, tax_rate1, entity_type, frequency_id, auto_bill_enabled, auto_bill, line_items })
                 .ReceiveJson<InvoiceSingle>()
                 .ConfigureAwait(false);
 
