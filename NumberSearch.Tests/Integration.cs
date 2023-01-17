@@ -117,7 +117,7 @@ namespace NumberSearch.Tests
         public async Task GetBillingInvoiceByClientIdAsync()
         {
             // Act
-            var result = await Invoice.GetByClientIdWithInoviceLinksAsync("7N1aM6ObWm", invoiceNinjaToken);
+            var result = await Invoice.GetByClientIdWithInoviceLinksAsync("7N1aM6ObWm", invoiceNinjaToken, false);
 
             // Assert        
             Assert.NotNull(result);

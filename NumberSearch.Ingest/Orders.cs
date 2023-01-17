@@ -183,7 +183,7 @@ namespace NumberSearch.Ingest
                         Log.Information($"[OrderUpdates] Order {order.OrderId} upgraded from a Quote.");
 
                         // Update the invoice links shown on the order.
-                        var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(order.BillingClientId, invoiceNinjaToken).ConfigureAwait(false);
+                        var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(order.BillingClientId, invoiceNinjaToken, order.Quote).ConfigureAwait(false);
 
                         var oneTimeLink = invoiceLinks.Where(x => x.id.Contains(order.BillingInvoiceId)).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
                         if (!string.IsNullOrWhiteSpace(oneTimeLink))
