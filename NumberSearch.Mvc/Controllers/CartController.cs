@@ -724,6 +724,8 @@ Accelerate Networks
                             var billingClients = await Client.GetByEmailAsync(order.Email, _invoiceNinjaToken).ConfigureAwait(false);
                             var billingClient = billingClients.data.FirstOrDefault();
 
+                            // To get the right data into invoice ninja 5 we must first create the billing client using a unique name,
+                            // and then update that billing client with the rest of the address and contact data once we have its id.
                             if (billingClient is null)
                             {
                                 // Create a new client in the billing system.
@@ -744,7 +746,11 @@ Accelerate Networks
                                     postal_code = order.Zip
                                 };
 
-                                billingClient = await newBillingClient.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                // Create the client and get its id.
+                                var newClient = await newBillingClient.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                newBillingClient.id = newClient.id;
+                                newBillingClient.contacts.FirstOrDefault().id = newClient.contacts.FirstOrDefault().id;
+                                billingClient = await newBillingClient.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                 Log.Information($"[Checkout] Created billing client {billingClient.name}, {billingClient.id}.");
                             }
                             else

@@ -130,7 +130,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             var result = await url
                 .WithHeader(tokenHeader, token)
                 .WithHeader(contentHeader, contentHeaderValue)
-                .PostJsonAsync(new { name = name, contact = new { email = contacts.FirstOrDefault().email } })
+                .PostJsonAsync(new { name })
                 .ReceiveJson<ClientSingle>()
                 .ConfigureAwait(false);
 
@@ -151,7 +151,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             var result = await url
                 .WithHeader(tokenHeader, token)
                 .WithHeader(contentHeader, contentHeaderValue)
-                .PutJsonAsync(new { name, contacts })
+                .PutJsonAsync(new { name, contacts, address1, address2, city, state, postal_code })
                 .ReceiveJson<ClientSingle>()
                 .ConfigureAwait(false);
 
