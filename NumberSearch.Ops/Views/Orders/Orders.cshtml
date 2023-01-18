@@ -122,35 +122,17 @@
                             }
                             <p>
                                 <div class="btn-group mt-2" role="group" aria-label="Basic example">
-                                    @if (!string.IsNullOrWhiteSpace(order?.Order?.BillingInvoiceId))
+                                    @if (!string.IsNullOrWhiteSpace(order?.Order?.UpfrontInvoiceLink))
                                     {
-                                        if (order?.Order?.Quote is not null && order.Order.Quote)
-                                        {
-                                            <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-outline-success" target="_blank" rel="noopener noreferrer">
-                                                View Upfront Quote
-                                            </a>
-                                        }
-                                        else
-                                        {
-                                            <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceId/edit" class="btn btn-outline-success" target="_blank" rel="noopener noreferrer">
-                                                View Upfront Invoice
-                                            </a>
-                                        }
+                                        <a href="@order?.Order?.UpfrontInvoiceLink" class="btn btn-outline-success" target="_blank" rel="noopener noreferrer">
+                                            View Upfront Quote
+                                        </a>
                                     }
-                                    @if (!string.IsNullOrWhiteSpace(order?.Order?.BillingInvoiceReoccuringId))
+                                    @if (!string.IsNullOrWhiteSpace(order?.Order?.ReoccuringInvoiceLink))
                                     {
-                                        if (order?.Order?.Quote is not null && order.Order.Quote)
-                                        {
-                                            <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceReoccuringId/edit" class="btn btn-outline-primary" target="_blank" rel="noopener noreferrer">
-                                                View Recurring Quote
-                                            </a>
-                                        }
-                                        else
-                                        {
-                                            <a href="https://billing.acceleratenetworks.com/invoices/@order?.Order?.BillingInvoiceReoccuringId/edit" class="btn btn-outline-primary" target="_blank" rel="noopener noreferrer">
-                                                View Recurring Invoice
-                                            </a>
-                                        }
+                                        <a href="@order?.Order?.ReoccuringInvoiceLink" class="btn btn-outline-primary" target="_blank" rel="noopener noreferrer">
+                                            View Recurring Quote
+                                        </a>
                                     }
                                 </div>
                             </p>

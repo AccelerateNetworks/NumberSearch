@@ -96,43 +96,26 @@
                                 </p>
                                 <p>
                                     <div class="btn-group mt-2" role="group" aria-label="Basic example">
-                                        @if (!string.IsNullOrWhiteSpace(order?.BillingInvoiceId))
+                                        @if (!string.IsNullOrWhiteSpace(order?.UpfrontInvoiceLink))
                                         {
-                                            if (order.Quote is true)
-                                            {
-                                                <a href="https://billing.acceleratenetworks.com/invoices/@order?.BillingInvoiceId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
-                                                    Upfront Quote
-                                                </a>
-                                            }
-                                            else
-                                            {
-                                                <a href="https://billing.acceleratenetworks.com/invoices/@order?.BillingInvoiceId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
-                                                    Upfront Invoice
-                                                </a>
-                                            }
+                                            <a href="@order?.UpfrontInvoiceLink" class="btn btn-success" target="_blank" rel="noopener noreferrer">
+                                                Upfront Quote
+                                            </a>
                                         }
 
-                                        @if (!string.IsNullOrWhiteSpace(order?.BillingInvoiceReoccuringId))
+                                        @if (!string.IsNullOrWhiteSpace(order?.ReoccuringInvoiceLink))
                                         {
-                                            if (order.Quote is true)
-                                            {
-                                                <a href="https://billing.acceleratenetworks.com/invoices/@order?.BillingInvoiceReoccuringId/edit" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                                                    Recurring Quote
-                                                </a>
-                                            }
-                                            else
-                                            {
-                                                <a href="https://billing.acceleratenetworks.com/invoices/@order?.BillingInvoiceReoccuringId/edit" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                                                    Recurring Invoice
-                                                </a>
-                                            }
+                                            <a href="@order?.ReoccuringInvoiceLink" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                                                Recurring Quote
+                                            </a>
                                         }
                                         @if (!string.IsNullOrWhiteSpace(order?.BillingClientId))
                                         {
-                                            <a href="https://billing.acceleratenetworks.com/clients/@order?.BillingClientId/edit" class="btn btn-info" target="_blank" rel="noopener noreferrer">
-                                                Billing Client
+                                            <a href="https://billing.acceleratenetworks.com/clients/@order?.BillingClientId/" class="btn btn-info" target="_blank" rel="noopener noreferrer">
+                                                Billing Client 
                                             </a>
                                         }
+
                                     </div>
                                 </p>
                             </td>
