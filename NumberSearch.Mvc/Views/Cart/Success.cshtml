@@ -376,28 +376,29 @@
             <div class="alert alert-info" role="alert">
                 A confirmation email will be sent to @Model?.Order?.Email shortly.
             </div>
-            if (!string.IsNullOrWhiteSpace(Model?.Order?.UpfrontInvoiceLink))
-            {
-                <div class="pricing-header mx-auto pb-3 text-center">
-                    <h1 class="display-4">Upfront</h1>
-                </div>
-                <!-- 4:3 aspect ratio -->
-                <div class="embed-responsive embed-responsive-4by3">
-                    <iframe class="embed-responsive-item" src="@Model?.Order?.UpfrontInvoiceLink"></iframe>
-                </div>
-                <br />
-            }
-            if (!string.IsNullOrWhiteSpace(Model?.Order?.ReoccuringInvoiceLink))
-            {
-                <div class="pricing-header mx-auto pb-3 text-center">
-                    <h1 class="display-4">Monthly</h1>
-                </div>
-                <!-- 4:3 aspect ratio -->
-                <div class="embed-responsive embed-responsive-4by3">
-                    <iframe class="embed-responsive-item" src="@Model?.Order?.ReoccuringInvoiceLink"></iframe>
-                </div>
-                <br />
-            }
+            // Disabled because these always bump you into the login screen in invoice ninja 5.
+            //if (!string.IsNullOrWhiteSpace(Model?.Order?.UpfrontInvoiceLink))
+            //{
+            //    <div class="pricing-header mx-auto pb-3 text-center">
+            //        <h1 class="display-4">Upfront</h1>
+            //    </div>
+            //    <!-- 4:3 aspect ratio -->
+            //    <div class="embed-responsive embed-responsive-4by3">
+            //        <iframe class="embed-responsive-item" src="@Model?.Order?.UpfrontInvoiceLink"></iframe>
+            //    </div>
+            //    <br />
+            //}
+            //if (!string.IsNullOrWhiteSpace(Model?.Order?.ReoccuringInvoiceLink))
+            //{
+            //    <div class="pricing-header mx-auto pb-3 text-center">
+            //        <h1 class="display-4">Monthly</h1>
+            //    </div>
+            //    <!-- 4:3 aspect ratio -->
+            //    <div class="embed-responsive embed-responsive-4by3">
+            //        <iframe class="embed-responsive-item" src="@Model?.Order?.ReoccuringInvoiceLink"></iframe>
+            //    </div>
+            //    <br />
+            //}
             <div class="jumbotron">
                 <h1 class="display-4">Need help? Contact us!</h1>
                 <p class="lead">Give us a ring at 206-858-8757 (texting is welcome) or <a href="mailto:support@acceleratenetworks.com?Subject=Help%20me%20with%20?" target="_top">email us</a>.</p>
