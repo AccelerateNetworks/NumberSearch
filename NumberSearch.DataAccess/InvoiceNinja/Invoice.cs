@@ -218,7 +218,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
                 .WithHeader(tokenHeader, token)
                 .WithHeader(requestedHeader, requestedHeaderValue)
                 .WithHeader(contentHeader, contentHeaderValue)
-                .PostJsonAsync(new { client_id = id, tax_name1, tax_rate1, entity_type, line_items })
+                .PostJsonAsync(new { client_id, tax_name1, tax_rate1, entity_type, line_items })
                 .ReceiveJson<InvoiceSingle>()
                 .ConfigureAwait(false);
 
