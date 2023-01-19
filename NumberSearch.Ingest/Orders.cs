@@ -160,7 +160,7 @@ namespace NumberSearch.Ingest
                     // Handle the reoccuring invoice.
                     try
                     {
-                        var reoccuringInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceReoccuringId, invoiceNinjaToken);
+                        var reoccuringInvoice = await ReccurringInvoice.GetByIdAsync(order.BillingInvoiceReoccuringId, invoiceNinjaToken);
                         // If we found a matching invoice in the billing system and the quote has been upgraded to an invoice.
                         if (reoccuringInvoice is not null && !string.IsNullOrWhiteSpace(reoccuringInvoice.id) && order.BillingInvoiceReoccuringId != reoccuringInvoice.id)
                         {
@@ -191,7 +191,9 @@ namespace NumberSearch.Ingest
                             order.UpfrontInvoiceLink = oneTimeLink;
                         }
 
-                        var reoccuringLink = invoiceLinks.Where(x => x.id.Contains(order.BillingInvoiceReoccuringId)).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                        var reccuringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(order.BillingClientId, invoiceNinjaToken).ConfigureAwait(false);
+
+                        var reoccuringLink = reccuringInvoiceLinks.Where(x => x.id.Contains(order.BillingInvoiceReoccuringId)).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
                         if (!string.IsNullOrWhiteSpace(reoccuringLink))
                         {
                             order.ReoccuringInvoiceLink = reoccuringLink;

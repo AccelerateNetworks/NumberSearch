@@ -1,5 +1,6 @@
 ﻿using Flurl.Http;
 
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.InvoiceNinja
@@ -295,8 +296,23 @@ namespace NumberSearch.DataAccess.InvoiceNinja
                 .GetJsonAsync<ReccurringInvoice>()
                 .ConfigureAwait(false);
 
-            // Unwrap the data we want from the single-field parent object.
             return result.data;
+        }
+
+        public static async Task<ReccurringInvoiceDatum> GetByIdAsync(string id, string token)
+        {
+            string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
+            string endpoint = "recurring_invoices";
+            string tokenHeader = "X-Api-Token";
+            string IdParameter = $"/{id}";
+            string url = $"{baseUrl}{endpoint}{IdParameter}";
+
+            var result = await url
+                .WithHeader(tokenHeader, token)
+                .GetJsonAsync<ReccurringInvoice>()
+                .ConfigureAwait(false);
+
+            return result.data.FirstOrDefault();
         }
     }
 
