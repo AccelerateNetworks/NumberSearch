@@ -263,13 +263,13 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             string tokenHeader = "X-Api-Token";
             string contentHeader = "Content-Type";
             string contentHeaderValue = "application/json";
-            string clientIdParameter = $"/{id}";
-            string url = $"{baseUrl}{endpoint}{clientIdParameter}?action=delete";
+            string IdParameter = $"/{id}";
+            string url = $"{baseUrl}{endpoint}{IdParameter}";
 
             var result = await url
                 .WithHeader(tokenHeader, token)
                 .WithHeader(contentHeader, contentHeaderValue)
-                .PutAsync()
+                .DeleteAsync()
                 .ReceiveJson<InvoiceSingle>()
                 .ConfigureAwait(false);
 
