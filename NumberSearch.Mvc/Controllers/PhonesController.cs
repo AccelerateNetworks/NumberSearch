@@ -17,6 +17,14 @@ namespace NumberSearch.Mvc.Controllers
         [HttpGet]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
         [OutputCache(Duration = 30)]
+        public IActionResult GRP2612()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
+        [OutputCache(Duration = 30)]
         public IActionResult GXP2170()
         {
             return View();
