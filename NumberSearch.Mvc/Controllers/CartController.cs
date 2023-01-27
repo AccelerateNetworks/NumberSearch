@@ -781,6 +781,18 @@ Accelerate Networks
                                     entity_type = "quote",
                                 };
 
+                                var hiddenReoccuringInvoice = new ReccurringInvoiceDatum
+                                {
+                                    client_id = billingClient.id,
+                                    line_items = reoccuringItems.ToArray(),
+                                    tax_name1 = billingTaxRate.name,
+                                    tax_rate1 = billingTaxRate.rate,
+                                    entity_type = "recurringInvoice",
+                                    frequency_id = "5",
+                                    auto_bill = "always",
+                                    auto_bill_enabled = false,
+                                };
+
                                 // Submit them to the billing system if they have items.
                                 if (upfrontInvoice.line_items.Any() && reoccuringInvoice.line_items.Any())
                                 {
@@ -792,6 +804,8 @@ Accelerate Networks
                                     {
                                         createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                         createNewReoccuringInvoice = await reoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        var createNewHiddenReoccuringInvoice = await hiddenReoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+
                                     }
                                     catch
                                     {
@@ -856,6 +870,7 @@ Accelerate Networks
                                     {
                                         // Submit them to the billing system.
                                         createNewReoccuringInvoice = await reoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        var createNewHiddenReoccuringInvoice = await hiddenReoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
                                     catch
                                     {
