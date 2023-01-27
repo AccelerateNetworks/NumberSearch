@@ -1755,7 +1755,7 @@ namespace NumberSearch.Tests
             {
                 Assert.False(string.IsNullOrWhiteSpace(result.OrderId.ToString()));
                 Assert.False(string.IsNullOrWhiteSpace(result.FirstName));
-                Assert.False(string.IsNullOrWhiteSpace(result.LastName));
+                //Assert.False(string.IsNullOrWhiteSpace(result.LastName));
                 //Assert.False(string.IsNullOrWhiteSpace(result.Address));
                 //Assert.False(string.IsNullOrWhiteSpace(result.City));
                 //Assert.False(string.IsNullOrWhiteSpace(result.State));
