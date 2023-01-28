@@ -1287,38 +1287,76 @@ public class OrdersController : Controller
 
             if (parent is not null && child is not null)
             {
+                var parentProductOrders = await _context.ProductOrders.Where(x => x.OrderId == parent.OrderId).ToListAsync();
+                var parentPurchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == parent.OrderId).ToListAsync();
+                var parentVerifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == parent.OrderId).ToListAsync();
+                var parentPortedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == parent.OrderId).ToListAsync();
+                var parentPortRequests = await _context.PortRequests.Where(x => x.OrderId == parent.OrderId).ToListAsync();
+
                 try
                 {
                     var productOrders = await _context.ProductOrders.Where(x => x.OrderId == child.OrderId).ToListAsync();
                     var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == child.OrderId).ToListAsync();
                     var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == child.OrderId).ToListAsync();
                     var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == child.OrderId).ToListAsync();
+                    var portRequests = await _context.PortRequests.Where(x => x.OrderId == child.OrderId).ToListAsync();
+
+                    List<Guid> duplicateIds = new();
+
+                    foreach (var item in purchasedPhoneNumbers)
+                    {
+                        var duplicate = parentPurchasedPhoneNumbers?.Where(x => x?.DialedNumber == item?.DialedNumber).FirstOrDefault();
+                        if (duplicate is null)
+                        {
+                            item.OrderId = parent.OrderId;
+                            _context.PurchasedPhoneNumbers.Update(item);
+                            await _context.SaveChangesAsync();
+                        }
+                        else
+                        {
+                            // Remove duplicate product orders.
+                            productOrders = productOrders.Where(x => x?.DialedNumber != item?.DialedNumber).ToList();
+                        }
+                    }
+
+                    foreach (var item in verifiedPhoneNumbers)
+                    {
+                        var duplicate = parentVerifiedPhoneNumbers.Where(x => x?.VerifiedDialedNumber == item?.VerifiedDialedNumber).FirstOrDefault();
+                        if (duplicate is null)
+                        {
+                            item.OrderId = parent.OrderId;
+                            _context.VerifiedPhoneNumbers.Update(item);
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+
+                    foreach (var item in portedPhoneNumbers)
+                    {
+                        var duplicate = portedPhoneNumbers.Where(x => x?.PortedDialedNumber == item?.PortedDialedNumber).FirstOrDefault();
+                        if (duplicate is null)
+                        {
+                            item.OrderId = parent.OrderId;
+                            _context.PortedPhoneNumbers.Update(item);
+                            await _context.SaveChangesAsync();
+                        }
+                        else
+                        {
+                            // Remove duplicate product orders.
+                            productOrders = productOrders.Where(x => x?.PortedDialedNumber != item?.PortedDialedNumber).ToList();
+                        }
+                    }
+
+                    foreach (var item in portRequests)
+                    {
+                        item.OrderId = parent.OrderId;
+                        _context.PortRequests.Update(item);
+                        await _context.SaveChangesAsync();
+                    }
 
                     foreach (var item in productOrders)
                     {
                         item.OrderId = parent.OrderId;
                         _context.ProductOrders.Update(item);
-                        await _context.SaveChangesAsync();
-                    }
-
-                    foreach (var item in purchasedPhoneNumbers)
-                    {
-                        item.OrderId = parent.OrderId;
-                        _context.PurchasedPhoneNumbers.Update(item);
-                        await _context.SaveChangesAsync();
-                    }
-
-                    foreach (var item in verifiedPhoneNumbers)
-                    {
-                        item.OrderId = parent.OrderId;
-                        _context.VerifiedPhoneNumbers.Update(item);
-                        await _context.SaveChangesAsync();
-                    }
-
-                    foreach (var item in portedPhoneNumbers)
-                    {
-                        item.OrderId = parent.OrderId;
-                        _context.PortedPhoneNumbers.Update(item);
                         await _context.SaveChangesAsync();
                     }
 
