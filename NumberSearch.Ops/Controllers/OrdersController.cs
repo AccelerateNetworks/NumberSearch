@@ -1712,39 +1712,8 @@ public class OrdersController : Controller
                     {
                         // Submit the number orders and track the total cost.
                         var onetimeItems = new List<Line_Items>();
-                        var reoccuringItems = new List<Line_Items>();
+                        var reoccurringItems = new List<Line_Items>();
                         var totalCost = 0;
-
-                        // Delete the old invoices in the billing system.
-                        if (!string.IsNullOrWhiteSpace(order.BillingInvoiceId))
-                        {
-                            try
-                            {
-                                var existingOneTimeInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
-                                var checkDelete = await existingOneTimeInvoice.DeleteAsync(_invoiceNinjaToken);
-                            }
-                            catch (FlurlHttpException ex)
-                            {
-                                Log.Error($"[Regenerate Invoices] Failed to delete Invoice Id: {order.BillingInvoiceId} for OrderId: {order.OrderId}");
-                                Log.Error(await ex.GetResponseStringAsync());
-                                return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to regenerate the invoices for {order.OrderId}. 😠\r\n{await ex.GetResponseStringAsync()}\r\n{ex.Message}\r\n{ex.StackTrace}", AlertType = "alert-danger" });
-                            }
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(order.BillingInvoiceReoccuringId))
-                        {
-                            try
-                            {
-                                var existingReoccuringInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
-                                var checkDelete = await existingReoccuringInvoice.DeleteAsync(_invoiceNinjaToken);
-                            }
-                            catch (FlurlHttpException ex)
-                            {
-                                Log.Error($"[Regenerate Invoices] Failed to delete Invoice Id: {order.BillingInvoiceReoccuringId} for OrderId: {order.OrderId}");
-                                Log.Error(await ex.GetResponseStringAsync());
-                                return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to regenerate the invoices for {order.OrderId}. 😠\r\n{await ex.GetResponseStringAsync()}\r\n{ex.Message}\r\n{ex.StackTrace}", AlertType = "alert-danger" });
-                            }
-                        }
 
                         var totalNumberPurchasingCost = 0;
 
@@ -1775,7 +1744,7 @@ public class OrdersController : Controller
 
                                 var calculatedCost = 20;
 
-                                if (ported != null)
+                                if (ported is not null)
                                 {
                                     totalCost += calculatedCost;
                                     onetimeItems.Add(new Line_Items
@@ -1792,14 +1761,14 @@ public class OrdersController : Controller
 
                             if (productOrder.VerifiedPhoneNumberId is not null && productOrder.VerifiedPhoneNumberId != Guid.Empty)
                             {
-                                var verfied = cart.VerifiedPhoneNumbers.Where(x => x.VerifiedPhoneNumberId == productOrder.VerifiedPhoneNumberId).FirstOrDefault();
+                                var verified = cart.VerifiedPhoneNumbers.Where(x => x.VerifiedPhoneNumberId == productOrder.VerifiedPhoneNumberId).FirstOrDefault();
 
-                                if (verfied != null)
+                                if (verified != null)
                                 {
                                     totalCost += 10;
                                     onetimeItems.Add(new Line_Items
                                     {
-                                        product_key = verfied.VerifiedDialedNumber,
+                                        product_key = verified.VerifiedDialedNumber,
                                         notes = $"Phone Number to Verify Daily",
                                         cost = 10,
                                         quantity = 1
@@ -1833,7 +1802,7 @@ public class OrdersController : Controller
                                 {
                                     _ = int.TryParse(service.Price, out var price);
                                     totalCost += price;
-                                    reoccuringItems.Add(new Line_Items
+                                    reoccurringItems.Add(new Line_Items
                                     {
                                         product_key = service.Name,
                                         notes = $"{service.Description}",
@@ -1898,7 +1867,7 @@ public class OrdersController : Controller
                             }
                         }
 
-                        // Handle hardware installation senarios, if hardware is in the order.
+                        // Handle hardware installation scenarios, if hardware is in the order.
                         if (cart.Products.Any())
                         {
                             if (order.OnsiteInstallation)
@@ -1923,7 +1892,7 @@ public class OrdersController : Controller
                             }
                         }
 
-                        // Handle the tax information for the invoice and fall back to simplier queries if we get failures.
+                        // Handle the tax information for the invoice and fall back to simpler queries if we get failures.
                         NumberSearch.DataAccess.SalesTax? specificTaxRate = null;
                         try
                         {
@@ -2000,7 +1969,10 @@ public class OrdersController : Controller
                                 postal_code = order.Zip
                             };
 
-                            billingClient = await newBillingClient.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                            var newClient = await newBillingClient.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                            newBillingClient.id = newClient.id;
+                            newBillingClient.contacts.FirstOrDefault().id = newClient?.contacts?.FirstOrDefault()?.id;
+                            billingClient = await newBillingClient.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
                             Log.Information($"[Checkout] Created billing client {billingClient.name}, {billingClient.id}.");
                         }
                         else
@@ -2017,60 +1989,71 @@ public class OrdersController : Controller
                             tax_rate1 = billingTaxRate.rate
                         };
 
-                        var reoccuringInvoice = new InvoiceDatum
-                        {
-                            id = billingClient.id,
-                            line_items = reoccuringItems.ToArray(),
-                            tax_name1 = billingTaxRate.name,
-                            tax_rate1 = billingTaxRate.rate
-                        };
-
                         // If they want just a Quote, create a quote in the billing system, not an invoice.
                         if (order.Quote)
                         {
                             // Mark the invoices as quotes.
                             upfrontInvoice.entity_type = "quote";
-                            reoccuringInvoice.entity_type = "quote";
+                            var reoccurringInvoice = new InvoiceDatum
+                            {
+                                client_id = billingClient.id,
+                                line_items = reoccurringItems.ToArray(),
+                                tax_name1 = billingTaxRate.name,
+                                tax_rate1 = billingTaxRate.rate,
+                                entity_type = "quote",
+                            };
+
+                            var hiddenReoccurringInvoice = new ReccurringInvoiceDatum
+                            {
+                                client_id = billingClient.id,
+                                line_items = reoccurringItems.ToArray(),
+                                tax_name1 = billingTaxRate.name,
+                                tax_rate1 = billingTaxRate.rate,
+                                entity_type = "recurringInvoice",
+                                frequency_id = "5",
+                                auto_bill = "always",
+                                auto_bill_enabled = false,
+                            };
 
                             // Submit them to the billing system if they have items.
-                            if (upfrontInvoice.line_items.Any() && reoccuringInvoice.line_items.Any())
+                            if (upfrontInvoice.line_items.Any() && reoccurringInvoice.line_items.Any())
                             {
                                 InvoiceDatum createNewOneTimeInvoice;
-                                InvoiceDatum createNewReoccuringInvoice;
+                                InvoiceDatum createNewReoccurringInvoice;
 
                                 // Retry once on invoice creation failures.
                                 try
                                 {
                                     createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                    createNewReoccuringInvoice = await reoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                 }
                                 catch
                                 {
                                     Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
                                     Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
-                                    Log.Fatal(JsonSerializer.Serialize(reoccuringInvoice));
+                                    Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
                                     createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                    createNewReoccuringInvoice = await reoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                 }
 
-                                if (createNewOneTimeInvoice is not null && createNewReoccuringInvoice is not null)
+                                if (createNewOneTimeInvoice is not null && createNewReoccurringInvoice is not null)
                                 {
                                     // Update the order with the billing system's client and the two invoice Id's.
                                     order.BillingClientId = createNewOneTimeInvoice.client_id.ToString(CultureInfo.CurrentCulture);
                                     order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
-                                    order.BillingInvoiceReoccuringId = createNewReoccuringInvoice.id.ToString(CultureInfo.CurrentCulture);
+                                    order.BillingInvoiceReoccuringId = createNewReoccurringInvoice.id.ToString(CultureInfo.CurrentCulture);
 
                                     _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
                                     var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
-                                    Log.Information(JsonSerializer.Serialize(invoiceLinks));
                                     var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-                                    var reoccuringLink = invoiceLinks.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var reoccurringLink = invoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
-                                    if (!string.IsNullOrWhiteSpace(reoccuringLink))
+                                    if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                     {
-                                        order.ReoccuringInvoiceLink = reoccuringLink;
+                                        order.ReoccuringInvoiceLink = reoccurringLink;
                                     }
 
                                     if (!string.IsNullOrWhiteSpace(oneTimeLink))
@@ -2083,40 +2066,39 @@ public class OrdersController : Controller
                                     Log.Fatal("[Checkout] Invoices were not successfully created in the billing system.");
                                 }
                             }
-                            else if (reoccuringInvoice.line_items.Any())
+                            else if (reoccurringInvoice.line_items.Any())
                             {
                                 // Submit them to the billing system.
-                                InvoiceDatum createNewReoccuringInvoice;
+                                InvoiceDatum createNewReoccurringInvoice;
                                 try
                                 {
                                     // Submit them to the billing system.
-                                    createNewReoccuringInvoice = await reoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                 }
                                 catch
                                 {
                                     Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
-                                    Log.Fatal(JsonSerializer.Serialize(reoccuringInvoice));
+                                    Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
                                     // Submit them to the billing system.
-                                    createNewReoccuringInvoice = await reoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                 }
 
-                                if (createNewReoccuringInvoice is not null)
+                                if (createNewReoccurringInvoice is not null)
                                 {
                                     // Update the order with the billing system's client and the two invoice Id's.
-                                    order.BillingClientId = createNewReoccuringInvoice.client_id.ToString(CultureInfo.CurrentCulture);
-                                    order.BillingInvoiceReoccuringId = createNewReoccuringInvoice.id.ToString(CultureInfo.CurrentCulture);
+                                    order.BillingClientId = createNewReoccurringInvoice.client_id.ToString(CultureInfo.CurrentCulture);
+                                    order.BillingInvoiceReoccuringId = createNewReoccurringInvoice.id.ToString(CultureInfo.CurrentCulture);
 
                                     _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
-                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccuringInvoice.client_id, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
-                                    Log.Information(JsonSerializer.Serialize(invoiceLinks));
+                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccurringInvoice.client_id, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
+                                    var reoccurringLink = invoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
-                                    var reoccuringLink = invoiceLinks.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-
-                                    if (!string.IsNullOrWhiteSpace(reoccuringLink))
+                                    if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                     {
-                                        order.ReoccuringInvoiceLink = reoccuringLink;
+                                        order.ReoccuringInvoiceLink = reoccurringLink;
                                     }
                                 }
                                 else
@@ -2172,43 +2154,55 @@ public class OrdersController : Controller
                         }
                         else
                         {
+                            var reoccurringInvoice = new ReccurringInvoiceDatum
+                            {
+                                client_id = billingClient.id,
+                                line_items = reoccurringItems.ToArray(),
+                                tax_name1 = billingTaxRate.name,
+                                tax_rate1 = billingTaxRate.rate,
+                                entity_type = "recurringInvoice",
+                                frequency_id = "5",
+                                auto_bill = "always",
+                                auto_bill_enabled = true,
+                            };
+
                             // Submit them to the billing system if they have items.
-                            if (upfrontInvoice.line_items.Any() && reoccuringInvoice.line_items.Any())
+                            if (upfrontInvoice.line_items.Any() && reoccurringInvoice.line_items.Any())
                             {
                                 InvoiceDatum createNewOneTimeInvoice;
-                                InvoiceDatum createNewReoccuringInvoice;
+                                InvoiceDatum createNewReoccurringInvoice;
                                 try
                                 {
                                     createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                    createNewReoccuringInvoice = await reoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                 }
                                 catch
                                 {
                                     Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
                                     Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
-                                    Log.Fatal(JsonSerializer.Serialize(reoccuringInvoice));
+                                    Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
                                     createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                    createNewReoccuringInvoice = await reoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                 }
 
-                                if (createNewOneTimeInvoice is not null && createNewReoccuringInvoice is not null)
+                                if (createNewOneTimeInvoice is not null && createNewReoccurringInvoice is not null)
                                 {
                                     // Update the order with the billing system's client and the two invoice Id's.
                                     order.BillingClientId = createNewOneTimeInvoice.client_id.ToString(CultureInfo.CurrentCulture);
                                     order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
-                                    order.BillingInvoiceReoccuringId = createNewReoccuringInvoice.id.ToString(CultureInfo.CurrentCulture);
+                                    order.BillingInvoiceReoccuringId = createNewReoccurringInvoice.id.ToString(CultureInfo.CurrentCulture);
 
                                     _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
                                     var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
-                                    Log.Information(JsonSerializer.Serialize(invoiceLinks));
+                                    var recurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
                                     var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-                                    var reoccuringLink = invoiceLinks.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var reoccurringLink = recurringInvoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
-                                    if (!string.IsNullOrWhiteSpace(reoccuringLink))
+                                    if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                     {
-                                        order.ReoccuringInvoiceLink = reoccuringLink;
+                                        order.ReoccuringInvoiceLink = reoccurringLink;
                                     }
 
                                     if (!string.IsNullOrWhiteSpace(oneTimeLink))
@@ -2221,37 +2215,36 @@ public class OrdersController : Controller
                                     Log.Fatal("[Checkout] Invoices were not successfully created in the billing system.");
                                 }
                             }
-                            else if (reoccuringInvoice.line_items.Any())
+                            else if (reoccurringInvoice.line_items.Any())
                             {
-                                InvoiceDatum createNewReoccuringInvoice;
+                                InvoiceDatum createNewReoccurringInvoice;
 
                                 try
                                 {
-                                    createNewReoccuringInvoice = await reoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                 }
                                 catch
                                 {
                                     Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
-                                    Log.Fatal(JsonSerializer.Serialize(reoccuringInvoice));
-                                    createNewReoccuringInvoice = await reoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
+                                    createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                 }
 
-                                if (createNewReoccuringInvoice is not null)
+                                if (createNewReoccurringInvoice is not null)
                                 {
                                     // Update the order with the billing system's client and the two invoice Id's.
-                                    order.BillingClientId = createNewReoccuringInvoice.client_id.ToString(CultureInfo.CurrentCulture);
-                                    order.BillingInvoiceReoccuringId = createNewReoccuringInvoice.id.ToString(CultureInfo.CurrentCulture);
+                                    order.BillingClientId = createNewReoccurringInvoice.client_id.ToString(CultureInfo.CurrentCulture);
+                                    order.BillingInvoiceReoccuringId = createNewReoccurringInvoice.id.ToString(CultureInfo.CurrentCulture);
 
                                     _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
-                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccuringInvoice.client_id, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
-                                    Log.Information(JsonSerializer.Serialize(invoiceLinks));
-                                    var reoccuringLink = invoiceLinks.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccurringInvoice.client_id, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
+                                    var reoccurringLink = invoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
-                                    if (!string.IsNullOrWhiteSpace(reoccuringLink))
+                                    if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                     {
-                                        order.ReoccuringInvoiceLink = reoccuringLink;
+                                        order.ReoccuringInvoiceLink = reoccurringLink;
                                     }
                                 }
                                 else
@@ -2284,7 +2277,6 @@ public class OrdersController : Controller
                                     await _context.SaveChangesAsync();
 
                                     var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
-                                    Log.Information(JsonSerializer.Serialize(invoiceLinks));
                                     var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
                                     if (!string.IsNullOrWhiteSpace(oneTimeLink))

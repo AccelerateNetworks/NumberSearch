@@ -592,7 +592,7 @@ namespace NumberSearch.Mvc.Controllers
                                 }
                             }
 
-                            // Handle hardware installation senarios, if hardware is in the order.
+                            // Handle hardware installation scenarios, if hardware is in the order.
                             if (cart?.Products is not null && cart.Products.Any())
                             {
                                 if (order.OnsiteInstallation)
@@ -748,8 +748,8 @@ Accelerate Networks
 
                                 // Create the client and get its id.
                                 var newClient = await newBillingClient.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                newBillingClient.id = newClient.id;
-                                newBillingClient.contacts.FirstOrDefault().id = newClient.contacts.FirstOrDefault().id;
+                                newBillingClient.id = newClient?.id;
+                                newBillingClient.contacts.FirstOrDefault().id = newClient?.contacts?.FirstOrDefault()?.id;
                                 billingClient = await newBillingClient.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                 Log.Information($"[Checkout] Created billing client {billingClient.name}, {billingClient.id}.");
                             }
@@ -772,7 +772,7 @@ Accelerate Networks
                             {
                                 // Mark the invoices as quotes.
                                 upfrontInvoice.entity_type = "quote";
-                                var reoccuringInvoice = new InvoiceDatum
+                                var reoccurringInvoice = new InvoiceDatum
                                 {
                                     client_id = billingClient.id,
                                     line_items = reoccuringItems.ToArray(),
@@ -781,7 +781,7 @@ Accelerate Networks
                                     entity_type = "quote",
                                 };
 
-                                var hiddenReoccuringInvoice = new ReccurringInvoiceDatum
+                                var hiddenReoccurringInvoice = new ReccurringInvoiceDatum
                                 {
                                     client_id = billingClient.id,
                                     line_items = reoccuringItems.ToArray(),
@@ -794,43 +794,43 @@ Accelerate Networks
                                 };
 
                                 // Submit them to the billing system if they have items.
-                                if (upfrontInvoice.line_items.Any() && reoccuringInvoice.line_items.Any())
+                                if (upfrontInvoice.line_items.Any() && reoccurringInvoice.line_items.Any())
                                 {
                                     InvoiceDatum createNewOneTimeInvoice;
-                                    InvoiceDatum createNewReoccuringInvoice;
+                                    InvoiceDatum createNewReoccurringInvoice;
 
                                     // Retry once on invoice creation failures.
                                     try
                                     {
                                         createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        createNewReoccuringInvoice = await reoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        var createNewHiddenReoccuringInvoice = await hiddenReoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
 
                                     }
                                     catch
                                     {
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
                                         Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
-                                        Log.Fatal(JsonSerializer.Serialize(reoccuringInvoice));
+                                        Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
                                         createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        createNewReoccuringInvoice = await reoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
 
-                                    if (createNewOneTimeInvoice is not null && createNewReoccuringInvoice is not null)
+                                    if (createNewOneTimeInvoice is not null && createNewReoccurringInvoice is not null)
                                     {
                                         // Update the order with the billing system's client and the two invoice Id's.
                                         order.BillingClientId = createNewOneTimeInvoice.client_id.ToString(CultureInfo.CurrentCulture);
                                         order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
-                                        order.BillingInvoiceReoccuringId = createNewReoccuringInvoice.id.ToString(CultureInfo.CurrentCulture);
+                                        order.BillingInvoiceReoccuringId = createNewReoccurringInvoice.id.ToString(CultureInfo.CurrentCulture);
                                         var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
                                         var oneTimeInvoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, true).ConfigureAwait(false);
                                         var oneTimeLink = oneTimeInvoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-                                        var reoccuringLink = oneTimeInvoiceLinks.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                        var reoccurringLink = oneTimeInvoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
-                                        if (!string.IsNullOrWhiteSpace(reoccuringLink))
+                                        if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                         {
-                                            order.ReoccuringInvoiceLink = reoccuringLink;
+                                            order.ReoccuringInvoiceLink = reoccurringLink;
                                         }
 
                                         if (!string.IsNullOrWhiteSpace(oneTimeLink))
@@ -838,11 +838,11 @@ Accelerate Networks
                                             order.UpfrontInvoiceLink = oneTimeLink;
                                         }
 
-                                        confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} and {createNewReoccuringInvoice.number} from Accelerate Networks";
+                                        confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} and {createNewReoccurringInvoice.number} from Accelerate Networks";
                                         confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
-Thanks for considering Accelerate Networks, take a look at the <a href='{reoccuringLink}'>monthly service cost here</a>, and the <a href='{oneTimeLink}'>upfront cost here</a>.
+Thanks for considering Accelerate Networks, take a look at the <a href='{reoccurringLink}'>monthly service cost here</a>, and the <a href='{oneTimeLink}'>upfront cost here</a>.
 <br />
 <br />                                                                            
 Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
@@ -862,46 +862,44 @@ Accelerate Networks
                                         Log.Fatal("[Checkout] Invoices were not successfully created in the billing system.");
                                     }
                                 }
-                                else if (reoccuringInvoice.line_items.Any())
+                                else if (reoccurringInvoice.line_items.Any())
                                 {
                                     // Submit them to the billing system.
-                                    InvoiceDatum createNewReoccuringInvoice;
+                                    InvoiceDatum createNewReoccurringInvoice;
                                     try
                                     {
                                         // Submit them to the billing system.
-                                        createNewReoccuringInvoice = await reoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        var createNewHiddenReoccuringInvoice = await hiddenReoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
                                     catch
                                     {
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
-                                        Log.Fatal(JsonSerializer.Serialize(reoccuringInvoice));
+                                        Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
                                         // Submit them to the billing system.
-                                        createNewReoccuringInvoice = await reoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
 
-                                    if (createNewReoccuringInvoice is not null)
+                                    if (createNewReoccurringInvoice is not null)
                                     {
                                         // Update the order with the billing system's client and the two invoice Id's.
-                                        order.BillingClientId = createNewReoccuringInvoice.client_id.ToString(CultureInfo.CurrentCulture);
-                                        order.BillingInvoiceReoccuringId = createNewReoccuringInvoice.id.ToString(CultureInfo.CurrentCulture);
+                                        order.BillingClientId = createNewReoccurringInvoice.client_id.ToString(CultureInfo.CurrentCulture);
+                                        order.BillingInvoiceReoccuringId = createNewReoccurringInvoice.id.ToString(CultureInfo.CurrentCulture);
                                         var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
-                                        var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccuringInvoice.client_id, _invoiceNinjaToken, true).ConfigureAwait(false);
-                                        Log.Information(JsonSerializer.Serialize(invoiceLinks));
+                                        var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccurringInvoice.client_id, _invoiceNinjaToken, true).ConfigureAwait(false);
+                                        var reoccurringLink = invoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
-                                        var reoccuringLink = invoiceLinks.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-
-                                        if (!string.IsNullOrWhiteSpace(reoccuringLink))
+                                        if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                         {
-                                            order.ReoccuringInvoiceLink = reoccuringLink;
+                                            order.ReoccuringInvoiceLink = reoccurringLink;
                                         }
 
-                                        confirmationEmail.Subject = $"Quote {createNewReoccuringInvoice.number} from Accelerate Networks";
+                                        confirmationEmail.Subject = $"Quote {createNewReoccurringInvoice.number} from Accelerate Networks";
                                         confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
-Thanks for considering Accelerate Networks, take a look at the <a href='{reoccuringLink}'>monthly service cost here</a>.
+Thanks for considering Accelerate Networks, take a look at the <a href='{reoccurringLink}'>monthly service cost here</a>.
 <br />
 <br />                                                                            
 Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
@@ -946,7 +944,6 @@ Accelerate Networks
                                         var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
                                         var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, true).ConfigureAwait(false);
-                                        Log.Information(JsonSerializer.Serialize(invoiceLinks));
                                         var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
                                         if (!string.IsNullOrWhiteSpace(oneTimeLink))
@@ -982,7 +979,7 @@ Accelerate Networks
                             }
                             else
                             {
-                                var reoccuringInvoice = new ReccurringInvoiceDatum
+                                var reoccurringInvoice = new ReccurringInvoiceDatum
                                 {
                                     client_id = billingClient.id,
                                     line_items = reoccuringItems.ToArray(),
@@ -996,41 +993,41 @@ Accelerate Networks
 
 
                                 // Submit them to the billing system if they have items.
-                                if (upfrontInvoice.line_items.Any() && reoccuringInvoice.line_items.Any())
+                                if (upfrontInvoice.line_items.Any() && reoccurringInvoice.line_items.Any())
                                 {
                                     InvoiceDatum createNewOneTimeInvoice;
-                                    InvoiceDatum createNewReoccuringInvoice;
+                                    InvoiceDatum createNewReoccurringInvoice;
 
                                     try
                                     {
                                         createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        createNewReoccuringInvoice = await reoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
                                     catch
                                     {
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
                                         Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
-                                        Log.Fatal(JsonSerializer.Serialize(reoccuringInvoice));
+                                        Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
                                         createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        createNewReoccuringInvoice = await reoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
 
-                                    if (createNewOneTimeInvoice is not null && createNewReoccuringInvoice is not null)
+                                    if (createNewOneTimeInvoice is not null && createNewReoccurringInvoice is not null)
                                     {
                                         // Update the order with the billing system's client and the two invoice Id's.
                                         order.BillingClientId = createNewOneTimeInvoice.client_id.ToString(CultureInfo.CurrentCulture);
                                         order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
-                                        order.BillingInvoiceReoccuringId = createNewReoccuringInvoice.id.ToString(CultureInfo.CurrentCulture);
+                                        order.BillingInvoiceReoccuringId = createNewReoccurringInvoice.id.ToString(CultureInfo.CurrentCulture);
                                         var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
                                         var oneTimeInvoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, false).ConfigureAwait(false);
-                                        var reccurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
+                                        var recurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
                                         var oneTimeLink = oneTimeInvoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-                                        var reoccuringLink = reccurringInvoiceLinks.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                        var reoccurringLink = recurringInvoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
-                                        if (!string.IsNullOrWhiteSpace(reoccuringLink))
+                                        if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                         {
-                                            order.ReoccuringInvoiceLink = reoccuringLink;
+                                            order.ReoccuringInvoiceLink = reoccurringLink;
                                         }
 
                                         if (!string.IsNullOrWhiteSpace(oneTimeLink))
@@ -1038,11 +1035,11 @@ Accelerate Networks
                                             order.UpfrontInvoiceLink = oneTimeLink;
                                         }
 
-                                        confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} and {createNewReoccuringInvoice.number} from Accelerate Networks";
+                                        confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} and {createNewReoccurringInvoice.number} from Accelerate Networks";
                                         confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
-Thanks for choosing Accelerate Networks, take a look at the <a href='{reoccuringLink}'>monthly service cost here</a>, and the <a href='{oneTimeLink}'>upfront cost here</a>.
+Thanks for choosing Accelerate Networks, take a look at the <a href='{reoccurringLink}'>monthly service cost here</a>, and the <a href='{oneTimeLink}'>upfront cost here</a>.
 <br />
 <br />                                                                            
 Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
@@ -1062,42 +1059,41 @@ Accelerate Networks
                                         Log.Fatal("[Checkout] Invoices were not successfully created in the billing system.");
                                     }
                                 }
-                                else if (reoccuringInvoice.line_items.Any())
+                                else if (reoccurringInvoice.line_items.Any())
                                 {
-                                    InvoiceDatum createNewReoccuringInvoice;
+                                    InvoiceDatum createNewReoccurringInvoice;
 
                                     try
                                     {
-                                        createNewReoccuringInvoice = await reoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
                                     catch
                                     {
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
-                                        Log.Fatal(JsonSerializer.Serialize(reoccuringInvoice));
-                                        createNewReoccuringInvoice = await reoccuringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
+                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
 
-                                    if (createNewReoccuringInvoice is not null)
+                                    if (createNewReoccurringInvoice is not null)
                                     {
                                         // Update the order with the billing system's client and the two invoice Id's.
-                                        order.BillingClientId = createNewReoccuringInvoice.client_id.ToString(CultureInfo.CurrentCulture);
-                                        order.BillingInvoiceReoccuringId = createNewReoccuringInvoice.id.ToString(CultureInfo.CurrentCulture);
+                                        order.BillingClientId = createNewReoccurringInvoice.client_id.ToString(CultureInfo.CurrentCulture);
+                                        order.BillingInvoiceReoccuringId = createNewReoccurringInvoice.id.ToString(CultureInfo.CurrentCulture);
                                         var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
-                                        var invoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewReoccuringInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
-                                        Log.Information(JsonSerializer.Serialize(invoiceLinks));
-                                        var reoccuringLink = invoiceLinks.Where(x => x.id == createNewReoccuringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                        var invoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewReoccurringInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
+                                        var reoccurringLink = invoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
-                                        if (!string.IsNullOrWhiteSpace(reoccuringLink))
+                                        if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                         {
-                                            order.ReoccuringInvoiceLink = reoccuringLink;
+                                            order.ReoccuringInvoiceLink = reoccurringLink;
                                         }
 
-                                        confirmationEmail.Subject = $"Quote {createNewReoccuringInvoice.number} from Accelerate Networks";
+                                        confirmationEmail.Subject = $"Quote {createNewReoccurringInvoice.number} from Accelerate Networks";
                                         confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
-Thanks for choosing Accelerate Networks, take a look at the <a href='{reoccuringLink}'>monthly service cost here</a>.
+Thanks for choosing Accelerate Networks, take a look at the <a href='{reoccurringLink}'>monthly service cost here</a>.
 <br />
 <br />                                                                            
 Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
@@ -1140,7 +1136,6 @@ Accelerate Networks
                                         var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
                                         var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, false).ConfigureAwait(false);
-                                        Log.Information(JsonSerializer.Serialize(invoiceLinks));
                                         var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
                                         if (!string.IsNullOrWhiteSpace(oneTimeLink))
