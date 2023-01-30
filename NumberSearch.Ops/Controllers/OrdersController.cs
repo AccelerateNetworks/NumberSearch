@@ -2018,23 +2018,82 @@ public class OrdersController : Controller
                             // Submit them to the billing system if they have items.
                             if (upfrontInvoice.line_items.Any() && reoccurringInvoice.line_items.Any())
                             {
-                                InvoiceDatum createNewOneTimeInvoice;
-                                InvoiceDatum createNewReoccurringInvoice;
+                                InvoiceDatum createNewOneTimeInvoice = null;
+                                InvoiceDatum createNewReoccurringInvoice = null;
 
-                                // Retry once on invoice creation failures.
                                 try
                                 {
-                                    createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                    createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                    var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    createNewOneTimeInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
+                                    createNewReoccurringInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
                                 }
                                 catch
                                 {
-                                    Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
-                                    Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
-                                    Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
-                                    createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                    createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    Log.Warning("[Checkout] Failed to find existing invoices in the billing system.");
+                                }
+
+                                // If it doesn't exist create it, otherwise update it.
+                                if (createNewOneTimeInvoice is null)
+                                {
+                                    try
+                                    {
+                                        createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(ex?.Message ?? "No Message found.");
+                                        Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
+                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                    }
+                                }
+                                else
+                                {
+                                    // Update the existing invoice.
+                                    try
+                                    {
+                                        createNewOneTimeInvoice.line_items = upfrontInvoice.line_items;
+                                        createNewOneTimeInvoice = await createNewOneTimeInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(ex?.Message ?? "No Message found.");
+                                        Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
+                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                    }
+                                }
+
+                                if (createNewReoccurringInvoice is null)
+                                {
+                                    try
+                                    {
+                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(ex?.Message ?? "No Message found.");
+                                        Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
+                                        Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
+                                    }
+                                }
+                                else
+                                {
+                                    // Update the existing invoice.
+                                    try
+                                    {
+                                        createNewReoccurringInvoice.line_items = reoccurringInvoice.line_items;
+                                        createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(ex?.Message ?? "No Message found.");
+                                        Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
+                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                    }
                                 }
 
                                 if (createNewOneTimeInvoice is not null && createNewReoccurringInvoice is not null)
@@ -2069,19 +2128,48 @@ public class OrdersController : Controller
                             else if (reoccurringInvoice.line_items.Any())
                             {
                                 // Submit them to the billing system.
-                                InvoiceDatum createNewReoccurringInvoice;
+                                InvoiceDatum createNewReoccurringInvoice = null;
+
                                 try
                                 {
-                                    // Submit them to the billing system.
-                                    createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                    var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    createNewReoccurringInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
                                 }
                                 catch
                                 {
-                                    Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
-                                    Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
-                                    // Submit them to the billing system.
-                                    createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    Log.Fatal("[Checkout] Failed to find existing invoices in the billing system.");
+                                }
+
+                                if (createNewReoccurringInvoice is null)
+                                {
+                                    try
+                                    {
+                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(ex?.Message ?? "No Message found.");
+                                        Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
+                                        Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
+                                    }
+                                }
+                                else
+                                {
+                                    // Update the existing invoice.
+                                    try
+                                    {
+                                        createNewReoccurringInvoice.line_items = reoccurringInvoice.line_items;
+                                        createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(ex?.Message ?? "No Message found.");
+                                        Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
+                                        Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
+                                    }
                                 }
 
                                 if (createNewReoccurringInvoice is not null)
@@ -2108,19 +2196,47 @@ public class OrdersController : Controller
                             }
                             else if (upfrontInvoice.line_items.Any())
                             {
-                                InvoiceDatum createNewOneTimeInvoice;
+                                InvoiceDatum createNewOneTimeInvoice = null;
 
                                 try
                                 {
-                                    // Submit them to the billing system.
-                                    createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    createNewOneTimeInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
                                 }
                                 catch
                                 {
-                                    Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
-                                    Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
-                                    // Submit them to the billing system.
-                                    createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    Log.Fatal("[Checkout] Failed to find existing invoices in the billing system.");
+                                }
+
+                                // If it doesn't exist create it, otherwise update it.
+                                if (createNewOneTimeInvoice is null)
+                                {
+                                    try
+                                    {
+                                        createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(ex?.Message ?? "No Message found.");
+                                        Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
+                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                    }
+                                }
+                                else
+                                {
+                                    // Update the existing invoice.
+                                    try
+                                    {
+                                        createNewOneTimeInvoice.line_items = upfrontInvoice.line_items;
+                                        createNewOneTimeInvoice = await createNewOneTimeInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(ex?.Message ?? "No Message found.");
+                                        Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
+                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                    }
                                 }
 
                                 if (createNewOneTimeInvoice is not null)
@@ -2169,20 +2285,79 @@ public class OrdersController : Controller
                             // Submit them to the billing system if they have items.
                             if (upfrontInvoice.line_items.Any() && reoccurringInvoice.line_items.Any())
                             {
-                                InvoiceDatum createNewOneTimeInvoice;
-                                InvoiceDatum createNewReoccurringInvoice;
+                                InvoiceDatum createNewOneTimeInvoice = null;
+                                ReccurringInvoiceDatum createNewReoccurringInvoice = null;
+
                                 try
                                 {
-                                    createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                    createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    createNewOneTimeInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
+                                    createNewReoccurringInvoice = await ReccurringInvoice.GetByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
                                 }
                                 catch
                                 {
-                                    Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
-                                    Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
-                                    Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
-                                    createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                    createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    Log.Fatal("[Checkout] Failed to find existing invoices in the billing system.");
+                                }
+
+                                if (createNewOneTimeInvoice is null)
+                                {
+                                    try
+                                    {
+                                        createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(ex?.Message ?? "No Message found.");
+                                        Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
+                                        Log.Fatal(JsonSerializer.Serialize(createNewOneTimeInvoice));
+                                    }
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        createNewOneTimeInvoice.line_items = upfrontInvoice.line_items;
+                                        createNewOneTimeInvoice = await createNewOneTimeInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(ex?.Message ?? "No Message found.");
+                                        Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
+                                        Log.Fatal(JsonSerializer.Serialize(createNewOneTimeInvoice));
+                                    }
+                                }
+
+                                if (createNewReoccurringInvoice is null)
+                                {
+                                    try
+                                    {
+                                        // Create
+                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(ex?.Message ?? "No Message found.");
+                                        Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
+                                        Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
+                                    }
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        // Update
+                                        createNewReoccurringInvoice.line_items = reoccurringInvoice.line_items;
+                                        createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(ex?.Message ?? "No Message found.");
+                                        Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
+                                        Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
+                                    }
                                 }
 
                                 if (createNewOneTimeInvoice is not null && createNewReoccurringInvoice is not null)
@@ -2217,17 +2392,45 @@ public class OrdersController : Controller
                             }
                             else if (reoccurringInvoice.line_items.Any())
                             {
-                                InvoiceDatum createNewReoccurringInvoice;
+                                ReccurringInvoiceDatum createNewReoccurringInvoice = null;
 
                                 try
                                 {
-                                    createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    createNewReoccurringInvoice = await ReccurringInvoice.GetByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
                                 }
                                 catch
                                 {
-                                    Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
-                                    Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
-                                    createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    Log.Fatal("[Checkout] Failed to find existing invoices in the billing system.");
+                                }
+
+                                if (createNewReoccurringInvoice is null)
+                                {
+                                    try
+                                    {
+                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(ex?.Message ?? "No Message found.");
+                                        Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
+                                        Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
+                                    }
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        createNewReoccurringInvoice.line_items = reoccurringInvoice.line_items;
+                                        createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(ex?.Message ?? "No Message found.");
+                                        Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
+                                        Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
+                                    }
                                 }
 
                                 if (createNewReoccurringInvoice is not null)
@@ -2239,7 +2442,7 @@ public class OrdersController : Controller
                                     _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
-                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccurringInvoice.client_id, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
+                                    var invoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewReoccurringInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
                                     var reoccurringLink = invoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
                                     if (!string.IsNullOrWhiteSpace(reoccurringLink))
@@ -2254,17 +2457,45 @@ public class OrdersController : Controller
                             }
                             else if (upfrontInvoice.line_items.Any())
                             {
-                                InvoiceDatum createNewOneTimeInvoice;
+                                InvoiceDatum createNewOneTimeInvoice = null;
 
                                 try
                                 {
-                                    createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    createNewOneTimeInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
                                 }
                                 catch
                                 {
-                                    Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
-                                    Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
-                                    createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    Log.Fatal("[Checkout] Failed to find existing invoices in the billing system.");
+                                }
+
+                                if (createNewOneTimeInvoice is null)
+                                {
+                                    try
+                                    {
+                                        createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(ex?.Message ?? "No Message found.");
+                                        Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
+                                        Log.Fatal(JsonSerializer.Serialize(createNewOneTimeInvoice));
+                                    }
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        createNewOneTimeInvoice.line_items = upfrontInvoice.line_items;
+                                        createNewOneTimeInvoice = await upfrontInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(ex?.Message ?? "No Message found.");
+                                        Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
+                                        Log.Fatal(JsonSerializer.Serialize(createNewOneTimeInvoice));
+                                    }
                                 }
 
                                 if (createNewOneTimeInvoice is not null)

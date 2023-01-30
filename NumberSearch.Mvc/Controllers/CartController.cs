@@ -996,7 +996,7 @@ Accelerate Networks
                                 if (upfrontInvoice.line_items.Any() && reoccurringInvoice.line_items.Any())
                                 {
                                     InvoiceDatum createNewOneTimeInvoice;
-                                    InvoiceDatum createNewReoccurringInvoice;
+                                    ReccurringInvoiceDatum createNewReoccurringInvoice;
 
                                     try
                                     {
@@ -1061,7 +1061,7 @@ Accelerate Networks
                                 }
                                 else if (reoccurringInvoice.line_items.Any())
                                 {
-                                    InvoiceDatum createNewReoccurringInvoice;
+                                    ReccurringInvoiceDatum createNewReoccurringInvoice;
 
                                     try
                                     {

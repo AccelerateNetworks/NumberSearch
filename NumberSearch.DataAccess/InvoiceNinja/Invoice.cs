@@ -382,7 +382,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public Invitation[] invitations { get; set; }
         public object[] documents { get; set; }
 
-        public async Task<InvoiceDatum> PostAsync(string token)
+        public async Task<ReccurringInvoiceDatum> PostAsync(string token)
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
             string endpoint = "recurring_invoices";
@@ -398,11 +398,35 @@ namespace NumberSearch.DataAccess.InvoiceNinja
                 .WithHeader(requestedHeader, requestedHeaderValue)
                 .WithHeader(contentHeader, contentHeaderValue)
                 .PostJsonAsync(new { client_id, tax_name1, tax_rate1, entity_type, frequency_id, auto_bill_enabled, auto_bill, line_items })
-                .ReceiveJson<InvoiceSingle>()
+                .ReceiveJson<ReccurringInvoice>()
                 .ConfigureAwait(false);
 
             // Unwrap the data we want from the single-field parent object.
-            return result.data;
+            return result.data.FirstOrDefault();
+        }
+
+        public async Task<ReccurringInvoiceDatum> PutAsync(string token)
+        {
+            string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
+            string endpoint = "recurring_invoices";
+            string tokenHeader = "X-Api-Token";
+            string requestedHeader = "X-Requested-With";
+            string requestedHeaderValue = "XMLHttpRequest";
+            string contentHeader = "Content-Type";
+            string contentHeaderValue = "application/json";
+            string clientIdParameter = $"/{id}";
+            string url = $"{baseUrl}{endpoint}{clientIdParameter}";
+
+            var result = await url
+                .WithHeader(tokenHeader, token)
+                .WithHeader(requestedHeader, requestedHeaderValue)
+                .WithHeader(contentHeader, contentHeaderValue)
+                .PutJsonAsync(new { client_id, tax_name1, tax_rate1, entity_type, frequency_id, auto_bill_enabled, auto_bill, line_items })
+                .ReceiveJson<ReccurringInvoice>()
+                .ConfigureAwait(false);
+
+            // Unwrap the data we want from the single-field parent object.
+            return result.data.FirstOrDefault();
         }
     }
 }
