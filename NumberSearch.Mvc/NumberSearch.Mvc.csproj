@@ -335,7 +335,10 @@
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\Scott Strong-3.jpg">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\scaled\Scott-headshot.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\seattlesouthsidecoc.jpg">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
