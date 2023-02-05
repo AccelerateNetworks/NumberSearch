@@ -25,6 +25,7 @@ var bulkVSPassword = builder.Configuration["BulkVSPassword"] ?? string.Empty;
 var bulkVSInbound = builder.Configuration["BulkVSInboundMessagingURL"] ?? $"https://portal.bulkvs.com/api/v1.0/messageSend";
 var teliToken = builder.Configuration["TeliToken"] ?? string.Empty;
 var teliInbound = builder.Configuration["TeliInboundMessageSendingURL"] ?? $"https://api.teleapi.net/sms/send?token=";
+var firstPointSMSOutbound = builder.Configuration["FirstPoint"] ?? $"https://smsapi.1pcom.net/v1/retailsendmessage";
 
 var app = builder.Build();
 
@@ -406,11 +407,125 @@ app.MapPost("/Message/Outbound/BulkVS", async ([Microsoft.AspNetCore.Mvc.FromBod
     return Results.BadRequest("Failed to submit message to BulkVS.");
 });
 
+// This only works for errors, we need functional credentials to finish building it out.
+app.MapPost("/Message/Outbound/FirstPoint", async ([Microsoft.AspNetCore.Mvc.FromBody] FirstPointOutbound message, MessagingContext db) =>
+{
+    // Validate and regularize the incoming message.
+    if (!message.RegularizeAndValidate())
+    {
+        return Results.BadRequest("Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers.");
+    }
+
+    try
+    {
+        var sendMessage = await firstPointSMSOutbound
+                .PostJsonAsync(message)
+                .ReceiveJson<FirstPointResponse>();
+
+        // Let the caller know that delivery status for specific numbers.
+        return Results.Ok(new SendMessageResponse
+        {
+            MessageSent = true,
+            Success = { },
+            Failure = { }
+        });
+    }
+    catch (FlurlHttpException ex)
+    {
+        var error = await ex.GetResponseJsonAsync<FirstPointResponse>();
+        // Let the caller know that delivery status for specific numbers.
+        return Results.Ok(new SendMessageResponse
+        {
+            MessageSent = false,
+            Success = { },
+            Failure = { }
+        });
+    }
+
+});
+
 app.Run();
 
 
 namespace Models
 {
+
+    public class FirstPointResponse
+    {
+        [JsonPropertyName("response")]
+        public Response Response { get; set; }
+    }
+    public class Response
+    {
+        [JsonPropertyName("code")]
+        public int Code { get; set; }
+        [JsonPropertyName("developertext")]
+        public string DeveloperText { get; set; }
+        [JsonPropertyName("subcode")]
+        public int Subcode { get; set; }
+        [JsonPropertyName("text")]
+        public string Text { get; set; }
+    }
+
+    public class FirstPointOutbound
+    {
+        [JsonPropertyName("username")]
+        public string Username { get; set; }
+        [JsonPropertyName("password")]
+        public string Password { get; set; }
+        [JsonPropertyName("to")]
+        public string To { get; set; }
+        [JsonPropertyName("msisdn")]
+        public string MSISDN { get; set; }
+        [JsonPropertyName("messagebody")]
+        public string MessageBody { get; set; }
+        // These are for the regularization of phone numbers and not mapped from the JSON payload.
+        [JsonIgnore]
+        public PhoneNumbersNA.PhoneNumber? FromPhoneNumber { get; set; }
+        [JsonIgnore]
+        public List<PhoneNumbersNA.PhoneNumber>? ToPhoneNumbers { get; set; }
+
+        public bool RegularizeAndValidate()
+        {
+            bool FromParsed = false;
+            bool ToParsed = false;
+
+            if (!string.IsNullOrWhiteSpace(MSISDN))
+            {
+                var checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(MSISDN, out var fromPhoneNumber);
+                if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
+                {
+                    FromPhoneNumber = fromPhoneNumber;
+                    MSISDN = fromPhoneNumber.DialedNumber;
+                    FromParsed = true;
+                }
+            }
+
+            if (To is not null && To.Any())
+            {
+                // This may not be necessary if this list is always created by the BulkVSMessage constructor.
+                ToPhoneNumbers ??= new List<PhoneNumbersNA.PhoneNumber>();
+
+                foreach (var number in To.Split(','))
+                {
+                    var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
+
+                    if (checkTo && toPhoneNumber is not null)
+                    {
+                        ToPhoneNumbers.Add(toPhoneNumber);
+                    }
+                }
+
+                // This will drop the numbers that couldn't be parsed.
+                To = ToPhoneNumbers is not null && ToPhoneNumbers.Any() ? ToPhoneNumbers.Select(x => x.DialedNumber!).ToString() : string.Empty;
+                ToParsed = true;
+            }
+
+            return FromParsed && ToParsed;
+        }
+
+    }
+
     // Message format supplied by BulkVS for both SMS and MMS.
     public class BulkVSInbound
     {
