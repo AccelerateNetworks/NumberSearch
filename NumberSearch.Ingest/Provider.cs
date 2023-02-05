@@ -348,29 +348,29 @@ namespace NumberSearch.Ingest
                         }
                         else if (phoneNumber.IngestedFrom == "Call48")
                         {
-                            // Verify that Call48 has the number.
-                            try
-                            {
-                                var credentials = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
-                                var results = await Search.GetLocalNumbersAsync(phoneNumber.State, string.Empty, phoneNumber.NPA.ToString(), phoneNumber.NXX.ToString(), credentials.data.token).ConfigureAwait(false);
-                                var matchingNumber = results?.data?.result?.Where(x => x?.did_number?.Replace("-", string.Empty) == phoneNumber?.DialedNumber)?.FirstOrDefault();
-                                if (matchingNumber != null && matchingNumber?.did_number?.Replace("-", string.Empty) == phoneNumber?.DialedNumber)
-                                {
-                                    Log.Information($"[Call48] Found {phoneNumber?.DialedNumber} in {results?.data?.result?.Length} results returned for {phoneNumber?.NPA}, {phoneNumber?.NXX}.");
-                                }
-                                else
-                                {
-                                    Log.Warning($"[Call48] Failed to find {phoneNumber?.DialedNumber} in {results?.data?.result?.Length} results returned for {phoneNumber?.NPA}, {phoneNumber?.NXX}.");
+                            //// Verify that Call48 has the number.
+                            //try
+                            //{
+                            //    var credentials = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
+                            //    var results = await Search.GetLocalNumbersAsync(phoneNumber.State, string.Empty, phoneNumber.NPA.ToString(), phoneNumber.NXX.ToString(), credentials.data.token).ConfigureAwait(false);
+                            //    var matchingNumber = results?.data?.result?.Where(x => x?.did_number?.Replace("-", string.Empty) == phoneNumber?.DialedNumber)?.FirstOrDefault();
+                            //    if (matchingNumber != null && matchingNumber?.did_number?.Replace("-", string.Empty) == phoneNumber?.DialedNumber)
+                            //    {
+                            //        Log.Information($"[Call48] Found {phoneNumber?.DialedNumber} in {results?.data?.result?.Length} results returned for {phoneNumber?.NPA}, {phoneNumber?.NXX}.");
+                            //    }
+                            //    else
+                            //    {
+                            //        Log.Warning($"[Call48] Failed to find {phoneNumber?.DialedNumber} in {results?.data?.result?.Length} results returned for {phoneNumber?.NPA}, {phoneNumber?.NXX}.");
 
-                                    // Remove numbers that are unpurchasable.
-                                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.Error($"{ex.Message}");
-                                Log.Error($"[Call48] Failed to query Call48 for {phoneNumber?.DialedNumber}.");
-                            }
+                            //        // Remove numbers that are unpurchasable.
+                            //        var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+                            //    }
+                            //}
+                            //catch (Exception ex)
+                            //{
+                            //    Log.Error($"{ex.Message}");
+                            //    Log.Error($"[Call48] Failed to query Call48 for {phoneNumber?.DialedNumber}.");
+                            //}
                         }
                         else if (phoneNumber.IngestedFrom == "Peerless")
                         {
