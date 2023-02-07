@@ -1,4 +1,6 @@
-﻿using Ical.Net.CalendarComponents;
+﻿using Flurl.Http;
+
+using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 
@@ -796,8 +798,8 @@ Accelerate Networks
                                 // Submit them to the billing system if they have items.
                                 if (upfrontInvoice.line_items.Any() && reoccurringInvoice.line_items.Any())
                                 {
-                                    InvoiceDatum createNewOneTimeInvoice;
-                                    InvoiceDatum createNewReoccurringInvoice;
+                                    InvoiceDatum createNewOneTimeInvoice = null;
+                                    InvoiceDatum createNewReoccurringInvoice = null;
 
                                     // Retry once on invoice creation failures.
                                     try
@@ -805,15 +807,14 @@ Accelerate Networks
                                         createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                         createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                         var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-
                                     }
-                                    catch
+                                    catch (FlurlHttpException ex)
                                     {
+                                        var error = await ex.GetResponseStringAsync().ConfigureAwait(false);
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
+                                        Log.Fatal(error);
                                         Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
                                         Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
-                                        createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
 
                                     if (createNewOneTimeInvoice is not null && createNewReoccurringInvoice is not null)
@@ -865,19 +866,19 @@ Accelerate Networks
                                 else if (reoccurringInvoice.line_items.Any())
                                 {
                                     // Submit them to the billing system.
-                                    InvoiceDatum createNewReoccurringInvoice;
+                                    InvoiceDatum createNewReoccurringInvoice = null;
                                     try
                                     {
                                         // Submit them to the billing system.
                                         createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                         var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
-                                    catch
+                                    catch (FlurlHttpException ex)
                                     {
+                                        var error = await ex.GetResponseStringAsync().ConfigureAwait(false);
+                                        Log.Fatal(error);
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
                                         Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
-                                        // Submit them to the billing system.
-                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
 
                                     if (createNewReoccurringInvoice is not null)
@@ -921,19 +922,19 @@ Accelerate Networks
                                 }
                                 else if (upfrontInvoice.line_items.Any())
                                 {
-                                    InvoiceDatum createNewOneTimeInvoice;
+                                    InvoiceDatum createNewOneTimeInvoice = null;
 
                                     try
                                     {
                                         // Submit them to the billing system.
                                         createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
-                                    catch
+                                    catch (FlurlHttpException ex)
                                     {
+                                        var error = await ex.GetResponseStringAsync().ConfigureAwait(false);
+                                        Log.Fatal(error);
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
                                         Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
-                                        // Submit them to the billing system.
-                                        createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
 
                                     if (createNewOneTimeInvoice is not null)
@@ -1061,17 +1062,18 @@ Accelerate Networks
                                 }
                                 else if (reoccurringInvoice.line_items.Any())
                                 {
-                                    ReccurringInvoiceDatum createNewReoccurringInvoice;
+                                    ReccurringInvoiceDatum createNewReoccurringInvoice = null;
 
                                     try
                                     {
                                         createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
-                                    catch
+                                    catch (FlurlHttpException ex)
                                     {
+                                        var error = await ex.GetResponseStringAsync();
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
+                                        Log.Fatal(JsonSerializer.Serialize(error));
                                         Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
-                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
 
                                     if (createNewReoccurringInvoice is not null)

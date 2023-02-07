@@ -316,6 +316,11 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         }
     }
 
+    public class ReccurringInvoiceSingle
+    {
+        public ReccurringInvoiceDatum data { get; set; }
+    }
+
     public class ReccurringInvoiceDatum
     {
         public string id { get; set; }
@@ -398,11 +403,11 @@ namespace NumberSearch.DataAccess.InvoiceNinja
                 .WithHeader(requestedHeader, requestedHeaderValue)
                 .WithHeader(contentHeader, contentHeaderValue)
                 .PostJsonAsync(new { client_id, tax_name1, tax_rate1, entity_type, frequency_id, auto_bill_enabled, auto_bill, line_items })
-                .ReceiveJson<ReccurringInvoice>()
+                .ReceiveJson<ReccurringInvoiceSingle>()
                 .ConfigureAwait(false);
 
             // Unwrap the data we want from the single-field parent object.
-            return result.data.FirstOrDefault();
+            return result.data;
         }
 
         public async Task<ReccurringInvoiceDatum> PutAsync(string token)
