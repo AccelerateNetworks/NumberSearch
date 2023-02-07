@@ -26,6 +26,9 @@ var bulkVSInbound = builder.Configuration["BulkVSInboundMessagingURL"] ?? $"http
 var teliToken = builder.Configuration["TeliToken"] ?? string.Empty;
 var teliInbound = builder.Configuration["TeliInboundMessageSendingURL"] ?? $"https://api.teleapi.net/sms/send?token=";
 var firstPointSMSOutbound = builder.Configuration["FirstPoint"] ?? $"https://smsapi.1pcom.net/v1/retailsendmessage";
+var firstPointUsername = "talkitupapi";
+var firstPointPassword = "4kZ5v015dcnk";
+
 
 var app = builder.Build();
 
@@ -55,14 +58,14 @@ app.MapGet("/Conversations", async (string primary, MessagingContext db) =>
     {
         var messages = await db.Messages
                         .Where(x => x.ToFromCompound.Contains(primaryNumber.DialedNumber))
-                        .OrderByDescending(x => x.DateRecievedUTC)
+                        .OrderByDescending(x => x.DateReceivedUTC)
                         .ToListAsync();
 
         if (messages is not null && messages.Any())
         {
             var uniqueCompoundKeys = messages
                                         .DistinctBy(x => x.ToFromCompound)
-                                        .OrderByDescending(x => x.DateRecievedUTC)
+                                        .OrderByDescending(x => x.DateReceivedUTC)
                                         .ToList();
 
             var recordsToRemove = new List<MessageRecord>();
@@ -76,7 +79,7 @@ app.MapGet("/Conversations", async (string primary, MessagingContext db) =>
                 if (reverseMatch is not null)
                 {
                     // Remove the older record.
-                    if (DateTime.Compare(reverseMatch.DateRecievedUTC, record.DateRecievedUTC) > 0)
+                    if (DateTime.Compare(reverseMatch.DateReceivedUTC, record.DateReceivedUTC) > 0)
                     {
                         recordsToRemove.Add(record);
                     }
@@ -146,7 +149,7 @@ app.MapGet("/Thread", async (string primary, string contacts, MessagingContext d
 
     if (combined.Any())
     {
-        return Results.Ok(combined.OrderByDescending(x => x.DateRecievedUTC));
+        return Results.Ok(combined.OrderByDescending(x => x.DateReceivedUTC));
     }
     else
     {
@@ -206,7 +209,7 @@ app.MapPost("/Message/Outbound/Teli", async ([Microsoft.AspNetCore.Mvc.FromBody]
         {
             Id = Guid.NewGuid(),
             Content = message?.Message ?? string.Empty,
-            DateRecievedUTC = DateTime.UtcNow,
+            DateReceivedUTC = DateTime.UtcNow,
             From = message?.FromPhoneNumber?.DialedNumber ?? string.Empty,
             To = string.Join(',', message?.ToPhoneNumbers?.Select(x => x.DialedNumber) ?? Array.Empty<string>()),
             MediaURLs = string.Empty,
@@ -382,7 +385,7 @@ app.MapPost("/Message/Outbound/BulkVS", async ([Microsoft.AspNetCore.Mvc.FromBod
         {
             Id = Guid.NewGuid(),
             Content = message?.Message ?? string.Empty,
-            DateRecievedUTC = DateTime.UtcNow,
+            DateReceivedUTC = DateTime.UtcNow,
             From = message?.FromPhoneNumber?.DialedNumber ?? string.Empty,
             To = string.Join(',', message?.ToPhoneNumbers?.Select(x => x.DialedNumber) ?? Array.Empty<string>()),
             MediaURLs = string.Join(',', message?.MediaURLs ?? Array.Empty<string>()),
@@ -410,6 +413,7 @@ app.MapPost("/Message/Outbound/BulkVS", async ([Microsoft.AspNetCore.Mvc.FromBod
 // This only works for errors, we need functional credentials to finish building it out.
 app.MapPost("/Message/Outbound/FirstPoint", async ([Microsoft.AspNetCore.Mvc.FromBody] FirstPointOutbound message, MessagingContext db) =>
 {
+    // https://portal.1pcom.net/download/SMSAPI.pdf
     // Validate and regularize the incoming message.
     if (!message.RegularizeAndValidate())
     {
@@ -419,27 +423,53 @@ app.MapPost("/Message/Outbound/FirstPoint", async ([Microsoft.AspNetCore.Mvc.Fro
     try
     {
         var sendMessage = await firstPointSMSOutbound
-                .PostJsonAsync(message)
+                .PostUrlEncodedAsync(new
+                {
+                    username = firstPointUsername,
+                    password = firstPointPassword,
+                    to = message.To,
+                    msisdn = message.MSISDN,
+                    messagebody = message.Message
+                })
                 .ReceiveJson<FirstPointResponse>();
 
-        // Let the caller know that delivery status for specific numbers.
-        return Results.Ok(new SendMessageResponse
+        if (sendMessage is not null && sendMessage?.Response?.Text is "OK")
         {
-            MessageSent = true,
-            Success = { },
-            Failure = { }
-        });
+            var record = new MessageRecord
+            {
+                Id = Guid.NewGuid(),
+                Content = message?.Message ?? string.Empty,
+                DateReceivedUTC = DateTime.UtcNow,
+                From = message?.FromPhoneNumber?.DialedNumber ?? string.Empty,
+                To = string.Join(',', message?.ToPhoneNumbers?.Select(x => x.DialedNumber) ?? Array.Empty<string>()),
+                MediaURLs = string.Empty,
+                MessageSource = MessageSource.Outgoing,
+                MessageType = MessageType.SMS,
+                DLRID = sendMessage?.Response?.DLRID
+            };
+
+            record.ToFromCompound = $"{record.From},{record.To}";
+
+            db.Messages.Add(record);
+            await db.SaveChangesAsync();
+
+            // Let the caller know that delivery status for specific numbers.
+            return Results.Ok(new SendMessageResponse
+            {
+                MessageSent = true,
+            });
+        }
+        else
+        {
+            return Results.BadRequest($"Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(sendMessage)}");
+        }
     }
     catch (FlurlHttpException ex)
     {
         var error = await ex.GetResponseJsonAsync<FirstPointResponse>();
+
         // Let the caller know that delivery status for specific numbers.
-        return Results.Ok(new SendMessageResponse
-        {
-            MessageSent = false,
-            Success = { },
-            Failure = { }
-        });
+        return Results.BadRequest($"Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(error)}");
     }
 
 });
@@ -449,7 +479,16 @@ app.Run();
 
 namespace Models
 {
-
+    // Example Response JSON
+    //    {
+    //    "response": {
+    //        "code": 0,
+    //        "developertext": "",
+    //        "dlrid": "78261715",
+    //        "subcode": 0,
+    //        "text": "OK"
+    //      }
+    //    }
     public class FirstPointResponse
     {
         [JsonPropertyName("response")]
@@ -461,24 +500,20 @@ namespace Models
         public int Code { get; set; }
         [JsonPropertyName("developertext")]
         public string DeveloperText { get; set; }
+        [JsonPropertyName("dlrid")]
+        public string DLRID { get; set; }
         [JsonPropertyName("subcode")]
         public int Subcode { get; set; }
         [JsonPropertyName("text")]
         public string Text { get; set; }
     }
 
+    // This model isn't converted into JSON as First Com expects a form-style URLEncoded POST as a request. Only the response is actually JSON.
     public class FirstPointOutbound
     {
-        [JsonPropertyName("username")]
-        public string Username { get; set; }
-        [JsonPropertyName("password")]
-        public string Password { get; set; }
-        [JsonPropertyName("to")]
         public string To { get; set; }
-        [JsonPropertyName("msisdn")]
         public string MSISDN { get; set; }
-        [JsonPropertyName("messagebody")]
-        public string MessageBody { get; set; }
+        public string Message { get; set; }
         // These are for the regularization of phone numbers and not mapped from the JSON payload.
         [JsonIgnore]
         public PhoneNumbersNA.PhoneNumber? FromPhoneNumber { get; set; }
@@ -496,7 +531,7 @@ namespace Models
                 if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
                 {
                     FromPhoneNumber = fromPhoneNumber;
-                    MSISDN = fromPhoneNumber.DialedNumber;
+                    MSISDN = $"1{fromPhoneNumber.DialedNumber}";
                     FromParsed = true;
                 }
             }
@@ -517,7 +552,7 @@ namespace Models
                 }
 
                 // This will drop the numbers that couldn't be parsed.
-                To = ToPhoneNumbers is not null && ToPhoneNumbers.Any() ? ToPhoneNumbers.Select(x => x.DialedNumber!).ToString() : string.Empty;
+                To = ToPhoneNumbers is not null && ToPhoneNumbers.Any() ? ToPhoneNumbers.Count > 1 ? string.Join(",", ToPhoneNumbers.Select(x => $"1{x.DialedNumber!}")) : $"1{ToPhoneNumbers?.FirstOrDefault()?.DialedNumber}" ?? string.Empty : string.Empty;
                 ToParsed = true;
             }
 
@@ -552,7 +587,7 @@ namespace Models
                 MediaURLs = MediaURLs is not null ? string.Join(',', MediaURLs) : string.Empty,
                 MessageType = MediaURLs is not null && MediaURLs.Any() ? MessageType.MMS : MessageType.SMS,
                 MessageSource = MessageSource.Incoming,
-                DateRecievedUTC = DateTime.UtcNow
+                DateReceivedUTC = DateTime.UtcNow
             };
 
             record.ToFromCompound = $"{record.From},{record.To}";
@@ -692,7 +727,7 @@ namespace Models
                 MediaURLs = string.Empty,
                 MessageType = string.IsNullOrWhiteSpace(Type) && Type == "mms" ? MessageType.MMS : MessageType.SMS,
                 MessageSource = MessageSource.Incoming,
-                DateRecievedUTC = DateTime.UtcNow
+                DateReceivedUTC = DateTime.UtcNow
             };
 
             record.ToFromCompound = $"{record.From},{record.To}";
@@ -784,8 +819,9 @@ namespace Models
         public string? MediaURLs { get; set; }
         public MessageType MessageType { get; set; }
         public MessageSource MessageSource { get; set; }
-        // Convert to DateTimeOffset if db is not sqlite.
-        public DateTime DateRecievedUTC { get; set; }
+        // Convert to DateTimeOffset if db is not SQLite.
+        public DateTime DateReceivedUTC { get; set; }
+        public string? DLRID { get; set; }
     }
 
     public enum MessageType { SMS, MMS };
@@ -803,7 +839,7 @@ namespace Models
         public DbSet<MessageRecord> Messages => Set<MessageRecord>();
         public string DbPath { get; set; }
 
-        // The following configures EF to create a Sqlite database file in the
+        // The following configures EF to create a SQLite database file in the
         // special "local" folder for your platform.
         protected override void OnConfiguring(DbContextOptionsBuilder options)
             => options.UseSqlite($"Data Source={DbPath};Cache=Shared");
