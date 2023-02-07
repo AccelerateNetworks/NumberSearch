@@ -22,12 +22,12 @@ builder.Services.AddMemoryCache();
 
 var bulkVSUsername = builder.Configuration["BulkVSUsername"] ?? string.Empty;
 var bulkVSPassword = builder.Configuration["BulkVSPassword"] ?? string.Empty;
-var bulkVSInbound = builder.Configuration["BulkVSInboundMessagingURL"] ?? $"https://portal.bulkvs.com/api/v1.0/messageSend";
+var bulkVSInbound = string.IsNullOrWhiteSpace(builder.Configuration["BulkVSInboundMessagingURL"]) ? $"https://portal.bulkvs.com/api/v1.0/messageSend" : builder.Configuration["BulkVSInboundMessagingURL"];
 var teliToken = builder.Configuration["TeliToken"] ?? string.Empty;
-var teliInbound = builder.Configuration["TeliInboundMessageSendingURL"] ?? $"https://api.teleapi.net/sms/send?token=";
-var firstPointSMSOutbound = builder.Configuration["FirstPoint"] ?? $"https://smsapi.1pcom.net/v1/retailsendmessage";
-var firstPointUsername = "talkitupapi";
-var firstPointPassword = "4kZ5v015dcnk";
+var teliInbound = string.IsNullOrWhiteSpace(builder.Configuration["TeliInboundMessageSendingURL"]) ? $"https://api.teleapi.net/sms/send?token=" : builder.Configuration["TeliInboundMessageSendingURL"];
+var firstPointSMSOutbound = string.IsNullOrWhiteSpace(builder.Configuration["FirstPointOutboundMessageURL"]) ? $"https://smsapi.1pcom.net/v1/retailsendmessage" : builder.Configuration["FirstPointOutboundMessageURL"];
+var firstPointUsername = builder.Configuration["FirstPointUsername"] ?? string.Empty;
+var firstPointPassword = builder.Configuration["FirstPointPassword"] ?? string.Empty;
 
 
 var app = builder.Build();
