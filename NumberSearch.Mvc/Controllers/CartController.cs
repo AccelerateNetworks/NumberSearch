@@ -791,8 +791,9 @@ Accelerate Networks
                                     tax_rate1 = billingTaxRate.rate,
                                     entity_type = "recurringInvoice",
                                     frequency_id = "5",
-                                    auto_bill = "always",
+                                    auto_bill = "opt_out",
                                     auto_bill_enabled = false,
+                                    next_send_date = DateTime.Now.AddMonths(1).ToString("yyyy-MM-dd HH:mm:ss"),
                                 };
 
                                 // Submit them to the billing system if they have items.
@@ -988,29 +989,30 @@ Accelerate Networks
                                     tax_rate1 = billingTaxRate.rate,
                                     entity_type = "recurringInvoice",
                                     frequency_id = "5",
-                                    auto_bill = "always",
+                                    auto_bill = "opt_out",
                                     auto_bill_enabled = true,
+                                    next_send_date = DateTime.Now.AddMonths(1).ToString("yyyy-MM-dd HH:mm:ss"),
+                                    status_id = "2",
                                 };
 
 
                                 // Submit them to the billing system if they have items.
                                 if (upfrontInvoice.line_items.Any() && reoccurringInvoice.line_items.Any())
                                 {
-                                    InvoiceDatum createNewOneTimeInvoice;
-                                    ReccurringInvoiceDatum createNewReoccurringInvoice;
+                                    InvoiceDatum createNewOneTimeInvoice = null;
+                                    ReccurringInvoiceDatum createNewReoccurringInvoice = null;
 
                                     try
                                     {
                                         createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                         createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
-                                    catch
+                                    catch (FlurlHttpException ex)
                                     {
+                                        var error = await ex.GetResponseStringAsync();
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
                                         Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
                                         Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
-                                        createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
 
                                     if (createNewOneTimeInvoice is not null && createNewReoccurringInvoice is not null)
@@ -1062,11 +1064,16 @@ Accelerate Networks
                                 }
                                 else if (reoccurringInvoice.line_items.Any())
                                 {
+                                    InvoiceDatum createNewOneTimeInvoice = null;
                                     ReccurringInvoiceDatum createNewReoccurringInvoice = null;
+
+                                    // Bill upfront for the first month of reoccurring service so that we can get their payment information on file.
+                                    upfrontInvoice.line_items = reoccurringInvoice.line_items;
 
                                     try
                                     {
                                         createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
                                     catch (FlurlHttpException ex)
                                     {
@@ -1080,22 +1087,30 @@ Accelerate Networks
                                     {
                                         // Update the order with the billing system's client and the two invoice Id's.
                                         order.BillingClientId = createNewReoccurringInvoice.client_id.ToString(CultureInfo.CurrentCulture);
+                                        order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
                                         order.BillingInvoiceReoccuringId = createNewReoccurringInvoice.id.ToString(CultureInfo.CurrentCulture);
                                         var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
-                                        var invoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewReoccurringInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
-                                        var reoccurringLink = invoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                        var oneTimeInvoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, false).ConfigureAwait(false);
+                                        var recurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
+                                        var oneTimeLink = oneTimeInvoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                        var reoccurringLink = recurringInvoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
                                         if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                         {
                                             order.ReoccuringInvoiceLink = reoccurringLink;
                                         }
 
-                                        confirmationEmail.Subject = $"Quote {createNewReoccurringInvoice.number} from Accelerate Networks";
+                                        if (!string.IsNullOrWhiteSpace(oneTimeLink))
+                                        {
+                                            order.UpfrontInvoiceLink = oneTimeLink;
+                                        }
+
+                                        confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} and {createNewReoccurringInvoice.number} from Accelerate Networks";
                                         confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
-Thanks for choosing Accelerate Networks, take a look at the <a href='{reoccurringLink}'>monthly service cost here</a>.
+Thanks for choosing Accelerate Networks, take a look at the <a href='{reoccurringLink}'>monthly service cost here</a>, and the <a href='{oneTimeLink}'>upfront cost here</a>.
 <br />
 <br />                                                                            
 Your order has been submitted and <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>can be reviewed here</a>, a delivery specialist will follow up with you soon.
