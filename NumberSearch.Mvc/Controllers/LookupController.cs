@@ -23,6 +23,8 @@ namespace NumberSearch.Mvc.Controllers
         private readonly Guid _teleToken;
         private readonly string _postgresql;
         private readonly string _bulkVSKey;
+        private readonly string _bulkVSUsername;
+        private readonly string _bulkVSPassword;
         private readonly string _callWithUsAPIkey;
 
         public LookupController(MvcConfiguration mvcConfiguration)
@@ -30,6 +32,8 @@ namespace NumberSearch.Mvc.Controllers
             _teleToken = Guid.Parse(mvcConfiguration.TeleAPI);
             _postgresql = mvcConfiguration.PostgresqlProd;
             _bulkVSKey = mvcConfiguration.BulkVSAPIKEY;
+            _bulkVSUsername = mvcConfiguration.BulkVSUsername;
+            _bulkVSPassword = mvcConfiguration.BulkVSPassword;
             _callWithUsAPIkey = mvcConfiguration.CallWithUsAPIKEY;
         }
 
@@ -58,7 +62,7 @@ namespace NumberSearch.Mvc.Controllers
                         // Drop everything else.
                     }
 
-                    // Drop leading 1's to improve the copy/paste experiance.
+                    // Drop leading 1's to improve the copy/paste experience.
                     if (converted.Count >= 10 && converted[0] == '1')
                     {
                         converted.Remove('1');
@@ -104,7 +108,8 @@ namespace NumberSearch.Mvc.Controllers
 
                 var cart = Cart.GetFromSession(HttpContext.Session);
 
-                var results = await VerifyPortablityInBulkAsync(parsedNumbers.ToArray());
+                var results = await Task.WhenAll(parsedNumbers.Select(VerifyPortabilityCnamLibdAsync));
+
 
                 var portableNumbers = results.Where(x => x.Portable && x.Wireless is false).ToArray();
                 var notPortable = results.Where(x => x.Portable is false).Select(x => x.PortedDialedNumber).ToArray();
@@ -162,10 +167,10 @@ namespace NumberSearch.Mvc.Controllers
             {
                 try
                 {
-                    var portable = await LnpCheck.IsPortableAsync(phoneNumber.DialedNumber, _teleToken).ConfigureAwait(false);
+                    var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber, _bulkVSUsername, _bulkVSPassword).ConfigureAwait(false);
 
                     // Fail fast
-                    if (portable is not true)
+                    if (portable is null || portable?.Portable is false)
                     {
                         Log.Information($"[Portability] {phoneNumber.DialedNumber} is not Portable.");
 
@@ -251,14 +256,7 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
-        public async Task<PortedPhoneNumber[]> VerifyPortablityInBulkAsync(string[] numbers)
-        {
-            var numbersAndPortability = await LnpCheck.IsBulkPortableAsync(numbers, _teleToken).ConfigureAwait(false);
-
-            return await Task.WhenAll(numbersAndPortability.Select(x => VerifyCnamLibdAsync(x.dialedNumber, x.Portable)));
-        }
-
-        public async Task<PortedPhoneNumber> VerifyCnamLibdAsync(string dialedNumber, bool portable)
+        public async Task<PortedPhoneNumber> VerifyPortabilityCnamLibdAsync(string dialedNumber)
         {
             var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
 
@@ -266,8 +264,10 @@ namespace NumberSearch.Mvc.Controllers
             {
                 try
                 {
+                    var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber, _bulkVSUsername, _bulkVSPassword).ConfigureAwait(false);
+
                     // Fail fast
-                    if (portable is not true)
+                    if (portable is null || portable?.Portable is false)
                     {
                         Log.Information($"[Portability] {phoneNumber.DialedNumber} is not Portable.");
 

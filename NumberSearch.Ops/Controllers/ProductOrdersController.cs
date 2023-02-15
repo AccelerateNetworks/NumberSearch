@@ -148,7 +148,7 @@ public class ProductOrdersController : Controller
                     {
                         var portRequestsController = new PortRequestsController(_configuration, _context);
 
-                        var port = await portRequestsController.VerifyPortablityAsync(number?.DialedNumber ?? string.Empty);
+                        var port = await portRequestsController.VerifyPortabilityAsync(number?.DialedNumber ?? string.Empty);
 
                         if (port.Portable)
                         {

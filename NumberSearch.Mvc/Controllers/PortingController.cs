@@ -24,6 +24,8 @@ namespace NumberSearch.Mvc.Controllers
         private readonly string _postgresql;
         private readonly Guid _teleToken;
         private readonly string _bulkVSAPIKey;
+        private readonly string _bulkVSAPIUsername;
+        private readonly string _bulkVSAPIPassword;
         private readonly string _azureStorage;
         private readonly string _SmtpUsername;
 
@@ -32,6 +34,8 @@ namespace NumberSearch.Mvc.Controllers
             _postgresql = mvcConfiguration.PostgresqlProd;
             _ = Guid.TryParse(mvcConfiguration.TeleAPI, out _teleToken);
             _bulkVSAPIKey = mvcConfiguration.BulkVSAPIKEY;
+            _bulkVSAPIUsername = mvcConfiguration.BulkVSUsername;
+            _bulkVSAPIPassword = mvcConfiguration.BulkVSPassword;
             _azureStorage = mvcConfiguration.AzureStorageAccount;
             _SmtpUsername = mvcConfiguration.SmtpUsername;
         }
@@ -69,7 +73,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 try
                 {
-                    var portable = await LnpCheck.IsPortableAsync(phoneNumber.DialedNumber, _teleToken).ConfigureAwait(false);
+                    var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber, _bulkVSAPIUsername, _bulkVSAPIPassword).ConfigureAwait(false);
 
                     // Determine if the number is a wireless number.
                     var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber, _bulkVSAPIKey).ConfigureAwait(false);
@@ -100,7 +104,7 @@ namespace NumberSearch.Mvc.Controllers
                     var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber, _bulkVSAPIKey);
                     checkNumber.LIDBName = numberName?.name;
 
-                    if (portable)
+                    if (portable is not null && portable.Portable)
                     {
                         Log.Information($"[Portability] {phoneNumber.DialedNumber} is Portable.");
 
@@ -202,9 +206,9 @@ namespace NumberSearch.Mvc.Controllers
 
             if (checkParse && phoneNumber is not null)
             {
-                var portable = await LnpCheck.IsPortableAsync(phoneNumber.DialedNumber, _teleToken).ConfigureAwait(false);
+                var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber, _bulkVSAPIUsername, _bulkVSAPIPassword).ConfigureAwait(false);
 
-                if (portable)
+                if (portable is not null && portable.Portable)
                 {
                     var port = new PortedPhoneNumber
                     {

@@ -732,55 +732,55 @@ namespace NumberSearch.Tests
         //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
         //}
 
-        [Fact]
-        public async Task LocalNumberPortabilityRawTestAsync()
-        {
-            // Arrange
-            string query = "1";
+        //[Fact]
+        //public async Task LocalNumberPortabilityRawTestAsync()
+        //{
+        //    // Arrange
+        //    string query = "1";
 
-            // Act
-            var results = await LnpCheck.GetRawAsync(query, token);
+        //    // Act
+        //    var results = await LnpCheck.GetRawAsync(query, token);
 
-            // Assert
-            Assert.NotNull(results);
-            Assert.False(results.data.Count == 0);
+        //    // Assert
+        //    Assert.NotNull(results);
+        //    Assert.False(results.data.Count == 0);
 
-            results = await LnpCheck.GetRawAsync("8662214141", token);
+        //    results = await LnpCheck.GetRawAsync("8662214141", token);
 
-            // Assert
-            Assert.NotNull(results);
-            Assert.False(results.data.Count == 0);
-        }
+        //    // Assert
+        //    Assert.NotNull(results);
+        //    Assert.False(results.data.Count == 0);
+        //}
 
-        [Fact]
-        public async Task TeliBulkPortabilityAsync()
-        {
-            // Arrange
-            var results = await LnpCheck.GetRawInBulkAsync(new[] { "8662214141", "2067696361" }, token);
+        //[Fact]
+        //public async Task TeliBulkPortabilityAsync()
+        //{
+        //    // Arrange
+        //    var results = await LnpCheck.GetRawInBulkAsync(new[] { "8662214141", "2067696361" }, token);
 
-            // Assert
-            Assert.NotNull(results);
-            //Assert.False(string.IsNullOrWhiteSpace(results));
-            //output.WriteLine(results);
-        }
+        //    // Assert
+        //    Assert.NotNull(results);
+        //    //Assert.False(string.IsNullOrWhiteSpace(results));
+        //    //output.WriteLine(results);
+        //}
 
-        [Fact]
-        public async Task LocalNumberPortabilityTestAsync()
-        {
-            // Arrange
-            string query = "1";
+        //[Fact]
+        //public async Task LocalNumberPortabilityTestAsync()
+        //{
+        //    // Arrange
+        //    string query = "1";
 
-            // Act
-            var result = await LnpCheck.IsPortableAsync(query, token);
+        //    // Act
+        //    var result = await LnpCheck.IsPortableAsync(query, token);
 
-            // Assert
-            Assert.False(result);
+        //    // Assert
+        //    Assert.False(result);
 
-            result = await LnpCheck.IsPortableAsync("8662214141", token);
+        //    result = await LnpCheck.IsPortableAsync("8662214141", token);
 
-            // Assert
-            Assert.True(result);
-        }
+        //    // Assert
+        //    Assert.True(result);
+        //}
 
 
         [Fact]

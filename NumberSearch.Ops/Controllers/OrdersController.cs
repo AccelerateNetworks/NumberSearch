@@ -2021,14 +2021,28 @@ public class OrdersController : Controller
                                 InvoiceDatum createNewOneTimeInvoice = null;
                                 InvoiceDatum createNewReoccurringInvoice = null;
 
+                                // TODO: These need to be quotes, not invoices.
+
                                 try
                                 {
                                     createNewOneTimeInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
+                                }
+                                catch (FlurlHttpException ex)
+                                {
+                                    var error = await ex.GetResponseStringAsync();
+                                    Log.Fatal(JsonSerializer.Serialize(error));
+                                    Log.Warning("[Checkout] Failed to find existing onetime invoice in the billing system.");
+                                }
+
+                                try
+                                {
                                     createNewReoccurringInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
                                 }
-                                catch
+                                catch (FlurlHttpException ex)
                                 {
-                                    Log.Warning("[Checkout] Failed to find existing invoices in the billing system.");
+                                    var error = await ex.GetResponseStringAsync();
+                                    Log.Fatal(JsonSerializer.Serialize(error));
+                                    Log.Warning("[Checkout] Failed to find existing reoccurring invoice in the billing system.");
                                 }
 
                                 // If it doesn't exist create it, otherwise update it.

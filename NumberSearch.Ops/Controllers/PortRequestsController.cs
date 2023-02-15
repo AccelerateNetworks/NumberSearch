@@ -46,7 +46,7 @@ public class PortRequestsController : Controller
         _context = context;
     }
 
-    public async Task<PortedPhoneNumber> VerifyPortablityAsync(string number)
+    public async Task<PortedPhoneNumber> VerifyPortabilityAsync(string number)
     {
         var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number, out var phoneNumber);
 
@@ -54,10 +54,10 @@ public class PortRequestsController : Controller
         {
             try
             {
-                var portable = await LnpCheck.IsPortableAsync(phoneNumber.DialedNumber, _teleToken).ConfigureAwait(false);
+                var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber, _bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
 
                 // Fail fast
-                if (portable is not true)
+                if (portable is null || portable.Portable is false)
                 {
                     Log.Information($"[Portability] {phoneNumber.DialedNumber} is not Portable.");
 
@@ -310,7 +310,7 @@ public class PortRequestsController : Controller
 
                 if (portRequest is not null && checkParse && phoneNumber is not null)
                 {
-                    var port = await VerifyPortablityAsync(phoneNumber.DialedNumber ?? string.Empty);
+                    var port = await VerifyPortabilityAsync(phoneNumber.DialedNumber ?? string.Empty);
 
                     if (port is not null && port.Portable)
                     {
