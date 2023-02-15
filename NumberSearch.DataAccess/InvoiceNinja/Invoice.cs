@@ -64,6 +64,23 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             // Unwrap the data we want from the single-field parent object.
             return result.data;
         }
+
+        public static async Task<InvoiceDatum> GetQuoteByIdAsync(string invoiceId, string token)
+        {
+            string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
+            string endpostring = "quotes";
+            string tokenHeader = "X-Api-Token";
+            string clientIdParameter = $"/{invoiceId}";
+            string url = $"{baseUrl}{endpostring}{clientIdParameter}";
+
+            var result = await url
+                .WithHeader(tokenHeader, token)
+                .GetJsonAsync<InvoiceSingle>()
+                .ConfigureAwait(false);
+
+            // Unwrap the data we want from the single-field parent object.
+            return result.data;
+        }
     }
 
     public class InvoiceSingle

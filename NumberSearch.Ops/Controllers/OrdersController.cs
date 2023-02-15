@@ -2025,7 +2025,7 @@ public class OrdersController : Controller
 
                                 try
                                 {
-                                    createNewOneTimeInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
+                                    createNewOneTimeInvoice = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
                                 }
                                 catch (FlurlHttpException ex)
                                 {
@@ -2036,7 +2036,7 @@ public class OrdersController : Controller
 
                                 try
                                 {
-                                    createNewReoccurringInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
+                                    createNewReoccurringInvoice = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
                                 }
                                 catch (FlurlHttpException ex)
                                 {
