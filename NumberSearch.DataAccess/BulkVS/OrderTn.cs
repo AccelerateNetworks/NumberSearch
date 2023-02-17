@@ -36,13 +36,9 @@ namespace NumberSearch.DataAccess.BulkVS
             {
                 return await route.WithBasicAuth(username, password).GetJsonAsync<IEnumerable<OrderTn>>().ConfigureAwait(false);
             }
-            catch (FlurlHttpException ex)
+            catch
             {
                 Log.Warning($"[Ingest] [BulkVS] No results found for area code {npa}.");
-                Log.Warning(ex?.Message);
-                Log.Warning(ex?.StackTrace?.ToString());
-                // Disabled because this is always an empty string in the logs.
-                //Log.Warning(await ex.GetResponseStringAsync());
                 return null;
             }
         }

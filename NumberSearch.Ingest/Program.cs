@@ -799,8 +799,6 @@ namespace NumberSearch.Ingest
 
                         try
                         {
-                            await Orders.UpdateOrdersAsync(config);
-
                             // Verify that all the Executive numbers are still purchasable for the priority area codes.
                             await Provider.VerifyAddToCartAsync(AreaCode.Priority, "Executive", postgresSQL, bulkVSusername, bulkVSpassword,
                                 teleToken, username, password, call48Username, call48Password, peerlessApiKey);
