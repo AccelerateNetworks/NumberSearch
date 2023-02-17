@@ -334,96 +334,96 @@ namespace NumberSearch.Ingest
                     {
                         var lastRun = await IngestStatistics.GetLastIngestAsync("TeleMessage", postgresSQL).ConfigureAwait(false);
 
-                        if (lastRun is not null && (lastRun.StartDate < (start - teleMessageCycle.CycleTime) || teleMessageCycle.RunNow))
-                        {
-                            Log.Information($"Last Run of {lastRun?.IngestedFrom} started at {lastRun?.StartDate} and ended at {lastRun?.EndDate}");
+                        //if (lastRun is not null && (lastRun.StartDate < (start - teleMessageCycle.CycleTime) || teleMessageCycle.RunNow))
+                        //{
+                        //    Log.Information($"Last Run of {lastRun?.IngestedFrom} started at {lastRun?.StartDate} and ended at {lastRun?.EndDate}");
 
-                            Log.Information($"[TeliMessage] Cycle time is {teleMessageCycle?.CycleTime}");
-                            Log.Information($"[TeliMessage] Enabled is {teleMessageCycle?.Enabled}");
+                        //    Log.Information($"[TeliMessage] Cycle time is {teleMessageCycle?.CycleTime}");
+                        //    Log.Information($"[TeliMessage] Enabled is {teleMessageCycle?.Enabled}");
 
-                            // Prevent another run from starting while this is still going.
-                            var lockingStats = new IngestStatistics
-                            {
-                                IngestedFrom = "TeleMessage",
-                                StartDate = DateTime.Now,
-                                EndDate = DateTime.Now,
-                                IngestedNew = 0,
-                                FailedToIngest = 0,
-                                NumbersRetrived = 0,
-                                Removed = 0,
-                                Unchanged = 0,
-                                UpdatedExisting = 0,
-                                Lock = true
-                            };
+                        //    // Prevent another run from starting while this is still going.
+                        //    var lockingStats = new IngestStatistics
+                        //    {
+                        //        IngestedFrom = "TeleMessage",
+                        //        StartDate = DateTime.Now,
+                        //        EndDate = DateTime.Now,
+                        //        IngestedNew = 0,
+                        //        FailedToIngest = 0,
+                        //        NumbersRetrived = 0,
+                        //        Removed = 0,
+                        //        Unchanged = 0,
+                        //        UpdatedExisting = 0,
+                        //        Lock = true
+                        //    };
 
-                            var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
+                        //    var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
 
-                            // Ingest all avalible numbers from the TeleMessage.
-                            Log.Information("Ingesting data from TeliMessage");
-                            var teleStats = new IngestStatistics
-                            {
-                                StartDate = DateTime.Now,
-                                EndDate = DateTime.Now,
-                                FailedToIngest = 0,
-                                IngestedFrom = "TeleMessage",
-                                IngestedNew = 0,
-                                Lock = false,
-                                NumbersRetrived = 0,
-                                Removed = 0,
-                                Unchanged = 0,
-                                UpdatedExisting = 0,
-                                Priority = true
-                            };
+                        //    // Ingest all avalible numbers from the TeleMessage.
+                        //    Log.Information("Ingesting data from TeliMessage");
+                        //    var teleStats = new IngestStatistics
+                        //    {
+                        //        StartDate = DateTime.Now,
+                        //        EndDate = DateTime.Now,
+                        //        FailedToIngest = 0,
+                        //        IngestedFrom = "TeleMessage",
+                        //        IngestedNew = 0,
+                        //        Lock = false,
+                        //        NumbersRetrived = 0,
+                        //        Removed = 0,
+                        //        Unchanged = 0,
+                        //        UpdatedExisting = 0,
+                        //        Priority = true
+                        //    };
 
-                            try
-                            {
-                                teleStats = await Provider.TeliMessageAsync(teleToken, Array.Empty<int>(), postgresSQL).ConfigureAwait(false);
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.Fatal("[TeliMessage] Failed to completed the priority ingest process.");
-                                Log.Fatal($"[TeliMessage] {ex.Message} {ex.InnerException}");
-                            }
+                        //    try
+                        //    {
+                        //        teleStats = await Provider.TeliMessageAsync(teleToken, Array.Empty<int>(), postgresSQL).ConfigureAwait(false);
+                        //    }
+                        //    catch (Exception ex)
+                        //    {
+                        //        Log.Fatal("[TeliMessage] Failed to completed the priority ingest process.");
+                        //        Log.Fatal($"[TeliMessage] {ex.Message} {ex.InnerException}");
+                        //    }
 
-                            // Remove the lock from the database to prevent it from getting cluttered with blank entries.
-                            var lockEntry = await IngestStatistics.GetLockAsync("TeleMessage", postgresSQL).ConfigureAwait(false);
-                            var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
+                        //    // Remove the lock from the database to prevent it from getting cluttered with blank entries.
+                        //    var lockEntry = await IngestStatistics.GetLockAsync("TeleMessage", postgresSQL).ConfigureAwait(false);
+                        //    var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
 
-                            // Remove all of the old numbers from the database.
-                            // Remove Telemessage records at half the rate that we ingest them by doubling the delete cycle.
-                            Log.Information("[TeliMessage] Removing old TeleMessage numbers from the database.");
-                            var teleMessageCleanUp = await PhoneNumber.DeleteOldByProvider(start, teleMessageCycle!.CycleTime, "TeleMessage", postgresSQL).ConfigureAwait(false);
+                        //    // Remove all of the old numbers from the database.
+                        //    // Remove Telemessage records at half the rate that we ingest them by doubling the delete cycle.
+                        //    Log.Information("[TeliMessage] Removing old TeleMessage numbers from the database.");
+                        //    var teleMessageCleanUp = await PhoneNumber.DeleteOldByProvider(start, teleMessageCycle!.CycleTime, "TeleMessage", postgresSQL).ConfigureAwait(false);
 
-                            var combined = new IngestStatistics
-                            {
-                                StartDate = teleStats.StartDate,
-                                EndDate = teleMessageCleanUp.EndDate,
-                                FailedToIngest = teleStats.FailedToIngest,
-                                IngestedFrom = teleStats.IngestedFrom,
-                                IngestedNew = teleStats.IngestedNew,
-                                Lock = false,
-                                NumbersRetrived = teleStats.NumbersRetrived,
-                                Removed = teleMessageCleanUp.Removed,
-                                Unchanged = teleStats.Unchanged,
-                                UpdatedExisting = teleStats.UpdatedExisting,
-                                Priority = false
-                            };
+                        //    var combined = new IngestStatistics
+                        //    {
+                        //        StartDate = teleStats.StartDate,
+                        //        EndDate = teleMessageCleanUp.EndDate,
+                        //        FailedToIngest = teleStats.FailedToIngest,
+                        //        IngestedFrom = teleStats.IngestedFrom,
+                        //        IngestedNew = teleStats.IngestedNew,
+                        //        Lock = false,
+                        //        NumbersRetrived = teleStats.NumbersRetrived,
+                        //        Removed = teleMessageCleanUp.Removed,
+                        //        Unchanged = teleStats.Unchanged,
+                        //        UpdatedExisting = teleStats.UpdatedExisting,
+                        //        Priority = false
+                        //    };
 
-                            if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
-                            {
-                                Log.Information($"[TeliMessage] Completed the TeleMessage ingest process {DateTime.Now}.");
-                            }
-                            else
-                            {
-                                Log.Fatal($"[TeliMessage] Failed to completed the TeleMessage ingest process {DateTime.Now}.");
-                            }
+                        //    if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
+                        //    {
+                        //        Log.Information($"[TeliMessage] Completed the TeleMessage ingest process {DateTime.Now}.");
+                        //    }
+                        //    else
+                        //    {
+                        //        Log.Fatal($"[TeliMessage] Failed to completed the TeleMessage ingest process {DateTime.Now}.");
+                        //    }
 
-                            if (teleMessageCycle.RunNow)
-                            {
-                                teleMessageCycle.RunNow = false;
-                                var checkRunNow = teleMessageCycle.PutAsync(postgresSQL).ConfigureAwait(false);
-                            }
-                        }
+                        //    if (teleMessageCycle.RunNow)
+                        //    {
+                        //        teleMessageCycle.RunNow = false;
+                        //        var checkRunNow = teleMessageCycle.PutAsync(postgresSQL).ConfigureAwait(false);
+                        //    }
+                        //}
 
                         // Priority ingest.
                         if (lastRun != null && ((teleMessagePriortyTimer.ElapsedMilliseconds >= priortyIngestCycleTime) || (!teleMessagePriortyTimer.IsRunning)))
