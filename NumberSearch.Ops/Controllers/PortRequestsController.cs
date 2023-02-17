@@ -490,73 +490,8 @@ public class PortRequestsController : Controller
                     });
                 }
 
-                // Split the tollfree numbers out from the local numbers.
-                var tollfreeNumbers = numbers.Where(x => PhoneNumbersNA.AreaCode.IsTollfree(x.PortedDialedNumber)).ToList();
-                var localNumbers = numbers.Where(x => !PhoneNumbersNA.AreaCode.IsTollfree(x.PortedDialedNumber)).ToList();
-
-                // Submit the tollfree numbers to TeliMessage in a port request.
-                if (tollfreeNumbers.Any())
-                {
-                    try
-                    {
-                        var teliResponse = await LnpCreate.GetAsync(portRequest?.BillingPhone ?? string.Empty, portRequest?.LocationType ?? string.Empty, portRequest?.BusinessContact ?? string.Empty,
-                            portRequest?.BusinessName ?? string.Empty, portRequest?.ResidentialFirstName ?? string.Empty, portRequest?.ResidentialLastName ?? string.Empty, portRequest?.ProviderAccountNumber ?? string.Empty,
-                            portRequest?.Address ?? string.Empty, portRequest?.Address2 ?? string.Empty, portRequest?.City ?? string.Empty, portRequest?.State ?? string.Empty, portRequest?.Zip ?? string.Empty, true,
-                            $"Email Notification to support@acceleratenetworks.com 24 hours or more prior to FOC. {portRequest?.PartialPortDescription ?? string.Empty}", portRequest?.WirelessNumber ?? false, portRequest?.CallerId ?? string.Empty, portRequest?.BillImagePath ?? string.Empty,
-                            tollfreeNumbers.Select(x => x.PortedDialedNumber).ToArray(), _teleToken).ConfigureAwait(false);
-
-                        if (teliResponse is not null && portRequest is not null && !string.IsNullOrWhiteSpace(teliResponse.data.id))
-                        {
-                            portRequest.TeliId = string.IsNullOrWhiteSpace(portRequest?.TeliId) ? teliResponse?.data?.id ?? "No Id Provided by Teli" : $"{portRequest?.TeliId}, {teliResponse?.data?.id}";
-                            portRequest.DateSubmitted = DateTime.Now;
-                            portRequest.VendorSubmittedTo = "TeliMessage";
-                            _context.PortRequests.Update(portRequest);
-                            await _context.SaveChangesAsync();
-
-                            foreach (var number in tollfreeNumbers)
-                            {
-                                number.ExternalPortRequestId = teliResponse?.data?.id ?? "No Id Provided by Teli";
-                                number.IngestedFrom = "TeliMessage";
-                                number.RawResponse = JsonSerializer.Serialize(teliResponse);
-                                _context.PortedPhoneNumbers.Update(number);
-                                await _context.SaveChangesAsync();
-                            }
-
-                            numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == portRequest.OrderId).ToListAsync();
-                        }
-                    }
-                    catch (FlurlHttpException ex)
-                    {
-                        var response = await ex.GetResponseStringAsync();
-                        Log.Error(response);
-                        return View("PortRequestEdit", new PortRequestResult
-                        {
-                            Order = order,
-                            PortRequest = portRequest,
-                            PhoneNumbers = numbers,
-                            Message = "Failed to submit port request to Teli: " + ex.Message + " " + response
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Fatal($"[PortRequest] Failed to submit port request to Teli.");
-                        Log.Error(ex.Message);
-                        Log.Error(ex.StackTrace ?? "No stack trace was provided.");
-
-                        numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == portRequest.OrderId).AsNoTracking().ToListAsync();
-
-                        return View("PortRequestEdit", new PortRequestResult
-                        {
-                            Order = order,
-                            PortRequest = portRequest,
-                            PhoneNumbers = numbers,
-                            Message = "Failed to submit port request to Teli: " + ex.Message + " " + ex.StackTrace
-                        });
-                    }
-                }
-
                 // Submit the local numbers to BulkVS in a port request.
-                if (localNumbers.Any())
+                if (numbers.Any())
                 {
                     try
                     {
@@ -566,7 +501,7 @@ public class PortRequestsController : Controller
                         string streetNumber = match.Groups[2].Value;
 
                         var lookups = new List<LrnBulkCnam>();
-                        foreach (var item in localNumbers)
+                        foreach (var item in numbers)
                         {
                             var spidCheck = await LrnBulkCnam.GetAsync(item.PortedDialedNumber, _bulkVSAPIKey).ConfigureAwait(false);
                             lookups.Add(spidCheck);
@@ -623,7 +558,7 @@ public class PortRequestsController : Controller
 
                                         foreach (var number in localTNs)
                                         {
-                                            var updatedNumber = localNumbers.Where(x => $"1{x.PortedDialedNumber}" == number).FirstOrDefault();
+                                            var updatedNumber = numbers.Where(x => $"1{x.PortedDialedNumber}" == number).FirstOrDefault();
                                             if (updatedNumber is not null)
                                             {
                                                 updatedNumber.ExternalPortRequestId = bulkResponse?.OrderId ?? "No Id Provided by BulkVS";
@@ -636,7 +571,7 @@ public class PortRequestsController : Controller
 
                                         numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
 
-                                        // Add a note to handle senarios where the requested FOC is to soon.
+                                        // Add a note to handle scenarios where the requested FOC is to soon.
                                         var note = new PortTNNote
                                         {
                                             Note = "If the port completion date requested is unavailable please pick the next available date and set the port to complete at 8pm that day."
@@ -729,7 +664,7 @@ public class PortRequestsController : Controller
                                     _context.PortRequests.Update(portRequest);
                                     await _context.SaveChangesAsync();
 
-                                    foreach (var number in localNumbers)
+                                    foreach (var number in numbers)
                                     {
                                         number.ExternalPortRequestId = bulkResponse?.OrderId;
                                         number.RawResponse = JsonSerializer.Serialize(bulkResponse);
