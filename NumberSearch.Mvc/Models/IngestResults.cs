@@ -1,14 +1,14 @@
 ﻿using NumberSearch.DataAccess;
 
-using System.Collections.Generic;
+using System;
 
 namespace NumberSearch.Mvc
 {
     public class IngestResults
     {
-        public IEnumerable<IngestStatistics>? Ingests { get; set; }
-        public IEnumerable<PhoneNumber.CountByProvider>? CurrentState { get; set; }
-        public IEnumerable<PhoneNumber.CountNPA>? AreaCodes { get; set; }
+        public IngestStatistics[] Ingests { get; set; } = Array.Empty<IngestStatistics>();
+        public PhoneNumber.CountByProvider[] CurrentState { get; set; } = Array.Empty<PhoneNumber.CountByProvider>();
+        public PhoneNumber.CountNPA[] AreaCodes { get; set; } = Array.Empty<PhoneNumber.CountNPA>();
         public int TotalPhoneNumbers { get; set; }
         public int TotalExecutiveNumbers { get; set; }
         public int TotalPremiumNumbers { get; set; }

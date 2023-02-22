@@ -800,7 +800,7 @@ namespace NumberSearch.Mvc.Controllers
             if (checkParse && phoneNumber is not null)
             {
                 // Determine if the number is a wireless number.
-                var lrnLookup = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber, _apiKey).ConfigureAwait(false);
+                var lrnLookup = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _apiKey).ConfigureAwait(false);
 
                 bool wireless = false;
 
@@ -830,12 +830,12 @@ namespace NumberSearch.Mvc.Controllers
                 portedPhoneNumber = new PortedPhoneNumber
                 {
                     PortedPhoneNumberId = Guid.NewGuid(),
-                    PortedDialedNumber = phoneNumber.DialedNumber,
+                    PortedDialedNumber = phoneNumber.DialedNumber ?? string.Empty,
                     NPA = phoneNumber.NPA,
                     NXX = phoneNumber.NXX,
                     XXXX = phoneNumber.XXXX,
-                    City = lrnLookup?.city,
-                    State = lrnLookup?.province,
+                    City = lrnLookup?.city ?? string.Empty,
+                    State = lrnLookup?.province ?? string.Empty,
                     DateIngested = DateTime.Now,
                     IngestedFrom = "UserInput",
                     Wireless = wireless
@@ -869,7 +869,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
             }
 
-            var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), PortedDialedNumber = portedPhoneNumber?.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber?.PortedPhoneNumberId, Quantity = 1 };
+            var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), PortedDialedNumber = portedPhoneNumber.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber?.PortedPhoneNumberId, Quantity = 1 };
 
             var checkAdd = cart.AddPortedPhoneNumber(portedPhoneNumber!, productOrder);
             var checkSet = cart.SetToSession(_httpContext.Session);
@@ -898,7 +898,7 @@ namespace NumberSearch.Mvc.Controllers
                 try
                 {
                     // Determine if the number is a wireless number.
-                    var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber, _apiKey).ConfigureAwait(false);
+                    var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _apiKey).ConfigureAwait(false);
 
                     bool wireless = false;
 
@@ -928,7 +928,7 @@ namespace NumberSearch.Mvc.Controllers
                     var verifiedPhoneNumber = new VerifiedPhoneNumber
                     {
                         VerifiedPhoneNumberId = Guid.NewGuid(),
-                        VerifiedDialedNumber = phoneNumber.DialedNumber,
+                        VerifiedDialedNumber = phoneNumber.DialedNumber ?? string.Empty,
                         NPA = phoneNumber.NPA,
                         NXX = phoneNumber.NXX,
                         XXXX = phoneNumber.XXXX,
@@ -1198,7 +1198,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 var productOrder = cart.ProductOrders?.Where(x => x.PortedPhoneNumberId == portedPhoneNumber.PortedPhoneNumberId).FirstOrDefault();
 
-                var newProductOrder = new ProductOrder { PortedDialedNumber = portedPhoneNumber?.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber?.PortedPhoneNumberId, Quantity = 1 };
+                var newProductOrder = new ProductOrder { PortedDialedNumber = portedPhoneNumber.PortedDialedNumber ?? string.Empty, PortedPhoneNumberId = portedPhoneNumber?.PortedPhoneNumberId, Quantity = 1 };
 
                 var checkRemove = cart.RemovePortedPhoneNumber(portedPhoneNumber!, productOrder ?? newProductOrder);
                 var checkSet = cart.SetToSession(_httpContext.Session);

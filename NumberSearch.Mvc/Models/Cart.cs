@@ -4,21 +4,20 @@ using NumberSearch.DataAccess;
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 
 namespace NumberSearch.Mvc
 {
     public class Cart
     {
-        public IEnumerable<PhoneNumber>? PhoneNumbers { get; set; }
-        public IEnumerable<Product>? Products { get; set; }
-        public IEnumerable<Service>? Services { get; set; }
-        public IEnumerable<ProductOrder>? ProductOrders { get; set; }
-        public IEnumerable<PortedPhoneNumber>? PortedPhoneNumbers { get; set; }
-        public IEnumerable<VerifiedPhoneNumber>? VerifiedPhoneNumbers { get; set; }
-        public IEnumerable<PurchasedPhoneNumber>? PurchasedPhoneNumbers { get; set; }
-        public IEnumerable<Coupon>? Coupons { get; set; }
-        public Order? Order { get; set; }
+        public List<PhoneNumber> PhoneNumbers { get; set; } = new List<PhoneNumber>();
+        public List<Product> Products { get; set; } = new List<Product>();
+        public List<Service> Services { get; set; } = new List<Service>();
+        public List<ProductOrder> ProductOrders { get; set; } = new List<ProductOrder>();
+        public List<PortedPhoneNumber> PortedPhoneNumbers { get; set; } = new List<PortedPhoneNumber>();
+        public List<VerifiedPhoneNumber> VerifiedPhoneNumbers { get; set; } = new List<VerifiedPhoneNumber>();
+        public List<PurchasedPhoneNumber> PurchasedPhoneNumbers { get; set; } = new List<PurchasedPhoneNumber>();
+        public List<Coupon> Coupons { get; set; } = new List<Coupon>();
+        public Order Order { get; set; } = new();
 
         enum CartKey
         {
@@ -40,15 +39,6 @@ namespace NumberSearch.Mvc
         /// <returns></returns>
         public static Cart GetFromSession(ISession session)
         {
-            //var numbers = session.Get<List<PhoneNumber>>(CartKey.PhoneNumbers.ToString());
-            //var products = session.Get<List<Product>>(CartKey.Products.ToString());
-            //var service = session.Get<List<Service>>(CartKey.Services.ToString());
-            //var productOrders = session.Get<List<ProductOrder>>(CartKey.ProductOrders.ToString());
-            //var portedPhoneNumbers = session.Get<List<PortedPhoneNumber>>(CartKey.PortedPhoneNumbers.ToString());
-            //var verfiedPhoneNumbers = session.Get<List<VerifiedPhoneNumber>>(CartKey.VerifiedPhoneNumber.ToString());
-            //var purchasedPhoneNumbers = session.Get<List<PurchasedPhoneNumber>>(CartKey.PurchasedPhoneNumber.ToString());
-            //var order = session.Get<Order>(CartKey.Order.ToString());
-
             var cart = session.Get<Cart>("Cart");
 
             return new Cart
@@ -73,15 +63,6 @@ namespace NumberSearch.Mvc
         public bool SetToSession(ISession session)
         {
             session.Set<Cart>("Cart", this);
-            //session.Set<List<PhoneNumber>>(CartKey.PhoneNumbers.ToString(), PhoneNumbers?.ToList());
-            //session.Set<List<Product>>(CartKey.Products.ToString(), Products?.ToList());
-            //session.Set<List<Service>>(CartKey.Services.ToString(), Services?.ToList());
-            //session.Set<List<ProductOrder>>(CartKey.ProductOrders.ToString(), ProductOrders?.ToList());
-            //session.Set<List<PortedPhoneNumber>>(CartKey.PortedPhoneNumbers.ToString(), PortedPhoneNumbers?.ToList());
-            //session.Set<List<VerifiedPhoneNumber>>(CartKey.VerifiedPhoneNumber.ToString(), VerifiedPhoneNumbers?.ToList());
-            //session.Set<List<PurchasedPhoneNumber>>(CartKey.PurchasedPhoneNumber.ToString(), PurchasedPhoneNumbers?.ToList());
-            //session.Set<Order>(CartKey.Order.ToString(), Order);
-
             return true;
         }
 
@@ -103,10 +84,10 @@ namespace NumberSearch.Mvc
             if (phoneNumber?.DialedNumber?.Length == 10 && phoneNumber.DialedNumber == productOrder?.DialedNumber)
             {
                 phoneNumbers[phoneNumber.DialedNumber] = phoneNumber;
-                PhoneNumbers = phoneNumbers.Values;
+                PhoneNumbers = phoneNumbers.Values.ToList();
 
                 productOrders[productOrder.DialedNumber] = productOrder;
-                ProductOrders = productOrders.Values;
+                ProductOrders = productOrders.Values.ToList();
 
                 return true;
             }
@@ -134,10 +115,10 @@ namespace NumberSearch.Mvc
             if (portedPhoneNumber?.PortedPhoneNumberId is not null && portedPhoneNumber.PortedPhoneNumberId == productOrder?.PortedPhoneNumberId)
             {
                 portedPhoneNumbers[portedPhoneNumber.PortedPhoneNumberId.ToString()] = portedPhoneNumber;
-                PortedPhoneNumbers = portedPhoneNumbers.Values;
+                PortedPhoneNumbers = portedPhoneNumbers.Values.ToList();
 
                 productOrders[productOrder.PortedPhoneNumberId?.ToString() ?? string.Empty] = productOrder;
-                ProductOrders = productOrders.Values;
+                ProductOrders = productOrders.Values.ToList();
 
                 return true;
             }
@@ -166,10 +147,10 @@ namespace NumberSearch.Mvc
             if (verifiedPhoneNumber?.VerifiedPhoneNumberId is not null && verifiedPhoneNumber.VerifiedPhoneNumberId == productOrder?.VerifiedPhoneNumberId)
             {
                 verifiedPhoneNumbers[verifiedPhoneNumber.VerifiedPhoneNumberId.ToString()] = verifiedPhoneNumber;
-                VerifiedPhoneNumbers = verifiedPhoneNumbers.Values;
+                VerifiedPhoneNumbers = verifiedPhoneNumbers.Values.ToList();
 
                 productOrders[productOrder.VerifiedPhoneNumberId?.ToString() ?? string.Empty] = productOrder;
-                ProductOrders = productOrders.Values;
+                ProductOrders = productOrders.Values.ToList();
 
                 return true;
             }
@@ -193,10 +174,10 @@ namespace NumberSearch.Mvc
             if (product is not null && productOrder is not null && !string.IsNullOrWhiteSpace(product?.Name) && product?.ProductId == productOrder?.ProductId)
             {
                 products[product!.ProductId.ToString()] = product;
-                Products = products.Values;
+                Products = products.Values.ToList();
 
                 productOrders[productOrder!.ProductId.ToString()] = productOrder;
-                ProductOrders = productOrders.Values;
+                ProductOrders = productOrders.Values.ToList();
 
                 return true;
             }
@@ -220,10 +201,10 @@ namespace NumberSearch.Mvc
             if (service is not null && productOrder is not null && !string.IsNullOrWhiteSpace(service?.Name) && service?.ServiceId == productOrder?.ServiceId)
             {
                 services[service!.ServiceId.ToString()] = service;
-                Services = services.Values;
+                Services = services.Values.ToList();
 
                 productOrders[productOrder!.ServiceId.ToString()] = productOrder;
-                ProductOrders = productOrders.Values;
+                ProductOrders = productOrders.Values.ToList();
 
                 return true;
             }
@@ -247,10 +228,10 @@ namespace NumberSearch.Mvc
             if (coupon is not null && productOrder is not null && !string.IsNullOrWhiteSpace(coupon?.Name) && productOrder.CouponId is not null && coupon?.CouponId == productOrder?.CouponId)
             {
                 coupons[coupon!.CouponId.ToString()] = coupon;
-                Coupons = coupons.Values;
+                Coupons = coupons.Values.ToList();
 
                 productOrders[productOrder!.CouponId.ToString() ?? string.Empty] = productOrder;
-                ProductOrders = productOrders.Values;
+                ProductOrders = productOrders.Values.ToList();
 
                 return true;
             }
@@ -281,8 +262,8 @@ namespace NumberSearch.Mvc
 
                 if (checkRemovePhoneNumber && checkRemoveProductOrder)
                 {
-                    PhoneNumbers = phoneNumbers.Values;
-                    ProductOrders = productOrders.Values;
+                    PhoneNumbers = phoneNumbers.Values.ToList();
+                    ProductOrders = productOrders.Values.ToList();
 
                     return true;
                 }
@@ -318,8 +299,8 @@ namespace NumberSearch.Mvc
 
                 if (checkRemovePortedPhoneNumber && checkRemoveProductOrder)
                 {
-                    PortedPhoneNumbers = portedPhoneNumbers.Values;
-                    ProductOrders = productOrders.Values;
+                    PortedPhoneNumbers = portedPhoneNumbers.Values.ToList();
+                    ProductOrders = productOrders.Values.ToList();
 
                     return true;
                 }
@@ -355,8 +336,8 @@ namespace NumberSearch.Mvc
 
                 if (checkRemovePortedPhoneNumber && checkRemoveProductOrder)
                 {
-                    VerifiedPhoneNumbers = verifedPhoneNumbers.Values;
-                    ProductOrders = productOrders.Values;
+                    VerifiedPhoneNumbers = verifedPhoneNumbers.Values.ToList();
+                    ProductOrders = productOrders.Values.ToList();
 
                     return true;
                 }
@@ -393,8 +374,8 @@ namespace NumberSearch.Mvc
 
                 if (checkRemoveProduct && checkRemoveProductorder)
                 {
-                    Products = products.Values;
-                    ProductOrders = productOrders.Values;
+                    Products = products.Values.ToList();
+                    ProductOrders = productOrders.Values.ToList();
 
                     return true;
                 }
@@ -430,8 +411,8 @@ namespace NumberSearch.Mvc
 
                 if (checkRemoveService && checkRemoveProductorder)
                 {
-                    Services = services.Values;
-                    ProductOrders = productOrders.Values;
+                    Services = services.Values.ToList();
+                    ProductOrders = productOrders.Values.ToList();
 
                     return true;
                 }
@@ -467,8 +448,8 @@ namespace NumberSearch.Mvc
 
                 if (checkRemoveService && checkRemoveProductorder)
                 {
-                    Coupons = coupons.Values;
-                    ProductOrders = productOrders.Values;
+                    Coupons = coupons.Values.ToList();
+                    ProductOrders = productOrders.Values.ToList();
 
                     return true;
                 }

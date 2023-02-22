@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
 using NumberSearch.Mvc.Models;
@@ -166,8 +165,8 @@ namespace NumberSearch.Mvc.Controllers
                     Message = !string.IsNullOrWhiteSpace(failed) ? $"{failed} is not purchasable at this time." : string.Empty,
                     AlertType = "alert-warning",
                     City = city,
-                    Cities = cities,
-                    PhoneNumbers = results,
+                    Cities = cities.ToArray(),
+                    PhoneNumbers = results.ToArray(),
                     Query = query,
                     Cart = cart
                 });
@@ -180,7 +179,7 @@ namespace NumberSearch.Mvc.Controllers
                 Page = page,
                 View = !string.IsNullOrWhiteSpace(view) ? view : "Recommended",
                 Message = !string.IsNullOrWhiteSpace(failed) ? $"{failed} is not purchasable at this time." : string.Empty,
-                PhoneNumbers = results,
+                PhoneNumbers = results.ToArray(),
                 City = city,
                 Query = query,
                 Cart = cart

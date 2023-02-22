@@ -2,7 +2,7 @@
 {
     public class CartResult
     {
-        public Cart? Cart { get; set; }
-        public string? Message { get; set; }
+        public Cart Cart { get; set; } = new();
+        public string Message { get; set; } = string.Empty;
     }
 }

@@ -11,6 +11,7 @@ using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Call48;
 using NumberSearch.DataAccess.Peerless;
 using NumberSearch.DataAccess.TeliMessage;
+using NumberSearch.Mvc.Models;
 
 using Serilog;
 
@@ -42,23 +43,23 @@ namespace NumberSearch.Mvc
 
         public MonitorLoop(IBackgroundTaskQueue taskQueue,
             ILogger<MonitorLoop> logger,
-            IHostApplicationLifetime applicationLifetime, IConfiguration configuration)
+            IHostApplicationLifetime applicationLifetime, IConfiguration configuration, MvcConfiguration mvcConfiguration)
         {
             _taskQueue = taskQueue;
             _cancellationToken = applicationLifetime.ApplicationStopping;
-            _ = Guid.TryParse(configuration.GetConnectionString("TeleAPI"), out _teleToken);
-            _postgresql = configuration.GetConnectionString("PostgresqlProd");
-            _ = int.TryParse(configuration.GetConnectionString("CallFlow"), out _CallFlow);
-            _ = int.TryParse(configuration.GetConnectionString("ChannelGroup"), out _ChannelGroup);
-            _fpcusername = configuration.GetConnectionString("PComNetUsername");
-            _fpcpassword = configuration.GetConnectionString("PComNetPassword");
-            _bulkVSusername = configuration.GetConnectionString("BulkVSUsername");
-            _bulkVSpassword = configuration.GetConnectionString("BulkVSPassword");
-            _call48Username = configuration.GetConnectionString("Call48Username");
-            _call48Password = configuration.GetConnectionString("Call48Password");
-            _emailUsername = configuration.GetConnectionString("SmtpUsername");
-            _emailPassword = configuration.GetConnectionString("SmtpPassword");
-            _peerlessApiKey = configuration.GetConnectionString("PeerlessAPIKey");
+            _ = Guid.TryParse(mvcConfiguration.TeleAPI, out _teleToken);
+            _postgresql = mvcConfiguration.PostgresqlProd;
+            _ = int.TryParse(mvcConfiguration.CallFlow, out _CallFlow);
+            _ = int.TryParse(mvcConfiguration.ChannelGroup, out _ChannelGroup);
+            _fpcusername = mvcConfiguration.PComNetUsername;
+            _fpcpassword = mvcConfiguration.PComNetPassword;
+            _bulkVSusername = mvcConfiguration.BulkVSUsername;
+            _bulkVSpassword = mvcConfiguration.BulkVSPassword;
+            _call48Username = mvcConfiguration.Call48Username;
+            _call48Password = mvcConfiguration.Call48Password;
+            _emailUsername = mvcConfiguration.SmtpUsername;
+            _emailPassword = mvcConfiguration.SmtpPassword;
+            _peerlessApiKey = mvcConfiguration.PeerlessAPIKey;
         }
 
         public void StartMonitorLoop()
@@ -237,9 +238,9 @@ namespace NumberSearch.Mvc
                                                         productOrder.OrderResponse = JsonSerializer.Serialize(ownedNumber);
                                                         productOrder.OrderResponse = "We already own this number.";
                                                         productOrder.Completed = true;
-                                                        ownedNumber.BillingClientId = order?.BillingClientId;
+                                                        ownedNumber.BillingClientId = order?.BillingClientId ?? string.Empty;
                                                         ownedNumber.Notes = $"Purchased in Order {order?.OrderId}";
-                                                        ownedNumber.OwnedBy = string.IsNullOrWhiteSpace(order?.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order?.BusinessName;
+                                                        ownedNumber.OwnedBy = string.IsNullOrWhiteSpace(order?.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order?.BusinessName ?? string.Empty;
 
                                                         var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
                                                         var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
@@ -250,11 +251,11 @@ namespace NumberSearch.Mvc
 
 
                                                     // Now that the number is purchased, register it as an offnet number with Teli.
-                                                    var checkExists = await UserDidsGet.GetAsync(nto?.DialedNumber, _teleToken).ConfigureAwait(false);
+                                                    var checkExists = await UserDidsGet.GetAsync(nto?.DialedNumber ?? string.Empty, _teleToken).ConfigureAwait(false);
 
                                                     if (checkExists is null || checkExists?.code != 200)
                                                     {
-                                                        var checkSubmit = await DidsOffnet.SubmitNumberAsync(nto?.DialedNumber, _teleToken);
+                                                        var checkSubmit = await DidsOffnet.SubmitNumberAsync(nto?.DialedNumber ?? string.Empty, _teleToken);
 
                                                         if (checkSubmit.code == 200)
                                                         {

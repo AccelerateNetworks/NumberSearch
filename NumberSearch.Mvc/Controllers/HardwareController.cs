@@ -76,13 +76,9 @@ namespace NumberSearch.Mvc.Controllers
                 if (!string.IsNullOrWhiteSpace(product?.VendorPartNumber))
                 {
                     var checkLookup = lookup.TryGetValue(product.VendorPartNumber, out var localVendor);
-                    if (checkLookup)
+                    if (checkLookup && localVendor is not null)
                     {
                         product.Vendor = localVendor;
-                    }
-                    else
-                    {
-
                     }
                 }
             }

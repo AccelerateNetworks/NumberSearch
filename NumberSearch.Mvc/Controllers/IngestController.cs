@@ -36,7 +36,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return View("Index", new IngestResults
             {
-                Ingests = ingests,
+                Ingests = ingests.ToArray(),
                 CurrentState = currentState,
                 AreaCodes = numbersByAreaCode,
                 TotalPhoneNumbers = total,

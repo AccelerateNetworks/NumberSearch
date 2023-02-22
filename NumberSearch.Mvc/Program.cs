@@ -1,17 +1,11 @@
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-using NpgsqlTypes;
-
 using Serilog;
 using Serilog.Events;
-using Serilog.Sinks.PostgreSQL;
-using Serilog.Sinks.PostgreSQL.ColumnWriters;
 
 using System;
-using System.Collections.Generic;
 
 namespace NumberSearch.Mvc
 {

@@ -20,7 +20,6 @@ namespace NumberSearch.Mvc.Controllers
     [ApiExplorerSettings(IgnoreApi = true)]
     public class LookupController : Controller
     {
-        private readonly Guid _teleToken;
         private readonly string _postgresql;
         private readonly string _bulkVSKey;
         private readonly string _bulkVSUsername;
@@ -29,7 +28,6 @@ namespace NumberSearch.Mvc.Controllers
 
         public LookupController(MvcConfiguration mvcConfiguration)
         {
-            _teleToken = Guid.Parse(mvcConfiguration.TeleAPI);
             _postgresql = mvcConfiguration.PostgresqlProd;
             _bulkVSKey = mvcConfiguration.BulkVSAPIKEY;
             _bulkVSUsername = mvcConfiguration.BulkVSUsername;
@@ -172,17 +170,17 @@ namespace NumberSearch.Mvc.Controllers
                     // Fail fast
                     if (portable is null || portable?.Portable is false)
                     {
-                        Log.Information($"[Portability] {phoneNumber.DialedNumber} is not Portable.");
+                        Log.Information($"[Portability] {phoneNumber?.DialedNumber} is not Portable.");
 
                         return new PortedPhoneNumber
                         {
-                            PortedDialedNumber = phoneNumber.DialedNumber,
+                            PortedDialedNumber = phoneNumber?.DialedNumber ?? string.Empty,
                             Portable = false
                         };
                     }
 
                     // Lookup the number.
-                    var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber, _bulkVSKey).ConfigureAwait(false);
+                    var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber?.DialedNumber ?? string.Empty, _bulkVSKey).ConfigureAwait(false);
 
                     // Determine if the number is a wireless number.
                     bool wireless = false;
@@ -208,18 +206,18 @@ namespace NumberSearch.Mvc.Controllers
                             break;
                     }
 
-                    var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber, _bulkVSKey);
-                    checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName?.name;
+                    var numberName = await CnamBulkVs.GetAsync(phoneNumber?.DialedNumber ?? string.Empty, _bulkVSKey);
+                    checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName?.name ?? string.Empty;
 
                     Log.Information($"[Portability] {number} is Portable.");
 
                     var portableNumber = new PortedPhoneNumber
                     {
                         PortedPhoneNumberId = Guid.NewGuid(),
-                        PortedDialedNumber = phoneNumber.DialedNumber,
-                        NPA = phoneNumber.NPA,
-                        NXX = phoneNumber.NXX,
-                        XXXX = phoneNumber.XXXX,
+                        PortedDialedNumber = phoneNumber?.DialedNumber ?? string.Empty,
+                        NPA = phoneNumber!.NPA,
+                        NXX = phoneNumber!.NXX,
+                        XXXX = phoneNumber!.XXXX,
                         City = checkNumber.city,
                         State = checkNumber.province,
                         DateIngested = DateTime.Now,
@@ -239,7 +237,7 @@ namespace NumberSearch.Mvc.Controllers
 
                     return new PortedPhoneNumber
                     {
-                        PortedDialedNumber = phoneNumber.DialedNumber,
+                        PortedDialedNumber = phoneNumber?.DialedNumber ?? string.Empty,
                         Portable = false
                     };
                 }
@@ -264,7 +262,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 try
                 {
-                    var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber, _bulkVSUsername, _bulkVSPassword).ConfigureAwait(false);
+                    var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSUsername, _bulkVSPassword).ConfigureAwait(false);
 
                     // Fail fast
                     if (portable is null || portable?.Portable is false)
@@ -273,7 +271,7 @@ namespace NumberSearch.Mvc.Controllers
 
                         return new PortedPhoneNumber
                         {
-                            PortedDialedNumber = phoneNumber.DialedNumber,
+                            PortedDialedNumber = phoneNumber.DialedNumber ?? string.Empty,
                             Portable = false
                         };
                     }
@@ -283,25 +281,25 @@ namespace NumberSearch.Mvc.Controllers
                     // Lookup the number.
                     if (phoneNumber.Type is NumberType.Canada)
                     {
-                        var canada = await DataAccess.CallWithUs.LRNLookup.GetAsync(phoneNumber.DialedNumber, _callWithUsAPIkey).ConfigureAwait(false);
+                        var canada = await DataAccess.CallWithUs.LRNLookup.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _callWithUsAPIkey).ConfigureAwait(false);
 
                         checkNumber = new LrnBulkCnam
                         {
-                            lata = canada?.LATA,
-                            lrn = canada?.LRN,
-                            jurisdiction = canada?.State,
-                            ocn = canada?.OCN,
-                            ratecenter = canada?.Ratecenter,
+                            lata = canada?.LATA ?? string.Empty,
+                            lrn = canada?.LRN ?? string.Empty,
+                            jurisdiction = canada?.State ?? string.Empty,
+                            ocn = canada?.OCN ?? string.Empty,
+                            ratecenter = canada?.Ratecenter ?? string.Empty,
                             tn = $"1{phoneNumber.DialedNumber}",
-                            lec = canada?.Company,
-                            lectype = canada?.Prefix_Type,
-                            city = canada?.Ratecenter,
-                            province = canada?.State
+                            lec = canada?.Company ?? string.Empty,
+                            lectype = canada?.Prefix_Type ?? string.Empty,
+                            city = canada?.Ratecenter ?? string.Empty,
+                            province = canada?.State ?? string.Empty
                         };
                     }
                     else
                     {
-                        checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber, _bulkVSKey).ConfigureAwait(false);
+                        checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSKey).ConfigureAwait(false);
                     }
 
                     // Determine if the number is a wireless number.
@@ -328,8 +326,8 @@ namespace NumberSearch.Mvc.Controllers
                             break;
                     }
 
-                    var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber, _bulkVSKey);
-                    checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName?.name;
+                    var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSKey);
+                    checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName.name ?? string.Empty;
 
                     // Log the lookup to the db.
                     var lookup = new PhoneNumberLookup(checkNumber);
@@ -345,7 +343,7 @@ namespace NumberSearch.Mvc.Controllers
                     var portableNumber = new PortedPhoneNumber
                     {
                         PortedPhoneNumberId = Guid.NewGuid(),
-                        PortedDialedNumber = phoneNumber.DialedNumber,
+                        PortedDialedNumber = phoneNumber.DialedNumber ?? string.Empty,
                         NPA = phoneNumber.NPA,
                         NXX = phoneNumber.NXX,
                         XXXX = phoneNumber.XXXX,
@@ -355,7 +353,7 @@ namespace NumberSearch.Mvc.Controllers
                         IngestedFrom = "UserInput",
                         Wireless = wireless,
                         LrnLookup = checkNumber,
-                        Carrier = carrier,
+                        Carrier = carrier ?? new(),
                         Portable = true
                     };
 
@@ -396,14 +394,14 @@ namespace NumberSearch.Mvc.Controllers
 
                 checkNumber = new LrnBulkCnam
                 {
-                    lata = canada?.LATA,
-                    lrn = canada?.LRN,
-                    jurisdiction = canada?.State,
-                    ocn = canada?.OCN,
-                    ratecenter = canada?.Ratecenter,
+                    lata = canada?.LATA ?? string.Empty,
+                    lrn = canada?.LRN ?? string.Empty,
+                    jurisdiction = canada?.State ?? string.Empty,
+                    ocn = canada?.OCN ?? string.Empty,
+                    ratecenter = canada?.Ratecenter ?? string.Empty,
                     tn = number,
-                    lec = canada?.Company,
-                    lectype = canada?.Prefix_Type,
+                    lec = canada?.Company ?? string.Empty,
+                    lectype = canada?.Prefix_Type ?? string.Empty,
                 };
             }
             else
@@ -412,7 +410,7 @@ namespace NumberSearch.Mvc.Controllers
             }
 
             var numberName = await CnamBulkVs.GetAsync(number, _bulkVSKey);
-            checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName?.name;
+            checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName.name;
 
             // Log the lookup to the db.
             var lookup = new PhoneNumberLookup(checkNumber);

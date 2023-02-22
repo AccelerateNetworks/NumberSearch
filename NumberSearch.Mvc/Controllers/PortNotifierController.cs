@@ -39,7 +39,7 @@ namespace NumberSearch.Mvc.Controllers
                 try
                 {
                     // Determine if the number is a wireless number.
-                    var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber, _bulkVSAPIKey).ConfigureAwait(false);
+                    var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSAPIKey).ConfigureAwait(false);
 
                     bool wireless = false;
 
@@ -64,14 +64,14 @@ namespace NumberSearch.Mvc.Controllers
                             break;
                     }
 
-                    var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber, _bulkVSAPIKey);
-                    checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName?.name;
+                    var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSAPIKey);
+                    checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName.name;
 
                     var checkLong = long.TryParse(checkNumber.activation, out var timeInSeconds);
 
                     var verify = new VerifiedPhoneNumber
                     {
-                        VerifiedDialedNumber = checkNumber.tn.Substring(1),
+                        VerifiedDialedNumber = checkNumber.tn[1..],
                         NPA = phoneNumber.NPA,
                         NXX = phoneNumber.NXX,
                         XXXX = phoneNumber.XXXX,
@@ -109,7 +109,7 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     var verified = new VerifiedPhoneNumber
                     {
-                        VerifiedDialedNumber = phoneNumber.DialedNumber,
+                        VerifiedDialedNumber = phoneNumber.DialedNumber ?? string.Empty,
                         NPA = phoneNumber.NPA,
                         NXX = phoneNumber.NXX,
                         XXXX = phoneNumber.XXXX,

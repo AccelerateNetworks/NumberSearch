@@ -8,7 +8,7 @@ namespace NumberSearch.Mvc.ViewComponents
         {
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            return View(cart?.ProductOrders);
+            return View(cart.ProductOrders);
         }
     }
 }
