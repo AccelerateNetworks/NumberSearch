@@ -12,17 +12,17 @@ namespace NumberSearch.DataAccess
     {
         public Guid PurchasedPhoneNumberId { get; set; }
         public Guid OrderId { get; set; }
-        public string DialedNumber { get; set; }
-        public string IngestedFrom { get; set; }
+        public string DialedNumber { get; set; } = string.Empty;
+        public string IngestedFrom { get; set; } = string.Empty;
         public DateTime DateIngested { get; set; }
         public DateTime DateOrdered { get; set; }
-        public string OrderResponse { get; set; }
+        public string OrderResponse { get; set; } = string.Empty;
         public bool Completed { get; set; }
         public int NPA { get; set; }
         public int NXX { get; set; }
         public int XXXX { get; set; }
-        public string NumberType { get; set; }
-        public string PIN { get; set; }
+        public string NumberType { get; set; } = string.Empty;
+        public string PIN { get; set; } = string.Empty;
 
         /// <summary>
         /// Get every purchased phone number.

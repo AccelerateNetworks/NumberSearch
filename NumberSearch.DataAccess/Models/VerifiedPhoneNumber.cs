@@ -11,28 +11,28 @@ namespace NumberSearch.DataAccess
     public class VerifiedPhoneNumber
     {
         public Guid VerifiedPhoneNumberId { get; set; }
-        public string VerifiedDialedNumber { get; set; }
+        public string VerifiedDialedNumber { get; set; } = string.Empty;
         public int NPA { get; set; }
         public int NXX { get; set; }
         public int XXXX { get; set; }
-        public string City { get; set; }
-        public string IngestedFrom { get; set; }
+        public string City { get; set; } = string.Empty;
+        public string IngestedFrom { get; set; } = string.Empty;
         public DateTime DateIngested { get; set; }
         public Guid? OrderId { get; set; }
         public bool Wireless { get; set; }
-        public string NumberType { get; set; }
-        public string LocalRoutingNumber { get; set; }
-        public string OperatingCompanyNumber { get; set; }
-        public string LocalAccessTransportArea { get; set; }
-        public string RateCenter { get; set; }
-        public string Province { get; set; }
-        public string Jurisdiction { get; set; }
-        public string Local { get; set; }
-        public string LocalExchangeCarrier { get; set; }
-        public string LocalExchangeCarrierType { get; set; }
-        public string ServiceProfileIdentifier { get; set; }
-        public string Activation { get; set; }
-        public string LIDBName { get; set; }
+        public string NumberType { get; set; } = string.Empty;
+        public string LocalRoutingNumber { get; set; } = string.Empty;
+        public string OperatingCompanyNumber { get; set; } = string.Empty;
+        public string LocalAccessTransportArea { get; set; } = string.Empty;
+        public string RateCenter { get; set; } = string.Empty;
+        public string Province { get; set; } = string.Empty;
+        public string Jurisdiction { get; set; } = string.Empty;
+        public string Local { get; set; } = string.Empty;
+        public string LocalExchangeCarrier { get; set; } = string.Empty;
+        public string LocalExchangeCarrierType { get; set; } = string.Empty;
+        public string ServiceProfileIdentifier { get; set; } = string.Empty;
+        public string Activation { get; set; } = string.Empty;
+        public string LIDBName { get; set; } = string.Empty;
         public DateTime LastPorted { get; set; }
         public DateTime DateToExpire { get; set; }
 

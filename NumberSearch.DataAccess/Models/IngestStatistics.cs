@@ -17,7 +17,7 @@ namespace NumberSearch.DataAccess
         public int UpdatedExisting { get; set; }
         public int Unchanged { get; set; }
         public int Removed { get; set; }
-        public string IngestedFrom { get; set; }
+        public string IngestedFrom { get; set; } = string.Empty;
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public bool Lock { get; set; }

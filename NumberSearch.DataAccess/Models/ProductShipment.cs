@@ -13,11 +13,11 @@ namespace NumberSearch.DataAccess
         public Guid ProductShipmentId { get; set; }
         public Guid ProductId { get; set; }
         public Guid OrderId { get; set; }
-        public string BillingClientId { get; set; }
-        public string Name { get; set; }
-        public string ShipmentSource { get; set; }
+        public string BillingClientId { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string ShipmentSource { get; set; } = string.Empty;
         public decimal PurchasePrice { get; set; }
-        public string ShipmentType { get; set; }
+        public string ShipmentType { get; set; } = string.Empty;
         public int Quantity { get; set; }
         public DateTime DateCreated { get; set; }
 

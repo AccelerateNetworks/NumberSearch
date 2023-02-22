@@ -13,19 +13,19 @@ namespace NumberSearch.DataAccess
     public class Product
     {
         public Guid ProductId { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         public int Price { get; set; }
-        public string Description { get; set; }
-        public string Image { get; set; }
+        public string Description { get; set; } = string.Empty;
+        public string Image { get; set; } = string.Empty;
         public bool Public { get; set; }
         public int QuantityAvailable { get; set; }
-        public string SupportLink { get; set; }
+        public string SupportLink { get; set; } = string.Empty;
         public int DisplayPriority { get; set; }
-        public string VendorPartNumber { get; set; }
-        public string Tags { get; set; }
-        public string Type { get; set; }
+        public string VendorPartNumber { get; set; } = string.Empty;
+        public string Tags { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
         // Just for the Price list page
-        public VendorProduct Vendor { get; set; }
+        public VendorProduct Vendor { get; set; } = new();
 
         /// <summary>
         /// Get a product by its Id.

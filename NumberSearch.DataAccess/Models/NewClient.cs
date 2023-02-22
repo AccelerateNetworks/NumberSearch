@@ -12,27 +12,27 @@ namespace NumberSearch.DataAccess
     {
         public Guid NewClientId { get; set; }
         public Guid OrderId { get; set; }
-        public string BillingClientId { get; set; }
-        public ExtensionRegistration[] ExtensionRegistrations { get; set; }
+        public string BillingClientId { get; set; } = string.Empty;
+        public ExtensionRegistration[] ExtensionRegistrations { get; set; } = Array.Empty<ExtensionRegistration>();
         public bool PhoneMenu { get; set; }
-        public string PhonesToRingOrMenuDescription { get; set; }
-        public PhoneMenuOption[] PhoneMenuOptions { get; set; }
-        public string BusinessHours { get; set; }
-        public string AfterHoursVoicemail { get; set; }
-        public NumberDescription[] NumberDescriptions { get; set; }
+        public string PhonesToRingOrMenuDescription { get; set; } = string.Empty;
+        public PhoneMenuOption[] PhoneMenuOptions { get; set; } = Array.Empty<PhoneMenuOption>();
+        public string BusinessHours { get; set; } = string.Empty;
+        public string AfterHoursVoicemail { get; set; } = string.Empty;
+        public NumberDescription[] NumberDescriptions { get; set; } = Array.Empty<NumberDescription>();
         public bool TextingService { get; set; }
-        public string TextingServiceName { get; set; }
+        public string TextingServiceName { get; set; } = string.Empty;
         public bool OverheadPaging { get; set; }
-        public string OverheadPagingDescription { get; set; }
+        public string OverheadPagingDescription { get; set; } = string.Empty;
         public bool Intercom { get; set; }
-        public string IntercomDescription { get; set; }
-        public IntercomRegistration[] IntercomRegistrations { get; set; }
+        public string IntercomDescription { get; set; } = string.Empty;
+        public IntercomRegistration[] IntercomRegistrations { get; set; } = Array.Empty<IntercomRegistration>();
         public bool SpeedDial { get; set; }
-        public SpeedDialKey[] SpeedDialKeys { get; set; }
+        public SpeedDialKey[] SpeedDialKeys { get; set; } = Array.Empty<SpeedDialKey>();
         public bool CustomHoldMusic { get; set; }
-        public string HoldMusicDescription { get; set; }
-        public string PhoneOfflineInstructions { get; set; }
-        public FollowMeRegistration[] FollowMeRegistrations { get; set; }
+        public string HoldMusicDescription { get; set; } = string.Empty;
+        public string PhoneOfflineInstructions { get; set; } = string.Empty;
+        public FollowMeRegistration[] FollowMeRegistrations { get; set; } = Array.Empty<FollowMeRegistration>();
         public DateTime DateUpdated { get; set; }
 
         public static async Task<NewClient> GetAsync(Guid newClientId, string connectionString)
@@ -105,10 +105,10 @@ namespace NumberSearch.DataAccess
         public Guid ExtensionRegistrationId { get; set; }
         public Guid NewClientId { get; set; }
         public int ExtensionNumber { get; set; }
-        public string NameOrLocation { get; set; }
-        public string Email { get; set; }
-        public string ModelOfPhone { get; set; }
-        public string OutboundCallerId { get; set; }
+        public string NameOrLocation { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string ModelOfPhone { get; set; } = string.Empty;
+        public string OutboundCallerId { get; set; } = string.Empty;
         public DateTime DateUpdated { get; set; }
 
         public static async Task<ExtensionRegistration[]> GetByNewClientAsync(Guid newClientId, string connectionString)
@@ -167,10 +167,10 @@ namespace NumberSearch.DataAccess
     {
         public Guid NumberDescriptionId { get; set; }
         public Guid NewClientId { get; set; }
-        public string PhoneNumber { get; set; }
-        public string Description { get; set; }
-        public string Prefix { get; set; }
-        public DateTime DateUpdated { get; set; }
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Prefix { get; set; } = string.Empty;
+        public DateTime DateUpdated { get; set; }   
 
         public static async Task<NumberDescription[]> GetByNewClientAsync(Guid newClientId, string connectionString)
         {
@@ -288,8 +288,8 @@ namespace NumberSearch.DataAccess
     {
         public Guid SpeedDialKeyId { get; set; }
         public Guid NewClientId { get; set; }
-        public string NumberOrExtension { get; set; }
-        public string LabelOrName { get; set; }
+        public string NumberOrExtension { get; set; } = string.Empty;
+        public string LabelOrName { get; set; } = string.Empty;
         public DateTime DateUpdated { get; set; }
 
         public static async Task<SpeedDialKey[]> GetByNewClientAsync(Guid newClientId, string connectionString)
@@ -348,9 +348,9 @@ namespace NumberSearch.DataAccess
     {
         public Guid PhoneMenuOptionId { get; set; }
         public Guid NewClientId { get; set; }
-        public string MenuOption { get; set; }
-        public string Destination { get; set; }
-        public string Description { get; set; }
+        public string MenuOption { get; set; } = string.Empty;
+        public string Destination { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public DateTime DateUpdated { get; set; }
 
         public static async Task<PhoneMenuOption[]> GetByNewClientAsync(Guid newClientId, string connectionString)
@@ -409,9 +409,9 @@ namespace NumberSearch.DataAccess
     {
         public Guid FollowMeRegistrationId { get; set; }
         public Guid NewClientId { get; set; }
-        public string NumberOrExtension { get; set; }
-        public string CellPhoneNumber { get; set; }
-        public string UnreachablePhoneNumber { get; set; }
+        public string NumberOrExtension { get; set; } = string.Empty;
+        public string CellPhoneNumber { get; set; } = string.Empty;
+        public string UnreachablePhoneNumber { get; set; } = string.Empty;
         public DateTime DateUpdated { get; set; }
 
         public static async Task<FollowMeRegistration[]> GetByNewClientAsync(Guid newClientId, string connectionString)

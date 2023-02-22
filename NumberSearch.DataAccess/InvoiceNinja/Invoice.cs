@@ -154,7 +154,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
 
     public class InvoiceDatum
     {
-        public string id { get; set; }
+        public string id { get; set; } = string.Empty;
         public string user_id { get; set; } = string.Empty;
         public string project_id { get; set; } = string.Empty;
         public string assigned_user_id { get; set; } = string.Empty;

@@ -12,34 +12,34 @@ namespace NumberSearch.DataAccess
     public class Order
     {
         public Guid OrderId { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Email { get; set; }
-        public string Address { get; set; }
-        public string Address2 { get; set; }
-        public string City { get; set; }
-        public string State { get; set; }
-        public string Zip { get; set; }
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string Address2 { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
+        public string Zip { get; set; } = string.Empty;
         public DateTime DateSubmitted { get; set; }
-        public string BusinessName { get; set; }
-        public string CustomerNotes { get; set; }
-        public string BillingClientId { get; set; }
-        public string BillingInvoiceId { get; set; }
+        public string BusinessName { get; set; } = string.Empty;
+        public string CustomerNotes { get; set; } = string.Empty;
+        public string BillingClientId { get; set; } = string.Empty;
+        public string BillingInvoiceId { get; set; } = string.Empty;
         public decimal SalesTax { get; set; }
         public bool Quote { get; set; }
-        public string BillingInvoiceReoccuringId { get; set; }
-        public string SalesEmail { get; set; }
-        public bool BackgroundWorkCompleted { get; set; }
+        public string BillingInvoiceReoccuringId { get; set; } = string.Empty;
+        public string SalesEmail { get; set; } = string.Empty;
+        public bool BackgroundWorkCompleted { get; set; }   
         public bool Completed { get; set; }
         public DateTime? InstallDate { get; set; }
-        public string UpfrontInvoiceLink { get; set; }
-        public string ReoccuringInvoiceLink { get; set; }
-        public bool OnsiteInstallation { get; set; }
-        public string AddressUnitType { get; set; }
-        public string AddressUnitNumber { get; set; }
-        public string UnparsedAddress { get; set; }
+        public string UpfrontInvoiceLink { get; set; } = string.Empty;
+        public string ReoccuringInvoiceLink { get; set; } = string.Empty;
+        public bool OnsiteInstallation { get; set; }    
+        public string AddressUnitType { get; set; } = string.Empty;
+        public string AddressUnitNumber { get; set; } = string.Empty;
+        public string UnparsedAddress { get; set; } = string.Empty;
         public Guid? MergedOrderId { get; set; }
-        public string E911ServiceNumber { get; set; }
+        public string E911ServiceNumber { get; set; } = string.Empty;
 
         public static async Task<Order> GetByIdAsync(Guid orderId, string connectionString)
         {
@@ -206,7 +206,7 @@ namespace NumberSearch.DataAccess
                 }
                 else
                 {
-                    if (order.OnsiteInstallation is true)
+                    if (order?.OnsiteInstallation is true)
                     {
                         return $"⭕ Install the cusomter's hardware onsite";
                     }

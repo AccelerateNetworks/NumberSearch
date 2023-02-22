@@ -10,20 +10,20 @@ namespace NumberSearch.DataAccess.TeliMessage
     public class DidsOffnet
     {
         public int code { get; set; }
-        public string status { get; set; }
-        public string error { get; set; }
-        public OffnetResponseData data { get; set; }
+        public string status { get; set; } = string.Empty;
+        public string error { get; set; } = string.Empty;
+        public OffnetResponseData data { get; set; } = new();
 
         public class OffnetResponseData
         {
-            public string jobid { get; set; }
+            public string jobid { get; set; } = string.Empty;
         }
 
         public class StatusResponse
         {
             public int code { get; set; }
-            public string status { get; set; }
-            public string data { get; set; }
+            public string status { get; set; } = string.Empty;
+            public string data { get; set; } = string.Empty;
         }
 
         public static async Task<DidsOffnet> VerifyCapabilityAsync(string number, Guid token)
@@ -40,7 +40,7 @@ namespace NumberSearch.DataAccess.TeliMessage
             }
             catch (FlurlHttpException ex)
             {
-                Log.Fatal($"{await ex.GetResponseStringAsync()}");
+                Log.Error($"{await ex.GetResponseStringAsync()}");
                 return new DidsOffnet { code = 500, status = "error", error = await ex.GetResponseJsonAsync() };
             }
         }
@@ -60,7 +60,7 @@ namespace NumberSearch.DataAccess.TeliMessage
             }
             catch (FlurlHttpException ex)
             {
-                Log.Fatal($"{await ex.GetResponseStringAsync()}");
+                Log.Error($"{await ex.GetResponseStringAsync()}");
                 return new DidsOffnet { code = 500, status = "error", error = await ex.GetResponseJsonAsync() };
             }
         }
@@ -79,7 +79,7 @@ namespace NumberSearch.DataAccess.TeliMessage
             }
             catch (FlurlHttpException ex)
             {
-                Log.Fatal($"{await ex.GetResponseStringAsync()}");
+                Log.Error($"{await ex.GetResponseStringAsync()}");
                 return new StatusResponse { code = 500, status = "Error", data = await ex.GetResponseJsonAsync() };
             }
         }

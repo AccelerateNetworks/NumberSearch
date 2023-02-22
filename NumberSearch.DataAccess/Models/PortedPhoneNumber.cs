@@ -13,25 +13,25 @@ namespace NumberSearch.DataAccess
     public class PortedPhoneNumber
     {
         public Guid PortedPhoneNumberId { get; set; }
-        public string PortedDialedNumber { get; set; }
+        public string PortedDialedNumber { get; set; } = string.Empty;
         public int NPA { get; set; }
         public int NXX { get; set; }
         public int XXXX { get; set; }
-        public string City { get; set; }
-        public string State { get; set; }
-        public string IngestedFrom { get; set; }
+        public string City { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
+        public string IngestedFrom { get; set; } = string.Empty;
         public DateTime DateIngested { get; set; }
         public Guid? PortRequestId { get; set; }
         public Guid? OrderId { get; set; }
         public bool Wireless { get; set; }
-        public string RequestStatus { get; set; }
+        public string RequestStatus { get; set; } = string.Empty;
         public DateTime? DateFirmOrderCommitment { get; set; }
-        public string ExternalPortRequestId { get; set; }
+        public string ExternalPortRequestId { get; set; } = string.Empty;
         public bool Completed { get; set; }
-        public string RawResponse { get; set; }
+        public string RawResponse { get; set; } = string.Empty;
         // Only used by the porting process to get helpful information on the ported phone number.
-        public LrnBulkCnam LrnLookup { get; set; }
-        public Carrier Carrier { get; set; }
+        public LrnBulkCnam LrnLookup { get; set; } = new();
+        public Carrier Carrier { get; set; } = new();
         public bool Portable { get; set; }
 
         /// <summary>

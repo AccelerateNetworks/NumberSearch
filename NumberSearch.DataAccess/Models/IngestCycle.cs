@@ -11,7 +11,7 @@ namespace NumberSearch.DataAccess
     public class IngestCycle
     {
         public Guid IngestCycleId { get; set; }
-        public string IngestedFrom { get; set; }
+        public string IngestedFrom { get; set; } = string.Empty;
         public TimeSpan CycleTime { get; set; }
         public DateTime LastUpdate { get; set; }
         public bool Enabled { get; set; }

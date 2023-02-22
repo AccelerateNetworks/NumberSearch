@@ -20,14 +20,14 @@ namespace NumberSearch.DataAccess
     {
         public Guid EmailId { get; set; }
         public Guid OrderId { get; set; }
-        public string PrimaryEmailAddress { get; set; }
-        public string SalesEmailAddress { get; set; }
-        public string CarbonCopy { get; set; }
-        public string Subject { get; set; }
-        public string MessageBody { get; set; }
+        public string PrimaryEmailAddress { get; set; } = string.Empty;
+        public string SalesEmailAddress { get; set; } = string.Empty;
+        public string CarbonCopy { get; set; } = string.Empty;
+        public string Subject { get; set; } = string.Empty;
+        public string MessageBody { get; set; } = string.Empty;
         public DateTime DateSent { get; set; }
         public bool Completed { get; set; }
-        public string CalendarInvite { get; set; }
+        public string CalendarInvite { get; set; } = string.Empty;
         public bool DoNotSend { get; set; }
 
         /// <summary>
@@ -166,7 +166,7 @@ namespace NumberSearch.DataAccess
             {
                 Log.Fatal($"[Email] Failed to send email {EmailId}.");
                 Log.Fatal(ex.Message);
-                Log.Fatal(ex.StackTrace);
+                Log.Fatal(ex.StackTrace ?? "StackTrace was null.");
                 Completed = false;
                 return false;
             }

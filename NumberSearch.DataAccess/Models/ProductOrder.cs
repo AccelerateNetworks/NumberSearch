@@ -15,8 +15,8 @@ namespace NumberSearch.DataAccess
         public Guid OrderId { get; set; }
         public Guid ProductId { get; set; }
         public Guid ServiceId { get; set; }
-        public string DialedNumber { get; set; }
-        public string PortedDialedNumber { get; set; }
+        public string DialedNumber { get; set; } = string.Empty;
+        public string PortedDialedNumber { get; set; } = string.Empty;
         public int Quantity { get; set; }
         public DateTime CreateDate { get; set; }
         public Guid? PortedPhoneNumberId { get; set; }

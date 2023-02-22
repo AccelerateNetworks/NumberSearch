@@ -11,9 +11,9 @@ namespace NumberSearch.DataAccess
     public class Service
     {
         public Guid ServiceId { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         public int Price { get; set; }
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         /// <summary>
         /// Get a product by its Id.

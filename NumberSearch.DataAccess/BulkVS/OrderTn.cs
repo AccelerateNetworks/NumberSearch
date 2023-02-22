@@ -18,7 +18,7 @@ namespace NumberSearch.DataAccess.BulkVS
         [JsonPropertyName("Rate Center")]
         [JsonProperty("Rate Center")]
         public string RateCenter { get; set; } = string.Empty;
-        public string State { get; set; }
+        public string State { get; set; } = string.Empty;
         [JsonPropertyName("Per Minute Rate")]
         [JsonProperty("Per Minute Rate")]
         public string PerMinuteRate { get; set; } = string.Empty;

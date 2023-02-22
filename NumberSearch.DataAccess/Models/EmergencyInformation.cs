@@ -11,21 +11,21 @@ namespace NumberSearch.DataAccess
     public class EmergencyInformation
     {
         public Guid EmergencyInformationId { get; set; }
-        public string DialedNumber { get; set; }
-        public string IngestedFrom { get; set; }
+        public string DialedNumber { get; set; } = string.Empty;
+        public string IngestedFrom { get; set; } = string.Empty;
         public DateTime DateIngested { get; set; }
-        public string TeliId { get; set; }
-        public string FullName { get; set; }
-        public string Address { get; set; }
-        public string City { get; set; }
-        public string State { get; set; }
-        public string Zip { get; set; }
-        public string UnitType { get; set; }
-        public string UnitNumber { get; set; }
+        public string TeliId { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
+        public string Zip { get; set; } = string.Empty;
+        public string UnitType { get; set; } = string.Empty;
+        public string UnitNumber { get; set; } = string.Empty;
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifyDate { get; set; }
-        public string AlertGroup { get; set; }
-        public string Note { get; set; }
+        public string AlertGroup { get; set; } = string.Empty;
+        public string Note { get; set; } = string.Empty;
 
         public static async Task<IEnumerable<EmergencyInformation>> GetAllAsync(string connectionString)
         {

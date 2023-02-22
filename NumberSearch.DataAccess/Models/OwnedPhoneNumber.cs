@@ -11,16 +11,16 @@ namespace NumberSearch.DataAccess
     public class OwnedPhoneNumber
     {
         public Guid OwnedPhoneNumberId { get; set; }
-        public string DialedNumber { get; set; }
-        public string IngestedFrom { get; set; }
+        public string DialedNumber { get; set; } = string.Empty;
+        public string IngestedFrom { get; set; } = string.Empty;
         public DateTime DateIngested { get; set; }
         public bool Active { get; set; }
-        public string BillingClientId { get; set; }
-        public string OwnedBy { get; set; }
-        public string Notes { get; set; }
-        public string SPID { get; set; }
-        public string SPIDName { get; set; }
-        public string LIDBCNAM { get; set; }
+        public string BillingClientId { get; set; } = string.Empty;
+        public string OwnedBy { get; set; } = string.Empty;
+        public string Notes { get; set; } = string.Empty;
+        public string SPID { get; set; } = string.Empty;
+        public string SPIDName { get; set; } = string.Empty;
+        public string LIDBCNAM { get; set; } = string.Empty;
         public Guid? EmergencyInformationId { get; set; }
 
         /// <summary>

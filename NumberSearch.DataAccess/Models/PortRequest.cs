@@ -14,35 +14,35 @@ namespace NumberSearch.DataAccess
     {
         public Guid PortRequestId { get; set; }
         public Guid OrderId { get; set; }
-        public string Address { get; set; }
-        public string Address2 { get; set; }
-        public string City { get; set; }
-        public string State { get; set; }
-        public string Zip { get; set; }
-        public string BillingPhone { get; set; }
-        public string LocationType { get; set; }
-        public string BusinessContact { get; set; }
-        public string BusinessName { get; set; }
-        public string ProviderAccountNumber { get; set; }
-        public string ProviderPIN { get; set; }
+        public string Address { get; set; } = string.Empty;
+        public string Address2 { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
+        public string Zip { get; set; } = string.Empty;
+        public string BillingPhone { get; set; } = string.Empty;
+        public string LocationType { get; set; } = string.Empty;
+        public string BusinessContact { get; set; } = string.Empty;
+        public string BusinessName { get; set; } = string.Empty;
+        public string ProviderAccountNumber { get; set; } = string.Empty;
+        public string ProviderPIN { get; set; } = string.Empty;
         public bool PartialPort { get; set; }
-        public string PartialPortDescription { get; set; }
+        public string PartialPortDescription { get; set; } = string.Empty;
         public bool WirelessNumber { get; set; }
-        public string CallerId { get; set; }
+        public string CallerId { get; set; } = string.Empty;
         // Only used in the form
-        public IFormFile BillImage { get; set; }
-        public string BillImagePath { get; set; }
-        public string BillImageFileType { get; set; }
+        public IFormFile? BillImage { get; set; }
+        public string BillImagePath { get; set; } = string.Empty;
+        public string BillImageFileType { get; set; } = string.Empty;
         public DateTime DateSubmitted { get; set; }
-        public string ResidentialFirstName { get; set; }
-        public string ResidentialLastName { get; set; }
-        public string TeliId { get; set; }
-        public string RequestStatus { get; set; }
+        public string ResidentialFirstName { get; set; } = string.Empty;
+        public string ResidentialLastName { get; set; } = string.Empty;
+        public string TeliId { get; set; } = string.Empty;
+        public string RequestStatus { get; set; } = string.Empty;
         public bool Completed { get; set; }
         public DateTime? DateCompleted { get; set; }
         public DateTime? DateUpdated { get; set; }
-        public string VendorSubmittedTo { get; set; }
-        public string BulkVSId { get; set; }
+        public string VendorSubmittedTo { get; set; } = string.Empty;
+        public string BulkVSId { get; set; } = string.Empty;
 
         /// <summary>
         /// Get all of the Port Requests from the database.

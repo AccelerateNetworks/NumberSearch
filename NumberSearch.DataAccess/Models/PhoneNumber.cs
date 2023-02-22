@@ -22,15 +22,15 @@ namespace NumberSearch.DataAccess
 
     public class PhoneNumber
     {
-        public string DialedNumber { get; set; }
+        public string DialedNumber { get; set; } = string.Empty;
         public int NPA { get; set; }
         public int NXX { get; set; }
         public int XXXX { get; set; }
-        public string City { get; set; }
-        public string State { get; set; }
-        public string IngestedFrom { get; set; }
+        public string City { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
+        public string IngestedFrom { get; set; } = string.Empty;
         public DateTime DateIngested { get; set; }
-        public string NumberType { get; set; }
+        public string NumberType { get; set; } = string.Empty;
         public bool Purchased { get; set; }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace NumberSearch.DataAccess
         public static async Task<IEnumerable<PhoneNumber>> SearchAsync(string query, string connectionString)
         {
             // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
-            query = query?.Trim()?.Replace('*', '_');
+            query = query.Trim().Replace('*', '_');
 
             await using var connection = new NpgsqlConnection(connectionString);
 
@@ -132,7 +132,7 @@ namespace NumberSearch.DataAccess
             var offset = (page * 50) - 50;
             var limit = 50;
             // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
-            query = query?.Trim()?.Replace('*', '_');
+            query = query.Trim().Replace('*', '_');
 
             await using var connection = new NpgsqlConnection(connectionString);
 
@@ -156,7 +156,7 @@ namespace NumberSearch.DataAccess
             var offset = (page * 50) - 50;
             var limit = 50;
             // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
-            query = query?.Trim()?.Replace('*', '_');
+            query = query.Trim().Replace('*', '_');
 
             await using var connection = new NpgsqlConnection(connectionString);
 
@@ -180,7 +180,7 @@ namespace NumberSearch.DataAccess
             var offset = (page * 50) - 50;
             var limit = 50;
             // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
-            query = query?.Trim()?.Replace('*', '_');
+            query = query.Trim().Replace('*', '_');
 
             await using var connection = new NpgsqlConnection(connectionString);
 
@@ -198,7 +198,7 @@ namespace NumberSearch.DataAccess
             var offset = (page * 50) - 50;
             var limit = 50;
             // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
-            query = query?.Trim()?.Replace('*', '_');
+            query = query.Trim().Replace('*', '_');
 
             await using var connection = new NpgsqlConnection(connectionString);
 
@@ -214,7 +214,7 @@ namespace NumberSearch.DataAccess
         public static async Task<int> NumberOfResultsInQuery(string query, string connectionString)
         {
             // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
-            query = query?.Trim()?.Replace('*', '_');
+            query = query.Trim().Replace('*', '_');
 
             await using var connection = new NpgsqlConnection(connectionString);
 
@@ -230,7 +230,7 @@ namespace NumberSearch.DataAccess
         public static async Task<int> NumberOfResultsInQueryWithCity(string query, string city, string connectionString)
         {
             // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
-            query = query?.Trim()?.Replace('*', '_');
+            query = query.Trim().Replace('*', '_');
 
             await using var connection = new NpgsqlConnection(connectionString);
 
@@ -246,7 +246,7 @@ namespace NumberSearch.DataAccess
         public static async Task<IEnumerable<string>> CitiesInQueryAsync(string query, string connectionString)
         {
             // Convert stars to underscores which serve the same purpose as wildcards in PostgreSQL.
-            query = query?.Trim()?.Replace('*', '_');
+            query = query.Trim().Replace('*', '_');
 
             await using var connection = new NpgsqlConnection(connectionString);
 
@@ -492,66 +492,69 @@ namespace NumberSearch.DataAccess
                 await connection.OpenAsync();
                 await using var transaction = await connection.BeginTransactionAsync();
 
-                foreach (var number in numbers.ToArray())
+                if (numbers is not null)
                 {
-                    // If anything is null, skip it.
-                    if (!(number.NPA < 100 || number.NXX < 100 || number.XXXX < 1 || number.DialedNumber == null || number.City == null || number.State == null || number.IngestedFrom == null || number.NumberType == null))
+                    foreach (var number in numbers.ToArray())
                     {
-                        var command = connection.CreateCommand();
-                        command.CommandText =
-                            $"INSERT INTO public.\"PhoneNumbers\"(\"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\", \"Purchased\") VALUES (@DialedNumber, @NPA, @NXX, @XXXX, @City, @State, @IngestedFrom, @DateIngested, @NumberType, @Purchased);";
+                        // If anything is null, skip it.
+                        if (!(number.NPA < 100 || number.NXX < 100 || number.XXXX < 1 || number.DialedNumber == null || number.City == null || number.State == null || number.IngestedFrom == null || number.NumberType == null))
+                        {
+                            var command = connection.CreateCommand();
+                            command.CommandText =
+                                $"INSERT INTO public.\"PhoneNumbers\"(\"DialedNumber\", \"NPA\", \"NXX\", \"XXXX\", \"City\", \"State\", \"IngestedFrom\", \"DateIngested\", \"NumberType\", \"Purchased\") VALUES (@DialedNumber, @NPA, @NXX, @XXXX, @City, @State, @IngestedFrom, @DateIngested, @NumberType, @Purchased);";
 
-                        var parameterDialedNumber = command.CreateParameter();
-                        parameterDialedNumber.ParameterName = "@DialedNumber";
-                        command.Parameters.Add(parameterDialedNumber);
-                        parameterDialedNumber.Value = number.DialedNumber;
+                            var parameterDialedNumber = command.CreateParameter();
+                            parameterDialedNumber.ParameterName = "@DialedNumber";
+                            command.Parameters.Add(parameterDialedNumber);
+                            parameterDialedNumber.Value = number.DialedNumber;
 
-                        var parameterNPA = command.CreateParameter();
-                        parameterNPA.ParameterName = "@NPA";
-                        command.Parameters.Add(parameterNPA);
-                        parameterNPA.Value = number.NPA;
+                            var parameterNPA = command.CreateParameter();
+                            parameterNPA.ParameterName = "@NPA";
+                            command.Parameters.Add(parameterNPA);
+                            parameterNPA.Value = number.NPA;
 
-                        var parameterNXX = command.CreateParameter();
-                        parameterNXX.ParameterName = "@NXX";
-                        command.Parameters.Add(parameterNXX);
-                        parameterNXX.Value = number.NXX;
+                            var parameterNXX = command.CreateParameter();
+                            parameterNXX.ParameterName = "@NXX";
+                            command.Parameters.Add(parameterNXX);
+                            parameterNXX.Value = number.NXX;
 
-                        var parameterXXXX = command.CreateParameter();
-                        parameterXXXX.ParameterName = "@XXXX";
-                        command.Parameters.Add(parameterXXXX);
-                        parameterXXXX.Value = number.XXXX;
+                            var parameterXXXX = command.CreateParameter();
+                            parameterXXXX.ParameterName = "@XXXX";
+                            command.Parameters.Add(parameterXXXX);
+                            parameterXXXX.Value = number.XXXX;
 
-                        var parameterCity = command.CreateParameter();
-                        parameterCity.ParameterName = "@City";
-                        command.Parameters.Add(parameterCity);
-                        parameterCity.Value = number.City;
+                            var parameterCity = command.CreateParameter();
+                            parameterCity.ParameterName = "@City";
+                            command.Parameters.Add(parameterCity);
+                            parameterCity.Value = number.City;
 
-                        var parameterState = command.CreateParameter();
-                        parameterState.ParameterName = "@State";
-                        command.Parameters.Add(parameterState);
-                        parameterState.Value = number.State;
+                            var parameterState = command.CreateParameter();
+                            parameterState.ParameterName = "@State";
+                            command.Parameters.Add(parameterState);
+                            parameterState.Value = number.State;
 
-                        var parameterIngestedFrom = command.CreateParameter();
-                        parameterIngestedFrom.ParameterName = "@IngestedFrom";
-                        command.Parameters.Add(parameterIngestedFrom);
-                        parameterIngestedFrom.Value = number.IngestedFrom;
+                            var parameterIngestedFrom = command.CreateParameter();
+                            parameterIngestedFrom.ParameterName = "@IngestedFrom";
+                            command.Parameters.Add(parameterIngestedFrom);
+                            parameterIngestedFrom.Value = number.IngestedFrom;
 
-                        var parameterDateIngested = command.CreateParameter();
-                        parameterDateIngested.ParameterName = "@DateIngested";
-                        command.Parameters.Add(parameterDateIngested);
-                        parameterDateIngested.Value = number.DateIngested;
+                            var parameterDateIngested = command.CreateParameter();
+                            parameterDateIngested.ParameterName = "@DateIngested";
+                            command.Parameters.Add(parameterDateIngested);
+                            parameterDateIngested.Value = number.DateIngested;
 
-                        var parameterNumberType = command.CreateParameter();
-                        parameterNumberType.ParameterName = "@NumberType";
-                        command.Parameters.Add(parameterNumberType);
-                        parameterNumberType.Value = number.NumberType;
+                            var parameterNumberType = command.CreateParameter();
+                            parameterNumberType.ParameterName = "@NumberType";
+                            command.Parameters.Add(parameterNumberType);
+                            parameterNumberType.Value = number.NumberType;
 
-                        var parameterPurchased = command.CreateParameter();
-                        parameterPurchased.ParameterName = "@Purchased";
-                        command.Parameters.Add(parameterPurchased);
-                        parameterPurchased.Value = number.Purchased;
+                            var parameterPurchased = command.CreateParameter();
+                            parameterPurchased.ParameterName = "@Purchased";
+                            command.Parameters.Add(parameterPurchased);
+                            parameterPurchased.Value = number.Purchased;
 
-                        await command.ExecuteNonQueryAsync();
+                            await command.ExecuteNonQueryAsync();
+                        }
                     }
                 }
 
