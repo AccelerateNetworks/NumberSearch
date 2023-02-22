@@ -11,8 +11,8 @@ namespace NumberSearch.DataAccess.TeliMessage
     public class DidsOrder
     {
         public int code { get; set; }
-        public string status { get; set; }
-        public TeliOrderResponse data { get; set; }
+        public string status { get; set; } = string.Empty;
+        public TeliOrderResponse data { get; set; } = new();
 
         /// <summary>
         /// Submit an order to purchase an available phone number.
@@ -37,20 +37,20 @@ namespace NumberSearch.DataAccess.TeliMessage
 
     public class TeliOrderResponse
     {
-        public string id { get; set; }
-        public string user_id { get; set; }
-        public string call_flow_id { get; set; }
-        public string channel_group_id { get; set; }
-        public string voicemail_inbox_id { get; set; }
-        public string number { get; set; }
-        public string country_code { get; set; }
-        public string npa { get; set; }
-        public string nxx { get; set; }
-        public string xxxx { get; set; }
-        public string number_type { get; set; }
-        public string state { get; set; }
-        public string ratecenter { get; set; }
-        public string sms_enabled { get; set; }
-        public string cnam { get; set; }
+        public string id { get; set; } = string.Empty;
+        public string user_id { get; set; } = string.Empty;
+        public string call_flow_id { get; set; } = string.Empty;
+        public string channel_group_id { get; set; } = string.Empty;
+        public string voicemail_inbox_id { get; set; } = string.Empty;
+        public string number { get; set; } = string.Empty;
+        public string country_code { get; set; } = string.Empty;
+        public string npa { get; set; } = string.Empty;
+        public string nxx { get; set; } = string.Empty;
+        public string xxxx { get; set; } = string.Empty;
+        public string number_type { get; set; } = string.Empty;
+        public string state { get; set; } = string.Empty;
+        public string ratecenter { get; set; } = string.Empty;
+        public string sms_enabled { get; set; } = string.Empty;
+        public string cnam { get; set; } = string.Empty;
     }
 }

@@ -9,16 +9,16 @@ namespace NumberSearch.DataAccess.TeleDynamics
 {
     public class VendorProduct
     {
-        public string PartNumber { get; set; }
-        public string ResrouceURL { get; set; }
-        public string Manufacturer { get; set; }
-        public string ProductName { get; set; }
+        public string PartNumber { get; set; } = string.Empty;
+        public string ResrouceURL { get; set; } = string.Empty;
+        public string Manufacturer { get; set; } = string.Empty;
+        public string ProductName { get; set; } = string.Empty;
         public double UnitPrice { get; set; }
         public double MSRP { get; set; }
         public double MAP { get; set; }
         public bool SpecialOrder { get; set; }
         public int Quantity { get; set; }
-        public string UPC { get; set; }
+        public string UPC { get; set; } = string.Empty;
 
         public static async Task<VendorProduct> GetAsync(string partNumber, string username, string password)
         {
@@ -35,12 +35,7 @@ namespace NumberSearch.DataAccess.TeleDynamics
 
             List<VendorProduct> products = new();
 
-            ParallelOptions parallelOptions = new()
-            {
-                MaxDegreeOfParallelism = Environment.ProcessorCount * 2
-            };
-
-            await Parallel.ForEachAsync(manufacturers, parallelOptions, async (manufacturer, token) =>
+            await Parallel.ForEachAsync(manufacturers, async (manufacturer, token) =>
                 {
                     string baseUrl = "https://tdapi.teledynamics.com/api/v1/product/manufacturer/";
                     string checkQuantityParameter = $"/CheckQuantity";

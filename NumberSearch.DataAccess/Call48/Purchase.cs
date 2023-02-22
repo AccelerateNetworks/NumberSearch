@@ -45,39 +45,38 @@ namespace NumberSearch.DataAccess.Call48
             }
             catch (FlurlHttpException ex)
             {
-                var error = await ex.GetResponseStringAsync();
-                Log.Fatal($"[Ingest] [Call48] Failed to purchase {number.DialedNumber}.");
-                Log.Fatal(error);
-                return null;
+                Log.Error($"[Ingest] [Call48] Failed to purchase {number.DialedNumber}.");
+                Log.Error(await ex.GetResponseStringAsync());
+                return new();
             }
         }
 
         public class PurchaseRequest
         {
-            public string type { get; set; }
-            public PurchaseNumber[] numbers { get; set; }
+            public string type { get; set; } = string.Empty;
+            public PurchaseNumber[] numbers { get; set; } = Array.Empty<PurchaseNumber>();
         }
 
         public class PurchaseResult
         {
             public int code { get; set; }
-            public string message { get; set; }
-            public PurchaseData data { get; set; }
-            public string error { get; set; }
+            public string message { get; set; } = string.Empty;
+            public PurchaseData data { get; set; } = new();
+            public string error { get; set; } = string.Empty;
         }
 
         public class PurchaseData
         {
             public bool success { get; set; }
-            public string message { get; set; }
+            public string message { get; set; } = string.Empty;
             public int fulfilled_quantity { get; set; }
         }
 
         public class PurchaseNumber
         {
-            public string npa { get; set; }
-            public string nxx { get; set; }
-            public string xxxx { get; set; }
+            public string npa { get; set; } = string.Empty;
+            public string nxx { get; set; } = string.Empty;
+            public string xxxx { get; set; } = string.Empty;
         }
     }
 }

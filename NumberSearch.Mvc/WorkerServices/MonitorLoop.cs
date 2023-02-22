@@ -171,7 +171,7 @@ namespace NumberSearch.Mvc
                                                         nto.Purchased = true;
                                                         productOrder.DateOrdered = DateTime.Now;
                                                         productOrder.OrderResponse = JsonSerializer.Serialize(executeOrder);
-                                                        productOrder.Completed = executeOrder.code == 200;
+                                                        productOrder.Completed = executeOrder.code is 200;
 
                                                         var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
                                                         var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);

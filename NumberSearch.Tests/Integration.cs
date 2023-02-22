@@ -453,7 +453,7 @@ namespace NumberSearch.Tests
             var result = await RateCenterLookup.GetAsync(npa, nxx).ConfigureAwait(false);
 
             // Assert        
-            Assert.Null(result);
+            Assert.True(string.IsNullOrWhiteSpace(result.RateCenter));
         }
 
 
@@ -579,45 +579,6 @@ namespace NumberSearch.Tests
             Assert.False(string.IsNullOrWhiteSpace(result.status));
             output.WriteLine(JsonSerializer.Serialize(result));
         }
-
-        [Fact]
-        public async Task TeliPortRequestStatusAsync()
-        {
-            // Arrange
-            var portRequests = new string[] { "3939", "5030", "4951", "4936" };
-
-            foreach (var request in portRequests)
-            {
-                // Act
-                var results = await LnpGet.GetAsync(request, token).ConfigureAwait(false);
-
-                // Assert
-                Assert.NotNull(results);
-                Assert.False(string.IsNullOrWhiteSpace(results.status));
-                Assert.True(results.code == 200);
-                output.WriteLine(JsonSerializer.Serialize(results));
-            }
-        }
-
-
-        // Teli doesn't have a way to delete these so only want to test it when required.
-        //[Fact]
-        //public async Task TeliPortRequestAsync()
-        //{
-        //    // Arrange
-        //    var orderId = Guid.Parse("4f6dad94-2442-42fa-a3eb-cf2aa9fe2324");
-        //    var fromDb = await PortRequest.GetByOrderIdAsync(orderId, postgresql).ConfigureAwait(false);
-        //    var numbers = await PortedPhoneNumber.GetByOrderIdAsync(orderId, postgresql).ConfigureAwait(false);
-
-        //    // Act
-        //    var results = await LnpCreate.GetAsync(fromDb, numbers, token).ConfigureAwait(false);
-
-        //    // Assert
-        //    Assert.NotNull(results);
-        //    Assert.False(string.IsNullOrWhiteSpace(results.status));
-        //    Assert.True(results.code == 200);
-        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
-        //}
 
         [Fact]
         public async Task PeerlessGetPhoneNumbersTestAsync()

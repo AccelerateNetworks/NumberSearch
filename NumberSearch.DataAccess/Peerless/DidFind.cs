@@ -10,8 +10,8 @@ namespace NumberSearch.DataAccess.Peerless
 
     public class DidFind
     {
-        public string did { get; set; }
-        public string category { get; set; }
+        public string did { get; set; } = string.Empty;
+        public string category { get; set; } = string.Empty;
 
         public static async Task<IEnumerable<DidFind>> GetRawAsync(string npa, string apiKey)
         {
@@ -46,30 +46,29 @@ namespace NumberSearch.DataAccess.Peerless
             return await route.GetJsonAsync<IEnumerable<DidFind>>().ConfigureAwait(false);
         }
 
-        public static async Task<IEnumerable<PhoneNumber>> GetByNPAAsync(string npa, string apiKey)
+        public static async Task<PhoneNumber[]> GetByNPAAsync(string npa, string apiKey)
         {
             var results = await GetRawAsync(npa, apiKey).ConfigureAwait(false);
-
             var list = new List<PhoneNumber>();
 
             // Bail out early if something is wrong.
-            if (results == null || !results.Any())
+            if (results is null || !results.Any())
             {
-                return list;
+                return Array.Empty<PhoneNumber>();
             }
 
             foreach (var item in results)
             {
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.did, out var phoneNumber);
 
-                if (checkParse)
+                if (checkParse && phoneNumber is not null)
                 {
                     list.Add(new PhoneNumber
                     {
                         NPA = phoneNumber.NPA,
                         NXX = phoneNumber.NXX,
                         XXXX = phoneNumber.XXXX,
-                        DialedNumber = phoneNumber.DialedNumber,
+                        DialedNumber = phoneNumber?.DialedNumber ?? string.Empty,
                         City = "Unknown City",
                         State = "Unknown State",
                         DateIngested = DateTime.Now,
@@ -80,30 +79,29 @@ namespace NumberSearch.DataAccess.Peerless
             return list.ToArray();
         }
 
-        public static async Task<IEnumerable<PhoneNumber>> GetByRateCenterAsync(string ratecenter, string apiKey)
+        public static async Task<PhoneNumber[]> GetByRateCenterAsync(string ratecenter, string apiKey)
         {
             var results = await GetRawByRateCenterAsync(ratecenter, apiKey).ConfigureAwait(false);
-
             var list = new List<PhoneNumber>();
 
             // Bail out early if something is wrong.
-            if (results == null || !results.Any())
+            if (results is null || !results.Any())
             {
-                return list;
+                return Array.Empty<PhoneNumber>();
             }
 
             foreach (var item in results)
             {
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.did, out var phoneNumber);
 
-                if (checkParse)
+                if (checkParse && phoneNumber is not null)
                 {
                     list.Add(new PhoneNumber
                     {
                         NPA = phoneNumber.NPA,
                         NXX = phoneNumber.NXX,
                         XXXX = phoneNumber.XXXX,
-                        DialedNumber = phoneNumber.DialedNumber,
+                        DialedNumber = phoneNumber?.DialedNumber ?? string.Empty,
                         City = "Unknown City",
                         State = "Unknown State",
                         DateIngested = DateTime.Now,
@@ -114,30 +112,29 @@ namespace NumberSearch.DataAccess.Peerless
             return list.ToArray();
         }
 
-        public static async Task<IEnumerable<PhoneNumber>> GetByDialedNumberAsync(string npa, string nxx, string xxxx, string apiKey)
+        public static async Task<PhoneNumber[]> GetByDialedNumberAsync(string npa, string nxx, string xxxx, string apiKey)
         {
             var results = await GetRawAsync(npa, nxx, xxxx, apiKey).ConfigureAwait(false);
-
             var list = new List<PhoneNumber>();
 
             // Bail out early if something is wrong.
-            if (results == null || !results.Any())
+            if (results is null || !results.Any())
             {
-                return list;
+                return Array.Empty<PhoneNumber>();
             }
 
             foreach (var item in results)
             {
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.did, out var phoneNumber);
 
-                if (checkParse)
+                if (checkParse && phoneNumber is not null)
                 {
                     list.Add(new PhoneNumber
                     {
                         NPA = phoneNumber.NPA,
                         NXX = phoneNumber.NXX,
                         XXXX = phoneNumber.XXXX,
-                        DialedNumber = phoneNumber.DialedNumber,
+                        DialedNumber = phoneNumber?.DialedNumber ?? string.Empty,
                         City = "Unknown City",
                         State = "Unknown State",
                         DateIngested = DateTime.Now,
@@ -145,6 +142,7 @@ namespace NumberSearch.DataAccess.Peerless
                     });
                 }
             }
+
             return list.ToArray();
         }
     }

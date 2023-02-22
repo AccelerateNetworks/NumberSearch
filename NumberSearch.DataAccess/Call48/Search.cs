@@ -11,20 +11,20 @@ namespace NumberSearch.DataAccess.Call48
 {
     public class Search
     {
-        public SearchData data { get; set; }
+        public SearchData data { get; set; } = new();
 
         public class SearchData
         {
-            public SearchResult[] result { get; set; }
+            public SearchResult[] result { get; set; } = Array.Empty<SearchResult>();
         }
 
         public class SearchResult
         {
             public int did_id { get; set; }
-            public string did_number { get; set; }
-            public string number { get; set; }
-            public string ratecenter { get; set; }
-            public string state { get; set; }
+            public string did_number { get; set; } = string.Empty;
+            public string number { get; set; } = string.Empty;
+            public string ratecenter { get; set; } = string.Empty;
+            public string state { get; set; } = string.Empty;
         }
 
         /// <summary>
@@ -62,9 +62,9 @@ namespace NumberSearch.DataAccess.Call48
             {
                 Log.Error($"[Ingest] [Call48] Failed to get numbers for {state} and NPA {npa}.");
                 Log.Error(ex.Message);
-                Log.Error(ex.StackTrace);
+                Log.Error(ex.StackTrace ?? "Stacktrace was null.");
                 Log.Error(await ex.GetResponseStringAsync());
-                return null;
+                return new();
             }
         }
 
@@ -75,30 +75,30 @@ namespace NumberSearch.DataAccess.Call48
         /// <param name="inNpa"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public static async Task<IEnumerable<PhoneNumber>> GetAsync(string stateShort, int inNpa, string token)
+        public static async Task<PhoneNumber[]> GetAsync(string stateShort, int inNpa, string token)
         {
             var results = await GetLocalNumbersAsync(stateShort, string.Empty, inNpa.ToString("000"), string.Empty, token).ConfigureAwait(false);
 
             var output = new List<PhoneNumber>();
 
             // Bail out early if something is wrong.
-            if (results == null || !results.data.result.Any())
+            if (results is null || !results.data.result.Any())
             {
-                return output;
+                return Array.Empty<PhoneNumber>();
             }
 
-            foreach (var item in results?.data?.result)
+            foreach (var item in results.data.result)
             {
-                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item?.did_number, out var phoneNumber);
+                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.did_number, out var phoneNumber);
 
-                if (checkParse)
+                if (checkParse && phoneNumber is not null)
                 {
                     output.Add(new PhoneNumber
                     {
                         NPA = phoneNumber.NPA,
                         NXX = phoneNumber.NXX,
                         XXXX = phoneNumber.XXXX,
-                        DialedNumber = phoneNumber.DialedNumber,
+                        DialedNumber = phoneNumber?.DialedNumber ?? string.Empty,
                         City = string.IsNullOrWhiteSpace(item.ratecenter) ? "Unknown City" : item.ratecenter,
                         State = string.IsNullOrWhiteSpace(item.state) ? "Unknown State" : item.state,
                         DateIngested = DateTime.Now,
@@ -110,33 +110,33 @@ namespace NumberSearch.DataAccess.Call48
                     Log.Warning($"[Ingest] [Call48] Failed to parse {item.did_number}");
                 }
             }
-            return output;
+            return output.ToArray();
         }
 
-        public static async Task<IEnumerable<PhoneNumber>> GetAsync(string stateShort, string ratecenter, string token)
+        public static async Task<PhoneNumber[]> GetAsync(string stateShort, string ratecenter, string token)
         {
             var results = await GetLocalNumbersAsync(stateShort, ratecenter, string.Empty, string.Empty, token).ConfigureAwait(false);
 
             var output = new List<PhoneNumber>();
 
             // Bail out early if something is wrong.
-            if (results == null || !results.data.result.Any())
+            if (results is null || !results.data.result.Any())
             {
-                return output;
+                return Array.Empty<PhoneNumber>();
             }
 
-            foreach (var item in results?.data?.result)
+            foreach (var item in results.data.result)
             {
-                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item?.did_number ?? item?.number ?? string.Empty, out var phoneNumber);
+                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(string.IsNullOrWhiteSpace(item.did_number) ? item.number : item.did_number, out var phoneNumber);
 
-                if (checkParse)
+                if (checkParse && phoneNumber is not null)
                 {
                     output.Add(new PhoneNumber
                     {
                         NPA = phoneNumber.NPA,
                         NXX = phoneNumber.NXX,
                         XXXX = phoneNumber.XXXX,
-                        DialedNumber = phoneNumber.DialedNumber,
+                        DialedNumber = phoneNumber?.DialedNumber ?? string.Empty,
                         City = string.IsNullOrWhiteSpace(item.ratecenter) ? "Unknown City" : item.ratecenter,
                         State = string.IsNullOrWhiteSpace(item.state) ? "Unknown State" : item.state,
                         DateIngested = DateTime.Now,
@@ -148,7 +148,8 @@ namespace NumberSearch.DataAccess.Call48
                     Log.Warning($"[Ingest] [Call48] Failed to parse {item.did_number}");
                 }
             }
-            return output;
+
+            return output.ToArray();
         }
     }
 }

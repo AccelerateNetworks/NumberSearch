@@ -15,8 +15,8 @@ namespace NumberSearch.DataAccess
     [XmlRoot(Namespace = "", ElementName = "response", IsNullable = false)]
     public class SalesTax
     {
-        public Addressline addressline { get; set; }
-        public TaxRate rate { get; set; }
+        public Addressline addressline { get; set; } = new();
+        public TaxRate rate { get; set; } = new();
         [XmlAttribute()]
         public int loccode { get; set; }
         [XmlAttribute()]
@@ -34,27 +34,27 @@ namespace NumberSearch.DataAccess
             [XmlAttribute()]
             public int code { get; set; }
             [XmlAttribute()]
-            public string street { get; set; }
+            public string street { get; set; } = string.Empty;
             [XmlAttribute()]
             public int househigh { get; set; }
             [XmlAttribute()]
             public int houselow { get; set; }
             [XmlAttribute()]
-            public string evenodd { get; set; }
+            public string evenodd { get; set; } = string.Empty;
             [XmlAttribute()]
-            public string state { get; set; }
+            public string state { get; set; } = string.Empty;
             [XmlAttribute()]
             public int zip { get; set; }
             [XmlAttribute()]
             public int plus4 { get; set; }
             [XmlAttribute()]
-            public string period { get; set; }
+            public string period { get; set; } = string.Empty;
             [XmlAttribute()]
-            public string rta { get; set; }
+            public string rta { get; set; } = string.Empty;
             [XmlAttribute()]
-            public string ptba { get; set; }
+            public string ptba { get; set; } = string.Empty;
             [XmlAttribute()]
-            public string cez { get; set; }
+            public string cez { get; set; } = string.Empty;
         }
 
         [System.Serializable()]
@@ -63,38 +63,13 @@ namespace NumberSearch.DataAccess
         public partial class TaxRate
         {
             [XmlAttribute()]
-            public string name { get; set; }
+            public string name { get; set; } = string.Empty;
             [XmlAttribute()]
             public int code { get; set; }
             [XmlAttribute()]
             public decimal staterate { get; set; }
             [XmlAttribute()]
             public decimal localrate { get; set; }
-        }
-
-        /// <summary>
-        /// Get the total Sale Tax rate for a specific address.
-        /// </summary>
-        /// <param name="streetAddress"> A valid street address (ex. 6500 Linderson way) </param>
-        /// <param name="city"> A valid City name (ex. Seattle) </param>
-        /// <param name="zip"> A valid Zip code inside Washington State (ex. 98501) </param>
-        /// <returns></returns>
-        public static async Task<decimal> GetTaxRateAsync(string streetAddress, string city, string zip)
-        {
-            string baseUrl = "https://webgis.dor.wa.gov/webapi/";
-            string endpoint = "AddressRates.aspx";
-            string outputParameter = $"?output=xml";
-            string addrParameter = $"&addr={streetAddress}";
-            string cityParameter = $"&city={city}";
-            string zipParameter = $"&zip={zip}";
-            string url = $"{baseUrl}{endpoint}{outputParameter}{addrParameter}{cityParameter}{zipParameter}";
-
-            var result = await url.GetStreamAsync().ConfigureAwait(false);
-
-            var serializer = new XmlSerializer(typeof(SalesTax));
-            var apiResponse = (SalesTax)serializer.Deserialize(result);
-
-            return apiResponse.rate1;
         }
 
         public static async Task<SalesTax> GetLocalAPIAsync(string streetAddress, string city, string zip)
@@ -107,13 +82,11 @@ namespace NumberSearch.DataAccess
             string zipParameter = $"&zip={zip}";
             string url = $"{baseUrl}{endpoint}{outputParameter}{addrParameter}{cityParameter}{zipParameter}";
 
-            var result = await url.GetStreamAsync().ConfigureAwait(false);
+            using var result = await url.GetStreamAsync().ConfigureAwait(false);
 
             // Learn more about this XML serialization method: https://docs.microsoft.com/en-us/dotnet/standard/serialization/how-to-deserialize-an-object
             var serializer = new XmlSerializer(typeof(SalesTax));
-            var apiResponse = (SalesTax)serializer.Deserialize(result);
-
-            return apiResponse;
+            return (SalesTax)serializer.Deserialize(result)!;
         }
 
         /// <summary>
@@ -133,13 +106,11 @@ namespace NumberSearch.DataAccess
             string zipParameter = $"&zip={zip}";
             string url = $"{baseUrl}{endpoint}{outputParameter}{addrParameter}{cityParameter}{zipParameter}";
 
-            var result = await url.GetStreamAsync().ConfigureAwait(false);
+            using var result = await url.GetStreamAsync().ConfigureAwait(false);
 
             // Learn more about this XML serialization method: https://docs.microsoft.com/en-us/dotnet/standard/serialization/how-to-deserialize-an-object
             var serializer = new XmlSerializer(typeof(SalesTax));
-            var apiResponse = (SalesTax)serializer.Deserialize(result);
-
-            return apiResponse;
+            return (SalesTax)serializer.Deserialize(result)!;
         }
     }
 }

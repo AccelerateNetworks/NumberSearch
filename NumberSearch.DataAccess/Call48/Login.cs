@@ -1,6 +1,5 @@
 ﻿using Flurl.Http;
 
-using System;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.Call48
@@ -8,13 +7,13 @@ namespace NumberSearch.DataAccess.Call48
     public class Login
     {
 
-        public string error { get; set; }
-        public Data data { get; set; }
+        public string error { get; set; } = string.Empty;
+        public Data data { get; set; } = new();
         public int code { get; set; }
 
         public class Data
         {
-            public string token { get; set; }
+            public string token { get; set; } = string.Empty;
         }
 
         /// <summary>

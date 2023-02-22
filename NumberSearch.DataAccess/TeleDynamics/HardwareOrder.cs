@@ -1,5 +1,9 @@
 ﻿using Flurl.Http;
 
+using Newtonsoft.Json;
+
+using Serilog;
+
 using System;
 using System.Threading.Tasks;
 
@@ -9,89 +13,89 @@ namespace NumberSearch.DataAccess.TeleDynamics
     {
         public class Order
         {
-            public string OrderNumber { get; set; }
-            public string PONumber { get; set; }
-            public string Status { get; set; }
+            public string OrderNumber { get; set; } = string.Empty;
+            public string PONumber { get; set; } = string.Empty;
+            public string Status { get; set; } = string.Empty;
             public int SubTotal { get; set; }
             public int OrderTotal { get; set; }
-            public string BillingType { get; set; }
+            public string BillingType { get; set; } = string.Empty;
             public bool HoldRequest { get; set; }
             public bool IsProvisioningOrder { get; set; }
-            public string ServiceProvider { get; set; }
-            public string ShippingType { get; set; }
-            public Shipping Shipping { get; set; }
-            public Trackinginformation[] TrackingInformation { get; set; }
-            public ShippingAddress ShippingAddress { get; set; }
-            public EnduserAddresses EndUserAddrses { get; set; }
+            public string ServiceProvider { get; set; } = string.Empty;
+            public string ShippingType { get; set; } = string.Empty;
+            public Shipping Shipping { get; set; } = new();
+            public Trackinginformation[] TrackingInformation { get; set; } = Array.Empty<Trackinginformation>();
+            public ShippingAddress ShippingAddress { get; set; } = new();
+            public EnduserAddresses EndUserAddrses { get; set; } = new();
             public int ShipmentTypeAddressKey { get; set; }
-            public Orderline[] OrderLines { get; set; }
+            public Orderline[] OrderLines { get; set; } = Array.Empty<Orderline>();
             public DateTime CreateDate { get; set; }
             public DateTime LastChangeDate { get; set; }
             public bool SignatureRequired { get; set; }
             public bool UseTPP { get; set; }
-            public string ProvisionUrl { get; set; }
-            public string ServerUserName { get; set; }
-            public string ServerPassword { get; set; }
-            public string Notes { get; set; }
-            public string JobReferenceNumber { get; set; }
+            public string ProvisionUrl { get; set; } = string.Empty;
+            public string ServerUserName { get; set; } = string.Empty;
+            public string ServerPassword { get; set; } = string.Empty;
+            public string Notes { get; set; } = string.Empty;
+            public string JobReferenceNumber { get; set; } = string.Empty;
             public bool CalculateShipping { get; set; }
         }
 
         public class Shipping
         {
-            public string Carrier { get; set; }
-            public string ShippingMethod { get; set; }
+            public string Carrier { get; set; } = string.Empty;
+            public string ShippingMethod { get; set; } = string.Empty;
             public int Quote { get; set; }
         }
 
         public class ShippingAddress
         {
-            public string Label { get; set; }
-            public string Address1 { get; set; }
-            public string Address2 { get; set; }
-            public string City { get; set; }
-            public string State { get; set; }
-            public string ZipCode { get; set; }
-            public string Country { get; set; }
-            public string StateOrProvince { get; set; }
+            public string Label { get; set; } = string.Empty;
+            public string Address1 { get; set; } = string.Empty;
+            public string Address2 { get; set; } = string.Empty;
+            public string City { get; set; } = string.Empty;
+            public string State { get; set; } = string.Empty;
+            public string ZipCode { get; set; } = string.Empty;
+            public string Country { get; set; } = string.Empty;
+            public string StateOrProvince { get; set; } = string.Empty;
         }
 
         public class EnduserAddresses
         {
-            public string Label { get; set; }
-            public string Address1 { get; set; }
-            public string Address2 { get; set; }
-            public string City { get; set; }
-            public string State { get; set; }
-            public string ZipCode { get; set; }
-            public string Country { get; set; }
-            public string StateOrProvince { get; set; }
+            public string Label { get; set; } = string.Empty;
+            public string Address1 { get; set; } = string.Empty;
+            public string Address2 { get; set; } = string.Empty;
+            public string City { get; set; } = string.Empty;
+            public string State { get; set; } = string.Empty;
+            public string ZipCode { get; set; } = string.Empty;
+            public string Country { get; set; } = string.Empty;
+            public string StateOrProvince { get; set; } = string.Empty;
         }
 
         public class Trackinginformation
         {
-            public string Carrier { get; set; }
-            public string TrackingNumber { get; set; }
-            public string Status { get; set; }
+            public string Carrier { get; set; } = string.Empty;
+            public string TrackingNumber { get; set; } = string.Empty;
+            public string Status { get; set; } = string.Empty;
             public DateTime ShipDate { get; set; }
-            public Productnumber[] ProductNumbers { get; set; }
+            public Productnumber[] ProductNumbers { get; set; } = Array.Empty<Productnumber>();
         }
 
         public class Productnumber
         {
-            public string PartNumber { get; set; }
+            public string PartNumber { get; set; } = string.Empty;
             public int Quantity { get; set; }
         }
 
         public class Orderline
         {
-            public string ProductName { get; set; }
-            public string PartNumber { get; set; }
+            public string ProductName { get; set; } = string.Empty;
+            public string PartNumber { get; set; } = string.Empty;
             public int Quantity { get; set; }
             public int UnitPrice { get; set; }
             public int ExtPrice { get; set; }
-            public string Firmware { get; set; }
-            public Serializationinformation[] SerializationInformation { get; set; }
+            public string Firmware { get; set; } = string.Empty;
+            public Serializationinformation[] SerializationInformation { get; set; } = Array.Empty<Serializationinformation>();
             public bool IsBackorder { get; set; }
             public int QtyBackOrdered { get; set; }
             public bool ShouldProvision { get; set; }
@@ -99,13 +103,8 @@ namespace NumberSearch.DataAccess.TeleDynamics
 
         public class Serializationinformation
         {
-            public string MAC { get; set; }
-            public string SerialNumber { get; set; }
-        }
-
-        public class Error
-        {
-            public string Message { get; set; }
+            public string MAC { get; set; } = string.Empty;
+            public string SerialNumber { get; set; } = string.Empty;
         }
 
         public static async Task<Order[]> SearchByPONumberAsync(string ponumber, string username, string password)
@@ -120,8 +119,9 @@ namespace NumberSearch.DataAccess.TeleDynamics
             }
             catch (FlurlHttpException ex)
             {
-                var error = await ex.GetResponseJsonAsync<Error>();
-                return new Order[] { };
+                var error = await ex.GetResponseStringAsync();
+                Log.Error(error);
+                return Array.Empty<Order>();
             }
         }
 
@@ -136,8 +136,9 @@ namespace NumberSearch.DataAccess.TeleDynamics
             }
             catch (FlurlHttpException ex)
             {
-                var error = await ex.GetResponseJsonAsync<Error>();
-                return new Order { };
+                var error = await ex.GetResponseStringAsync();
+                Log.Error(error);
+                return new();
             }
         }
 
@@ -152,8 +153,9 @@ namespace NumberSearch.DataAccess.TeleDynamics
             }
             catch (FlurlHttpException ex)
             {
-                var error = await ex.GetResponseJsonAsync<Error>();
-                return new Order { };
+                var error = await ex.GetResponseStringAsync();
+                Log.Error(error);
+                return new();
             }
         }
     }

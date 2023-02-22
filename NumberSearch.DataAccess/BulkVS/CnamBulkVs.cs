@@ -9,9 +9,9 @@ namespace NumberSearch.DataAccess.BulkVS
 {
     public class CnamBulkVs
     {
-        public string name { get; set; }
-        public string number { get; set; }
-        public string time { get; set; }
+        public string name { get; set; } = string.Empty;
+        public string number { get; set; } = string.Empty;
+        public string time { get; set; } = string.Empty;
         public DateTime LastChecked { get; set; }
 
         /// <summary>
@@ -46,9 +46,8 @@ namespace NumberSearch.DataAccess.BulkVS
             catch (FlurlHttpException ex)
             {
                 Log.Error($"Failed to parse response from BulkVS for {dialedNumber}");
-                Log.Error(ex.Message);
-                Log.Error(ex.StackTrace);
-                return new CnamBulkVs();
+                Log.Error(await ex.GetResponseStringAsync());
+                return new();
             }
         }
     }

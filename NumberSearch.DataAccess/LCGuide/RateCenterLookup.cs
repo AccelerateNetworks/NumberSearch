@@ -6,8 +6,8 @@ namespace NumberSearch.DataAccess.LCGuide
 {
     public class RateCenterLookup
     {
-        public string RateCenter { get; set; }
-        public string Region { get; set; }
+        public string RateCenter { get; set; } = string.Empty;
+        public string Region { get; set; } = string.Empty;
 
         public static async Task<RateCenterLookup> GetAsync(string npa, string nxx)
         {
@@ -22,17 +22,17 @@ namespace NumberSearch.DataAccess.LCGuide
             {
                 var rateCenterStart = result.IndexOf("<rc>") + "<rc>".Length;
                 var rateCenterEnd = result.IndexOf("</rc>");
-                var rateCenterText = result.Substring(rateCenterStart, rateCenterEnd - rateCenterStart);
+                var rateCenterText = result[rateCenterStart..rateCenterEnd];
 
                 var regionStart = result.IndexOf("<region>") + "<region>".Length;
                 var regionEnd = result.IndexOf("</region>");
-                var regionText = result.Substring(regionStart, regionEnd - regionStart);
+                var regionText = result[regionStart..regionEnd];
 
                 return new RateCenterLookup { RateCenter = rateCenterText, Region = regionText };
             }
             else
             {
-                return null;
+                return new();
             }
         }
     }

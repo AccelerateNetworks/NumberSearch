@@ -1,7 +1,5 @@
 ﻿using Flurl.Http;
 
-using NumberSearch.DataAccess.TeliMessage;
-
 using Serilog;
 
 using System;
@@ -12,49 +10,49 @@ namespace NumberSearch.DataAccess.TeliMessage
     public class DidsGet
     {
         public int code { get; set; }
-        public string status { get; set; }
-        public ResponseData data { get; set; }
-        public string ErrorData { get; set; }
+        public string status { get; set; } = string.Empty;
+        public ResponseData data { get; set; } = new();
+        public string ErrorData { get; set; } = string.Empty;
 
         public class ResponseData
         {
-            public string id { get; set; }
-            public string user_id { get; set; }
-            public string call_flow_id { get; set; }
-            public string channel_group_id { get; set; }
-            public object voicemail_inbox_id { get; set; }
-            public string number { get; set; }
-            public string country_code { get; set; }
-            public string npa { get; set; }
-            public string nxx { get; set; }
-            public string xxxx { get; set; }
-            public string number_type { get; set; }
-            public string state { get; set; }
-            public string ratecenter { get; set; }
-            public string xmpp_enabled { get; set; }
-            public object slacksms_team { get; set; }
-            public string cnam { get; set; }
-            public E911 e911 { get; set; }
-            public string note { get; set; }
-            public object forced_call_flow { get; set; }
-            public string sms_post_url { get; set; }
-            public string call_post_url { get; set; }
+            public string id { get; set; } = string.Empty;
+            public string user_id { get; set; } = string.Empty;
+            public string call_flow_id { get; set; } = string.Empty;
+            public string channel_group_id { get; set; } = string.Empty;
+            public object voicemail_inbox_id { get; set; } = new();
+            public string number { get; set; } = string.Empty;
+            public string country_code { get; set; } = string.Empty;
+            public string npa { get; set; } = string.Empty;
+            public string nxx { get; set; } = string.Empty;
+            public string xxxx { get; set; } = string.Empty;
+            public string number_type { get; set; } = string.Empty;
+            public string state { get; set; } = string.Empty;
+            public string ratecenter { get; set; } = string.Empty;
+            public string xmpp_enabled { get; set; } = string.Empty;
+            public object slacksms_team { get; set; } = new();
+            public string cnam { get; set; } = string.Empty;
+            public E911 e911 { get; set; } = new();
+            public string note { get; set; } = string.Empty;
+            public object forced_call_flow { get; set; } = new();
+            public string sms_post_url { get; set; } = string.Empty;
+            public string call_post_url { get; set; } = string.Empty;
         }
 
         public class E911
         {
-            public string id { get; set; }
-            public string did_id { get; set; }
-            public string did_number { get; set; }
-            public string full_name { get; set; }
-            public string address { get; set; }
-            public string city { get; set; }
-            public string state { get; set; }
-            public string zip { get; set; }
-            public string unit_type { get; set; }
-            public string unit_number { get; set; }
-            public string create_dt { get; set; }
-            public string modify_dt { get; set; }
+            public string id { get; set; } = string.Empty;
+            public string did_id { get; set; } = string.Empty;
+            public string did_number { get; set; } = string.Empty;
+            public string full_name { get; set; } = string.Empty;
+            public string address { get; set; } = string.Empty;
+            public string city { get; set; } = string.Empty;
+            public string state { get; set; } = string.Empty;
+            public string zip { get; set; } = string.Empty;
+            public string unit_type { get; set; } = string.Empty;
+            public string unit_number { get; set; } = string.Empty;
+            public string create_dt { get; set; } = string.Empty;
+            public string modify_dt { get; set; } = string.Empty;
         }
 
         public static async Task<DidsGet> GetAsync(string npa, Guid token)
@@ -72,7 +70,7 @@ namespace NumberSearch.DataAccess.TeliMessage
             }
             catch (FlurlHttpException ex)
             {
-                Log.Fatal($"{await ex.GetResponseStringAsync()}");
+                Log.Error($"{await ex.GetResponseStringAsync()}");
                 return new DidsGet { code = 500, status = "error", ErrorData = await ex.GetResponseStringAsync() };
             }
         }

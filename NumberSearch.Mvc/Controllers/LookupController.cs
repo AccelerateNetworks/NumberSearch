@@ -167,7 +167,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 try
                 {
-                    var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber, _bulkVSUsername, _bulkVSPassword).ConfigureAwait(false);
+                    var portable = await ValidatePortability.GetAsync(phoneNumber?.DialedNumber ?? string.Empty, _bulkVSUsername, _bulkVSPassword).ConfigureAwait(false);
 
                     // Fail fast
                     if (portable is null || portable?.Portable is false)
@@ -287,16 +287,16 @@ namespace NumberSearch.Mvc.Controllers
 
                         checkNumber = new LrnBulkCnam
                         {
-                            lata = canada.LATA,
-                            lrn = canada.LRN,
-                            jurisdiction = canada.State,
-                            ocn = canada.OCN,
-                            ratecenter = canada.Ratecenter,
+                            lata = canada?.LATA,
+                            lrn = canada?.LRN,
+                            jurisdiction = canada?.State,
+                            ocn = canada?.OCN,
+                            ratecenter = canada?.Ratecenter,
                             tn = $"1{phoneNumber.DialedNumber}",
-                            lec = canada.Company,
-                            lectype = canada.Prefix_Type,
-                            city = canada.Ratecenter,
-                            province = canada.State
+                            lec = canada?.Company,
+                            lectype = canada?.Prefix_Type,
+                            city = canada?.Ratecenter,
+                            province = canada?.State
                         };
                     }
                     else
@@ -396,14 +396,14 @@ namespace NumberSearch.Mvc.Controllers
 
                 checkNumber = new LrnBulkCnam
                 {
-                    lata = canada.LATA,
-                    lrn = canada.LRN,
-                    jurisdiction = canada.State,
-                    ocn = canada.OCN,
-                    ratecenter = canada.Ratecenter,
+                    lata = canada?.LATA,
+                    lrn = canada?.LRN,
+                    jurisdiction = canada?.State,
+                    ocn = canada?.OCN,
+                    ratecenter = canada?.Ratecenter,
                     tn = number,
-                    lec = canada.Company,
-                    lectype = canada.Prefix_Type,
+                    lec = canada?.Company,
+                    lectype = canada?.Prefix_Type,
                 };
             }
             else

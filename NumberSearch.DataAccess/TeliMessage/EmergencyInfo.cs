@@ -12,27 +12,27 @@ namespace NumberSearch.DataAccess
     public class EmergencyInfo
     {
         public int code { get; set; }
-        public string status { get; set; }
-        public EmergencyInfoDetail data { get; set; }
-        public string error { get; set; }
+        public string status { get; set; } = string.Empty;
+        public EmergencyInfoDetail data { get; set; } = new();
+        public string error { get; set; } = string.Empty;
 
         public class EmergencyInfoDetail
         {
-            public string id { get; set; }
-            public string did_id { get; set; }
-            public string did_number { get; set; }
-            public string full_name { get; set; }
-            public string address { get; set; }
-            public string city { get; set; }
-            public string state { get; set; }
-            public string zip { get; set; }
-            public string unit_type { get; set; }
-            public string unit_number { get; set; }
-            public string create_dt { get; set; }
-            public string modify_dt { get; set; }
-            public string alert_group { get; set; }
-            public string did_note { get; set; }
-        }
+            public string id { get; set; } = string.Empty;
+            public string did_id { get; set; } = string.Empty;
+            public string did_number { get; set; } = string.Empty;
+            public string full_name { get; set; } = string.Empty;
+            public string address { get; set; } = string.Empty;
+            public string city { get; set; } = string.Empty;
+            public string state { get; set; } = string.Empty;
+            public string zip { get; set; } = string.Empty;
+            public string unit_type { get; set; } = string.Empty;
+            public string unit_number { get; set; } = string.Empty;
+            public string create_dt { get; set; } = string.Empty;
+            public string modify_dt { get; set; } = string.Empty;
+            public string alert_group { get; set; } = string.Empty;
+            public string did_note { get; set; } = string.Empty;
+        }   
 
         public static async Task<EmergencyInfo> GetAsync(string number, Guid token)
         {

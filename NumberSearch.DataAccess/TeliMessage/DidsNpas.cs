@@ -5,14 +5,11 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.TeliMessage
 {
-
     public class DidsNpas
     {
         public int code { get; set; }
-        public string status { get; set; }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "<Pending>")]
-        public string[] data { get; set; }
+        public string status { get; set; } = string.Empty;
+        public string[] data { get; set; } = Array.Empty<string>();
 
         public static async Task<DidsNpas> GetAsync(Guid token)
         {

@@ -9,20 +9,20 @@ namespace NumberSearch.DataAccess.BulkVS
 {
     public class LrnBulkCnam
     {
-        public string tn { get; set; }
-        public string lrn { get; set; }
-        public string ocn { get; set; }
-        public string lata { get; set; }
-        public string city { get; set; }
-        public string ratecenter { get; set; }
-        public string province { get; set; }
-        public string jurisdiction { get; set; }
-        public string local { get; set; }
-        public string lec { get; set; }
-        public string lectype { get; set; }
-        public string spid { get; set; }
-        public string activation { get; set; }
-        public string LIDBName { get; set; }
+        public string tn { get; set; } = string.Empty;
+        public string lrn { get; set; } = string.Empty;
+        public string ocn { get; set; } = string.Empty;
+        public string lata { get; set; } = string.Empty;
+        public string city { get; set; } = string.Empty;
+        public string ratecenter { get; set; } = string.Empty;
+        public string province { get; set; } = string.Empty;
+        public string jurisdiction { get; set; } = string.Empty;
+        public string local { get; set; } = string.Empty;
+        public string lec { get; set; } = string.Empty;
+        public string lectype { get; set; } = string.Empty;
+        public string spid { get; set; } = string.Empty;
+        public string activation { get; set; } = string.Empty;
+        public string LIDBName { get; set; } = string.Empty;
         public DateTime LastPorted { get; set; }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace NumberSearch.DataAccess.BulkVS
             catch (FlurlHttpException ex)
             {
                 Log.Warning(await ex.GetResponseStringAsync());
-                return null;
+                return new();
             }
         }
     }

@@ -275,7 +275,7 @@ namespace NumberSearch.Ingest
                     {
                         match = await RateCenterLookup.GetAsync(number.NPA.ToString(), number.NXX.ToString()).ConfigureAwait(false);
 
-                        if (match is not null)
+                        if (!string.IsNullOrWhiteSpace(match.RateCenter))
                         {
                             npaNxxLookup.Add($"{number.NPA}{number.NXX}", match);
 

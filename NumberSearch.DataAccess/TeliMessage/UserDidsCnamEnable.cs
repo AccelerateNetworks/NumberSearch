@@ -5,12 +5,11 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.TeliMessage
 {
-    // TODO: This is a mess. We need to clean this up and correctly model the API interface.
     public class UserDidsCnamEnable
     {
         public int code { get; set; }
-        public string status { get; set; }
-        public string data { get; set; }
+        public string status { get; set; } = string.Empty;
+        public string data { get; set; } = string.Empty;
 
         /// <summary>
         /// Enable CNAM on this number.
@@ -34,7 +33,7 @@ namespace NumberSearch.DataAccess.TeliMessage
         /// <returns></returns>
         public bool CnamEnabled()
         {
-            return status == "success";
+            return status is "success";
         }
     }
 }

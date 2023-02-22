@@ -12,20 +12,20 @@ namespace NumberSearch.DataAccess.BulkVS
 {
     public class E911Record
     {
-        public string TN { get; set; }
+        public string TN { get; set; } = string.Empty;
         [JsonPropertyName("Caller Name")]
         [JsonProperty("Caller Name")]
         public bool CallerName { get; set; }
         [JsonPropertyName("Address Line 1")]
         [JsonProperty("Address Line 1")]
-        public string AddressLine1 { get; set; }
+        public string AddressLine1 { get; set; } = string.Empty;
         [JsonPropertyName("Address Line 2")]
         [JsonProperty("Address Line 2")]
-        public string AddressLine2 { get; set; }
-        public string City { get; set; }
-        public string State { get; set; }
-        public string Zip { get; set; }
-        public string[] Sms { get; set; }
+        public string AddressLine2 { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
+        public string Zip { get; set; } = string.Empty;
+        public string[] Sms { get; set; } = Array.Empty<string>();
         [JsonPropertyName("Last Modification")]
         [JsonProperty("Last Modification")]
         public DateTime LastModification { get; set; }
@@ -47,37 +47,37 @@ namespace NumberSearch.DataAccess.BulkVS
             {
                 Log.Warning($"[E911] [BulkVS] No results found for number {dialedNumber}.");
                 Log.Warning(await ex.GetResponseStringAsync());
-                return null;
+                return new();
             }
         }
 
         public class ProvisionRequest
         {
-            public string TN { get; set; }
+            public string TN { get; set; } = string.Empty;
             [JsonPropertyName("Caller Name")]
             [JsonProperty("Caller Name")]
-            public string CallerName { get; set; }
-            public string AddressID { get; set; }
-            public string[] Sms { get; set; }
+            public string CallerName { get; set; } = string.Empty;
+            public string AddressID { get; set; } = string.Empty;
+            public string[] Sms { get; set; } = Array.Empty<string>();
         }
 
         public class ProvisionResponse
         {
-            public string Status { get; set; }
-            public string TN { get; set; }
+            public string Status { get; set; } = string.Empty;
+            public string TN { get; set; } = string.Empty;
             [JsonPropertyName("Caller Name")]
             [JsonProperty("Caller Name")]
-            public string CallerName { get; set; }
+            public string CallerName { get; set; } = string.Empty;
             [JsonPropertyName("Address Line 1")]
             [JsonProperty("Address Line 1")]
-            public string AddressLine1 { get; set; }
+            public string AddressLine1 { get; set; } = string.Empty;
             [JsonPropertyName("Address Line 2")]
             [JsonProperty("Address Line 2")]
-            public string AddressLine2 { get; set; }
-            public string City { get; set; }
-            public string State { get; set; }
-            public string Zip { get; set; }
-            public string[] Sms { get; set; }
+            public string AddressLine2 { get; set; } = string.Empty;
+            public string City { get; set; } = string.Empty;
+            public string State { get; set; } = string.Empty;
+            public string Zip { get; set; } = string.Empty;
+            public string[] Sms { get; set; } = Array.Empty<string>();
             [JsonPropertyName("Last Modification")]
             [JsonProperty("Last Modification")]
             public DateTime LastModification { get; set; }
@@ -100,7 +100,7 @@ namespace NumberSearch.DataAccess.BulkVS
             {
                 Log.Warning($"[E911] [BulkVS] Unable to provision E911 service for {dialedNumber}.");
                 Log.Warning(await ex.GetResponseStringAsync());
-                return null;
+                return new();
             }
         }
 
@@ -108,29 +108,29 @@ namespace NumberSearch.DataAccess.BulkVS
         {
             [JsonPropertyName("Street Number")]
             [JsonProperty("Street Number")]
-            public string StreetNumber { get; set; }
+            public string StreetNumber { get; set; } = string.Empty;
             [JsonPropertyName("Street Name")]
             [JsonProperty("Street Name")]
-            public string StreetName { get; set; }
-            public string Location { get; set; }
-            public string City { get; set; }
-            public string State { get; set; }
-            public string Zip { get; set; }
+            public string StreetName { get; set; } = string.Empty;
+            public string Location { get; set; } = string.Empty;
+            public string City { get; set; } = string.Empty;
+            public string State { get; set; } = string.Empty;
+            public string Zip { get; set; } = string.Empty;
         }
 
         public class ValidatedAddress
         {
-            public string Status { get; set; }
-            public string AddressID { get; set; }
+            public string Status { get; set; } = string.Empty;
+            public string AddressID { get; set; } = string.Empty;
             [JsonPropertyName("Address Line 1")]
             [JsonProperty("Address Line 1")]
-            public string AddressLine1 { get; set; }
+            public string AddressLine1 { get; set; } = string.Empty;
             [JsonPropertyName("Address Line 2")]
             [JsonProperty("Address Line 2")]
-            public string AddressLine2 { get; set; }
-            public string City { get; set; }
-            public string State { get; set; }
-            public string Zip { get; set; }
+            public string AddressLine2 { get; set; } = string.Empty;
+            public string City { get; set; } = string.Empty;
+            public string State { get; set; } = string.Empty;
+            public string Zip { get; set; } = string.Empty;
         }
 
         public static async Task<ValidatedAddress> ValidateAddressAsync(string streetNumber, string streetName, string location, string city, string state, string zip, string username, string password)
@@ -149,7 +149,7 @@ namespace NumberSearch.DataAccess.BulkVS
             {
                 Log.Warning($"[E911] [BulkVS] Failed to validate address for E911 service.");
                 Log.Warning(await ex.GetResponseStringAsync());
-                return null;
+                return new();
             }
         }
     }

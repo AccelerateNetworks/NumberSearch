@@ -494,9 +494,6 @@ namespace NumberSearch.Ingest
                             {
                                 Log.Fatal($"[TeliMessage] Failed to completed the priority ingest process {DateTime.Now}.");
                             }
-
-                            // Update the statuses of all active TeliMessage port request.
-                            await PortRequests.UpdateStatusesTeliMessageAsync(config);
                         }
                     }
 

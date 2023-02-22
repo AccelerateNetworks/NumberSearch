@@ -13,19 +13,19 @@ namespace NumberSearch.DataAccess.Call48
     public class Ratecenter
     {
         public int code { get; set; }
-        public string error { get; set; }
-        public RatecenterDatum[] data { get; set; }
+        public string error { get; set; } = string.Empty;
+        public RatecenterDatum[] data { get; set; } = Array.Empty<RatecenterDatum>();
 
         public class RatecenterDatum
         {
             public int footprint_id { get; set; }
-            public string rate_center { get; set; }
+            public string rate_center { get; set; } = string.Empty;
         }
 
         public class StateRatecenter
         {
-            public string ShortState { get; set; }
-            public string[] Ratecenters { get; set; }
+            public string ShortState { get; set; } = string.Empty;
+            public string[] Ratecenters { get; set; } = Array.Empty<string>();
         }
         /// <summary>
         /// Get a valid security token from Call48.
@@ -50,7 +50,7 @@ namespace NumberSearch.DataAccess.Call48
             {
                 Log.Warning("[Call48] Failed to get ratecenters.");
                 Log.Warning(await ex.GetResponseStringAsync());
-                return null;
+                return new();
             }
         }
 
@@ -59,13 +59,16 @@ namespace NumberSearch.DataAccess.Call48
             var ratecenters = new List<StateRatecenter>();
             foreach (var state in states)
             {
-                var results = await GetRatecentersByStateAsync(state.StateShort, token).ConfigureAwait(false);
-
-                ratecenters.Add(new StateRatecenter
+                if (!string.IsNullOrWhiteSpace(state.StateShort))
                 {
-                    ShortState = state.StateShort,
-                    Ratecenters = results.data.Select(x => x.rate_center).ToArray()
-                });
+                    var results = await GetRatecentersByStateAsync(state.StateShort, token).ConfigureAwait(false);
+
+                    ratecenters.Add(new StateRatecenter
+                    {
+                        ShortState = state.StateShort,
+                        Ratecenters = results.data.Select(x => x.rate_center).ToArray()
+                    });
+                }
             }
 
             return ratecenters.ToArray();

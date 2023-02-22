@@ -8,14 +8,14 @@ namespace NumberSearch.DataAccess.CallWithUs
 {
     public class LRNLookup
     {
-        public string LRN { get; set; }
-        public string State { get; set; }
-        public string Ratecenter { get; set; }
-        public string LATA { get; set; }
-        public string OCN { get;set; }
-        public string Company { get; set; }
-        public string Prefix_Type { get; set; }
-        public string CLLI { get; set; }
+        public string LRN { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
+        public string Ratecenter { get; set; } = string.Empty;
+        public string LATA { get; set; } = string.Empty;
+        public string OCN { get; set; } = string.Empty;
+        public string Company { get; set; } = string.Empty;
+        public string Prefix_Type { get; set; } = string.Empty;
+        public string CLLI { get; set; } = string.Empty;
 
         /// <summary>
         /// Docs: http://callwithus.com/API#lrn
@@ -49,8 +49,8 @@ namespace NumberSearch.DataAccess.CallWithUs
             }
             catch (FlurlHttpException ex)
             {
-                Log.Warning(await ex.GetResponseStringAsync());
-                return null;
+                Log.Error(await ex.GetResponseStringAsync());
+                return new();
             }
         }
     }

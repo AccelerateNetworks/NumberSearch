@@ -11,21 +11,21 @@ namespace NumberSearch.DataAccess.BulkVS
 {
     public class ValidatePortability
     {
-        public string TN { get; set; }
+        public string TN { get; set; } = string.Empty;
         public bool Portable { get; set; }
         [JsonPropertyName("Losing Carrier")]
         [JsonProperty("Losing Carrier")]
-        public string LosingCarrier { get; set; }
-        public string Tier { get; set; }
+        public string LosingCarrier { get; set; } = string.Empty;
+        public string Tier { get; set; } = string.Empty;
         [JsonPropertyName("Rate Center")]
         [JsonProperty("Rate Center")]
-        public string RateCenter { get; set; }
-        public string State { get; set; }
+        public string RateCenter { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
         [JsonPropertyName("Per Minute Rate")]
         [JsonProperty("Per Minute Rate")]
-        public string PerMinuteRate { get; set; }
-        public string Mrc { get; set; }
-        public string Nrc { get; set; }
+        public string PerMinuteRate { get; set; } = string.Empty;
+        public string Mrc { get; set; } = string.Empty;
+        public string Nrc { get; set; } = string.Empty;
 
         public static async Task<ValidatePortability> GetAsync(string dialedNumber, string username, string password)
         {
@@ -41,7 +41,7 @@ namespace NumberSearch.DataAccess.BulkVS
             {
                 Log.Warning($"[Portability] [BulkVS] No results found for number {dialedNumber}.");
                 Log.Warning(await ex.GetResponseStringAsync());
-                return null;
+                return new();
             }
         }
     }

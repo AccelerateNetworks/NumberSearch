@@ -1,7 +1,5 @@
 ﻿using Flurl.Http;
 
-using NumberSearch.DataAccess.TeliMessage;
-
 using Serilog;
 
 using System;
@@ -16,7 +14,6 @@ namespace NumberSearch.DataAccess.TeliMessage
         public string error { get; set; }
         public OffnetResponseData data { get; set; }
 
-
         public class OffnetResponseData
         {
             public string jobid { get; set; }
@@ -28,7 +25,6 @@ namespace NumberSearch.DataAccess.TeliMessage
             public string status { get; set; }
             public string data { get; set; }
         }
-
 
         public static async Task<DidsOffnet> VerifyCapabilityAsync(string number, Guid token)
         {

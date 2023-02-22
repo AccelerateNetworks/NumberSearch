@@ -538,11 +538,11 @@ public class OrdersController : Controller
                             {
                                 // With a valid address we can now register the address to the phone number selected for this account.
                                 var checkNumber = await UserDidsGet.GetAsync(phoneNumber.DialedNumber, _teleToken);
-                                if (checkNumber is null)
+                                if (checkNumber.code is not 200)
                                 {
                                     // Check if the number can be registered as an offnet number with Teli.
                                     var checkOffnet = await DidsOffnet.VerifyCapabilityAsync(phoneNumber.DialedNumber, _teleToken);
-                                    if (checkOffnet.code == 200)
+                                    if (checkOffnet.code is 200)
                                     {
                                         // Insert the offnet number.
                                         var offnetInsertJob = await DidsOffnet.SubmitNumberAsync(phoneNumber.DialedNumber, _teleToken);
@@ -552,7 +552,7 @@ public class OrdersController : Controller
                                         {
                                             var checkJobStatus = await DidsOffnet.StatusSubmitNumberAsync(offnetInsertJob.data.jobid, _teleToken);
 
-                                            while (checkJobStatus.status != "success")
+                                            while (checkJobStatus.status is not "success")
                                             {
                                                 await Task.Delay(1000);
                                                 checkJobStatus = await DidsOffnet.StatusSubmitNumberAsync(offnetInsertJob.data.jobid, _teleToken);
@@ -931,7 +931,7 @@ public class OrdersController : Controller
                                 else
                                 {
                                     // Get the did_id and use it to register the number.
-                                    if (checkNumber?.code == 200 && !string.IsNullOrWhiteSpace(checkNumber?.data?.id))
+                                    if (checkNumber?.code is 200 && !string.IsNullOrWhiteSpace(checkNumber?.data?.id))
                                     {
                                         var fullName = $"{order.FirstName} {order.LastName}";
                                         NumberSearch.DataAccess.EmergencyInfo? E911Request = null;

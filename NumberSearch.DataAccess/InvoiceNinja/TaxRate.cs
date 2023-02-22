@@ -1,5 +1,6 @@
 ﻿using Flurl.Http;
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -7,7 +8,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
 {
     public class TaxRate
     {
-        public TaxRateDatum[] data { get; set; }
+        public TaxRateDatum[] data { get; set; } = Array.Empty<TaxRateDatum>();
 
         public static async Task<TaxRate> GetAllAsync(string token)
         {
@@ -26,19 +27,19 @@ namespace NumberSearch.DataAccess.InvoiceNinja
 
     public class TaxSingle
     {
-        public TaxRateDatum data { get; set; }
+        public TaxRateDatum data { get; set; } = new();
     }
 
     public class TaxRateDatum
     {
-        public string account_key { get; set; }
+        public string account_key { get; set; } = string.Empty;
         public bool is_owner { get; set; }
-        public string id { get; set; }
-        public string name { get; set; }
+        public string id { get; set; } = string.Empty;
+        public string name { get; set; } = string.Empty;
         public decimal rate { get; set; }
         public bool is_inclusive { get; set; }
         public int updated_at { get; set; }
-        public object archived_at { get; set; }
+        public object archived_at { get; set; } = new();
 
         public async Task<TaxRateDatum> PostAsync(string token)
         {
@@ -57,7 +58,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
                 .ConfigureAwait(false);
 
             // Unwrap the data we want from the single-field parent object.
-            return result.data;
+            return result?.data ?? new();
         }
     }
 }
