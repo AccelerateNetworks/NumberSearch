@@ -40,55 +40,13 @@ namespace NumberSearch.Ingest
                     count = c.Count > count ? c.Count : count;
                 }
 
-                if (count == 1)
+                number.NumberType = count switch
                 {
-                    number.NumberType = Standard;
-                }
-
-                if (count == 2)
-                {
-                    number.NumberType = Standard;
-                }
-
-                if (count == 3)
-                {
-                    number.NumberType = Standard;
-                }
-
-                if (count == 4)
-                {
-                    number.NumberType = Premium;
-                }
-
-                if (count == 5)
-                {
-                    number.NumberType = Executive;
-                }
-
-                if (count == 6)
-                {
-                    number.NumberType = Executive;
-                }
-
-                if (count == 7)
-                {
-                    number.NumberType = Executive;
-                }
-
-                if (count == 8)
-                {
-                    number.NumberType = Executive;
-                }
-
-                if (count == 9)
-                {
-                    number.NumberType = Executive;
-                }
-
-                if (count == 10)
-                {
-                    number.NumberType = Executive;
-                }
+                    1 or 2 or 3 => Standard,
+                    4 or 5 => Premium,
+                    6 or 7 or 8 or 9 or 10 => Executive,
+                    _ => Standard,
+                };
 
                 // Overwrite the number type with Tollfree, as that's the primary type.
                 var checkTollfree = PhoneNumbersNA.AreaCode.TollFreeFlatLookup[number.NPA];
@@ -202,7 +160,6 @@ namespace NumberSearch.Ingest
                     catch (Exception ex)
                     {
                         Log.Fatal(ex.Message);
-                        Log.Fatal(ex.InnerException.ToString());
                         Log.Fatal($"{update.DialedNumber} {update.NPA} {update.NXX} {update.XXXX} {update.City} {update.State} {update.IngestedFrom} {update.NumberType} {update.DateIngested} {update.Purchased}");
                     }
                     count++;

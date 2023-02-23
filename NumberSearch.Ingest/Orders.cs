@@ -1,9 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-
-using NumberSearch.DataAccess;
-using NumberSearch.DataAccess.InvoiceNinja;
-
-using Serilog;
+﻿using NumberSearch.DataAccess;
 
 using System;
 using System.Collections.Generic;
@@ -19,8 +14,8 @@ namespace NumberSearch.Ingest
         public class OrderStatus
         {
             public Guid OrderId { get; set; }
-            public string? Status { get; set; }
-            public string? Customer { get; set; }
+            public string Status { get; set; } = string.Empty;
+            public string Customer { get; set; } = string.Empty;
         }
 
         public static async Task<IEnumerable<OrderStatus>> IncompleteOrderRemindersAsync(string connectionString)
@@ -33,18 +28,20 @@ namespace NumberSearch.Ingest
             {
                 var portRequest = portRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefault();
 
-                var productOrders = await ProductOrder.GetAsync(order.OrderId, connectionString);
-
-                var nextStep = Order.GetStatus(order, productOrders, portRequest);
-
-                // If the order isn't complete and is not a quote add it to the reminders list.
-                if (order.Completed is not true
-                    && order.Quote is not true
-                    && (portRequest is not null
-                    || (productOrders is not null
-                    && productOrders.Where(x => x.PortedPhoneNumberId.HasValue is true).Any())))
+                if (portRequest is not null)
                 {
-                    orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
+                    var productOrders = await ProductOrder.GetAsync(order.OrderId, connectionString);
+                    var nextStep = Order.GetStatus(order, productOrders, portRequest);
+
+                    // If the order isn't complete and is not a quote add it to the reminders list.
+                    if (order.Completed is not true
+                        && order.Quote is not true
+                        && (portRequest is not null
+                        || (productOrders is not null
+                        && productOrders.Where(x => x.PortedPhoneNumberId.HasValue is true).Any())))
+                    {
+                        orderStatuses.Add(new OrderStatus { OrderId = order.OrderId, Status = nextStep, Customer = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order.BusinessName });
+                    }
                 }
             }
 

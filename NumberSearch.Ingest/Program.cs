@@ -21,22 +21,25 @@ namespace NumberSearch.Ingest
             .AddUserSecrets("328593cf-cbb9-48e9-8938-e38a44c8291d")
             .Build();
 
-            var teleToken = string.IsNullOrWhiteSpace(config.GetConnectionString("TeleAPI")) ? throw new Exception("TeliAPI config key is blank.") : Guid.Parse(config.GetConnectionString("TeleAPI") ?? string.Empty);
-            var postgresSQL = string.IsNullOrWhiteSpace(config.GetConnectionString("PostgresqlProd")) ? throw new Exception("PostgresqlProd config key is blank.") : config.GetConnectionString("PostgresqlProd");
-            var bulkVSKey = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSAPIKEY")) ? throw new Exception("BulkVSAPIKEY config key is blank.") : config.GetConnectionString("BulkVSAPIKEY");
-            var bulkVSSecret = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSAPISecret")) ? throw new Exception("BulkVSAPISecret config key is blank.") : config.GetConnectionString("BulkVSAPISecret");
-            var bulkVSusername = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSUsername")) ? throw new Exception("BulkVSUsername config key is blank.") : config.GetConnectionString("BulkVSUsername");
-            var bulkVSpassword = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSPassword")) ? throw new Exception("BulkVSPassword config key is blank.") : config.GetConnectionString("BulkVSPassword");
-            var username = string.IsNullOrWhiteSpace(config.GetConnectionString("PComNetUsername")) ? throw new Exception("PComNetUsername config key is blank.") : config.GetConnectionString("PComNetUsername");
-            var password = string.IsNullOrWhiteSpace(config.GetConnectionString("PComNetPassword")) ? throw new Exception("PComNetPassword config key is blank.") : config.GetConnectionString("PComNetPassword");
-            var peerlessApiKey = string.IsNullOrWhiteSpace(config.GetConnectionString("PeerlessAPIKey")) ? throw new Exception("PeerlessAPIKey config key is blank.") : config.GetConnectionString("PeerlessAPIKey");
-            var call48Username = string.IsNullOrWhiteSpace(config.GetConnectionString("Call48Username")) ? throw new Exception("Call48Username config key is blank.") : config.GetConnectionString("Call48Username");
-            var call48Password = string.IsNullOrWhiteSpace(config.GetConnectionString("Call48Password")) ? throw new Exception("Call48Password config key is blank.") : config.GetConnectionString("Call48Password");
-            var smtpUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("SmtpUsername")) ? throw new Exception("SmtpUsername config key is blank.") : config.GetConnectionString("SmtpUsername");
-            var smtpPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("SmtpPassword")) ? throw new Exception("SmtpPassword config key is blank.") : config.GetConnectionString("SmtpPassword");
-            var emailOrders = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailOrders")) ? throw new Exception("EmailOrders config key is blank.") : config.GetConnectionString("EmailOrders");
-            var emailDan = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailDan")) ? throw new Exception("EmailDan config key is blank.") : config.GetConnectionString("EmailDan");
-            var emailTom = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailTom")) ? throw new Exception("EmailTom config key is blank.") : config.GetConnectionString("EmailTom");
+            var appConfig = new IngestConfiguration
+            {
+                TeleAPI = string.IsNullOrWhiteSpace(config.GetConnectionString("TeleAPI")) ? throw new Exception("TeliAPI config key is blank.") : Guid.Parse(config.GetConnectionString("TeleAPI") ?? string.Empty),
+                Postgresql = string.IsNullOrWhiteSpace(config.GetConnectionString("PostgresqlProd")) ? throw new Exception("PostgresqlProd config key is blank.") : config.GetConnectionString("PostgresqlProd") ?? string.Empty,
+                BulkVSAPIKEY = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSAPIKEY")) ? throw new Exception("BulkVSAPIKEY config key is blank.") : config.GetConnectionString("BulkVSAPIKEY") ?? string.Empty,
+                BulkVSAPISecret = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSAPISecret")) ? throw new Exception("BulkVSAPISecret config key is blank.") : config.GetConnectionString("BulkVSAPISecret") ?? string.Empty,
+                BulkVSUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSUsername")) ? throw new Exception("BulkVSUsername config key is blank.") : config.GetConnectionString("BulkVSUsername") ?? string.Empty,
+                BulkVSPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSPassword")) ? throw new Exception("BulkVSPassword config key is blank.") : config.GetConnectionString("BulkVSPassword") ?? string.Empty,
+                PComNetUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("PComNetUsername")) ? throw new Exception("PComNetUsername config key is blank.") : config.GetConnectionString("PComNetUsername") ?? string.Empty,
+                PComNetPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("PComNetPassword")) ? throw new Exception("PComNetPassword config key is blank.") : config.GetConnectionString("PComNetPassword") ?? string.Empty,
+                PeerlessAPIKey = string.IsNullOrWhiteSpace(config.GetConnectionString("PeerlessAPIKey")) ? throw new Exception("PeerlessAPIKey config key is blank.") : config.GetConnectionString("PeerlessAPIKey") ?? string.Empty,
+                Call48Username = string.IsNullOrWhiteSpace(config.GetConnectionString("Call48Username")) ? throw new Exception("Call48Username config key is blank.") : config.GetConnectionString("Call48Username") ?? string.Empty,
+                Call48Password = string.IsNullOrWhiteSpace(config.GetConnectionString("Call48Password")) ? throw new Exception("Call48Password config key is blank.") : config.GetConnectionString("Call48Password") ?? string.Empty,
+                SmtpUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("SmtpUsername")) ? throw new Exception("SmtpUsername config key is blank.") : config.GetConnectionString("SmtpUsername") ?? string.Empty,
+                SmtpPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("SmtpPassword")) ? throw new Exception("SmtpPassword config key is blank.") : config.GetConnectionString("SmtpPassword") ?? string.Empty,
+                EmailOrders = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailOrders")) ? throw new Exception("EmailOrders config key is blank.") : config.GetConnectionString("EmailOrders") ?? string.Empty,
+                EmailDan = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailDan")) ? throw new Exception("EmailDan config key is blank.") : config.GetConnectionString("EmailDan") ?? string.Empty,
+                EmailTom = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailTom")) ? throw new Exception("EmailTom config key is blank.") : config.GetConnectionString("EmailTom") ?? string.Empty
+            };
 
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
@@ -69,7 +72,7 @@ namespace NumberSearch.Ingest
                     var start = DateTime.Now;
 
                     // Get the configuration for each of the ingest providers.
-                    var cycles = await IngestCycle.GetAllAsync(postgresSQL).ConfigureAwait(false);
+                    var cycles = await IngestCycle.GetAllAsync(appConfig.Postgresql).ConfigureAwait(false);
                     var bulkVSCycle = cycles.Where(x => x.IngestedFrom == "BulkVS").FirstOrDefault();
                     var firstPointComCycle = cycles.Where(x => x.IngestedFrom == "FirstPointCom").FirstOrDefault();
                     var teleMessageCycle = cycles.Where(x => x.IngestedFrom == "TeleMessage").FirstOrDefault();
@@ -80,7 +83,7 @@ namespace NumberSearch.Ingest
                     // Ingest phone numbers from BulkVS.
                     if (bulkVSCycle is not null && (bulkVSCycle.Enabled || bulkVSCycle.RunNow))
                     {
-                        var lastRun = await IngestStatistics.GetLastIngestAsync("BulkVS", postgresSQL).ConfigureAwait(false);
+                        var lastRun = await IngestStatistics.GetLastIngestAsync("BulkVS", appConfig.Postgresql).ConfigureAwait(false);
 
                         // If the last ingest was run to recently do nothing.
                         if (lastRun is not null && (lastRun.StartDate < (start - bulkVSCycle.CycleTime) || bulkVSCycle.RunNow))
@@ -105,19 +108,19 @@ namespace NumberSearch.Ingest
                                 Lock = true
                             };
 
-                            var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
+                            var checkLock = await lockingStats.PostAsync(appConfig.Postgresql).ConfigureAwait(false);
 
                             // Ingest all avablie phones numbers from the BulkVs API.
                             Log.Information("Ingesting data from BulkVS");
-                            var BulkVSStats = await Provider.BulkVSAsync(bulkVSusername, bulkVSpassword, PhoneNumbersNA.AreaCode.All, postgresSQL).ConfigureAwait(false);
+                            var BulkVSStats = await Provider.BulkVSAsync(appConfig.BulkVSUsername, appConfig.BulkVSPassword, PhoneNumbersNA.AreaCode.All, appConfig.Postgresql).ConfigureAwait(false);
 
                             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
-                            var lockEntry = await IngestStatistics.GetLockAsync("BulkVS", postgresSQL).ConfigureAwait(false);
-                            var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
+                            var lockEntry = await IngestStatistics.GetLockAsync("BulkVS", appConfig.Postgresql).ConfigureAwait(false);
+                            var checkRemoveLock = await lockEntry.DeleteAsync(appConfig.Postgresql).ConfigureAwait(false);
 
                             // Remove all of the old numbers from the database.
                             Log.Information("[BulkVS] Removing old numbers from the database.");
-                            var bulkVSCleanUp = await PhoneNumber.DeleteOldByProvider(start, bulkVSCycle!.CycleTime, "BulkVS", postgresSQL).ConfigureAwait(false);
+                            var bulkVSCleanUp = await PhoneNumber.DeleteOldByProvider(start, bulkVSCycle!.CycleTime, "BulkVS", appConfig.Postgresql).ConfigureAwait(false);
 
                             var combined = new IngestStatistics
                             {
@@ -134,7 +137,7 @@ namespace NumberSearch.Ingest
                                 Priority = false
                             };
 
-                            if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
+                            if (await combined.PostAsync(appConfig.Postgresql).ConfigureAwait(false))
                             {
                                 Log.Information($"[BulkVS] Completed the ingest process {DateTime.Now}.");
                             }
@@ -146,7 +149,7 @@ namespace NumberSearch.Ingest
                             if (bulkVSCycle.RunNow)
                             {
                                 bulkVSCycle.RunNow = false;
-                                var checkRunNow = bulkVSCycle.PutAsync(postgresSQL).ConfigureAwait(false);
+                                var checkRunNow = bulkVSCycle.PutAsync(appConfig.Postgresql).ConfigureAwait(false);
                             }
 
                         }
@@ -166,7 +169,7 @@ namespace NumberSearch.Ingest
 
                             // Ingest priority phones numbers from the BulkVs API.
                             Log.Information("[BulkVS] Ingesting priority data from BulkVS.");
-                            var BulkVSStats = await Provider.BulkVSAsync(bulkVSusername, bulkVSpassword, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
+                            var BulkVSStats = await Provider.BulkVSAsync(appConfig.BulkVSUsername, appConfig.BulkVSPassword, AreaCode.Priority, appConfig.Postgresql).ConfigureAwait(false);
 
                             var combined = new IngestStatistics
                             {
@@ -186,11 +189,11 @@ namespace NumberSearch.Ingest
                             // Remove stale priority numbers
                             foreach (var code in AreaCode.Priority)
                             {
-                                var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, new TimeSpan(priortyIngestCycleTime), code, lastRun.IngestedFrom, postgresSQL).ConfigureAwait(false);
+                                var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, new TimeSpan(priortyIngestCycleTime), code, lastRun.IngestedFrom, appConfig.Postgresql).ConfigureAwait(false);
                                 combined.Removed += removedNumbers.Removed;
                             }
 
-                            if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
+                            if (await combined.PostAsync(appConfig.Postgresql).ConfigureAwait(false))
                             {
                                 Log.Information($"[BulkVS] Completed the priority ingest process {DateTime.Now}.");
                             }
@@ -202,14 +205,14 @@ namespace NumberSearch.Ingest
                             Log.Information($"[BulkVS] [PortRequests] Priority ingest of Port Request statuses started at {DateTime.Now}.");
 
                             // Update the statuses of all the active port requests with BulkVS.
-                            await PortRequests.UpdateStatusesBulkVSAsync(config);
+                            await PortRequests.UpdateStatusesBulkVSAsync(appConfig);
                         }
                     }
 
                     // Ingest phone numbers from FirstPointCom.
                     if (firstPointComCycle is not null && (firstPointComCycle.Enabled || firstPointComCycle.RunNow))
                     {
-                        var lastRun = await IngestStatistics.GetLastIngestAsync("FirstPointCom", postgresSQL).ConfigureAwait(false);
+                        var lastRun = await IngestStatistics.GetLastIngestAsync("FirstPointCom", appConfig.Postgresql).ConfigureAwait(false);
 
                         if (lastRun is not null && (lastRun.StartDate < (start - firstPointComCycle.CycleTime) || firstPointComCycle.RunNow))
                         {
@@ -233,19 +236,19 @@ namespace NumberSearch.Ingest
                                 Lock = true
                             };
 
-                            var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
+                            var checkLock = await lockingStats.PostAsync(appConfig.Postgresql).ConfigureAwait(false);
 
                             // Ingest all avalible numbers in the FirsPointtCom API.
                             Log.Information("[FirstPointCom] Ingesting data from FirstPointCom");
-                            var FirstPointComStats = await Provider.FirstPointComAsync(username, password, PhoneNumbersNA.AreaCode.All, postgresSQL).ConfigureAwait(false);
+                            var FirstPointComStats = await Provider.FirstPointComAsync(appConfig.PComNetUsername, appConfig.PComNetPassword, PhoneNumbersNA.AreaCode.All, appConfig.Postgresql).ConfigureAwait(false);
 
                             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
-                            var lockEntry = await IngestStatistics.GetLockAsync("FirstPointCom", postgresSQL).ConfigureAwait(false);
-                            var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
+                            var lockEntry = await IngestStatistics.GetLockAsync("FirstPointCom", appConfig.Postgresql).ConfigureAwait(false);
+                            var checkRemoveLock = await lockEntry.DeleteAsync(appConfig.Postgresql).ConfigureAwait(false);
 
                             // Remove all of the old numbers from the database.
                             Log.Information("[FirstPointCom] Removing old FirstPointCom numbers from the database.");
-                            var firstPointComCleanUp = await PhoneNumber.DeleteOldByProvider(start, firstPointComCycle!.CycleTime, "FirstPointCom", postgresSQL).ConfigureAwait(false);
+                            var firstPointComCleanUp = await PhoneNumber.DeleteOldByProvider(start, firstPointComCycle!.CycleTime, "FirstPointCom", appConfig.Postgresql).ConfigureAwait(false);
 
                             var combined = new IngestStatistics
                             {
@@ -262,7 +265,7 @@ namespace NumberSearch.Ingest
                                 Priority = false
                             };
 
-                            if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
+                            if (await combined.PostAsync(appConfig.Postgresql).ConfigureAwait(false))
                             {
                                 Log.Information($"[FirstPointCom] Completed the FirstPointCom ingest process {DateTime.Now}.");
                             }
@@ -274,7 +277,7 @@ namespace NumberSearch.Ingest
                             if (firstPointComCycle.RunNow)
                             {
                                 firstPointComCycle.RunNow = false;
-                                var checkRunNow = firstPointComCycle.PutAsync(postgresSQL).ConfigureAwait(false);
+                                var checkRunNow = firstPointComCycle.PutAsync(appConfig.Postgresql).ConfigureAwait(false);
                             }
                         }
 
@@ -294,7 +297,7 @@ namespace NumberSearch.Ingest
 
                             // Ingest priority numbers in the FirsPointCom API.
                             Log.Information("[FirstPointCom] Ingesting priority data from FirstPointCom");
-                            var FirstPointComStats = await Provider.FirstPointComAsync(username, password, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
+                            var FirstPointComStats = await Provider.FirstPointComAsync(appConfig.PComNetUsername, appConfig.PComNetPassword, AreaCode.Priority, appConfig.Postgresql).ConfigureAwait(false);
 
                             var combined = new IngestStatistics
                             {
@@ -314,11 +317,11 @@ namespace NumberSearch.Ingest
                             // Remove stale priority numbers
                             foreach (var code in AreaCode.Priority)
                             {
-                                var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, new TimeSpan(priortyIngestCycleTime), code, lastRun.IngestedFrom, postgresSQL).ConfigureAwait(false);
+                                var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, new TimeSpan(priortyIngestCycleTime), code, lastRun.IngestedFrom, appConfig.Postgresql).ConfigureAwait(false);
                                 combined.Removed += removedNumbers.Removed;
                             }
 
-                            if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
+                            if (await combined.PostAsync(appConfig.Postgresql).ConfigureAwait(false))
                             {
                                 Log.Information($"[FirstPointCom] Completed the priority ingest process {DateTime.Now}.");
                             }
@@ -332,7 +335,7 @@ namespace NumberSearch.Ingest
                     // Ingest phone numbers from TeleMessage.
                     if (teleMessageCycle is not null && (teleMessageCycle.Enabled || teleMessageCycle.RunNow))
                     {
-                        var lastRun = await IngestStatistics.GetLastIngestAsync("TeleMessage", postgresSQL).ConfigureAwait(false);
+                        var lastRun = await IngestStatistics.GetLastIngestAsync("TeleMessage", appConfig.Postgresql).ConfigureAwait(false);
 
                         //if (lastRun is not null && (lastRun.StartDate < (start - teleMessageCycle.CycleTime) || teleMessageCycle.RunNow))
                         //{
@@ -456,7 +459,7 @@ namespace NumberSearch.Ingest
                             };
                             try
                             {
-                                teleStats = await Provider.TeliMessageAsync(teleToken, AreaCode.Priority, postgresSQL).ConfigureAwait(false);
+                                teleStats = await Provider.TeliMessageAsync(appConfig.TeleAPI, AreaCode.Priority, appConfig.Postgresql).ConfigureAwait(false);
                             }
                             catch (Exception ex)
                             {
@@ -482,11 +485,11 @@ namespace NumberSearch.Ingest
                             // Remove stale priority numbers
                             foreach (var code in AreaCode.Priority)
                             {
-                                var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, new TimeSpan(priortyIngestCycleTime), code, lastRun.IngestedFrom, postgresSQL).ConfigureAwait(false);
+                                var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, new TimeSpan(priortyIngestCycleTime), code, lastRun.IngestedFrom, appConfig.Postgresql).ConfigureAwait(false);
                                 combined.Removed += removedNumbers.Removed;
                             }
 
-                            if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
+                            if (await combined.PostAsync(appConfig.Postgresql).ConfigureAwait(false))
                             {
                                 Log.Information($"[TeliMessage] Completed the priority ingest process {DateTime.Now}.");
                             }
@@ -624,7 +627,7 @@ namespace NumberSearch.Ingest
                     // Ingest phone numbers from Peerless.
                     if (peerlessCycle != null && (peerlessCycle.Enabled || peerlessCycle.RunNow))
                     {
-                        var lastRun = await IngestStatistics.GetLastIngestAsync("Peerless", postgresSQL).ConfigureAwait(false);
+                        var lastRun = await IngestStatistics.GetLastIngestAsync("Peerless", appConfig.Postgresql).ConfigureAwait(false);
 
                         //if (lastRun != null && (lastRun.StartDate < (start - peerlessCycle.CycleTime) || peerlessCycle.RunNow))
                         //{
@@ -708,7 +711,7 @@ namespace NumberSearch.Ingest
 
                             // Ingest priority numbers from the TeleMessage.
                             Log.Information("[Peerless] Ingesting priority data from Peerless");
-                            var peerlessStats = await Provider.PeerlessAsync(Peerless.PriorityRateCenters, peerlessApiKey, postgresSQL).ConfigureAwait(false);
+                            var peerlessStats = await Provider.PeerlessAsync(Peerless.PriorityRateCenters, appConfig.PeerlessAPIKey, appConfig.Postgresql).ConfigureAwait(false);
 
                             var combined = new IngestStatistics
                             {
@@ -728,11 +731,11 @@ namespace NumberSearch.Ingest
                             // Remove stale priority numbers
                             foreach (var code in AreaCode.Priority)
                             {
-                                var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, new TimeSpan(priortyIngestCycleTime), code, lastRun.IngestedFrom, postgresSQL).ConfigureAwait(false);
+                                var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, new TimeSpan(priortyIngestCycleTime), code, lastRun.IngestedFrom, appConfig.Postgresql).ConfigureAwait(false);
                                 combined.Removed += removedNumbers.Removed;
                             }
 
-                            if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
+                            if (await combined.PostAsync(appConfig.Postgresql).ConfigureAwait(false))
                             {
                                 Log.Information("[Peerless] Completed the priority ingest process.");
                             }
@@ -746,7 +749,7 @@ namespace NumberSearch.Ingest
                     // Ingest all the phone numbers we own.
                     if (ownedNumbersCycle is not null && (ownedNumbersCycle.Enabled || ownedNumbersCycle.RunNow))
                     {
-                        var lastRun = await IngestStatistics.GetLastIngestAsync("OwnedNumbers", postgresSQL).ConfigureAwait(false);
+                        var lastRun = await IngestStatistics.GetLastIngestAsync("OwnedNumbers", appConfig.Postgresql).ConfigureAwait(false);
 
                         if (lastRun is not null && (lastRun.StartDate < (start - ownedNumbersCycle.CycleTime) || ownedNumbersCycle.RunNow))
                         {
@@ -770,14 +773,14 @@ namespace NumberSearch.Ingest
                                 Lock = true
                             };
 
-                            var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
+                            var checkLock = await lockingStats.PostAsync(appConfig.Postgresql).ConfigureAwait(false);
 
-                            await Owned.IngestAsync(config);
+                            await Owned.IngestAsync(appConfig);
 
                             if (ownedNumbersCycle!.RunNow)
                             {
                                 ownedNumbersCycle.RunNow = false;
-                                var checkRunNow = ownedNumbersCycle.PutAsync(postgresSQL).ConfigureAwait(false);
+                                var checkRunNow = ownedNumbersCycle.PutAsync(appConfig.Postgresql).ConfigureAwait(false);
                             }
                         }
                     }
@@ -797,8 +800,8 @@ namespace NumberSearch.Ingest
                         try
                         {
                             // Verify that all the Executive numbers are still purchasable for the priority area codes.
-                            await Provider.VerifyAddToCartAsync(AreaCode.Priority, "Executive", postgresSQL, bulkVSusername, bulkVSpassword,
-                                teleToken, username, password, call48Username, call48Password, peerlessApiKey);
+                            await Provider.VerifyAddToCartAsync(AreaCode.Priority, "Executive", appConfig.Postgresql, appConfig.BulkVSUsername, appConfig.BulkVSPassword,
+                                appConfig.TeleAPI, appConfig.PComNetUsername, appConfig.PComNetPassword, appConfig.Call48Username, appConfig.Call48Password, appConfig.PeerlessAPIKey);
                         }
                         catch (Exception ex)
                         {
@@ -828,8 +831,8 @@ namespace NumberSearch.Ingest
                 // Notify someone that there's been a failure.
                 var notificationEmail = new Email
                 {
-                    PrimaryEmailAddress = emailTom,
-                    CarbonCopy = emailDan,
+                    PrimaryEmailAddress = appConfig.EmailTom,
+                    CarbonCopy = appConfig.EmailDan,
                     DateSent = DateTime.Now,
                     Subject = $"[Ingest] App is down.",
                     MessageBody = $"Something has gone wrong and the ingest app is down at {DateTime.Now}. Please capture the logs and then restart or redeploy the ingest application to restore service.",
@@ -837,12 +840,44 @@ namespace NumberSearch.Ingest
                     Completed = true
                 };
 
-                var checkSend = await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);
-                var checkSave = await notificationEmail.PostAsync(postgresSQL).ConfigureAwait(false);
+                var checkSend = await notificationEmail.SendEmailAsync(appConfig.SmtpUsername, appConfig.SmtpPassword).ConfigureAwait(false);
+                var checkSave = await notificationEmail.PostAsync(appConfig.Postgresql).ConfigureAwait(false);
 
                 // Save the log.
                 await Log.CloseAndFlushAsync();
             }
+        }
+
+        public class IngestConfiguration
+        {
+            public Guid TeleAPI { get; set; }
+            public string CallFlow { get; set; } = string.Empty;
+            public string ChannelGroup { get; set; } = string.Empty;
+            public string PComNetUsername { get; set; } = string.Empty;
+            public string PComNetPassword { get; set; } = string.Empty;
+            public string BulkVSAPIKEY { get; set; } = string.Empty;
+            public string BulkVSAPISecret { get; set; } = string.Empty;
+            public string BulkVSUsername { get; set; } = string.Empty;
+            public string BulkVSPassword { get; set; } = string.Empty;
+            public string Postgresql { get; set; } = string.Empty;
+            public string PostgresqlProd { get; set; } = string.Empty;
+            public string SmtpUsername { get; set; } = string.Empty;
+            public string SmtpPassword { get; set; } = string.Empty;
+            public string MicrosoftClientId { get; set; } = string.Empty;
+            public string MicrosoftClientSecret { get; set; } = string.Empty;
+            public string PeerlessAPIKey { get; set; } = string.Empty;
+            public string InvoiceNinjaToken { get; set; } = string.Empty;
+            public string Data247Username { get; set; } = string.Empty;
+            public string Data247Password { get; set; } = string.Empty;
+            public string EmailOrders { get; set; } = string.Empty;
+            public string EmailDan { get; set; } = string.Empty;
+            public string EmailTom { get; set; } = string.Empty;
+            public string AzureStorageAccount { get; set; } = string.Empty;
+            public string TeleDynamicsUsername { get; set; } = string.Empty;
+            public string TeleDynamicsPassword { get; set; } = string.Empty;
+            public string Call48Username { get; set; } = string.Empty;
+            public string Call48Password { get; set; } = string.Empty;
+            public string CallWithUsAPIKEY { get; set; } = string.Empty;
         }
     }
 }

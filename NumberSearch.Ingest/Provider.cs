@@ -130,9 +130,9 @@ namespace NumberSearch.Ingest
 
                 foreach (var state in states)
                 {
-                    Log.Information($"[Call48] Ingesting numbers for {state.StateShort}.");
+                    Log.Information($"[Call48] Ingesting numbers for {state?.StateShort}.");
 
-                    var ratecenters = await Ratecenter.GetRatecentersByStateAsync(state.StateShort, credentials.data.token);
+                    var ratecenters = await Ratecenter.GetRatecentersByStateAsync(state?.StateShort ?? string.Empty, credentials.data.token);
 
                     if (ratecenters is not null && ratecenters.data.Any())
                     {
@@ -140,12 +140,12 @@ namespace NumberSearch.Ingest
                         {
                             try
                             {
-                                numbers.AddRange(await Search.GetAsync(state.StateShort, ratecenter.rate_center, credentials.data.token).ConfigureAwait(false));
+                                numbers.AddRange(await Search.GetAsync(state?.StateShort ?? string.Empty, ratecenter.rate_center, credentials.data.token).ConfigureAwait(false));
                                 Log.Information($"[Call48] Found {numbers.Count} Phone Numbers");
                             }
                             catch (Exception ex)
                             {
-                                Log.Error($"[Call48] Rate Center {ratecenter.rate_center} in State {state.StateShort} failed @ {DateTime.Now}: {ex.Message}");
+                                Log.Error($"[Call48] Rate Center {ratecenter.rate_center} in State {state?.StateShort ?? string.Empty} failed @ {DateTime.Now}: {ex.Message}");
                             }
                         }
                     }
@@ -229,7 +229,7 @@ namespace NumberSearch.Ingest
             {
                 var tollfree = await DidsList.GetAllTollfreeAsync(token).ConfigureAwait(false);
                 readyToSubmit.AddRange(tollfree);
-                Log.Information($"[TeliMessage] Found {tollfree.Count()} Tollfree Phone Numbers.");
+                Log.Information($"[TeliMessage] Found {tollfree.Length} Tollfree Phone Numbers.");
             }
             catch (Exception ex)
             {
@@ -269,20 +269,20 @@ namespace NumberSearch.Ingest
                     foreach (var phoneNumber in numbers)
                     {
                         // Check that the number is still avalible from the provider.
-                        if (phoneNumber.IngestedFrom == "BulkVS")
+                        if (phoneNumber.IngestedFrom is "BulkVS")
                         {
                             var npanxx = $"{phoneNumber.NPA}{phoneNumber.NXX}";
                             try
                             {
                                 var doesItStillExist = await OrderTn.GetAsync(phoneNumber.NPA, phoneNumber.NXX, _bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
                                 var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
-                                if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
+                                if (checkIfExists is not null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
                                 {
-                                    Log.Information($"[BulkVS] Found {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {npanxx}.");
+                                    Log.Information($"[BulkVS] Found {phoneNumber.DialedNumber} in {doesItStillExist.Length} results returned for {npanxx}.");
                                 }
                                 else
                                 {
-                                    Log.Warning($"[BulkVS] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {npanxx}.");
+                                    Log.Warning($"[BulkVS] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Length} results returned for {npanxx}.");
 
                                     // Remove numbers that are unpurchasable.
                                     var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
@@ -295,7 +295,7 @@ namespace NumberSearch.Ingest
                             }
 
                         }
-                        else if (phoneNumber.IngestedFrom == "TeleMessage")
+                        else if (phoneNumber.IngestedFrom is "TeleMessage")
                         {
                             // Verify that tele has the number.
                             try
@@ -304,11 +304,11 @@ namespace NumberSearch.Ingest
                                 var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
                                 if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
                                 {
-                                    Log.Information($"[TeliMessage] Found {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {phoneNumber.DialedNumber}.");
+                                    Log.Information($"[TeliMessage] Found {phoneNumber.DialedNumber} in {doesItStillExist.Length} results returned for {phoneNumber.DialedNumber}.");
                                 }
                                 else
                                 {
-                                    Log.Warning($"[TeliMessage] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {phoneNumber.DialedNumber}.");
+                                    Log.Warning($"[TeliMessage] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Length} results returned for {phoneNumber.DialedNumber}.");
 
                                     // Remove numbers that are unpurchasable.
                                     var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
@@ -321,14 +321,14 @@ namespace NumberSearch.Ingest
                             }
 
                         }
-                        else if (phoneNumber.IngestedFrom == "FirstPointCom")
+                        else if (phoneNumber.IngestedFrom is "FirstPointCom")
                         {
                             // Verify that tele has the number.
                             try
                             {
                                 var results = await NpaNxxFirstPointCom.GetAsync(phoneNumber.NPA.ToString(new CultureInfo("en-US")), phoneNumber.NXX.ToString(new CultureInfo("en-US")), string.Empty, _fpcusername, _fpcpassword).ConfigureAwait(false);
                                 var matchingNumber = results?.Where(x => x?.DialedNumber == phoneNumber?.DialedNumber)?.FirstOrDefault();
-                                if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
+                                if (matchingNumber is not null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
                                 {
                                     Log.Information($"[FirstPointCom] Found {phoneNumber.DialedNumber} in {results?.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
                                 }
@@ -346,7 +346,7 @@ namespace NumberSearch.Ingest
                                 Log.Error($"[FirstPointCom] Failed to query FirstPointCom for {phoneNumber?.DialedNumber}.");
                             }
                         }
-                        else if (phoneNumber.IngestedFrom == "Call48")
+                        else if (phoneNumber.IngestedFrom is "Call48")
                         {
                             //// Verify that Call48 has the number.
                             //try
@@ -372,7 +372,7 @@ namespace NumberSearch.Ingest
                             //    Log.Error($"[Call48] Failed to query Call48 for {phoneNumber?.DialedNumber}.");
                             //}
                         }
-                        else if (phoneNumber.IngestedFrom == "Peerless")
+                        else if (phoneNumber.IngestedFrom is "Peerless")
                         {
                             // Verify that Peerless has the number.
                             try
@@ -380,13 +380,13 @@ namespace NumberSearch.Ingest
                                 var results = await DidFind.GetByDialedNumberAsync(phoneNumber.NPA.ToString("000"), phoneNumber.NXX.ToString("000"), phoneNumber.XXXX.ToString("0000"), _peerlessApiKey);
                                 // Sometimes Call48 includes dashes in their numbers for no reason.
                                 var matchingNumber = results?.Where(x => x?.DialedNumber == phoneNumber?.DialedNumber)?.FirstOrDefault();
-                                if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
+                                if (matchingNumber is not null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
                                 {
-                                    Log.Information($"[Peerless] Found {phoneNumber.DialedNumber} in {results?.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}, {phoneNumber.XXXX}.");
+                                    Log.Information($"[Peerless] Found {phoneNumber.DialedNumber} in {results?.Length} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}, {phoneNumber.XXXX}.");
                                 }
                                 else
                                 {
-                                    Log.Warning($"[Peerless] Failed to find {phoneNumber.DialedNumber} in {results?.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}, {phoneNumber.XXXX}.");
+                                    Log.Warning($"[Peerless] Failed to find {phoneNumber.DialedNumber} in {results?.Length} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}, {phoneNumber.XXXX}.");
 
                                     // Remove numbers that are unpurchasable.
                                     var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
@@ -399,11 +399,11 @@ namespace NumberSearch.Ingest
                             }
 
                         }
-                        else if (phoneNumber.IngestedFrom == "OwnedNumber")
+                        else if (phoneNumber.IngestedFrom is "OwnedNumber")
                         {
                             // Verify that we still have the number.
                             var matchingNumber = await OwnedPhoneNumber.GetByDialedNumberAsync(phoneNumber.DialedNumber, _postgresql).ConfigureAwait(false);
-                            if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
+                            if (matchingNumber is not null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
                             {
                                 Log.Information($"[OwnedNumber] Found {phoneNumber.DialedNumber}.");
                             }
