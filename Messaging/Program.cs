@@ -74,7 +74,7 @@ app.MapGet("/Conversations", async (string primary, MessagingContext db) =>
             {
                 var reverseToAndFrom = $"{record.To},{record.From}";
 
-                var reverseMatch = uniqueCompoundKeys.Where(x => x.ToFromCompound.Contains(reverseToAndFrom)).FirstOrDefault();
+                var reverseMatch = uniqueCompoundKeys.Where(x => x.ToFromCompound?.Contains(reverseToAndFrom) ?? false).FirstOrDefault();
 
                 if (reverseMatch is not null)
                 {
@@ -192,7 +192,7 @@ app.MapPost("/Message/Outbound/Teli", async ([Microsoft.AspNetCore.Mvc.FromBody]
     // https://apidocs.teleapi.net/api/sms/sending-sms
     if (string.IsNullOrWhiteSpace(message.Message))
     {
-        message.Message = message.Message.Length > 910
+        message.Message = message.Message?.Length > 910
             ? message.Message[..910]
             : message.Message;
     }
@@ -312,7 +312,7 @@ app.MapPost("/Message/Outbound/BulkVS", async ([Microsoft.AspNetCore.Mvc.FromBod
     }
 
     // Only two file types are valid for outgoing messages.
-    if (message is not null && message.MediaURLs.Any())
+    if (message is not null && message.MediaURLs is not null && message.MediaURLs.Any())
     {
         var validFileTypes = new List<string>();
 
@@ -445,7 +445,7 @@ app.MapPost("/Message/Outbound/FirstPoint", async ([Microsoft.AspNetCore.Mvc.Fro
                 MediaURLs = string.Empty,
                 MessageSource = MessageSource.Outgoing,
                 MessageType = MessageType.SMS,
-                DLRID = sendMessage?.Response?.DLRID
+                DLRID = sendMessage.Response.DLRID
             };
 
             record.ToFromCompound = $"{record.From},{record.To}";
@@ -492,33 +492,33 @@ namespace Models
     public class FirstPointResponse
     {
         [JsonPropertyName("response")]
-        public Response Response { get; set; }
+        public Response Response { get; set; } = new();
     }
     public class Response
     {
         [JsonPropertyName("code")]
         public int Code { get; set; }
         [JsonPropertyName("developertext")]
-        public string DeveloperText { get; set; }
+        public string DeveloperText { get; set; } = string.Empty;
         [JsonPropertyName("dlrid")]
-        public string DLRID { get; set; }
+        public string DLRID { get; set; } = string.Empty;
         [JsonPropertyName("subcode")]
         public int Subcode { get; set; }
         [JsonPropertyName("text")]
-        public string Text { get; set; }
+        public string Text { get; set; } = string.Empty;
     }
 
     // This model isn't converted into JSON as First Com expects a form-style URLEncoded POST as a request. Only the response is actually JSON.
     public class FirstPointOutbound
     {
-        public string To { get; set; }
-        public string MSISDN { get; set; }
-        public string Message { get; set; }
+        public string To { get; set; } = string.Empty;
+        public string MSISDN { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
         // These are for the regularization of phone numbers and not mapped from the JSON payload.
         [JsonIgnore]
-        public PhoneNumbersNA.PhoneNumber? FromPhoneNumber { get; set; }
+        public PhoneNumbersNA.PhoneNumber FromPhoneNumber { get; set; } = new();
         [JsonIgnore]
-        public List<PhoneNumbersNA.PhoneNumber>? ToPhoneNumbers { get; set; }
+        public List<PhoneNumbersNA.PhoneNumber> ToPhoneNumbers { get; set; } = new();
 
         public bool RegularizeAndValidate()
         {
@@ -564,16 +564,16 @@ namespace Models
     // Message format supplied by BulkVS for both SMS and MMS.
     public class BulkVSInbound
     {
-        public string? From { get; set; }
-        public string[]? To { get; set; }
-        public string? Message { get; set; }
+        public string From { get; set; } = string.Empty;
+        public string[] To { get; set; } = Array.Empty<string>();
+        public string Message { get; set; } = string.Empty;
         // Only used in MMS messages.
-        public string[]? MediaURLs { get; set; }
+        public string[] MediaURLs { get; set; } = Array.Empty<string>();
         // These are for the regularization of phone numbers and not mapped from the JSON payload.
         [JsonIgnore]
-        public PhoneNumbersNA.PhoneNumber? FromPhoneNumber { get; set; }
+        public PhoneNumbersNA.PhoneNumber FromPhoneNumber { get; set; } = new();
         [JsonIgnore]
-        public List<PhoneNumbersNA.PhoneNumber>? ToPhoneNumbers { get; set; }
+        public List<PhoneNumbersNA.PhoneNumber> ToPhoneNumbers { get; set; } = new();
 
         // Convert from the vendor specific format to the generic format stored in the database.
         public MessageRecord ToMessageRecord()
@@ -581,7 +581,7 @@ namespace Models
             var record = new MessageRecord
             {
                 Id = Guid.NewGuid(),
-                From = string.IsNullOrWhiteSpace(FromPhoneNumber?.DialedNumber) ? From : FromPhoneNumber?.DialedNumber,
+                From = string.IsNullOrWhiteSpace(FromPhoneNumber?.DialedNumber) ? From : FromPhoneNumber.DialedNumber,
                 To = ToPhoneNumbers is not null && ToPhoneNumbers.Any() ? string.Join(',', ToPhoneNumbers.Select(x => x.DialedNumber)) : string.Join(',', To ?? Array.Empty<string>()),
                 Content = Message,
                 MediaURLs = MediaURLs is not null ? string.Join(',', MediaURLs) : string.Empty,
@@ -614,10 +614,7 @@ namespace Models
             if (To is not null && To.Any())
             {
                 // This may not be nessesary if this list is always created by the BulkVSMessage constructor.
-                if (ToPhoneNumbers is null)
-                {
-                    ToPhoneNumbers = new List<PhoneNumbersNA.PhoneNumber>();
-                }
+                ToPhoneNumbers ??= new List<PhoneNumbersNA.PhoneNumber>();
 
                 foreach (var number in To)
                 {
@@ -641,39 +638,39 @@ namespace Models
     public class SendMessageResponse
     {
         public bool MessageSent { get; set; }
-        public string[]? Success { get; set; }
-        public string[]? Failure { get; set; }
+        public string[] Success { get; set; } = Array.Empty<string>();
+        public string[] Failure { get; set; } = Array.Empty<string>();
     }
 
     public class BulkVSOutboundResponse
     {
-        public string? RefId { get; set; }
-        public string? From { get; set; }
-        public string? MessageType { get; set; }
-        public BulkVSOutboundResult[]? Results { get; set; }
+        public string RefId { get; set; } = string.Empty;
+        public string From { get; set; } = string.Empty;
+        public string MessageType { get; set; } = string.Empty;
+        public BulkVSOutboundResult[] Results { get; set; } = Array.Empty<BulkVSOutboundResult>();
 
         public class BulkVSOutboundResult
         {
-            public string? To { get; set; }
-            public string? Status { get; set; }
+            public string To { get; set; } = string.Empty;
+            public string Status { get; set; } = string.Empty;
         }
     }
 
     public class TeliInbound
     {
         [JsonPropertyName("source")]
-        public string? Source { get; set; }
+        public string Source { get; set; } = string.Empty;
         [JsonPropertyName("destination")]
-        public string? Destination { get; set; }
+        public string Destination { get; set; } = string.Empty;
         [JsonPropertyName("message")]
-        public string? Message { get; set; }
+        public string Message { get; set; } = string.Empty;
         [JsonPropertyName("type")]
-        public string? Type { get; set; }
+        public string Type { get; set; } = string.Empty;
         // These are for the regularization of phone numbers and not mapped from the JSON payload.
         [JsonIgnore]
-        public PhoneNumbersNA.PhoneNumber? FromPhoneNumber { get; set; }
+        public PhoneNumbersNA.PhoneNumber FromPhoneNumber { get; set; } = new();
         [JsonIgnore]
-        public List<PhoneNumbersNA.PhoneNumber>? ToPhoneNumbers { get; set; }
+        public List<PhoneNumbersNA.PhoneNumber> ToPhoneNumbers { get; set; } = new();
 
         public bool RegularizeAndValidate()
         {
@@ -693,10 +690,7 @@ namespace Models
             if (To.Any())
             {
                 // This may not be nessesary if this list is always created by the BulkVSMessage constructor.
-                if (ToPhoneNumbers is null)
-                {
-                    ToPhoneNumbers = new List<PhoneNumbersNA.PhoneNumber>();
-                }
+                ToPhoneNumbers ??= new List<PhoneNumbersNA.PhoneNumber>();
 
                 foreach (var number in To)
                 {
@@ -721,7 +715,7 @@ namespace Models
             var record = new MessageRecord
             {
                 Id = Guid.NewGuid(),
-                From = string.IsNullOrWhiteSpace(FromPhoneNumber?.DialedNumber) ? Source : FromPhoneNumber?.DialedNumber,
+                From = string.IsNullOrWhiteSpace(FromPhoneNumber?.DialedNumber) ? Source : FromPhoneNumber.DialedNumber,
                 To = ToPhoneNumbers is not null && ToPhoneNumbers.Any() ? string.Join(',', ToPhoneNumbers.Select(x => x.DialedNumber)) : string.Join(',', Destination),
                 Content = Message,
                 MediaURLs = string.Empty,
@@ -768,10 +762,7 @@ namespace Models
             if (To.Any())
             {
                 // This may not be nessesary if this list is always created by the BulkVSMessage constructor.
-                if (ToPhoneNumbers is null)
-                {
-                    ToPhoneNumbers = new List<PhoneNumbersNA.PhoneNumber>();
-                }
+                ToPhoneNumbers ??= new List<PhoneNumbersNA.PhoneNumber>();
 
                 foreach (var number in To)
                 {
@@ -812,16 +803,16 @@ namespace Models
     {
         [Key]
         public Guid Id { get; set; }
-        public string? From { get; set; }
-        public string? To { get; set; }
-        public string? ToFromCompound { get; set; }
-        public string? Content { get; set; }
-        public string? MediaURLs { get; set; }
+        public string From { get; set; } = string.Empty;
+        public string To { get; set; } = string.Empty;
+        public string ToFromCompound { get; set; } = string.Empty;
+        public string Content { get; set; } = string.Empty;
+        public string MediaURLs { get; set; } = string.Empty;
         public MessageType MessageType { get; set; }
         public MessageSource MessageSource { get; set; }
         // Convert to DateTimeOffset if db is not SQLite.
         public DateTime DateReceivedUTC { get; set; }
-        public string? DLRID { get; set; }
+        public string DLRID { get; set; } = string.Empty;
     }
 
     public enum MessageType { SMS, MMS };
