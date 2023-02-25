@@ -62,7 +62,7 @@ namespace NumberSearch.Ops.Controllers
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
             var role = await _roleManager.FindByIdAsync(id);
-            await _roleManager.DeleteAsync(role);
+            await _roleManager.DeleteAsync(role ?? new());
             return RedirectToAction(nameof(Index));
         }
     }

@@ -24,7 +24,7 @@ public class ProductOrdersController : Controller
     {
         _context = context;
         _configuration = config;
-        _postgresql = _configuration.GetConnectionString("PostgresqlProd");
+        _postgresql = _configuration.GetConnectionString("PostgresqlProd") ?? string.Empty;
     }
 
     // GET: ProductOrders
@@ -111,7 +111,7 @@ public class ProductOrdersController : Controller
                     {
                         var purchased = new DataAccess.PurchasedPhoneNumber
                         {
-                            DialedNumber = number.DialedNumber,
+                            DialedNumber = number.DialedNumber ?? string.Empty,
                             Completed = true,
                             DateIngested = DateTime.Now,
                             DateOrdered = DateTime.Now,

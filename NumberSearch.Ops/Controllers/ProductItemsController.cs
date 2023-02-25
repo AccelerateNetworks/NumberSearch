@@ -24,7 +24,7 @@ namespace NumberSearch.Ops.Controllers
             _context = context;
             _userManager = userManager;
             _configuration = config;
-            _postgresql = _configuration.GetConnectionString("PostgresqlProd");
+            _postgresql = _configuration.GetConnectionString("PostgresqlProd") ?? string.Empty;
         }
 
         // GET: ProductItems

@@ -71,9 +71,9 @@ namespace NumberSearch.Ops.Controllers
                 var userRolesViewModel = new ManageUserRolesViewModel
                 {
                     RoleId = role.Id,
-                    RoleName = role.Name
+                    RoleName = role.Name ?? string.Empty,
                 };
-                if (await _userManager.IsInRoleAsync(user, role.Name))
+                if (await _userManager.IsInRoleAsync(user, role.Name ?? string.Empty))
                 {
                     userRolesViewModel.Selected = true;
                 }
@@ -137,7 +137,7 @@ namespace NumberSearch.Ops.Controllers
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
-            await _userManager.DeleteAsync(user);
+            await _userManager.DeleteAsync(user ?? new());
             return RedirectToAction(nameof(Index));
         }
     }

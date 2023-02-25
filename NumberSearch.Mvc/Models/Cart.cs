@@ -9,14 +9,14 @@ namespace NumberSearch.Mvc
 {
     public class Cart
     {
-        public List<PhoneNumber> PhoneNumbers { get; set; } = new List<PhoneNumber>();
-        public List<Product> Products { get; set; } = new List<Product>();
-        public List<Service> Services { get; set; } = new List<Service>();
-        public List<ProductOrder> ProductOrders { get; set; } = new List<ProductOrder>();
-        public List<PortedPhoneNumber> PortedPhoneNumbers { get; set; } = new List<PortedPhoneNumber>();
-        public List<VerifiedPhoneNumber> VerifiedPhoneNumbers { get; set; } = new List<VerifiedPhoneNumber>();
-        public List<PurchasedPhoneNumber> PurchasedPhoneNumbers { get; set; } = new List<PurchasedPhoneNumber>();
-        public List<Coupon> Coupons { get; set; } = new List<Coupon>();
+        public List<PhoneNumber> PhoneNumbers { get; set; } = new();
+        public List<Product> Products { get; set; } = new();
+        public List<Service> Services { get; set; } = new();
+        public List<ProductOrder> ProductOrders { get; set; } = new();
+        public List<PortedPhoneNumber> PortedPhoneNumbers { get; set; } = new();
+        public List<VerifiedPhoneNumber> VerifiedPhoneNumbers { get; set; } = new();
+        public List<PurchasedPhoneNumber> PurchasedPhoneNumbers { get; set; } = new();
+        public List<Coupon> Coupons { get; set; } = new();
         public Order Order { get; set; } = new();
 
         enum CartKey

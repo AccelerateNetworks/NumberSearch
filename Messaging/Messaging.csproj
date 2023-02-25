@@ -19,7 +19,7 @@
 		</PackageReference>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.3" />
 		<PackageReference Include="NetEscapades.AspNetCore.SecurityHeaders" Version="0.18.0" />
-		<PackageReference Include="PhoneNumbersNA" Version="1.0.8" />
+		<PackageReference Include="PhoneNumbersNA" Version="1.0.9" />
 		<PackageReference Include="prometheus-net" Version="8.0.0" />
 		<PackageReference Include="prometheus-net.AspNetCore" Version="8.0.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />

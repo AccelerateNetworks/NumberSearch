@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using AccelerateNetworks.Operations;
 
-using AccelerateNetworks.Operations;
+using System;
 namespace NumberSearch.Ops.Models;
 
 public class CreateLookup
 {
-    public IEnumerable<Carrier>? Carriers { get; set; }
-    public PhoneNumberLookup? Lookup { get; set; }
+    public Carrier[] Carriers { get; set; } = Array.Empty<Carrier>();
+    public PhoneNumberLookup Lookup { get; set; } = new();
 }

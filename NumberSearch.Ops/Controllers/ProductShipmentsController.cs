@@ -54,7 +54,7 @@ public class ProductShipmentsController : Controller
     [HttpGet("ProductShipments/Create")]
     public async Task<IActionResult> Create(Guid? orderId)
     {
-        var products = await _context.Products.ToListAsync();
+        var products = await _context.Products.ToArrayAsync();
 
         if (orderId is not null)
         {
@@ -138,7 +138,7 @@ public class ProductShipmentsController : Controller
         {
             return NotFound();
         }
-        var productItems = await _context.ProductItems.Where(x => x.ProductShipmentId == productShipment.ProductShipmentId).ToListAsync();
+        var productItems = await _context.ProductItems.Where(x => x.ProductShipmentId == productShipment.ProductShipmentId).ToArrayAsync();
         return View(new EditProductShipment { ProductItems = productItems, Shipment = productShipment });
     }
 
@@ -196,7 +196,7 @@ public class ProductShipmentsController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        var productItems = await _context.ProductItems.Where(x => x.ProductShipmentId == productShipment.ProductShipmentId).ToListAsync();
+        var productItems = await _context.ProductItems.Where(x => x.ProductShipmentId == productShipment.ProductShipmentId).ToArrayAsync();
         return View(new EditProductShipment { ProductItems = productItems, Shipment = productShipment });
     }
 

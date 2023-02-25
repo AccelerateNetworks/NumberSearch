@@ -1,12 +1,12 @@
 ﻿using AccelerateNetworks.Operations;
 
-using System.Collections.Generic;
+using System;
 
 namespace NumberSearch.Ops.Models
 {
     public class EditCarrier
     {
-        public IEnumerable<PhoneNumberLookup>? Lookups { get; set; }
-        public Carrier? Carrier { get; set; }
+        public PhoneNumberLookup[] Lookups { get; set; } = Array.Empty<PhoneNumberLookup>();
+        public Carrier Carrier { get; set; } = new();
     }
 }

@@ -526,8 +526,8 @@ namespace NumberSearch.Mvc.Controllers
                                             {
                                                 if (coupon.Name.Contains("20"))
                                                 {
-                                                    var discountTo20 = cart?.PhoneNumbers is not null && cart.PhoneNumbers.Any() ? cart.PhoneNumbers.Count() * 20 :
-                                                    cart?.PurchasedPhoneNumbers is not null && cart.PurchasedPhoneNumbers.Any() ? cart.PurchasedPhoneNumbers.Count() * 20 : 0;
+                                                    var discountTo20 = cart?.PhoneNumbers is not null && cart.PhoneNumbers.Any() ? cart.PhoneNumbers.Count * 20 :
+                                                    cart?.PurchasedPhoneNumbers is not null && cart.PurchasedPhoneNumbers.Any() ? cart.PurchasedPhoneNumbers.Count * 20 : 0;
                                                     totalCost -= totalNumberPurchasingCost - discountTo20;
                                                     onetimeItems.Add(new Line_Items
                                                     {
@@ -1163,7 +1163,7 @@ Accelerate Networks
 206-858-8757 (call or text)";
 
                                             // This order is just for purchasing phone numbers.
-                                            if (cart is not null && cart.PhoneNumbers is not null && cart.ProductOrders is not null && cart.PhoneNumbers.Count() == cart.ProductOrders.Count())
+                                            if (cart is not null && cart.PhoneNumbers is not null && cart.ProductOrders is not null && cart.PhoneNumbers.Count == cart.ProductOrders.Count)
                                             {
                                                 var formattedNumbers = string.Empty;
 
@@ -1179,7 +1179,7 @@ Accelerate Networks
                                                     }
                                                 }
 
-                                                if (cart.PhoneNumbers.Count() > 1)
+                                                if (cart.PhoneNumbers.Count > 1)
                                                 {
                                                     confirmationEmail.Subject = $"Order for {cart.PhoneNumbers.FirstOrDefault()?.DialedNumber} is complete!";
                                                     confirmationEmail.MessageBody = $@"Hi {order.FirstName},

@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Configuration;
 
 using MimeKit;
-using MimeKit.Text;
 
 using System.Threading.Tasks;
 
@@ -12,18 +11,18 @@ namespace NumberSearch.Ops.Services
 {
     public class EmailSender : IEmailSender
     {
-        private IConfiguration _configuration { get; set; } //set only via Secret Manager
+        private IConfiguration Configuration { get; set; } //set only via Secret Manager
 
         public EmailSender(IConfiguration configuration)
         {
-            _configuration = configuration;
+            Configuration = configuration;
         }
 
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
             var outboundMessage = new MimeKit.MimeMessage
             {
-                Sender = new MimeKit.MailboxAddress("Number Search", _configuration.GetConnectionString("SmtpUsername")),
+                Sender = new MimeKit.MailboxAddress("Number Search", Configuration.GetConnectionString("SmtpUsername")),
                 Subject = subject
             };
 
@@ -32,7 +31,7 @@ namespace NumberSearch.Ops.Services
                 HtmlBody = @$"<!DOCTYPE html><html><head><title></title></head><body><p>{htmlMessage}<p></body></html>"
             };
 
-            var ordersInbox = MailboxAddress.Parse(_configuration.GetConnectionString("SmtpUsername"));
+            var ordersInbox = MailboxAddress.Parse(Configuration.GetConnectionString("SmtpUsername"));
             var recipient = MailboxAddress.Parse(email);
 
 
@@ -47,7 +46,7 @@ namespace NumberSearch.Ops.Services
             smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
             await smtp.ConnectAsync("mail.seattlemesh.net", 587, SecureSocketOptions.StartTls).ConfigureAwait(false);
-            await smtp.AuthenticateAsync(_configuration.GetConnectionString("SmtpUsername"), _configuration.GetConnectionString("SmtpPassword")).ConfigureAwait(false);
+            await smtp.AuthenticateAsync(Configuration.GetConnectionString("SmtpUsername"), Configuration.GetConnectionString("SmtpPassword")).ConfigureAwait(false);
             await smtp.SendAsync(outboundMessage).ConfigureAwait(false);
             await smtp.DisconnectAsync(true).ConfigureAwait(false);
         }

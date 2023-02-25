@@ -1,15 +1,15 @@
 ﻿using AccelerateNetworks.Operations;
 
-using System.Collections.Generic;
+using System;
 
 namespace NumberSearch.Ops
 {
     public class InventoryResult
     {
-        public ProductShipment? Shipment { get; set; }
-        public Product? Product { get; set; }
-        public IEnumerable<ProductShipment>? ProductShipments { get; set; }
-        public IEnumerable<Product>? Products { get; set; }
-        public string? Message { get; set; }
+        public ProductShipment Shipment { get; set; } = new();
+        public Product Product { get; set; } = new();
+        public ProductShipment[] ProductShipments { get; set; } = Array.Empty<ProductShipment>();
+        public Product[] Products { get; set; } = Array.Empty<Product>();
+        public string Message { get; set; } = string.Empty;
     }
 }

@@ -69,7 +69,7 @@ namespace NumberSearch.Ops.Controllers
         // GET: CarriersController/Create
         public async Task<IActionResult> Create()
         {
-            return View(new CreateLookup { Carriers = await _context.Carriers.ToListAsync() });
+            return View(new CreateLookup { Carriers = await _context.Carriers.ToArrayAsync() });
         }
 
         // POST: CarriersController/Create
@@ -104,7 +104,7 @@ namespace NumberSearch.Ops.Controllers
             {
                 return NotFound();
             }
-            return View(new CreateLookup { Lookup = product, Carriers = await _context.Carriers.ToListAsync() });
+            return View(new CreateLookup { Lookup = product, Carriers = await _context.Carriers.ToArrayAsync() });
         }
 
         // POST: CarriersController/Edit/5

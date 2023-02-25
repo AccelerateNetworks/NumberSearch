@@ -102,7 +102,7 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
             if (await _userManager.CountRecoveryCodesAsync(user).ConfigureAwait(false) == 0)
             {
                 var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10).ConfigureAwait(false);
-                RecoveryCodes = recoveryCodes.ToArray();
+                RecoveryCodes = recoveryCodes is null ? Array.Empty<string>() : recoveryCodes.ToArray();
                 return RedirectToPage("./ShowRecoveryCodes");
             }
             else
@@ -124,7 +124,7 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
             SharedKey = FormatKey(unformattedKey!);
 
             var email = await _userManager.GetEmailAsync(user).ConfigureAwait(false);
-            AuthenticatorUri = GenerateQrCodeUri(email!, unformattedKey);
+            AuthenticatorUri = GenerateQrCodeUri(email!, unformattedKey ?? string.Empty);
         }
 
         private static string FormatKey(string unformattedKey)

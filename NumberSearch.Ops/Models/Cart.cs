@@ -8,14 +8,14 @@ namespace NumberSearch.Ops
 {
     public class Cart
     {
-        public IEnumerable<PhoneNumber>? PhoneNumbers { get; set; }
-        public IEnumerable<Product>? Products { get; set; }
-        public IEnumerable<Service>? Services { get; set; }
-        public IEnumerable<ProductOrder>? ProductOrders { get; set; }
-        public IEnumerable<PortedPhoneNumber>? PortedPhoneNumbers { get; set; }
-        public IEnumerable<VerifiedPhoneNumber>? VerifiedPhoneNumbers { get; set; }
-        public IEnumerable<PurchasedPhoneNumber>? PurchasedPhoneNumbers { get; set; }
-        public IEnumerable<Coupon>? Coupons { get; set; }
+        public List<PhoneNumber> PhoneNumbers { get; set; } = new();
+        public List<Product> Products { get; set; } = new();
+        public List<Service> Services { get; set; } = new();
+        public List<ProductOrder> ProductOrders { get; set; } = new();
+        public List<PortedPhoneNumber> PortedPhoneNumbers { get; set; } = new();
+        public List<VerifiedPhoneNumber> VerifiedPhoneNumbers { get; set; } = new();
+        public List<PurchasedPhoneNumber> PurchasedPhoneNumbers { get; set; } = new();
+        public List<Coupon> Coupons { get; set; } = new();
 
         public Order? Order { get; set; }
 
@@ -50,10 +50,10 @@ namespace NumberSearch.Ops
             if (phoneNumber?.DialedNumber?.Length == 10 && phoneNumber.DialedNumber == productOrder?.DialedNumber)
             {
                 phoneNumbers[phoneNumber.DialedNumber] = phoneNumber;
-                PhoneNumbers = phoneNumbers.Values;
+                PhoneNumbers = phoneNumbers.Values.ToList();
 
                 productOrders[productOrder.DialedNumber] = productOrder;
-                ProductOrders = productOrders.Values;
+                ProductOrders = productOrders.Values.ToList();
 
                 return true;
             }
@@ -81,10 +81,10 @@ namespace NumberSearch.Ops
             if (portedPhoneNumber?.PortedPhoneNumberId is not null && productOrder?.PortedPhoneNumberId is not null && portedPhoneNumber.PortedPhoneNumberId == productOrder?.PortedPhoneNumberId)
             {
                 portedPhoneNumbers[portedPhoneNumber.PortedPhoneNumberId.ToString()] = portedPhoneNumber;
-                PortedPhoneNumbers = portedPhoneNumbers.Values;
+                PortedPhoneNumbers = portedPhoneNumbers.Values.ToList();
 
                 productOrders[productOrder.PortedPhoneNumberId.ToString()!] = productOrder;
-                ProductOrders = productOrders.Values;
+                ProductOrders = productOrders.Values.ToList();
 
                 return true;
             }
@@ -113,10 +113,10 @@ namespace NumberSearch.Ops
             if (verifiedPhoneNumber?.VerifiedPhoneNumberId is not null && productOrder?.VerifiedPhoneNumberId is not null && verifiedPhoneNumber.VerifiedPhoneNumberId == productOrder?.VerifiedPhoneNumberId)
             {
                 verifiedPhoneNumbers[verifiedPhoneNumber.VerifiedPhoneNumberId.ToString()] = verifiedPhoneNumber;
-                VerifiedPhoneNumbers = verifiedPhoneNumbers.Values;
+                VerifiedPhoneNumbers = verifiedPhoneNumbers.Values.ToList();
 
                 productOrders[productOrder.VerifiedPhoneNumberId.ToString()!] = productOrder;
-                ProductOrders = productOrders.Values;
+                ProductOrders = productOrders.Values.ToList();
 
                 return true;
             }
@@ -140,10 +140,10 @@ namespace NumberSearch.Ops
             if (product is not null && productOrder is not null && productOrder.ProductId is not null && !string.IsNullOrWhiteSpace(product?.Name) && product?.ProductId == productOrder?.ProductId)
             {
                 products[product!.ProductId.ToString()] = product;
-                Products = products.Values;
+                Products = products.Values.ToList();
 
                 productOrders[productOrder!.ProductId.ToString()!] = productOrder;
-                ProductOrders = productOrders.Values;
+                ProductOrders = productOrders.Values.ToList();
 
                 return true;
             }
@@ -167,10 +167,10 @@ namespace NumberSearch.Ops
             if (service is not null && productOrder is not null && productOrder.ServiceId is not null && !string.IsNullOrWhiteSpace(service?.Name) && service?.ServiceId == productOrder?.ServiceId)
             {
                 services[service!.ServiceId.ToString()] = service;
-                Services = services.Values;
+                Services = services.Values.ToList();
 
                 productOrders[productOrder!.ServiceId.ToString()!] = productOrder;
-                ProductOrders = productOrders.Values;
+                ProductOrders = productOrders.Values.ToList();
 
                 return true;
             }
@@ -194,10 +194,10 @@ namespace NumberSearch.Ops
             if (coupon is not null && productOrder is not null && productOrder.CouponId is not null && !string.IsNullOrWhiteSpace(coupon?.Name) && coupon?.CouponId == productOrder?.CouponId)
             {
                 coupons[coupon!.CouponId.ToString()] = coupon;
-                Coupons = coupons.Values;
+                Coupons = coupons.Values.ToList();
 
                 productOrders[productOrder!.CouponId.ToString()!] = productOrder;
-                ProductOrders = productOrders.Values;
+                ProductOrders = productOrders.Values.ToList();
 
                 return true;
             }
@@ -228,8 +228,8 @@ namespace NumberSearch.Ops
 
                 if (checkRemovePhoneNumber && checkRemoveProductOrder)
                 {
-                    PhoneNumbers = phoneNumbers.Values;
-                    ProductOrders = productOrders.Values;
+                    PhoneNumbers = phoneNumbers.Values.ToList();
+                    ProductOrders = productOrders.Values.ToList();
 
                     return true;
                 }
@@ -265,8 +265,8 @@ namespace NumberSearch.Ops
 
                 if (checkRemovePortedPhoneNumber && checkRemoveProductOrder)
                 {
-                    PortedPhoneNumbers = portedPhoneNumbers.Values;
-                    ProductOrders = productOrders.Values;
+                    PortedPhoneNumbers = portedPhoneNumbers.Values.ToList();
+                    ProductOrders = productOrders.Values.ToList();
 
                     return true;
                 }
@@ -302,8 +302,8 @@ namespace NumberSearch.Ops
 
                 if (checkRemovePortedPhoneNumber && checkRemoveProductOrder)
                 {
-                    VerifiedPhoneNumbers = verifedPhoneNumbers.Values;
-                    ProductOrders = productOrders.Values;
+                    VerifiedPhoneNumbers = verifedPhoneNumbers.Values.ToList();
+                    ProductOrders = productOrders.Values.ToList();
 
                     return true;
                 }
@@ -340,8 +340,8 @@ namespace NumberSearch.Ops
 
                 if (checkRemoveProduct && checkRemoveProductorder)
                 {
-                    Products = products.Values;
-                    ProductOrders = productOrders.Values;
+                    Products = products.Values.ToList();
+                    ProductOrders = productOrders.Values.ToList();
 
                     return true;
                 }
@@ -377,8 +377,8 @@ namespace NumberSearch.Ops
 
                 if (checkRemoveService && checkRemoveProductorder)
                 {
-                    Services = services.Values;
-                    ProductOrders = productOrders.Values;
+                    Services = services.Values.ToList();
+                    ProductOrders = productOrders.Values.ToList();
 
                     return true;
                 }
@@ -414,8 +414,8 @@ namespace NumberSearch.Ops
 
                 if (checkRemoveService && checkRemoveProductorder)
                 {
-                    Coupons = coupons.Values;
-                    ProductOrders = productOrders.Values;
+                    Coupons = coupons.Values.ToList();
+                    ProductOrders = productOrders.Values.ToList();
 
                     return true;
                 }

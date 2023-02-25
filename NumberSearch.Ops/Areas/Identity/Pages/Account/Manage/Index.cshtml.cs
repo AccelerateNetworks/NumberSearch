@@ -42,11 +42,11 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
             var userName = await _userManager.GetUserNameAsync(user).ConfigureAwait(false);
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user).ConfigureAwait(false);
 
-            Username = userName;
+            Username = userName ?? string.Empty;
 
             Input = new InputModel
             {
-                PhoneNumber = phoneNumber
+                PhoneNumber = phoneNumber ?? string.Empty
             };
         }
 

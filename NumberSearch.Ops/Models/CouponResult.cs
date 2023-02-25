@@ -1,13 +1,13 @@
 ﻿using AccelerateNetworks.Operations;
 
-using System.Collections.Generic;
+using System;
 
 namespace NumberSearch.Ops
 {
     public class CouponResult
     {
-        public Coupon? Coupon { get; set; }
-        public IEnumerable<Coupon>? Coupons { get; set; }
-        public string? Message { get; set; }
+        public Coupon Coupon { get; set; } = new();
+        public Coupon[] Coupons { get; set; } = Array.Empty<Coupon>();
+        public string Message { get; set; } = string.Empty;
     }
 }

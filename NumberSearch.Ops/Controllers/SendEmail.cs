@@ -91,7 +91,7 @@ public class SendEmail
         {
             Log.Fatal($"[Email] Failed to send email {email.EmailId}.");
             Log.Fatal(ex.Message);
-            Log.Fatal(ex.StackTrace);
+            Log.Fatal(ex.StackTrace ?? "StackTrace was null.");
             email.Completed = false;
             return false;
         }

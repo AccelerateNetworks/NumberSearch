@@ -1,11 +1,11 @@
 ﻿using AccelerateNetworks.Operations;
 
-using System.Collections.Generic;
+using System;
 
 namespace NumberSearch.Ops.Models;
 
 public class CreateProductShipment
 {
-    public IEnumerable<Product>? Products { get; set; }
-    public ProductShipment? Shipment { get; set; }
+    public Product[] Products { get; set; } = Array.Empty<Product>();
+    public ProductShipment Shipment { get; set; } = new();
 }

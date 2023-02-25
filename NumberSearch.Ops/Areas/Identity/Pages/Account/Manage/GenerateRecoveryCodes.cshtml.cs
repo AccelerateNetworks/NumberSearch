@@ -63,7 +63,7 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
             }
 
             var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10).ConfigureAwait(false);
-            RecoveryCodes = recoveryCodes?.ToArray();
+            RecoveryCodes = recoveryCodes is null ? Array.Empty<string>() : recoveryCodes.ToArray();
 
             _logger.LogInformation("User with ID '{UserId}' has generated new 2FA recovery codes.", userId);
             StatusMessage = "You have generated new recovery codes.";

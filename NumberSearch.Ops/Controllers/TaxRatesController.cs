@@ -19,7 +19,7 @@ namespace NumberSearch.Ops.Controllers
 
         public TaxRatesController(IConfiguration config)
         {
-            _invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
+            _invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken") ?? string.Empty;
         }
 
         [Authorize]
@@ -148,9 +148,9 @@ namespace NumberSearch.Ops.Controllers
                 {
                     Log.Fatal($"[Checkout] Failed to get the Sale Tax rate for {location.Address}, {location.City}, {location.Zip}.");
                     Log.Fatal(ex.Message);
-                    Log.Fatal(ex.StackTrace);
-                    Log.Fatal(ex.InnerException?.Message);
-                    Log.Fatal(ex.InnerException?.StackTrace);
+                    Log.Fatal(ex.StackTrace ?? "StackTrace was null.");
+                    Log.Fatal(ex.InnerException?.Message ?? "Inner Exception Message was null.");
+                    Log.Fatal(ex.InnerException?.StackTrace ?? "Inner Exception Message StackTrace was null.");
 
                     var result = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
 

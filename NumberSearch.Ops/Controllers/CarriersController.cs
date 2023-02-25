@@ -122,7 +122,7 @@ namespace NumberSearch.Ops.Controllers
             }
             else
             {
-                var lookups = await _context.PhoneNumberLookups.Where(x => x.Ocn == carrier.Ocn).ToListAsync();
+                var lookups = await _context.PhoneNumberLookups.Where(x => x.Ocn == carrier.Ocn).ToArrayAsync();
                 return View(new EditCarrier { Carrier = carrier, Lookups = lookups });
             }
         }

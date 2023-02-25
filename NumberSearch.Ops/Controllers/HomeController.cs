@@ -29,9 +29,9 @@ public class HomeController : Controller
         numberSearchContext context)
     {
         _configuration = config;
-        _emailUsername = config.GetConnectionString("SmtpUsername");
-        _emailPassword = config.GetConnectionString("SmtpPassword");
-        _postgresql = _configuration.GetConnectionString("PostgresqlProd");
+        _emailUsername = config.GetConnectionString("SmtpUsername") ?? string.Empty;
+        _emailPassword = config.GetConnectionString("SmtpPassword") ?? string.Empty;
+        _postgresql = _configuration.GetConnectionString("PostgresqlProd") ?? string.Empty;
         _context = context;
     }
 
@@ -100,23 +100,23 @@ public class HomeController : Controller
     {
         if (ProductShipmentId is null || !ProductShipmentId.HasValue)
         {
-            var products = await _context.Products.AsNoTracking().ToListAsync();
-            var shipments = await _context.ProductShipments.AsNoTracking().ToListAsync();
+            var products = await _context.Products.AsNoTracking().ToArrayAsync();
+            var shipments = await _context.ProductShipments.AsNoTracking().ToArrayAsync();
 
             return View("Shipments", new InventoryResult { Products = products, ProductShipments = shipments });
         }
         else
         {
-            var products = await _context.Products.ToListAsync();
+            var products = await _context.Products.ToArrayAsync();
             var checkExists = await _context.ProductShipments.AsNoTracking().FirstOrDefaultAsync(x => x.ProductShipmentId == ProductShipmentId);
 
             if (checkExists is not null)
             {
-                return View("Shipments", new InventoryResult { Products = products, ProductShipments = new List<ProductShipment> { checkExists }, Shipment = checkExists });
+                return View("Shipments", new InventoryResult { Products = products, ProductShipments = new ProductShipment[] { checkExists }, Shipment = checkExists });
             }
             else
             {
-                var shipments = await _context.ProductShipments.AsNoTracking().ToListAsync();
+                var shipments = await _context.ProductShipments.AsNoTracking().ToArrayAsync();
 
                 return View("Shipments", new InventoryResult { Products = products, ProductShipments = shipments });
             }
@@ -136,7 +136,7 @@ public class HomeController : Controller
         else
         {
             shipment.DateCreated = DateTime.Now;
-            var products = await _context.Products.ToListAsync();
+            var products = await _context.Products.ToArrayAsync();
             var checkExists = await _context.ProductShipments.FirstOrDefaultAsync(x => x.ProductShipmentId == shipment.ProductShipmentId);
 
             if (checkExists is null)
@@ -158,7 +158,7 @@ public class HomeController : Controller
                 await _context.SaveChangesAsync();
             }
 
-            var shipments = await _context.ProductShipments.ToListAsync();
+            var shipments = await _context.ProductShipments.ToArrayAsync();
 
             // Update all product inventory counts when a shipment is added or updated.
             foreach (var product in products)
@@ -204,7 +204,7 @@ public class HomeController : Controller
     {
         if (ProductId is null || !ProductId.HasValue)
         {
-            var products = await _context.Products.AsNoTracking().ToListAsync();
+            var products = await _context.Products.AsNoTracking().ToArrayAsync();
 
             return View("Products", new InventoryResult { Products = products });
         }
@@ -212,7 +212,7 @@ public class HomeController : Controller
         {
             var products = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == ProductId);
 
-            return View("Products", new InventoryResult { Products = new List<Product> { products ?? new() }, Product = products ?? new() });
+            return View("Products", new InventoryResult { Products = new Product[] { products ?? new() }, Product = products ?? new() });
         }
     }
 
@@ -235,8 +235,8 @@ public class HomeController : Controller
             await _context.SaveChangesAsync();
         }
 
-        var products = await _context.Products.ToListAsync();
-        var shipments = await _context.ProductShipments.ToListAsync();
+        var products = await _context.Products.ToArrayAsync();
+        var shipments = await _context.ProductShipments.ToArrayAsync();
 
         return View("Products", new InventoryResult { Products = products, ProductShipments = shipments });
     }
@@ -271,7 +271,7 @@ public class HomeController : Controller
     {
         if (couponId is null)
         {
-            var results = await _context.Coupons.ToListAsync();
+            var results = await _context.Coupons.ToArrayAsync();
 
             return View("Coupons", new CouponResult { Coupons = results });
         }
@@ -280,7 +280,7 @@ public class HomeController : Controller
             // Show all orders
             var result = await _context.Coupons.Where(x => x.CouponId == couponId).FirstOrDefaultAsync();
 
-            return View("Coupons", new CouponResult { Coupon = result ?? new(), Coupons = new List<Coupon> { result ?? new Coupon() } });
+            return View("Coupons", new CouponResult { Coupon = result ?? new(), Coupons = new Coupon[] { result ?? new Coupon() } });
         }
     }
 
@@ -291,7 +291,7 @@ public class HomeController : Controller
     {
         if (couponId is null)
         {
-            var results = await _context.Coupons.ToListAsync();
+            var results = await _context.Coupons.ToArrayAsync();
 
             return View("Coupons", new CouponResult { Coupons = results });
         }
@@ -305,7 +305,7 @@ public class HomeController : Controller
                 await _context.SaveChangesAsync();
             }
 
-            var results = await _context.Coupons.ToListAsync();
+            var results = await _context.Coupons.ToArrayAsync();
 
             return View("Coupons", new CouponResult { Coupons = results });
         }
@@ -333,7 +333,7 @@ public class HomeController : Controller
             await _context.SaveChangesAsync();
         }
 
-        var coupons = await _context.Coupons.AsNoTracking().ToListAsync();
+        var coupons = await _context.Coupons.AsNoTracking().ToArrayAsync();
 
         return View("Coupons", new CouponResult { Coupons = coupons });
     }

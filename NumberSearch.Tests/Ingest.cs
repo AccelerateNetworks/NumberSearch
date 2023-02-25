@@ -100,7 +100,7 @@ namespace NumberSearch.Tests
 
             // Assert
             Assert.NotNull(results);
-            Assert.True(results.Count() > 0);
+            Assert.True(results.Any());
             foreach (var result in results)
             {
                 Assert.False(string.IsNullOrWhiteSpace(result.NumberType));
@@ -124,7 +124,7 @@ namespace NumberSearch.Tests
 
             // Assert
             Assert.NotNull(results);
-            Assert.True(results.Count() > 0);
+            Assert.True(results.Any());
             output.WriteLine(list.Count.ToString());
             output.WriteLine(results.Count().ToString());
             Assert.True(list.Count % results.Count() == 0);

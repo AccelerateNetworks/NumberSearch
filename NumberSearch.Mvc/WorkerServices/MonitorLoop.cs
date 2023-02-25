@@ -2,9 +2,7 @@
 
 using Flurl.Http;
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
@@ -42,8 +40,7 @@ namespace NumberSearch.Mvc
         private readonly string _peerlessApiKey;
 
         public MonitorLoop(IBackgroundTaskQueue taskQueue,
-            ILogger<MonitorLoop> logger,
-            IHostApplicationLifetime applicationLifetime, IConfiguration configuration, MvcConfiguration mvcConfiguration)
+            IHostApplicationLifetime applicationLifetime, MvcConfiguration mvcConfiguration)
         {
             _taskQueue = taskQueue;
             _cancellationToken = applicationLifetime.ApplicationStopping;

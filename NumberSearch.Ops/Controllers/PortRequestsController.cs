@@ -28,7 +28,6 @@ namespace NumberSearch.Ops.Controllers;
 public class PortRequestsController : Controller
 {
     private readonly string _azureStorage;
-    private readonly Guid _teleToken;
     private readonly string _bulkVSAPIKey;
     private readonly string _bulkVSusername;
     private readonly string _bulkVSpassword;
@@ -37,12 +36,11 @@ public class PortRequestsController : Controller
 
     public PortRequestsController(IConfiguration config, numberSearchContext context)
     {
-        _azureStorage = config.GetConnectionString("AzureStorageAccount");
-        _teleToken = Guid.Parse(config.GetConnectionString("TeleAPI"));
-        _emailOrders = config.GetConnectionString("EmailOrders");
-        _bulkVSAPIKey = config.GetConnectionString("BulkVSAPIKEY");
-        _bulkVSusername = config.GetConnectionString("BulkVSUsername");
-        _bulkVSpassword = config.GetConnectionString("BulkVSPassword");
+        _azureStorage = config.GetConnectionString("AzureStorageAccount") ?? string.Empty;
+        _emailOrders = config.GetConnectionString("EmailOrders") ?? string.Empty;
+        _bulkVSAPIKey = config.GetConnectionString("BulkVSAPIKEY") ?? string.Empty;
+        _bulkVSusername = config.GetConnectionString("BulkVSUsername") ?? string.Empty;
+        _bulkVSpassword = config.GetConnectionString("BulkVSPassword") ?? string.Empty;
         _context = context;
     }
 
@@ -54,7 +52,7 @@ public class PortRequestsController : Controller
         {
             try
             {
-                var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber, _bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
+                var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
 
                 // Fail fast
                 if (portable is null || portable.Portable is false)
@@ -69,7 +67,7 @@ public class PortRequestsController : Controller
                 }
 
                 // Lookup the number.
-                var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber, _bulkVSAPIKey).ConfigureAwait(false);
+                var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSAPIKey).ConfigureAwait(false);
 
                 // Determine if the number is a wireless number.
                 bool wireless = false;
@@ -95,8 +93,8 @@ public class PortRequestsController : Controller
                         break;
                 }
 
-                var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber, _bulkVSAPIKey);
-                checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName?.name;
+                var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSAPIKey);
+                checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName.name;
 
                 Log.Information($"[Portability] {phoneNumber.DialedNumber} is Portable.");
 
@@ -157,7 +155,7 @@ public class PortRequestsController : Controller
                 var portRequest = await _context.PortRequests.Where(x => x.OrderId == order.OrderId).AsNoTracking().FirstOrDefaultAsync(x => x.OrderId == orderId);
                 if (portRequest is not null)
                 {
-                    var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                    var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToArrayAsync();
 
                     return View("PortRequestEdit", new PortRequestResult
                     {
@@ -275,7 +273,7 @@ public class PortRequestsController : Controller
                         }
                     }
 
-                    var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                    var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToArrayAsync();
 
                     return View("PortRequestEdit", new PortRequestResult
                     {
@@ -304,7 +302,7 @@ public class PortRequestsController : Controller
             if (order is not null)
             {
                 portRequest = await _context.PortRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefaultAsync();
-                var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+                var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
 
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
 
@@ -322,7 +320,7 @@ public class PortRequestsController : Controller
                         _context.PortedPhoneNumbers.Add(port);
                         await _context.SaveChangesAsync();
 
-                        numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+                        numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
 
                         var productOrder = new ProductOrder
                         {
@@ -395,7 +393,7 @@ public class PortRequestsController : Controller
 
                             if (portRequest is not null)
                             {
-                                var numbersFailed = await _context.PortedPhoneNumbers.Where(x => x.OrderId == portRequest.OrderId).ToListAsync();
+                                var numbersFailed = await _context.PortedPhoneNumbers.Where(x => x.OrderId == portRequest.OrderId).ToArrayAsync();
 
                                 return View("PortRequestEdit", new PortRequestResult
                                 {
@@ -427,7 +425,7 @@ public class PortRequestsController : Controller
                     await _context.SaveChangesAsync();
 
                     portRequest = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == portRequest!.OrderId);
-                    var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == portRequest!.OrderId).AsNoTracking().ToListAsync();
+                    var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == portRequest!.OrderId).AsNoTracking().ToArrayAsync();
 
                     return View("PortRequestEdit", new PortRequestResult
                     {
@@ -475,11 +473,11 @@ public class PortRequestsController : Controller
             {
                 // Prevent duplicate submissions.
                 var numbers = await _context.PortedPhoneNumbers
-                    .Where(x => x.OrderId == order.OrderId && string.IsNullOrWhiteSpace(x.ExternalPortRequestId)).ToListAsync();
+                    .Where(x => x.OrderId == order.OrderId && string.IsNullOrWhiteSpace(x.ExternalPortRequestId)).ToArrayAsync();
 
                 if (numbers is null || !numbers.Any())
                 {
-                    numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+                    numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
 
                     return View("PortRequestEdit", new PortRequestResult
                     {
@@ -553,7 +551,7 @@ public class PortRequestsController : Controller
                                         portRequest.DateSubmitted = DateTime.Now;
                                         portRequest.VendorSubmittedTo = "BulkVS";
                                         portRequest.BulkVSId = string.IsNullOrWhiteSpace(portRequest?.BulkVSId) ? bulkResponse.OrderId : $"{portRequest.BulkVSId}, {bulkResponse.OrderId}";
-                                        _context.PortRequests.Update(portRequest);
+                                        _context.PortRequests.Update(portRequest ?? new());
                                         await _context.SaveChangesAsync();
 
                                         foreach (var number in localTNs)
@@ -569,7 +567,7 @@ public class PortRequestsController : Controller
                                             }
                                         }
 
-                                        numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+                                        numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
 
                                         // Add a note to handle scenarios where the requested FOC is to soon.
                                         var note = new PortTNNote
@@ -577,7 +575,7 @@ public class PortRequestsController : Controller
                                             Note = "If the port completion date requested is unavailable please pick the next available date and set the port to complete at 8pm that day."
                                         };
 
-                                        await note.PostAsync(bulkResponse?.OrderId, _bulkVSusername, _bulkVSpassword);
+                                        await note.PostAsync(bulkResponse.OrderId, _bulkVSusername, _bulkVSpassword);
 
                                         if (bulkResponse is not null && !string.IsNullOrWhiteSpace(bulkResponse.Description))
                                         {
@@ -588,13 +586,13 @@ public class PortRequestsController : Controller
                                     {
                                         Log.Fatal($"[PortRequest] Failed to submit port request to BulkVS.");
 
-                                        numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                                        numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToArrayAsync();
 
                                         return View("PortRequestEdit", new PortRequestResult
                                         {
                                             Order = order,
                                             Message = $"Failed to submit port request to BulkVS. {bulkResponse?.Description} - {bulkResponse?.Code}",
-                                            PortRequest = portRequest,
+                                            PortRequest = portRequest ?? new(),
                                             PhoneNumbers = numbers
                                         });
                                     }
@@ -606,7 +604,7 @@ public class PortRequestsController : Controller
                                     return View("PortRequestEdit", new PortRequestResult
                                     {
                                         Order = order,
-                                        PortRequest = portRequest,
+                                        PortRequest = portRequest ?? new(),
                                         PhoneNumbers = numbers,
                                         Message = "Failed to submit port request to BulkVS: " + ex.Message + " " + response
                                     });
@@ -628,22 +626,22 @@ public class PortRequestsController : Controller
                             {
                                 ReferenceId = string.Empty,
                                 TNList = TNs,
-                                BTN = portRequest.BillingPhone,
-                                SubscriberType = portRequest.LocationType,
-                                AccountNumber = portRequest.ProviderAccountNumber,
-                                Pin = portRequest.ProviderPIN,
+                                BTN = portRequest.BillingPhone ?? string.Empty,
+                                SubscriberType = portRequest.LocationType ?? string.Empty,
+                                AccountNumber = portRequest.ProviderAccountNumber ?? string.Empty,
+                                Pin = portRequest.ProviderPIN ?? string.Empty,
                                 Name = string.IsNullOrWhiteSpace(portRequest.BusinessName) ? $"Accelerate Networks" : $"{portRequest.BusinessName}",
                                 Contact = string.IsNullOrWhiteSpace(portRequest.BusinessContact) ? $"{portRequest.ResidentialFirstName} {portRequest.ResidentialLastName}" : portRequest.BusinessContact,
                                 StreetNumber = streetNumber,
                                 StreetName = $"{portRequest.Address[streetNumber.Length..].Trim()} {portRequest?.Address2}",
-                                City = portRequest?.City,
+                                City = portRequest?.City ?? string.Empty,
                                 State = "WA",
-                                Zip = portRequest?.Zip,
+                                Zip = portRequest?.Zip ?? string.Empty,
                                 RDD = portRequest?.TargetDate is not null && portRequest.TargetDate.HasValue ? portRequest!.TargetDate.GetValueOrDefault().ToString("yyyy-MM-dd") : DateTime.Now.AddDays(3).ToString("yyyy-MM-dd"),
                                 Time = portRequest?.TargetDate is not null && portRequest.TargetDate.HasValue ? portRequest!.TargetDate.GetValueOrDefault().ToString("HH:mm:ss") : "20:00:00",
-                                PortoutPin = portRequest?.ProviderPIN,
+                                PortoutPin = portRequest?.ProviderPIN ?? string.Empty,
                                 TrunkGroup = "SFO",
-                                Lidb = portRequest?.CallerId,
+                                Lidb = portRequest?.CallerId ?? string.Empty,
                                 Sms = false,
                                 Mms = false,
                                 SignLoa = false,
@@ -661,7 +659,7 @@ public class PortRequestsController : Controller
                                     portRequest.DateSubmitted = DateTime.Now;
                                     portRequest.VendorSubmittedTo = "BulkVS";
                                     portRequest.BulkVSId = string.IsNullOrWhiteSpace(portRequest?.BulkVSId) ? bulkResponse.OrderId : $"{portRequest.BulkVSId}, {bulkResponse.OrderId}";
-                                    _context.PortRequests.Update(portRequest);
+                                    _context.PortRequests.Update(portRequest ?? new());
                                     await _context.SaveChangesAsync();
 
                                     foreach (var number in numbers)
@@ -672,7 +670,7 @@ public class PortRequestsController : Controller
                                         await _context.SaveChangesAsync();
                                     }
 
-                                    numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+                                    numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
 
                                     // Add a note to handle senarios where the requested FOC is to soon.
                                     var note = new PortTNNote
@@ -680,7 +678,7 @@ public class PortRequestsController : Controller
                                         Note = "If the port completion date requested is unavailable please pick the next available date and set the port to complete at 8pm that day."
                                     };
 
-                                    await note.PostAsync(bulkResponse?.OrderId, _bulkVSusername, _bulkVSpassword);
+                                    await note.PostAsync(bulkResponse.OrderId, _bulkVSusername, _bulkVSpassword);
 
                                     if (bulkResponse is not null && !string.IsNullOrWhiteSpace(bulkResponse.Description))
                                     {
@@ -707,7 +705,7 @@ public class PortRequestsController : Controller
                                 return View("PortRequestEdit", new PortRequestResult
                                 {
                                     Order = order,
-                                    PortRequest = portRequest,
+                                    PortRequest = portRequest ?? new(),
                                     PhoneNumbers = numbers,
                                     Message = "Failed to submit port request to BulkVS: " + ex.Message + " " + response
                                 });
@@ -747,7 +745,7 @@ public class PortRequestsController : Controller
                 return View("PortRequestEdit", new PortRequestResult
                 {
                     Order = order,
-                    PortRequest = portRequest,
+                    PortRequest = portRequest ?? new(),
                     PhoneNumbers = numbers,
                     AlertType = "alert-success",
                     Message = responseMessages.Any() ? string.Join(", ", responseMessages.ToArray()) : "🥰 Port Request was submitted to our vendors!"
