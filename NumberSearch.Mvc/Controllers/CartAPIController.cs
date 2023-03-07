@@ -627,11 +627,11 @@ namespace NumberSearch.Mvc.Controllers
                 if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
                 {
                     purchasable = true;
-                    Log.Information($"[BulkVS] Found {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {npanxx}.");
+                    Log.Information($"[BulkVS] Found {phoneNumber.DialedNumber} in {doesItStillExist.Length} results returned for {npanxx}.");
                 }
                 else
                 {
-                    Log.Warning($"[BulkVS] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {npanxx}.");
+                    Log.Warning($"[BulkVS] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Length} results returned for {npanxx}.");
 
                     // Remove numbers that are unpurchasable.
                     var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
@@ -649,11 +649,11 @@ namespace NumberSearch.Mvc.Controllers
                 if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
                 {
                     purchasable = true;
-                    Log.Information($"[TeleMessage] Found {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {phoneNumber.DialedNumber}.");
+                    Log.Information($"[TeleMessage] Found {phoneNumber.DialedNumber} in {doesItStillExist.Length} results returned for {phoneNumber.DialedNumber}.");
                 }
                 else
                 {
-                    Log.Warning($"[TeleMessage] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Count()} results returned for {phoneNumber.DialedNumber}.");
+                    Log.Warning($"[TeleMessage] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Length} results returned for {phoneNumber.DialedNumber}.");
 
                     // Remove numbers that are unpurchasable.
                     var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
@@ -691,11 +691,6 @@ namespace NumberSearch.Mvc.Controllers
                 var results = await Search.GetLocalNumbersAsync(phoneNumber.State, string.Empty, phoneNumber.NPA.ToString(), phoneNumber.NXX.ToString(), credentials.data.token).ConfigureAwait(false);
                 var matchingNumber = results.data.result.Where(x => x?.did_number is not null && x.did_number.Replace("-", string.Empty) == phoneNumber.DialedNumber).FirstOrDefault();
 
-                if (matchingNumber != null)
-                {
-                    results.data.result.Where(x => x.number is not null && x.number.Replace("-", string.Empty) == phoneNumber.DialedNumber).FirstOrDefault();
-                }
-
                 if (matchingNumber != null && matchingNumber?.did_number.Replace("-", string.Empty) == phoneNumber.DialedNumber)
                 {
                     purchasable = true;
@@ -721,11 +716,11 @@ namespace NumberSearch.Mvc.Controllers
                 if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
                 {
                     purchasable = true;
-                    Log.Information($"[Peerless] Found {phoneNumber.DialedNumber} in {numbers.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}, {phoneNumber.XXXX}.");
+                    Log.Information($"[Peerless] Found {phoneNumber.DialedNumber} in {numbers.Length} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}, {phoneNumber.XXXX}.");
                 }
                 else
                 {
-                    Log.Warning($"[Peerless] Failed to find {phoneNumber.DialedNumber} in {numbers.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}, {phoneNumber.XXXX}.");
+                    Log.Warning($"[Peerless] Failed to find {phoneNumber.DialedNumber} in {numbers.Length} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}, {phoneNumber.XXXX}.");
 
                     // Remove numbers that are unpurchasable.
                     var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
