@@ -550,23 +550,23 @@
                         <label for="firstName">First name</label>
                         <input asp-for="Order!.FirstName" type="text" class="form-control" id="firstName" placeholder="Alexander" required>
                         <small class="text-muted">
-                            Enter your first name (ex. Alexander)
+                            Enter your first name
                         </small>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="lastName">Last name</label>
                         <input asp-for="Order!.LastName" type="text" class="form-control" id="lastName" placeholder="Bell" required>
                         <small class="text-muted">
-                            Enter your last name (ex. Bell)
+                            Enter your last name
                         </small>
                     </div>
                 </div>
 
                 <div class="mb-3">
                     <label for="email">Business Name <span class="text-muted">(Optional)</span></label>
-                    <input asp-for="Order!.BusinessName" type="text" class="form-control" id="businessName" placeholder="American Telegraph and Telephone Company">
+                    <input asp-for="Order!.BusinessName" type="text" class="form-control" id="businessName" placeholder="ACME Corporation">
                     <small class="text-muted">
-                        Enter the name of your business or the organization that you represent (ex. Accelerate Networks)
+                        Enter the name of your business or the organization that you represent
                     </small>
                 </div>
 
@@ -574,7 +574,7 @@
                     <label for="email">Email </label>
                     <input asp-for="Order!.Email" type="email" class="form-control" id="email" placeholder="tom@myspace.com" required>
                     <small class="text-muted">
-                        Enter an email address for shipping updates and order information (ex. tom@myspace.com)
+                        Enter an email address for shipping updates and order information
                     </small>
                 </div>
 
@@ -584,6 +584,7 @@
                         <label for="address">Address</label>
                         <input asp-for="Order!.UnparsedAddress" type="text" class="form-control" id="address" readonly>
                         <small class="text-muted">
+                            @*If it doesn't have a placeholder value give it a example*@
                             Enter the shipping address for this order, or the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
                         </small>
                     </div>
@@ -596,6 +597,7 @@
                         <ul class="list-group" role="menu" aria-labelledby="menu1" id="addressOptions">
                         </ul>
                         <small class="text-muted">
+                            @*If it doesn't have a placeholder value give it a example*@
                             Enter the shipping address for this order, or the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
                         </small>
                     </div>
@@ -637,14 +639,14 @@
                             }
                         </select>
                         <small class="text-muted">
-                            Optionally enter a unit type (ex. Apartment)
+                            Optionally enter a unit type
                         </small>
                     </div>
                     <div class="col-md-8 mb-3">
                         <label for="address2">Unit Number <span class="text-muted">(Optional)</span></label>
                         <input asp-for="Order!.AddressUnitNumber" type="text" class="form-control" id="address2" placeholder="307">
                         <small class="text-muted">
-                            Optionally enter a unit number (ex. 307)
+                            Optionally enter a unit number
                         </small>
                     </div>
                 </div>
