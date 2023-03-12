@@ -16,5 +16,7 @@ namespace AccelerateNetworks.Operations
         public string? VendorPartNumber { get; set; }
         public string? Type { get; set; }
         public string? Tags { get; set; }
+        public string? VendorDescription { get; set; }
+        public string? VendorFeatures { get; set; }
     }
 }

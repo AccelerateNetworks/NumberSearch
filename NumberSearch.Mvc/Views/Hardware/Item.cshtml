@@ -1,0 +1,134 @@
+﻿@model HardwareResult
+@{
+    ViewData["Title"] = "Hardware";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="text-light p-5" style="background-color: #3279B2">
+    <div class="container py-5 py-md-6 py-lg-7 mb-7 text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-md-11">
+                <h1 class="display-3 text-light">@Model?.Product?.Name</h1>
+                <p class="lead text-white">The right tool for your business.</p>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="pt-5 pb-5">
+    <div class="container">
+        <div class="row mb-0">
+            @if (Model?.Product is not null && !string.IsNullOrWhiteSpace(Model?.Product?.Name))
+            {
+                var inCart = Model.Cart.ProductOrders;
+                var product = Model.Product;
+                var quantity = 0;
+                var quantityCount = inCart?.Where(x => x.ProductId == product.ProductId).FirstOrDefault();
+                if (quantityCount is not null && quantityCount.Quantity > 0)
+                {
+                    quantity = quantityCount.Quantity;
+                }
+                <div class="col-sm-6 mb-4" id="@product.Name">
+                    <div class="card h-100 shadow">
+                        <img class="card-img-top" src="@product.Image" />
+                        <div class="card-body">
+                            <div class="card-title">
+                                <h4 class="display-4">
+                                    @product.Name
+                                    @{
+                                        if (!string.IsNullOrWhiteSpace(product.SupportLink))
+                                        {
+                                            <a class="btn btn-outline-info float-right" href="@product.SupportLink">Support</a>
+                                        }
+                                    }
+                                </h4>
+                            </div>
+                            <p class="card-text">@product.Description</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="btn-group">
+                                    <div class="input-group mb-3">
+                                        @if (quantity > 0)
+                                        {
+                                            <input id="@product.ProductId" type="number" min="0" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@quantity">
+                                            <div class="input-group-append">
+                                                <button onclick="RemoveFromCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)" class="btn btn-outline-danger">
+                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <input id="@product.ProductId" type="number" min="0" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                            <div class="input-group-append">
+                                                <button type="submit" class="btn btn-outline-primary" onclick="AddToCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)">
+                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                    Add To Cart
+                                                </button>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <large class="text-primary">$@product.Price</large>
+                        </div>
+                    </div>
+                </div>
+            }
+            <div class="col-sm-6 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header">
+                        <h4 class="my-0 font-weight-normal text-center">Features</h4>
+                    </div>
+                    <div class="card-body">
+                        @if (!string.IsNullOrWhiteSpace(Model?.Product?.VendorFeatures))
+                        {
+                            <ul>
+                                @foreach (string feature in Model.Product.VendorFeatures.Split("\r\n"))
+                                {
+                                    <li>
+                                        @feature
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <ul>
+                                <li>⌛ Coming soon. If you need details now, call (206) 333-3341!</li>
+                            </ul>
+                        }
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        @if (!string.IsNullOrWhiteSpace(Model?.Product?.VendorDescription))
+        {
+            <div class="row">
+                <div class="col-12">
+                    <div class="card mb-4 shadow">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal text-center" id="initialsetup">Description</h4>
+                        </div>
+                        <div class="card-body">
+                            <p>@Model?.Product?.VendorDescription</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="mt-auto fixed-bottom bg-white p-3 shadow-lg">
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <a type="button" class="btn btn-primary btn-lg btn-block" asp-controller="Services" asp-action="Index">◁ Add Services</a>
+            </div>
+            <div class="col">
+                <a type="button" class="btn btn-success btn-lg btn-block" asp-controller="Search" asp-action="Index">Add Numbers ▷</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -58,8 +58,9 @@ namespace NumberSearch.Mvc.Controllers
             await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            return View("Index", new HardwareResult { Cart = cart, Phones = products.Where(x => x.Type != "Accessory").ToArray(), Accessories = accessories });
+            return View("Item", new HardwareResult { Cart = cart, Product = products.FirstOrDefault() ?? new() });
         }
+
 
         [HttpGet("Hardware/PartnerPriceList")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]

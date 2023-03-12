@@ -14,7 +14,7 @@
         </div>
     </div>
 </section>
-<div class="p-5">
+<div class="pt-5 pb-5">
     <div class="container">
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             @if (Model.Phones is not null && !Model.Phones.Any())
@@ -57,15 +57,15 @@
 
                                 <div class="col mb-4" id="@product.Name">
                                     <div class="card h-100 shadow">
-                                        <img class="card-img-top" src="@product.Image" />
+                                        <img class="card-img-top" src="@product.Image" loading="lazy" height="390" width="390" />
                                         <div class="card-body">
                                             <div class="card-title">
                                                 <h4 class="display-4">
                                                     @product.Name
                                                     @{
-                                                        if (!string.IsNullOrWhiteSpace(product.SupportLink))
+                                                        if (!string.IsNullOrWhiteSpace(product.Name))
                                                         {
-                                                            <a class="btn btn-outline-info float-right" href="@product.SupportLink">Learn More</a>
+                                                            <a class="btn btn-outline-info float-right stretched-link" href="Hardware/@product.Name">Learn More</a>
                                                         }
                                                     }
                                                 </h4>
@@ -123,15 +123,15 @@
 
                                 <div class="col mb-4" id="@product.Name">
                                     <div class="card h-100 shadow">
-                                        <img class="card-img-top" src="@product.Image" />
+                                        <img class="card-img-top" src="@product.Image" loading="lazy" height="390" width="390" />
                                         <div class="card-body">
                                             <div class="card-title">
                                                 <h4 class="display-4">
                                                     @product.Name
                                                     @{
-                                                        if (!string.IsNullOrWhiteSpace(product.SupportLink))
+                                                        if (!string.IsNullOrWhiteSpace(product.Name))
                                                         {
-                                                            <a class="btn btn-outline-info float-right" href="@product.SupportLink">Learn More</a>
+                                                            <a class="btn btn-outline-info float-right stretched-link" href="Hardware/@product.Name">Learn More</a>
                                                         }
                                                     }
                                                 </h4>
@@ -192,15 +192,15 @@
 
                                 <div class="col mb-4" id="@product.Name">
                                     <div class="card h-100 shadow">
-                                        <img class="card-img-top" src="@product.Image" />
+                                        <img class="card-img-top" src="@product.Image" loading="lazy" height="390" width="390" />
                                         <div class="card-body">
                                             <div class="card-title">
                                                 <h4 class="display-4">
                                                     @product.Name
                                                     @{
-                                                        if (!string.IsNullOrWhiteSpace(product.SupportLink))
+                                                        if (!string.IsNullOrWhiteSpace(product.Name))
                                                         {
-                                                            <a class="btn btn-outline-info float-right" href="@product.SupportLink">Learn More</a>
+                                                            <a class="btn btn-outline-info float-right stretched-link" href="Hardware/@product.Name">Learn More</a>
                                                         }
                                                     }
                                                 </h4>
@@ -258,15 +258,15 @@
 
                                 <div class="col mb-4" id="@product.Name">
                                     <div class="card h-100 shadow">
-                                        <img class="card-img-top" src="@product.Image" />
+                                        <img class="card-img-top" src="@product.Image" loading="lazy" height="390" width="390" />
                                         <div class="card-body">
                                             <div class="card-title">
                                                 <h4 class="display-4">
                                                     @product.Name
                                                     @{
-                                                        if (!string.IsNullOrWhiteSpace(product.SupportLink))
+                                                        if (!string.IsNullOrWhiteSpace(product.Name))
                                                         {
-                                                            <a class="btn btn-outline-info float-right" href="@product.SupportLink">Learn More</a>
+                                                            <a class="btn btn-outline-info float-right stretched-link" href="Hardware/@product.Name">Learn More</a>
                                                         }
                                                     }
                                                 </h4>
@@ -308,7 +308,6 @@
                     </div>
                 </div>
             }
-            @*<div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">...</div>*@
         </div>
     </div>
 </div>

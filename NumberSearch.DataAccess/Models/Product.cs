@@ -24,6 +24,8 @@ namespace NumberSearch.DataAccess
         public string VendorPartNumber { get; set; } = string.Empty;
         public string Tags { get; set; } = string.Empty;
         public string Type { get; set; } = string.Empty;
+        public string VendorDescription { get; set; } = string.Empty;
+        public string VendorFeatures { get; set; } = string.Empty;
         // Just for the Price list page
         public VendorProduct Vendor { get; set; } = new();
 
@@ -38,7 +40,7 @@ namespace NumberSearch.DataAccess
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryFirstOrDefaultAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\", \"Public\", \"QuantityAvailable\", \"SupportLink\", \"DisplayPriority\", \"VendorPartNumber\", \"Type\", \"Tags\" FROM public.\"Products\" " +
+                .QueryFirstOrDefaultAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\", \"Public\", \"QuantityAvailable\", \"SupportLink\", \"DisplayPriority\", \"VendorPartNumber\", \"Type\", \"Tags\", \"VendorDescription\", \"VendorFeatures\" FROM public.\"Products\" " +
                 "WHERE \"ProductId\" = @productId",
                 new { productId })
                 .ConfigureAwait(false);
@@ -57,7 +59,7 @@ namespace NumberSearch.DataAccess
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\", \"Public\", \"QuantityAvailable\", \"SupportLink\", \"DisplayPriority\", \"VendorPartNumber\", \"Type\", \"Tags\"  FROM public.\"Products\" " +
+                .QueryAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\", \"Public\", \"QuantityAvailable\", \"SupportLink\", \"DisplayPriority\", \"VendorPartNumber\", \"Type\", \"Tags\", \"VendorDescription\", \"VendorFeatures\"  FROM public.\"Products\" " +
                 "WHERE \"Name\" = @name",
                 new { name })
                 .ConfigureAwait(false);
@@ -70,7 +72,7 @@ namespace NumberSearch.DataAccess
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\", \"Public\", \"QuantityAvailable\", \"SupportLink\", \"DisplayPriority\", \"VendorPartNumber\", \"Type\", \"Tags\" FROM public.\"Products\"")
+                .QueryAsync<Product>("SELECT \"ProductId\", \"Name\", \"Price\", \"Description\", \"Image\", \"Public\", \"QuantityAvailable\", \"SupportLink\", \"DisplayPriority\", \"VendorPartNumber\", \"Type\", \"Tags\", \"VendorDescription\", \"VendorFeatures\" FROM public.\"Products\"")
                 .ConfigureAwait(false);
 
             return result;
@@ -86,9 +88,9 @@ namespace NumberSearch.DataAccess
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"Products\"(\"Name\", \"Price\", \"Description\", \"Image\", \"Public\", \"QuantityAvailable\", \"SupportLink\", \"DisplayPriority\", \"VendorPartNumber\", \"Type\", \"Tags\") " +
-                "VALUES(@Name, @Price, @Description, @Image, @Public, @QuantityAvailable, @SupportLink, @DisplayPriority, @VendorPartNumber, @Type, @Tags)",
-                new { Name, Price, Description, Image, Public, QuantityAvailable, SupportLink, DisplayPriority, VendorPartNumber, Type, Tags })
+                .ExecuteAsync("INSERT INTO public.\"Products\"(\"Name\", \"Price\", \"Description\", \"Image\", \"Public\", \"QuantityAvailable\", \"SupportLink\", \"DisplayPriority\", \"VendorPartNumber\", \"Type\", \"Tags\", \"VendorDescription\", \"VendorFeatures\") " +
+                "VALUES(@Name, @Price, @Description, @Image, @Public, @QuantityAvailable, @SupportLink, @DisplayPriority, @VendorPartNumber, @Type, @Tags, @VendorDescription, @VendorFeatures)",
+                new { Name, Price, Description, Image, Public, QuantityAvailable, SupportLink, DisplayPriority, VendorPartNumber, Type, Tags, VendorDescription, VendorFeatures })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -112,9 +114,9 @@ namespace NumberSearch.DataAccess
 
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"Products\" " +
-                "SET \"Name\" = @Name, \"Price\" = @Price, \"Description\" = @Description, \"Image\" = @Image, \"Public\" = @Public, \"QuantityAvailable\" = @QuantityAvailable, \"SupportLink\" = @SupportLink, \"DisplayPriority\" = @DisplayPriority, \"VendorPartNumber\" = @VendorPartNumber, \"Type\" = @Type, \"Tags\" = @Tags " +
+                "SET \"Name\" = @Name, \"Price\" = @Price, \"Description\" = @Description, \"Image\" = @Image, \"Public\" = @Public, \"QuantityAvailable\" = @QuantityAvailable, \"SupportLink\" = @SupportLink, \"DisplayPriority\" = @DisplayPriority, \"VendorPartNumber\" = @VendorPartNumber, \"Type\" = @Type, \"Tags\" = @Tags, \"VendorDescription\" = @VendorDescription, \"VendorFeatures\" = @VendorFeatures " +
                 "WHERE \"ProductId\" = @ProductId",
-                new { Name, Price, Description, Image, Public, ProductId, QuantityAvailable, SupportLink, DisplayPriority, VendorPartNumber, Type })
+                new { Name, Price, Description, Image, Public, ProductId, QuantityAvailable, SupportLink, DisplayPriority, VendorPartNumber, Type, VendorDescription, VendorFeatures })
                 .ConfigureAwait(false);
 
             if (result == 1)

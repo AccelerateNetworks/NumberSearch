@@ -647,6 +647,12 @@ public partial class numberSearchContext : DbContext
             entity.Property(e => e.Type).HasColumnType("character varying");
 
             entity.Property(e => e.VendorPartNumber).HasColumnType("character varying");
+
+            entity.Property(e => e.Tags).HasColumnType("character varying");
+
+            entity.Property(e => e.VendorDescription).HasColumnType("character varying");
+
+            entity.Property(e => e.VendorFeatures).HasColumnType("character varying");
         });
 
         modelBuilder.Entity<ProductOrder>(entity =>
@@ -691,9 +697,9 @@ public partial class numberSearchContext : DbContext
             entity.Property(e => e.MACAddress).HasColumnType("character varying");
 
             entity.Property(e => e.Condition).HasColumnType("character varying");
-            
+
             entity.Property(e => e.ExternalOrderId).HasColumnType("character varying");
-            
+
             entity.Property(e => e.ShipmentTrackingLink).HasColumnType("character varying");
 
             entity.Property(e => e.DateCreated)
