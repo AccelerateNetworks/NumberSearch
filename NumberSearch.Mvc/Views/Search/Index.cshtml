@@ -96,9 +96,9 @@
             <div class="row pt-3 pb-3">
                 @if (Model?.CleanQuery is not null && Model?.Query is not null && Model.CleanQuery.Length == 10 && Model.Query.Length == 3)
                 {
-                <div class="alert alert-info col-12" role="alert">
-                    Area code @Model.CleanQuery.Substring(0, 3) detected.
-                </div>
+                    <div class="alert alert-info col-12" role="alert">
+                        Area code @Model.CleanQuery.Substring(0, 3) detected.
+                    </div>
                 }
                 <div class="alert alert-success col-12" role="alert">
                     @total
@@ -214,26 +214,26 @@
                 </form>
                 @if (Model?.View == "Location")
                 {
-                <p>Filter by City</p>
-                <div class="mb-3">
-                    @if (Model?.Cities is not null)
-                    {
-                        foreach (var city in Model.Cities)
+                    <p>Filter by City</p>
+                    <div class="mb-3">
+                        @if (Model?.Cities is not null)
                         {
-                            if (city == Model?.City)
+                            foreach (var city in Model.Cities)
                             {
-                                <div class="btn-group">
-                                    <a class="btn btn-outline-info active mb-1" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&City=@city&View=Location&Page=@Model.Page">@city</a>
-                                    <a class="btn btn-outline-danger mb-1" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&View=Location&Page=@Model.Page">Remove</a>
-                                </div>
-                            }
-                            else
-                            {
-                                <a class="btn btn-outline-info mb-1" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model?.Query&City=@city&View=Location&Page=@Model?.Page">@city</a>
+                                if (city == Model?.City)
+                                {
+                                    <div class="btn-group">
+                                        <a class="btn btn-outline-info active mb-1" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&City=@city&View=Location&Page=@Model.Page">@city</a>
+                                        <a class="btn btn-outline-danger mb-1" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model.Query&View=Location&Page=@Model.Page">Remove</a>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <a class="btn btn-outline-info mb-1" onclick="displayBusyIndicator(this)" href="/Search?Query=@Model?.Query&City=@city&View=Location&Page=@Model?.Page">@city</a>
+                                }
                             }
                         }
-                    }
-                </div>
+                    </div>
                 }
                 <div class="table-responsive shadow-sm">
                     <table class="table table-striped table-borderless table-hover">
