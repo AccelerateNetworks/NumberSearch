@@ -34,7 +34,7 @@ namespace NumberSearch.Mvc.Controllers
             // Grab the posts from the database.
             var posts = await connection
                 .QueryAsync<WriteAs.NET.Client.Models.Post>("SELECT \"Id\", \"Slug\", \"Appearance\", \"Language\", \"Rtl\", \"CreateDate\", \"LastUpdatedDate\", \"Title\", \"Body\", \"Views\" " +
-                "FROM public.\"WriteAsPosts\"")
+                "FROM public.\"WriteAsPosts\" ORDER BY \"CreateDate\" DESC")
                 .ConfigureAwait(false);
 
             if (posts is null || !posts.Any() || refresh)
@@ -58,7 +58,7 @@ namespace NumberSearch.Mvc.Controllers
 
                 posts = await connection
                     .QueryAsync<WriteAs.NET.Client.Models.Post>("SELECT \"Id\", \"Slug\", \"Appearance\", \"Language\", \"Rtl\", \"CreateDate\", \"LastUpdatedDate\", \"Title\", \"Body\", \"Views\" " +
-                    "FROM public.\"WriteAsPosts\"")
+                    "FROM public.\"WriteAsPosts\" ORDER BY \"CreateDate\" DESC")
                     .ConfigureAwait(false);
             }
 
