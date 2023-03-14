@@ -1,8 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
-using Microsoft.Extensions.Configuration;
-
-using NodaTime;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.TeleDynamics;
@@ -33,12 +30,22 @@ namespace NumberSearch.Mvc.Controllers
         {
             var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
 
-            var accessories = products.Where(x => x.Type == "Accessory").ToArray();
+            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
+            var cart = Cart.GetFromSession(HttpContext.Session);
+
+            return View("Index", new HardwareResult { Cart = cart, Phones = products.Where(x => x.Type is not "Accessory").ToArray() });
+        }
+
+        [HttpGet("Accessories")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> IndexAlternateAsync()
+        {
+            var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
 
             await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            return View("Index", new HardwareResult { Cart = cart, Phones = products.Where(x => x.Type != "Accessory").ToArray(), Accessories = accessories });
+            return View("Index", new HardwareResult { Cart = cart, Accessories = products.Where(x => x.Type is "Accessory").ToArray() });
         }
 
         [HttpGet("Hardware/{product}")]
@@ -60,7 +67,6 @@ namespace NumberSearch.Mvc.Controllers
 
             return View("Item", new HardwareResult { Cart = cart, Product = products.FirstOrDefault() ?? new() });
         }
-
 
         [HttpGet("Hardware/PartnerPriceList")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
