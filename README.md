@@ -2,7 +2,7 @@
 [![.NET](https://github.com/AccelerateNetworks/NumberSearch/actions/workflows/dotnet.yml/badge.svg)](https://github.com/AccelerateNetworks/NumberSearch/actions/workflows/dotnet.yml)
 [![Build Status](https://dev.azure.com/thomasaryan/NumberSearch/_apis/build/status/Linux?branchName=master)](https://dev.azure.com/thomasaryan/NumberSearch/_build/latest?definitionId=3&branchName=master)
 # NumberSearch
-NumberSearch is the public facing website for AccelerateNetworks a Seattle-area communication services company. ☎
+NumberSearch is the website for AccelerateNetworks a Seattle-area communication services company. ☎
 
 [Try it out here!](https://acceleratenetworks.com/)
 
