@@ -7,16 +7,50 @@ using System.Text.Json.Serialization;
 using Prometheus;
 using System.ComponentModel.DataAnnotations;
 using Models;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Version = "v1",
+        Title = "WASaleTaxRateLookup",
+        Description = "Find the Sale Tax rate that applies to a specific address in Washington State.",
+        Contact = new OpenApiContact
+        {
+            Name = "Thomas Ryan",
+            Email = string.Empty,
+            Url = new Uri("https://thomasryan.xyz/"),
+        },
+        License = new OpenApiLicense
+        {
+            Name = "Use under LICX",
+            Url = new Uri("https://github.com/uncheckederror/WASalesTaxLookup/blob/master/LICENSE"),
+        }
+    });
+
+    // Set the comments path for the Swagger JSON and UI.
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+});
 
 // EF Core
 builder.Services.AddDbContext<MessagingContext>(opt => opt.UseSqlite());
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+});
+
 
 builder.Services.AddMemoryCache();
 
@@ -29,16 +63,23 @@ var firstPointSMSOutbound = string.IsNullOrWhiteSpace(builder.Configuration["Fir
 var firstPointUsername = builder.Configuration["FirstPointUsername"] ?? string.Empty;
 var firstPointPassword = builder.Configuration["FirstPointPassword"] ?? string.Empty;
 
-
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseDeveloperExceptionPage();
+
+// Swagger defaults
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-    app.UseDeveloperExceptionPage();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Messaging");
+});
+
+// Set the app root to the swagger docs
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Messaging");
+    c.RoutePrefix = string.Empty;
+});
 
 app.UseHttpsRedirection();
 app.UseSecurityHeaders();
