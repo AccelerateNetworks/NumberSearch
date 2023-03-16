@@ -96,3 +96,9 @@ steps:
     artifactName: 'Ops'
     targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ops/bin/Release/net7.0/'
     publishLocation: 'pipeline'
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    artifactName: 'Messaging'
+    targetPath: '$(System.DefaultWorkingDirectory)/Messaging/bin/Release/net7.0/'
+    publishLocation: 'pipeline'
