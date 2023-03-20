@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Ops.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class RolesController : Controller
     {
         private readonly RoleManager<IdentityRole> _roleManager;

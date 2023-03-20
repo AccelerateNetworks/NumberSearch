@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Ops.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class CarriersController : Controller
     {
         private readonly numberSearchContext _context;

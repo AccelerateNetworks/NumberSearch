@@ -6,8 +6,8 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-		<PackageReference Include="System.ServiceModel.Http" Version="4.10.0" />
-		<PackageReference Include="System.ServiceModel.Security" Version="4.10.0" />
+		<PackageReference Include="System.ServiceModel.Http" Version="4.10.1" />
+		<PackageReference Include="System.ServiceModel.Security" Version="4.10.1" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\NumberSearch.DataAccess\NumberSearch.DataAccess.csproj" />

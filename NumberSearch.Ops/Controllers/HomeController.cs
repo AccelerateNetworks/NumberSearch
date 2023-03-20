@@ -15,6 +15,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Ops.Controllers;
+[ApiExplorerSettings(IgnoreApi = true)]
 
 public class HomeController : Controller
 {

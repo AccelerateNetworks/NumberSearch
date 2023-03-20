@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Ops.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class TaxRatesController : Controller
     {
         private readonly string _invoiceNinjaToken;

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Ops.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class UsersController : Controller
     {
         private readonly UserManager<IdentityUser> _userManager;

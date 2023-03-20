@@ -21,6 +21,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Ops.Controllers;
+[ApiExplorerSettings(IgnoreApi = true)]
 public class OrdersController : Controller
 {
     private readonly Guid _teleToken;

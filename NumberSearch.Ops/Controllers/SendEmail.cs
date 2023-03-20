@@ -1,5 +1,7 @@
 ﻿using MailKit.Security;
 
+using Microsoft.AspNetCore.Mvc;
+
 using MimeKit;
 
 using Serilog;
@@ -10,6 +12,7 @@ using System.Threading.Tasks;
 
 namespace AccelerateNetworks.Operations.Services;
 
+[ApiExplorerSettings(IgnoreApi = true)]
 public class SendEmail
 {
     /// <summary>

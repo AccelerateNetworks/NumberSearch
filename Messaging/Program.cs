@@ -1,48 +1,109 @@
 using Flurl.Http;
 
-using Microsoft.EntityFrameworkCore;
+using Messaging;
 
-using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+
+using Models;
 
 using Prometheus;
+
 using System.ComponentModel.DataAnnotations;
-using Models;
-using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.OpenApi.Models;
-using System.Reflection;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters()
+        {
+            ClockSkew = TimeSpan.Zero,
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = "AccelerateNetworks.Messaging",
+            ValidAudience = "AccelerateNetworks.Messaging",
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration.GetConnectionString("MessagingAPISecret") ?? string.Empty)
+            ),
+        };
+    });
+
+builder.Services.AddAuthorization();
+builder.Services.AddCors();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
+builder.Services.AddSwaggerGen(option =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo
+    option.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
-        Title = "WASaleTaxRateLookup",
-        Description = "Find the Sale Tax rate that applies to a specific address in Washington State.",
+        Title = "AccelerateNetworks.Messaging",
+        Description = "This API abstracts the sending and recieving of SMS/MMS messages to and from our upstream vendors.",
         Contact = new OpenApiContact
         {
-            Name = "Thomas Ryan",
-            Email = string.Empty,
-            Url = new Uri("https://thomasryan.xyz/"),
+            Name = string.Empty,
+            Email = "dan@acceleratenetworks.com",
+            Url = new Uri("https://acceleratenetworks.com/"),
         },
         License = new OpenApiLicense
         {
             Name = "Use under LICX",
-            Url = new Uri("https://github.com/uncheckederror/WASalesTaxLookup/blob/master/LICENSE"),
+            Url = new Uri("https://github.com/AccelerateNetworks/NumberSearch/blob/master/LICENSE"),
+        }
+    });
+    option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please enter a valid token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
+    });
+    option.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type=ReferenceType.SecurityScheme,
+                    Id="Bearer"
+                }
+            },
+            new string[]{}
         }
     });
 
     // Set the comments path for the Swagger JSON and UI.
     //var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     //var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    //c.IncludeXmlComments(xmlPath);
+    //option.IncludeXmlComments(xmlPath);
 });
 
 // EF Core
 builder.Services.AddDbContext<MessagingContext>(opt => opt.UseSqlite());
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseNpgsql(
+                    builder.Configuration.GetConnectionString("PostgresqlProd")));
+
+builder.Services.AddIdentityCore<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>();
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -51,8 +112,19 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
         ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
 });
 
+builder.Services.AddRateLimiter(_ => _
+    .AddFixedWindowLimiter(policyName: "onePerSecond", options =>
+    {
+        options.PermitLimit = 1;
+        options.Window = TimeSpan.FromSeconds(1);
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 2;
+    }));
 
 builder.Services.AddMemoryCache();
+builder.Services.AddScoped<TokenService, TokenService>();
+builder.Configuration.AddUserSecrets("328593cf-cbb9-48e9-8938-e38a44c8291d");
+
 
 var bulkVSUsername = builder.Configuration["BulkVSUsername"] ?? string.Empty;
 var bulkVSPassword = builder.Configuration["BulkVSPassword"] ?? string.Empty;
@@ -65,6 +137,18 @@ var firstPointPassword = builder.Configuration["FirstPointPassword"] ?? string.E
 
 var app = builder.Build();
 
+app.UseCors();
+app.UseAuthentication();
+
+// Uncomment for debugging the request pipeline.
+//app.Use((context, next) =>
+//{
+//    // Put a breakpoint here
+//    return next(context);
+//});
+
+app.UseAuthorization();
+app.UseHttpsRedirection();
 app.UseSwagger();
 app.UseDeveloperExceptionPage();
 
@@ -81,13 +165,38 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = string.Empty;
 });
 
-app.UseHttpsRedirection();
 app.UseSecurityHeaders();
 app.UseHttpMetrics();
 
 app.MapMetrics();
 
-app.MapGet("/Conversations", async (string primary, MessagingContext db) =>
+app.MapPost("/Token", async (AuthRequest request, ApplicationDbContext db, UserManager<IdentityUser> userManager, TokenService tokenService, IConfiguration configuration) =>
+{
+    var managedUser = await userManager.FindByEmailAsync(request.Email);
+    if (managedUser == null)
+    {
+        return Results.BadRequest("Bad credentials");
+    }
+    var isPasswordValid = await userManager.CheckPasswordAsync(managedUser, request.Password);
+    if (!isPasswordValid)
+    {
+        return Results.BadRequest("Bad credentials");
+    }
+    var userInDb = db.Users.FirstOrDefault(u => u.Email == request.Email);
+    if (userInDb is null)
+        return Results.Unauthorized();
+    var accessToken = tokenService.CreateToken(userInDb, configuration);
+    await db.SaveChangesAsync();
+    return Results.Ok(new AuthResponse
+    {
+        Username = userInDb?.UserName ?? string.Empty,
+        Email = userInDb?.Email ?? string.Empty,
+        Token = accessToken,
+    });
+})
+    .RequireRateLimiting("onePerSecond");
+
+app.MapGet("/Conversations", async (string primary, MessagingContext db, ClaimsPrincipal user) =>
 {
     var checkPrimary = PhoneNumbersNA.PhoneNumber.TryParse(primary, out var primaryNumber);
     if (!checkPrimary)
@@ -145,7 +254,8 @@ app.MapGet("/Conversations", async (string primary, MessagingContext db) =>
     }
 
     return Results.NotFound();
-});
+})
+    .RequireAuthorization();
 
 app.MapGet("/Thread", async (string primary, string contacts, MessagingContext db) =>
 {
@@ -196,7 +306,7 @@ app.MapGet("/Thread", async (string primary, string contacts, MessagingContext d
     {
         return Results.NotFound();
     }
-});
+}).RequireAuthorization();
 
 // Listen for messages from the Teli Webhook.
 app.MapPost("/Message/Inbound/Teli", async ([Microsoft.AspNetCore.Mvc.FromBody] TeliInbound message, MessagingContext db) =>
@@ -219,7 +329,7 @@ app.MapPost("/Message/Inbound/Teli", async ([Microsoft.AspNetCore.Mvc.FromBody] 
     {
         return Results.BadRequest();
     }
-});
+}).RequireAuthorization();
 
 app.MapPost("/Message/Outbound/Teli", async ([Microsoft.AspNetCore.Mvc.FromBody] TeliOutbound message, MessagingContext db) =>
 {
@@ -277,7 +387,7 @@ app.MapPost("/Message/Outbound/Teli", async ([Microsoft.AspNetCore.Mvc.FromBody]
 
     return Results.BadRequest("Failed to submit message to Teli.");
 
-});
+}).RequireAuthorization();
 
 // Listen for messages from the BulkVS Webhook.
 app.MapPost("/Message/Inbound/BulkVS", async ([Microsoft.AspNetCore.Mvc.FromBody] BulkVSInbound message, MessagingContext db) =>
@@ -334,7 +444,7 @@ app.MapPost("/Message/Inbound/BulkVS", async ([Microsoft.AspNetCore.Mvc.FromBody
     {
         return Results.BadRequest();
     }
-});
+}).RequireAuthorization();
 
 app.MapPost("/Message/Outbound/BulkVS", async ([Microsoft.AspNetCore.Mvc.FromBody] BulkVSInbound message, MessagingContext db) =>
 {
@@ -449,7 +559,7 @@ app.MapPost("/Message/Outbound/BulkVS", async ([Microsoft.AspNetCore.Mvc.FromBod
     }
 
     return Results.BadRequest("Failed to submit message to BulkVS.");
-});
+}).RequireAuthorization();
 
 // This only works for errors, we need functional credentials to finish building it out.
 app.MapPost("/Message/Outbound/FirstPoint", async ([Microsoft.AspNetCore.Mvc.FromBody] FirstPointOutbound message, MessagingContext db) =>
@@ -513,7 +623,7 @@ app.MapPost("/Message/Outbound/FirstPoint", async ([Microsoft.AspNetCore.Mvc.Fro
         return Results.BadRequest($"Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(error)}");
     }
 
-});
+}).RequireAuthorization();
 
 app.Run();
 
@@ -875,5 +985,18 @@ namespace Models
         // special "local" folder for your platform.
         protected override void OnConfiguring(DbContextOptionsBuilder options)
             => options.UseSqlite($"Data Source={DbPath};Cache=Shared");
+    }
+
+    public class AuthRequest
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+
+    public class AuthResponse
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Token { get; set; } = string.Empty;
     }
 }

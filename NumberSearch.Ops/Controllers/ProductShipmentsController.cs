@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Ops.Controllers;
 
+[ApiExplorerSettings(IgnoreApi = true)]
 public class ProductShipmentsController : Controller
 {
     private readonly numberSearchContext _context;

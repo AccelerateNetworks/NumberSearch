@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Ops.Controllers;
 
+[ApiExplorerSettings(IgnoreApi = true)]
 public class PortRequestsController : Controller
 {
     private readonly string _azureStorage;
