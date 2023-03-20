@@ -22,7 +22,18 @@ using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Configuration.AddUserSecrets("328593cf-cbb9-48e9-8938-e38a44c8291d");
+
+var bulkVSUsername = builder.Configuration.GetConnectionString("BulkVSUsername") ?? string.Empty;
+var bulkVSPassword = builder.Configuration.GetConnectionString("BulkVSPassword") ?? string.Empty;
+var bulkVSInbound = string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("BulkVSInboundMessagingURL")) ? $"https://portal.bulkvs.com/api/v1.0/messageSend" : builder.Configuration.GetConnectionString("BulkVSInboundMessagingURL");
+var teliToken = builder.Configuration.GetConnectionString("TeleAPI") ?? string.Empty;
+var teliInbound = string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("TeliInboundMessageSendingURL")) ? $"https://api.teleapi.net/sms/send?token=" : builder.Configuration.GetConnectionString("TeliInboundMessageSendingURL");
+var firstPointSMSOutbound = string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("FirstPointOutboundMessageURL")) ? $"https://smsapi.1pcom.net/v1/retailsendmessage" : builder.Configuration.GetConnectionString("FirstPointOutboundMessageURL");
+var firstPointUsername = builder.Configuration.GetConnectionString("PComNetUsername") ?? string.Empty;
+var firstPointPassword = builder.Configuration.GetConnectionString("PComNetPassword") ?? string.Empty;
+var localSecret = builder.Configuration.GetConnectionString("MessagingAPISecret") ?? string.Empty;
+
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -37,7 +48,7 @@ builder.Services
             ValidIssuer = "AccelerateNetworks.Messaging",
             ValidAudience = "AccelerateNetworks.Messaging",
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration.GetConnectionString("MessagingAPISecret") ?? string.Empty)
+                Encoding.UTF8.GetBytes(localSecret)
             ),
         };
     });
@@ -123,17 +134,6 @@ builder.Services.AddRateLimiter(_ => _
 
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<TokenService, TokenService>();
-builder.Configuration.AddUserSecrets("328593cf-cbb9-48e9-8938-e38a44c8291d");
-
-
-var bulkVSUsername = builder.Configuration["BulkVSUsername"] ?? string.Empty;
-var bulkVSPassword = builder.Configuration["BulkVSPassword"] ?? string.Empty;
-var bulkVSInbound = string.IsNullOrWhiteSpace(builder.Configuration["BulkVSInboundMessagingURL"]) ? $"https://portal.bulkvs.com/api/v1.0/messageSend" : builder.Configuration["BulkVSInboundMessagingURL"];
-var teliToken = builder.Configuration["TeliToken"] ?? string.Empty;
-var teliInbound = string.IsNullOrWhiteSpace(builder.Configuration["TeliInboundMessageSendingURL"]) ? $"https://api.teleapi.net/sms/send?token=" : builder.Configuration["TeliInboundMessageSendingURL"];
-var firstPointSMSOutbound = string.IsNullOrWhiteSpace(builder.Configuration["FirstPointOutboundMessageURL"]) ? $"https://smsapi.1pcom.net/v1/retailsendmessage" : builder.Configuration["FirstPointOutboundMessageURL"];
-var firstPointUsername = builder.Configuration["FirstPointUsername"] ?? string.Empty;
-var firstPointPassword = builder.Configuration["FirstPointPassword"] ?? string.Empty;
 
 var app = builder.Build();
 
@@ -193,8 +193,7 @@ app.MapPost("/Token", async (AuthRequest request, ApplicationDbContext db, UserM
         Email = userInDb?.Email ?? string.Empty,
         Token = accessToken,
     });
-})
-    .RequireRateLimiting("onePerSecond");
+}).RequireRateLimiting("onePerSecond");
 
 app.MapGet("/Conversations", async (string primary, MessagingContext db, ClaimsPrincipal user) =>
 {
