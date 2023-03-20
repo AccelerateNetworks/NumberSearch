@@ -38,6 +38,7 @@ variables:
   ConnectionStrings.Call48Username: $(Call48Username)
   ConnectionStrings.Call48Password: $(Call48Password)
   ConnectionStrings.CallWithUsAPIKEY: $(CallWithUsAPIKEY)
+  ConnectionStrings.MessagingAPISecret: $(MessagingAPISecret)
   ApplicationInsights.InstrumentationKey: $(AIInstrumentationKey)
   ApplicationInsights.ConnectionString: $(AIConnectionString)
 
@@ -70,6 +71,12 @@ steps:
 - task: FileTransform@2
   inputs:
     folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ops/bin/Release/net7.0/'
+    jsonTargetFiles: 'appsettings.json'
+    xmlTransformationRules: '' # disabled
+
+- task: FileTransform@2
+  inputs:
+    folderPath: '$(System.DefaultWorkingDirectory)/Messaging/bin/Release/net7.0/'
     jsonTargetFiles: 'appsettings.json'
     xmlTransformationRules: '' # disabled
 
