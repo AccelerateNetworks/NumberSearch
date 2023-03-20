@@ -18,7 +18,7 @@ The Messaging project is a prototype Web API that is intended to abstract our up
 
 # Architecture
 
-![NumberSearch drawio (5)](https://user-images.githubusercontent.com/11726956/225472652-a9db4146-bef1-498e-8cad-be769869e19e.png)
+![NumberSearch drawio (6)](https://user-images.githubusercontent.com/11726956/225510562-708ba9cc-4a57-4da0-8644-ae07091aee37.png)
 
 # Run locally on Windows 11
 * Install [Visual Studio 2022 Community Edition](https://visualstudio.microsoft.com/vs/).
