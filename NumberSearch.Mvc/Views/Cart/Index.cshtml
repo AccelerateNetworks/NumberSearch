@@ -98,8 +98,6 @@
                                     foreach (var item in Model.Cart.PortedPhoneNumbers)
                                     {
                                         var calculatedCost = 20;
-
-
                                         var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
                                         var formattedNumber = $"({item?.NPA}) {item?.NXX}-{item?.XXXX.ToString("0000")}";
                                         var number = item?.PortedDialedNumber;
@@ -161,7 +159,7 @@
                                         <td>at $@item?.Price each</td>
                                         <td>$@localTotal</td>
                                         <td>
-                                            <button onclick="RemoveFromCart('Product', '@item?.ProductId', 1, this)" class="btn btn-outline-danger">
+                                            <button onclick="RemoveFromCart('Product', '@item?.ProductId', @productOrder.Quantity, this)" class="btn btn-outline-danger">
                                                 <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                 Remove
                                             </button>
@@ -190,7 +188,7 @@
                                         <td>at $@item.Price per</td>
                                         <td>$@localTotal</td>
                                         <td>
-                                            <button onclick="RemoveFromCart('Service', '@item.ServiceId', 1, this)" class="btn btn-outline-danger">
+                                            <button onclick="RemoveFromCart('Service', '@item.ServiceId', @productOrder.Quantity, this)" class="btn btn-outline-danger">
                                                 <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                 Remove
                                             </button>

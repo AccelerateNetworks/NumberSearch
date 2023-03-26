@@ -46,7 +46,7 @@ function AddToCart(type, id, quantity, element) {
             spinner.addClass('d-none');
             $(element).replaceWith(removeButton);
             cartCounter = parseInt($('#cartCounter').text());
-            cartCounter++;
+            cartCounter = cartCounter + parseInt(quantity);
             $(contactButton).addClass('d-none');
             $(cartButton).removeClass('d-none');
             $('#cartCounter').text(cartCounter).removeClass('d-none');
@@ -75,7 +75,7 @@ function RemoveFromCart(type, id, quantity, element) {
             spinner.addClass('d-none');
             $(element).replaceWith(addButton);
             cartCounter = parseInt($('#cartCounter').text());
-            cartCounter--;
+            cartCounter = cartCounter - parseInt(quantity);
             $('#cartCounter').text(cartCounter).removeClass('d-none');
         } else {
             console.log(`Failed to remove ${type} ${id} from cart.`)
