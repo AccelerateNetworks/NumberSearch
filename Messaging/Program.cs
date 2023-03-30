@@ -23,7 +23,7 @@ using Serilog;
 using Serilog.Events;
 
 Log.Logger = new LoggerConfiguration()
-                    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                                     .Enrich.FromLogContext()
                                     .WriteTo.Console()
                 .WriteTo.File(
@@ -389,6 +389,14 @@ try
     }).RequireAuthorization();
 
     app.Run();
+
+    // Create the database if it doesn't exist
+    var dbContext = app.Services.GetService<MessagingContext>();
+    if (dbContext is not null)
+    {
+        dbContext.Database.EnsureCreated();
+
+    }
 }
 catch (Exception ex)
 {
