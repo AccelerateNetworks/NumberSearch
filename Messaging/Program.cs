@@ -334,10 +334,8 @@ try
         }
     }).RequireAuthorization();
 
-    app.MapPost("/api/inbound/1pcom", async ([Microsoft.AspNetCore.Mvc.FromForm] FirstPointInbound message, HttpContext ctx, string token, MessagingContext db) =>
+    app.MapPost("/api/inbound/1pcom", async (HttpContext ctx, string token, MessagingContext db) =>
     {
-        Log.Information(System.Text.Json.JsonSerializer.Serialize(message));
-
         if (token is not "okereeduePeiquah3yaemohGhae0ie")
         {
             Log.Warning($"Token is not valid. Token: {token} is not okereeduePeiquah3yaemohGhae0ie");
@@ -347,28 +345,44 @@ try
             Log.Information("The FirstPointCom token is valid.");
         }
 
-        var formValues = ctx.Request.Form;
-        Log.Information("Raw form encoded values from the HttpContext");
-        foreach (var value in formValues)
+        try
         {
-            Log.Information($"{value.Key}, {value.Value}");
+            var formValues = ctx.Request.Form;
+            Log.Information("Raw form encoded values from the HttpContext");
+            foreach (var value in formValues)
+            {
+                Log.Information($"{value.Key}, {value.Value}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error("Failed to read HttpRequest Form headers.");
         }
 
-        message.msisdn = string.IsNullOrWhiteSpace(message.msisdn) ? ctx.Request.Form["msisdn"] : message.msisdn;
-        message.to = string.IsNullOrWhiteSpace(message.to) ? ctx.Request.Form["to"] : message.to;
-        message.message = string.IsNullOrWhiteSpace(message.message) ? ctx.Request.Form["message"] : message.message;
-        message.sessionid = string.IsNullOrWhiteSpace(message.sessionid) ? ctx.Request.Form["sessionid"] : message.sessionid;
-        message.serversecret = string.IsNullOrWhiteSpace(message.serversecret) ? ctx.Request.Form["serversecret"] : message.serversecret;
-        message.timezone = string.IsNullOrWhiteSpace(message.timezone) ? ctx.Request.Form["timezone"] : message.timezone;
-        message.origtime = string.IsNullOrWhiteSpace(message.origtime) ? ctx.Request.Form["origtime"] : message.origtime;
-
-        Log.Information("Attempting to replace unset values with the form encoded values.");
-        Log.Information(System.Text.Json.JsonSerializer.Serialize(message));
-
-        // Validate and regularize the incoming message.
-        if (!message.RegularizeAndValidate())
+        try
         {
-            return Results.BadRequest($"Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers. {System.Text.Json.JsonSerializer.Serialize(message)}");
+            FirstPointInbound message = new();
+
+            message.msisdn = string.IsNullOrWhiteSpace(message.msisdn) ? ctx.Request.Form["msisdn"] : message.msisdn;
+            message.to = string.IsNullOrWhiteSpace(message.to) ? ctx.Request.Form["to"] : message.to;
+            message.message = string.IsNullOrWhiteSpace(message.message) ? ctx.Request.Form["message"] : message.message;
+            message.sessionid = string.IsNullOrWhiteSpace(message.sessionid) ? ctx.Request.Form["sessionid"] : message.sessionid;
+            message.serversecret = string.IsNullOrWhiteSpace(message.serversecret) ? ctx.Request.Form["serversecret"] : message.serversecret;
+            message.timezone = string.IsNullOrWhiteSpace(message.timezone) ? ctx.Request.Form["timezone"] : message.timezone;
+            message.origtime = string.IsNullOrWhiteSpace(message.origtime) ? ctx.Request.Form["origtime"] : message.origtime;
+
+            Log.Information("Attempting to replace unset values with the form encoded values.");
+            Log.Information(System.Text.Json.JsonSerializer.Serialize(message));
+
+            // Validate and regularize the incoming message.
+            if (!message.RegularizeAndValidate())
+            {
+                return Results.BadRequest($"Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers. {System.Text.Json.JsonSerializer.Serialize(message)}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Information("Failed to read form data by field name.");
         }
 
         return Results.Ok("Message recieved.");
