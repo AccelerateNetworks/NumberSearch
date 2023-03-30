@@ -160,7 +160,7 @@ try
         .UseSqlite()
         .Options;
     using var dbContext = new MessagingContext(contextOptions);
-    await dbContext.Database.EnsureCreatedAsync();
+    //await dbContext.Database.EnsureCreatedAsync();
     await dbContext.Database.MigrateAsync();
 
     app.UseCors();
