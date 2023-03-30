@@ -21,6 +21,7 @@ using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using Serilog;
 using Serilog.Events;
+using Microsoft.Extensions.Hosting;
 
 Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -387,16 +388,17 @@ try
         }
 
     }).RequireAuthorization();
-
     app.Run();
 
+    using var scope = app.Services.CreateScope();
     // Create the database if it doesn't exist
-    var dbContext = app.Services.GetService<MessagingContext>();
+    var dbContext = scope.ServiceProvider.GetService<MessagingContext>();
     if (dbContext is not null)
     {
         dbContext.Database.EnsureCreated();
-
+        dbContext.Database.Migrate();
     }
+
 }
 catch (Exception ex)
 {
