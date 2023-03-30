@@ -333,6 +333,28 @@ try
         }
     }).RequireAuthorization();
 
+    app.MapPost("/api/inbound/1pcom", async ([Microsoft.AspNetCore.Mvc.FromBody] FirstPointInbound message, string token, MessagingContext db) =>
+    {
+        Log.Information(System.Text.Json.JsonSerializer.Serialize(message));
+
+        if (token is not "okereeduePeiquah3yaemohGhae0ie")
+        {
+            Log.Warning($"Token is not valid. Token: {token} is not okereeduePeiquah3yaemohGhae0ie");
+        }
+        else
+        {
+            Log.Information("The FirstPointCom token is valid.");
+        }
+
+        // Validate and regularize the incoming message.
+        if (!message.RegularizeAndValidate())
+        {
+            return Results.BadRequest($"Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers. {System.Text.Json.JsonSerializer.Serialize(message)}");
+        }
+
+        return Results.Ok("Message recieved.");
+    });
+
     // This only works for errors, we need functional credentials to finish building it out.
     app.MapPost("/Message/Outbound/FirstPoint", async ([Microsoft.AspNetCore.Mvc.FromBody] FirstPointOutbound message, MessagingContext db) =>
     {
@@ -490,6 +512,65 @@ namespace Models
         }
 
     }
+
+
+    public class FirstPointInbound
+    {
+        public string origtime { get; set; } = string.Empty;
+        public string msisdn { get; set; } = string.Empty;
+        public string to { get; set; } = string.Empty;
+        public string sessionid { get; set; } = string.Empty;
+        public string timezone { get; set; } = string.Empty;
+        public string message { get; set; } = string.Empty;
+        public float api_version { get; set; }
+        public string serversecret { get; set; } = string.Empty;
+        // These are for the regularization of phone numbers and not mapped from the JSON payload.
+        [JsonIgnore]
+        public PhoneNumbersNA.PhoneNumber FromPhoneNumber { get; set; } = new();
+        [JsonIgnore]
+        public List<PhoneNumbersNA.PhoneNumber> ToPhoneNumbers { get; set; } = new();
+
+        public bool RegularizeAndValidate()
+        {
+            bool FromParsed = false;
+            bool ToParsed = false;
+
+            if (!string.IsNullOrWhiteSpace(msisdn))
+            {
+                var checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(msisdn, out var fromPhoneNumber);
+                if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
+                {
+                    FromPhoneNumber = fromPhoneNumber;
+                    msisdn = $"1{fromPhoneNumber.DialedNumber}";
+                    FromParsed = true;
+                }
+            }
+
+            if (to is not null && to.Any())
+            {
+                // This may not be necessary if this list is always created by the BulkVSMessage constructor.
+                ToPhoneNumbers ??= new List<PhoneNumbersNA.PhoneNumber>();
+
+                foreach (var number in to.Split(','))
+                {
+                    var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
+
+                    if (checkTo && toPhoneNumber is not null)
+                    {
+                        ToPhoneNumbers.Add(toPhoneNumber);
+                    }
+                }
+
+                // This will drop the numbers that couldn't be parsed.
+                to = ToPhoneNumbers is not null && ToPhoneNumbers.Any() ? ToPhoneNumbers.Count > 1 ? string.Join(",", ToPhoneNumbers.Select(x => $"1{x.DialedNumber!}")) : $"1{ToPhoneNumbers?.FirstOrDefault()?.DialedNumber}" ?? string.Empty : string.Empty;
+                ToParsed = true;
+            }
+
+            return FromParsed && ToParsed;
+        }
+
+    }
+
 
     // Message format supplied by BulkVS for both SMS and MMS.
     public class BulkVSInbound
