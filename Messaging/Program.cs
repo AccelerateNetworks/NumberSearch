@@ -155,6 +155,14 @@ try
 
     var app = builder.Build();
 
+    // Create the database if it doesn't exist
+    var contextOptions = new DbContextOptionsBuilder<MessagingContext>()
+        .UseSqlite()
+        .Options;
+    using var dbContext = new MessagingContext(contextOptions);
+    await dbContext.Database.EnsureCreatedAsync();
+    await dbContext.Database.MigrateAsync();
+
     app.UseCors();
     app.UseAuthentication();
 
@@ -389,16 +397,6 @@ try
 
     }).RequireAuthorization();
     app.Run();
-
-    using var scope = app.Services.CreateScope();
-    // Create the database if it doesn't exist
-    var dbContext = scope.ServiceProvider.GetService<MessagingContext>();
-    if (dbContext is not null)
-    {
-        dbContext.Database.EnsureCreated();
-        dbContext.Database.Migrate();
-    }
-
 }
 catch (Exception ex)
 {
