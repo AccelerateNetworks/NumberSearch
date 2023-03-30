@@ -22,6 +22,7 @@ using System.Threading.RateLimiting;
 using Serilog;
 using Serilog.Events;
 using Microsoft.Extensions.Hosting;
+using System.Reflection;
 
 Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -333,7 +334,7 @@ try
         }
     }).RequireAuthorization();
 
-    app.MapPost("/api/inbound/1pcom", async ([Microsoft.AspNetCore.Mvc.FromBody] FirstPointInbound message, string token, MessagingContext db) =>
+    app.MapPost("/api/inbound/1pcom", async ([Microsoft.AspNetCore.Mvc.FromForm] FirstPointInbound message, HttpContext ctx, string token, MessagingContext db) =>
     {
         Log.Information(System.Text.Json.JsonSerializer.Serialize(message));
 
@@ -345,6 +346,24 @@ try
         {
             Log.Information("The FirstPointCom token is valid.");
         }
+
+        var formValues = ctx.Request.Form;
+        Log.Information("Raw form encoded values from the HttpContext");
+        foreach (var value in formValues)
+        {
+            Log.Information($"{value.Key}, {value.Value}");
+        }
+
+        message.msisdn = string.IsNullOrWhiteSpace(message.msisdn) ? ctx.Request.Form["msisdn"] : message.msisdn;
+        message.to = string.IsNullOrWhiteSpace(message.to) ? ctx.Request.Form["to"] : message.to;
+        message.message = string.IsNullOrWhiteSpace(message.message) ? ctx.Request.Form["message"] : message.message;
+        message.sessionid = string.IsNullOrWhiteSpace(message.sessionid) ? ctx.Request.Form["sessionid"] : message.sessionid;
+        message.serversecret = string.IsNullOrWhiteSpace(message.serversecret) ? ctx.Request.Form["serversecret"] : message.serversecret;
+        message.timezone = string.IsNullOrWhiteSpace(message.timezone) ? ctx.Request.Form["timezone"] : message.timezone;
+        message.origtime = string.IsNullOrWhiteSpace(message.origtime) ? ctx.Request.Form["origtime"] : message.origtime;
+
+        Log.Information("Attempting to replace unset values with the form encoded values.");
+        Log.Information(System.Text.Json.JsonSerializer.Serialize(message));
 
         // Validate and regularize the incoming message.
         if (!message.RegularizeAndValidate())
@@ -568,7 +587,6 @@ namespace Models
 
             return FromParsed && ToParsed;
         }
-
     }
 
 
