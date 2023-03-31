@@ -767,7 +767,7 @@ namespace NumberSearch.Tests
         [Fact]
         public async Task FirstComGetPhoneNumbersTestAsync()
         {
-            var results = await FirstCom.NpaNxxFirstPointCom.GetAsync("206", string.Empty, string.Empty, pComNetCredentials.Username, pComNetCredentials.Password);
+            var results = await FirstCom.NpaNxxFirstPointCom.GetAsync("425", string.Empty, string.Empty, pComNetCredentials.Username, pComNetCredentials.Password);
 
             Assert.NotNull(results);
             Assert.NotEmpty(results);
