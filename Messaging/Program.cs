@@ -23,6 +23,7 @@ using Serilog;
 using Serilog.Events;
 using Microsoft.Extensions.Hosting;
 using System.Reflection;
+using Microsoft.Extensions.Primitives;
 
 Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -161,7 +162,6 @@ try
         .UseSqlite()
         .Options;
     using var dbContext = new MessagingContext(contextOptions);
-    //await dbContext.Database.EnsureCreatedAsync();
     await dbContext.Database.MigrateAsync();
 
     app.UseCors();
@@ -197,10 +197,10 @@ try
 
     app.MapMetrics();
 
-    app.MapPost("/Token", async (AuthRequest request, ApplicationDbContext db, UserManager<IdentityUser> userManager, TokenService tokenService, IConfiguration configuration) =>
+    app.MapPost("/login", async (AuthRequest request, ApplicationDbContext db, UserManager<IdentityUser> userManager, TokenService tokenService, IConfiguration configuration) =>
     {
         var managedUser = await userManager.FindByEmailAsync(request.Email);
-        if (managedUser == null)
+        if (managedUser is null)
         {
             return Results.BadRequest("Bad credentials");
         }
@@ -222,7 +222,7 @@ try
         });
     }).RequireRateLimiting("onePerSecond");
 
-    app.MapGet("/Conversations", async (string primary, MessagingContext db, ClaimsPrincipal user) =>
+    app.MapGet("/conversations", async (string primary, MessagingContext db, ClaimsPrincipal user) =>
     {
         var checkPrimary = PhoneNumbersNA.PhoneNumber.TryParse(primary, out var primaryNumber);
         if (!checkPrimary)
@@ -283,7 +283,7 @@ try
     })
         .RequireAuthorization();
 
-    app.MapGet("/Thread", async (string primary, string contacts, MessagingContext db) =>
+    app.MapGet("/thread", async (string primary, string contacts, MessagingContext db) =>
     {
         var checkPrimary = PhoneNumbersNA.PhoneNumber.TryParse(primary, out var primaryNumber);
         if (!checkPrimary)
@@ -340,45 +340,63 @@ try
         {
             Log.Warning($"Token is not valid. Token: {token} is not okereeduePeiquah3yaemohGhae0ie");
         }
-        else
-        {
-            Log.Information("The FirstPointCom token is valid.");
-        }
 
         try
         {
-            var formValues = ctx.Request.Form;
-            Log.Information("Raw form encoded values from the HttpContext");
-            foreach (var value in formValues)
+            FirstPointInbound message = new()
             {
-                Log.Information($"{value.Key}, {value.Value}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.Error("Failed to read HttpRequest Form headers.");
-        }
-
-        try
-        {
-            FirstPointInbound message = new();
-
-            message.msisdn = string.IsNullOrWhiteSpace(message.msisdn) ? ctx.Request.Form["msisdn"] : message.msisdn;
-            message.to = string.IsNullOrWhiteSpace(message.to) ? ctx.Request.Form["to"] : message.to;
-            message.message = string.IsNullOrWhiteSpace(message.message) ? ctx.Request.Form["message"] : message.message;
-            message.sessionid = string.IsNullOrWhiteSpace(message.sessionid) ? ctx.Request.Form["sessionid"] : message.sessionid;
-            message.serversecret = string.IsNullOrWhiteSpace(message.serversecret) ? ctx.Request.Form["serversecret"] : message.serversecret;
-            message.timezone = string.IsNullOrWhiteSpace(message.timezone) ? ctx.Request.Form["timezone"] : message.timezone;
-            message.origtime = string.IsNullOrWhiteSpace(message.origtime) ? ctx.Request.Form["origtime"] : message.origtime;
-
-            Log.Information("Attempting to replace unset values with the form encoded values.");
-            Log.Information(System.Text.Json.JsonSerializer.Serialize(message));
+                msisdn = ctx.Request.Form["msisdn"].ToString(),
+                to = ctx.Request.Form["to"].ToString(),
+                message = ctx.Request.Form["message"].ToString(),
+                sessionid = ctx.Request.Form["sessionid"].ToString(),
+                serversecret = ctx.Request.Form["serversecret"].ToString(),
+                timezone = ctx.Request.Form["timezone"].ToString(),
+                origtime = ctx.Request.Form["origtime"].ToString(),
+            };
 
             // Validate and regularize the incoming message.
             if (!message.RegularizeAndValidate())
             {
                 return Results.BadRequest($"Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers. {System.Text.Json.JsonSerializer.Serialize(message)}");
             }
+
+            MessageRecord record = new()
+            {
+                Content = message.message,
+                From = message.FromPhoneNumber.DialedNumber,
+                To = string.Join(',', message?.ToPhoneNumbers?.Select(x => x.DialedNumber) ?? Array.Empty<string>()),
+                MessageSource = MessageSource.Incoming,
+                MessageType = MessageType.SMS,
+                MediaURLs = string.Empty,
+            };
+
+            record.ToFromCompound = $"{record.From},{record.To}";
+            db.Messages.Add(record);
+
+            try
+            {
+                await db.SaveChangesAsync();
+
+                var existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == record.To).FirstOrDefaultAsync();
+                if (existingRegistration is not null && existingRegistration.AsDialed == record.To)
+                {
+                    try
+                    {
+                        _ = await existingRegistration.CallbackUrl.PostJsonAsync(record);
+                        return Results.Ok("The incoming message was recieved and forwarded to the client.");
+                    }
+                    catch (FlurlHttpException ex)
+                    {
+                        Log.Error(await ex.GetResponseStringAsync());
+                        return Results.Problem("Failed to forward the message to the client's callback url.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem($"Failed to save incoming message to the database. {ex.Message}");
+            }
+
         }
         catch (Exception ex)
         {
@@ -388,8 +406,53 @@ try
         return Results.Ok("Message recieved.");
     });
 
+    app.MapPost("/registerclient", async (string asDialed, string callBackUrl, MessagingContext db) =>
+    {
+        var checkAsDialed = PhoneNumbersNA.PhoneNumber.TryParse(asDialed, out var asDialedNumber);
+        if (!checkAsDialed)
+        {
+            return Results.BadRequest("As Dialed number couldn't be parsed as a valid NANP (North American Number Plan) number.");
+        }
+
+        // Validate the callback Url to prevent dumb errors.
+        if (!Uri.IsWellFormedUriString(callBackUrl, UriKind.Absolute))
+        {
+            return Results.BadRequest($"The callback Url provided {callBackUrl} is invalid or not a well formatted Uri. Please read https://learn.microsoft.com/en-us/dotnet/api/system.uri.iswellformeduristring?view=net-7.0 for more information.");
+        }
+
+        try
+        {
+            // Update existing registrations before creating new ones.
+            var existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == asDialedNumber.DialedNumber).FirstOrDefaultAsync();
+
+            if (existingRegistration is not null && !string.IsNullOrWhiteSpace(existingRegistration.CallbackUrl))
+            {
+                existingRegistration.CallbackUrl = callBackUrl;
+            }
+            else
+            {
+                await db.AddAsync(new ClientRegistration
+                {
+                    AsDialed = asDialedNumber.DialedNumber,
+                    CallbackUrl = callBackUrl,
+                });
+            }
+
+            await db.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex.Message);
+            Log.Error(ex.StackTrace ?? "No stacktrace found.");
+            return Results.Problem("Failed to save the registration to the database.");
+        }
+
+        return Results.Ok($"{asDialedNumber.DialedNumber} is now registered to {callBackUrl}");
+
+    }).RequireAuthorization();
+
     // This only works for errors, we need functional credentials to finish building it out.
-    app.MapPost("/Message/Outbound/FirstPoint", async ([Microsoft.AspNetCore.Mvc.FromBody] FirstPointOutbound message, MessagingContext db) =>
+    app.MapPost("/message/send", async ([Microsoft.AspNetCore.Mvc.FromBody] FirstPointOutbound message, MessagingContext db) =>
     {
         // https://portal.1pcom.net/download/SMSAPI.pdf
         // Validate and regularize the incoming message.
@@ -451,6 +514,7 @@ try
         }
 
     }).RequireAuthorization();
+
     app.Run();
 }
 catch (Exception ex)
@@ -546,7 +610,6 @@ namespace Models
 
     }
 
-
     public class FirstPointInbound
     {
         public string origtime { get; set; } = string.Empty;
@@ -555,7 +618,8 @@ namespace Models
         public string sessionid { get; set; } = string.Empty;
         public string timezone { get; set; } = string.Empty;
         public string message { get; set; } = string.Empty;
-        public float api_version { get; set; }
+        // We don't care so we're not going to serialize this field.
+        //public float api_version { get; set; }
         public string serversecret { get; set; } = string.Empty;
         // These are for the regularization of phone numbers and not mapped from the JSON payload.
         [JsonIgnore]
@@ -603,81 +667,6 @@ namespace Models
         }
     }
 
-
-    // Message format supplied by BulkVS for both SMS and MMS.
-    public class BulkVSInbound
-    {
-        public string From { get; set; } = string.Empty;
-        public string[] To { get; set; } = Array.Empty<string>();
-        public string Message { get; set; } = string.Empty;
-        // Only used in MMS messages.
-        public string[] MediaURLs { get; set; } = Array.Empty<string>();
-        // These are for the regularization of phone numbers and not mapped from the JSON payload.
-        [JsonIgnore]
-        public PhoneNumbersNA.PhoneNumber FromPhoneNumber { get; set; } = new();
-        [JsonIgnore]
-        public List<PhoneNumbersNA.PhoneNumber> ToPhoneNumbers { get; set; } = new();
-
-        // Convert from the vendor specific format to the generic format stored in the database.
-        public MessageRecord ToMessageRecord()
-        {
-            var record = new MessageRecord
-            {
-                Id = Guid.NewGuid(),
-                From = string.IsNullOrWhiteSpace(FromPhoneNumber?.DialedNumber) ? From : FromPhoneNumber.DialedNumber,
-                To = ToPhoneNumbers is not null && ToPhoneNumbers.Any() ? string.Join(',', ToPhoneNumbers.Select(x => x.DialedNumber)) : string.Join(',', To ?? Array.Empty<string>()),
-                Content = Message,
-                MediaURLs = MediaURLs is not null ? string.Join(',', MediaURLs) : string.Empty,
-                MessageType = MediaURLs is not null && MediaURLs.Any() ? MessageType.MMS : MessageType.SMS,
-                MessageSource = MessageSource.Incoming,
-                DateReceivedUTC = DateTime.UtcNow
-            };
-
-            record.ToFromCompound = $"{record.From},{record.To}";
-
-            return record;
-        }
-
-        public bool RegularizeAndValidate()
-        {
-            bool FromParsed = false;
-            bool ToParsed = false;
-
-            if (!string.IsNullOrWhiteSpace(From))
-            {
-                var checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(From, out var fromPhoneNumber);
-                if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
-                {
-                    FromPhoneNumber = fromPhoneNumber;
-                    From = fromPhoneNumber.DialedNumber;
-                    FromParsed = true;
-                }
-            }
-
-            if (To is not null && To.Any())
-            {
-                // This may not be nessesary if this list is always created by the BulkVSMessage constructor.
-                ToPhoneNumbers ??= new List<PhoneNumbersNA.PhoneNumber>();
-
-                foreach (var number in To)
-                {
-                    var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
-
-                    if (checkTo && toPhoneNumber is not null)
-                    {
-                        ToPhoneNumbers.Add(toPhoneNumber);
-                    }
-                }
-
-                // This will drop the numbers that couldn't be parsed.
-                To = ToPhoneNumbers is not null && ToPhoneNumbers.Any() ? ToPhoneNumbers.Select(x => x.DialedNumber!).ToArray() : Array.Empty<string>();
-                ToParsed = true;
-            }
-
-            return FromParsed && ToParsed;
-        }
-    }
-
     public class SendMessageResponse
     {
         public bool MessageSent { get; set; }
@@ -685,167 +674,11 @@ namespace Models
         public string[] Failure { get; set; } = Array.Empty<string>();
     }
 
-    public class BulkVSOutboundResponse
-    {
-        public string RefId { get; set; } = string.Empty;
-        public string From { get; set; } = string.Empty;
-        public string MessageType { get; set; } = string.Empty;
-        public BulkVSOutboundResult[] Results { get; set; } = Array.Empty<BulkVSOutboundResult>();
-
-        public class BulkVSOutboundResult
-        {
-            public string To { get; set; } = string.Empty;
-            public string Status { get; set; } = string.Empty;
-        }
-    }
-
-    public class TeliInbound
-    {
-        [JsonPropertyName("source")]
-        public string Source { get; set; } = string.Empty;
-        [JsonPropertyName("destination")]
-        public string Destination { get; set; } = string.Empty;
-        [JsonPropertyName("message")]
-        public string Message { get; set; } = string.Empty;
-        [JsonPropertyName("type")]
-        public string Type { get; set; } = string.Empty;
-        // These are for the regularization of phone numbers and not mapped from the JSON payload.
-        [JsonIgnore]
-        public PhoneNumbersNA.PhoneNumber FromPhoneNumber { get; set; } = new();
-        [JsonIgnore]
-        public List<PhoneNumbersNA.PhoneNumber> ToPhoneNumbers { get; set; } = new();
-
-        public bool RegularizeAndValidate()
-        {
-            bool FromParsed = false;
-            bool ToParsed = false;
-
-            var checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(Source ?? string.Empty, out var fromPhoneNumber);
-            if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
-            {
-                FromPhoneNumber = fromPhoneNumber;
-                Source = fromPhoneNumber.DialedNumber;
-                FromParsed = true;
-            }
-
-            var To = PhoneNumbersNA.Parse.AsDialedNumbers(Destination ?? string.Empty);
-
-            if (To.Any())
-            {
-                // This may not be nessesary if this list is always created by the BulkVSMessage constructor.
-                ToPhoneNumbers ??= new List<PhoneNumbersNA.PhoneNumber>();
-
-                foreach (var number in To)
-                {
-                    var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
-
-                    if (checkTo && toPhoneNumber is not null)
-                    {
-                        ToPhoneNumbers.Add(toPhoneNumber);
-                    }
-                }
-
-                // This will drop the numbers that couldn't be parsed.
-                Destination = string.Join(',', ToPhoneNumbers.Select(x => x.DialedNumber));
-                ToParsed = true;
-            }
-
-            return FromParsed && ToParsed;
-        }
-
-        public MessageRecord ToMessageRecord()
-        {
-            var record = new MessageRecord
-            {
-                Id = Guid.NewGuid(),
-                From = string.IsNullOrWhiteSpace(FromPhoneNumber?.DialedNumber) ? Source : FromPhoneNumber.DialedNumber,
-                To = ToPhoneNumbers is not null && ToPhoneNumbers.Any() ? string.Join(',', ToPhoneNumbers.Select(x => x.DialedNumber)) : string.Join(',', Destination),
-                Content = Message,
-                MediaURLs = string.Empty,
-                MessageType = string.IsNullOrWhiteSpace(Type) && Type == "mms" ? MessageType.MMS : MessageType.SMS,
-                MessageSource = MessageSource.Incoming,
-                DateReceivedUTC = DateTime.UtcNow
-            };
-
-            record.ToFromCompound = $"{record.From},{record.To}";
-
-            return record;
-        }
-    }
-
-    public class TeliOutbound
-    {
-        [JsonPropertyName("source")]
-        public string? Source { get; set; }
-        [JsonPropertyName("destination")]
-        public string? Destination { get; set; }
-        [JsonPropertyName("message")]
-        public string? Message { get; set; }
-        // These are for the regularization of phone numbers and not mapped from the JSON payload.
-        [JsonIgnore]
-        public PhoneNumbersNA.PhoneNumber? FromPhoneNumber { get; set; }
-        [JsonIgnore]
-        public List<PhoneNumbersNA.PhoneNumber>? ToPhoneNumbers { get; set; }
-
-        public bool RegularizeAndValidate()
-        {
-            bool FromParsed = false;
-            bool ToParsed = false;
-
-            var checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(Source ?? string.Empty, out var fromPhoneNumber);
-            if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
-            {
-                FromPhoneNumber = fromPhoneNumber;
-                Source = fromPhoneNumber.DialedNumber;
-                FromParsed = true;
-            }
-
-            var To = PhoneNumbersNA.Parse.AsDialedNumbers(Destination ?? string.Empty);
-
-            if (To.Any())
-            {
-                // This may not be nessesary if this list is always created by the BulkVSMessage constructor.
-                ToPhoneNumbers ??= new List<PhoneNumbersNA.PhoneNumber>();
-
-                foreach (var number in To)
-                {
-                    var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
-
-                    if (checkTo && toPhoneNumber is not null)
-                    {
-                        ToPhoneNumbers.Add(toPhoneNumber);
-                    }
-                }
-
-                // This will drop the numbers that couldn't be parsed.
-                Destination = string.Join(',', ToPhoneNumbers.Select(x => x.DialedNumber));
-                ToParsed = true;
-            }
-
-            return FromParsed && ToParsed;
-        }
-    }
-
-    public class TeliOutboundError
-    {
-        [JsonPropertyName("code")]
-        public int? Code { get; set; }
-        [JsonPropertyName("status")]
-        public string? Status { get; set; }
-        [JsonPropertyName("data")]
-        public string? Data { get; set; }
-
-        public bool IsSuccess()
-        {
-            return Status is not null && Status == "success" && Code is not null && Code == 200;
-        }
-    }
-
     // Format maintained in the database.
     public class MessageRecord
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         public string From { get; set; } = string.Empty;
         public string To { get; set; } = string.Empty;
         public string ToFromCompound { get; set; } = string.Empty;
@@ -854,7 +687,7 @@ namespace Models
         public MessageType MessageType { get; set; }
         public MessageSource MessageSource { get; set; }
         // Convert to DateTimeOffset if db is not SQLite.
-        public DateTime DateReceivedUTC { get; set; }
+        public DateTime DateReceivedUTC { get; set; } = DateTime.UtcNow;
         public string DLRID { get; set; } = string.Empty;
     }
 
@@ -871,6 +704,8 @@ namespace Models
         }
 
         public DbSet<MessageRecord> Messages => Set<MessageRecord>();
+        public DbSet<ClientRegistration> ClientRegistrations => Set<ClientRegistration>();
+
         public string DbPath { get; set; }
 
         // The following configures EF to create a SQLite database file in the
@@ -890,5 +725,14 @@ namespace Models
         public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Token { get; set; } = string.Empty;
+    }
+
+    public class ClientRegistration
+    {
+        [Key]
+        public Guid ClientRegistrationId { get; set; } = Guid.NewGuid();
+        public string AsDialed { get; set; } = string.Empty;
+        public string CallbackUrl { get; set; } = string.Empty;
+        public DateTime DateRegistered { get; set; } = DateTime.Now;
     }
 }
