@@ -3,10 +3,12 @@ using Flurl.Http;
 using Messaging;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -14,18 +16,15 @@ using Models;
 
 using Prometheus;
 
+using Serilog;
+using Serilog.Events;
+
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
-using Serilog;
-using Serilog.Events;
-using Microsoft.Extensions.Hosting;
-using System.Reflection;
-using Microsoft.Extensions.Primitives;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 
 Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -75,6 +74,16 @@ try
             };
         });
 
+    // Makes enums show up in the docs correctly.
+    builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+    {
+        options.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
+    builder.Services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
+
     builder.Services.AddAuthorization();
     builder.Services.AddCors();
     builder.Services.AddEndpointsApiExplorer();
@@ -96,7 +105,9 @@ try
                 Name = "Use under LICX",
                 Url = new Uri("https://github.com/AccelerateNetworks/NumberSearch/blob/master/LICENSE"),
             }
+            
         });
+        option.UseInlineDefinitionsForEnums();
         option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
             In = ParameterLocation.Header,
@@ -222,7 +233,8 @@ try
             Email = userInDb?.Email ?? string.Empty,
             Token = accessToken,
         });
-    }).RequireRateLimiting("onePerSecond");
+    })
+        .RequireRateLimiting("onePerSecond").WithOpenApi(x => new(x) { Summary = "Get an auth token.", Description = "JWT magic bb." });
 
     app.MapGet("/conversations", async (string primary, MessagingContext db, ClaimsPrincipal user) =>
     {
@@ -283,7 +295,7 @@ try
 
         return Results.NotFound();
     })
-        .RequireAuthorization().ExcludeFromDescription();
+        .RequireAuthorization().ExcludeFromDescription().WithOpenApi();
 
     app.MapGet("/thread", async (string primary, string contacts, MessagingContext db) =>
     {
@@ -334,8 +346,7 @@ try
         {
             return Results.NotFound();
         }
-    }).RequireAuthorization().ExcludeFromDescription();
-
+    }).RequireAuthorization().ExcludeFromDescription().WithOpenApi();
 
     app.MapPost("/api/inbound/1pcom", async Task<Results<Ok<string>, BadRequest<string>>> (HttpRequest request, string token, MessagingContext db) =>
     {
@@ -385,6 +396,9 @@ try
                 {
                     try
                     {
+                        // Add some retry logic
+                        // Number of retry
+                        // Successfully delieverd
                         _ = await existingRegistration.CallbackUrl.PostJsonAsync(record);
                         return TypedResults.Ok("The incoming message was recieved and forwarded to the client.");
                     }
@@ -409,7 +423,8 @@ try
         }
 
         return TypedResults.Ok("Message recieved.");
-    }).ExcludeFromDescription();
+    })
+        .ExcludeFromDescription().WithOpenApi(x => new(x) { Summary = "For use by First Poiunt Communications only.", Description = "Recieves incoming messages from our upstream provider." });
 
     app.MapGet("/client", async Task<Results<Ok<ClientRegistration>, BadRequest<string>, NotFound<string>>> (string asDialed, MessagingContext db) =>
     {
@@ -439,7 +454,8 @@ try
             return TypedResults.BadRequest(ex.Message);
         }
 
-    }).RequireAuthorization();
+    })
+        .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Lookup a specific client registration using the dialed number.", Description = "Use this to see if a dialed number is registered and find out what callback Url its registered to." });
 
     app.MapGet("/client/all", async Task<Results<Ok<ClientRegistration[]>, BadRequest<string>, NotFound<string>>> (MessagingContext db) =>
     {
@@ -463,7 +479,8 @@ try
             return TypedResults.BadRequest(ex.Message);
         }
 
-    }).RequireAuthorization();
+    })
+        .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all registered clients.", Description = "This is intended to be used for debugging client registrations." });
 
     app.MapPost("/client/register", async Task<Results<Ok<RegistrationResponse>, BadRequest<RegistrationResponse>>> (RegistrationRequest registration, MessagingContext db) =>
     {
@@ -526,7 +543,8 @@ try
 
         return TypedResults.Ok(new RegistrationResponse { DialedNumber = asDialedNumber.DialedNumber, CallbackUrl = registration.CallbackUrl, Registered = true });
 
-    }).RequireAuthorization();
+    })
+        .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Register a client for message forwarding.", Description = "Boy I wish I had more to say about this, lmao." });
 
     app.MapGet("/message/all", async Task<Results<Ok<MessageRecord[]>, NotFound<string>, BadRequest<string>>> (MessagingContext db) =>
     {
@@ -549,9 +567,9 @@ try
             Log.Error(ex.StackTrace ?? "No stacktrace found.");
             return TypedResults.BadRequest(ex.Message);
         }
-    }).RequireAuthorization();
+    })
+        .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all sent and recieved messages.", Description = "This is intended to help you debug problems with message sending and delievery so you can see if it's this API or the upstream vendor that is causing problems." });
 
-    // This only works for errors, we need functional credentials to finish building it out.
     app.MapPost("/message/send", async Task<Results<Ok<SendMessageResponse>, BadRequest<SendMessageResponse>>> ([Microsoft.AspNetCore.Mvc.FromBody] FirstPointOutbound message, MessagingContext db) =>
     {
         // https://portal.1pcom.net/download/SMSAPI.pdf
@@ -614,7 +632,8 @@ try
             return TypedResults.BadRequest(new SendMessageResponse { Message = "Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(error)}" });
         }
 
-    }).RequireAuthorization();
+    })
+        .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Send an SMS Message.", Description = "Boy I wish I had more to say about this, lmao."});
 
     app.Run();
 }
@@ -775,7 +794,9 @@ namespace Models
 
     public class SendMessageResponse
     {
+        [DefaultValue(false)]
         public bool MessageSent { get; set; } = false;
+        [DataType(DataType.Text)]
         public string Message { get; set; } = string.Empty;
     }
 
@@ -792,7 +813,9 @@ namespace Models
         public MessageType MessageType { get; set; }
         public MessageSource MessageSource { get; set; }
         // Convert to DateTimeOffset if db is not SQLite.
+        [DataType(DataType.DateTime)]
         public DateTime DateReceivedUTC { get; set; } = DateTime.UtcNow;
+        [DataType(DataType.Text)]
         public string DLRID { get; set; } = string.Empty;
     }
 
@@ -821,28 +844,39 @@ namespace Models
 
     public class AuthRequest
     {
+        [DataType(DataType.EmailAddress)]
         public string Email { get; set; } = string.Empty;
+        [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
     }
 
     public class AuthResponse
     {
+        [DataType(DataType.Text)]
         public string Username { get; set; } = string.Empty;
+        [DataType(DataType.EmailAddress)]
         public string Email { get; set; } = string.Empty;
+        [DataType(DataType.Text)]
         public string Token { get; set; } = string.Empty;
     }
 
     public class RegistrationRequest
     {
+        [DataType(DataType.PhoneNumber)]
         public string DialedNumber { get; set; } = string.Empty;
+        [DataType(DataType.Url)]
         public string CallbackUrl { get; set; } = string.Empty;
     }
 
     public class RegistrationResponse
     {
+        [DataType(DataType.PhoneNumber)]
         public string DialedNumber { get; set; } = string.Empty;
+        [DataType(DataType.Url)]
         public string CallbackUrl { get; set; } = string.Empty;
+        [DefaultValue(false)]
         public bool Registered { get; set; } = false;
+        [DataType(DataType.Text)]
         public string Message { get; set; } = string.Empty;
     }
 
@@ -850,8 +884,11 @@ namespace Models
     {
         [Key]
         public Guid ClientRegistrationId { get; set; } = Guid.NewGuid();
+        [DataType(DataType.PhoneNumber)]
         public string AsDialed { get; set; } = string.Empty;
+        [DataType(DataType.Url)]
         public string CallbackUrl { get; set; } = string.Empty;
+        [DataType(DataType.DateTime)]
         public DateTime DateRegistered { get; set; } = DateTime.Now;
     }
 }
