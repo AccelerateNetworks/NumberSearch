@@ -24,6 +24,8 @@ using Serilog.Events;
 using Microsoft.Extensions.Hosting;
 using System.Reflection;
 using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 
 Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -197,24 +199,24 @@ try
 
     app.MapMetrics();
 
-    app.MapPost("/login", async (AuthRequest request, ApplicationDbContext db, UserManager<IdentityUser> userManager, TokenService tokenService, IConfiguration configuration) =>
+    app.MapPost("/login", async Task<Results<Ok<AuthResponse>, BadRequest<string>, UnauthorizedHttpResult>> (AuthRequest request, ApplicationDbContext db, UserManager<IdentityUser> userManager, TokenService tokenService, IConfiguration configuration) =>
     {
         var managedUser = await userManager.FindByEmailAsync(request.Email);
         if (managedUser is null)
         {
-            return Results.BadRequest("Bad credentials");
+            return TypedResults.BadRequest("Bad credentials");
         }
         var isPasswordValid = await userManager.CheckPasswordAsync(managedUser, request.Password);
         if (!isPasswordValid)
         {
-            return Results.BadRequest("Bad credentials");
+            return TypedResults.BadRequest("Bad credentials");
         }
         var userInDb = db.Users.FirstOrDefault(u => u.Email == request.Email);
         if (userInDb is null)
-            return Results.Unauthorized();
+            return TypedResults.Unauthorized();
         var accessToken = tokenService.CreateToken(userInDb, configuration);
         await db.SaveChangesAsync();
-        return Results.Ok(new AuthResponse
+        return TypedResults.Ok(new AuthResponse
         {
             Username = userInDb?.UserName ?? string.Empty,
             Email = userInDb?.Email ?? string.Empty,
@@ -281,7 +283,7 @@ try
 
         return Results.NotFound();
     })
-        .RequireAuthorization();
+        .RequireAuthorization().ExcludeFromDescription();
 
     app.MapGet("/thread", async (string primary, string contacts, MessagingContext db) =>
     {
@@ -332,9 +334,10 @@ try
         {
             return Results.NotFound();
         }
-    }).RequireAuthorization();
+    }).RequireAuthorization().ExcludeFromDescription();
 
-    app.MapPost("/api/inbound/1pcom", async (HttpContext ctx, string token, MessagingContext db) =>
+
+    app.MapPost("/api/inbound/1pcom", async Task<Results<Ok<string>, BadRequest<string>>> (HttpRequest request, string token, MessagingContext db) =>
     {
         if (token is not "okereeduePeiquah3yaemohGhae0ie")
         {
@@ -345,19 +348,19 @@ try
         {
             FirstPointInbound message = new()
             {
-                msisdn = ctx.Request.Form["msisdn"].ToString(),
-                to = ctx.Request.Form["to"].ToString(),
-                message = ctx.Request.Form["message"].ToString(),
-                sessionid = ctx.Request.Form["sessionid"].ToString(),
-                serversecret = ctx.Request.Form["serversecret"].ToString(),
-                timezone = ctx.Request.Form["timezone"].ToString(),
-                origtime = ctx.Request.Form["origtime"].ToString(),
+                msisdn = request.Form["msisdn"].ToString(),
+                to = request.Form["to"].ToString(),
+                message = request.Form["message"].ToString(),
+                sessionid = request.Form["sessionid"].ToString(),
+                serversecret = request.Form["serversecret"].ToString(),
+                timezone = request.Form["timezone"].ToString(),
+                origtime = request.Form["origtime"].ToString(),
             };
 
             // Validate and regularize the incoming message.
             if (!message.RegularizeAndValidate())
             {
-                return Results.BadRequest($"Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers. {System.Text.Json.JsonSerializer.Serialize(message)}");
+                return TypedResults.BadRequest($"Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers. {System.Text.Json.JsonSerializer.Serialize(message)}");
             }
 
             MessageRecord record = new()
@@ -371,7 +374,7 @@ try
             };
 
             record.ToFromCompound = $"{record.From},{record.To}";
-            db.Messages.Add(record);
+            await db.Messages.AddAsync(record);
 
             try
             {
@@ -383,41 +386,109 @@ try
                     try
                     {
                         _ = await existingRegistration.CallbackUrl.PostJsonAsync(record);
-                        return Results.Ok("The incoming message was recieved and forwarded to the client.");
+                        return TypedResults.Ok("The incoming message was recieved and forwarded to the client.");
                     }
                     catch (FlurlHttpException ex)
                     {
                         Log.Error(await ex.GetResponseStringAsync());
-                        return Results.Problem("Failed to forward the message to the client's callback url.");
+                        return TypedResults.BadRequest("Failed to forward the message to the client's callback url.");
                     }
                 }
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to save incoming message to the database. {ex.Message}");
+                return TypedResults.BadRequest($"Failed to save incoming message to the database. {ex.Message}");
             }
-
         }
         catch (Exception ex)
         {
+            Log.Error(ex.Message);
+            Log.Error(ex.StackTrace ?? "No stacktrace found.");
+            Log.Error(string.Join(',', request.Form.Select(x => $" {x.Key} : {x.Value}").ToArray()));
             Log.Information("Failed to read form data by field name.");
         }
 
-        return Results.Ok("Message recieved.");
-    });
+        return TypedResults.Ok("Message recieved.");
+    }).ExcludeFromDescription();
 
-    app.MapPost("/registerclient", async (string asDialed, string callBackUrl, MessagingContext db) =>
+    app.MapGet("/client", async Task<Results<Ok<ClientRegistration>, BadRequest<string>, NotFound<string>>> (string asDialed, MessagingContext db) =>
     {
         var checkAsDialed = PhoneNumbersNA.PhoneNumber.TryParse(asDialed, out var asDialedNumber);
         if (!checkAsDialed)
         {
-            return Results.BadRequest("As Dialed number couldn't be parsed as a valid NANP (North American Number Plan) number.");
+            return TypedResults.BadRequest("AsDialed number couldn't be parsed as a valid NANP (North American Number Plan) number.");
+        }
+
+        try
+        {
+            var registration = await db.ClientRegistrations.FirstOrDefaultAsync(x => x.AsDialed == asDialedNumber.DialedNumber);
+
+            if (registration is not null && !string.IsNullOrWhiteSpace(registration.AsDialed) && registration.AsDialed == asDialedNumber.DialedNumber)
+            {
+                return TypedResults.Ok(registration);
+            }
+            else
+            {
+                return TypedResults.NotFound($"Failed to find a client registration for {asDialed}.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex.Message);
+            Log.Error(ex.StackTrace ?? "No stacktrace found.");
+            return TypedResults.BadRequest(ex.Message);
+        }
+
+    }).RequireAuthorization();
+
+    app.MapGet("/client/all", async Task<Results<Ok<ClientRegistration[]>, BadRequest<string>, NotFound<string>>> (MessagingContext db) =>
+    {
+        try
+        {
+            var registrations = await db.ClientRegistrations.ToArrayAsync();
+
+            if (registrations is not null && registrations.Any())
+            {
+                return TypedResults.Ok(registrations);
+            }
+            else
+            {
+                return TypedResults.NotFound($"No clients are currently registered for service.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex.Message);
+            Log.Error(ex.StackTrace ?? "No stacktrace found.");
+            return TypedResults.BadRequest(ex.Message);
+        }
+
+    }).RequireAuthorization();
+
+    app.MapPost("/client/register", async Task<Results<Ok<RegistrationResponse>, BadRequest<RegistrationResponse>>> (RegistrationRequest registration, MessagingContext db) =>
+    {
+        var checkAsDialed = PhoneNumbersNA.PhoneNumber.TryParse(registration.DialedNumber, out var asDialedNumber);
+        if (!checkAsDialed)
+        {
+            return TypedResults.BadRequest(new RegistrationResponse
+            {
+                DialedNumber = registration.DialedNumber,
+                CallbackUrl = registration.CallbackUrl,
+                Registered = false,
+                Message = "Dialed number couldn't be parsed as a valid NANP (North American Number Plan) number."
+            });
         }
 
         // Validate the callback Url to prevent dumb errors.
-        if (!Uri.IsWellFormedUriString(callBackUrl, UriKind.Absolute))
+        if (!Uri.IsWellFormedUriString(registration.CallbackUrl, UriKind.Absolute))
         {
-            return Results.BadRequest($"The callback Url provided {callBackUrl} is invalid or not a well formatted Uri. Please read https://learn.microsoft.com/en-us/dotnet/api/system.uri.iswellformeduristring?view=net-7.0 for more information.");
+            return TypedResults.BadRequest(new RegistrationResponse
+            {
+                DialedNumber = registration.DialedNumber,
+                CallbackUrl = registration.CallbackUrl,
+                Registered = false,
+                Message = $"The callback Url provided {registration.CallbackUrl} is invalid or not a well formatted Uri. Please read https://learn.microsoft.com/en-us/dotnet/api/system.uri.iswellformeduristring?view=net-7.0 for more information."
+            });
         }
 
         try
@@ -427,14 +498,14 @@ try
 
             if (existingRegistration is not null && !string.IsNullOrWhiteSpace(existingRegistration.CallbackUrl))
             {
-                existingRegistration.CallbackUrl = callBackUrl;
+                existingRegistration.CallbackUrl = registration.CallbackUrl;
             }
             else
             {
                 await db.AddAsync(new ClientRegistration
                 {
                     AsDialed = asDialedNumber.DialedNumber,
-                    CallbackUrl = callBackUrl,
+                    CallbackUrl = registration.CallbackUrl,
                 });
             }
 
@@ -444,21 +515,50 @@ try
         {
             Log.Error(ex.Message);
             Log.Error(ex.StackTrace ?? "No stacktrace found.");
-            return Results.Problem("Failed to save the registration to the database.");
+            return TypedResults.BadRequest(new RegistrationResponse
+            {
+                DialedNumber = registration.DialedNumber,
+                CallbackUrl = registration.CallbackUrl,
+                Registered = false,
+                Message = $"Failed to save the registration to the database. Please email dan@acceleratenetworks.com to report this outage. {ex.Message}"
+            });
         }
 
-        return Results.Ok($"{asDialedNumber.DialedNumber} is now registered to {callBackUrl}");
+        return TypedResults.Ok(new RegistrationResponse { DialedNumber = asDialedNumber.DialedNumber, CallbackUrl = registration.CallbackUrl, Registered = true });
 
     }).RequireAuthorization();
 
+    app.MapGet("/message/all", async Task<Results<Ok<MessageRecord[]>, NotFound<string>, BadRequest<string>>> (MessagingContext db) =>
+    {
+        try
+        {
+            var messages = await db.Messages.ToArrayAsync();
+
+            if (messages is not null && messages.Any())
+            {
+                return TypedResults.Ok(messages);
+            }
+            else
+            {
+                return TypedResults.NotFound($"No messages have been recorded.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex.Message);
+            Log.Error(ex.StackTrace ?? "No stacktrace found.");
+            return TypedResults.BadRequest(ex.Message);
+        }
+    }).RequireAuthorization();
+
     // This only works for errors, we need functional credentials to finish building it out.
-    app.MapPost("/message/send", async ([Microsoft.AspNetCore.Mvc.FromBody] FirstPointOutbound message, MessagingContext db) =>
+    app.MapPost("/message/send", async Task<Results<Ok<SendMessageResponse>, BadRequest<SendMessageResponse>>> ([Microsoft.AspNetCore.Mvc.FromBody] FirstPointOutbound message, MessagingContext db) =>
     {
         // https://portal.1pcom.net/download/SMSAPI.pdf
         // Validate and regularize the incoming message.
         if (!message.RegularizeAndValidate())
         {
-            return Results.BadRequest("Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers.");
+            return TypedResults.BadRequest(new SendMessageResponse { Message = "Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers." });
         }
 
         try
@@ -495,14 +595,15 @@ try
                 await db.SaveChangesAsync();
 
                 // Let the caller know that delivery status for specific numbers.
-                return Results.Ok(new SendMessageResponse
+                return TypedResults.Ok(new SendMessageResponse
                 {
+                    Message = $"Message sent to {record.To}",
                     MessageSent = true,
                 });
             }
             else
             {
-                return Results.BadRequest($"Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(sendMessage)}");
+                return TypedResults.BadRequest(new SendMessageResponse { Message = "Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(sendMessage)}" });
             }
         }
         catch (FlurlHttpException ex)
@@ -510,7 +611,7 @@ try
             var error = await ex.GetResponseJsonAsync<FirstPointResponse>();
 
             // Let the caller know that delivery status for specific numbers.
-            return Results.BadRequest($"Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(error)}");
+            return TypedResults.BadRequest(new SendMessageResponse { Message = "Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(error)}" });
         }
 
     }).RequireAuthorization();
@@ -634,11 +735,16 @@ namespace Models
 
             if (!string.IsNullOrWhiteSpace(msisdn))
             {
-                var checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(msisdn, out var fromPhoneNumber);
+                bool checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(msisdn, out var fromPhoneNumber);
                 if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
                 {
                     FromPhoneNumber = fromPhoneNumber;
                     msisdn = $"1{fromPhoneNumber.DialedNumber}";
+                    FromParsed = true;
+                }
+                // Handle incoming short codes.
+                else if (msisdn.Length is 5 || msisdn.Length is 6)
+                {
                     FromParsed = true;
                 }
             }
@@ -669,9 +775,8 @@ namespace Models
 
     public class SendMessageResponse
     {
-        public bool MessageSent { get; set; }
-        public string[] Success { get; set; } = Array.Empty<string>();
-        public string[] Failure { get; set; } = Array.Empty<string>();
+        public bool MessageSent { get; set; } = false;
+        public string Message { get; set; } = string.Empty;
     }
 
     // Format maintained in the database.
@@ -725,6 +830,20 @@ namespace Models
         public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Token { get; set; } = string.Empty;
+    }
+
+    public class RegistrationRequest
+    {
+        public string DialedNumber { get; set; } = string.Empty;
+        public string CallbackUrl { get; set; } = string.Empty;
+    }
+
+    public class RegistrationResponse
+    {
+        public string DialedNumber { get; set; } = string.Empty;
+        public string CallbackUrl { get; set; } = string.Empty;
+        public bool Registered { get; set; } = false;
+        public string Message { get; set; } = string.Empty;
     }
 
     public class ClientRegistration
