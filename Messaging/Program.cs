@@ -105,7 +105,7 @@ try
                 Name = "Use under LICX",
                 Url = new Uri("https://github.com/AccelerateNetworks/NumberSearch/blob/master/LICENSE"),
             }
-            
+
         });
         option.UseInlineDefinitionsForEnums();
         option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -348,84 +348,6 @@ try
         }
     }).RequireAuthorization().ExcludeFromDescription().WithOpenApi();
 
-    app.MapPost("/api/inbound/1pcom", async Task<Results<Ok<string>, BadRequest<string>>> (HttpRequest request, string token, MessagingContext db) =>
-    {
-        if (token is not "okereeduePeiquah3yaemohGhae0ie")
-        {
-            Log.Warning($"Token is not valid. Token: {token} is not okereeduePeiquah3yaemohGhae0ie");
-        }
-
-        try
-        {
-            FirstPointInbound message = new()
-            {
-                msisdn = request.Form["msisdn"].ToString(),
-                to = request.Form["to"].ToString(),
-                message = request.Form["message"].ToString(),
-                sessionid = request.Form["sessionid"].ToString(),
-                serversecret = request.Form["serversecret"].ToString(),
-                timezone = request.Form["timezone"].ToString(),
-                origtime = request.Form["origtime"].ToString(),
-            };
-
-            // Validate and regularize the incoming message.
-            if (!message.RegularizeAndValidate())
-            {
-                return TypedResults.BadRequest($"Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers. {System.Text.Json.JsonSerializer.Serialize(message)}");
-            }
-
-            MessageRecord record = new()
-            {
-                Content = message.message,
-                From = message.FromPhoneNumber.DialedNumber,
-                To = string.Join(',', message?.ToPhoneNumbers?.Select(x => x.DialedNumber) ?? Array.Empty<string>()),
-                MessageSource = MessageSource.Incoming,
-                MessageType = MessageType.SMS,
-                MediaURLs = string.Empty,
-            };
-
-            record.ToFromCompound = $"{record.From},{record.To}";
-            await db.Messages.AddAsync(record);
-
-            try
-            {
-                await db.SaveChangesAsync();
-
-                var existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == record.To).FirstOrDefaultAsync();
-                if (existingRegistration is not null && existingRegistration.AsDialed == record.To)
-                {
-                    try
-                    {
-                        // Add some retry logic
-                        // Number of retry
-                        // Successfully delieverd
-                        _ = await existingRegistration.CallbackUrl.PostJsonAsync(record);
-                        return TypedResults.Ok("The incoming message was recieved and forwarded to the client.");
-                    }
-                    catch (FlurlHttpException ex)
-                    {
-                        Log.Error(await ex.GetResponseStringAsync());
-                        return TypedResults.BadRequest("Failed to forward the message to the client's callback url.");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                return TypedResults.BadRequest($"Failed to save incoming message to the database. {ex.Message}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex.Message);
-            Log.Error(ex.StackTrace ?? "No stacktrace found.");
-            Log.Error(string.Join(',', request.Form.Select(x => $" {x.Key} : {x.Value}").ToArray()));
-            Log.Information("Failed to read form data by field name.");
-        }
-
-        return TypedResults.Ok("Message recieved.");
-    })
-        .ExcludeFromDescription().WithOpenApi(x => new(x) { Summary = "For use by First Poiunt Communications only.", Description = "Recieves incoming messages from our upstream provider." });
-
     app.MapGet("/client", async Task<Results<Ok<ClientRegistration>, BadRequest<string>, NotFound<string>>> (string asDialed, MessagingContext db) =>
     {
         var checkAsDialed = PhoneNumbersNA.PhoneNumber.TryParse(asDialed, out var asDialedNumber);
@@ -633,7 +555,89 @@ try
         }
 
     })
-        .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Send an SMS Message.", Description = "Boy I wish I had more to say about this, lmao."});
+        .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Send an SMS Message.", Description = "Submit outbound messages to this endpoint. The 'to' field is a comma separated list of dialed numbers, or a single dialed number without commas. The 'msisdn' the dialed number of the client that is sending the message. The 'message' field is a string. No validation of the message field occurs before it is forwarded to our upstream vendors." });
+
+    // Add unit tests for this endpoint to verify its behavior.
+    //https://sms.callpipe.com/api/inbound/1pcom?token=okereeduePeiquah3yaemohGhae0ie
+    //    { "origtime": "2022-04-17 03:48:00", "msisdn": "15555551212", "to": "14445556543", "sessionid": "tLMOYTAmIFiQvBE6X1g", "timezone": "EST", "message": "Your Lyft code is 12345", "api_version": 0.5, "serversecret": "sekrethere"}
+    // When this issue is resolved we can simplify the way that we are recieving data in this endpoint: https://github.com/dotnet/aspnetcore/issues/39430 and https://stackoverflow.com/questions/71047077/net-6-minimal-api-and-multipart-form-data/71048827#71048827
+    app.MapPost("/api/inbound/1pcom", async Task<Results<Ok<string>, BadRequest<string>>> (HttpContext context, string token, MessagingContext db) =>
+    {
+        if (token is not "okereeduePeiquah3yaemohGhae0ie")
+        {
+            Log.Warning($"Token is not valid. Token: {token} is not okereeduePeiquah3yaemohGhae0ie");
+        }
+
+        try
+        {
+            FirstPointInbound message = new()
+            {
+                msisdn = context.Request.Form["msisdn"].ToString(),
+                to = context.Request.Form["to"].ToString(),
+                message = context.Request.Form["message"].ToString(),
+                sessionid = context.Request.Form["sessionid"].ToString(),
+                serversecret = context.Request.Form["serversecret"].ToString(),
+                timezone = context.Request.Form["timezone"].ToString(),
+                origtime = context.Request.Form["origtime"].ToString(),
+            };
+
+            // Validate and regularize the incoming message.
+            if (!message.RegularizeAndValidate())
+            {
+                return TypedResults.BadRequest($"Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers. {System.Text.Json.JsonSerializer.Serialize(message)}");
+            }
+
+            MessageRecord record = new()
+            {
+                Content = message.message,
+                From = message.FromPhoneNumber.DialedNumber,
+                To = string.Join(',', message?.ToPhoneNumbers?.Select(x => x.DialedNumber) ?? Array.Empty<string>()),
+                MessageSource = MessageSource.Incoming,
+                MessageType = MessageType.SMS,
+                MediaURLs = string.Empty,
+            };
+
+            record.ToFromCompound = $"{record.From},{record.To}";
+            await db.Messages.AddAsync(record);
+
+            try
+            {
+                await db.SaveChangesAsync();
+
+                var existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == record.To).FirstOrDefaultAsync();
+                if (existingRegistration is not null && existingRegistration.AsDialed == record.To)
+                {
+                    try
+                    {
+                        // Add some retry logic
+                        // Number of retry
+                        // Successfully delieverd
+                        _ = await existingRegistration.CallbackUrl.PostJsonAsync(record);
+                        return TypedResults.Ok("The incoming message was recieved and forwarded to the client.");
+                    }
+                    catch (FlurlHttpException ex)
+                    {
+                        Log.Error(await ex.GetResponseStringAsync());
+                        return TypedResults.BadRequest("Failed to forward the message to the client's callback url.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return TypedResults.BadRequest($"Failed to save incoming message to the database. {ex.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex.Message);
+            Log.Error(ex.StackTrace ?? "No stacktrace found.");
+            Log.Error(string.Join(',', context.Request.Form.Select(x => $" {x.Key} : {x.Value}").ToArray()));
+            Log.Information("Failed to read form data by field name.");
+        }
+
+        return TypedResults.Ok("Message recieved.");
+    })
+        .WithOpenApi(x => new(x) { Summary = "For use by First Point Communications only.", Description = "Recieves incoming messages from our upstream provider. Forwards valid SMS messages to clients registered through the /client/register endpoint. Forwarded messages are in the form described by the MessageRecord entry in the Schema's section of this page. The is no request body as the data provided by First Point Communications is UrlEncoded like POSTing form data rather than JSON formatted in body of the POST request. The Token is a secret created and maintained by First Point Communications. This endpoint is not for use by anyone other than First Point Communications. It is documented here to help developers understand how incoming messages are fowarded to the client that they have registered with this API." });
 
     app.Run();
 }
