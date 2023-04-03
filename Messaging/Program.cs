@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Primitives;
@@ -492,7 +493,7 @@ try
     })
         .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all sent and recieved messages.", Description = "This is intended to help you debug problems with message sending and delievery so you can see if it's this API or the upstream vendor that is causing problems." });
 
-    app.MapPost("/message/send", async Task<Results<Ok<SendMessageResponse>, BadRequest<SendMessageResponse>>> ([Microsoft.AspNetCore.Mvc.FromBody] FirstPointOutbound message, MessagingContext db) =>
+    app.MapPost("/message/send", async Task<Results<Ok<SendMessageResponse>, BadRequest<SendMessageResponse>>> ([Microsoft.AspNetCore.Mvc.FromBody] SendMessageRequest message, MessagingContext db) =>
     {
         // https://portal.1pcom.net/download/SMSAPI.pdf
         // Validate and regularize the incoming message.
@@ -561,11 +562,12 @@ try
     //https://sms.callpipe.com/api/inbound/1pcom?token=okereeduePeiquah3yaemohGhae0ie
     //    { "origtime": "2022-04-17 03:48:00", "msisdn": "15555551212", "to": "14445556543", "sessionid": "tLMOYTAmIFiQvBE6X1g", "timezone": "EST", "message": "Your Lyft code is 12345", "api_version": 0.5, "serversecret": "sekrethere"}
     // When this issue is resolved we can simplify the way that we are recieving data in this endpoint: https://github.com/dotnet/aspnetcore/issues/39430 and https://stackoverflow.com/questions/71047077/net-6-minimal-api-and-multipart-form-data/71048827#71048827
-    app.MapPost("/api/inbound/1pcom", async Task<Results<Ok<string>, BadRequest<string>>> (HttpContext context, string token, MessagingContext db) =>
+    app.MapPost("/api/inbound/1pcom", async Task<Results<Ok<string>, BadRequest<string>, UnauthorizedHttpResult>> (HttpContext context, string token, MessagingContext db) =>
     {
         if (token is not "okereeduePeiquah3yaemohGhae0ie")
         {
             Log.Warning($"Token is not valid. Token: {token} is not okereeduePeiquah3yaemohGhae0ie");
+            return TypedResults.Unauthorized();
         }
 
         try
@@ -631,13 +633,14 @@ try
         {
             Log.Error(ex.Message);
             Log.Error(ex.StackTrace ?? "No stacktrace found.");
-            Log.Error(string.Join(',', context.Request.Form.Select(x => $" {x.Key} : {x.Value}").ToArray()));
             Log.Information("Failed to read form data by field name.");
+            return TypedResults.BadRequest("Failed to read form data by field name.");
         }
 
-        return TypedResults.Ok("Message recieved.");
+        return TypedResults.BadRequest("Failed to record the message or forward it to the registered client.");
+
     })
-        .WithOpenApi(x => new(x) { Summary = "For use by First Point Communications only.", Description = "Recieves incoming messages from our upstream provider. Forwards valid SMS messages to clients registered through the /client/register endpoint. Forwarded messages are in the form described by the MessageRecord entry in the Schema's section of this page. The is no request body as the data provided by First Point Communications is UrlEncoded like POSTing form data rather than JSON formatted in body of the POST request. The Token is a secret created and maintained by First Point Communications. This endpoint is not for use by anyone other than First Point Communications. It is documented here to help developers understand how incoming messages are fowarded to the client that they have registered with this API." });
+        .WithOpenApi(x => new(x) { Summary = "For use by First Point Communications only.", Description = "Recieves incoming messages from our upstream provider. Forwards valid SMS messages to clients registered through the /client/register endpoint. Forwarded messages are in the form described by the MessageRecord entry in the Schema's section of this page. The is no request body as the data provided by First Point Communications is UrlEncoded like POSTing form data rather than JSON formatted in body of the POST request. The Token is a secret created and maintained by First Point Communications. This endpoint is not for use by anyone other than First Point Communications. It is documented here to help developers understand how incoming messages are fowarded to the client that they have registered with this API. The Messaging.Tests project is a series of functional tests that verify the behavior of this endpoint, because this method of message passing is so chaotic." });
 
     app.Run();
 }
@@ -649,6 +652,10 @@ finally
 {
     Log.CloseAndFlush();
 }
+
+// Without this the test suite won't work.
+public partial class Program
+{ }
 
 namespace Models
 {
@@ -682,7 +689,7 @@ namespace Models
     }
 
     // This model isn't converted into JSON as First Com expects a form-style URLEncoded POST as a request. Only the response is actually JSON.
-    public class FirstPointOutbound
+    public class SendMessageRequest
     {
         public string To { get; set; } = string.Empty;
         public string MSISDN { get; set; } = string.Empty;
@@ -743,7 +750,7 @@ namespace Models
         public string timezone { get; set; } = string.Empty;
         public string message { get; set; } = string.Empty;
         // We don't care so we're not going to serialize this field.
-        //public float api_version { get; set; }
+        public double api_version { get; set; }
         public string serversecret { get; set; } = string.Empty;
         // These are for the regularization of phone numbers and not mapped from the JSON payload.
         [JsonIgnore]
