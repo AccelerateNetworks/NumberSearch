@@ -62,6 +62,15 @@ namespace NumberSearch.Mvc.Controllers
             return View();
         }
 
+        [HttpGet("Home/Careers")]
+        [HttpGet("Careers")]
+        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
+        [OutputCache(Duration = 30)]
+        public IActionResult Careers()
+        {
+            return View();
+        }
+
         [HttpGet("releases/android/RELEASE")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
         [OutputCache(Duration = 30)]
