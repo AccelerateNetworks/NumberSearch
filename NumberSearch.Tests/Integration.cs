@@ -1,17 +1,13 @@
 
 using Microsoft.Extensions.Configuration;
 
-using NuGet.Frameworks;
-
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
-using NumberSearch.DataAccess.Call48;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.LCGuide;
 using NumberSearch.DataAccess.Models;
 using NumberSearch.DataAccess.Peerless;
 using NumberSearch.DataAccess.TeleDynamics;
-using NumberSearch.DataAccess.TeliMessage;
 using NumberSearch.Mvc.Models;
 
 using ServiceReference;
@@ -472,115 +468,6 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
-        public async Task TeliNPAsTestAsync()
-        {
-            // Arrange
-
-            // Act
-            var results = await DidsNpas.GetAsync(token);
-
-            // Assert
-            Assert.NotNull(results);
-            Assert.False(string.IsNullOrWhiteSpace(results.status));
-            Assert.True(results.code == 200);
-            foreach (var result in results.data)
-            {
-                Assert.False(string.IsNullOrWhiteSpace(result));
-            }
-            output.WriteLine(JsonSerializer.Serialize(results));
-        }
-
-        [Fact]
-        public async Task TeliGetAllOwnedNumbersAsync()
-        {
-            // Arrange
-
-            // Act
-            var results = await UserDidsList.GetAllAsync(token).ConfigureAwait(false);
-
-            // Assert
-            Assert.NotNull(results);
-            Assert.False(string.IsNullOrWhiteSpace(results.status));
-            Assert.True(results.code == 200);
-            foreach (var result in results.data)
-            {
-                Assert.False(string.IsNullOrWhiteSpace(result.number));
-            }
-            output.WriteLine(JsonSerializer.Serialize(results));
-        }
-
-        //[Fact]
-        //public async Task TeliGetAllTollfreeAsync()
-        //{
-        //    // Arrange
-
-        //    // Act
-        //    var results = await DidsList.GetAllTollfreeAsync(token).ConfigureAwait(false);
-
-        //    // Assert
-        //    Assert.NotNull(results);
-        //    foreach (var result in results)
-        //    {
-        //        Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-        //    }
-        //    output.WriteLine(JsonSerializer.Serialize(results));
-        //}
-
-        [Fact]
-        public async Task TeliEnableCNAMAsync()
-        {
-            // Arrange
-
-            // Act
-            var results = await UserDidsCnamEnable.GetAsync("9292233014", token);
-
-            // Assert
-            Assert.NotNull(results);
-            Assert.False(string.IsNullOrWhiteSpace(results.status));
-            Assert.True(results.code == 200);
-            Assert.True(results.CnamEnabled());
-            output.WriteLine(JsonSerializer.Serialize(results));
-        }
-
-        [Fact]
-        public async Task TeliLookupEmergencyInfoAsync()
-        {
-            // Arrange
-
-            // Act
-            var results = await EmergencyInfo.GetAsync("2062011205", token);
-
-            // Assert
-            Assert.NotNull(results);
-            Assert.False(string.IsNullOrWhiteSpace(results.status));
-            output.WriteLine(JsonSerializer.Serialize(results));
-
-            results = await EmergencyInfo.GetAsync("9365820436", token);
-            Assert.NotNull(results);
-            Assert.False(string.IsNullOrWhiteSpace(results.status));
-            output.WriteLine(JsonSerializer.Serialize(results));
-        }
-
-        [Fact]
-        public async Task TeliValidateEmergencyAddressAsync()
-        {
-            // Arrange
-
-            // Act
-            var results = await EmergencyInfo.GetAsync("2062011205", token);
-
-            // Assert
-            Assert.NotNull(results);
-            Assert.False(string.IsNullOrWhiteSpace(results.status));
-            output.WriteLine(JsonSerializer.Serialize(results));
-
-            var result = await EmergencyInfo.ValidateAddressAsync(results.data.address, results.data.city, results.data.state, results.data.zip, token);
-            Assert.NotNull(result);
-            Assert.False(string.IsNullOrWhiteSpace(result.status));
-            output.WriteLine(JsonSerializer.Serialize(result));
-        }
-
-        [Fact]
         public async Task PeerlessGetPhoneNumbersTestAsync()
         {
             // Arrange
@@ -949,6 +836,42 @@ namespace NumberSearch.Tests
             Assert.NotEmpty(results);
         }
 
+        [Fact]
+        public async Task BulkVSRESTValidateAddressAsync()
+        {
+            // Arrange
+            // Act
+            var results = await E911Record.ValidateAddressAsync("", "", "", "", "", "", bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+
+            // Assert
+            Assert.NotNull(results);
+            output.WriteLine(JsonSerializer.Serialize(results));
+        }
+
+        [Fact]
+        public async Task BulkVSRESTGetExistingRecordAsync()
+        {
+            // Arrange
+            // Act
+            var results = await E911Record.GetAsync("", bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+
+            // Assert
+            Assert.NotNull(results);
+            output.WriteLine(JsonSerializer.Serialize(results));
+        }
+
+        [Fact]
+        public async Task BulkVSRESTProvisionAsync()
+        {
+            // Arrange
+            // Act
+            var results = await E911Record.PostAsync("", "", "", Array.Empty<string>(), bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+
+            // Assert
+            Assert.NotNull(results);
+            output.WriteLine(JsonSerializer.Serialize(results));
+        }
+
         // Disabled so as not to mess up this specific order in the vendor's system.
         //[Fact]
         //public async Task BulkVSRESTAddANoteAsync()
@@ -1092,20 +1015,6 @@ namespace NumberSearch.Tests
         //}
 
         [Fact]
-        public async Task TeleNumberDetailsTestAsync()
-        {
-            // Arrange
-            var number = "2068588757";
-
-            // Act
-            var results = await UserDidsGet.GetAsync(number, token);
-
-            Assert.NotNull(results);
-            Assert.True(results.code == 200);
-            output.WriteLine(results.code.ToString());
-        }
-
-        [Fact]
         public async Task GetCarrierByOCNAsync()
         {
             // Arrange
@@ -1116,27 +1025,6 @@ namespace NumberSearch.Tests
 
             Assert.NotNull(results);
             Assert.True(results.Ocn == ocn);
-        }
-
-        [Fact]
-        public async Task TeleNoteTestAsync()
-        {
-            // Arrange
-            var number = "2068588757";
-
-            // Act
-            var results = await UserDidsGet.GetAsync(number, token).ConfigureAwait(false);
-
-            Assert.NotNull(results);
-            output.WriteLine(results.data.id);
-
-            var note = $"This is a test note.";
-
-            var setNote = await UserDidsNote.SetNote(note, results.data.id, token).ConfigureAwait(false);
-
-            Assert.NotNull(setNote);
-            Assert.True(setNote.code == 200);
-            output.WriteLine(setNote.data);
         }
 
         [Fact]

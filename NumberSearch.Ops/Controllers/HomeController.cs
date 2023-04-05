@@ -77,20 +77,20 @@ public class HomeController : Controller
     }
 
     [Authorize]
-    [Route("/Home/EmergencyInformation")]
-    [Route("/Home/EmergencyInformation/{dialedNumber}")]
+    [Route("/Home/E911")]
+    [Route("/Home/E911/{dialedNumber}")]
     public async Task<IActionResult> AllEmergencyInformation(string dialedNumber)
     {
         if (string.IsNullOrWhiteSpace(dialedNumber))
         {
             // Show all orders
             var info = await _context.EmergencyInformations.OrderByDescending(x => x.DateIngested).AsNoTracking().ToListAsync();
-            return View("EmergencyInformation", info);
+            return View("E911", info);
         }
         else
         {
             var info = await _context.EmergencyInformations.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
-            return View("EmergencyInformationEdit", info);
+            return View("E911Edit", info);
         }
     }
 

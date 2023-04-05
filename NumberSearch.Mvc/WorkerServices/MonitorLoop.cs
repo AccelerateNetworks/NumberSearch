@@ -8,7 +8,6 @@ using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Call48;
 using NumberSearch.DataAccess.Peerless;
-using NumberSearch.DataAccess.TeliMessage;
 using NumberSearch.Mvc.Models;
 
 using Serilog;
@@ -25,7 +24,6 @@ namespace NumberSearch.Mvc
     {
         private readonly IBackgroundTaskQueue _taskQueue;
         private readonly CancellationToken _cancellationToken;
-        private readonly Guid _teleToken;
         private readonly string _postgresql;
         private readonly int _CallFlow;
         private readonly int _ChannelGroup;
@@ -44,7 +42,6 @@ namespace NumberSearch.Mvc
         {
             _taskQueue = taskQueue;
             _cancellationToken = applicationLifetime.ApplicationStopping;
-            _ = Guid.TryParse(mvcConfiguration.TeleAPI, out _teleToken);
             _postgresql = mvcConfiguration.PostgresqlProd;
             _ = int.TryParse(mvcConfiguration.CallFlow, out _CallFlow);
             _ = int.TryParse(mvcConfiguration.ChannelGroup, out _ChannelGroup);
@@ -129,34 +126,6 @@ namespace NumberSearch.Mvc
                                                         var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
 
                                                         Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from BulkVS.");
-                                                    }
-                                                    else if (nto.IngestedFrom == "TeleMessage")
-                                                    {
-                                                        // Buy it and save the reciept.
-                                                        var executeOrder = await DidsOrder.GetAsync(nto.DialedNumber, _CallFlow, _ChannelGroup, _teleToken).ConfigureAwait(false);
-
-                                                        nto.Purchased = true;
-                                                        productOrder.DateOrdered = DateTime.Now;
-                                                        productOrder.OrderResponse = JsonSerializer.Serialize(executeOrder);
-                                                        productOrder.Completed = executeOrder.code == 200;
-
-                                                        var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
-                                                        var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
-
-                                                        Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from TeliMessage.");
-
-                                                        // Set a note for these number purchases inside of Tele's system.
-                                                        var getTeleId = await UserDidsGet.GetAsync(nto.DialedNumber, _teleToken).ConfigureAwait(false);
-                                                        var setTeleLabel = await UserDidsNote.SetNote($"{order?.BusinessName} {order?.FirstName} {order?.LastName}", getTeleId.data.id, _teleToken).ConfigureAwait(false);
-
-                                                        if (setTeleLabel.code == 200)
-                                                        {
-                                                            Log.Information($"[Background Worker] Sucessfully set TeleMessage label for {nto.DialedNumber} to {order?.BusinessName} {order?.FirstName} {order?.LastName}.");
-                                                        }
-                                                        else
-                                                        {
-                                                            Log.Fatal($"[Background Worker] Failed to set TeleMessage label for {nto.DialedNumber} to {order?.BusinessName} {order?.FirstName} {order?.LastName}.");
-                                                        }
                                                     }
                                                     else if (nto.IngestedFrom == "Call48")
                                                     {
@@ -245,27 +214,6 @@ namespace NumberSearch.Mvc
 
                                                         Log.Information($"[Background Worker] Purchased number {nto?.DialedNumber} from OwnedNumbers.");
                                                     }
-
-
-                                                    // Now that the number is purchased, register it as an offnet number with Teli.
-                                                    var checkExists = await UserDidsGet.GetAsync(nto?.DialedNumber ?? string.Empty, _teleToken).ConfigureAwait(false);
-
-                                                    if (checkExists is null || checkExists?.code != 200)
-                                                    {
-                                                        var checkSubmit = await DidsOffnet.SubmitNumberAsync(nto?.DialedNumber ?? string.Empty, _teleToken);
-
-                                                        if (checkSubmit.code == 200)
-                                                        {
-                                                            Log.Information($"[Background Worker] Submitted {nto?.DialedNumber} as an Offnet number to Teli.");
-                                                        }
-                                                        else
-                                                        {
-                                                            Log.Fatal($"[Background Worker] Failed to submit {nto?.DialedNumber} as an Offnet number to Teli.");
-                                                            Log.Fatal($"[Background Worker] {checkSubmit?.status} {checkSubmit?.error}");
-                                                        }
-                                                    }
-
-
                                                 }
                                                 catch (FlurlHttpException ex)
                                                 {
@@ -283,31 +231,6 @@ namespace NumberSearch.Mvc
                                         catch (OperationCanceledException)
                                         {
                                             // Prevent throwing if the Delay is cancelled
-                                        }
-                                    }
-                                }
-
-                                // Now that the number has been submitted for porting, register it as an offnet number with Teli.
-                                var portedPhoneNumber = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
-
-                                foreach (var phoneNumber in portedPhoneNumber)
-                                {
-                                    if (!string.IsNullOrWhiteSpace(phoneNumber.ExternalPortRequestId))
-                                    {
-                                        var checkExists = await UserDidsGet.GetAsync(phoneNumber.PortedDialedNumber, _teleToken).ConfigureAwait(false);
-
-                                        if (checkExists is null || checkExists?.code != 200)
-                                        {
-                                            var checkOffnet = await DidsOffnet.SubmitNumberAsync(phoneNumber.PortedDialedNumber, _teleToken).ConfigureAwait(false);
-
-                                            if (checkOffnet.code == 200)
-                                            {
-                                                Log.Information($"[Background Worker] Submitted {phoneNumber.PortedDialedNumber} as an Offnet number to Teli.");
-                                            }
-                                            else
-                                            {
-                                                Log.Information($"[Background Worker] Failed to submit {phoneNumber.PortedDialedNumber} as an Offnet number to Teli.");
-                                            }
                                         }
                                     }
                                 }

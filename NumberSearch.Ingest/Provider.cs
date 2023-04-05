@@ -4,16 +4,13 @@ using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Call48;
 using NumberSearch.DataAccess.Peerless;
-using NumberSearch.DataAccess.TeliMessage;
 
 using Serilog;
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Ingest
@@ -172,88 +169,6 @@ namespace NumberSearch.Ingest
             return stats;
         }
 
-        /// <summary>
-        /// Ingests phone numbers from the TeleMessage API.
-        /// </summary>
-        /// <param name="token"> The teleMesssage token. </param>
-        /// <param name="connectionString"> The connection string for the database. </param>
-        /// <returns></returns>
-        public static async Task<IngestStatistics> TeliMessageAsync(Guid token, int[] areaCodes, string connectionString)
-        {
-            var readyToSubmit = new List<PhoneNumber>();
-
-            var start = DateTime.Now;
-
-            // Pass this provider a blank array if you want it to figure out what NPAs are available. 
-            var npas = areaCodes.Length > 0 ? areaCodes : Array.Empty<int>();
-
-            // Capture the NPAs.
-            try
-            {
-                if (npas.Length > 0)
-                {
-                    Log.Information($"[TeliMessage] Found {npas.Length} NPAs");
-                }
-                else
-                {
-                    npas = await TeliMessage.GetValidNPAsAsync(token).ConfigureAwait(false);
-
-                    Log.Information($"[TeliMessage] Found {npas.Length} NPAs");
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"{ex.Message}");
-                Log.Error($"[TeliMessage] No NPAs Retrived.");
-            }
-
-            // Capture the numbers using their NPA's.
-            foreach (var npa in npas)
-            {
-                try
-                {
-                    var localNumbers = await TeliMessage.GetXXXXsByNPAAsync(npa, token).ConfigureAwait(false);
-                    readyToSubmit.AddRange(localNumbers);
-
-                    Log.Information($"[TeliMessage] Found {localNumbers.Length} Phone Numbers for the {npa} Area Code.");
-                }
-                catch (Exception ex)
-                {
-                    Log.Error($"[TeliMessage] {ex.Message} {ex.InnerException}");
-                    Log.Information($"[TeliMessage] Found 0 Phone Numbers for the {npa} Area Code.");
-                }
-            }
-
-            // Capture the tollfree numbers.
-            try
-            {
-                var tollfree = await DidsList.GetAllTollfreeAsync(token).ConfigureAwait(false);
-                readyToSubmit.AddRange(tollfree);
-                Log.Information($"[TeliMessage] Found {tollfree.Length} Tollfree Phone Numbers.");
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"[TeliMessage] {ex.Message} {ex.InnerException}");
-                Log.Information($"[TeliMessage] Found 0 Tollfree Phone Numbers.");
-            }
-
-            Log.Information($"[TeliMessage] Found {readyToSubmit.Count} Phone Numbers");
-
-            var locations = await Services.AssignRatecenterAndRegionAsync(readyToSubmit).ConfigureAwait(false);
-            readyToSubmit = locations.ToList();
-
-            var typedNumbers = Services.AssignNumberTypes(readyToSubmit).ToArray();
-
-            var stats = await Services.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
-
-            var end = DateTime.Now;
-            stats.StartDate = start;
-            stats.EndDate = end;
-            stats.IngestedFrom = "TeleMessage";
-
-            return stats;
-        }
-
         public static async Task VerifyAddToCartAsync(int[] areaCodes, string numberType, string _postgresql, string _bulkVSusername,
             string _bulkVSpassword, Guid _teleToken, string _fpcusername, string _fpcpassword, string _call48Username,
             string _call48Password, string _peerlessApiKey)
@@ -292,32 +207,6 @@ namespace NumberSearch.Ingest
                             {
                                 Log.Error($"{ex.Message}");
                                 Log.Error($"[BulkVS] Failed to query BulkVS for {phoneNumber?.DialedNumber}.");
-                            }
-
-                        }
-                        else if (phoneNumber.IngestedFrom is "TeleMessage")
-                        {
-                            // Verify that tele has the number.
-                            try
-                            {
-                                var doesItStillExist = await DidsList.GetAsync(phoneNumber.NPA, phoneNumber.NXX, _teleToken).ConfigureAwait(false);
-                                var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
-                                if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
-                                {
-                                    Log.Information($"[TeliMessage] Found {phoneNumber.DialedNumber} in {doesItStillExist.Length} results returned for {phoneNumber.DialedNumber}.");
-                                }
-                                else
-                                {
-                                    Log.Warning($"[TeliMessage] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Length} results returned for {phoneNumber.DialedNumber}.");
-
-                                    // Remove numbers that are unpurchasable.
-                                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.Error($"{ex.Message}");
-                                Log.Error($"[TeliMessage] Failed to query TeliMessage for {phoneNumber?.DialedNumber}.");
                             }
 
                         }

@@ -1,9 +1,9 @@
 ﻿@using AccelerateNetworks.Operations
 @model IEnumerable<EmergencyInformation>
 @{
-    ViewData["Title"] = "Emergency Information";
+    ViewData["Title"] = "E911";
 }
-<h1 class="display-4 p-3">🚨 Emergency Information</h1>
+<h1 class="display-4 p-3">🚨 E911</h1>
 <div class="table-responsive">
     <table class="table table-striped table-borderless table-hover" id="table">
         <thead>
@@ -70,7 +70,7 @@
                             <a href="https://www.google.com/maps/place/@info?.Address,+@info?.City,+@info?.State+@info?.Zip/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
                                 Map
                             </a>
-                            <a class="btn btn-danger text-light" href="/Home/EmergencyInformation/@info?.DialedNumber">Edit</a>
+                            <a class="btn btn-danger text-light" href="/Home/E911/@info?.DialedNumber">Edit</a>
                         </div>
                     </td>
                 </tr>

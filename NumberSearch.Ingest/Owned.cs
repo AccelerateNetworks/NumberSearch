@@ -4,7 +4,6 @@ using Flurl.Http;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
-using NumberSearch.DataAccess.TeliMessage;
 
 using PhoneNumbersNA;
 
@@ -25,29 +24,20 @@ namespace NumberSearch.Ingest
     {
         public async static Task IngestAsync(IngestConfiguration configuration)
         {
-            Log.Information("[OwnedNumbers] Ingesting data from OwnedNumbers.");
+            Log.Information("[OwnedNumbers] Ingesting data for OwnedNumbers.");
             var allNumbers = new List<OwnedPhoneNumber>();
             var start = DateTime.Now;
 
             // Ingest all owned numbers from the providers.
             try
             {
-                if (!string.IsNullOrWhiteSpace(configuration.PComNetUsername) && !string.IsNullOrWhiteSpace(configuration.PComNetPassword))
+                var firstComNumbers = await FirstPointComAsync(configuration.PComNetUsername, configuration.PComNetPassword).ConfigureAwait(false);
+                if (firstComNumbers != null)
                 {
-                    var firstComNumbers = await FirstPointComAsync(configuration.PComNetUsername, configuration.PComNetPassword).ConfigureAwait(false);
-                    if (firstComNumbers != null)
-                    {
-                        allNumbers.AddRange(firstComNumbers);
-                    };
-                }
-
-                var teleMessageNumbers = await TeleMessageAsync(configuration.TeleAPI).ConfigureAwait(false);
-                var bulkVSNumbers = await TnRecord.GetOwnedAsync(configuration.BulkVSUsername, configuration.BulkVSPassword).ConfigureAwait(false);
-
-                if (teleMessageNumbers != null)
-                {
-                    allNumbers.AddRange(teleMessageNumbers);
+                    allNumbers.AddRange(firstComNumbers);
                 };
+
+                var bulkVSNumbers = await TnRecord.GetOwnedAsync(configuration.BulkVSUsername, configuration.BulkVSPassword).ConfigureAwait(false);
 
                 if (bulkVSNumbers != null)
                 {
@@ -161,80 +151,42 @@ namespace NumberSearch.Ingest
 
             foreach (var npa in PhoneNumbersNA.AreaCode.All)
             {
-                var results = await FirstPointComOwnedPhoneNumber.GetAsync(npa.ToString(), username, password).ConfigureAwait(false);
-
-                foreach (var item in results.DIDOrder)
+                try
                 {
-                    var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.DID, out var phoneNumber);
+                    var results = await FirstPointComOwnedPhoneNumber.GetAsync(npa.ToString(), username, password).ConfigureAwait(false);
 
-                    if (checkParse && phoneNumber is not null)
+                    Log.Information($"[OwnedNumbers] [FirstPointCom] Retrived {results.DIDOrder.Length} owned numbers.");
+
+                    foreach (var item in results.DIDOrder)
                     {
-                        numbers.Add(new OwnedPhoneNumber
+                        var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.DID, out var phoneNumber);
+
+                        if (checkParse && phoneNumber is not null)
                         {
-                            DialedNumber = phoneNumber.DialedNumber ?? string.Empty,
-                            IngestedFrom = "FirstPointCom",
-                            Active = true,
-                            DateIngested = DateTime.Now
-                        });
+                            numbers.Add(new OwnedPhoneNumber
+                            {
+                                DialedNumber = phoneNumber.DialedNumber ?? string.Empty,
+                                IngestedFrom = "FirstPointCom",
+                                Active = true,
+                                DateIngested = DateTime.Now
+                            });
+                        }
+                        else
+                        {
+                            Log.Fatal($"[OwnedNumber] Failed to parse Owned Number {item.DID} from FirstPointCom.");
+                        }
                     }
-                    else
-                    {
-                        Log.Fatal($"[OwnedNumber] Failed to parse Owned Number {item.DID} from FirstPointCom.");
-                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex.Message);
+                    Log.Error($"[OwnedNumbers] [FirstPointCom] No numbers found for NPA {npa}");
                 }
             }
 
             Log.Information($"[OwnedNumbers] [FirstPointCom] Ingested {numbers.Count} owned numbers.");
 
-            return numbers.ToArray();
-        }
-
-        public static async Task<IEnumerable<OwnedPhoneNumber>> TeleMessageAsync(Guid token)
-        {
-            var results = await UserDidsList.GetAllAsync(token).ConfigureAwait(false);
-
-            var list = new List<OwnedPhoneNumber>();
-
-            if (results?.data is not null)
-            {
-                foreach (var item in results.data)
-                {
-                    var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.number, out var phoneNumber);
-
-                    if (checkParse && phoneNumber is not null)
-                    {
-                        var number = new OwnedPhoneNumber
-                        {
-                            DialedNumber = phoneNumber.DialedNumber ?? string.Empty,
-                            IngestedFrom = "TeleMessage",
-                            Active = true,
-                            DateIngested = DateTime.Now,
-                            Notes = item.note
-                        };
-
-                        // Enabled CNAM on Teli numbers every time they are ingested.
-                        try
-                        {
-                            var cnamEnable = await UserDidsCnamEnable.GetAsync(number.DialedNumber, token).ConfigureAwait(false);
-                            var result = await UserDidsGet.GetAsync(number.DialedNumber, token).ConfigureAwait(false);
-                            var lidb = await UserDidsLibdGet.GetAsync(result?.data?.id ?? string.Empty, token).ConfigureAwait(false);
-                            number.LIDBCNAM = lidb?.data ?? string.Empty;
-                            Log.Information($"[OwnedNumber] [TeleMessage] LIDB CNAM {lidb?.data} for {number.DialedNumber} or did_id {result?.data?.id} is enabled? {cnamEnable.CnamEnabled()}.");
-                        }
-                        catch (FlurlHttpException ex)
-                        {
-                            Log.Fatal($"[OwnedNumber] [TeleMessage] Failed to enable CNAM for {number.DialedNumber}.");
-                            Log.Fatal($"[OwnedNumber] [TeleMessage] {ex.GetResponseStringAsync()}.");
-                        }
-
-                        list.Add(number);
-                    }
-                }
-
-            }
-            Log.Information($"[OwnedNumbers] [TeleMessage] Ingested {list.Count} owned numbers.");
-
-            return list;
+            return numbers.Any() ? numbers.ToArray() : new List<OwnedPhoneNumber>();
         }
 
         public static async Task<IngestStatistics> SubmitOwnedNumbersAsync(IEnumerable<OwnedPhoneNumber> numbers, string connectionString)
@@ -547,90 +499,7 @@ namespace NumberSearch.Ingest
             Log.Information($"[OwnedNumbers] Verifying Emergency Information for {owned?.Count()} Owned Phone numbers.");
 
             var emergencyInformation = await EmergencyInformation.GetAllAsync(connectionString).ConfigureAwait(false);
-
-            if (owned is not null && owned.Any())
-            {
-                foreach (var number in owned)
-                {
-                    try
-                    {
-                        var info = await EmergencyInfo.GetAsync(number.DialedNumber, teleToken).ConfigureAwait(false);
-
-                        if (info is not null && info?.data is not null && info?.code == 200)
-                        {
-                            var checkCreate = DateTime.TryParse(info?.data?.create_dt, out var createdDate);
-                            var checkMod = DateTime.TryParse(info?.data?.modify_dt, out var modDate);
-
-                            var toDb = new EmergencyInformation
-                            {
-                                Address = info?.data.address ?? string.Empty,
-                                AlertGroup = info?.data.alert_group ?? string.Empty,
-                                City = info?.data.city ?? string.Empty,
-                                CreatedDate = checkCreate ? createdDate : DateTime.Now,
-                                DateIngested = DateTime.Now,
-                                DialedNumber = number.DialedNumber,
-                                FullName = info?.data.full_name ?? string.Empty,
-                                IngestedFrom = "TeleMessage",
-                                ModifyDate = checkMod ? modDate : DateTime.Now,
-                                Note = info?.data.did_note.Trim() ?? string.Empty,
-                                State = info?.data.state ?? string.Empty,
-                                TeliId = info?.data.did_id ?? string.Empty,
-                                UnitNumber = info?.data.unit_number ?? string.Empty,
-                                UnitType = info?.data.unit_type ?? string.Empty,
-                                Zip = info?.data.zip ?? string.Empty
-                            };
-
-                            var existing = emergencyInformation.Where(x => x.DialedNumber == toDb.DialedNumber).FirstOrDefault();
-
-                            if (existing is null)
-                            {
-                                var checkSubmit = await toDb.PostAsync(connectionString).ConfigureAwait(false);
-
-                                if (checkSubmit)
-                                {
-                                    Log.Information($"[OwnedNumbers] Added Emergency Information for {number.DialedNumber}.");
-                                }
-                                else
-                                {
-                                    Log.Fatal($"[OwnedNumbers] Failed to add Emergency Information for {number.DialedNumber}.");
-                                }
-                            }
-                            else
-                            {
-                                var checkSubmit = await toDb.PutAsync(connectionString).ConfigureAwait(false);
-
-                                if (checkSubmit)
-                                {
-                                    Log.Information($"[OwnedNumbers] Updated Emergency Information for {number.DialedNumber}.");
-                                }
-                                else
-                                {
-                                    Log.Fatal($"[OwnedNumbers] Failed to updated Emergency Information for {number.DialedNumber}.");
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Information($"[OwnedNumbers] Failed to update Emergency Information for {number.DialedNumber}.");
-                        Log.Information($"[OwnedNumbers] {ex.Message}.");
-                        Log.Information($"[OwnedNumbers] {ex.StackTrace}.");
-                    };
-                }
-
-                var fromDb = await EmergencyInformation.GetAllAsync(connectionString).ConfigureAwait(false);
-
-                foreach (var item in owned)
-                {
-                    var emergencyInfo = fromDb.Where(x => x.DialedNumber == item.DialedNumber).FirstOrDefault();
-
-                    if (emergencyInfo is not null)
-                    {
-                        item.EmergencyInformationId = emergencyInfo?.EmergencyInformationId;
-                        Log.Information($"[OwnedNumbers] Matched Emergency Information {item.EmergencyInformationId} to {item.DialedNumber}.");
-                    }
-                }
-            }
+            // TODO
 
             return owned ?? new List<OwnedPhoneNumber>();
         }

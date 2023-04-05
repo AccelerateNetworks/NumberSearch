@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Primitives;
@@ -22,6 +21,7 @@ using Serilog.Events;
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -29,8 +29,8 @@ using System.Threading.RateLimiting;
 
 Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                                    .Enrich.FromLogContext()
-                                    .WriteTo.Console()
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
                 .WriteTo.File(
                     $"{DateTime.Now:yyyyMMdd}_NumberSearch.Messaging.txt",
                     rollingInterval: RollingInterval.Day,
@@ -41,9 +41,7 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     var builder = WebApplication.CreateBuilder(args);
-
     builder.Host.UseSerilog();
-
     builder.Configuration.AddUserSecrets("328593cf-cbb9-48e9-8938-e38a44c8291d");
 
     var bulkVSUsername = builder.Configuration.GetConnectionString("BulkVSUsername") ?? string.Empty;
@@ -134,9 +132,9 @@ try
     });
 
         // Set the comments path for the Swagger JSON and UI.
-        //var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-        //var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-        //option.IncludeXmlComments(xmlPath);
+        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+        option.IncludeXmlComments(xmlPath);
     });
 
     // EF Core

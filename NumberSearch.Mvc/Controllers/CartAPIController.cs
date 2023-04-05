@@ -2,13 +2,11 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Call48;
 using NumberSearch.DataAccess.Peerless;
-using NumberSearch.DataAccess.TeliMessage;
 using NumberSearch.Mvc.Models;
 
 using Serilog;
@@ -632,28 +630,6 @@ namespace NumberSearch.Mvc.Controllers
                 else
                 {
                     Log.Warning($"[BulkVS] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Length} results returned for {npanxx}.");
-
-                    // Remove numbers that are unpurchasable.
-                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
-
-                    // Sadly its gone. And the user needs to pick a different number.
-                    return BadRequest($"{dialedPhoneNumber} is no longer available.");
-                }
-
-            }
-            else if (phoneNumber.IngestedFrom == "TeleMessage")
-            {
-                // Verify that tele has the number.
-                var doesItStillExist = await DidsList.GetAsync(phoneNumber.NPA, phoneNumber.NXX, _teleToken).ConfigureAwait(false);
-                var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
-                if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
-                {
-                    purchasable = true;
-                    Log.Information($"[TeleMessage] Found {phoneNumber.DialedNumber} in {doesItStillExist.Length} results returned for {phoneNumber.DialedNumber}.");
-                }
-                else
-                {
-                    Log.Warning($"[TeleMessage] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Length} results returned for {phoneNumber.DialedNumber}.");
 
                     // Remove numbers that are unpurchasable.
                     var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
