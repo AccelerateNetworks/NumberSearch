@@ -50,10 +50,6 @@ namespace NumberSearch.Ingest
                 Log.Fatal(ex?.StackTrace ?? "No stacktrace found.");
             }
 
-            // Update emergency info
-            var emergency = await VerifyEmergencyInformationAsync(allNumbers, configuration.Postgresql).ConfigureAwait(false);
-            allNumbers = emergency.ToList();
-
             // If we ingested any owned numbers update the database.
             IngestStatistics ownedNumberStats;
             if (allNumbers.Count > 0)
