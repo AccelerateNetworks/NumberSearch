@@ -21,7 +21,7 @@ public partial class numberSearchContext : DbContext
     public virtual DbSet<AspNetUserToken> AspNetUserTokens { get; set; } = null!;
     public virtual DbSet<Carrier> Carriers { get; set; } = null!;
     public virtual DbSet<Coupon> Coupons { get; set; } = null!;
-    public virtual DbSet<EmergencyInformation> EmergencyInformations { get; set; } = null!;
+    public virtual DbSet<EmergencyInformation> EmergencyInformation { get; set; } = null!;
     public virtual DbSet<ExtensionRegistration> ExtensionRegistrations { get; set; } = null!;
     public virtual DbSet<FollowMeRegistration> FollowMeRegistrations { get; set; } = null!;
     public virtual DbSet<Ingest> Ingests { get; set; } = null!;
@@ -186,9 +186,7 @@ public partial class numberSearchContext : DbContext
 
         modelBuilder.Entity<EmergencyInformation>(entity =>
         {
-            entity.HasNoKey();
-
-            entity.ToTable("EmergencyInformation");
+            entity.Property(e => e.EmergencyInformationId).HasDefaultValueSql("uuid_generate_v4()");
 
             entity.Property(e => e.Address).HasColumnType("character varying");
 

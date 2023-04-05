@@ -84,12 +84,12 @@ public class HomeController : Controller
         if (string.IsNullOrWhiteSpace(dialedNumber))
         {
             // Show all orders
-            var info = await _context.EmergencyInformations.OrderByDescending(x => x.DateIngested).AsNoTracking().ToListAsync();
+            var info = await _context.EmergencyInformation.OrderByDescending(x => x.DateIngested).AsNoTracking().ToListAsync();
             return View("E911", info);
         }
         else
         {
-            var info = await _context.EmergencyInformations.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
+            var info = await _context.EmergencyInformation.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
             return View("E911Edit", info);
         }
     }

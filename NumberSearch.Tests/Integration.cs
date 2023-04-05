@@ -821,6 +821,8 @@ namespace NumberSearch.Tests
             // Assert
             Assert.NotNull(results);
             Assert.NotEmpty(results);
+            output.WriteLine(JsonSerializer.Serialize(results.FirstOrDefault()));
+            output.WriteLine($"{results.Count()} Owned Numbers from BulkVS");
         }
 
         [Fact]

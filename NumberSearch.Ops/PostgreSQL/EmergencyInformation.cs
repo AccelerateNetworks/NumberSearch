@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace AccelerateNetworks.Operations
 {
     public partial class EmergencyInformation
     {
+        [Key]
         public Guid EmergencyInformationId { get; set; }
         public string DialedNumber { get; set; } = null!;
         public string IngestedFrom { get; set; } = null!;

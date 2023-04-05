@@ -38,7 +38,6 @@ namespace NumberSearch.Ingest
                 };
 
                 var bulkVSNumbers = await TnRecord.GetOwnedAsync(configuration.BulkVSUsername, configuration.BulkVSPassword).ConfigureAwait(false);
-
                 if (bulkVSNumbers != null)
                 {
                     allNumbers.AddRange(bulkVSNumbers);
@@ -52,7 +51,7 @@ namespace NumberSearch.Ingest
             }
 
             // Update emergency info
-            var emergency = await VerifyEmergencyInformationAsync(allNumbers, configuration.TeleAPI, configuration.Postgresql).ConfigureAwait(false);
+            var emergency = await VerifyEmergencyInformationAsync(allNumbers, configuration.Postgresql).ConfigureAwait(false);
             allNumbers = emergency.ToList();
 
             // If we ingested any owned numbers update the database.
@@ -494,7 +493,7 @@ namespace NumberSearch.Ingest
             return serviceProviderChanged;
         }
 
-        public static async Task<IEnumerable<OwnedPhoneNumber>> VerifyEmergencyInformationAsync(IEnumerable<OwnedPhoneNumber> owned, Guid teleToken, string connectionString)
+        public static async Task<IEnumerable<OwnedPhoneNumber>> VerifyEmergencyInformationAsync(IEnumerable<OwnedPhoneNumber> owned, string connectionString)
         {
             Log.Information($"[OwnedNumbers] Verifying Emergency Information for {owned?.Count()} Owned Phone numbers.");
 
