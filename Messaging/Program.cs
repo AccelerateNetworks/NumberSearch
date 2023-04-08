@@ -63,10 +63,10 @@ try
                 ClockSkew = TimeSpan.Zero,
                 ValidateIssuer = true,
                 ValidateAudience = true,
-                ValidateLifetime = true,
+                ValidateLifetime = false,
                 ValidateIssuerSigningKey = true,
-                ValidIssuer = "AccelerateNetworks.Messaging",
-                ValidAudience = "AccelerateNetworks.Messaging",
+                ValidIssuer = "sms.callpipe.com",
+                ValidAudience = "sms.callpipe.com",
                 IssuerSigningKey = new SymmetricSecurityKey(
                     Encoding.UTF8.GetBytes(localSecret)
                 ),

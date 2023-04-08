@@ -74,14 +74,14 @@
                     </div>
                 </div>
             }
-            <div class="col-sm-6 mb-4">
-                <div class="card shadow h-100">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal text-center">Features</h4>
-                    </div>
-                    <div class="card-body">
-                        @if (!string.IsNullOrWhiteSpace(Model?.Product?.VendorFeatures))
-                        {
+            @if (!string.IsNullOrWhiteSpace(Model?.Product?.VendorFeatures))
+            {
+                <div class="col-sm-6 mb-4">
+                    <div class="card shadow h-100">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal text-center">Features</h4>
+                        </div>
+                        <div class="card-body">
                             <ul>
                                 @foreach (string feature in Model.Product.VendorFeatures.Split("\r\n"))
                                 {
@@ -90,17 +90,10 @@
                                     </li>
                                 }
                             </ul>
-                        }
-                        else
-                        {
-                            <ul>
-                                <li>⌛ Coming soon. If you need details now, call (206) 333-3341!</li>
-                            </ul>
-                        }
+                        </div>
                     </div>
                 </div>
-            </div>
-
+            }
         </div>
         @if (!string.IsNullOrWhiteSpace(Model?.Product?.VendorDescription))
         {

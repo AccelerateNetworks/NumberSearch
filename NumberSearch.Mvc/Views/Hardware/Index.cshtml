@@ -57,28 +57,33 @@
 
                                 <div class="col mb-4" id="@product.Name">
                                     <div class="card h-100 shadow">
-                                        <a href="Hardware/@product.Name">
+                                        @if (string.IsNullOrWhiteSpace(product.VendorFeatures))
+                                        {
                                             <img class="card-img-top" src="@product.Image" loading="lazy" />
-                                        </a>
+                                        }
+                                        else
+                                        {
+                                            <a href="Hardware/@product.Name">
+                                                <img class="card-img-top" src="@product.Image" loading="lazy" />
+                                            </a>
+                                        }
                                         <div class="card-body">
                                             <div class="card-title">
                                                 <h4 class="display-4">
                                                     @product.Name
+                                                    @if (!string.IsNullOrWhiteSpace(product.VendorFeatures))
+                                                    {
+                                                        <a class="btn btn-outline-info float-right" href="Hardware/@product.Name">About</a>
+                                                    }
                                                 </h4>
                                             </div>
                                             <p class="card-text">@product.Description</p>
                                         </div>
                                         <div class="card-footer">
-                                            <large class="text-primary">
-                                                $@product.Price
-                                                @{
-                                                    if (!string.IsNullOrWhiteSpace(product.VendorFeatures))
-                                                    {
-                                                        <a class="btn btn-outline-info float-right" href="Hardware/@product.Name">Learn More</a>
-                                                    }
-                                                }
-                                            </large>
-                                            <div class="d-flex justify-content-around align-items-center mt-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <large class="text-primary pr-4">
+                                                    $@product.Price
+                                                </large>
                                                 <div class="btn-group">
                                                     <div class="input-group">
                                                         @if (quantity > 0)
@@ -133,28 +138,33 @@
 
                                 <div class="col mb-4" id="@product.Name">
                                     <div class="card h-100 shadow">
-                                        <a href="Hardware/@product.Name">
+                                        @if (string.IsNullOrWhiteSpace(product.VendorFeatures))
+                                        {
                                             <img class="card-img-top" src="@product.Image" loading="lazy" />
-                                        </a>
+                                        }
+                                        else
+                                        {
+                                            <a href="Hardware/@product.Name">
+                                                <img class="card-img-top" src="@product.Image" loading="lazy" />
+                                            </a>
+                                        }
                                         <div class="card-body">
                                             <div class="card-title">
                                                 <h4 class="display-4">
                                                     @product.Name
+                                                    @if (!string.IsNullOrWhiteSpace(product.VendorFeatures))
+                                                    {
+                                                        <a class="btn btn-outline-info float-right" href="Hardware/@product.Name">About</a>
+                                                    }
                                                 </h4>
                                             </div>
                                             <p class="card-text">@product.Description</p>
                                         </div>
                                         <div class="card-footer">
-                                            <large class="text-primary">
-                                                $@product.Price
-                                                @{
-                                                    if (!string.IsNullOrWhiteSpace(product.VendorFeatures))
-                                                    {
-                                                        <a class="btn btn-outline-info float-right" href="Hardware/@product.Name">Learn More</a>
-                                                    }
-                                                }
-                                            </large>
-                                            <div class="d-flex justify-content-around align-items-center mt-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <large class="text-primary pr-4">
+                                                    $@product.Price
+                                                </large>
                                                 <div class="btn-group">
                                                     <div class="input-group">
                                                         @if (quantity > 0)
@@ -180,7 +190,6 @@
                                                     </div>
                                                 </div>
                                             </div>
-
                                         </div>
                                     </div>
                                 </div>
