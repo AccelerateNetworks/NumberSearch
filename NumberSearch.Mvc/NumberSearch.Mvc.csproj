@@ -157,6 +157,9 @@
 		<Content Update="wwwroot\images\scaled\11315553-a8da-4a45-b632-b8ced825957dscaled.jpg">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Update="wwwroot\images\scaled\4PortPOESwitch-400.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Update="wwwroot\images\scaled\accelerate.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
@@ -171,6 +174,9 @@
 		</Content>
 		<Content Update="wwwroot\images\scaled\chba.webp">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\scaled\CP935W-400.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\DP722-1-400.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -258,6 +264,9 @@
 		</Content>
 		<Content Update="wwwroot\images\scaled\GRP2616-400.webp">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\scaled\GRP2670-400.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\GS-DP752-400.jpg">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
