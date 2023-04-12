@@ -19,7 +19,6 @@
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.4" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.4" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SQLite" Version="7.0.4" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="7.0.4" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.4" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.4">
