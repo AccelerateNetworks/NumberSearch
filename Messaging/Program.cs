@@ -434,9 +434,10 @@ try
             // Update existing registrations before creating new ones.
             var existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == asDialedNumber.DialedNumber).FirstOrDefaultAsync();
 
-            if (existingRegistration is not null && !string.IsNullOrWhiteSpace(existingRegistration.CallbackUrl))
+            if (existingRegistration is not null && !string.IsNullOrWhiteSpace(existingRegistration.CallbackUrl) && existingRegistration.CallbackUrl != registration.CallbackUrl)
             {
                 existingRegistration.CallbackUrl = registration.CallbackUrl;
+                existingRegistration.ClientSecret = registration.ClientSecret;
             }
             else
             {
@@ -444,6 +445,7 @@ try
                 {
                     AsDialed = asDialedNumber.DialedNumber,
                     CallbackUrl = registration.CallbackUrl,
+                    ClientSecret = registration.ClientSecret,
                 });
             }
 
@@ -610,8 +612,9 @@ try
                     try
                     {
                         // Add some retry logic
-                        // Number of retry
+                        // Number of retrys
                         // Successfully delieverd
+                        record.ClientSecret = existingRegistration.ClientSecret;
                         _ = await existingRegistration.CallbackUrl.PostJsonAsync(record);
                         return TypedResults.Ok("The incoming message was recieved and forwarded to the client.");
                     }
@@ -826,6 +829,8 @@ namespace Models
         public DateTime DateReceivedUTC { get; set; } = DateTime.UtcNow;
         [DataType(DataType.Text)]
         public string DLRID { get; set; } = string.Empty;
+        [DataType(DataType.Password)]
+        public string ClientSecret { get; set; } = string.Empty;
     }
 
     public enum MessageType { SMS, MMS };
@@ -875,6 +880,8 @@ namespace Models
         public string DialedNumber { get; set; } = string.Empty;
         [DataType(DataType.Url)]
         public string CallbackUrl { get; set; } = string.Empty;
+        [DataType(DataType.Password)]
+        public string ClientSecret { get; set; } = string.Empty;
     }
 
     public class RegistrationResponse
@@ -899,5 +906,7 @@ namespace Models
         public string CallbackUrl { get; set; } = string.Empty;
         [DataType(DataType.DateTime)]
         public DateTime DateRegistered { get; set; } = DateTime.Now;
+        [DataType(DataType.Password)]
+        public string ClientSecret { get; set; } = string.Empty;
     }
 }
