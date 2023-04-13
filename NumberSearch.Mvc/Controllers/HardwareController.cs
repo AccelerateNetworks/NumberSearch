@@ -49,23 +49,23 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpGet("Hardware/{product}")]
+        [HttpGet("Accessories/{product}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> SpecificProductAsync(string product)
         {
-            var products = await Product.GetAsync(product, _postgresql).ConfigureAwait(false);
+            var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var productItems = products.Where(x => x.Name.ToLowerInvariant().Replace(" ", string.Empty) == product.ToLowerInvariant().Replace(" ", string.Empty));
 
             // If no matching products are found bump them back to the list of all hardware.
-            if (!products.Any())
+            if (!productItems.Any())
             {
                 return Redirect($"/Hardware/");
             }
 
-            var accessories = products.Where(x => x.Type == "Accessory").ToArray();
-
             await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            return View("Item", new HardwareResult { Cart = cart, Product = products.FirstOrDefault() ?? new() });
+            return View("Item", new HardwareResult { Cart = cart, Product = productItems.FirstOrDefault() ?? new() });
         }
 
         [HttpGet("Hardware/PartnerPriceList")]
