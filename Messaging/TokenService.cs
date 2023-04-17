@@ -26,8 +26,8 @@ namespace Messaging
         private static JwtSecurityToken CreateJwtToken(List<Claim> claims, SigningCredentials credentials,
             DateTime expiration) =>
             new(
-                "AccelerateNetworks.Messaging",
-                "AccelerateNetworks.Messaging",
+                "sms.callpipe.com",
+                "sms.callpipe.com",
                 claims,
                 expires: expiration,
                 signingCredentials: credentials
