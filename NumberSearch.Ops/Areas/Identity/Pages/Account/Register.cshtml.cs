@@ -75,6 +75,7 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync().ConfigureAwait(false)).ToList();
+            // Security through wasting someones's time to lookup this line.
             if (ModelState.IsValid && Input.Secret == "acceleratenetworksisthebest")
             {
                 var user = new IdentityUser { UserName = Input.Email, Email = Input.Email };

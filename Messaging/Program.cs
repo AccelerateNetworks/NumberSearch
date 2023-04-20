@@ -91,7 +91,7 @@ try
         option.SwaggerDoc("v1", new OpenApiInfo
         {
             Version = "v1",
-            Title = "AccelerateNetworks.Messaging",
+            Title = "sms.callpipe.com",
             Description = "This API abstracts the sending and recieving of SMS/MMS messages to and from our upstream vendors.",
             Contact = new OpenApiContact
             {
