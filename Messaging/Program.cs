@@ -14,7 +14,7 @@ using Microsoft.OpenApi.Models;
 
 using Models;
 
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
 
 using Prometheus;
 
@@ -380,11 +380,20 @@ try
     })
         .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Lookup a specific client registration using the dialed number.", Description = "Use this to see if a dialed number is registered and find out what callback Url its registered to." });
 
-    app.MapGet("/client/all", async Task<Results<Ok<ClientRegistration[]>, BadRequest<string>, NotFound<string>>> (MessagingContext db) =>
+    app.MapGet("/client/all", async Task<Results<Ok<ClientRegistration[]>, BadRequest<string>, NotFound<string>>> (bool? clear, MessagingContext db) =>
     {
         try
         {
+
             var registrations = await db.ClientRegistrations.ToArrayAsync();
+
+            if (clear is not null && clear is true)
+            {
+                db.ClientRegistrations.RemoveRange(registrations);
+                await db.SaveChangesAsync();
+            }
+
+            registrations = await db.ClientRegistrations.ToArrayAsync();
 
             if (registrations is not null && registrations.Any())
             {
