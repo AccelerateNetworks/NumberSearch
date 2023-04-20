@@ -14,6 +14,8 @@ using Microsoft.OpenApi.Models;
 
 using Models;
 
+using Newtonsoft.Json;
+
 using Prometheus;
 
 using Serilog;
@@ -434,10 +436,17 @@ try
             // Update existing registrations before creating new ones.
             var existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == asDialedNumber.DialedNumber).FirstOrDefaultAsync();
 
-            if (existingRegistration is not null && !string.IsNullOrWhiteSpace(existingRegistration.CallbackUrl) && existingRegistration.CallbackUrl != registration.CallbackUrl)
+            if (existingRegistration is not null)
             {
-                existingRegistration.CallbackUrl = registration.CallbackUrl;
-                existingRegistration.ClientSecret = registration.ClientSecret;
+                // If they really are different update the record.
+                if (existingRegistration.CallbackUrl != registration.CallbackUrl || existingRegistration.ClientSecret != registration.ClientSecret)
+                {
+                    existingRegistration.CallbackUrl = registration.CallbackUrl;
+                    existingRegistration.ClientSecret = registration.ClientSecret;
+                    await db.SaveChangesAsync();
+                }
+
+                // Otherwise do nothing.
             }
             else
             {
@@ -447,9 +456,8 @@ try
                     CallbackUrl = registration.CallbackUrl,
                     ClientSecret = registration.ClientSecret,
                 });
+                await db.SaveChangesAsync();
             }
-
-            await db.SaveChangesAsync();
         }
         catch (Exception ex)
         {
@@ -615,12 +623,15 @@ try
                         // Number of retrys
                         // Successfully delieverd
                         record.ClientSecret = existingRegistration.ClientSecret;
-                        _ = await existingRegistration.CallbackUrl.PostJsonAsync(record);
+                        var response = await existingRegistration.CallbackUrl.PostJsonAsync(record);
+                        Log.Information(await response.GetStringAsync());
+                        Log.Information(System.Text.Json.JsonSerializer.Serialize(record));
                         return TypedResults.Ok("The incoming message was recieved and forwarded to the client.");
                     }
                     catch (FlurlHttpException ex)
                     {
                         Log.Error(await ex.GetResponseStringAsync());
+                        Log.Error(System.Text.Json.JsonSerializer.Serialize(record));
                         return TypedResults.BadRequest("Failed to forward the message to the client's callback url.");
                     }
                 }
