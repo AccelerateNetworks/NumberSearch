@@ -5,6 +5,8 @@ using Flurl.Http;
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 
+using Org.BouncyCastle.Math.EC.Rfc7748;
+
 using PhoneNumbersNA;
 
 using Serilog;
@@ -17,6 +19,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 
 using static NumberSearch.Ingest.Program;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NumberSearch.Ingest
 {
@@ -36,7 +39,16 @@ namespace NumberSearch.Ingest
                 {
                     allNumbers.AddRange(firstComNumbers);
                 };
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal("[OwnedNumbers] Failed to retrive owned numbers for FirstPointCom.");
+                Log.Fatal(ex.Message);
+                Log.Fatal(ex?.StackTrace ?? "No stacktrace found.");
+            }
 
+            try
+            {
                 var bulkVSNumbers = await TnRecord.GetOwnedAsync(configuration.BulkVSUsername, configuration.BulkVSPassword).ConfigureAwait(false);
                 if (bulkVSNumbers != null)
                 {
@@ -45,7 +57,7 @@ namespace NumberSearch.Ingest
             }
             catch (Exception ex)
             {
-                Log.Fatal("[OwnedNumbers] Failed to retrive owned numbers.");
+                Log.Fatal("[OwnedNumbers] Failed to retrive owned numbers for BulkVS.");
                 Log.Fatal(ex.Message);
                 Log.Fatal(ex?.StackTrace ?? "No stacktrace found.");
             }
@@ -184,20 +196,21 @@ namespace NumberSearch.Ingest
             return numbers.Any() ? numbers.ToArray() : new List<OwnedPhoneNumber>();
         }
 
-        public static async Task<IngestStatistics> SubmitOwnedNumbersAsync(IEnumerable<OwnedPhoneNumber> numbers, string connectionString)
+        public static async Task<IngestStatistics> SubmitOwnedNumbersAsync(IEnumerable<OwnedPhoneNumber> newlyIngested, string connectionString)
         {
             var start = DateTime.Now;
             var ingestedNew = 0;
             var updatedExisting = 0;
 
             var existingOwnedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
+            var numbersAsDict = existingOwnedNumbers.ToDictionary(x => x.DialedNumber, x => x);
 
-            foreach (var item in numbers)
+            foreach (var item in newlyIngested)
             {
-                // TODO: Convert this to a dictionary lookup.
-                var number = existingOwnedNumbers.Where(x => x.DialedNumber == item.DialedNumber).FirstOrDefault();
+                // Add new owned numbers.
+                var checkExisting = numbersAsDict.TryGetValue(item.DialedNumber, out var number);
 
-                if (number is null)
+                if (checkExisting is false || number is null)
                 {
                     var checkCreate = await item.PostAsync(connectionString).ConfigureAwait(false);
                     if (checkCreate)
@@ -212,9 +225,11 @@ namespace NumberSearch.Ingest
                 }
                 else
                 {
-                    item.Notes = string.IsNullOrWhiteSpace(number.Notes) ? item.Notes : number.Notes;
+                    // Update existing owned numbers.
+                    number.Active = true;
+                    number.Notes = string.IsNullOrWhiteSpace(number.Notes) ? item.Notes : number.Notes;
 
-                    var checkCreate = await item.PutAsync(connectionString).ConfigureAwait(false);
+                    var checkCreate = await number.PutAsync(connectionString).ConfigureAwait(false);
                     if (checkCreate)
                     {
                         updatedExisting++;
@@ -227,6 +242,24 @@ namespace NumberSearch.Ingest
                 }
             }
 
+            var unmatchedExistingNumbers = existingOwnedNumbers.Where(x => !numbersAsDict.ContainsKey(x.DialedNumber)).ToArray();
+
+            foreach (var item in unmatchedExistingNumbers)
+            {            
+                // Mark unmatched Numbers as inactive.
+                item.Active = false;
+                var checkCreate = await item.PutAsync(connectionString).ConfigureAwait(false);
+                if (checkCreate)
+                {
+                    updatedExisting++;
+                    Log.Information($"[OwnedNumbers] Updated {item.DialedNumber} as an owned number.");
+                }
+                else
+                {
+                    Log.Fatal($"[OwnedNumbers] Failed to update {item.DialedNumber} as an owned number.");
+                }
+            }
+
             var end = DateTime.Now;
 
             var stats = new IngestStatistics
@@ -234,7 +267,7 @@ namespace NumberSearch.Ingest
                 StartDate = start,
                 EndDate = end,
                 IngestedFrom = "OwnedNumbers",
-                NumbersRetrived = numbers.Count(),
+                NumbersRetrived = newlyIngested.Count(),
                 Priority = false,
                 Lock = false,
                 IngestedNew = ingestedNew,
