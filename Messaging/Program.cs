@@ -640,9 +640,15 @@ try
                     catch (FlurlHttpException ex)
                     {
                         Log.Error(await ex.GetResponseStringAsync());
+                        Log.Error(System.Text.Json.JsonSerializer.Serialize(existingRegistration));
                         Log.Error(System.Text.Json.JsonSerializer.Serialize(record));
                         return TypedResults.BadRequest("Failed to forward the message to the client's callback url.");
                     }
+                }
+                else
+                {
+                    Log.Error(System.Text.Json.JsonSerializer.Serialize(record));
+                    return TypedResults.BadRequest($"{record.To} is not registered as a client.");
                 }
             }
             catch (Exception ex)
@@ -657,9 +663,6 @@ try
             Log.Information("Failed to read form data by field name.");
             return TypedResults.BadRequest("Failed to read form data by field name.");
         }
-
-        return TypedResults.BadRequest("Failed to record the message or forward it to the registered client.");
-
     })
         .WithOpenApi(x => new(x) { Summary = "For use by First Point Communications only.", Description = "Recieves incoming messages from our upstream provider. Forwards valid SMS messages to clients registered through the /client/register endpoint. Forwarded messages are in the form described by the MessageRecord entry in the Schema's section of this page. The is no request body as the data provided by First Point Communications is UrlEncoded like POSTing form data rather than JSON formatted in body of the POST request. The Token is a secret created and maintained by First Point Communications. This endpoint is not for use by anyone other than First Point Communications. It is documented here to help developers understand how incoming messages are fowarded to the client that they have registered with this API. The Messaging.Tests project is a series of functional tests that verify the behavior of this endpoint, because this method of message passing is so chaotic." });
 

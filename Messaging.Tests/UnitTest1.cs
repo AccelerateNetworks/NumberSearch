@@ -110,7 +110,7 @@ namespace Messaging.Tests
             Assert.False(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
             var message = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"Failed to forward the message to the client's callback url.\"", message);
+            Assert.Equal("\"2068589312 is not registered as a client.\"", message);
         }
     }
 }
