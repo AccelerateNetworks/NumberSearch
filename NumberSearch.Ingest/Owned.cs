@@ -19,7 +19,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 
 using static NumberSearch.Ingest.Program;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NumberSearch.Ingest
 {
@@ -67,7 +66,7 @@ namespace NumberSearch.Ingest
             if (allNumbers.Count > 0)
             {
                 Log.Information($"[OwnedNumbers] Submitting {allNumbers.Count} numbers to the database.");
-                ownedNumberStats = await SubmitOwnedNumbersAsync(allNumbers, configuration.Postgresql).ConfigureAwait(false);
+                ownedNumberStats = await SubmitOwnedNumbersAsync(allNumbers.DistinctBy(x => x.DialedNumber), configuration.Postgresql).ConfigureAwait(false);
             }
             else
             {
@@ -203,12 +202,14 @@ namespace NumberSearch.Ingest
             var updatedExisting = 0;
 
             var existingOwnedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
-            var numbersAsDict = existingOwnedNumbers.ToDictionary(x => x.DialedNumber, x => x);
+            var existingAsDict = existingOwnedNumbers.DistinctBy(x => x.DialedNumber).ToDictionary(x => x.DialedNumber, x => x);
+            var newAsDict = newlyIngested.ToDictionary(x => x.DialedNumber, x => x);
+
 
             foreach (var item in newlyIngested)
             {
                 // Add new owned numbers.
-                var checkExisting = numbersAsDict.TryGetValue(item.DialedNumber, out var number);
+                var checkExisting = existingAsDict.TryGetValue(item.DialedNumber, out var number);
 
                 if (checkExisting is false || number is null)
                 {
@@ -228,6 +229,7 @@ namespace NumberSearch.Ingest
                     // Update existing owned numbers.
                     number.Active = true;
                     number.Notes = string.IsNullOrWhiteSpace(number.Notes) ? item.Notes : number.Notes;
+                    number.IngestedFrom = item.IngestedFrom;
 
                     var checkCreate = await number.PutAsync(connectionString).ConfigureAwait(false);
                     if (checkCreate)
@@ -242,7 +244,7 @@ namespace NumberSearch.Ingest
                 }
             }
 
-            var unmatchedExistingNumbers = existingOwnedNumbers.Where(x => !numbersAsDict.ContainsKey(x.DialedNumber)).ToArray();
+            var unmatchedExistingNumbers = existingOwnedNumbers.Where(x => !newAsDict.ContainsKey(x.DialedNumber)).ToArray();
 
             foreach (var item in unmatchedExistingNumbers)
             {            

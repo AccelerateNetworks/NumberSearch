@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
+using static NumberSearch.Ingest.Program;
+
 namespace NumberSearch.Tests
 {
     public class FunctionalIngest
@@ -31,6 +33,7 @@ namespace NumberSearch.Tests
         private readonly string call48Username;
         private readonly string call48Password;
         private readonly IConfiguration configuration;
+        private readonly IngestConfiguration ingestConfiguration;
 
         public FunctionalIngest(ITestOutputHelper output)
         {
@@ -59,6 +62,27 @@ namespace NumberSearch.Tests
             invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
             call48Username = config.GetConnectionString("Call48Username");
             call48Password = config.GetConnectionString("Call48Password");
+
+            var appConfig = new IngestConfiguration
+            {
+                TeleAPI = string.IsNullOrWhiteSpace(config.GetConnectionString("TeleAPI")) ? throw new Exception("TeliAPI config key is blank.") : Guid.Parse(config.GetConnectionString("TeleAPI") ?? string.Empty),
+                Postgresql = string.IsNullOrWhiteSpace(config.GetConnectionString("PostgresqlProd")) ? throw new Exception("PostgresqlProd config key is blank.") : config.GetConnectionString("PostgresqlProd") ?? string.Empty,
+                BulkVSAPIKEY = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSAPIKEY")) ? throw new Exception("BulkVSAPIKEY config key is blank.") : config.GetConnectionString("BulkVSAPIKEY") ?? string.Empty,
+                BulkVSAPISecret = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSAPISecret")) ? throw new Exception("BulkVSAPISecret config key is blank.") : config.GetConnectionString("BulkVSAPISecret") ?? string.Empty,
+                BulkVSUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSUsername")) ? throw new Exception("BulkVSUsername config key is blank.") : config.GetConnectionString("BulkVSUsername") ?? string.Empty,
+                BulkVSPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSPassword")) ? throw new Exception("BulkVSPassword config key is blank.") : config.GetConnectionString("BulkVSPassword") ?? string.Empty,
+                PComNetUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("PComNetUsername")) ? throw new Exception("PComNetUsername config key is blank.") : config.GetConnectionString("PComNetUsername") ?? string.Empty,
+                PComNetPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("PComNetPassword")) ? throw new Exception("PComNetPassword config key is blank.") : config.GetConnectionString("PComNetPassword") ?? string.Empty,
+                PeerlessAPIKey = string.IsNullOrWhiteSpace(config.GetConnectionString("PeerlessAPIKey")) ? throw new Exception("PeerlessAPIKey config key is blank.") : config.GetConnectionString("PeerlessAPIKey") ?? string.Empty,
+                Call48Username = string.IsNullOrWhiteSpace(config.GetConnectionString("Call48Username")) ? throw new Exception("Call48Username config key is blank.") : config.GetConnectionString("Call48Username") ?? string.Empty,
+                Call48Password = string.IsNullOrWhiteSpace(config.GetConnectionString("Call48Password")) ? throw new Exception("Call48Password config key is blank.") : config.GetConnectionString("Call48Password") ?? string.Empty,
+                SmtpUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("SmtpUsername")) ? throw new Exception("SmtpUsername config key is blank.") : config.GetConnectionString("SmtpUsername") ?? string.Empty,
+                SmtpPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("SmtpPassword")) ? throw new Exception("SmtpPassword config key is blank.") : config.GetConnectionString("SmtpPassword") ?? string.Empty,
+                EmailOrders = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailOrders")) ? throw new Exception("EmailOrders config key is blank.") : config.GetConnectionString("EmailOrders") ?? string.Empty,
+                EmailDan = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailDan")) ? throw new Exception("EmailDan config key is blank.") : config.GetConnectionString("EmailDan") ?? string.Empty,
+                EmailTom = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailTom")) ? throw new Exception("EmailTom config key is blank.") : config.GetConnectionString("EmailTom") ?? string.Empty
+            };
+            ingestConfiguration = appConfig;
         }
 
         //[Fact]
@@ -131,18 +155,16 @@ namespace NumberSearch.Tests
         }
 
         // This takes 3 minutes to run.
-        //[Fact]
-        //public async Task OwnedFirstPointCom()
-        //{
-        //    // Arrange
+        [Fact]
+        public async Task OwnedNumbersAsync()
+        {
+            // Arrange
 
-        //    // Act
-        //    var results = await Owned.FirstPointComAsync(pComNetCredentials.Username, pComNetCredentials.Password).ConfigureAwait(false);
+            // Act
+            await Owned.IngestAsync(ingestConfiguration).ConfigureAwait(false);
 
-        //    // Assert
-        //    Assert.NotNull(results);
-        //    output.WriteLine(results.Count().ToString());
-        //}
+            // Assert
+        }
 
         // This test is slow too.
         //[Fact]
