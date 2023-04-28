@@ -1013,18 +1013,18 @@ namespace Models
                 bool checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(msisdn, out var fromPhoneNumber);
                 if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
                 {
-                    FromPhoneNumber = fromPhoneNumber;
-                    msisdn = $"1{fromPhoneNumber.DialedNumber}";
-                    FromParsed = true;
-                }
-                // Handle incoming short codes.
-                else if (msisdn.Length is 5 || msisdn.Length is 6)
-                {
-                    FromPhoneNumber = new PhoneNumbersNA.PhoneNumber
+                    if (fromPhoneNumber.Type is not PhoneNumbersNA.NumberType.ShortCode)
                     {
-                        DialedNumber = msisdn,
-                    };
-                    FromParsed = true;
+                        FromPhoneNumber = fromPhoneNumber;
+                        msisdn = $"1{fromPhoneNumber.DialedNumber}";
+                        FromParsed = true;
+                    }
+                    else
+                    {
+                        FromPhoneNumber = fromPhoneNumber;
+                        msisdn = fromPhoneNumber.DialedNumber;
+                        FromParsed = true;
+                    }
                 }
             }
 
