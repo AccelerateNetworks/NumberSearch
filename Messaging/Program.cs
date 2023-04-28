@@ -14,8 +14,6 @@ using Microsoft.OpenApi.Models;
 
 using Models;
 
-//using Newtonsoft.Json;
-
 using Prometheus;
 
 using Serilog;
@@ -23,7 +21,6 @@ using Serilog.Events;
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -46,15 +43,19 @@ try
     builder.Host.UseSerilog();
     builder.Configuration.AddUserSecrets("328593cf-cbb9-48e9-8938-e38a44c8291d");
 
-    var bulkVSUsername = builder.Configuration.GetConnectionString("BulkVSUsername") ?? string.Empty;
-    var bulkVSPassword = builder.Configuration.GetConnectionString("BulkVSPassword") ?? string.Empty;
-    var bulkVSInbound = string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("BulkVSInboundMessagingURL")) ? $"https://portal.bulkvs.com/api/v1.0/messageSend" : builder.Configuration.GetConnectionString("BulkVSInboundMessagingURL");
-    var teliToken = builder.Configuration.GetConnectionString("TeleAPI") ?? string.Empty;
-    var teliInbound = string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("TeliInboundMessageSendingURL")) ? $"https://api.teleapi.net/sms/send?token=" : builder.Configuration.GetConnectionString("TeliInboundMessageSendingURL");
-    var firstPointSMSOutbound = string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("FirstPointOutboundMessageURL")) ? $"https://smsapi.1pcom.net/v1/retailsendmessage" : builder.Configuration.GetConnectionString("FirstPointOutboundMessageURL");
-    var firstPointUsername = builder.Configuration.GetConnectionString("PComNetUsername") ?? string.Empty;
-    var firstPointPassword = builder.Configuration.GetConnectionString("PComNetPassword") ?? string.Empty;
-    var localSecret = builder.Configuration.GetConnectionString("MessagingAPISecret") ?? string.Empty;
+    string bulkVSUsername = builder.Configuration.GetConnectionString("BulkVSUsername") ?? string.Empty;
+    string bulkVSPassword = builder.Configuration.GetConnectionString("BulkVSPassword") ?? string.Empty;
+    string bulkVSInbound = string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("BulkVSInboundMessagingURL"))
+        ? @"https://portal.bulkvs.com/api/v1.0/messageSend" : builder.Configuration.GetConnectionString("BulkVSInboundMessagingURL") ?? string.Empty;
+    string firstPointSMSOutbound = string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("FirstPointOutboundMessageURL"))
+        ? @"https://smsapi.1pcom.net/v1/retailsendmessage" : builder.Configuration.GetConnectionString("FirstPointOutboundMessageURL") ?? string.Empty;
+    string firstPointMMSOutbound = string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("FirstPointOutboundMMSMessageURL"))
+        ? @"https://mmsc01.1pcom.net/MMS_Send" : builder.Configuration.GetConnectionString("FirstPointOutboundMMSMessageURL") ?? string.Empty;
+    string firstPointMMSInbound = string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("FirstPointOutboundMMSMessageURL"))
+        ? @"https://mmsc01.1pcom.net/MMS_Send" : builder.Configuration.GetConnectionString("FirstPointOutboundMMSMessageURL") ?? string.Empty;
+    string firstPointUsername = builder.Configuration.GetConnectionString("PComNetUsername") ?? string.Empty;
+    string firstPointPassword = builder.Configuration.GetConnectionString("PComNetPassword") ?? string.Empty;
+    string localSecret = builder.Configuration.GetConnectionString("MessagingAPISecret") ?? string.Empty;
 
     builder.Services
         .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -561,7 +562,7 @@ try
             }
             else
             {
-                return TypedResults.BadRequest(new SendMessageResponse { Message = "Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(sendMessage)}" });
+                return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(sendMessage)}" });
             }
         }
         catch (FlurlHttpException ex)
@@ -569,11 +570,168 @@ try
             var error = await ex.GetResponseJsonAsync<FirstPointResponse>();
 
             // Let the caller know that delivery status for specific numbers.
-            return TypedResults.BadRequest(new SendMessageResponse { Message = "Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(error)}" });
+            return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(error)}" });
         }
 
     })
         .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Send an SMS Message.", Description = "Submit outbound messages to this endpoint. The 'to' field is a comma separated list of dialed numbers, or a single dialed number without commas. The 'msisdn' the dialed number of the client that is sending the message. The 'message' field is a string. No validation of the message field occurs before it is forwarded to our upstream vendors." });
+
+    app.MapPost("1pcom/outbound/MMS_Send", async Task<Results<Ok<SendMessageResponse>, BadRequest<SendMessageResponse>>> (FirstPointMMSRequest message, MessagingContext db) =>
+    {
+        // See emails from Endstream for docs
+        // Validate and regularize the incoming message.
+        if (!message.RegularizeAndValidate())
+        {
+            return TypedResults.BadRequest(new SendMessageResponse { Message = "Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers." });
+        }
+
+        try
+        {
+            var sendMessage = await firstPointMMSOutbound
+                    .PostUrlEncodedAsync(new
+                    {
+                        username = firstPointUsername,
+                        password = firstPointPassword,
+                        message.ani,
+                        message.recip,
+                        message.ufile
+                    })
+                    .ReceiveJson<FirstPointResponse>();
+
+            if (sendMessage is not null && sendMessage?.Response?.Text is "OK")
+            {
+                var record = new MessageRecord
+                {
+                    Id = Guid.NewGuid(),
+                    Content = string.Empty,
+                    DateReceivedUTC = DateTime.UtcNow,
+                    From = message?.FromPhoneNumber?.DialedNumber ?? string.Empty,
+                    To = string.Join(',', message?.ToPhoneNumbers?.Select(x => x.DialedNumber) ?? Array.Empty<string>()),
+                    MediaURLs = string.Empty,
+                    MessageSource = MessageSource.Outgoing,
+                    MessageType = MessageType.MMS,
+                    DLRID = sendMessage.Response.DLRID
+                };
+
+                record.ToFromCompound = $"{record.From},{record.To}";
+
+                db.Messages.Add(record);
+                await db.SaveChangesAsync();
+
+                // Let the caller know that delivery status for specific numbers.
+                return TypedResults.Ok(new SendMessageResponse
+                {
+                    Message = $"Message sent to {record.To}",
+                    MessageSent = true,
+                });
+            }
+            else
+            {
+                return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(sendMessage)}" });
+            }
+        }
+        catch (FlurlHttpException ex)
+        {
+            var error = await ex.GetResponseJsonAsync<FirstPointResponse>();
+
+            // Let the caller know that delivery status for specific numbers.
+            return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(error)}" });
+        }
+
+    }).RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Send an MMS Message.", Description = "Submit outbound messages to this endpoint." });
+
+    app.MapPost("1pcom/inbound/MMS", async Task<Results<Ok<string>, BadRequest<string>, UnauthorizedHttpResult>> (HttpContext context, string token, MessagingContext db) =>
+    {
+        if (token is not "okereeduePeiquah3yaemohGhae0ie")
+        {
+            Log.Warning($"Token is not valid. Token: {token} is not okereeduePeiquah3yaemohGhae0ie");
+            return TypedResults.Unauthorized();
+        }
+
+        try
+        {
+            FirstPointInbound message = new()
+            {
+                msisdn = context.Request.Form["msisdn"].ToString(),
+                to = context.Request.Form["to"].ToString(),
+                message = context.Request.Form["message"].ToString(),
+                sessionid = context.Request.Form["sessionid"].ToString(),
+                serversecret = context.Request.Form["serversecret"].ToString(),
+                timezone = context.Request.Form["timezone"].ToString(),
+                origtime = context.Request.Form["origtime"].ToString(),
+            };
+
+            var MMSDescription = System.Text.Json.JsonSerializer.Deserialize<FirstPointMMSMessage>(message.message);
+
+            // Validate and regularize the incoming message.
+            if (!message.RegularizeAndValidate())
+            {
+                return TypedResults.BadRequest($"Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers. {System.Text.Json.JsonSerializer.Serialize(message)}");
+            }
+
+            string MMSMessagePickupRequest = $"{MMSDescription?.url}&authkey={MMSDescription?.authkey}";
+
+            MessageRecord record = new()
+            {
+                Content = MMSDescription?.files ?? message.message,
+                From = message.FromPhoneNumber.DialedNumber,
+                To = string.Join(',', message?.ToPhoneNumbers?.Select(x => x.DialedNumber) ?? Array.Empty<string>()),
+                MessageSource = MessageSource.Incoming,
+                MessageType = MessageType.SMS,
+                MediaURLs = string.Empty,
+            };
+
+            record.ToFromCompound = $"{record.From},{record.To}";
+            await db.Messages.AddAsync(record);
+
+            try
+            {
+                await db.SaveChangesAsync();
+
+                var existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == record.To).FirstOrDefaultAsync();
+                if (existingRegistration is not null && existingRegistration.AsDialed == record.To)
+                {
+                    try
+                    {
+                        // Add some retry logic
+                        // Number of retrys
+                        // Successfully delieverd
+                        record.ClientSecret = existingRegistration.ClientSecret;
+                        var response = await existingRegistration.CallbackUrl.PostJsonAsync(record);
+                        Log.Information(await response.GetStringAsync());
+                        Log.Information(System.Text.Json.JsonSerializer.Serialize(record));
+                        return TypedResults.Ok("The incoming message was recieved and forwarded to the client.");
+                    }
+                    catch (FlurlHttpException ex)
+                    {
+                        Log.Error(await ex.GetResponseStringAsync());
+                        Log.Error(System.Text.Json.JsonSerializer.Serialize(existingRegistration));
+                        Log.Error(System.Text.Json.JsonSerializer.Serialize(record));
+                        return TypedResults.BadRequest("Failed to forward the message to the client's callback url.");
+                    }
+                }
+                else
+                {
+                    Log.Error(System.Text.Json.JsonSerializer.Serialize(record));
+                    return TypedResults.BadRequest($"{record.To} is not registered as a client.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return TypedResults.BadRequest($"Failed to save incoming message to the database. {ex.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex.Message);
+            Log.Error(ex.StackTrace ?? "No stacktrace found.");
+            Log.Information("Failed to read form data by field name.");
+            return TypedResults.BadRequest("Failed to read form data by field name.");
+        }
+
+    }).RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Send an MMS Message.", Description = "Submit outbound messages to this endpoint." });
+
+
 
     // Add unit tests for this endpoint to verify its behavior.
     //https://sms.callpipe.com/api/inbound/1pcom?token=okereeduePeiquah3yaemohGhae0ie
@@ -663,8 +821,9 @@ try
             Log.Information("Failed to read form data by field name.");
             return TypedResults.BadRequest("Failed to read form data by field name.");
         }
-    })
-        .WithOpenApi(x => new(x) { Summary = "For use by First Point Communications only.", Description = "Recieves incoming messages from our upstream provider. Forwards valid SMS messages to clients registered through the /client/register endpoint. Forwarded messages are in the form described by the MessageRecord entry in the Schema's section of this page. The is no request body as the data provided by First Point Communications is UrlEncoded like POSTing form data rather than JSON formatted in body of the POST request. The Token is a secret created and maintained by First Point Communications. This endpoint is not for use by anyone other than First Point Communications. It is documented here to help developers understand how incoming messages are fowarded to the client that they have registered with this API. The Messaging.Tests project is a series of functional tests that verify the behavior of this endpoint, because this method of message passing is so chaotic." });
+    }).WithOpenApi(x => new(x) { Summary = "For use by First Point Communications only.", Description = "Recieves incoming messages from our upstream provider. Forwards valid SMS messages to clients registered through the /client/register endpoint. Forwarded messages are in the form described by the MessageRecord entry in the Schema's section of this page. The is no request body as the data provided by First Point Communications is UrlEncoded like POSTing form data rather than JSON formatted in body of the POST request. The Token is a secret created and maintained by First Point Communications. This endpoint is not for use by anyone other than First Point Communications. It is documented here to help developers understand how incoming messages are fowarded to the client that they have registered with this API. The Messaging.Tests project is a series of functional tests that verify the behavior of this endpoint, because this method of message passing is so chaotic." });
+
+
 
     app.Run();
 }
@@ -710,6 +869,59 @@ namespace Models
         public int Subcode { get; set; }
         [JsonPropertyName("text")]
         public string Text { get; set; } = string.Empty;
+    }
+
+    public class FirstPointMMSRequest
+    {
+        // MSISDN or From Dialed Number
+        public string ani { get; set; } = string.Empty;
+        // To Dialed Number
+        public string recip { get; set; } = string.Empty;
+        public byte[]? ufile { get; set; } = null;
+        // These are for the regularization of phone numbers and not mapped from the JSON payload.
+        [JsonIgnore]
+        public PhoneNumbersNA.PhoneNumber FromPhoneNumber { get; set; } = new();
+        [JsonIgnore]
+        public List<PhoneNumbersNA.PhoneNumber> ToPhoneNumbers { get; set; } = new();
+
+        public bool RegularizeAndValidate()
+        {
+            bool FromParsed = false;
+            bool ToParsed = false;
+
+            if (!string.IsNullOrWhiteSpace(ani))
+            {
+                var checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(ani, out var fromPhoneNumber);
+                if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
+                {
+                    FromPhoneNumber = fromPhoneNumber;
+                    ani = $"1{fromPhoneNumber.DialedNumber}";
+                    FromParsed = true;
+                }
+            }
+
+            if (recip is not null && recip.Any())
+            {
+                // This may not be necessary if this list is always created by the BulkVSMessage constructor.
+                ToPhoneNumbers ??= new List<PhoneNumbersNA.PhoneNumber>();
+
+                foreach (var number in recip.Split(','))
+                {
+                    var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
+
+                    if (checkTo && toPhoneNumber is not null)
+                    {
+                        ToPhoneNumbers.Add(toPhoneNumber);
+                    }
+                }
+
+                // This will drop the numbers that couldn't be parsed.
+                recip = ToPhoneNumbers is not null && ToPhoneNumbers.Any() ? ToPhoneNumbers.Count > 1 ? string.Join(",", ToPhoneNumbers.Select(x => $"1{x.DialedNumber!}")) : $"1{ToPhoneNumbers?.FirstOrDefault()?.DialedNumber}" ?? string.Empty : string.Empty;
+                ToParsed = true;
+            }
+
+            return FromParsed && ToParsed;
+        }
     }
 
     // This model isn't converted into JSON as First Com expects a form-style URLEncoded POST as a request. Only the response is actually JSON.
@@ -765,6 +977,15 @@ namespace Models
 
     }
 
+    public class FirstPointMMSMessage
+    {
+        public string authkey { get; set; } = string.Empty;
+        public string encoding { get; set; } = string.Empty;
+        public string files { get; set; } = string.Empty;
+        public string recip { get; set; } = string.Empty;
+        public string url { get; set; } = string.Empty;
+    }
+
     public class FirstPointInbound
     {
         public string origtime { get; set; } = string.Empty;
@@ -799,6 +1020,10 @@ namespace Models
                 // Handle incoming short codes.
                 else if (msisdn.Length is 5 || msisdn.Length is 6)
                 {
+                    FromPhoneNumber = new PhoneNumbersNA.PhoneNumber
+                    {
+                        DialedNumber = msisdn,
+                    };
                     FromParsed = true;
                 }
             }

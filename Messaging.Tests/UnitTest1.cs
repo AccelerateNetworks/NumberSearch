@@ -112,5 +112,33 @@ namespace Messaging.Tests
             var message = await response.Content.ReadAsStringAsync();
             Assert.Equal("\"2068589312 is not registered as a client.\"", message);
         }
+
+        [Fact]
+        public async Task CenturyLinkBillingMessageAsync()
+        {
+            string route = "/api/inbound/1pcom";
+            string token = "okereeduePeiquah3yaemohGhae0ie";
+
+            var stringContent = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("origtime", "2023-04-28 19:14:10"),
+                    new KeyValuePair<string, string>("msisdn", "67378"),
+                    new KeyValuePair<string, string>("to", "12068589310"),
+                    new KeyValuePair<string, string>("sessionid", "tLMOYTAmIFiQvBE6X1g"),
+                    new KeyValuePair<string, string>("timezone", "EST"),
+                    new KeyValuePair<string, string>("message", "CenturyLink: Payment to be applied on 05/05/2023. Text HELP for help, NOREMINDER to stop pay alerts, STOP to stop all alerts. Msg&data rates may apply."),
+                    new KeyValuePair<string, string>("api_version", "0.5"),
+                    new KeyValuePair<string, string>("serversecret", "sekrethere"),
+
+                });
+
+            var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
+
+            Assert.NotNull(response);
+            Assert.False(response.IsSuccessStatusCode);
+            Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
+            var message = await response.Content.ReadAsStringAsync();
+            Assert.Equal("\"2068589310 is not registered as a client.\"", message);
+        }
     }
 }
