@@ -1,11 +1,7 @@
 ﻿using FirstCom;
 
-using Flurl.Http;
-
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
-
-using Org.BouncyCastle.Math.EC.Rfc7748;
 
 using PhoneNumbersNA;
 
@@ -201,37 +197,86 @@ namespace NumberSearch.Ingest
             var ingestedNew = 0;
             var updatedExisting = 0;
 
-            var existingOwnedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
-            var existingAsDict = existingOwnedNumbers.DistinctBy(x => x.DialedNumber).ToDictionary(x => x.DialedNumber, x => x);
-            var newAsDict = newlyIngested.ToDictionary(x => x.DialedNumber, x => x);
-
-
-            foreach (var item in newlyIngested)
+            try
             {
-                // Add new owned numbers.
-                var checkExisting = existingAsDict.TryGetValue(item.DialedNumber, out var number);
+                var existingOwnedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
+                var existingAsDict = existingOwnedNumbers.DistinctBy(x => x.DialedNumber).ToDictionary(x => x.DialedNumber, x => x);
+                var newAsDict = newlyIngested.ToDictionary(x => x.DialedNumber, x => x);
+                var portedPhoneNumbers = await PortedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
 
-                if (checkExisting is false || number is null)
+                foreach (var item in newlyIngested)
                 {
-                    var checkCreate = await item.PostAsync(connectionString).ConfigureAwait(false);
-                    if (checkCreate)
+                    var checkExisting = existingAsDict.TryGetValue(item.DialedNumber, out var number);
+
+                    if (checkExisting is false || number is null)
                     {
-                        ingestedNew++;
-                        Log.Information($"[OwnedNumbers] Added {item.DialedNumber} as an owned number.");
+                        var matchingPort = portedPhoneNumbers.Where(x => x.PortedDialedNumber == item.DialedNumber).FirstOrDefault();
+                        if (matchingPort is not null && matchingPort.RequestStatus is not "COMPLETE")
+                        {
+                            // If it is a ported number and the port has not complete mark it as ported in.
+                            item.Status = "Porting In";
+                        }
+                        else
+                        {
+                            // If it's not a ported number or the porting is complete just mark it as active.
+                            item.Status = "Active";
+                        }
+                        item.Active = true;
+                        // Add new owned numbers.
+                        var checkCreate = await item.PostAsync(connectionString).ConfigureAwait(false);
+                        if (checkCreate)
+                        {
+                            ingestedNew++;
+                            Log.Information($"[OwnedNumbers] Added {item.DialedNumber} as an owned number.");
+                        }
+                        else
+                        {
+                            Log.Fatal($"[OwnedNumbers] Failed to add {item.DialedNumber} as an owned number.");
+                        }
                     }
                     else
                     {
-                        Log.Fatal($"[OwnedNumbers] Failed to add {item.DialedNumber} as an owned number.");
+                        // Update existing owned numbers.
+                        var matchingPort = portedPhoneNumbers.Where(x => x.PortedDialedNumber == item.DialedNumber).FirstOrDefault();
+                        if (matchingPort is not null && matchingPort.RequestStatus is not "COMPLETE")
+                        {
+                            // If it is a ported number and the port has not complete mark it as ported in.
+                            item.Status = "Porting In";
+                        }
+                        else
+                        {
+                            // If it's not a ported number or the porting is complete just mark it as active.
+                            item.Status = "Active";
+                        }
+                        number.Notes = string.IsNullOrWhiteSpace(number.Notes) ? item.Notes : number.Notes;
+                        number.IngestedFrom = item.IngestedFrom;
+                        number.DateUpdated = item.DateIngested;
+                        item.Active = true;
+
+                        var checkCreate = await number.PutAsync(connectionString).ConfigureAwait(false);
+                        if (checkCreate)
+                        {
+                            updatedExisting++;
+                            Log.Information($"[OwnedNumbers] Updated {item.DialedNumber} as an owned number.");
+                        }
+                        else
+                        {
+                            Log.Fatal($"[OwnedNumbers] Failed to update {item.DialedNumber} as an owned number.");
+                        }
                     }
                 }
-                else
-                {
-                    // Update existing owned numbers.
-                    number.Active = true;
-                    number.Notes = string.IsNullOrWhiteSpace(number.Notes) ? item.Notes : number.Notes;
-                    number.IngestedFrom = item.IngestedFrom;
 
-                    var checkCreate = await number.PutAsync(connectionString).ConfigureAwait(false);
+                var unmatchedExistingNumbers = existingOwnedNumbers.Where(x => !newAsDict.ContainsKey(x.DialedNumber)).ToArray();
+
+                foreach (var item in unmatchedExistingNumbers)
+                {
+                    // Mark unmatched Numbers as inactive.
+                    item.Active = false;
+                    if (item.Status is not "Cancelled" || item.Status is not "Porting Out")
+                    {
+                        item.Status = "Cancelled";
+                    }
+                    var checkCreate = await item.PutAsync(connectionString).ConfigureAwait(false);
                     if (checkCreate)
                     {
                         updatedExisting++;
@@ -242,47 +287,48 @@ namespace NumberSearch.Ingest
                         Log.Fatal($"[OwnedNumbers] Failed to update {item.DialedNumber} as an owned number.");
                     }
                 }
-            }
 
-            var unmatchedExistingNumbers = existingOwnedNumbers.Where(x => !newAsDict.ContainsKey(x.DialedNumber)).ToArray();
+                var end = DateTime.Now;
 
-            foreach (var item in unmatchedExistingNumbers)
-            {            
-                // Mark unmatched Numbers as inactive.
-                item.Active = false;
-                var checkCreate = await item.PutAsync(connectionString).ConfigureAwait(false);
-                if (checkCreate)
+                var stats = new IngestStatistics
                 {
-                    updatedExisting++;
-                    Log.Information($"[OwnedNumbers] Updated {item.DialedNumber} as an owned number.");
-                }
-                else
-                {
-                    Log.Fatal($"[OwnedNumbers] Failed to update {item.DialedNumber} as an owned number.");
-                }
+                    StartDate = start,
+                    EndDate = end,
+                    IngestedFrom = "OwnedNumbers",
+                    NumbersRetrived = newlyIngested.Count(),
+                    Priority = false,
+                    Lock = false,
+                    IngestedNew = ingestedNew,
+                    UpdatedExisting = updatedExisting,
+                    Removed = 0,
+                    Unchanged = 0,
+                    FailedToIngest = 0
+                };
+
+                Log.Information($"[OwnedNumbers] Updated {updatedExisting} owned numbers.");
+                Log.Information($"[OwnedNumbers] Added {ingestedNew} new owned numbers.");
+
+                return stats;
             }
-
-            var end = DateTime.Now;
-
-            var stats = new IngestStatistics
+            catch (Exception ex)
             {
-                StartDate = start,
-                EndDate = end,
-                IngestedFrom = "OwnedNumbers",
-                NumbersRetrived = newlyIngested.Count(),
-                Priority = false,
-                Lock = false,
-                IngestedNew = ingestedNew,
-                UpdatedExisting = updatedExisting,
-                Removed = 0,
-                Unchanged = 0,
-                FailedToIngest = 0
-            };
-
-            Log.Information($"[OwnedNumbers] Updated {updatedExisting} owned numbers.");
-            Log.Information($"[OwnedNumbers] Added {ingestedNew} new owned numbers.");
-
-            return stats;
+                Log.Fatal($"{ex.Message}");
+                Log.Fatal($"{ex.StackTrace}");
+                return new()
+                {
+                    StartDate = start,
+                    EndDate = DateTime.Now,
+                    IngestedFrom = "OwnedNumbers",
+                    NumbersRetrived = newlyIngested.Count(),
+                    Priority = false,
+                    Lock = false,
+                    IngestedNew = ingestedNew,
+                    UpdatedExisting = updatedExisting,
+                    Removed = 0,
+                    Unchanged = 0,
+                    FailedToIngest = 0
+                };
+            }
         }
 
         public static async Task<IngestStatistics> OfferUnassignedNumberForSaleAsync(string connectionString)

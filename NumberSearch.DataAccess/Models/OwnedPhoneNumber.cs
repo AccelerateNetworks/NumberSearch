@@ -10,18 +10,21 @@ namespace NumberSearch.DataAccess
 {
     public class OwnedPhoneNumber
     {
-        public Guid OwnedPhoneNumberId { get; set; }
+        public Guid OwnedPhoneNumberId { get; set; } = Guid.NewGuid();
         public string DialedNumber { get; set; } = string.Empty;
         public string IngestedFrom { get; set; } = string.Empty;
-        public DateTime DateIngested { get; set; }
-        public bool Active { get; set; }
+        public DateTime DateIngested { get; set; } = DateTime.Now;
+        public bool Active { get; set; } = false;
         public string BillingClientId { get; set; } = string.Empty;
         public string OwnedBy { get; set; } = string.Empty;
         public string Notes { get; set; } = string.Empty;
         public string SPID { get; set; } = string.Empty;
         public string SPIDName { get; set; } = string.Empty;
         public string LIDBCNAM { get; set; } = string.Empty;
-        public Guid? EmergencyInformationId { get; set; }
+        public Guid? EmergencyInformationId { get; set; } = null;
+        public DateTime DateUpdated { get; set; } = DateTime.Now;
+        public string Status { get; set; } = string.Empty;
+        public string FusionPBXClientId { get; set; } = string.Empty;
 
         /// <summary>
         /// Get every owned phone number.
@@ -33,7 +36,7 @@ namespace NumberSearch.DataAccess
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<OwnedPhoneNumber>("""SELECT "OwnedPhoneNumberId", "DialedNumber", "IngestedFrom", "DateIngested", "Active", "BillingClientId", "OwnedBy", "Notes", "SPID", "SPIDName", "LIDBCNAM", "EmergencyInformationId" FROM public."OwnedPhoneNumbers" """)
+                .QueryAsync<OwnedPhoneNumber>("""SELECT "OwnedPhoneNumberId", "DialedNumber", "IngestedFrom", "DateIngested", "Active", "BillingClientId", "OwnedBy", "Notes", "SPID", "SPIDName", "LIDBCNAM", "EmergencyInformationId", "DateUpdated", "Status", "FusionPBXClientId" FROM public."OwnedPhoneNumbers" """)
                 .ConfigureAwait(false);
             return result;
         }
@@ -48,7 +51,7 @@ namespace NumberSearch.DataAccess
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryFirstOrDefaultAsync<OwnedPhoneNumber>("""SELECT "OwnedPhoneNumberId", "DialedNumber", "IngestedFrom", "DateIngested", "Active", "BillingClientId", "OwnedBy", "Notes", "SPID", "SPIDName", "LIDBCNAM", "EmergencyInformationId" FROM public."OwnedPhoneNumbers" WHERE "DialedNumber" = @dialedNumber""", new { dialedNumber })
+                .QueryFirstOrDefaultAsync<OwnedPhoneNumber>("""SELECT "OwnedPhoneNumberId", "DialedNumber", "IngestedFrom", "DateIngested", "Active", "BillingClientId", "OwnedBy", "Notes", "SPID", "SPIDName", "LIDBCNAM", "EmergencyInformationId", "DateUpdated", "Status", "FusionPBXClientId" FROM public."OwnedPhoneNumbers" WHERE "DialedNumber" = @dialedNumber""", new { dialedNumber })
                 .ConfigureAwait(false);
 
             return result;
@@ -67,8 +70,8 @@ namespace NumberSearch.DataAccess
             DateIngested = DateTime.Now;
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"OwnedPhoneNumbers\" (\"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"Active\", \"BillingClientId\", \"OwnedBy\", \"Notes\", \"SPID\", \"SPIDName\", \"LIDBCNAM\", \"EmergencyInformationId\") VALUES (@DialedNumber, @IngestedFrom, @DateIngested, @Active, @BillingClientId, @OwnedBy, @Notes, @SPID, @SPIDName, @LIDBCNAM, @EmergencyInformationId)",
-                new { DialedNumber, IngestedFrom, DateIngested, Active, BillingClientId, OwnedBy, Notes, SPID, SPIDName, LIDBCNAM, EmergencyInformationId })
+                .ExecuteAsync("INSERT INTO public.\"OwnedPhoneNumbers\" (\"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"Active\", \"BillingClientId\", \"OwnedBy\", \"Notes\", \"SPID\", \"SPIDName\", \"LIDBCNAM\", \"EmergencyInformationId\", \"DateUpdated\", \"Status\", \"FusionPBXClientId\") VALUES (@DialedNumber, @IngestedFrom, @DateIngested, @Active, @BillingClientId, @OwnedBy, @Notes, @SPID, @SPIDName, @LIDBCNAM, @EmergencyInformationId, @DateUpdated, @Status, @FusionPBXClientId)",
+                new { DialedNumber, IngestedFrom, DateIngested, Active, BillingClientId, OwnedBy, Notes, SPID, SPIDName, LIDBCNAM, EmergencyInformationId, DateUpdated, Status, FusionPBXClientId })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -94,8 +97,8 @@ namespace NumberSearch.DataAccess
             DateIngested = DateTime.Now;
 
             var result = await connection
-                .ExecuteAsync("UPDATE public.\"OwnedPhoneNumbers\" SET \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"Active\" = @Active, \"BillingClientId\" = @BillingClientId, \"OwnedBy\" = @OwnedBy, \"Notes\" = @Notes, \"SPID\" = @SPID, \"SPIDName\" = @SPIDName, \"LIDBCNAM\" = @LIDBCNAM, \"EmergencyInformationId\" = @EmergencyInformationId WHERE \"OwnedPhoneNumberId\" = @OwnedPhoneNumberId",
-                new { IngestedFrom, DateIngested, Active, BillingClientId, OwnedBy, Notes, SPID, SPIDName, LIDBCNAM, EmergencyInformationId, OwnedPhoneNumberId })
+                .ExecuteAsync("UPDATE public.\"OwnedPhoneNumbers\" SET \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"Active\" = @Active, \"BillingClientId\" = @BillingClientId, \"OwnedBy\" = @OwnedBy, \"Notes\" = @Notes, \"SPID\" = @SPID, \"SPIDName\" = @SPIDName, \"LIDBCNAM\" = @LIDBCNAM, \"EmergencyInformationId\" = @EmergencyInformationId, \"DateUpdated\" = @DateUpdated, \"Status\" = @Status, \"FusionPBXClientId\" = @FusionPBXClientId WHERE \"OwnedPhoneNumberId\" = @OwnedPhoneNumberId",
+                new { IngestedFrom, DateIngested, Active, BillingClientId, OwnedBy, Notes, SPID, SPIDName, LIDBCNAM, EmergencyInformationId, DateUpdated, Status, FusionPBXClientId, OwnedPhoneNumberId })
                 .ConfigureAwait(false);
 
             if (result == 1)
