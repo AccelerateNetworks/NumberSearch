@@ -114,10 +114,10 @@ namespace NumberSearch.Ops.Controllers
         [HttpPost("/Lookups/Edit/{id}")]
         public async Task<IActionResult> Edit(Guid id, [Bind("PhoneNumberLookupId,DialedNumber,Lrn,Ocn,Lata,City,Ratecenter,State,Jurisdiction,Local,Lec,Lectype,Spid,Lidbname,LastPorted,IngestedFrom,DateIngested,CarrierId")] PhoneNumberLookup lookup)
         {
-            if (id != lookup.CarrierId)
-            {
-                return NotFound();
-            }
+            //if (id != lookup.CarrierId)
+            //{
+            //    return NotFound();
+            //}
 
             if (ModelState.IsValid)
             {

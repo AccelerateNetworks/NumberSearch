@@ -134,10 +134,10 @@ namespace NumberSearch.Ops.Controllers
         [HttpPost("/Carriers/Edit/{id}")]
         public async Task<IActionResult> Edit(Guid id, [Bind("CarrierId,Ocn,Lec,Lectype,Spid,Name,Type,Ratecenter,Color,LogoLink,LastUpdated")] Carrier carrier)
         {
-            if (id != carrier.CarrierId)
-            {
-                return NotFound();
-            }
+            //if (id != carrier.CarrierId)
+            //{
+            //    return NotFound();
+            //}
 
             if (ModelState.IsValid)
             {
