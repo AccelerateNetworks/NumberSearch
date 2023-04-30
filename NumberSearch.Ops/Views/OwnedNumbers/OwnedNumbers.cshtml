@@ -11,7 +11,7 @@
     Porting Out: <strong>@Model.Where(x => x.Status is "Porting Out").Count()</strong>
     |
     @{
-        foreach (string provider in Model?.Select(x => x.IngestedFrom).Distinct())
+        foreach (string provider in Model.Select(x => x.IngestedFrom).Distinct())
         {
             string numbersForProider = $"{provider}: <strong>{Model.Where(x => x.IngestedFrom == provider).Count()}</strong> ";
             @Html.Raw(numbersForProider);
