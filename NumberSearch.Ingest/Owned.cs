@@ -238,7 +238,7 @@ namespace NumberSearch.Ingest
                     {
                         // Update existing owned numbers.
                         var matchingPort = portedPhoneNumbers.Where(x => x.PortedDialedNumber == item.DialedNumber).FirstOrDefault();
-                        if (matchingPort is not null && matchingPort.RequestStatus is not "COMPLETE")
+                        if (matchingPort is not null && !string.IsNullOrWhiteSpace(matchingPort.RequestStatus) && matchingPort.RequestStatus is not "COMPLETE")
                         {
                             // If it is a ported number and the port has not complete mark it as ported in.
                             number.Status = "Porting In";
