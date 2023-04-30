@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace AccelerateNetworks.Operations
 {
@@ -17,5 +16,9 @@ namespace AccelerateNetworks.Operations
         public string? SPIDName { get; set; }
         public string? Lidbcnam { get; set; }
         public Guid? EmergencyInformationId { get; set; }
+        public DateTime DateUpdated { get; set; }
+        public string? Status { get; set; }
+        public string? FusionPBXClientId { get; set; }
+
     }
 }

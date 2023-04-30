@@ -155,16 +155,16 @@ namespace NumberSearch.Tests
         }
 
         // This takes 3 minutes to run.
-        //[Fact]
-        //public async Task OwnedNumbersAsync()
-        //{
-        //    //Arrange
+        [Fact]
+        public async Task OwnedNumbersAsync()
+        {
+            //Arrange
 
-        //    //Act
-        //    await Owned.IngestAsync(ingestConfiguration).ConfigureAwait(false);
+            //Act
+            await Owned.IngestAsync(ingestConfiguration).ConfigureAwait(false);
 
-        //    //Assert
-        //}
+            //Assert
+        }
 
         // This test is slow too.
         //[Fact]

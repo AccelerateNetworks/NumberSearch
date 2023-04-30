@@ -241,17 +241,17 @@ namespace NumberSearch.Ingest
                         if (matchingPort is not null && matchingPort.RequestStatus is not "COMPLETE")
                         {
                             // If it is a ported number and the port has not complete mark it as ported in.
-                            item.Status = "Porting In";
+                            number.Status = "Porting In";
                         }
                         else
                         {
                             // If it's not a ported number or the porting is complete just mark it as active.
-                            item.Status = "Active";
+                            number.Status = "Active";
                         }
                         number.Notes = string.IsNullOrWhiteSpace(number.Notes) ? item.Notes : number.Notes;
                         number.IngestedFrom = item.IngestedFrom;
                         number.DateUpdated = item.DateIngested;
-                        item.Active = true;
+                        number.Active = true;
 
                         var checkCreate = await number.PutAsync(connectionString).ConfigureAwait(false);
                         if (checkCreate)

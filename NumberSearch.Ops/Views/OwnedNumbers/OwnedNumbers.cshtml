@@ -4,23 +4,29 @@
     ViewData["Title"] = "Owned Phone Numbers";
 }
 <h1 class="display-4 p-3">🏢 Owned Numbers</h1>
+<p>Total: <strong>@Model.Count()</strong> |
+    Active: <strong>@Model.Where(x => x.Status is "Active").Count()</strong> 
+    Cancelled: <strong>@Model.Where(x => x.Status is "Cancelled").Count()</strong> 
+    Porting In: <strong>@Model.Where(x => x.Status is "Porting In").Count()</strong> 
+    Porting Out: <strong>@Model.Where(x => x.Status is "Porting Out").Count()</strong>
+    |
+    @{
+        foreach (string provider in Model?.Select(x => x.IngestedFrom).Distinct())
+        {
+            string numbersForProider = $"{provider}: <strong>{Model.Where(x => x.IngestedFrom == provider).Count()}</strong> ";
+            @Html.Raw(numbersForProider);
+        }
+    }
+</p>
 <div class="table-responsive">
     <table class="table table-striped table-borderless table-hover" id="table">
         <thead>
             <tr>
-                <th scope="col">
-                    Number
-                </th>
+                <th scope="col">Number</th>
                 <th>Status</th>
-                <th scope="col">
-                    Provider
-                </th>
-                <th>
-                    Notes
-                </th>
-                <th>
-                    Client and Billing Id
-                </th>
+                <th scope="col">Provider</th>
+                <th>Notes</th>
+                <th>Client and Billing Id</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -44,16 +50,14 @@
                     <tr>
                         <td scope="row">
                             @*<a href="https://acceleratenetworks.com/cart/order/@order.OrderId" class="btn btn-primary">
-                                    View Order
-                                </a>*@
+                    View Order
+                    </a>*@
                             @*<h4 class="d-flex justify-content-between align-items-center mt-3">
-                                    <span class="badge badge-info badge-pill">
-                                        @number.DateIngested
-                                    </span>
-                                </h4>*@
+                    <span class="badge badge-info badge-pill">
+                    @number.DateIngested
+                    </span>
+                    </h4>*@
                             <h4>@number.DialedNumber</h4>
-                        </td>
-                        <td>
                             @{
                                 if (number.Active)
                                 {
@@ -66,7 +70,15 @@
                             }
                         </td>
                         <td>
+                            @number.Status
+                        </td>
+                        <td>
                             @Html.Raw(ingestedBadge)
+                            <p>
+                                Last Updated
+                                @number.DateUpdated.ToShortDateString()
+                            </p>
+
                         </td>
                         <td>
                             <p>@number.Notes</p>
