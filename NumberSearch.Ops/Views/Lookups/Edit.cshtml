@@ -87,19 +87,23 @@
                 <input asp-for="Lookup!.DateIngested" class="form-control" type="datetime" readonly />
                 <span asp-validation-for="Lookup!.DateIngested" class="text-danger"></span>
             </div>
+            @*            <div class="form-group">
+            <label asp-for="Lookup!.CarrierId" class="control-label"></label>
+            <select asp-for="Lookup!.CarrierId" class="form-select mr-sm-2" id="name" required>
+            <option selected>Choose...</option>
+            @if (Model.Carriers is not null)
+            {
+            foreach (var product in Model.Carriers.OrderByDescending(x => x.Name))
+            {
+            <option value="@product.CarrierId">@product.Name - OCN @product.Ocn</option>
+            }
+            }
+            </select>
+            <span asp-validation-for="Lookup!.CarrierId" class="text-danger"></span>
+            </div>*@
             <div class="form-group">
-                <label asp-for="Lookup!.CarrierId" class="control-label"></label>
-                <select asp-for="Lookup!.CarrierId" class="form-select mr-sm-2" id="name" required>
-                    <option selected>Choose...</option>
-                    @if (Model.Carriers is not null)
-                    {
-                        foreach (var product in Model.Carriers.OrderByDescending(x => x.Name))
-                        {
-                            <option value="@product.CarrierId">@product.Name - OCN @product.Ocn</option>
-                        }
-                    }
-                </select>
-                <span asp-validation-for="Lookup!.CarrierId" class="text-danger"></span>
+                <p>Create a new Carrier records based on the OCN, SPID, and LECtype of this Lookup:</p>
+                <a asp-controller="Carriers" asp-action="FromLookup" asp-route-id="@Model.Lookup.PhoneNumberLookupId" class="btn btn-success">New Carrier</a>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary mt-3 mb-3" />
@@ -111,6 +115,6 @@
 
 @section Scripts {
     @{
-    await Html.RenderPartialAsync("_ValidationScriptsPartial");
-}
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

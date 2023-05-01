@@ -8,5 +8,6 @@ namespace NumberSearch.Ops.Models
     {
         public PhoneNumberLookup[] Lookups { get; set; } = Array.Empty<PhoneNumberLookup>();
         public Carrier Carrier { get; set; } = new();
+        public string Message { get; set; } = string.Empty;
     }
 }

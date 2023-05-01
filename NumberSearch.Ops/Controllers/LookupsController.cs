@@ -27,19 +27,19 @@ namespace NumberSearch.Ops.Controllers
         public async Task<IActionResult> Index()
         {
             // Match lookups to existing carriers.
-            var carriers = await _context.Carriers.ToListAsync();
-            var lookups = await _context.PhoneNumberLookups.ToListAsync();
+            //var carriers = await _context.Carriers.ToListAsync();
+            //var lookups = await _context.PhoneNumberLookups.ToListAsync();
 
-            foreach (var item in lookups)
-            {
-                var carrier = carriers.Where(x => x.Ocn == item.Ocn).FirstOrDefault();
+            //foreach (var item in lookups)
+            //{
+            //    var carrier = carriers.Where(x => x.Ocn == item.Ocn).FirstOrDefault();
 
-                if (carrier is not null)
-                {
-                    item.CarrierId = carrier.CarrierId;
-                    _context.Update(item);
-                }
-            }
+            //    if (carrier is not null)
+            //    {
+            //        item.CarrierId = carrier.CarrierId;
+            //        _context.Update(item);
+            //    }
+            //}
 
             await _context.SaveChangesAsync();
 
@@ -126,18 +126,6 @@ namespace NumberSearch.Ops.Controllers
                 {
                     lookup.DateIngested = DateTime.Now;
                     _context.Update(lookup);
-
-                    var carrier = await _context.Carriers.Where(x => x.CarrierId == lookup.CarrierId).FirstOrDefaultAsync();
-                    // Updated all the lookups related to this OCN.
-                    var relatedLookups = await _context.PhoneNumberLookups.Where(x => x.Ocn == lookup.Ocn).ToListAsync();
-                    if (carrier is not null && relatedLookups.Any())
-                    {
-                        foreach (var relatedLookup in relatedLookups)
-                        {
-                            relatedLookup.CarrierId = carrier.CarrierId;
-                        }
-                        _context.UpdateRange(relatedLookups);
-                    }
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)

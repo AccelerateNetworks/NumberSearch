@@ -100,7 +100,7 @@ namespace NumberSearch.Ops.Controllers
                 }
                 _context.UpdateRange(relatedLookups);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return View("Edit", new EditCarrier { Carrier = carrier, Lookups = relatedLookups.ToArray(), Message = $"Created a new Carrier for OCN {carrier.Ocn}!" });
             }
             return View(carrier);
         }
@@ -128,17 +128,22 @@ namespace NumberSearch.Ops.Controllers
             }
         }
 
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        [HttpPost("/Carriers/Edit/")]
+        public async Task<IActionResult> Edit([Bind("CarrierId,Ocn,Lec,Lectype,Spid,Name,Type,Ratecenter,Color,LogoLink,LastUpdated")] Carrier carrier)
+        {
+                return await Edit(carrier.CarrierId, carrier);
+           
+        }
+
+
         // POST: CarriersController/Edit/5
         [Authorize]
         [ValidateAntiForgeryToken]
         [HttpPost("/Carriers/Edit/{id}")]
         public async Task<IActionResult> Edit(Guid id, [Bind("CarrierId,Ocn,Lec,Lectype,Spid,Name,Type,Ratecenter,Color,LogoLink,LastUpdated")] Carrier carrier)
         {
-            //if (id != carrier.CarrierId)
-            //{
-            //    return NotFound();
-            //}
-
             if (ModelState.IsValid)
             {
                 try
@@ -154,6 +159,9 @@ namespace NumberSearch.Ops.Controllers
                     }
                     _context.UpdateRange(relatedLookups);
                     await _context.SaveChangesAsync();
+
+                    return View("Edit", new EditCarrier { Carrier = carrier, Lookups = relatedLookups.ToArray(), Message = $"Saved your changes to OCN {carrier.Ocn}!" });
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -166,9 +174,8 @@ namespace NumberSearch.Ops.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
             }
-            return View(carrier);
+            return View("Edit", new EditCarrier { Carrier = carrier, Lookups = await _context.PhoneNumberLookups.Where(x => x.Ocn == carrier.Ocn).ToArrayAsync(), Message = $"Failed to save your changes to OCN {carrier.Ocn}!" });
         }
 
         [Authorize]

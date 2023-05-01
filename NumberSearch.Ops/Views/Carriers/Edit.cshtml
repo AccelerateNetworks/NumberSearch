@@ -5,6 +5,16 @@
 }
 
 <h1 class="display-4 p-3">📯 Edit Carrier</h1>
+@if (!string.IsNullOrWhiteSpace(Model?.Message))
+{
+    <div class="row">
+        <div class="col">
+            <div class="alert alert-primary" role="alert">
+                @Model.Message
+            </div>
+        </div>
+    </div>
+}
 
 @Html.AntiForgeryToken()
 <div class="row">
@@ -144,6 +154,6 @@
 
 @section Scripts {
     @{
-    await Html.RenderPartialAsync("_ValidationScriptsPartial");
-}
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
