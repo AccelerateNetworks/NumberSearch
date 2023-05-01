@@ -14,7 +14,10 @@
 <div class="row">
     <div class="col">
         <p>Lookup records are the create when the Numbers in Bulk tool at <a href="https://acceleratenetworks.com/Lookup" target="_blank">https://acceleratenetworks.com/Lookup</a> is used to research a number.</p>
-        <p>Essentially it should work like this: Ops => Lookups => New Carrier on the lookup => Create a new Carrier for that Lookup's combination of OCN, SPID, and LECType => Lookups with matching OCNs will get associated with that Carrier and you can see all of the Lookups for that Carrier if you Edit the Carrier record.</p>
+        <p>The Lookups that are shown in the table below have OCNs (Operating Carrier Numbers) that cannot be matched to an existing Carrier. To see all existing Carriers please check out the Carriers page. You can use a lookup as the template for a new Carrier record by clicking on the "New Carrier" button next to the lookup you want to create a Carrier for. Once you've created a new Carrier for that lookup all of the other lookup records with the same OCN will be marked with Carrier's information and disappear from this page.</p>
+        <p>Although a single Carrier can have multiple OCNs, SPIDs, and LECtypes we represent them as a unique Carrier record based on the combination of those three properties. This is why there are often multiple records for major Carriers.</p>
+        <p>The Match Existing button will review the OCN of each lookup record and try to match it to the OCN of an existing Carrier record. Before you start creating new Carriers it's recommended that you clikck the Match Existing button first so that you can avoid creating duplicate Carrier records.</p>
+        <p>The Verify Match button reviews all of the lookups and compares their OCN to the OCN of the Carrier record that they are associated with. If they don't match then the lookup is update to remove the reference to the Carrier. This is helpful to clean up after a lookup record is incorrectly associated with a Carrier due to editing of the lookup record.</p>
     </div>
 </div>
 <div class="table-responsive">
