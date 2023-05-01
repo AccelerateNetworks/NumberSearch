@@ -5,15 +5,22 @@
 
 <div class="d-flex justify-content-between align-items-center">
     <h1 class="display-4 p-3">🥠 Lookups</h1>
-    <a asp-action="Create" class="btn btn-lg btn-success">Create New</a>
+    <div class="btn-group">
+        <a asp-action="Create" class="btn btn-lg btn-success">Create New</a>
+        <a asp-action="OCNMatchLookups" class="btn btn-lg btn-primary">Match Existing</a>
+        <a asp-action="CarrierMatchesLookupOCN" class="btn btn-lg btn-secondary">Verify Matches</a>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <p>Lookup records are the create when the Numbers in Bulk tool at <a href="https://acceleratenetworks.com/Lookup" target="_blank">https://acceleratenetworks.com/Lookup</a> is used to research a number.</p>
+        <p>Essentially it should work like this: Ops => Lookups => New Carrier on the lookup => Create a new Carrier for that Lookup's combination of OCN, SPID, and LECType => Lookups with matching OCNs will get associated with that Carrier and you can see all of the Lookups for that Carrier if you Edit the Carrier record.</p>
+    </div>
 </div>
 <div class="table-responsive">
     <table class="table table-striped table-borderless table-hover" id="table">
         <thead>
             <tr>
-                <th>
-
-                </th>
                 <th scope="col">
                     Ocn
                 </th>
@@ -43,11 +50,6 @@
             {
                 <tr>
                     <td>
-                        <div class="btn-group" role="group" aria-label="Basic example">
-                            <a asp-controller="Carriers" asp-action="FromLookup" asp-route-id="@product.PhoneNumberLookupId" class="btn btn-success">New Carrier</a>
-                        </div>
-                    </td>
-                    <td>
                         @product?.Ocn
                     </td>
                     <td>
@@ -70,6 +72,7 @@
                     </td>
                     <td>
                         <div class="btn-group" role="group" aria-label="Basic example">
+                            <a asp-controller="Carriers" asp-action="FromLookup" asp-route-id="@product.PhoneNumberLookupId" class="btn btn-success">New Carrier</a>
                             <a asp-action="Edit" asp-route-id="@product?.PhoneNumberLookupId" class="btn btn-warning">Edit</a>
                             <a asp-action="Details" asp-route-id="@product?.PhoneNumberLookupId" class="btn btn-primary">Details</a>
                             <a asp-action="Delete" asp-route-id="@product?.PhoneNumberLookupId" class="btn btn-danger">Delete</a>

@@ -946,9 +946,18 @@ namespace Models
                 var checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(MSISDN, out var fromPhoneNumber);
                 if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
                 {
-                    FromPhoneNumber = fromPhoneNumber;
-                    MSISDN = $"1{fromPhoneNumber.DialedNumber}";
-                    FromParsed = true;
+                    if (fromPhoneNumber.Type is not PhoneNumbersNA.NumberType.ShortCode)
+                    {
+                        FromPhoneNumber = fromPhoneNumber;
+                        MSISDN = $"1{fromPhoneNumber.DialedNumber}";
+                        FromParsed = true;
+                    }
+                    else
+                    {
+                        FromPhoneNumber = fromPhoneNumber;
+                        MSISDN = fromPhoneNumber.DialedNumber;
+                        FromParsed = true;
+                    }
                 }
             }
 
