@@ -7,6 +7,7 @@ using NumberSearch.Ops.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using NumberSearch.DataAccess;
 
 namespace NumberSearch.Ops.Controllers
 {
@@ -26,21 +27,21 @@ namespace NumberSearch.Ops.Controllers
         public async Task<IActionResult> Index()
         {
             // Match lookups to existing carriers.
-            //var carriers = await _context.Carriers.ToListAsync();
-            //var lookups = await _context.PhoneNumberLookups.ToListAsync();
+            var carriers = await _context.Carriers.ToListAsync();
+            var lookups = await _context.PhoneNumberLookups.ToListAsync();
 
-            //foreach (var item in lookups)
-            //{
-            //    var carrier = carriers.Where(x => x.Ocn == item.Ocn).FirstOrDefault();
+            foreach (var item in lookups)
+            {
+                var carrier = carriers.Where(x => x.Ocn == item.Ocn).FirstOrDefault();
 
-            //    if (carrier is not null)
-            //    {
-            //        item.CarrierId = carrier.CarrierId;
-            //        _context.Update(item);
-            //    }
-            //}
+                if (carrier is not null)
+                {
+                    item.CarrierId = carrier.CarrierId;
+                    _context.Update(item);
+                }
+            }
 
-            //await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
             return View(await _context.PhoneNumberLookups.Where(x => x.CarrierId == null && !string.IsNullOrWhiteSpace(x.Ocn)).ToListAsync());
         }
@@ -77,7 +78,7 @@ namespace NumberSearch.Ops.Controllers
         [Authorize]
         [ValidateAntiForgeryToken]
         [HttpPost("/Lookups/Create")]
-        public async Task<IActionResult> Create([Bind("PhoneNumberLookupId,DialedNumber,Lrn,Ocn,Lata,City,Ratecenter,State,Jurisdiction,Local,Lec,Lectype,Spid,Lidbname,LastPorted,IngestedFrom,DateIngested,CarrierId")] PhoneNumberLookup lookup)
+        public async Task<IActionResult> Create([Bind("PhoneNumberLookupId,DialedNumber,Lrn,Ocn,Lata,City,Ratecenter,State,Jurisdiction,Local,Lec,Lectype,Spid,Lidbname,LastPorted,IngestedFrom,DateIngested,CarrierId")] AccelerateNetworks.Operations.PhoneNumberLookup lookup)
         {
             if (ModelState.IsValid)
             {
@@ -112,12 +113,12 @@ namespace NumberSearch.Ops.Controllers
         [Authorize]
         [ValidateAntiForgeryToken]
         [HttpPost("/Lookups/Edit/{id}")]
-        public async Task<IActionResult> Edit(Guid id, [Bind("PhoneNumberLookupId,DialedNumber,Lrn,Ocn,Lata,City,Ratecenter,State,Jurisdiction,Local,Lec,Lectype,Spid,Lidbname,LastPorted,IngestedFrom,DateIngested,CarrierId")] PhoneNumberLookup lookup)
+        public async Task<IActionResult> Edit(Guid id, [Bind("PhoneNumberLookupId,DialedNumber,Lrn,Ocn,Lata,City,Ratecenter,State,Jurisdiction,Local,Lec,Lectype,Spid,Lidbname,LastPorted,IngestedFrom,DateIngested,CarrierId")] AccelerateNetworks.Operations.PhoneNumberLookup lookup)
         {
-            //if (id != lookup.CarrierId)
-            //{
-            //    return NotFound();
-            //}
+            if (id != lookup.PhoneNumberLookupId)
+            {
+                return NotFound();
+            }
 
             if (ModelState.IsValid)
             {
@@ -125,6 +126,18 @@ namespace NumberSearch.Ops.Controllers
                 {
                     lookup.DateIngested = DateTime.Now;
                     _context.Update(lookup);
+
+                    var carrier = await _context.Carriers.Where(x => x.CarrierId == lookup.CarrierId).FirstOrDefaultAsync();
+                    // Updated all the lookups related to this OCN.
+                    var relatedLookups = await _context.PhoneNumberLookups.Where(x => x.Ocn == lookup.Ocn).ToListAsync();
+                    if (carrier is not null && relatedLookups.Any())
+                    {
+                        foreach (var relatedLookup in relatedLookups)
+                        {
+                            relatedLookup.CarrierId = carrier.CarrierId;
+                        }
+                        _context.UpdateRange(relatedLookups);
+                    }
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -140,7 +153,7 @@ namespace NumberSearch.Ops.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(lookup);
+            return View(new CreateLookup { Lookup = lookup, Carriers = await _context.Carriers.ToArrayAsync() });
         }
 
         [Authorize]

@@ -99,6 +99,9 @@
 		<Content Update="wwwroot\images\scaled\cloud.aidanis.online_login%28iPhone X%29.webp">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Update="wwwroot\images\scaled\favicon-194x194.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Update="wwwroot\images\scaled\mail.seattlemesh.net_%28iPhone X%29.png">
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Content>
