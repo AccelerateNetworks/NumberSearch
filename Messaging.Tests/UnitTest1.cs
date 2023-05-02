@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 
+using Models;
+
 namespace Messaging.Tests
 {
     public class Functional : IClassFixture<WebApplicationFactory<Program>>
@@ -139,6 +141,106 @@ namespace Messaging.Tests
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
             var message = await response.Content.ReadAsStringAsync();
             Assert.Equal("\"2068589310 is not registered as a client.\"", message);
+        }
+
+        [Fact]
+        public async Task SendMessageRequestParsingAsync()
+        {
+            var request = new SendMessageRequest
+            {
+                MSISDN = "42278",
+                To = "2063332262",
+                Message = "Test Message",
+            };
+
+            var check = request.RegularizeAndValidate();
+
+            if (check)
+            {
+                Assert.Equal("42278", request.MSISDN);
+                Assert.Equal("12063332262", request.To);
+                Assert.Equal("Test Message", request.Message);
+            }
+
+            request = new SendMessageRequest
+            {
+                MSISDN = "142278",
+                To = "12063332262",
+                Message = "Test Message",
+            };
+
+            check = request.RegularizeAndValidate();
+
+            if (check)
+            {
+                Assert.Equal("42278", request.MSISDN);
+                Assert.Equal("12063332262", request.To);
+                Assert.Equal("Test Message", request.Message);
+            }
+
+            request = new SendMessageRequest
+            {
+                MSISDN = "42278",
+                To = "12063332262",
+                Message = "Test Message",
+            };
+
+            check = request.RegularizeAndValidate();
+
+            if (check)
+            {
+                Assert.Equal("42278", request.MSISDN);
+                Assert.Equal("12063332262", request.To);
+                Assert.Equal("Test Message", request.Message);
+            }
+
+            request = new SendMessageRequest
+            {
+                MSISDN = "142278",
+                To = "2063332262",
+                Message = "Test Message",
+            };
+
+            check = request.RegularizeAndValidate();
+
+            if (check)
+            {
+                Assert.Equal("42278", request.MSISDN);
+                Assert.Equal("12063332262", request.To);
+                Assert.Equal("Test Message", request.Message);
+            }
+
+            request = new SendMessageRequest
+            {
+                MSISDN = "12063332262",
+                To = "42278",
+                Message = "Test Message",
+            };
+
+            check = request.RegularizeAndValidate();
+
+            if (check)
+            {
+                Assert.Equal("12063332262", request.MSISDN);
+                Assert.Equal("42278", request.To);
+                Assert.Equal("Test Message", request.Message);
+            }
+
+            request = new SendMessageRequest
+            {
+                MSISDN = "2063332262",
+                To = "142278",
+                Message = "Test Message",
+            };
+
+            check = request.RegularizeAndValidate();
+
+            if (check)
+            {
+                Assert.Equal("12063332262", request.MSISDN);
+                Assert.Equal("42278", request.To);
+                Assert.Equal("Test Message", request.Message);
+            }
         }
     }
 }
