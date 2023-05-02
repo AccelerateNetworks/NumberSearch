@@ -66,13 +66,60 @@ namespace NumberSearch.Ops.Controllers
 
             if (lookup is not null)
             {
-                return View("Create", new Carrier
+                var relatedLookups = await _context.PhoneNumberLookups.Where(x => x.Ocn == lookup.Ocn).ToArrayAsync();
+                if (string.IsNullOrWhiteSpace(lookup.Lec))
                 {
-                    Lec = lookup.Lec,
-                    Spid = lookup.Spid,
-                    Lectype = lookup.Lectype,
-                    Ocn = lookup.Ocn
-                });
+                    return View("Create", new CreateCarrier
+                    {
+                        Lookups = relatedLookups,
+                        Carrier = new()
+                        {
+                            Lec = lookup.Lec,
+                            Spid = lookup.Spid,
+                            Lectype = lookup.Lectype,
+                            Ocn = lookup.Ocn
+                        }
+                    });
+                }
+                else
+                {
+                    string[] carrierQuery = lookup.Lec.Split(' ');
+                    var relatedCarriers = await _context.Carriers.Where(x => x.Lec != null && x.Lec.ToLower().Contains(carrierQuery[0].ToLower())).ToArrayAsync();
+                    if (relatedCarriers.Any())
+                    {
+                        return View("Create", new CreateCarrier
+                        {
+                            Lookups = relatedLookups,
+                            Carriers = relatedCarriers,
+                            Carrier = new()
+                            {
+                                Lec = lookup.Lec,
+                                Spid = lookup.Spid,
+                                Lectype = lookup.Lectype,
+                                Ocn = lookup.Ocn,
+                                Color = relatedCarriers.FirstOrDefault()?.Color,
+                                LogoLink = relatedCarriers.FirstOrDefault()?.LogoLink,
+                                Name = relatedCarriers.FirstOrDefault()?.Name,
+                                Type = relatedCarriers.FirstOrDefault()?.Type,
+                            }
+                        });
+                    }
+                    else
+                    {
+                        return View("Create", new CreateCarrier
+                        {
+                            Lookups = relatedLookups,
+                            Carriers = relatedCarriers,
+                            Carrier = new()
+                            {
+                                Lec = lookup.Lec,
+                                Spid = lookup.Spid,
+                                Lectype = lookup.Lectype,
+                                Ocn = lookup.Ocn
+                            }
+                        });
+                    }
+                }
             }
             else
             {
@@ -133,8 +180,8 @@ namespace NumberSearch.Ops.Controllers
         [HttpPost("/Carriers/Edit/")]
         public async Task<IActionResult> Edit([Bind("CarrierId,Ocn,Lec,Lectype,Spid,Name,Type,Ratecenter,Color,LogoLink,LastUpdated")] Carrier carrier)
         {
-                return await Edit(carrier.CarrierId, carrier);
-           
+            return await Edit(carrier.CarrierId, carrier);
+
         }
 
 

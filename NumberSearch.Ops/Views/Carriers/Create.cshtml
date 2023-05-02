@@ -1,70 +1,220 @@
-﻿@model AccelerateNetworks.Operations.Carrier
+﻿@model CreateCarrier
 
 @{
     ViewData["Title"] = "Create";
 }
 
-<h1 class="display-4 p-3">📯 Create Carrier</h1>
 @Html.AntiForgeryToken()
 <div class="row">
     <div class="col-md-4">
+        <h1 class="display-4 p-3">📯 Create Carrier</h1>
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+                <label asp-for="Carrier.Name" class="control-label"></label>
+                <input asp-for="Carrier.Name" class="form-control" />
+                <span asp-validation-for="Carrier.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Type" class="control-label"></label>
-                <select asp-for="Type" class="form-select mr-sm-2" id="name" required>
+                <label asp-for="Carrier.Type" class="control-label"></label>
+                <select asp-for="Carrier.Type" class="form-select mr-sm-2" id="name" required>
                     <option selected>Choose...</option>
                     <option value="Landline">Landline</option>
                     <option value="Wireless">Wireless</option>
                     <option value="VoIP Reseller">VoIP Reseller</option>
                 </select>
-                <span asp-validation-for="Type" class="text-danger"></span>
+                <span asp-validation-for="Carrier.Type" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Ocn" class="control-label"></label>
-                <input asp-for="Ocn" class="form-control" />
-                <span asp-validation-for="Ocn" class="text-danger"></span>
+                <label asp-for="Carrier.Ocn" class="control-label"></label>
+                <input asp-for="Carrier.Ocn" class="form-control" />
+                <span asp-validation-for="Carrier.Ocn" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Lec" class="control-label"></label>
-                <input asp-for="Lec" class="form-control" />
-                <span asp-validation-for="Lec" class="text-danger"></span>
+                <label asp-for="Carrier.Lec" class="control-label"></label>
+                <input asp-for="Carrier.Lec" class="form-control" />
+                <span asp-validation-for="Carrier.Lec" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Lectype" class="control-label"></label>
-                <input asp-for="Lectype" class="form-control" />
-                <span asp-validation-for="Lectype" class="text-danger"></span>
+                <label asp-for="Carrier.Lectype" class="control-label"></label>
+                <input asp-for="Carrier.Lectype" class="form-control" />
+                <span asp-validation-for="Carrier.Lectype" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Spid" class="control-label"></label>
-                <input asp-for="Spid" class="form-control" />
-                <span asp-validation-for="Spid" class="text-danger"></span>
+                <label asp-for="Carrier.Spid" class="control-label"></label>
+                <input asp-for="Carrier.Spid" class="form-control" />
+                <span asp-validation-for="Carrier.Spid" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Color" class="control-label"></label>
-                <input asp-for="Color" class="form-control" />
-                <span asp-validation-for="Color" class="text-danger"></span>
+                <label asp-for="Carrier.Color" class="control-label"></label>
+                <input asp-for="Carrier.Color" class="form-control" />
+                <span asp-validation-for="Carrier.Color" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="LogoLink" class="control-label"></label>
-                <input asp-for="LogoLink" class="form-control" />
-                <span asp-validation-for="LogoLink" class="text-danger"></span>
+                <label asp-for="Carrier.LogoLink" class="control-label"></label>
+                <input asp-for="Carrier.LogoLink" class="form-control" />
+                <span asp-validation-for="Carrier.LogoLink" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary mt-3 mb-3" />
             </div>
         </form>
     </div>
+    <div class="col-md-8">
+        <h1 class="display-4 p-3">🥠 Related Lookups with this OCN</h1>
+        <div class="table-responsive">
+            <table class="table table-striped table-borderless table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">
+                            DialedNumber
+                        </th>
+                        <th scope="col">
+                            Lrn
+                        </th>
+                        <th scope="col">
+                            Ocn
+                        </th>
+                        <th scope="col">
+                            Lec
+                        </th>
+                        <th scope="col">
+                            Lectype
+                        </th>
+                        <th scope="col">
+                            Spid
+                        </th>
+                        <th scope="col">
+                            DateIngested
+                        </th>
+                        <th scope="col">
+                            CarrierId
+                        </th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model?.Lookups is not null)
+                    {
+                        foreach (var product in Model.Lookups.OrderByDescending(x => x?.DateIngested))
+                        {
+                            <tr>
+                                <td>
+                                    @product?.DialedNumber
+                                </td>
+                                <td>
+                                    @product?.Lrn
+                                </td>
+                                <td>
+                                    @product?.Ocn
+                                </td>
+                                <td>
+                                    @product?.Lec
+                                </td>
+                                <td>
+                                    @product?.Lectype
+                                </td>
+                                <td>
+                                    @product?.Spid
+                                </td>
+                                <td>
+                                    @product?.DateIngested
+                                </td>
+                                <td>
+                                    @product?.CarrierId
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group" aria-label="Basic example">
+                                        <a asp-controller="Lookups" asp-action="Edit" asp-route-id="@product?.PhoneNumberLookupId" class="btn btn-warning">Edit</a>
+                                        <a asp-controller="Lookups" asp-action="Details" asp-route-id="@product?.PhoneNumberLookupId" class="btn btn-primary">Details</a>
+                                        <a asp-controller="Lookups" asp-action="Delete" asp-route-id="@product?.PhoneNumberLookupId" class="btn btn-danger">Delete</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @if (Model.Carriers.Any())
+    {
+        <div class="col-md-12">
+            <h1 class="display-4 p-3">📯 Carriers with similar LECs</h1>
+            <div class="table-responsive">
+                <table class="table table-striped table-borderless table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">
+                                Name
+                            </th>
+                            <th scope="col">
+                                Type
+                            </th>
+                            <th>
+                                Lec
+                            </th>
+                            <th>
+                                Lectype
+                            </th>
+                            <th>
+                                Logo
+                            </th>
+                            <th scope="col">
+                                Ocn
+                            </th>
+                            <th scope="col">
+                                Spid
+                            </th>
+                            <th>
+
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var product in Model.Carriers.OrderByDescending(x => x?.Name))
+                        {
+                            <tr style="background-color: @product.Color;">
+                                <td>
+                                    @product?.Name
+                                </td>
+                                <td>
+                                    @product?.Type
+                                </td>
+                                <td>
+                                    @product?.Lec
+                                </td>
+                                <td>
+                                    @product?.Lectype
+                                </td>
+                                <td>
+                                    <img src="@product?.LogoLink" alt="@product?.Name" height="30">
+                                </td>
+                                <td>
+                                    @product?.Ocn
+                                </td>
+                                <td>
+                                    @product?.Spid
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group" aria-label="Basic example">
+                                        <a asp-action="Edit" asp-route-id="@product?.CarrierId" class="btn btn-warning">Edit</a>
+                                        <a asp-action="Details" asp-route-id="@product?.CarrierId" class="btn btn-primary">Details</a>
+                                        <a asp-action="Delete" asp-route-id="@product?.CarrierId" class="btn btn-danger">Delete</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
 </div>
-    <a asp-action="Index" class="btn btn-outline-primary">Back to List</a>
+<a asp-action="Index" class="btn btn-outline-primary">Back to List of Carriers</a>
 
 @section Scripts {
     @{
-    await Html.RenderPartialAsync("_ValidationScriptsPartial");
-}
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
