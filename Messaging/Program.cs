@@ -540,8 +540,8 @@ try
                     Id = Guid.NewGuid(),
                     Content = message?.Message ?? string.Empty,
                     DateReceivedUTC = DateTime.UtcNow,
-                    From = message?.FromPhoneNumber?.DialedNumber ?? string.Empty,
-                    To = string.Join(',', message?.ToPhoneNumbers?.Select(x => x.DialedNumber) ?? Array.Empty<string>()),
+                    From = message?.MSISDN ?? "MSISDN was blank",
+                    To = message?.To ?? "To was blank",
                     MediaURLs = string.Empty,
                     MessageSource = MessageSource.Outgoing,
                     MessageType = MessageType.SMS,
@@ -946,16 +946,16 @@ namespace Models
                 var checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(MSISDN, out var fromPhoneNumber);
                 if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
                 {
-                    if (fromPhoneNumber.Type is not PhoneNumbersNA.NumberType.ShortCode)
+                    if (fromPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode)
                     {
                         FromPhoneNumber = fromPhoneNumber;
-                        MSISDN = $"1{fromPhoneNumber.DialedNumber}";
+                        MSISDN = fromPhoneNumber.DialedNumber;
                         FromParsed = true;
                     }
                     else
                     {
                         FromPhoneNumber = fromPhoneNumber;
-                        MSISDN = fromPhoneNumber.DialedNumber;
+                        MSISDN = $"1{fromPhoneNumber.DialedNumber}";
                         FromParsed = true;
                     }
                 }
@@ -965,6 +965,7 @@ namespace Models
             {
                 // This may not be necessary if this list is always created by the BulkVSMessage constructor.
                 ToPhoneNumbers ??= new List<PhoneNumbersNA.PhoneNumber>();
+                string parsedTo = string.Empty;
 
                 foreach (var number in To.Split(','))
                 {
@@ -973,17 +974,24 @@ namespace Models
                     if (checkTo && toPhoneNumber is not null)
                     {
                         ToPhoneNumbers.Add(toPhoneNumber);
+                        if (toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode)
+                        {
+                            parsedTo += $"{toPhoneNumber.DialedNumber}";
+                        }
+                        else
+                        {
+                            parsedTo += $"1{toPhoneNumber.DialedNumber}";
+                        }
                     }
                 }
 
                 // This will drop the numbers that couldn't be parsed.
-                To = ToPhoneNumbers is not null && ToPhoneNumbers.Any() ? ToPhoneNumbers.Count > 1 ? string.Join(",", ToPhoneNumbers.Select(x => $"1{x.DialedNumber!}")) : $"1{ToPhoneNumbers?.FirstOrDefault()?.DialedNumber}" ?? string.Empty : string.Empty;
+                To = string.IsNullOrWhiteSpace(parsedTo) ? To : parsedTo;
                 ToParsed = true;
             }
 
             return FromParsed && ToParsed;
         }
-
     }
 
     public class FirstPointMMSMessage
@@ -1041,6 +1049,7 @@ namespace Models
             {
                 // This may not be necessary if this list is always created by the BulkVSMessage constructor.
                 ToPhoneNumbers ??= new List<PhoneNumbersNA.PhoneNumber>();
+                string parsedTo = string.Empty;
 
                 foreach (var number in to.Split(','))
                 {
@@ -1049,11 +1058,19 @@ namespace Models
                     if (checkTo && toPhoneNumber is not null)
                     {
                         ToPhoneNumbers.Add(toPhoneNumber);
+                        if (toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode)
+                        {
+                            parsedTo += $"{toPhoneNumber.DialedNumber}";
+                        }
+                        else
+                        {
+                            parsedTo += $"1{toPhoneNumber.DialedNumber}";
+                        }
                     }
                 }
 
                 // This will drop the numbers that couldn't be parsed.
-                to = ToPhoneNumbers is not null && ToPhoneNumbers.Any() ? ToPhoneNumbers.Count > 1 ? string.Join(",", ToPhoneNumbers.Select(x => $"1{x.DialedNumber!}")) : $"1{ToPhoneNumbers?.FirstOrDefault()?.DialedNumber}" ?? string.Empty : string.Empty;
+                to = string.IsNullOrWhiteSpace(parsedTo) ? to : parsedTo;
                 ToParsed = true;
             }
 

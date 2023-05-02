@@ -37,7 +37,7 @@ namespace Messaging.Tests
             Assert.False(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
             var message = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers. {\\\"origtime\\\":\\\"2022-04-17 03:48:00\\\",\\\"msisdn\\\":\\\"15555551212\\\",\\\"to\\\":\\\"\\\",\\\"sessionid\\\":\\\"tLMOYTAmIFiQvBE6X1g\\\",\\\"timezone\\\":\\\"EST\\\",\\\"message\\\":\\\"Your Lyft code is 12345\\\",\\\"api_version\\\":0,\\\"serversecret\\\":\\\"sekrethere\\\"}\"", message);
+            Assert.Equal("\"Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers. {\\\"origtime\\\":\\\"2022-04-17 03:48:00\\\",\\\"msisdn\\\":\\\"15555551212\\\",\\\"to\\\":\\\"14445556543\\\",\\\"sessionid\\\":\\\"tLMOYTAmIFiQvBE6X1g\\\",\\\"timezone\\\":\\\"EST\\\",\\\"message\\\":\\\"Your Lyft code is 12345\\\",\\\"api_version\\\":0,\\\"serversecret\\\":\\\"sekrethere\\\"}\"", message);
         }
 
         [Fact]
