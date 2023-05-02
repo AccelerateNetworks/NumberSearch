@@ -1,5 +1,5 @@
 ﻿@using AccelerateNetworks.Operations
-@model OwnedPhoneNumber
+@model OwnedNumberResult
 @{
     ViewData["Title"] = "Owned Phone Number";
 }
@@ -8,9 +8,9 @@
 <div class="btn-group pb-3" role="group" aria-label="Basic example">
     <a class="btn btn-primary" href="/Home/OwnedNumbers">Return to List</a>
     @{
-        if (!string.IsNullOrWhiteSpace(Model?.BillingClientId))
+        if (!string.IsNullOrWhiteSpace(Model?.Owned.BillingClientId))
         {
-            <a href="https://billing.acceleratenetworks.com/clients/@Model?.BillingClientId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
+            <a href="https://billing.acceleratenetworks.com/clients/@Model?.Owned.BillingClientId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
                 Billing
             </a>
         }
@@ -22,9 +22,9 @@
         }
     }
     @{
-        if (!(Model?.EmergencyInformationId is null))
+        if (!(Model?.Owned.EmergencyInformationId is null))
         {
-            <a href="/Home/EmergencyInformation/@Model?.DialedNumber" class="btn btn-info">
+            <a href="/Home/EmergencyInformation/@Model?.Owned.DialedNumber" class="btn btn-info">
                 Emergency
             </a>
         }
@@ -36,16 +36,16 @@
         }
     }
 </div>
-<form action="/Home/OwnedNumbers/@Model?.DialedNumber" method="post" class="needs-validation">
+<form action="/Home/OwnedNumbers/@Model?.Owned.DialedNumber" method="post" class="needs-validation">
     @Html.AntiForgeryToken()
     <div class="row">
         <div class="col-md-6 mb-3">
             <label for="firstName">Dialed Number</label>
-            <input asp-for="DialedNumber" type="text" class="form-control" id="DialedNumber" readonly>
+            <input asp-for="Owned.DialedNumber" type="text" class="form-control" id="DialedNumber" readonly>
         </div>
         <div class="col-md-6 mb-3">
             <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" asp-for="Active" role="switch" id="active">
+                <input class="form-check-input" type="checkbox" asp-for="Owned.Active" role="switch" id="active">
                 <label class="form-check-label" for="active">Active</label>
             </div>
         </div>
@@ -53,40 +53,183 @@
     <div class="row">
         <div class="col-md-6 mb-3">
             <label for="firstName">Ingested From</label>
-            <input asp-for="IngestedFrom" type="text" class="form-control" id="IngestedFrom" readonly>
+            <input asp-for="Owned.IngestedFrom" type="text" class="form-control" id="IngestedFrom" readonly>
         </div>
         <div class="col-md-6 mb-3">
             <label for="lastName">Ingested Date</label>
-            <input asp-for="DateIngested" type="text" class="form-control" id="DateIngested" readonly>
+            <input asp-for="Owned.DateIngested" type="text" class="form-control" id="DateIngested" readonly>
         </div>
     </div>
     <div class="row">
         <div class="col-md-12 mb-3">
             <label for="firstName">Notes</label>
-            <input asp-for="Notes" type="text" class="form-control" id="Notes">
+            <input asp-for="Owned.Notes" type="text" class="form-control" id="Notes">
         </div>
     </div>
     <div class="row">
         <div class="col-md-6 mb-3">
             <label for="lastName">Service Provider</label>
-            <input asp-for="SPIDName" type="text" class="form-control" id="SPIDName" readonly>
+            <input asp-for="Owned.SPIDName" type="text" class="form-control" id="SPIDName" readonly>
         </div>
         <div class="col-md-6 mb-3">
             <label for="lastName">Service Provider Id</label>
-            <input asp-for="SPID" type="text" class="form-control" id="SPID" readonly>
+            <input asp-for="Owned.SPID" type="text" class="form-control" id="SPID" readonly>
         </div>
     </div>
     <div class="row">
         <div class="col-md-6 mb-3">
             <label for="firstName">Billing Client Id</label>
-            <input asp-for="BillingClientId" type="text" class="form-control" id="BillingClientId">
+            <input asp-for="Owned.BillingClientId" type="text" class="form-control" id="BillingClientId">
         </div>
         <div class="col-md-6 mb-3">
             <label for="lastName">Owned By</label>
-            <input asp-for="OwnedBy" type="text" class="form-control" id="OwnedBy">
+            <input asp-for="Owned.OwnedBy" type="text" class="form-control" id="OwnedBy">
         </div>
     </div>
     <button type="submit" class="btn btn-danger">Update</button>
     <br />
 </form>
 <br />
+
+@if (Model?.PortedPhoneNumbers.Any() ?? false)
+{
+    <h1 class="display-4 p-3">Related Ported Numbers</h1>
+    <div class="table-responsive">
+        <table class="table table-striped table-borderless table-hover" id="table">
+            <thead>
+                <tr>
+                    <th scope="col">
+                        PortedDialedNumber
+                    </th>
+                    <th scope="col">
+                        DateIngested
+                    </th>
+                    <th scope="col">
+                        DateFirmOrderCommitment
+                    </th>
+                    <th scope="col">
+                        ExternalPortRequestId
+                    </th>
+                    <th scope="col">
+                        IngestedFrom
+                    </th>
+                    <th scope="col">
+                        Completed
+                    </th>
+                    <th scope="col">
+                        OrderId
+                    </th>
+                    @*                <th></th>
+                *@
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var product in Model?.PortedPhoneNumbers.OrderByDescending(x => x?.DateIngested))
+                {
+                    <tr>
+                        <td>
+                            @product?.PortedDialedNumber
+                        </td>
+                        <td>
+                            @product?.DateIngested
+                        </td>
+                        <td>
+                            @product?.DateFirmOrderCommitment
+                        </td>
+                        <td>
+                            @product?.ExternalPortRequestId
+                        </td>
+                        <td>
+                            @product?.IngestedFrom
+                        </td>
+                        <td>
+                            @product?.Completed
+                        </td>
+                        <td>
+                            @product?.OrderId
+                        </td>
+                        @*                    <td>
+                <div class="btn-group" role="group" aria-label="Basic example">
+                <a asp-controller="Carriers" asp-action="FromLookup" asp-route-id="@product.PhoneNumberLookupId" class="btn btn-success">New Carrier</a>
+                <a asp-action="Edit" asp-route-id="@product?.PhoneNumberLookupId" class="btn btn-warning">Edit</a>
+                <a asp-action="Details" asp-route-id="@product?.PhoneNumberLookupId" class="btn btn-primary">Details</a>
+                <a asp-action="Delete" asp-route-id="@product?.PhoneNumberLookupId" class="btn btn-danger">Delete</a>
+                </div>
+                </td>*@
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+@if (Model?.PurchasedPhoneNumbers.Any() ?? false)
+{
+    <h1 class="display-4 p-3">Related Purchased Numbers</h1>
+    <div class="table-responsive">
+        <table class="table table-striped table-borderless table-hover" id="table">
+            <thead>
+                <tr>
+                    <th scope="col">
+                        DialedNumber
+                    </th>
+                    <th scope="col">
+                        DateIngested
+                    </th>
+                    <th scope="col">
+                        NumberType
+                    </th>
+                    <th scope="col">
+                        DateOrdered
+                    </th>
+                    <th scope="col">
+                        IngestedFrom
+                    </th>
+                    <th scope="col">
+                        Completed
+                    </th>
+                    <th scope="col">
+                        OrderId
+                    </th>
+                    @*                <th></th>
+                *@
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var product in Model?.PurchasedPhoneNumbers.OrderByDescending(x => x?.DateIngested))
+                {
+                    <tr>
+                        <td>
+                            @product?.DialedNumber
+                        </td>
+                        <td>
+                            @product?.DateIngested
+                        </td>
+                        <td>
+                            @product?.NumberType
+                        </td>
+                        <td>
+                            @product?.DateOrdered
+                        </td>
+                        <td>
+                            @product?.IngestedFrom
+                        </td>
+                        <td>
+                            @product?.Completed
+                        </td>
+                        <td>
+                            @product?.OrderId
+                        </td>
+                        @*                    <td>
+                <div class="btn-group" role="group" aria-label="Basic example">
+                <a asp-controller="Carriers" asp-action="FromLookup" asp-route-id="@product.PhoneNumberLookupId" class="btn btn-success">New Carrier</a>
+                <a asp-action="Edit" asp-route-id="@product?.PhoneNumberLookupId" class="btn btn-warning">Edit</a>
+                <a asp-action="Details" asp-route-id="@product?.PhoneNumberLookupId" class="btn btn-primary">Details</a>
+                <a asp-action="Delete" asp-route-id="@product?.PhoneNumberLookupId" class="btn btn-danger">Delete</a>
+                </div>
+                </td>*@
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

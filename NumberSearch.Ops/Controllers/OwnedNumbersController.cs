@@ -34,7 +34,18 @@ public class OwnedNumbersController : Controller
         else
         {
             var order = await _context.OwnedPhoneNumbers.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
-            return View("OwnedNumberEdit", order);
+            if (order is not null && order.DialedNumber == dialedNumber)
+            {
+                var portedNumbers = await _context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == dialedNumber).ToArrayAsync();
+                var purchasedNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == dialedNumber).ToArrayAsync();
+                return View("OwnedNumberEdit", new OwnedNumberResult { PurchasedPhoneNumbers = purchasedNumbers, PortedPhoneNumbers = portedNumbers, Owned = order });
+            }
+            else
+            {
+                // Show all orders
+                var orders = await _context.OwnedPhoneNumbers.OrderByDescending(x => x.DialedNumber).AsNoTracking().ToListAsync();
+                return View("OwnedNumbers", orders);
+            }
         }
     }
 
@@ -65,7 +76,9 @@ public class OwnedNumbersController : Controller
                 await _context.SaveChangesAsync();
             }
 
-            return View("OwnedNumberEdit", order);
+            var portedNumbers = await _context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == number.DialedNumber).ToArrayAsync();
+            var purchasedNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == number.DialedNumber).ToArrayAsync();
+            return View("OwnedNumberEdit", new OwnedNumberResult { PurchasedPhoneNumbers = purchasedNumbers, PortedPhoneNumbers = portedNumbers, Owned = order });
         }
     }
 }
