@@ -12,13 +12,13 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Carrier.Name" class="control-label"></label>
-                <input asp-for="Carrier.Name" class="form-control" />
+                <input asp-for="Carrier.Name" class="form-control" required />
                 <span asp-validation-for="Carrier.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Carrier.Type" class="control-label"></label>
                 <select asp-for="Carrier.Type" class="form-select mr-sm-2" id="name" required>
-                    <option selected>Choose...</option>
+                    <option selected></option>
                     <option value="Landline">Landline</option>
                     <option value="Wireless">Wireless</option>
                     <option value="VoIP Reseller">VoIP Reseller</option>
@@ -27,17 +27,17 @@
             </div>
             <div class="form-group">
                 <label asp-for="Carrier.Ocn" class="control-label"></label>
-                <input asp-for="Carrier.Ocn" class="form-control" />
+                <input asp-for="Carrier.Ocn" class="form-control" required />
                 <span asp-validation-for="Carrier.Ocn" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Carrier.Lec" class="control-label"></label>
-                <input asp-for="Carrier.Lec" class="form-control" />
+                <input asp-for="Carrier.Lec" class="form-control" required />
                 <span asp-validation-for="Carrier.Lec" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Carrier.Lectype" class="control-label"></label>
-                <input asp-for="Carrier.Lectype" class="form-control" />
+                <input asp-for="Carrier.Lectype" class="form-control" required />
                 <span asp-validation-for="Carrier.Lectype" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -142,7 +142,7 @@
         <div class="col-md-12">
             <h1 class="display-4 p-3">📯 Carriers with similar LECs</h1>
             <div class="table-responsive">
-                <table class="table table-striped table-borderless table-hover">
+                <table class="table table-striped table-borderless table-hover" id="table">
                     <thead>
                         <tr>
                             <th scope="col">
@@ -158,7 +158,10 @@
                                 Lectype
                             </th>
                             <th>
-                                Logo
+                                Logo (Copy Image Link)
+                            </th>
+                            <th>
+                                Color
                             </th>
                             <th scope="col">
                                 Ocn
@@ -188,7 +191,10 @@
                                     @product?.Lectype
                                 </td>
                                 <td>
-                                    <img src="@product?.LogoLink" alt="@product?.Name" height="30">
+                                    <img src="@product?.LogoLink" alt="@product?.LogoLink" height="30">
+                                </td>
+                                <td>
+                                    @product?.Color
                                 </td>
                                 <td>
                                     @product?.Ocn

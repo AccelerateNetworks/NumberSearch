@@ -106,6 +106,8 @@ namespace NumberSearch.Ops.Controllers
                     }
                     else
                     {
+                        relatedCarriers = await _context.Carriers.ToArrayAsync();
+
                         return View("Create", new CreateCarrier
                         {
                             Lookups = relatedLookups,
