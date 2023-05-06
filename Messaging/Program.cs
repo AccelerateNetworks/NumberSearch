@@ -179,6 +179,13 @@ try
     builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
     builder.Services.AddAWSService<IAmazonS3>();
 
+    builder.Services.AddHttpLogging(httpLogging =>
+     {
+         httpLogging.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;
+         httpLogging.RequestBodyLogLimit = 4096;
+         httpLogging.ResponseBodyLogLimit = 4096;
+     });
+
     var app = builder.Build();
 
     // Create the database if it doesn't exist
@@ -198,6 +205,7 @@ try
 
     app.UseCors();
     app.UseAuthentication();
+    app.UseHttpLogging();
 
     // Uncomment for debugging the request pipeline.
     //app.Use((context, next) =>
@@ -677,6 +685,9 @@ try
                 timezone = context.Request.Form["timezone"].ToString(),
                 origtime = context.Request.Form["origtime"].ToString(),
             };
+
+            string incomingRequest = string.Join(',', context.Request.Form.Select(x => $"{x.Key} : {x.Value}"));
+            Log.Information(incomingRequest);
 
             var MMSDescription = System.Text.Json.JsonSerializer.Deserialize<FirstPointMMSMessage>(message.message);
 
