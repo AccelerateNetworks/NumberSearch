@@ -1,6 +1,16 @@
-using Microsoft.AspNetCore.Mvc.Testing;
+using Amazon;
+using Amazon.Runtime.Endpoints;
+using Amazon.S3;
+using Amazon.S3.Transfer;
 
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Routing;
 using Models;
+
+using Newtonsoft.Json.Linq;
+
+using System.Net.Http;
+using System.Runtime.CompilerServices;
 
 namespace Messaging.Tests
 {
@@ -242,5 +252,70 @@ namespace Messaging.Tests
                 Assert.Equal("Test Message", request.Message);
             }
         }
+
+        [Fact]
+        public async Task MMSMessageAsync()
+        {
+            string route = "/1pcom/inbound/MMS";
+            string token = "okereeduePeiquah3yaemohGhae0ie";
+
+            var stringContent = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("origtime", "2023-05-04 18:06:00"),
+                    new KeyValuePair<string, string>("msisdn", "12066320575"),
+                    new KeyValuePair<string, string>("to", "12066320575"),
+                    new KeyValuePair<string, string>("sessionid", "redo 18:08:25:027ffa64b9fe9824a4c98c73d016264ad92"),
+                    new KeyValuePair<string, string>("timezone", "EST"),
+                    new KeyValuePair<string, string>("message", "{\r\n\"authkey\":\"2870e0d1-8dfa-4b31-91e9-6d0fc72de19d\",\r\n\"encoding\":\"native\",\r\n\"files\":\"part-001.jpg,part-002.txt,\",\r\n\"recip\":\"12066320575,\",\r\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=ffa64b9fe9824a4c98c73d016264ad92\"\r\n}"),
+                    new KeyValuePair<string, string>("api_version", "0.5"),
+                    new KeyValuePair<string, string>("serversecret", "Sek3628"),
+                    new KeyValuePair<string, string>("remote", "12066320575"),
+                    new KeyValuePair<string, string>("host", "12066320575"),
+                });
+
+            var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
+
+            Assert.NotNull(response);
+            Assert.False(response.IsSuccessStatusCode);
+            Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
+            var message = await response.Content.ReadAsStringAsync();
+            Assert.Equal("\"2066320575 is not registered as a client.\"", message);
+        }
+
+        //[Fact]
+        //public async Task SaveFileToDigitalOceanSpacesAsync()
+        //{
+        //    using var fileStream = new FileStream("", FileMode.Open, FileAccess.Read);
+        //    string fileName = "appsettings.json";
+        //    var _awsAccessKey = "";
+        //    var _awsSecretKey = "";
+        //    var bucketName = "MessagingAPIIntegrationTest";
+        //    var config = new AmazonS3Config
+        //    {
+        //        ServiceURL = ""
+        //    };
+        //    var client = new AmazonS3Client(_awsAccessKey, _awsSecretKey, config);
+        //    var bucket = await client.PutBucketAsync(bucketName);
+        //    var fileUtil = new TransferUtility(client);
+        //    var fileRequest = new TransferUtilityUploadRequest
+        //    {
+        //        BucketName = bucketName,
+        //        InputStream = fileStream,
+        //        StorageClass = S3StorageClass.Standard,
+        //        Key = fileName,
+        //        CannedACL = S3CannedACL.PublicRead,
+        //    };
+        //    await fileUtil.UploadAsync(fileRequest);
+        //    string mediaURL = $"{config.ServiceURL}{bucketName}/{fileRequest.Key}";
+        //    Assert.False(string.IsNullOrWhiteSpace(mediaURL));
+        //    var httpClient = new HttpClient();
+        //    var response = await httpClient.GetByteArrayAsync(mediaURL);
+        //    Assert.NotNull(response);
+        //    await File.WriteAllBytesAsync(fileRequest.Key, response);
+        //    var text = File.ReadAllText(fileRequest.Key);
+        //    Assert.False(string.IsNullOrWhiteSpace(text));
+        //    // Clean up
+        //    File.Delete(fileRequest.Key);
+        //}
     }
 }

@@ -1,3 +1,6 @@
+using Amazon.S3;
+using Amazon.S3.Transfer;
+
 using Flurl.Http;
 
 using Messaging;
@@ -56,6 +59,10 @@ try
     string firstPointUsername = builder.Configuration.GetConnectionString("PComNetUsername") ?? string.Empty;
     string firstPointPassword = builder.Configuration.GetConnectionString("PComNetPassword") ?? string.Empty;
     string localSecret = builder.Configuration.GetConnectionString("MessagingAPISecret") ?? string.Empty;
+    string digitalOceanSpacesBucket = builder.Configuration.GetConnectionString("BucketName") ?? string.Empty;
+    string digitalOceanSpacesAccessKey = builder.Configuration.GetConnectionString("DOSpacesAccessKey") ?? string.Empty;
+    string digitalOceanSpacesSecretKey = builder.Configuration.GetConnectionString("DOSpacesSecretKey") ?? string.Empty;
+    string s3ServiceURL = builder.Configuration.GetConnectionString("S3ServiceURL") ?? string.Empty;
 
     builder.Services
         .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -169,6 +176,8 @@ try
 
     builder.Services.AddMemoryCache();
     builder.Services.AddScoped<TokenService, TokenService>();
+    builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+    builder.Services.AddAWSService<IAmazonS3>();
 
     var app = builder.Build();
 
@@ -178,6 +187,14 @@ try
         .Options;
     using var dbContext = new MessagingContext(contextOptions);
     await dbContext.Database.MigrateAsync();
+
+    // Make sure the bucket exists.
+    var spacesConfig = new AmazonS3Config
+    {
+        ServiceURL = "https://accelerate-networks-mms.sfo3.digitaloceanspaces.com"
+    };
+    var spacesClient = new AmazonS3Client(digitalOceanSpacesAccessKey, digitalOceanSpacesSecretKey, spacesConfig);
+    _ = await spacesClient.PutBucketAsync(digitalOceanSpacesBucket);
 
     app.UseCors();
     app.UseAuthentication();
@@ -669,8 +686,6 @@ try
                 return TypedResults.BadRequest($"Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers. {System.Text.Json.JsonSerializer.Serialize(message)}");
             }
 
-            string MMSMessagePickupRequest = $"{MMSDescription?.url}&authkey={MMSDescription?.authkey}";
-
             MessageRecord record = new()
             {
                 Content = MMSDescription?.files ?? message.message,
@@ -678,8 +693,44 @@ try
                 To = string.Join(',', message?.ToPhoneNumbers?.Select(x => x.DialedNumber) ?? Array.Empty<string>()),
                 MessageSource = MessageSource.Incoming,
                 MessageType = MessageType.SMS,
-                MediaURLs = string.Empty,
             };
+
+            string MMSMessagePickupRequest = $"{MMSDescription?.url}&authkey={MMSDescription?.authkey}";
+
+            Log.Information(MMSMessagePickupRequest);
+
+            if (!string.IsNullOrWhiteSpace(MMSDescription?.files))
+            {
+                // Make sure the bucket exists.
+                var spacesConfig = new AmazonS3Config
+                {
+                    ServiceURL = s3ServiceURL,
+                };
+                using var spacesClient = new AmazonS3Client(digitalOceanSpacesAccessKey, digitalOceanSpacesSecretKey, spacesConfig);
+                using var fileUtil = new TransferUtility(spacesClient);
+
+                foreach (string file in MMSDescription.files.Split(','))
+                {
+                    if (!string.IsNullOrWhiteSpace(file))
+                    {
+                        string fileDownloadURL = $"{MMSMessagePickupRequest}&file={file}";
+                        Log.Information(fileDownloadURL);
+                        using var fileStream = await fileDownloadURL.GetStreamAsync();
+                        var fileRequest = new TransferUtilityUploadRequest
+                        {
+                            BucketName = digitalOceanSpacesBucket,
+                            InputStream = fileStream,
+                            StorageClass = S3StorageClass.Standard,
+                            Key = $"{record.Id}{file}",
+                            CannedACL = S3CannedACL.PublicRead,
+                        };
+                        await fileUtil.UploadAsync(fileRequest);
+                        string mediaURL = $"{spacesConfig.ServiceURL}{fileRequest.BucketName}/{fileRequest.Key}";
+                        Log.Information(mediaURL);
+                        record.MediaURLs = string.IsNullOrWhiteSpace(mediaURL) ? mediaURL : $"{record.MediaURLs},{mediaURL}";
+                    }
+                }
+            }
 
             record.ToFromCompound = $"{record.From},{record.To}";
             await db.Messages.AddAsync(record);
@@ -729,7 +780,7 @@ try
             return TypedResults.BadRequest("Failed to read form data by field name.");
         }
 
-    }).RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Send an MMS Message.", Description = "Submit outbound messages to this endpoint." });
+    }).WithOpenApi(x => new(x) { Summary = "Send an MMS Message.", Description = "Submit outbound messages to this endpoint." });
 
 
 
