@@ -39,6 +39,10 @@ variables:
   ConnectionStrings.Call48Password: $(Call48Password)
   ConnectionStrings.CallWithUsAPIKEY: $(CallWithUsAPIKEY)
   ConnectionStrings.MessagingAPISecret: $(MessagingAPISecret)
+  ConnectionStrings.DOSpacesAccessKey: $(DOSpacesAccessKey)
+  ConnectionStrings.DOSpacesSecretKey: $(DOSpacesSecretKey)
+  ConnectionStrings.BucketName: $(BucketName)
+  ConnectionStrings.S3ServiceURL: $(S3ServiceURL)
   ApplicationInsights.InstrumentationKey: $(AIInstrumentationKey)
   ApplicationInsights.ConnectionString: $(AIConnectionString)
 
