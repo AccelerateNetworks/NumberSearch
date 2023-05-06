@@ -726,8 +726,7 @@ try
                         };
                         await fileUtil.UploadAsync(fileRequest);
                         string mediaURL = $"{spacesConfig.ServiceURL}{fileRequest.BucketName}/{fileRequest.Key}";
-                        Log.Information(mediaURL);
-                        record.MediaURLs = string.IsNullOrWhiteSpace(mediaURL) ? mediaURL : $"{record.MediaURLs},{mediaURL}";
+                        record.MediaURLs = string.IsNullOrWhiteSpace(record.MediaURLs) ? mediaURL : $"{record.MediaURLs},{mediaURL}";
                     }
                 }
             }
