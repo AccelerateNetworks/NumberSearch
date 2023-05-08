@@ -6,8 +6,8 @@
 <h1 class="display-4 p-3">🏢 Owned Numbers</h1>
 
 <div class="btn-group pb-3" role="group" aria-label="Basic example">
-    <a class="btn btn-primary" href="/Home/OwnedNumbers">Return to List</a>
-    @{
+@*    <a class="btn btn-primary" href="/Home/OwnedNumbers">Return to List</a>
+*@    @{
         if (!string.IsNullOrWhiteSpace(Model?.Owned.BillingClientId))
         {
             <a href="https://billing.acceleratenetworks.com/clients/@Model?.Owned.BillingClientId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">

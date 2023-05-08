@@ -89,7 +89,7 @@
                         </td>
                         <td>
                             <div class="btn-group" role="group" aria-label="Basic example">
-                                <a class="btn btn-danger text-light" href="/Home/OwnedNumbers/@number.DialedNumber">Edit</a>
+                                <a class="btn btn-danger text-light" href="/Home/OwnedNumbers/@number.DialedNumber" target="_blank">Edit</a>
                                 @{
                                     if (!string.IsNullOrWhiteSpace(number.BillingClientId))
                                     {
@@ -107,7 +107,7 @@
                                 @{
                                     if (number?.EmergencyInformationId is not null)
                                     {
-                                        <a href="/Home/EmergencyInformation/@number.DialedNumber" class="btn btn-info text-light">
+                                        <a href="/Home/EmergencyInformation/@number.DialedNumber" class="btn btn-info text-light" target="_blank">
                                             Emergency
                                         </a>
                                     }
