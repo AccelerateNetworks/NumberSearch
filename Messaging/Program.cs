@@ -684,6 +684,7 @@ try
                 serversecret = context.Request.Form["serversecret"].ToString(),
                 timezone = context.Request.Form["timezone"].ToString(),
                 origtime = context.Request.Form["origtime"].ToString(),
+                fullrecipientlist = context.Request.Form["FullRecipientList"].ToString(),
             };
 
             string incomingRequest = string.Join(',', context.Request.Form.Select(x => $"{x.Key} : {x.Value}"));
@@ -1076,6 +1077,7 @@ namespace Models
         public double api_version { get; set; }
         public string serversecret { get; set; } = string.Empty;
         // These are for the regularization of phone numbers and not mapped from the JSON payload.
+        public string fullrecipientlist { get; set; } = string.Empty;
         [JsonIgnore]
         public PhoneNumbersNA.PhoneNumber FromPhoneNumber { get; set; } = new();
         [JsonIgnore]
@@ -1113,6 +1115,33 @@ namespace Models
                 string parsedTo = string.Empty;
 
                 foreach (var number in to.Split(','))
+                {
+                    var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
+
+                    if (checkTo && toPhoneNumber is not null)
+                    {
+                        ToPhoneNumbers.Add(toPhoneNumber);
+                        if (toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode)
+                        {
+                            parsedTo += $"{toPhoneNumber.DialedNumber}";
+                        }
+                        else
+                        {
+                            parsedTo += $"1{toPhoneNumber.DialedNumber}";
+                        }
+                    }
+                }
+
+                // This will drop the numbers that couldn't be parsed.
+                to = string.IsNullOrWhiteSpace(parsedTo) ? to : parsedTo;
+                ToParsed = true;
+            }
+
+            if (to is not null && fullrecipientlist is not null && fullrecipientlist.Any())
+            {
+                string parsedTo = string.Empty;
+
+                foreach (var number in fullrecipientlist.Split(','))
                 {
                     var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
 
