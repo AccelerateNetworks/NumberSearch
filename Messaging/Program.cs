@@ -711,6 +711,8 @@ try
 
             Log.Information(MMSMessagePickupRequest);
 
+            List<string> mediaURLs = new();
+
             if (!string.IsNullOrWhiteSpace(MMSDescription?.files))
             {
                 // Make sure the bucket exists.
@@ -737,12 +739,12 @@ try
                             CannedACL = S3CannedACL.Private,
                         };
                         await fileUtil.UploadAsync(fileRequest);
-                        string mediaURL = $"{spacesConfig.ServiceURL}{fileRequest.BucketName}/{fileRequest.Key}";
-                        record.MediaURLs = string.IsNullOrWhiteSpace(record.MediaURLs) ? mediaURL : $"{record.MediaURLs},{mediaURL}";
+                        mediaURLs.Add($"{spacesConfig.ServiceURL}{fileRequest.BucketName}/{fileRequest.Key}");
                     }
                 }
             }
 
+            record.MediaURLs = string.Join(',', mediaURLs);
             record.ToFromCompound = $"{record.From},{record.To}";
             await db.Messages.AddAsync(record);
 
@@ -762,12 +764,14 @@ try
                         {
                             try
                             {
+                                ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(record, message, mediaURLs.ToArray(), existingRegistration.ClientSecret);
+
                                 // Add some retry logic
                                 // Number of retrys
                                 // Successfully delieverd
-                                record.ClientSecret = existingRegistration.ClientSecret;
-                                var response = await existingRegistration.CallbackUrl.PostJsonAsync(record);
+                                var response = await existingRegistration.CallbackUrl.PostJsonAsync(toForward);
                                 Log.Information(await response.GetStringAsync());
+                                Log.Information(System.Text.Json.JsonSerializer.Serialize(toForward));
                                 sentNumber.Add(toNumber.DialedNumber);
                             }
                             catch (FlurlHttpException ex)
@@ -800,13 +804,14 @@ try
                     {
                         try
                         {
+                            ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(record, message, mediaURLs.ToArray(), existingRegistration.ClientSecret);
+
                             // Add some retry logic
                             // Number of retrys
                             // Successfully delieverd
-                            record.ClientSecret = existingRegistration.ClientSecret;
-                            var response = await existingRegistration.CallbackUrl.PostJsonAsync(record);
+                            var response = await existingRegistration.CallbackUrl.PostJsonAsync(toForward);
                             Log.Information(await response.GetStringAsync());
-                            Log.Information(System.Text.Json.JsonSerializer.Serialize(record));
+                            Log.Information(System.Text.Json.JsonSerializer.Serialize(toForward));
                             return TypedResults.Ok("The incoming message was recieved and forwarded to the client.");
                         }
                         catch (FlurlHttpException ex)
@@ -838,8 +843,6 @@ try
         }
 
     }).WithOpenApi(x => new(x) { Summary = "Send an MMS Message.", Description = "Submit outbound messages to this endpoint." });
-
-
 
     // Add unit tests for this endpoint to verify its behavior.
     //https://sms.callpipe.com/api/inbound/1pcom?token=okereeduePeiquah3yaemohGhae0ie
@@ -902,12 +905,14 @@ try
                         {
                             try
                             {
+                                ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(record, message, Array.Empty<string>(), existingRegistration.ClientSecret);
+
                                 // Add some retry logic
                                 // Number of retrys
                                 // Successfully delieverd
-                                record.ClientSecret = existingRegistration.ClientSecret;
-                                var response = await existingRegistration.CallbackUrl.PostJsonAsync(record);
+                                var response = await existingRegistration.CallbackUrl.PostJsonAsync(toForward);
                                 Log.Information(await response.GetStringAsync());
+                                Log.Information(System.Text.Json.JsonSerializer.Serialize(toForward));
                                 sentNumber.Add(toNumber.DialedNumber);
                             }
                             catch (FlurlHttpException ex)
@@ -940,13 +945,13 @@ try
                     {
                         try
                         {
+                            ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(record, message, Array.Empty<string>(), existingRegistration.ClientSecret);
                             // Add some retry logic
                             // Number of retrys
                             // Successfully delieverd
-                            record.ClientSecret = existingRegistration.ClientSecret;
-                            var response = await existingRegistration.CallbackUrl.PostJsonAsync(record);
+                            var response = await existingRegistration.CallbackUrl.PostJsonAsync(toForward);
                             Log.Information(await response.GetStringAsync());
-                            Log.Information(System.Text.Json.JsonSerializer.Serialize(record));
+                            Log.Information(System.Text.Json.JsonSerializer.Serialize(toForward));
                             return TypedResults.Ok("The incoming message was recieved and forwarded to the client.");
                         }
                         catch (FlurlHttpException ex)
@@ -1293,6 +1298,36 @@ namespace Models
         public string DLRID { get; set; } = string.Empty;
         [DataType(DataType.Password)]
         public string ClientSecret { get; set; } = string.Empty;
+    }
+
+    // Format forward to client apps as JSON.
+    public class ForwardedMessage
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public string From { get; set; } = string.Empty;
+        public string[] To { get; set; } = Array.Empty<string>();
+        public string Content { get; set; } = string.Empty;
+        public string[] MediaURLs { get; set; } = Array.Empty<string>();
+        public MessageType MessageType { get; set; }
+        [DataType(DataType.DateTime)]
+        public DateTime DateReceivedUTC { get; set; } = DateTime.UtcNow;
+        [DataType(DataType.Password)]
+        public string ClientSecret { get; set; } = string.Empty;
+
+        public static ForwardedMessage ToForwardedMessage(MessageRecord record, FirstPointInbound parsed, string[] mediaURLs, string secret)
+        {
+            return new()
+            {
+                Id = record.Id,
+                From = parsed.FromPhoneNumber.DialedNumber,
+                To = parsed.ToPhoneNumbers.Select(x => x.DialedNumber).ToArray(),
+                Content = record.Content,
+                MediaURLs = mediaURLs,
+                MessageType = record.MessageType,
+                DateReceivedUTC = record.DateReceivedUTC,
+                ClientSecret = secret,
+            };
+        }
     }
 
     public enum MessageType { SMS, MMS };
