@@ -704,7 +704,7 @@ try
                 From = message.FromPhoneNumber.DialedNumber,
                 To = string.Join(',', message?.ToPhoneNumbers?.Select(x => x.DialedNumber) ?? Array.Empty<string>()),
                 MessageSource = MessageSource.Incoming,
-                MessageType = MessageType.SMS,
+                MessageType = MessageType.MMS,
             };
 
             string MMSMessagePickupRequest = $"{MMSDescription?.url}&authkey={MMSDescription?.authkey}";
