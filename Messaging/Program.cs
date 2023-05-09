@@ -750,32 +750,78 @@ try
             {
                 await db.SaveChangesAsync();
 
-                var existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == record.To).FirstOrDefaultAsync();
-                if (existingRegistration is not null && existingRegistration.AsDialed == record.To)
+                // Handle group messages with potentially multiple client registrations.
+                if (message is not null && message.ToPhoneNumbers.Count > 1)
                 {
-                    try
+                    List<string> sentNumber = new();
+                    foreach (var toNumber in message.ToPhoneNumbers)
                     {
-                        // Add some retry logic
-                        // Number of retrys
-                        // Successfully delieverd
-                        record.ClientSecret = existingRegistration.ClientSecret;
-                        var response = await existingRegistration.CallbackUrl.PostJsonAsync(record);
-                        Log.Information(await response.GetStringAsync());
+                        var existingRegistration = await db.ClientRegistrations.FirstOrDefaultAsync(x => x.AsDialed == toNumber.DialedNumber);
+
+                        if (existingRegistration is not null && existingRegistration.AsDialed == toNumber.DialedNumber)
+                        {
+                            try
+                            {
+                                // Add some retry logic
+                                // Number of retrys
+                                // Successfully delieverd
+                                record.ClientSecret = existingRegistration.ClientSecret;
+                                var response = await existingRegistration.CallbackUrl.PostJsonAsync(record);
+                                Log.Information(await response.GetStringAsync());
+                                sentNumber.Add(toNumber.DialedNumber);
+                            }
+                            catch (FlurlHttpException ex)
+                            {
+                                Log.Error(await ex.GetResponseStringAsync());
+                                Log.Error(System.Text.Json.JsonSerializer.Serialize(existingRegistration));
+                                Log.Error($"Failed to forward message to {toNumber.DialedNumber}");
+                            }
+                        }
+                        else
+                        {
+                            Log.Warning($"{toNumber.DialedNumber} is not registered as a client.");
+                        }
+                    }
+
+                    if (sentNumber.Any())
+                    {
                         Log.Information(System.Text.Json.JsonSerializer.Serialize(record));
                         return TypedResults.Ok("The incoming message was recieved and forwarded to the client.");
                     }
-                    catch (FlurlHttpException ex)
-                    {
-                        Log.Error(await ex.GetResponseStringAsync());
-                        Log.Error(System.Text.Json.JsonSerializer.Serialize(existingRegistration));
-                        Log.Error(System.Text.Json.JsonSerializer.Serialize(record));
-                        return TypedResults.BadRequest("Failed to forward the message to the client's callback url.");
-                    }
+
+                    Log.Warning(System.Text.Json.JsonSerializer.Serialize(record));
+                    return TypedResults.BadRequest($"{record.To} is not registered as a client.");
                 }
                 else
                 {
-                    Log.Error(System.Text.Json.JsonSerializer.Serialize(record));
-                    return TypedResults.BadRequest($"{record.To} is not registered as a client.");
+                    var toNumber = message is not null && message.ToPhoneNumbers.FirstOrDefault() is not null ? message.ToPhoneNumbers.FirstOrDefault()?.DialedNumber : record.To;
+                    var existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == toNumber).FirstOrDefaultAsync();
+                    if (existingRegistration is not null && existingRegistration.AsDialed == record.To)
+                    {
+                        try
+                        {
+                            // Add some retry logic
+                            // Number of retrys
+                            // Successfully delieverd
+                            record.ClientSecret = existingRegistration.ClientSecret;
+                            var response = await existingRegistration.CallbackUrl.PostJsonAsync(record);
+                            Log.Information(await response.GetStringAsync());
+                            Log.Information(System.Text.Json.JsonSerializer.Serialize(record));
+                            return TypedResults.Ok("The incoming message was recieved and forwarded to the client.");
+                        }
+                        catch (FlurlHttpException ex)
+                        {
+                            Log.Error(await ex.GetResponseStringAsync());
+                            Log.Error(System.Text.Json.JsonSerializer.Serialize(existingRegistration));
+                            Log.Error(System.Text.Json.JsonSerializer.Serialize(record));
+                            return TypedResults.BadRequest("Failed to forward the message to the client's callback url.");
+                        }
+                    }
+                    else
+                    {
+                        Log.Error(System.Text.Json.JsonSerializer.Serialize(record));
+                        return TypedResults.BadRequest($"{record.To} is not registered as a client.");
+                    }
                 }
             }
             catch (Exception ex)
@@ -818,6 +864,7 @@ try
                 serversecret = context.Request.Form["serversecret"].ToString(),
                 timezone = context.Request.Form["timezone"].ToString(),
                 origtime = context.Request.Form["origtime"].ToString(),
+                fullrecipientlist = context.Request.Form["FullRecipientList"].ToString(),
             };
 
             // Validate and regularize the incoming message.
@@ -843,32 +890,78 @@ try
             {
                 await db.SaveChangesAsync();
 
-                var existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == record.To).FirstOrDefaultAsync();
-                if (existingRegistration is not null && existingRegistration.AsDialed == record.To)
+                // Handle group messages with potentially multiple client registrations.
+                if (message is not null && message.ToPhoneNumbers.Count > 1)
                 {
-                    try
+                    List<string> sentNumber = new();
+                    foreach (var toNumber in message.ToPhoneNumbers)
                     {
-                        // Add some retry logic
-                        // Number of retrys
-                        // Successfully delieverd
-                        record.ClientSecret = existingRegistration.ClientSecret;
-                        var response = await existingRegistration.CallbackUrl.PostJsonAsync(record);
-                        Log.Information(await response.GetStringAsync());
+                        var existingRegistration = await db.ClientRegistrations.FirstOrDefaultAsync(x => x.AsDialed == toNumber.DialedNumber);
+
+                        if (existingRegistration is not null && existingRegistration.AsDialed == toNumber.DialedNumber)
+                        {
+                            try
+                            {
+                                // Add some retry logic
+                                // Number of retrys
+                                // Successfully delieverd
+                                record.ClientSecret = existingRegistration.ClientSecret;
+                                var response = await existingRegistration.CallbackUrl.PostJsonAsync(record);
+                                Log.Information(await response.GetStringAsync());
+                                sentNumber.Add(toNumber.DialedNumber);
+                            }
+                            catch (FlurlHttpException ex)
+                            {
+                                Log.Error(await ex.GetResponseStringAsync());
+                                Log.Error(System.Text.Json.JsonSerializer.Serialize(existingRegistration));
+                                Log.Error($"Failed to forward message to {toNumber.DialedNumber}");
+                            }
+                        }
+                        else
+                        {
+                            Log.Warning($"{toNumber.DialedNumber} is not registered as a client.");
+                        }
+                    }
+
+                    if (sentNumber.Any())
+                    {
                         Log.Information(System.Text.Json.JsonSerializer.Serialize(record));
                         return TypedResults.Ok("The incoming message was recieved and forwarded to the client.");
                     }
-                    catch (FlurlHttpException ex)
-                    {
-                        Log.Error(await ex.GetResponseStringAsync());
-                        Log.Error(System.Text.Json.JsonSerializer.Serialize(existingRegistration));
-                        Log.Error(System.Text.Json.JsonSerializer.Serialize(record));
-                        return TypedResults.BadRequest("Failed to forward the message to the client's callback url.");
-                    }
+
+                    Log.Warning(System.Text.Json.JsonSerializer.Serialize(record));
+                    return TypedResults.BadRequest($"{record.To} is not registered as a client.");
                 }
                 else
                 {
-                    Log.Error(System.Text.Json.JsonSerializer.Serialize(record));
-                    return TypedResults.BadRequest($"{record.To} is not registered as a client.");
+                    var toNumber = message is not null && message.ToPhoneNumbers.FirstOrDefault() is not null ? message.ToPhoneNumbers.FirstOrDefault()?.DialedNumber : record.To;
+                    var existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == toNumber).FirstOrDefaultAsync();
+                    if (existingRegistration is not null && existingRegistration.AsDialed == record.To)
+                    {
+                        try
+                        {
+                            // Add some retry logic
+                            // Number of retrys
+                            // Successfully delieverd
+                            record.ClientSecret = existingRegistration.ClientSecret;
+                            var response = await existingRegistration.CallbackUrl.PostJsonAsync(record);
+                            Log.Information(await response.GetStringAsync());
+                            Log.Information(System.Text.Json.JsonSerializer.Serialize(record));
+                            return TypedResults.Ok("The incoming message was recieved and forwarded to the client.");
+                        }
+                        catch (FlurlHttpException ex)
+                        {
+                            Log.Error(await ex.GetResponseStringAsync());
+                            Log.Error(System.Text.Json.JsonSerializer.Serialize(existingRegistration));
+                            Log.Error(System.Text.Json.JsonSerializer.Serialize(record));
+                            return TypedResults.BadRequest("Failed to forward the message to the client's callback url.");
+                        }
+                    }
+                    else
+                    {
+                        Log.Error(System.Text.Json.JsonSerializer.Serialize(record));
+                        return TypedResults.BadRequest($"{record.To} is not registered as a client.");
+                    }
                 }
             }
             catch (Exception ex)
@@ -1123,11 +1216,11 @@ namespace Models
                         ToPhoneNumbers.Add(toPhoneNumber);
                         if (toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode)
                         {
-                            parsedTo += $"{toPhoneNumber.DialedNumber}";
+                            parsedTo = string.IsNullOrWhiteSpace(parsedTo) ? $"{toPhoneNumber.DialedNumber}" : $",{toPhoneNumber.DialedNumber}";
                         }
                         else
                         {
-                            parsedTo += $"1{toPhoneNumber.DialedNumber}";
+                            parsedTo += string.IsNullOrWhiteSpace(parsedTo) ? $"1{toPhoneNumber.DialedNumber}" : $",1{toPhoneNumber.DialedNumber}";
                         }
                     }
                 }
@@ -1147,14 +1240,19 @@ namespace Models
 
                     if (checkTo && toPhoneNumber is not null)
                     {
-                        ToPhoneNumbers.Add(toPhoneNumber);
-                        if (toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode)
+                        // Prevent adding duplicates to the To list.
+                        bool checkExists = ToPhoneNumbers.Exists(x => x.DialedNumber == toPhoneNumber.DialedNumber);
+                        if (!checkExists)
                         {
-                            parsedTo += $"{toPhoneNumber.DialedNumber}";
-                        }
-                        else
-                        {
-                            parsedTo += $"1{toPhoneNumber.DialedNumber}";
+                            ToPhoneNumbers.Add(toPhoneNumber);
+                            if (toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode)
+                            {
+                                parsedTo = string.IsNullOrWhiteSpace(parsedTo) ? $"{toPhoneNumber.DialedNumber}" : $",{toPhoneNumber.DialedNumber}";
+                            }
+                            else
+                            {
+                                parsedTo += string.IsNullOrWhiteSpace(parsedTo) ? $"1{toPhoneNumber.DialedNumber}" : $",1{toPhoneNumber.DialedNumber}";
+                            }
                         }
                     }
                 }

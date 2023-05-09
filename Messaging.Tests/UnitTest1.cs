@@ -5,6 +5,7 @@ using Amazon.S3.Transfer;
 
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Routing;
+
 using Models;
 
 using Newtonsoft.Json.Linq;
@@ -49,7 +50,7 @@ namespace Messaging.Tests
             Assert.False(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
             var message = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers. {\\\"origtime\\\":\\\"2022-04-17 03:48:00\\\",\\\"msisdn\\\":\\\"15555551212\\\",\\\"to\\\":\\\"14445556543\\\",\\\"sessionid\\\":\\\"tLMOYTAmIFiQvBE6X1g\\\",\\\"timezone\\\":\\\"EST\\\",\\\"message\\\":\\\"Your Lyft code is 12345\\\",\\\"api_version\\\":0,\\\"serversecret\\\":\\\"sekrethere\\\"}\"", message);
+            Assert.Equal("\"Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers. {\\\"origtime\\\":\\\"2022-04-17 03:48:00\\\",\\\"msisdn\\\":\\\"15555551212\\\",\\\"to\\\":\\\"14445556543\\\",\\\"sessionid\\\":\\\"tLMOYTAmIFiQvBE6X1g\\\",\\\"timezone\\\":\\\"EST\\\",\\\"message\\\":\\\"Your Lyft code is 12345\\\",\\\"api_version\\\":0,\\\"serversecret\\\":\\\"sekrethere\\\",\\\"fullrecipientlist\\\":\\\"\\\"}\"", message);
         }
 
         [Fact]
@@ -123,6 +124,34 @@ namespace Messaging.Tests
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
             var message = await response.Content.ReadAsStringAsync();
             Assert.Equal("\"2068589312 is not registered as a client.\"", message);
+        }
+
+        [Fact]
+        public async Task GroupSMSMessageAsync()
+        {
+            string route = "/api/inbound/1pcom";
+            string token = "okereeduePeiquah3yaemohGhae0ie";
+
+            var stringContent = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("origtime", "2022-04-17 03:48:00"),
+                    new KeyValuePair<string, string>("msisdn", "12065579450"),
+                    new KeyValuePair<string, string>("to", "12068589312,12068589310"),
+                    new KeyValuePair<string, string>("sessionid", "tLMOYTAmIFiQvBE6X1g"),
+                    new KeyValuePair<string, string>("timezone", "EST"),
+                    new KeyValuePair<string, string>("message", "Hello, this is 1stPoint SMS :D"),
+                    new KeyValuePair<string, string>("api_version", "0.5"),
+                    new KeyValuePair<string, string>("serversecret", "sekrethere"),
+
+                });
+
+            var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
+
+            Assert.NotNull(response);
+            Assert.False(response.IsSuccessStatusCode);
+            Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
+            var message = await response.Content.ReadAsStringAsync();
+            Assert.Equal("\"2068589312,2068589310 is not registered as a client.\"", message);
         }
 
         [Fact]
@@ -280,6 +309,36 @@ namespace Messaging.Tests
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
             var message = await response.Content.ReadAsStringAsync();
             Assert.Equal("\"2066320575 is not registered as a client.\"", message);
+        }
+
+        [Fact]
+        public async Task GroupMMSMessageAsync()
+        {
+            string route = "/1pcom/inbound/MMS";
+            string token = "okereeduePeiquah3yaemohGhae0ie";
+
+            var stringContent = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("origtime", "2023-05-08 14:50:00"),
+                    new KeyValuePair<string, string>("msisdn", "12065579450"),
+                    new KeyValuePair<string, string>("to", "12068589310"),
+                    new KeyValuePair<string, string>("sessionid", "2ee9b7b8a1db41d590a9fcabbec08b63"),
+                    new KeyValuePair<string, string>("timezone", "EST"),
+                    new KeyValuePair<string, string>("message", "{\r\n\"authkey\":\"7071e405-3cb8-43ac-acae-6c06987ede02\",\r\n\"encoding\":\"native\",\r\n\"files\":\"part-001.txt,\",\r\n\"recip\":\"12068589310,\",\r\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=2ee9b7b8a1db41d590a9fcabbec08b63\"\r\n}"),
+                    new KeyValuePair<string, string>("api_version", "0.5"),
+                    new KeyValuePair<string, string>("serversecret", "Sek3628"),
+                    new KeyValuePair<string, string>("remote", "12065579450"),
+                    new KeyValuePair<string, string>("host", "12068589310"),
+                    new KeyValuePair<string, string>("FullRecipientList", ", 12067696361"),
+                });
+
+            var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
+
+            Assert.NotNull(response);
+            Assert.False(response.IsSuccessStatusCode);
+            Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
+            var message = await response.Content.ReadAsStringAsync();
+            Assert.Equal("\"2068589310,2067696361 is not registered as a client.\"", message);
         }
 
         //[Fact]
