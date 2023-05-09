@@ -665,7 +665,7 @@ try
 
     }).RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Send an MMS Message.", Description = "Submit outbound messages to this endpoint." });
 
-    app.MapPost("1pcom/inbound/MMS", async Task<Results<Ok<string>, BadRequest<string>, UnauthorizedHttpResult>> (HttpContext context, string token, MessagingContext db) =>
+    app.MapPost("1pcom/inbound/MMS", async Task<Results<Ok<string>, BadRequest<string>, Ok<ForwardedMessage>, UnauthorizedHttpResult>> (HttpContext context, string token, MessagingContext db) =>
     {
         if (token is not "okereeduePeiquah3yaemohGhae0ie")
         {
@@ -848,7 +848,7 @@ try
     //https://sms.callpipe.com/api/inbound/1pcom?token=okereeduePeiquah3yaemohGhae0ie
     //    { "origtime": "2022-04-17 03:48:00", "msisdn": "15555551212", "to": "14445556543", "sessionid": "tLMOYTAmIFiQvBE6X1g", "timezone": "EST", "message": "Your Lyft code is 12345", "api_version": 0.5, "serversecret": "sekrethere"}
     // When this issue is resolved we can simplify the way that we are recieving data in this endpoint: https://github.com/dotnet/aspnetcore/issues/39430 and https://stackoverflow.com/questions/71047077/net-6-minimal-api-and-multipart-form-data/71048827#71048827
-    app.MapPost("/api/inbound/1pcom", async Task<Results<Ok<string>, BadRequest<string>, UnauthorizedHttpResult>> (HttpContext context, string token, MessagingContext db) =>
+    app.MapPost("/api/inbound/1pcom", async Task<Results<Ok<string>, BadRequest<string>, Ok<ForwardedMessage>, UnauthorizedHttpResult>> (HttpContext context, string token, MessagingContext db) =>
     {
         if (token is not "okereeduePeiquah3yaemohGhae0ie")
         {
