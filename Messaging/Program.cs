@@ -734,7 +734,7 @@ try
                             InputStream = fileStream,
                             StorageClass = S3StorageClass.Standard,
                             Key = $"{record.Id}{file}",
-                            CannedACL = S3CannedACL.PublicRead,
+                            CannedACL = S3CannedACL.Private,
                         };
                         await fileUtil.UploadAsync(fileRequest);
                         string mediaURL = $"{spacesConfig.ServiceURL}{fileRequest.BucketName}/{fileRequest.Key}";
