@@ -1324,7 +1324,7 @@ namespace Models
                 From = parsed.FromPhoneNumber.DialedNumber,
                 To = primaryTo,
                 AdditionalRecipients = parsed.ToPhoneNumbers.Where(x => x.DialedNumber != primaryTo).Select(x => x.DialedNumber).ToArray(),
-                Content = parsed.message,
+                Content = textMessage,
                 MediaURLs = mediaURLs,
                 MessageType = mediaURLs.Any() ? MessageType.MMS : MessageType.SMS,
                 DateReceivedUTC = DateTime.UtcNow,
