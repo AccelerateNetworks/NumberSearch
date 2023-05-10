@@ -764,7 +764,7 @@ try
                         {
                             try
                             {
-                                ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(message, record.Id, mediaURLs.ToArray(), existingRegistration.AsDialed, existingRegistration.ClientSecret);
+                                ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(message, record.Id, record.Content, mediaURLs.ToArray(), existingRegistration.AsDialed, existingRegistration.ClientSecret);
 
                                 // Add some retry logic
                                 // Number of retrys
@@ -804,7 +804,7 @@ try
                     {
                         try
                         {
-                            ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(message, record.Id, mediaURLs.ToArray(), existingRegistration.AsDialed, existingRegistration.ClientSecret);
+                            ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(message, record.Id, record.Content, mediaURLs.ToArray(), existingRegistration.AsDialed, existingRegistration.ClientSecret);
 
                             // Add some retry logic
                             // Number of retrys
@@ -905,7 +905,7 @@ try
                         {
                             try
                             {
-                                ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(message, record.Id, Array.Empty<string>(), existingRegistration.AsDialed, existingRegistration.ClientSecret);
+                                ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(message, record.Id, record.Content, Array.Empty<string>(), existingRegistration.AsDialed, existingRegistration.ClientSecret);
 
                                 // Add some retry logic
                                 // Number of retrys
@@ -945,7 +945,7 @@ try
                     {
                         try
                         {
-                            ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(message, record.Id, Array.Empty<string>(), existingRegistration.AsDialed, existingRegistration.ClientSecret);
+                            ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(message, record.Id, record.Content, Array.Empty<string>(), existingRegistration.AsDialed, existingRegistration.ClientSecret);
                             // Add some retry logic
                             // Number of retrys
                             // Successfully delieverd
@@ -1316,7 +1316,7 @@ namespace Models
         [DataType(DataType.Password)]
         public string ClientSecret { get; set; } = string.Empty;
 
-        public static ForwardedMessage ToForwardedMessage(FirstPointInbound parsed, Guid recordId, string[] mediaURLs, string primaryTo, string secret)
+        public static ForwardedMessage ToForwardedMessage(FirstPointInbound parsed, Guid recordId, string textMessage, string[] mediaURLs, string primaryTo, string secret)
         {
             return new()
             {
