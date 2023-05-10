@@ -516,7 +516,7 @@ try
     {
         try
         {
-            var messages = await db.Messages.ToArrayAsync();
+            var messages = await db.Messages.OrderByDescending(x => x.DateReceivedUTC).Take(10).ToArrayAsync();
 
             if (messages is not null && messages.Any())
             {
@@ -764,7 +764,7 @@ try
                         {
                             try
                             {
-                                ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(record, message, mediaURLs.ToArray(), existingRegistration.ClientSecret);
+                                ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(message, record.Id, mediaURLs.ToArray(), existingRegistration.AsDialed, existingRegistration.ClientSecret);
 
                                 // Add some retry logic
                                 // Number of retrys
@@ -800,11 +800,11 @@ try
                 {
                     var toNumber = message is not null && message.ToPhoneNumbers.FirstOrDefault() is not null ? message.ToPhoneNumbers.FirstOrDefault()?.DialedNumber : record.To;
                     var existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == toNumber).FirstOrDefaultAsync();
-                    if (existingRegistration is not null && existingRegistration.AsDialed == record.To)
+                    if (message is not null && existingRegistration is not null && existingRegistration.AsDialed == record.To)
                     {
                         try
                         {
-                            ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(record, message, mediaURLs.ToArray(), existingRegistration.ClientSecret);
+                            ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(message, record.Id, mediaURLs.ToArray(), existingRegistration.AsDialed, existingRegistration.ClientSecret);
 
                             // Add some retry logic
                             // Number of retrys
@@ -905,7 +905,7 @@ try
                         {
                             try
                             {
-                                ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(record, message, Array.Empty<string>(), existingRegistration.ClientSecret);
+                                ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(message, record.Id, Array.Empty<string>(), existingRegistration.AsDialed, existingRegistration.ClientSecret);
 
                                 // Add some retry logic
                                 // Number of retrys
@@ -941,11 +941,11 @@ try
                 {
                     var toNumber = message is not null && message.ToPhoneNumbers.FirstOrDefault() is not null ? message.ToPhoneNumbers.FirstOrDefault()?.DialedNumber : record.To;
                     var existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == toNumber).FirstOrDefaultAsync();
-                    if (existingRegistration is not null && existingRegistration.AsDialed == record.To)
+                    if (message is not null && existingRegistration is not null && existingRegistration.AsDialed == record.To)
                     {
                         try
                         {
-                            ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(record, message, Array.Empty<string>(), existingRegistration.ClientSecret);
+                            ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(message, record.Id, Array.Empty<string>(), existingRegistration.AsDialed, existingRegistration.ClientSecret);
                             // Add some retry logic
                             // Number of retrys
                             // Successfully delieverd
@@ -1090,6 +1090,7 @@ namespace Models
         public string To { get; set; } = string.Empty;
         public string MSISDN { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
+        public string[] MediaURLs { get; set; } = Array.Empty<string>();
         // These are for the regularization of phone numbers and not mapped from the JSON payload.
         [JsonIgnore]
         public PhoneNumbersNA.PhoneNumber FromPhoneNumber { get; set; } = new();
@@ -1305,7 +1306,8 @@ namespace Models
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public string From { get; set; } = string.Empty;
-        public string[] To { get; set; } = Array.Empty<string>();
+        public string To { get; set; } = string.Empty;
+        public string[] AdditionalRecipients { get; set; } = Array.Empty<string>();
         public string Content { get; set; } = string.Empty;
         public string[] MediaURLs { get; set; } = Array.Empty<string>();
         public MessageType MessageType { get; set; }
@@ -1314,18 +1316,33 @@ namespace Models
         [DataType(DataType.Password)]
         public string ClientSecret { get; set; } = string.Empty;
 
-        public static ForwardedMessage ToForwardedMessage(MessageRecord record, FirstPointInbound parsed, string[] mediaURLs, string secret)
+        public static ForwardedMessage ToForwardedMessage(FirstPointInbound parsed, Guid recordId, string[] mediaURLs, string primaryTo, string secret)
         {
             return new()
             {
-                Id = record.Id,
+                Id = recordId,
                 From = parsed.FromPhoneNumber.DialedNumber,
-                To = parsed.ToPhoneNumbers.Select(x => x.DialedNumber).ToArray(),
-                Content = record.Content,
+                To = primaryTo,
+                AdditionalRecipients = parsed.ToPhoneNumbers.Where(x => x.DialedNumber != primaryTo).Select(x => x.DialedNumber).ToArray(),
+                Content = parsed.message,
                 MediaURLs = mediaURLs,
-                MessageType = record.MessageType,
-                DateReceivedUTC = record.DateReceivedUTC,
+                MessageType = mediaURLs.Any() ? MessageType.MMS : MessageType.SMS,
+                DateReceivedUTC = DateTime.UtcNow,
                 ClientSecret = secret,
+            };
+        }
+
+        public MessageRecord ToMessageRecord()
+        {
+            return new()
+            {
+                Id = Id,
+                From = From,
+                To = $"{To},{string.Join(',', AdditionalRecipients)}",
+                Content = Content,
+                MediaURLs = string.Join(',', MediaURLs),
+                MessageType = MessageType,
+                DateReceivedUTC = DateReceivedUTC,
             };
         }
     }
