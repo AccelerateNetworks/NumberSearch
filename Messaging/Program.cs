@@ -753,7 +753,7 @@ try
                 await db.SaveChangesAsync();
 
                 // Handle group messages with potentially multiple client registrations.
-                if (message is not null && message.ToPhoneNumbers.Count > 1)
+                if (message is not null && message.ToPhoneNumbers.Any())
                 {
                     List<string> sentNumber = new();
                     foreach (var toNumber in message.ToPhoneNumbers)
@@ -792,42 +792,10 @@ try
                         Log.Information(System.Text.Json.JsonSerializer.Serialize(record));
                         return TypedResults.Ok("The incoming message was recieved and forwarded to the client.");
                     }
-
-                    Log.Warning(System.Text.Json.JsonSerializer.Serialize(record));
-                    return TypedResults.BadRequest($"{record.To} is not registered as a client.");
                 }
-                else
-                {
-                    var toNumber = message is not null && message.ToPhoneNumbers.FirstOrDefault() is not null ? message.ToPhoneNumbers.FirstOrDefault()?.DialedNumber : record.To;
-                    var existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == toNumber).FirstOrDefaultAsync();
-                    if (message is not null && existingRegistration is not null && existingRegistration.AsDialed == record.To)
-                    {
-                        try
-                        {
-                            ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(message, record.Id, record.Content, mediaURLs.ToArray(), existingRegistration.AsDialed, existingRegistration.ClientSecret);
 
-                            // Add some retry logic
-                            // Number of retrys
-                            // Successfully delieverd
-                            var response = await existingRegistration.CallbackUrl.PostJsonAsync(toForward);
-                            Log.Information(await response.GetStringAsync());
-                            Log.Information(System.Text.Json.JsonSerializer.Serialize(toForward));
-                            return TypedResults.Ok("The incoming message was recieved and forwarded to the client.");
-                        }
-                        catch (FlurlHttpException ex)
-                        {
-                            Log.Error(await ex.GetResponseStringAsync());
-                            Log.Error(System.Text.Json.JsonSerializer.Serialize(existingRegistration));
-                            Log.Error(System.Text.Json.JsonSerializer.Serialize(record));
-                            return TypedResults.BadRequest("Failed to forward the message to the client's callback url.");
-                        }
-                    }
-                    else
-                    {
-                        Log.Error(System.Text.Json.JsonSerializer.Serialize(record));
-                        return TypedResults.BadRequest($"{record.To} is not registered as a client.");
-                    }
-                }
+                Log.Warning(System.Text.Json.JsonSerializer.Serialize(record));
+                return TypedResults.BadRequest($"{record.To} is not registered as a client.");
             }
             catch (Exception ex)
             {
@@ -894,7 +862,7 @@ try
                 await db.SaveChangesAsync();
 
                 // Handle group messages with potentially multiple client registrations.
-                if (message is not null && message.ToPhoneNumbers.Count > 1)
+                if (message is not null && message.ToPhoneNumbers.Any())
                 {
                     List<string> sentNumber = new();
                     foreach (var toNumber in message.ToPhoneNumbers)
@@ -933,41 +901,11 @@ try
                         Log.Information(System.Text.Json.JsonSerializer.Serialize(record));
                         return TypedResults.Ok("The incoming message was recieved and forwarded to the client.");
                     }
+                }
 
-                    Log.Warning(System.Text.Json.JsonSerializer.Serialize(record));
-                    return TypedResults.BadRequest($"{record.To} is not registered as a client.");
-                }
-                else
-                {
-                    var toNumber = message is not null && message.ToPhoneNumbers.FirstOrDefault() is not null ? message.ToPhoneNumbers.FirstOrDefault()?.DialedNumber : record.To;
-                    var existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == toNumber).FirstOrDefaultAsync();
-                    if (message is not null && existingRegistration is not null && existingRegistration.AsDialed == record.To)
-                    {
-                        try
-                        {
-                            ForwardedMessage toForward = ForwardedMessage.ToForwardedMessage(message, record.Id, record.Content, Array.Empty<string>(), existingRegistration.AsDialed, existingRegistration.ClientSecret);
-                            // Add some retry logic
-                            // Number of retrys
-                            // Successfully delieverd
-                            var response = await existingRegistration.CallbackUrl.PostJsonAsync(toForward);
-                            Log.Information(await response.GetStringAsync());
-                            Log.Information(System.Text.Json.JsonSerializer.Serialize(toForward));
-                            return TypedResults.Ok("The incoming message was recieved and forwarded to the client.");
-                        }
-                        catch (FlurlHttpException ex)
-                        {
-                            Log.Error(await ex.GetResponseStringAsync());
-                            Log.Error(System.Text.Json.JsonSerializer.Serialize(existingRegistration));
-                            Log.Error(System.Text.Json.JsonSerializer.Serialize(record));
-                            return TypedResults.BadRequest("Failed to forward the message to the client's callback url.");
-                        }
-                    }
-                    else
-                    {
-                        Log.Error(System.Text.Json.JsonSerializer.Serialize(record));
-                        return TypedResults.BadRequest($"{record.To} is not registered as a client.");
-                    }
-                }
+                Log.Warning(System.Text.Json.JsonSerializer.Serialize(record));
+                return TypedResults.BadRequest($"{record.To} is not registered as a client.");
+
             }
             catch (Exception ex)
             {
