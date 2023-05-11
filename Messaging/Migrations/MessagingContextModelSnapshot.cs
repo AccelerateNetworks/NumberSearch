@@ -49,15 +49,7 @@ namespace Messaging.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ClientSecret")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("DLRID")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -78,11 +70,15 @@ namespace Messaging.Migrations
                     b.Property<int>("MessageType")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("To")
+                    b.Property<string>("RawRequest")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ToFromCompound")
+                    b.Property<string>("RawResponse")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("To")
                         .IsRequired()
                         .HasColumnType("TEXT");
 

@@ -475,6 +475,9 @@
 		<Content Update="wwwroot\videos\acceleratenetworks.m4v">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Update="wwwroot\videos\acceleratenetworks2023.mp4">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Update="wwwroot\videos\DP_base_station.webp">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>

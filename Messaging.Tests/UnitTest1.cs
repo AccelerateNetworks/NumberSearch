@@ -1,17 +1,6 @@
-using Amazon;
-using Amazon.Runtime.Endpoints;
-using Amazon.S3;
-using Amazon.S3.Transfer;
-
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.Routing;
 
 using Models;
-
-using Newtonsoft.Json.Linq;
-
-using System.Net.Http;
-using System.Runtime.CompilerServices;
 
 namespace Messaging.Tests
 {
@@ -50,7 +39,7 @@ namespace Messaging.Tests
             Assert.False(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
             var message = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers. {\\\"origtime\\\":\\\"2022-04-17 03:48:00\\\",\\\"msisdn\\\":\\\"15555551212\\\",\\\"to\\\":\\\"14445556543\\\",\\\"sessionid\\\":\\\"tLMOYTAmIFiQvBE6X1g\\\",\\\"timezone\\\":\\\"EST\\\",\\\"message\\\":\\\"Your Lyft code is 12345\\\",\\\"api_version\\\":0,\\\"serversecret\\\":\\\"sekrethere\\\",\\\"fullrecipientlist\\\":\\\"\\\"}\"", message);
+            Assert.Equal("\"MSISDN 15555551212 could not be parsed as valid NANP (North American Numbering Plan) number. origtime:2022-04-17 03:48:00, ,msisdn:15555551212, ,to:14445556543, ,sessionid:tLMOYTAmIFiQvBE6X1g, ,timezone:EST, ,message:Your Lyft code is 12345, ,api_version:0.5, ,serversecret:sekrethere, \"", message);
         }
 
         [Fact]
@@ -123,7 +112,7 @@ namespace Messaging.Tests
             Assert.False(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
             var message = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"2068589312 is not registered as a client.\"", message);
+            Assert.Equal("\"12068589312 is not registered as a client.\"", message);
         }
 
         [Fact]
@@ -151,7 +140,7 @@ namespace Messaging.Tests
             Assert.False(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
             var message = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"2068589312,2068589310 is not registered as a client.\"", message);
+            Assert.Equal("\"12068589312 is not registered as a client.\"", message);
         }
 
         [Fact]
@@ -179,7 +168,7 @@ namespace Messaging.Tests
             Assert.False(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
             var message = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"2068589310 is not registered as a client.\"", message);
+            Assert.Equal("\"12068589310 is not registered as a client.\"", message);
         }
 
         [Fact]
@@ -308,7 +297,7 @@ namespace Messaging.Tests
             Assert.False(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
             var message = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"2066320575 is not registered as a client.\"", message);
+            Assert.Equal("\"12066320575 is not registered as a client.\"", message);
         }
 
         [Fact]
@@ -338,7 +327,7 @@ namespace Messaging.Tests
             Assert.False(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
             var message = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"2068589310,2067696361 is not registered as a client.\"", message);
+            Assert.Equal("\"12068589310 is not registered as a client.\"", message);
         }
 
         //[Fact]
