@@ -27,6 +27,8 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
 Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .Enrich.FromLogContext()
@@ -668,12 +670,14 @@ try
                     }
                 }
             }
-
             toForward.MediaURLs = mediaURLs.ToArray();
 
-            var client = await db.ClientRegistrations.FirstOrDefaultAsync(x => x.AsDialed == toForward.To);
+            // We already know that it's good.
+            _ = PhoneNumbersNA.PhoneNumber.TryParse(toForward.To, out var toPhoneNumber);
 
-            if (client is not null && client.AsDialed == toForward.To)
+            var client = await db.ClientRegistrations.FirstOrDefaultAsync(x => x.AsDialed == toPhoneNumber.DialedNumber);
+
+            if (client is not null && client.AsDialed == toPhoneNumber.DialedNumber)
             {
                 try
                 {
@@ -815,9 +819,12 @@ try
                 }
             }
 
-            var client = await db.ClientRegistrations.FirstOrDefaultAsync(x => x.AsDialed == toForward.To);
+            // We already know that it's good.
+            _ = PhoneNumbersNA.PhoneNumber.TryParse(toForward.To, out var toPhoneNumber);
 
-            if (client is not null && client.AsDialed == toForward.To)
+            var client = await db.ClientRegistrations.FirstOrDefaultAsync(x => x.AsDialed == toPhoneNumber.DialedNumber);
+
+            if (client is not null && client.AsDialed == toPhoneNumber.DialedNumber)
             {
                 try
                 {
