@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc.Testing;
 
 using Models;
 
+using System.Net.Http.Json;
+
 namespace Messaging.Tests
 {
     public class Functional : IClassFixture<WebApplicationFactory<Program>>
@@ -10,8 +12,34 @@ namespace Messaging.Tests
         private readonly HttpClient _httpClient;
         public Functional(WebApplicationFactory<Program> factory)
         {
-            _factory = factory;
+            _factory = factory; 
             _httpClient = factory.CreateClient();
+        }
+
+
+        [Fact]
+        public async Task GetAValidJWTAsync()
+        {
+            string route = "/login";
+            // TODO: replace with test suite only credentials and share the token between tests.
+            var authRequest = new AuthRequest
+            {
+
+            };
+
+            var response = await _httpClient.PostAsJsonAsync($"{route}", authRequest);
+
+            Assert.NotNull(response);
+            Assert.True(response.IsSuccessStatusCode);
+            Assert.True(response.StatusCode is System.Net.HttpStatusCode.OK);
+            var authCredentials = await response.Content.ReadFromJsonAsync<AuthResponse>();
+            Assert.NotNull(authCredentials);
+            _httpClient.DefaultRequestHeaders.Authorization = new("Bearer", authCredentials.Token);
+
+            response = await _httpClient.GetAsync("/client/all");
+            var clients = await response.Content.ReadFromJsonAsync<ClientRegistration[]>();
+            Assert.NotNull(clients);
+            Assert.NotEmpty(clients);
         }
 
         [Fact]

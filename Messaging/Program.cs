@@ -27,8 +27,6 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
 Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .Enrich.FromLogContext()
@@ -179,12 +177,12 @@ try
     builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
     builder.Services.AddAWSService<IAmazonS3>();
 
-    builder.Services.AddHttpLogging(httpLogging =>
-     {
-         httpLogging.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;
-         httpLogging.RequestBodyLogLimit = 4096;
-         httpLogging.ResponseBodyLogLimit = 4096;
-     });
+    //builder.Services.AddHttpLogging(httpLogging =>
+    // {
+    //     httpLogging.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;
+    //     httpLogging.RequestBodyLogLimit = 4096;
+    //     httpLogging.ResponseBodyLogLimit = 4096;
+    // });
 
     var app = builder.Build();
 
@@ -446,6 +444,8 @@ try
                     })
                     .ReceiveJson<FirstPointResponse>();
 
+            Log.Information(System.Text.Json.JsonSerializer.Serialize(sendMessage));
+
             if (sendMessage is not null && sendMessage?.Response?.Text is "OK")
             {
                 var record = new MessageRecord
@@ -458,6 +458,8 @@ try
                     MediaURLs = string.Empty,
                     MessageSource = MessageSource.Outgoing,
                     MessageType = MessageType.SMS,
+                    RawRequest = System.Text.Json.JsonSerializer.Serialize(message),
+                    RawResponse = System.Text.Json.JsonSerializer.Serialize(sendMessage)
                 };
 
                 db.Messages.Add(record);
