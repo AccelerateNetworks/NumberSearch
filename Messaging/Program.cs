@@ -1,4 +1,5 @@
 using Amazon.S3;
+using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 
 using Flurl.Http;
@@ -26,6 +27,8 @@ using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -424,24 +427,66 @@ try
 
     app.MapPost("/message/send", async Task<Results<Ok<SendMessageResponse>, BadRequest<SendMessageResponse>>> ([Microsoft.AspNetCore.Mvc.FromBody] SendMessageRequest message, MessagingContext db) =>
     {
-        // https://portal.1pcom.net/download/SMSAPI.pdf
-        // Validate and regularize the incoming message.
-        if (!message.RegularizeAndValidate())
+        var toForward = new toForwardOutbound
         {
-            return TypedResults.BadRequest(new SendMessageResponse { Message = "Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers." });
+            username = firstPointUsername,
+            password = firstPointPassword,
+            messagebody = message.Message
+        };
+
+        if (!string.IsNullOrWhiteSpace(message.MSISDN))
+        {
+            bool checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(message.MSISDN, out var fromPhoneNumber);
+            if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
+            {
+                if (fromPhoneNumber.Type is not PhoneNumbersNA.NumberType.ShortCode)
+                {
+                    toForward.msisdn = $"1{fromPhoneNumber.DialedNumber}";
+                }
+                else
+                {
+                    toForward.msisdn = fromPhoneNumber.DialedNumber;
+                }
+            }
+            else
+            {
+                return TypedResults.BadRequest(new SendMessageResponse { Message = $"MSISDN {message.MSISDN} could not be parsed as valid NANP (North American Numbering Plan) number. {System.Text.Json.JsonSerializer.Serialize(message)}" });
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(message.To))
+        {
+            List<string> numbers = new();
+
+            foreach (var number in message.To.Split(','))
+            {
+                var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
+
+                if (checkTo && toPhoneNumber is not null)
+                {
+                    var formattedNumber = toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode ? $"{toPhoneNumber.DialedNumber}" : $"1{toPhoneNumber.DialedNumber}";
+                    // Prevent the MSISDN from being included in the the recipients list.
+                    if (formattedNumber != toForward.msisdn)
+                    {
+                        numbers.Add(formattedNumber);
+                    }
+                }
+            }
+
+            if (numbers.Any())
+            {
+                toForward.to = string.Join(',', numbers);
+            }
+            else
+            {
+                return TypedResults.BadRequest(new SendMessageResponse { Message = $"To {message.To} could not be parsed as valid NANP (North American Numbering Plan) number. {System.Text.Json.JsonSerializer.Serialize(message)}" });
+            }
         }
 
         try
         {
             var sendMessage = await firstPointSMSOutbound
-                    .PostUrlEncodedAsync(new
-                    {
-                        username = firstPointUsername,
-                        password = firstPointPassword,
-                        to = message.To,
-                        msisdn = message.MSISDN,
-                        messagebody = message.Message
-                    })
+                    .PostUrlEncodedAsync(toForward)
                     .ReceiveJson<FirstPointResponse>();
 
             Log.Information(System.Text.Json.JsonSerializer.Serialize(sendMessage));
@@ -479,10 +524,10 @@ try
         }
         catch (FlurlHttpException ex)
         {
-            var error = await ex.GetResponseJsonAsync<FirstPointResponse>();
-
+            var error = await ex.GetResponseStringAsync();
+            Log.Error(error);
             // Let the caller know that delivery status for specific numbers.
-            return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(error)}" });
+            return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. {error}" });
         }
 
     })
@@ -980,68 +1025,6 @@ namespace Models
         public string MSISDN { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
         public string[] MediaURLs { get; set; } = Array.Empty<string>();
-        // These are for the regularization of phone numbers and not mapped from the JSON payload.
-        [JsonIgnore]
-        public PhoneNumbersNA.PhoneNumber FromPhoneNumber { get; set; } = new();
-        [JsonIgnore]
-        public List<PhoneNumbersNA.PhoneNumber> ToPhoneNumbers { get; set; } = new();
-
-        public bool RegularizeAndValidate()
-        {
-            bool FromParsed = false;
-            bool ToParsed = false;
-
-            if (!string.IsNullOrWhiteSpace(MSISDN))
-            {
-                var checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(MSISDN, out var fromPhoneNumber);
-                if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
-                {
-                    if (fromPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode)
-                    {
-                        FromPhoneNumber = fromPhoneNumber;
-                        MSISDN = fromPhoneNumber.DialedNumber;
-                        FromParsed = true;
-                    }
-                    else
-                    {
-                        FromPhoneNumber = fromPhoneNumber;
-                        MSISDN = $"1{fromPhoneNumber.DialedNumber}";
-                        FromParsed = true;
-                    }
-                }
-            }
-
-            if (To is not null && To.Any())
-            {
-                // This may not be necessary if this list is always created by the BulkVSMessage constructor.
-                ToPhoneNumbers ??= new List<PhoneNumbersNA.PhoneNumber>();
-                string parsedTo = string.Empty;
-
-                foreach (var number in To.Split(','))
-                {
-                    var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
-
-                    if (checkTo && toPhoneNumber is not null)
-                    {
-                        ToPhoneNumbers.Add(toPhoneNumber);
-                        if (toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode)
-                        {
-                            parsedTo += $"{toPhoneNumber.DialedNumber}";
-                        }
-                        else
-                        {
-                            parsedTo += $"1{toPhoneNumber.DialedNumber}";
-                        }
-                    }
-                }
-
-                // This will drop the numbers that couldn't be parsed.
-                To = string.IsNullOrWhiteSpace(parsedTo) ? To : parsedTo;
-                ToParsed = true;
-            }
-
-            return FromParsed && ToParsed;
-        }
     }
 
     public class FirstPointMMSMessage
@@ -1111,6 +1094,15 @@ namespace Models
                 RawResponse = rawResponse
             };
         }
+    }
+
+    public class toForwardOutbound
+    {
+        public string username { get; set; } = string.Empty;
+        public string password { get; set; } = string.Empty;
+        public string to { get; set; } = string.Empty;
+        public string msisdn { get; set; } = string.Empty;
+        public string messagebody { get; set; } = string.Empty;
     }
 
     public enum MessageType { SMS, MMS };
