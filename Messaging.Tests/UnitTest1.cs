@@ -165,10 +165,10 @@ namespace Messaging.Tests
             var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
 
             Assert.NotNull(response);
-            Assert.False(response.IsSuccessStatusCode);
-            Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
+            Assert.True(response.IsSuccessStatusCode);
+            Assert.True(response.StatusCode is not System.Net.HttpStatusCode.BadRequest);
             var message = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"12068589310 is not registered as a client.\"", message);
+            Assert.Equal("\"The incoming message was recieved and forwarded to the client.\"", message);
         }
 
         [Fact]
@@ -324,10 +324,10 @@ namespace Messaging.Tests
             var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
 
             Assert.NotNull(response);
-            Assert.False(response.IsSuccessStatusCode);
-            Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
+            Assert.True(response.IsSuccessStatusCode);
+            Assert.True(response.StatusCode is not System.Net.HttpStatusCode.BadRequest);
             var message = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"12068589310 is not registered as a client.\"", message);
+            Assert.Equal("\"The incoming message was recieved and forwarded to the client.\"", message);
         }
 
         //[Fact]

@@ -205,7 +205,7 @@ try
 
     app.UseCors();
     app.UseAuthentication();
-    app.UseHttpLogging();
+    //app.UseHttpLogging();
 
     // Uncomment for debugging the request pipeline.
     //app.Use((context, next) =>
@@ -673,11 +673,11 @@ try
             toForward.MediaURLs = mediaURLs.ToArray();
 
             // We already know that it's good.
-            _ = PhoneNumbersNA.PhoneNumber.TryParse(toForward.To, out var toPhoneNumber);
+            _ = PhoneNumbersNA.PhoneNumber.TryParse(toForward.To, out var toRegisteredNumber);
 
-            var client = await db.ClientRegistrations.FirstOrDefaultAsync(x => x.AsDialed == toPhoneNumber.DialedNumber);
+            var client = await db.ClientRegistrations.FirstOrDefaultAsync(x => x.AsDialed == toRegisteredNumber.DialedNumber);
 
-            if (client is not null && client.AsDialed == toPhoneNumber.DialedNumber)
+            if (client is not null && client.AsDialed == toRegisteredNumber.DialedNumber)
             {
                 try
                 {
@@ -820,11 +820,11 @@ try
             }
 
             // We already know that it's good.
-            _ = PhoneNumbersNA.PhoneNumber.TryParse(toForward.To, out var toPhoneNumber);
+            _ = PhoneNumbersNA.PhoneNumber.TryParse(toForward.To, out var toRegisteredNumber);
 
-            var client = await db.ClientRegistrations.FirstOrDefaultAsync(x => x.AsDialed == toPhoneNumber.DialedNumber);
+            var client = await db.ClientRegistrations.FirstOrDefaultAsync(x => x.AsDialed == toRegisteredNumber.DialedNumber);
 
-            if (client is not null && client.AsDialed == toPhoneNumber.DialedNumber)
+            if (client is not null && client.AsDialed == toRegisteredNumber.DialedNumber)
             {
                 try
                 {
