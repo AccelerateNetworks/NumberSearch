@@ -115,6 +115,34 @@ namespace Messaging.Tests
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
         }
 
+        //[Fact]
+        //public async Task SMSGroupMessage()
+        //{
+        //    string route = "/api/inbound/1pcom";
+        //    string token = "okereeduePeiquah3yaemohGhae0ie";
+
+        //    var stringContent = new FormUrlEncodedContent(new[]
+        //        {
+        //            new KeyValuePair<string, string>("origtime", "2022-04-17 03:48:00"),
+        //            new KeyValuePair<string, string>("msisdn", "12068589312"),
+        //            new KeyValuePair<string, string>("to", "12068589313,12068589313,15036622288,97167"),
+        //            new KeyValuePair<string, string>("sessionid", "tLMOYTAmIFiQvBE6X1g"),
+        //            new KeyValuePair<string, string>("timezone", "EST"),
+        //            new KeyValuePair<string, string>("message", "screams in javascript"),
+        //            new KeyValuePair<string, string>("api_version", "0.5"),
+        //            new KeyValuePair<string, string>("serversecret", "sekrethere"),
+
+        //        });
+
+        //    var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
+
+        //    Assert.NotNull(response);
+        //    Assert.False(response.IsSuccessStatusCode);
+        //    Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
+        //    var message = await response.Content.ReadAsStringAsync();
+        //    Assert.Equal("\"12068589312 is not registered as a client.\"", message);
+        //}
+
         [Fact]
         public async Task CorrectlyFormattedMessageWithBadCallbackUrl()
         {
@@ -198,6 +226,106 @@ namespace Messaging.Tests
             var message = await response.Content.ReadAsStringAsync();
             Assert.Equal("\"The incoming message was recieved and forwarded to the client.\"", message);
         }
+
+        //[Fact]
+        //public async Task SendMessageRequestParsingAsync()
+        //{
+        //    var request = new SendMessageRequest
+        //    {
+        //        MSISDN = "42278",
+        //        To = "2063332262",
+        //        Message = "Test Message",
+        //    };
+
+        //    var check = request.RegularizeAndValidate();
+
+        //    if (check)
+        //    {
+        //        Assert.Equal("42278", request.MSISDN);
+        //        Assert.Equal("12063332262", request.To);
+        //        Assert.Equal("Test Message", request.Message);
+        //    }
+
+        //    request = new SendMessageRequest
+        //    {
+        //        MSISDN = "142278",
+        //        To = "12063332262",
+        //        Message = "Test Message",
+        //    };
+
+        //    check = request.RegularizeAndValidate();
+
+        //    if (check)
+        //    {
+        //        Assert.Equal("42278", request.MSISDN);
+        //        Assert.Equal("12063332262", request.To);
+        //        Assert.Equal("Test Message", request.Message);
+        //    }
+
+        //    request = new SendMessageRequest
+        //    {
+        //        MSISDN = "42278",
+        //        To = "12063332262",
+        //        Message = "Test Message",
+        //    };
+
+        //    check = request.RegularizeAndValidate();
+
+        //    if (check)
+        //    {
+        //        Assert.Equal("42278", request.MSISDN);
+        //        Assert.Equal("12063332262", request.To);
+        //        Assert.Equal("Test Message", request.Message);
+        //    }
+
+        //    request = new SendMessageRequest
+        //    {
+        //        MSISDN = "142278",
+        //        To = "2063332262",
+        //        Message = "Test Message",
+        //    };
+
+        //    check = request.RegularizeAndValidate();
+
+        //    if (check)
+        //    {
+        //        Assert.Equal("42278", request.MSISDN);
+        //        Assert.Equal("12063332262", request.To);
+        //        Assert.Equal("Test Message", request.Message);
+        //    }
+
+        //    request = new SendMessageRequest
+        //    {
+        //        MSISDN = "12063332262",
+        //        To = "42278",
+        //        Message = "Test Message",
+        //    };
+
+        //    check = request.RegularizeAndValidate();
+
+        //    if (check)
+        //    {
+        //        Assert.Equal("12063332262", request.MSISDN);
+        //        Assert.Equal("42278", request.To);
+        //        Assert.Equal("Test Message", request.Message);
+        //    }
+
+        //    request = new SendMessageRequest
+        //    {
+        //        MSISDN = "2063332262",
+        //        To = "142278",
+        //        Message = "Test Message",
+        //    };
+
+        //    check = request.RegularizeAndValidate();
+
+        //    if (check)
+        //    {
+        //        Assert.Equal("12063332262", request.MSISDN);
+        //        Assert.Equal("42278", request.To);
+        //        Assert.Equal("Test Message", request.Message);
+        //    }
+        //}
 
         [Fact]
         public async Task MMSMessageAsync()

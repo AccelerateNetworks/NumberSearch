@@ -654,7 +654,12 @@ try
 
                     if (checkTo && toPhoneNumber is not null)
                     {
-                        numbers.Add(toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode ? $"{toPhoneNumber.DialedNumber}" : $"1{toPhoneNumber.DialedNumber}");
+                        var formattedNumber = toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode ? $"{toPhoneNumber.DialedNumber}" : $"1{toPhoneNumber.DialedNumber}";
+                        // Prevent the duplicates from being included in the the recipients list.
+                        if (!numbers.Contains(formattedNumber))
+                        {
+                            numbers.Add(formattedNumber);
+                        }
                     }
                 }
 
@@ -664,7 +669,12 @@ try
 
                     if (checkTo && toPhoneNumber is not null)
                     {
-                        numbers.Add(toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode ? $"{toPhoneNumber.DialedNumber}" : $"1{toPhoneNumber.DialedNumber}");
+                        var formattedNumber = toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode ? $"{toPhoneNumber.DialedNumber}" : $"1{toPhoneNumber.DialedNumber}";
+                        // Prevent the duplicates from being included in the the recipients list.
+                        if (!numbers.Contains(formattedNumber))
+                        {
+                            numbers.Add(formattedNumber);
+                        }
                     }
                 }
 
@@ -678,7 +688,7 @@ try
                 {
                     toForward.To = numbers.FirstOrDefault() ?? string.Empty;
                     // Dump any extra numbers in the full rec.
-                    toForward.AdditionalRecipients = numbers.Where(x => x != to).ToArray();
+                    toForward.AdditionalRecipients = numbers.Where(x => x != toForward.To).ToArray();
                 }
                 else
                 {
@@ -834,7 +844,12 @@ try
 
                     if (checkTo && toPhoneNumber is not null)
                     {
-                        numbers.Add(toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode ? $"{toPhoneNumber.DialedNumber}" : $"1{toPhoneNumber.DialedNumber}");
+                        var formattedNumber = toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode ? $"{toPhoneNumber.DialedNumber}" : $"1{toPhoneNumber.DialedNumber}";
+                        // Prevent the duplicates from being included in the the recipients list.
+                        if (!numbers.Contains(formattedNumber))
+                        {
+                            numbers.Add(formattedNumber);
+                        }
                     }
                 }
 
@@ -844,7 +859,12 @@ try
 
                     if (checkTo && toPhoneNumber is not null)
                     {
-                        numbers.Add(toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode ? $"{toPhoneNumber.DialedNumber}" : $"1{toPhoneNumber.DialedNumber}");
+                        var formattedNumber = toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode ? $"{toPhoneNumber.DialedNumber}" : $"1{toPhoneNumber.DialedNumber}";
+                        // Prevent the duplicates from being included in the the recipients list.
+                        if (!numbers.Contains(formattedNumber))
+                        {
+                            numbers.Add(formattedNumber);
+                        }
                     }
                 }
 
@@ -858,7 +878,7 @@ try
                 {
                     toForward.To = numbers.FirstOrDefault() ?? string.Empty;
                     // Dump any extra numbers in the full rec.
-                    toForward.AdditionalRecipients = numbers.Where(x => x != to).ToArray();
+                    toForward.AdditionalRecipients = numbers.Where(x => x != toForward.To).ToArray();
                 }
                 else
                 {
