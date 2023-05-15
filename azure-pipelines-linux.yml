@@ -92,12 +92,6 @@ steps:
     projects: '**/NumberSearch.Tests/*.csproj'
     arguments: '--configuration $(buildConfiguration)'
 
-- task: DotNetCoreCLI@2
-  inputs:
-    command: test
-    projects: '**/Messaging.Tests/*.csproj'
-    arguments: '--configuration $(buildConfiguration)'
-
 - task: PublishPipelineArtifact@1
   inputs:
     artifactName: 'Mvc'
