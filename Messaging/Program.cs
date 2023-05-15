@@ -27,9 +27,6 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
-using static System.Net.Mime.MediaTypeNames;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
 Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .Enrich.FromLogContext()
@@ -961,8 +958,8 @@ try
         string messagebody = context.Request.Form["messagebody"].ToString();
 
         return !string.IsNullOrWhiteSpace(username) && username == firstPointUsername && !string.IsNullOrWhiteSpace(password) && password == firstPointPassword
-                ? TypedResults.Ok(new FirstPointResponse { Response = new Response { Text = "The outbound message was recieved and the vendor credentials matched." } })
-                : TypedResults.BadRequest(new FirstPointResponse { Response = new Response { Text = "The outbound message did not include the required credentials to authenticate with the vendor." } });
+                ? TypedResults.Ok(new FirstPointResponse { Response = new Response { Text = "OK", Code = 200, DeveloperText = "The outbound message was recieved and the vendor credentials matched." } })
+                : TypedResults.BadRequest(new FirstPointResponse { Response = new Response { Text = "BadRequest", Code = 500, DeveloperText = "The outbound message did not include the required credentials to authenticate with the vendor." } });
     }).WithOpenApi(x => new(x) { Summary = "Endpoint that can be used to support functional testing of the message sending endpoints without actually sending it to the vendor.", Description = "For testing purposes only." });
 
     app.Run();

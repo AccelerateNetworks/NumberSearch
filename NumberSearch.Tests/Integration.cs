@@ -24,7 +24,6 @@ namespace NumberSearch.Tests
 {
     public class Integration
     {
-        private readonly Guid token;
         private readonly ITestOutputHelper output;
         private readonly Credentials pComNetCredentials;
         private readonly string bulkVSKey;
@@ -62,7 +61,6 @@ namespace NumberSearch.Tests
             bulkVSKey = config.GetConnectionString("BulkVSAPIKEY");
             bulkVSUsername = config.GetConnectionString("BulkVSUsername");
             bulkVSPassword = config.GetConnectionString("BulkVSPassword");
-            token = Guid.Parse(config.GetConnectionString("TeleAPI"));
             postgresql = config.GetConnectionString("PostgresqlProd");
             invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
             _teleDynamicsUsername = config.GetConnectionString("TeleDynamicsUsername");
@@ -467,64 +465,64 @@ namespace NumberSearch.Tests
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
-        //[Fact]
-        //public async Task PeerlessGetPhoneNumbersTestAsync()
-        //{
-        //    // Arrange
-        //    string npa = "425";
+        [Fact]
+        public async Task PeerlessGetPhoneNumbersTestAsync()
+        {
+            // Arrange
+            string npa = "425";
 
-        //    // Act
-        //    var results = await DidFind.GetByNPAAsync(npa, _peerlessApiKey).ConfigureAwait(false);
+            // Act
+            var results = await DidFind.GetByNPAAsync(npa, _peerlessApiKey).ConfigureAwait(false);
 
-        //    // Assert
-        //    Assert.NotNull(results);
-        //    Assert.NotEmpty(results);
-        //    int count = 0;
+            // Assert
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            int count = 0;
 
-        //    foreach (var result in results.ToArray())
-        //    {
-        //        output.WriteLine(result.DialedNumber);
-        //        Assert.True(result.NPA > 99);
-        //        Assert.True(result.NXX > 99);
-        //        Assert.True(result.XXXX > 1);
-        //        Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-        //        Assert.False(string.IsNullOrWhiteSpace(result.City));
-        //        Assert.False(string.IsNullOrWhiteSpace(result.State));
-        //        Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
-        //        count++;
-        //    }
-        //    output.WriteLine($"{count} Results Reviewed");
-        //}
+            foreach (var result in results.ToArray())
+            {
+                output.WriteLine(result.DialedNumber);
+                Assert.True(result.NPA > 99);
+                Assert.True(result.NXX > 99);
+                Assert.True(result.XXXX > 1);
+                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+                Assert.False(string.IsNullOrWhiteSpace(result.City));
+                Assert.False(string.IsNullOrWhiteSpace(result.State));
+                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+                count++;
+            }
+            output.WriteLine($"{count} Results Reviewed");
+        }
 
 
-        //[Fact]
-        //public async Task PeerlessGetPhoneNumbersByRateCenterTestAsync()
-        //{
-        //    // Arrange
-        //    string ratecenter = "BREWSTER";
+        [Fact]
+        public async Task PeerlessGetPhoneNumbersByRateCenterTestAsync()
+        {
+            // Arrange
+            string ratecenter = "BREWSTER";
 
-        //    // Act
-        //    var results = await DidFind.GetByRateCenterAsync(ratecenter, _peerlessApiKey).ConfigureAwait(false);
+            // Act
+            var results = await DidFind.GetByRateCenterAsync(ratecenter, _peerlessApiKey).ConfigureAwait(false);
 
-        //    // Assert
-        //    Assert.NotNull(results);
-        //    Assert.NotEmpty(results);
-        //    int count = 0;
+            // Assert
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            int count = 0;
 
-        //    foreach (var result in results.ToArray())
-        //    {
-        //        output.WriteLine(result.DialedNumber);
-        //        Assert.True(result.NPA > 99);
-        //        Assert.True(result.NXX > 99);
-        //        Assert.True(result.XXXX > 1);
-        //        Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-        //        Assert.False(string.IsNullOrWhiteSpace(result.City));
-        //        Assert.False(string.IsNullOrWhiteSpace(result.State));
-        //        Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
-        //        count++;
-        //    }
-        //    output.WriteLine($"{count} Results Reviewed");
-        //}
+            foreach (var result in results.ToArray())
+            {
+                output.WriteLine(result.DialedNumber);
+                Assert.True(result.NPA > 99);
+                Assert.True(result.NXX > 99);
+                Assert.True(result.XXXX > 1);
+                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+                Assert.False(string.IsNullOrWhiteSpace(result.City));
+                Assert.False(string.IsNullOrWhiteSpace(result.State));
+                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+                count++;
+            }
+            output.WriteLine($"{count} Results Reviewed");
+        }
 
         //[Fact]
         //public async Task PeerlessGetNXXsTestAsync()
@@ -539,97 +537,6 @@ namespace NumberSearch.Tests
         //    Assert.NotNull(results);
         //    output.WriteLine(JsonSerializer.Serialize(results));
         //}
-
-        //[Fact]
-        //public async Task TeleNXXsTestAsync()
-        //{
-        //    // Arrange
-        //    string npa = "206";
-
-        //    // Act
-        //    var results = await DidsNxxs.GetAsync(npa, token);
-
-        //    // Assert
-        //    Assert.NotNull(results);
-        //    Assert.False(string.IsNullOrWhiteSpace(results.status));
-        //    Assert.True(results.code == 200);
-        //    foreach (var result in results.data)
-        //    {
-        //        Assert.False(string.IsNullOrWhiteSpace(result));
-        //    }
-        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
-        //}
-
-        //[Fact]
-        //public async Task LocalNumberTestAsync()
-        //{
-        //    // Arrange
-        //    string query = "20645";
-
-        //    // Act
-        //    var results = await DidsList.GetRawAsync(query, token);
-
-        //    // Assert
-        //    Assert.NotNull(results);
-        //    Assert.False(string.IsNullOrWhiteSpace(results.status));
-        //    Assert.True(results.code == 200);
-        //    foreach (var result in results.data.dids)
-        //    {
-        //        Assert.False(string.IsNullOrWhiteSpace(result.number));
-        //    }
-        //    output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
-        //}
-
-        //[Fact]
-        //public async Task LocalNumberPortabilityRawTestAsync()
-        //{
-        //    // Arrange
-        //    string query = "1";
-
-        //    // Act
-        //    var results = await LnpCheck.GetRawAsync(query, token);
-
-        //    // Assert
-        //    Assert.NotNull(results);
-        //    Assert.False(results.data.Count == 0);
-
-        //    results = await LnpCheck.GetRawAsync("8662214141", token);
-
-        //    // Assert
-        //    Assert.NotNull(results);
-        //    Assert.False(results.data.Count == 0);
-        //}
-
-        //[Fact]
-        //public async Task TeliBulkPortabilityAsync()
-        //{
-        //    // Arrange
-        //    var results = await LnpCheck.GetRawInBulkAsync(new[] { "8662214141", "2067696361" }, token);
-
-        //    // Assert
-        //    Assert.NotNull(results);
-        //    //Assert.False(string.IsNullOrWhiteSpace(results));
-        //    //output.WriteLine(results);
-        //}
-
-        //[Fact]
-        //public async Task LocalNumberPortabilityTestAsync()
-        //{
-        //    // Arrange
-        //    string query = "1";
-
-        //    // Act
-        //    var result = await LnpCheck.IsPortableAsync(query, token);
-
-        //    // Assert
-        //    Assert.False(result);
-
-        //    result = await LnpCheck.IsPortableAsync("8662214141", token);
-
-        //    // Assert
-        //    Assert.True(result);
-        //}
-
 
         [Fact]
         public async Task PComNetDIDInventorySearchAsyncTestAsync()

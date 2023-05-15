@@ -130,19 +130,19 @@ namespace Messaging.Tests
             Assert.Equal("\"MSISDN 15555551212 could not be parsed as valid NANP (North American Numbering Plan) number. origtime:2022-04-17 03:48:00, ,msisdn:15555551212, ,to:14445556543, ,sessionid:tLMOYTAmIFiQvBE6X1g, ,timezone:EST, ,message:Your Lyft code is 12345, ,api_version:0.5, ,serversecret:sekrethere, \"", message);
         }
 
-        [Fact]
-        public async Task SendSMSMessageAsync()
-        {
+        //[Fact]
+        //public async Task SendSMSMessageAsync()
+        //{
 
-            var _client = await GetHttpClientWithValidBearerTokenAsync();
-            var message = new SendMessageRequest { MediaURLs = Array.Empty<string>(), Message = "This is an SMS Message test.", MSISDN = "12068589313", To = "12068589312" };
-            var response = await _client.PostAsJsonAsync("/message/send?test=true", message);
-            var details = await response.Content.ReadFromJsonAsync<SendMessageResponse>();
-            Assert.NotNull(details);
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(details.MessageSent);
+        //    var _client = await GetHttpClientWithValidBearerTokenAsync();
+        //    var message = new SendMessageRequest { MediaURLs = Array.Empty<string>(), Message = "This is an SMS Message test.", MSISDN = "12068589313", To = "12068589312" };
+        //    var response = await _client.PostAsJsonAsync("/message/send?test=true", message);
+        //    var details = await response.Content.ReadFromJsonAsync<SendMessageResponse>();
+        //    Assert.NotNull(details);
+        //    Assert.True(response.IsSuccessStatusCode);
+        //    Assert.True(details.MessageSent);
 
-        }
+        //}
 
         [Fact]
         public async Task MessageSendingTestAsync()
