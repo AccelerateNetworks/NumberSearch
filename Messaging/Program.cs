@@ -485,12 +485,11 @@ try
 
         try
         {
-            var sendMessagelol = test ?? false ? await "http://sms.callpipe.com/message/send/test"
+            var sendMessage = test ?? false ? await "https://sms.callpipe.com/message/send/test"
                     .PostUrlEncodedAsync(toForward)
-                    .ReceiveString() : await firstPointSMSOutbound
+                    .ReceiveJson<FirstPointResponse>() : await firstPointSMSOutbound
                     .PostUrlEncodedAsync(toForward)
-                    .ReceiveString();
-            var sendMessage = new FirstPointResponse();
+                    .ReceiveJson<FirstPointResponse>();
 
             Log.Information(System.Text.Json.JsonSerializer.Serialize(sendMessage));
 
