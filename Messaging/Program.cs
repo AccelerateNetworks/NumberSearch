@@ -1,5 +1,4 @@
 using Amazon.S3;
-using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 
 using Flurl.Http;
@@ -28,6 +27,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
+using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 Log.Logger = new LoggerConfiguration()
@@ -425,7 +425,7 @@ try
     })
         .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all sent and recieved messages.", Description = "This is intended to help you debug problems with message sending and delievery so you can see if it's this API or the upstream vendor that is causing problems." });
 
-    app.MapPost("/message/send", async Task<Results<Ok<SendMessageResponse>, BadRequest<SendMessageResponse>>> ([Microsoft.AspNetCore.Mvc.FromBody] SendMessageRequest message, MessagingContext db) =>
+    app.MapPost("/message/send", async Task<Results<Ok<SendMessageResponse>, BadRequest<SendMessageResponse>>> ([Microsoft.AspNetCore.Mvc.FromBody] SendMessageRequest message, bool? test, MessagingContext db) =>
     {
         var toForward = new toForwardOutbound
         {
@@ -485,9 +485,12 @@ try
 
         try
         {
-            var sendMessage = await firstPointSMSOutbound
+            var sendMessagelol = test ?? false ? await "http://sms.callpipe.com/message/send/test"
                     .PostUrlEncodedAsync(toForward)
-                    .ReceiveJson<FirstPointResponse>();
+                    .ReceiveString() : await firstPointSMSOutbound
+                    .PostUrlEncodedAsync(toForward)
+                    .ReceiveString();
+            var sendMessage = new FirstPointResponse();
 
             Log.Information(System.Text.Json.JsonSerializer.Serialize(sendMessage));
 
@@ -528,6 +531,11 @@ try
             Log.Error(error);
             // Let the caller know that delivery status for specific numbers.
             return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. {error}" });
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex.Message);
+            return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. {ex.Message}" });
         }
 
     })
@@ -938,6 +946,26 @@ try
         }
     }).WithOpenApi(x => new(x) { Summary = "For use by First Point Communications only.", Description = "Recieves incoming messages from our upstream provider. Forwards valid SMS messages to clients registered through the /client/register endpoint. Forwarded messages are in the form described by the MessageRecord entry in the Schema's section of this page. The is no request body as the data provided by First Point Communications is UrlEncoded like POSTing form data rather than JSON formatted in body of the POST request. The Token is a secret created and maintained by First Point Communications. This endpoint is not for use by anyone other than First Point Communications. It is documented here to help developers understand how incoming messages are fowarded to the client that they have registered with this API. The Messaging.Tests project is a series of functional tests that verify the behavior of this endpoint, because this method of message passing is so chaotic." });
 
+    app.MapPost("/message/forward/test", async Task<Results<Ok<string>, BadRequest<string>>> (ForwardedMessage message, MessagingContext db) =>
+    {
+        return message.ClientSecret is "thisisatest"
+        ? TypedResults.Ok("The incoming message was recieved and forwarded to the client.")
+        : TypedResults.BadRequest("The client secret could not be matched for this number.");
+    }).WithOpenApi(x => new(x) { Summary = "Endpoint that can be used as the callback URL for a registered client to support functional testing of the message fowarding endpoints.", Description = "For testing purposes only." });
+
+    app.MapPost("/message/send/test", async Task<Results<Ok<FirstPointResponse>, BadRequest<FirstPointResponse>>> (HttpContext context) =>
+    {
+        string username = context.Request.Form["username"].ToString();
+        string password = context.Request.Form["password"].ToString();
+        string to = context.Request.Form["to"].ToString();
+        string msisdn = context.Request.Form["msisdn"].ToString();
+        string messagebody = context.Request.Form["messagebody"].ToString();
+
+        return !string.IsNullOrWhiteSpace(username) && username == firstPointUsername && !string.IsNullOrWhiteSpace(password) && password == firstPointPassword
+                ? TypedResults.Ok(new FirstPointResponse { Response = new Response { Text = "The outbound message was recieved and the vendor credentials matched." } })
+                : TypedResults.BadRequest(new FirstPointResponse { Response = new Response { Text = "The outbound message did not include the required credentials to authenticate with the vendor." } });
+    }).WithOpenApi(x => new(x) { Summary = "Endpoint that can be used to support functional testing of the message sending endpoints without actually sending it to the vendor.", Description = "For testing purposes only." });
+
     app.Run();
 }
 catch (Exception ex)
@@ -1073,7 +1101,9 @@ namespace Models
         public string To { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
         public string MediaURLs { get; set; } = string.Empty;
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public MessageType MessageType { get; set; }
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public MessageSource MessageSource { get; set; }
         // Convert to DateTimeOffset if db is not SQLite.
         [DataType(DataType.DateTime)]
