@@ -43,6 +43,8 @@ variables:
   ConnectionStrings.DOSpacesSecretKey: $(DOSpacesSecretKey)
   ConnectionStrings.BucketName: $(BucketName)
   ConnectionStrings.S3ServiceURL: $(S3ServiceURL)
+  ConnectionStrings.OpsUsername: $(OpsUsername)
+  ConnectionStrings.OpsPassword: $(OpsPassword)
   ApplicationInsights.InstrumentationKey: $(AIInstrumentationKey)
   ApplicationInsights.ConnectionString: $(AIConnectionString)
 
