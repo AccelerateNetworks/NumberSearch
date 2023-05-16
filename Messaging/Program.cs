@@ -197,14 +197,6 @@ try
     using var dbContext = new MessagingContext(contextOptions);
     await dbContext.Database.MigrateAsync();
 
-    // Make sure the bucket exists.
-    var spacesConfig = new AmazonS3Config
-    {
-        ServiceURL = "https://accelerate-networks-mms.sfo3.digitaloceanspaces.com"
-    };
-    var spacesClient = new AmazonS3Client(digitalOceanSpacesAccessKey, digitalOceanSpacesSecretKey, spacesConfig);
-    _ = await spacesClient.PutBucketAsync(digitalOceanSpacesBucket);
-
     app.UseCors();
     app.UseAuthentication();
     //app.UseHttpLogging();
