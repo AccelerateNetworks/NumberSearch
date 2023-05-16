@@ -17,6 +17,7 @@ variables:
   ConnectionStrings.PostgresqlProd: $(PostgresqlProd)
   ConnectionStrings.PComNetUsername: $(PComNetUsername)
   ConnectionStrings.PComNetPassword: $(PComNetPassword)
+  ConnectionStrings.PComNetIncomingToken: $(PComNetIncomingToken)
   ConnectionStrings.PeerlessAPIKey: $(PeerlessAPIKey)
   ConnectionStrings.BulkVSAPISecret: $(BulkVSAPISecret)
   ConnectionStrings.ChannelGroup: $(ChannelGroup)
