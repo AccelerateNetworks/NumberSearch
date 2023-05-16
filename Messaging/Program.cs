@@ -56,6 +56,10 @@ try
         ? @"https://mmsc01.1pcom.net/MMS_Send" : builder.Configuration.GetConnectionString("FirstPointOutboundMMSMessageURL") ?? string.Empty;
     string firstPointUsername = builder.Configuration.GetConnectionString("PComNetUsername") ?? string.Empty;
     string firstPointPassword = builder.Configuration.GetConnectionString("PComNetPassword") ?? string.Empty;
+    string firstPointIncomingToken = builder.Configuration.GetConnectionString("PComNetIncomingToken") ?? string.Empty;
+    string firstPointIncomingMMSSecret = builder.Configuration.GetConnectionString("PComNetIncomingMMSSecret") ?? string.Empty;
+    string firstPointIncomingSMSSecret = builder.Configuration.GetConnectionString("PComNetIncomingSMSSecret") ?? string.Empty;
+
     string localSecret = builder.Configuration.GetConnectionString("MessagingAPISecret") ?? string.Empty;
     string digitalOceanSpacesBucket = builder.Configuration.GetConnectionString("BucketName") ?? string.Empty;
     string digitalOceanSpacesAccessKey = builder.Configuration.GetConnectionString("DOSpacesAccessKey") ?? string.Empty;
@@ -600,9 +604,9 @@ try
 
     app.MapPost("1pcom/inbound/MMS", async Task<Results<Ok<string>, BadRequest<string>, Ok<ForwardedMessage>, UnauthorizedHttpResult>> (HttpContext context, string token, MessagingContext db) =>
     {
-        if (token is not "okereeduePeiquah3yaemohGhae0ie")
+        if (token != firstPointIncomingToken)
         {
-            Log.Warning($"Token is not valid. Token: {token} is not okereeduePeiquah3yaemohGhae0ie");
+            Log.Warning($"Token is not valid. Token: {token} is not {firstPointIncomingToken}");
             return TypedResults.Unauthorized();
         }
 
@@ -620,6 +624,13 @@ try
 
             // The message field is a JSON object.
             var MMSDescription = System.Text.Json.JsonSerializer.Deserialize<FirstPointMMSMessage>(message);
+
+            // Disabled because this secret value changes whenever.
+            //if (serversecret != firstPointIncomingMMSSecret)
+            //{
+            //    Log.Warning($"Token is not valid. serversecret: {serversecret} is not {firstPointIncomingMMSSecret}");
+            //    return TypedResults.Unauthorized();
+            //}
 
             ForwardedMessage toForward = new()
             {
@@ -786,15 +797,12 @@ try
 
     }).WithOpenApi(x => new(x) { Summary = "Recieve an MMS Message.", Description = "Submit inbound messages to this endpoint." });
 
-    // Add unit tests for this endpoint to verify its behavior.
-    //https://sms.callpipe.com/api/inbound/1pcom?token=okereeduePeiquah3yaemohGhae0ie
-    //    { "origtime": "2022-04-17 03:48:00", "msisdn": "15555551212", "to": "14445556543", "sessionid": "tLMOYTAmIFiQvBE6X1g", "timezone": "EST", "message": "Your Lyft code is 12345", "api_version": 0.5, "serversecret": "sekrethere"}
     // When this issue is resolved we can simplify the way that we are recieving data in this endpoint: https://github.com/dotnet/aspnetcore/issues/39430 and https://stackoverflow.com/questions/71047077/net-6-minimal-api-and-multipart-form-data/71048827#71048827
     app.MapPost("/api/inbound/1pcom", async Task<Results<Ok<string>, BadRequest<string>, Ok<ForwardedMessage>, UnauthorizedHttpResult>> (HttpContext context, string token, MessagingContext db) =>
     {
-        if (token is not "okereeduePeiquah3yaemohGhae0ie")
+        if (token != firstPointIncomingToken)
         {
-            Log.Warning($"Token is not valid. Token: {token} is not okereeduePeiquah3yaemohGhae0ie");
+            Log.Warning($"Token is not valid. Token: {token} is not {firstPointIncomingToken}");
             return TypedResults.Unauthorized();
         }
 
@@ -810,6 +818,12 @@ try
             string fullrecipientlist = context.Request.Form["FullRecipientList"].ToString();
             string incomingRequest = string.Join(',', context.Request.Form.Select(x => $"{x.Key}:{x.Value}, "));
 
+            // Disabled because this secret value changes whenever.
+            //if (serversecret != firstPointIncomingSMSSecret)
+            //{
+            //    Log.Warning($"Token is not valid. serversecret: {serversecret} is not {firstPointIncomingMMSSecret}");
+            //    return TypedResults.Unauthorized();
+            //}
 
             ForwardedMessage toForward = new()
             {
