@@ -178,6 +178,9 @@
 		<Content Update="wwwroot\images\scaled\CP935W-400.webp">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Update="wwwroot\images\scaled\DP720_front-400.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Update="wwwroot\images\scaled\DP722-1-400.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
@@ -192,6 +195,9 @@
 		</Content>
 		<Content Update="wwwroot\images\scaled\DP730-1-400.webp">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\scaled\DP730_side-400.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\DP750_720_combination-2-400.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
