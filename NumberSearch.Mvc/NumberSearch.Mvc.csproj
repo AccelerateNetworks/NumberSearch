@@ -232,6 +232,9 @@
 		<Content Update="wwwroot\images\scaled\favicon-194x194.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Update="wwwroot\images\scaled\finnhead.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Update="wwwroot\images\scaled\GBX20-400.webp">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
@@ -315,6 +318,9 @@
 		</Content>
 		<Content Update="wwwroot\images\scaled\GXP2200EXT-400.webp">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\scaled\hannahheadshot.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\headthumb.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
