@@ -29,6 +29,7 @@ using System.Threading.RateLimiting;
 
 Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
                 .WriteTo.Console()
                 .WriteTo.File(
@@ -104,7 +105,7 @@ try
         {
             Version = "v1",
             Title = "sms.callpipe.com",
-            Description = "This API abstracts the sending and recieving of SMS/MMS messages to and from our upstream vendors.",
+            Description = "This API abstracts the sending and receiving of SMS/MMS messages to and from our upstream vendors.",
             Contact = new OpenApiContact
             {
                 Name = string.Empty,
@@ -226,9 +227,9 @@ try
         c.RoutePrefix = string.Empty;
     });
 
+    app.UseSerilogRequestLogging();
     app.UseSecurityHeaders();
     app.UseHttpMetrics();
-
     app.MapMetrics();
 
     app.MapPost("/login", async Task<Results<Ok<AuthResponse>, BadRequest<string>, UnauthorizedHttpResult>> (AuthRequest request, ApplicationDbContext db, UserManager<IdentityUser> userManager, TokenService tokenService, IConfiguration configuration) =>
@@ -416,7 +417,7 @@ try
             return TypedResults.BadRequest(ex.Message);
         }
     })
-        .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all sent and recieved messages.", Description = "This is intended to help you debug problems with message sending and delievery so you can see if it's this API or the upstream vendor that is causing problems." });
+        .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all sent and received messages.", Description = "This is intended to help you debug problems with message sending and delievery so you can see if it's this API or the upstream vendor that is causing problems." });
 
     app.MapPost("/message/send", async Task<Results<Ok<SendMessageResponse>, BadRequest<SendMessageResponse>>> ([Microsoft.AspNetCore.Mvc.FromBody] SendMessageRequest message, bool? test, MessagingContext db) =>
     {
@@ -647,6 +648,7 @@ try
                 }
                 else
                 {
+                    Log.Error($"Failed to parse MSISDN {msisdn} from incoming request {incomingRequest} please file a ticket with the message provider.");
                     return TypedResults.BadRequest($"MSISDN {msisdn} could not be parsed as valid NANP (North American Numbering Plan) number. {incomingRequest}");
                 }
             }
@@ -685,8 +687,8 @@ try
                     }
                 }
 
-                // Assume that the first number in the list of To numbers is the primary To that is registered with our service. Treat all others as additional reciepients.
-                // If multiple numbers in the set of To's are registered as clients the upstream vendor will submit multiple inbound messages so we don't have to handle that senario.
+                // Assume that the first number in the list of To numbers is the primary To that is registered with our service. Treat all others as additional recipients.
+                // If multiple numbers in the set of To's are registered as clients the upstream vendor will submit multiple inbound messages so we don't have to handle that scenario.
                 if (numbers.Any() && numbers.Count is 1)
                 {
                     toForward.To = numbers.FirstOrDefault() ?? string.Empty;
@@ -699,6 +701,7 @@ try
                 }
                 else
                 {
+                    Log.Error($"Failed to parse To {to} from incoming request {incomingRequest} please file a ticket with the message provider.");
                     return TypedResults.BadRequest($"To {to}{fullrecipientlist} could not be parsed as valid NANP (North American Numbering Plan) numbers. {incomingRequest}");
                 }
             }
@@ -771,7 +774,7 @@ try
                 }
 
                 Log.Information(System.Text.Json.JsonSerializer.Serialize(record));
-                return TypedResults.Ok("The incoming message was recieved and forwarded to the client.");
+                return TypedResults.Ok("The incoming message was received and forwarded to the client.");
             }
             else
             {
@@ -787,9 +790,9 @@ try
             return TypedResults.BadRequest("Failed to read form data by field name.");
         }
 
-    }).WithOpenApi(x => new(x) { Summary = "Recieve an MMS Message.", Description = "Submit inbound messages to this endpoint." });
+    }).WithOpenApi(x => new(x) { Summary = "Receive an MMS Message.", Description = "Submit inbound messages to this endpoint." });
 
-    // When this issue is resolved we can simplify the way that we are recieving data in this endpoint: https://github.com/dotnet/aspnetcore/issues/39430 and https://stackoverflow.com/questions/71047077/net-6-minimal-api-and-multipart-form-data/71048827#71048827
+    // When this issue is resolved we can simplify the way that we are receiving data in this endpoint: https://github.com/dotnet/aspnetcore/issues/39430 and https://stackoverflow.com/questions/71047077/net-6-minimal-api-and-multipart-form-data/71048827#71048827
     app.MapPost("/api/inbound/1pcom", async Task<Results<Ok<string>, BadRequest<string>, Ok<ForwardedMessage>, UnauthorizedHttpResult>> (HttpContext context, string token, MessagingContext db) =>
     {
         if (token != firstPointIncomingToken)
@@ -840,6 +843,7 @@ try
                 }
                 else
                 {
+                    Log.Error($"Failed to parse MSISDN {msisdn} from incoming request {incomingRequest} please file a ticket with the message provider.");
                     return TypedResults.BadRequest($"MSISDN {msisdn} could not be parsed as valid NANP (North American Numbering Plan) number. {incomingRequest}");
                 }
             }
@@ -878,8 +882,8 @@ try
                     }
                 }
 
-                // Assume that the first number in the list of To numbers is the primary To that is registered with our service. Treat all others as additional reciepients.
-                // If multiple numbers in the set of To's are registered as clients the upstream vendor will submit multiple inbound messages so we don't have to handle that senario.
+                // Assume that the first number in the list of To numbers is the primary To that is registered with our service. Treat all others as additional recipients.
+                // If multiple numbers in the set of To's are registered as clients the upstream vendor will submit multiple inbound messages so we don't have to handle that scenario.
                 if (numbers.Any() && numbers.Count is 1)
                 {
                     toForward.To = numbers.FirstOrDefault() ?? string.Empty;
@@ -892,6 +896,7 @@ try
                 }
                 else
                 {
+                    Log.Error($"Failed to parse To {to} from incoming request {incomingRequest} please file a ticket with the message provider.");
                     return TypedResults.BadRequest($"To {to}{fullrecipientlist} could not be parsed as valid NANP (North American Numbering Plan) numbers. {incomingRequest}");
                 }
             }
@@ -931,7 +936,7 @@ try
                 }
 
                 Log.Information(System.Text.Json.JsonSerializer.Serialize(record));
-                return TypedResults.Ok("The incoming message was recieved and forwarded to the client.");
+                return TypedResults.Ok("The incoming message was received and forwarded to the client.");
             }
             else
             {
@@ -946,14 +951,14 @@ try
             Log.Information("Failed to read form data by field name.");
             return TypedResults.BadRequest("Failed to read form data by field name.");
         }
-    }).WithOpenApi(x => new(x) { Summary = "For use by First Point Communications only.", Description = "Recieves incoming messages from our upstream provider. Forwards valid SMS messages to clients registered through the /client/register endpoint. Forwarded messages are in the form described by the MessageRecord entry in the Schema's section of this page. The is no request body as the data provided by First Point Communications is UrlEncoded like POSTing form data rather than JSON formatted in body of the POST request. The Token is a secret created and maintained by First Point Communications. This endpoint is not for use by anyone other than First Point Communications. It is documented here to help developers understand how incoming messages are fowarded to the client that they have registered with this API. The Messaging.Tests project is a series of functional tests that verify the behavior of this endpoint, because this method of message passing is so chaotic." });
+    }).WithOpenApi(x => new(x) { Summary = "For use by First Point Communications only.", Description = "Receives incoming messages from our upstream provider. Forwards valid SMS messages to clients registered through the /client/register endpoint. Forwarded messages are in the form described by the MessageRecord entry in the Schema's section of this page. The is no request body as the data provided by First Point Communications is UrlEncoded like POSTing form data rather than JSON formatted in body of the POST request. The Token is a secret created and maintained by First Point Communications. This endpoint is not for use by anyone other than First Point Communications. It is documented here to help developers understand how incoming messages are forwarded to the client that they have registered with this API. The Messaging.Tests project is a series of functional tests that verify the behavior of this endpoint, because this method of message passing is so chaotic." });
 
     app.MapPost("/message/forward/test", async Task<Results<Ok<string>, BadRequest<string>>> (ForwardedMessage message, MessagingContext db) =>
     {
         return message.ClientSecret is "thisisatest"
-        ? TypedResults.Ok("The incoming message was recieved and forwarded to the client.")
+        ? TypedResults.Ok("The incoming message was received and forwarded to the client.")
         : TypedResults.BadRequest("The client secret could not be matched for this number.");
-    }).WithOpenApi(x => new(x) { Summary = "Endpoint that can be used as the callback URL for a registered client to support functional testing of the message fowarding endpoints.", Description = "For testing purposes only." });
+    }).WithOpenApi(x => new(x) { Summary = "Endpoint that can be used as the callback URL for a registered client to support functional testing of the message forwarding endpoints.", Description = "For testing purposes only." });
 
     app.MapPost("/message/send/test", async Task<Results<Ok<FirstPointResponse>, BadRequest<FirstPointResponse>>> (HttpContext context) =>
     {
@@ -964,7 +969,7 @@ try
         string messagebody = context.Request.Form["messagebody"].ToString();
 
         return !string.IsNullOrWhiteSpace(username) && username == firstPointUsername && !string.IsNullOrWhiteSpace(password) && password == firstPointPassword
-                ? TypedResults.Ok(new FirstPointResponse { Response = new Response { Text = "OK", Code = 200, DeveloperText = "The outbound message was recieved and the vendor credentials matched." } })
+                ? TypedResults.Ok(new FirstPointResponse { Response = new Response { Text = "OK", Code = 200, DeveloperText = "The outbound message was received and the vendor credentials matched." } })
                 : TypedResults.BadRequest(new FirstPointResponse { Response = new Response { Text = "BadRequest", Code = 500, DeveloperText = "The outbound message did not include the required credentials to authenticate with the vendor." } });
     }).WithOpenApi(x => new(x) { Summary = "Endpoint that can be used to support functional testing of the message sending endpoints without actually sending it to the vendor.", Description = "For testing purposes only." });
 

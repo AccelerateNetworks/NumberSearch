@@ -270,7 +270,7 @@ namespace Messaging.Tests
             _output.WriteLine(await response.Content.ReadAsStringAsync());
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.OK);
-            Assert.Equal("\"The incoming message was recieved and forwarded to the client.\"", await response.Content.ReadAsStringAsync());
+            Assert.Equal("\"The incoming message was received and forwarded to the client.\"", await response.Content.ReadAsStringAsync());
         }
 
         [Fact]
@@ -335,7 +335,7 @@ namespace Messaging.Tests
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.OK);
             var message = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"The incoming message was recieved and forwarded to the client.\"", message);
+            Assert.Equal("\"The incoming message was received and forwarded to the client.\"", message);
         }
 
         [Fact]
@@ -371,7 +371,40 @@ namespace Messaging.Tests
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is not System.Net.HttpStatusCode.BadRequest);
             var message = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"The incoming message was recieved and forwarded to the client.\"", message);
+            Assert.Equal("\"The incoming message was received and forwarded to the client.\"", message);
+        }
+
+        [Fact]
+        public async Task BadFromNumberAsync()
+        {
+            var _httpClient = await GetHttpClientWithValidBearerTokenAsync();
+            var registrationRequest = new RegistrationRequest() { CallbackUrl = "https://sms.callpipe.com/message/forward/test", ClientSecret = "thisisatest", DialedNumber = "12068991741" };
+            var response = await _httpClient.PostAsJsonAsync("/client/register", registrationRequest);
+            var data = await response.Content.ReadFromJsonAsync<RegistrationResponse>();
+            Assert.NotNull(data);
+            Assert.True(data.Registered);
+
+            string route = "/api/inbound/1pcom";
+            string token = "okereeduePeiquah3yaemohGhae0ie";
+
+            var stringContent = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("origtime", "2023-04-28 19:14:10"),
+                    new KeyValuePair<string, string>("msisdn", "110000011909"),
+                    new KeyValuePair<string, string>("to", "12068991741"),
+                    new KeyValuePair<string, string>("sessionid", "1L0i0T2OQsSCzQe8p7AVSA"),
+                    new KeyValuePair<string, string>("timezone", "EST"),
+                    new KeyValuePair<string, string>("message", "Verizon:+DO+NOT+Share+this+Forgot+Password+code.+A+Verizon+representative+will+NEVER+call+you+or+text+you+for+this+code.+Code+059089."),
+                    new KeyValuePair<string, string>("api_version", "0.5"),
+                    new KeyValuePair<string, string>("serversecret", "sekrethere"),
+                });
+
+            response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
+
+            Assert.NotNull(response);
+            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            Assert.False(response.IsSuccessStatusCode);
+            Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
         }
 
 
@@ -409,7 +442,7 @@ namespace Messaging.Tests
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.OK);
             var message = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"The incoming message was recieved and forwarded to the client.\"", message);
+            Assert.Equal("\"The incoming message was received and forwarded to the client.\"", message);
         }
 
         [Fact]
@@ -440,7 +473,7 @@ namespace Messaging.Tests
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is not System.Net.HttpStatusCode.BadRequest);
             var message = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"The incoming message was recieved and forwarded to the client.\"", message);
+            Assert.Equal("\"The incoming message was received and forwarded to the client.\"", message);
         }
 
         //[Fact]
