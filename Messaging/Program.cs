@@ -608,10 +608,10 @@ try
             string msisdn = context.Request.Form["msisdn"].ToString();
             string to = context.Request.Form["to"].ToString();
             string message = context.Request.Form["message"].ToString();
-            string sessionid = context.Request.Form["sessionid"].ToString();
-            string serversecret = context.Request.Form["serversecret"].ToString();
-            string timezone = context.Request.Form["timezone"].ToString();
-            string origtime = context.Request.Form["origtime"].ToString();
+            //string sessionid = context.Request.Form["sessionid"].ToString();
+            //string serversecret = context.Request.Form["serversecret"].ToString();
+            //string timezone = context.Request.Form["timezone"].ToString();
+            //string origtime = context.Request.Form["origtime"].ToString();
             string fullrecipientlist = context.Request.Form["FullRecipientList"].ToString();
             string incomingRequest = string.Join(',', context.Request.Form.Select(x => $"{x.Key}:{x.Value}, "));
 
@@ -806,10 +806,10 @@ try
             string msisdn = context.Request.Form["msisdn"].ToString();
             string to = context.Request.Form["to"].ToString();
             string message = context.Request.Form["message"].ToString();
-            string sessionid = context.Request.Form["sessionid"].ToString();
-            string serversecret = context.Request.Form["serversecret"].ToString();
-            string timezone = context.Request.Form["timezone"].ToString();
-            string origtime = context.Request.Form["origtime"].ToString();
+            //string sessionid = context.Request.Form["sessionid"].ToString();
+            //string serversecret = context.Request.Form["serversecret"].ToString();
+            //string timezone = context.Request.Form["timezone"].ToString();
+            //string origtime = context.Request.Form["origtime"].ToString();
             string fullrecipientlist = context.Request.Form["FullRecipientList"].ToString();
             string incomingRequest = string.Join(',', context.Request.Form.Select(x => $"{x.Key}:{x.Value}, "));
 

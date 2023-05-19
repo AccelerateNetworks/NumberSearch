@@ -116,15 +116,9 @@ namespace Messaging.Tests
 
             var stringContent = new FormUrlEncodedContent(new[]
                 {
-                    new KeyValuePair<string, string>("origtime", "2022-04-17 03:48:00"),
                     new KeyValuePair<string, string>("msisdn", "15555551212"),
                     new KeyValuePair<string, string>("to", "14445556543"),
-                    new KeyValuePair<string, string>("sessionid", "tLMOYTAmIFiQvBE6X1g"),
-                    new KeyValuePair<string, string>("timezone", "EST"),
                     new KeyValuePair<string, string>("message", "Your Lyft code is 12345"),
-                    new KeyValuePair<string, string>("api_version", "0.5"),
-                    new KeyValuePair<string, string>("serversecret", "sekrethere"),
-
                 });
 
             var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
@@ -134,7 +128,7 @@ namespace Messaging.Tests
             Assert.False(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
             var message = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"MSISDN 15555551212 could not be parsed as valid NANP (North American Numbering Plan) number. origtime:2022-04-17 03:48:00, ,msisdn:15555551212, ,to:14445556543, ,sessionid:tLMOYTAmIFiQvBE6X1g, ,timezone:EST, ,message:Your Lyft code is 12345, ,api_version:0.5, ,serversecret:sekrethere, \"", message);
+            Assert.Equal("\"MSISDN 15555551212 could not be parsed as valid NANP (North American Numbering Plan) number. msisdn:15555551212, ,to:14445556543, ,message:Your Lyft code is 12345, \"", message);
         }
 
         [Fact]
@@ -205,15 +199,9 @@ namespace Messaging.Tests
 
             var stringContent = new FormUrlEncodedContent(new[]
                 {
-                    new KeyValuePair<string, string>("origtime", "2022-04-17 03:48:00"),
                     new KeyValuePair<string, string>("msisdn", "15555551212"),
                     new KeyValuePair<string, string>("to", "14445556543"),
-                    new KeyValuePair<string, string>("sessionid", "tLMOYTAmIFiQvBE6X1g"),
-                    new KeyValuePair<string, string>("timezone", "EST"),
                     new KeyValuePair<string, string>("message", "Your Lyft code is 12345"),
-                    new KeyValuePair<string, string>("api_version", "0.5"),
-                    new KeyValuePair<string, string>("serversecret", "sekrethere"),
-
                 });
 
             var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
@@ -255,15 +243,9 @@ namespace Messaging.Tests
 
             var stringContent = new FormUrlEncodedContent(new[]
                 {
-                    new KeyValuePair<string, string>("origtime", "2022-04-17 03:48:00"),
                     new KeyValuePair<string, string>("msisdn", "12068589312"),
                     new KeyValuePair<string, string>("to", "12068589313,12068589313,15036622288,97167"),
-                    new KeyValuePair<string, string>("sessionid", "tLMOYTAmIFiQvBE6X1g"),
-                    new KeyValuePair<string, string>("timezone", "EST"),
                     new KeyValuePair<string, string>("message", "screams in javascript"),
-                    new KeyValuePair<string, string>("api_version", "0.5"),
-                    new KeyValuePair<string, string>("serversecret", "sekrethere"),
-
                 });
 
             response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
@@ -281,14 +263,9 @@ namespace Messaging.Tests
 
             var stringContent = new FormUrlEncodedContent(new[]
                 {
-                    new KeyValuePair<string, string>("origtime", "2022-04-17 03:48:00"),
                     new KeyValuePair<string, string>("msisdn", "12065579450"),
                     new KeyValuePair<string, string>("to", "12068589311"),
-                    new KeyValuePair<string, string>("sessionid", "tLMOYTAmIFiQvBE6X1g"),
-                    new KeyValuePair<string, string>("timezone", "EST"),
                     new KeyValuePair<string, string>("message", "Hello, this is 1stPoint SMS :D"),
-                    new KeyValuePair<string, string>("api_version", "0.5"),
-                    new KeyValuePair<string, string>("serversecret", "sekrethere"),
 
                 });
 
@@ -317,15 +294,9 @@ namespace Messaging.Tests
 
             var stringContent = new FormUrlEncodedContent(new[]
                 {
-                    new KeyValuePair<string, string>("origtime", "2022-04-17 03:48:00"),
                     new KeyValuePair<string, string>("msisdn", "12065579450"),
                     new KeyValuePair<string, string>("to", "12068589312,12068589310"),
-                    new KeyValuePair<string, string>("sessionid", "tLMOYTAmIFiQvBE6X1g"),
-                    new KeyValuePair<string, string>("timezone", "EST"),
                     new KeyValuePair<string, string>("message", "Hello, this is 1stPoint SMS :D"),
-                    new KeyValuePair<string, string>("api_version", "0.5"),
-                    new KeyValuePair<string, string>("serversecret", "sekrethere"),
-
                 });
 
             response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
@@ -353,15 +324,9 @@ namespace Messaging.Tests
 
             var stringContent = new FormUrlEncodedContent(new[]
                 {
-                    new KeyValuePair<string, string>("origtime", "2023-04-28 19:14:10"),
                     new KeyValuePair<string, string>("msisdn", "67378"),
                     new KeyValuePair<string, string>("to", "12068589310"),
-                    new KeyValuePair<string, string>("sessionid", "tLMOYTAmIFiQvBE6X1g"),
-                    new KeyValuePair<string, string>("timezone", "EST"),
                     new KeyValuePair<string, string>("message", "CenturyLink: Payment to be applied on 05/05/2023. Text HELP for help, NOREMINDER to stop pay alerts, STOP to stop all alerts. Msg&data rates may apply."),
-                    new KeyValuePair<string, string>("api_version", "0.5"),
-                    new KeyValuePair<string, string>("serversecret", "sekrethere"),
-
                 });
 
             response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
@@ -389,14 +354,10 @@ namespace Messaging.Tests
 
             var stringContent = new FormUrlEncodedContent(new[]
                 {
-                    new KeyValuePair<string, string>("origtime", "2023-04-28 19:14:10"),
                     new KeyValuePair<string, string>("msisdn", "110000011909"),
                     new KeyValuePair<string, string>("to", "12068991741"),
-                    new KeyValuePair<string, string>("sessionid", "1L0i0T2OQsSCzQe8p7AVSA"),
                     new KeyValuePair<string, string>("timezone", "EST"),
                     new KeyValuePair<string, string>("message", "Verizon:+DO+NOT+Share+this+Forgot+Password+code.+A+Verizon+representative+will+NEVER+call+you+or+text+you+for+this+code.+Code+059089."),
-                    new KeyValuePair<string, string>("api_version", "0.5"),
-                    new KeyValuePair<string, string>("serversecret", "sekrethere"),
                 });
 
             response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
@@ -423,14 +384,9 @@ namespace Messaging.Tests
 
             var stringContent = new FormUrlEncodedContent(new[]
                 {
-                    new KeyValuePair<string, string>("origtime", "2023-05-04 18:06:00"),
                     new KeyValuePair<string, string>("msisdn", "12066320575"),
                     new KeyValuePair<string, string>("to", "12066320575"),
-                    new KeyValuePair<string, string>("sessionid", "redo 18:08:25:027ffa64b9fe9824a4c98c73d016264ad92"),
-                    new KeyValuePair<string, string>("timezone", "EST"),
                     new KeyValuePair<string, string>("message", "{\r\n\"authkey\":\"2870e0d1-8dfa-4b31-91e9-6d0fc72de19d\",\r\n\"encoding\":\"native\",\r\n\"files\":\"part-001.jpg,part-002.txt,\",\r\n\"recip\":\"12066320575,\",\r\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=ffa64b9fe9824a4c98c73d016264ad92\"\r\n}"),
-                    new KeyValuePair<string, string>("api_version", "0.5"),
-                    new KeyValuePair<string, string>("serversecret", "Sek3628"),
                     new KeyValuePair<string, string>("remote", "12066320575"),
                     new KeyValuePair<string, string>("host", "12066320575"),
                 });
@@ -453,16 +409,11 @@ namespace Messaging.Tests
 
             var stringContent = new FormUrlEncodedContent(new[]
                 {
-                    new KeyValuePair<string, string>("origtime", "2023-05-08 14:50:00"),
                     new KeyValuePair<string, string>("msisdn", "12065579450"),
                     new KeyValuePair<string, string>("to", "12068589310"),
-                    new KeyValuePair<string, string>("sessionid", "2ee9b7b8a1db41d590a9fcabbec08b63"),
                     new KeyValuePair<string, string>("timezone", "EST"),
                     new KeyValuePair<string, string>("message", "{\r\n\"authkey\":\"7071e405-3cb8-43ac-acae-6c06987ede02\",\r\n\"encoding\":\"native\",\r\n\"files\":\"part-001.txt,\",\r\n\"recip\":\"12068589310,\",\r\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=2ee9b7b8a1db41d590a9fcabbec08b63\"\r\n}"),
                     new KeyValuePair<string, string>("api_version", "0.5"),
-                    new KeyValuePair<string, string>("serversecret", "Sek3628"),
-                    new KeyValuePair<string, string>("remote", "12065579450"),
-                    new KeyValuePair<string, string>("host", "12068589310"),
                     new KeyValuePair<string, string>("FullRecipientList", ", 12067696361"),
                 });
 
