@@ -23,6 +23,8 @@ using Serilog.Events;
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
+using System.Net.Mime;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
@@ -479,11 +481,58 @@ try
 
         try
         {
-            var sendMessage = test ?? false ? await "https://sms.callpipe.com/message/send/test"
-                    .PostUrlEncodedAsync(toForward)
-                    .ReceiveJson<FirstPointResponse>() : await firstPointSMSOutbound
-                    .PostUrlEncodedAsync(toForward)
-                    .ReceiveJson<FirstPointResponse>();
+            FirstPointResponse sendMessage = new();
+            // Handle MMSes
+            //if (message.MediaURLs.Any())
+            //{
+            //    //var spacesConfig = new AmazonS3Config
+            //    //{
+            //    //    ServiceURL = s3ServiceURL,
+            //    //};
+            //    //using var spacesClient = new AmazonS3Client(digitalOceanSpacesAccessKey, digitalOceanSpacesSecretKey, spacesConfig);
+            //    //using var fileUtil = new TransferUtility(spacesClient);
+
+            //    List<byte[]> files = new();
+
+            //    // capture the media urls as byte[]'s
+            //    foreach (string fileURL in message.MediaURLs)
+            //    {
+            //        // Won't need to do this if the links are passed in as presigned URLs
+            //        // https://docs.aws.amazon.com/AmazonS3/latest/userguide/ShareObjectPreSignedURL.html
+
+            //        //var fileRequest = new TransferUtilityDownloadRequest
+            //        //{
+            //        //    BucketName = digitalOceanSpacesBucket,
+            //        //    Key = $"{toForward.Id}{file}",   
+            //        //    h
+            //        //};
+            //        //await fileUtil.DownloadAsync(fileRequest);
+
+            //        files.Add(await fileURL.GetBytesAsync());
+            //    }
+
+            //    var content = await File.ReadAllBytesAsync("C:\\Users\\thoma\\Source\\Repos\\AccelerateNetworks\\NumberSearch\\Messaging\\test.txt");
+
+            //    var fileContent = new MemoryStream(content);
+
+            //    // pass them on to the vendor
+            //    sendMessage = await firstPointMMSOutbound.PostMultipartAsync(mp => mp
+            //    .AddString("username", firstPointUsername)
+            //    .AddString("password", firstPointPassword)
+            //    .AddString("ani", toForward.msisdn)
+            //    .AddString("recip", toForward.to)
+            //    .AddFile("ufile", fileContent, "text.txt", "text/plain")
+            //    )
+            //    .ReceiveJson<FirstPointResponse>();
+            //}
+            //else
+            //{
+                sendMessage = test ?? false ? await "https://sms.callpipe.com/message/send/test"
+                .PostUrlEncodedAsync(toForward)
+                .ReceiveJson<FirstPointResponse>() : await firstPointSMSOutbound
+                .PostUrlEncodedAsync(toForward)
+                .ReceiveJson<FirstPointResponse>();
+            //}
 
             Log.Information(System.Text.Json.JsonSerializer.Serialize(sendMessage));
 
@@ -533,67 +582,6 @@ try
 
     })
         .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Send an SMS Message.", Description = "Submit outbound messages to this endpoint. The 'to' field is a comma separated list of dialed numbers, or a single dialed number without commas. The 'msisdn' the dialed number of the client that is sending the message. The 'message' field is a string. No validation of the message field occurs before it is forwarded to our upstream vendors." });
-
-    app.MapPost("1pcom/outbound/MMS_Send", async Task<Results<Ok<SendMessageResponse>, BadRequest<SendMessageResponse>>> (FirstPointMMSRequest message, MessagingContext db) =>
-    {
-        // See emails from Endstream for docs
-        // Validate and regularize the incoming message.
-        if (!message.RegularizeAndValidate())
-        {
-            return TypedResults.BadRequest(new SendMessageResponse { Message = "Phone Numbers could not be parsed as valid NANP (North American Numbering Plan) numbers." });
-        }
-
-        try
-        {
-            var sendMessage = await firstPointMMSOutbound
-                    .PostUrlEncodedAsync(new
-                    {
-                        username = firstPointUsername,
-                        password = firstPointPassword,
-                        message.ani,
-                        message.recip,
-                        message.ufile
-                    })
-                    .ReceiveJson<FirstPointResponse>();
-
-            if (sendMessage is not null && sendMessage?.Response?.Text is "OK")
-            {
-                var record = new MessageRecord
-                {
-                    Id = Guid.NewGuid(),
-                    Content = string.Empty,
-                    DateReceivedUTC = DateTime.UtcNow,
-                    From = message?.FromPhoneNumber?.DialedNumber ?? string.Empty,
-                    To = string.Join(',', message?.ToPhoneNumbers?.Select(x => x.DialedNumber) ?? Array.Empty<string>()),
-                    MediaURLs = string.Empty,
-                    MessageSource = MessageSource.Outgoing,
-                    MessageType = MessageType.MMS,
-                };
-
-                db.Messages.Add(record);
-                await db.SaveChangesAsync();
-
-                // Let the caller know that delivery status for specific numbers.
-                return TypedResults.Ok(new SendMessageResponse
-                {
-                    Message = $"Message sent to {record.To}",
-                    MessageSent = true,
-                });
-            }
-            else
-            {
-                return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(sendMessage)}" });
-            }
-        }
-        catch (FlurlHttpException ex)
-        {
-            var error = await ex.GetResponseJsonAsync<FirstPointResponse>();
-
-            // Let the caller know that delivery status for specific numbers.
-            return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(error)}" });
-        }
-
-    }).RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Send an MMS Message.", Description = "Submit outbound messages to this endpoint." });
 
     app.MapPost("1pcom/inbound/MMS", async Task<Results<Ok<string>, BadRequest<string>, Ok<ForwardedMessage>, UnauthorizedHttpResult>> (HttpContext context, string token, MessagingContext db) =>
     {
@@ -649,7 +637,10 @@ try
                 else
                 {
                     Log.Error($"Failed to parse MSISDN {msisdn} from incoming request {incomingRequest} please file a ticket with the message provider.");
-                    return TypedResults.BadRequest($"MSISDN {msisdn} could not be parsed as valid NANP (North American Numbering Plan) number. {incomingRequest}");
+                    // We want the customer to get this message event if the From address is invalid.
+                    toForward.Content = $"This message was received from an invalid phone number {msisdn}. You will not be able to respond. {toForward.Content}";
+                    toForward.From = "12068588757";
+                    msisdn = toForward.From;
                 }
             }
 
@@ -844,7 +835,10 @@ try
                 else
                 {
                     Log.Error($"Failed to parse MSISDN {msisdn} from incoming request {incomingRequest} please file a ticket with the message provider.");
-                    return TypedResults.BadRequest($"MSISDN {msisdn} could not be parsed as valid NANP (North American Numbering Plan) number. {incomingRequest}");
+                    // We want the customer to get this message event if the From address is invalid.
+                    toForward.Content = $"This message was received from an invalid phone number {msisdn}. You will not be able to respond. {toForward.Content}";
+                    toForward.From = "12068588757";
+                    msisdn = toForward.From;
                 }
             }
 

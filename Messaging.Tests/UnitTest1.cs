@@ -128,7 +128,7 @@ namespace Messaging.Tests
             Assert.False(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
             var message = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"MSISDN 15555551212 could not be parsed as valid NANP (North American Numbering Plan) number. msisdn:15555551212, ,to:14445556543, ,message:Your Lyft code is 12345, \"", message);
+            Assert.Equal("\"To 14445556543 could not be parsed as valid NANP (North American Numbering Plan) numbers. msisdn:15555551212, ,to:14445556543, ,message:Your Lyft code is 12345, \"", message);
         }
 
         [Fact]
@@ -143,6 +143,19 @@ namespace Messaging.Tests
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(details.MessageSent);
         }
+
+        //[Fact]
+        //public async Task SendMMSMessageAsync()  
+        //{
+        //    var _client = await GetHttpClientWithValidBearerTokenAsync();
+        //    var message = new SendMessageRequest { MediaURLs = new string[] { "https://acceleratenetworks.com/images/scaled/DSC08263-3.jpg" }, Message = "This is an MMS Message test.", MSISDN = "12068589313", To = "12067696361" };
+        //    var response = await _client.PostAsJsonAsync("/message/send?test=true", message);
+        //    var details = await response.Content.ReadFromJsonAsync<SendMessageResponse>();
+        //    Assert.NotNull(details);
+        //    _output.WriteLine(await response.Content.ReadAsStringAsync());
+        //    Assert.True(response.IsSuccessStatusCode);
+        //    Assert.True(details.MessageSent);
+        //}
 
         [Fact]
         public async Task SendSMSGroupMessageAsync()
@@ -364,8 +377,8 @@ namespace Messaging.Tests
 
             Assert.NotNull(response);
             _output.WriteLine(await response.Content.ReadAsStringAsync());
-            Assert.False(response.IsSuccessStatusCode);
-            Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
+            Assert.True(response.IsSuccessStatusCode);
+            Assert.True(response.StatusCode is not System.Net.HttpStatusCode.BadRequest);
         }
 
 
