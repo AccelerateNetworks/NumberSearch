@@ -170,13 +170,13 @@
             </div>
         </div>
         <div class="col">
- @*           <div class="d-grid gap-2">
-                @if (!string.IsNullOrWhiteSpace(Model?.Order?.BillingClientId))
-                {
-                    <a href="https://billing.acceleratenetworks.com/client/@Model?.Order?.BillingClientId" class="btn btn-outline-info" target="_blank" rel="noopener noreferrer">
-                        View Billing System Client
-                    </a>
-                }
+            @*           <div class="d-grid gap-2">
+            @if (!string.IsNullOrWhiteSpace(Model?.Order?.BillingClientId))
+            {
+            <a href="https://billing.acceleratenetworks.com/client/@Model?.Order?.BillingClientId" class="btn btn-outline-info" target="_blank" rel="noopener noreferrer">
+            View Billing System Client
+            </a>
+            }
             </div>*@
         </div>
     </div>
@@ -456,7 +456,7 @@
                                             var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX?.ToString("0000")}";
                                             var number = item.DialedNumber;
                                             <tr>
-                                                <td scope="row"><h4>@formattedNumber</h4></td>
+                                                <td scope="row"><h4><a class="link-dark" href="/Home/NumberOrders/@item?.DialedNumber">@formattedNumber</a></h4></td>
                                                 <td>@item?.DialedNumber</td>
                                                 @{
                                                     if (item?.NumberType == "Executive")

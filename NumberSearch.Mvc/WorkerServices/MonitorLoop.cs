@@ -102,7 +102,7 @@ namespace NumberSearch.Mvc
                                                 {
                                                     if (nto.IngestedFrom == "BulkVS")
                                                     {
-                                                        // Buy it and save the reciept.
+                                                        // Buy it and save the receipt.
                                                         var executeOrder = new OrderTnRequestBody
                                                         {
                                                             TN = nto.DialedNumber,
@@ -119,8 +119,8 @@ namespace NumberSearch.Mvc
                                                         productOrder.DateOrdered = DateTime.Now;
                                                         // Keep the raw response as a receipt.
                                                         productOrder.OrderResponse = JsonSerializer.Serialize(orderResponse);
-                                                        // If the status code of the order comes back as 200 then it was sucessful.
-                                                        productOrder.Completed = orderResponse.Failed is null;
+                                                        // If the status code of the order comes back as 200 then it was successful.
+                                                        productOrder.Completed = string.IsNullOrWhiteSpace(orderResponse?.Failed?.Description);
 
                                                         var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
                                                         var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
@@ -132,7 +132,7 @@ namespace NumberSearch.Mvc
                                                         // Find the number.
                                                         var credentials = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
 
-                                                        // Buy it and save the reciept.
+                                                        // Buy it and save the receipt.
                                                         var executeOrder = await Purchase.PurchasePhoneNumberAsync(nto, credentials.data.token).ConfigureAwait(false);
 
                                                         nto.Purchased = true;
@@ -182,7 +182,7 @@ namespace NumberSearch.Mvc
                                                     }
                                                     else if (nto.IngestedFrom == "FirstPointCom")
                                                     {
-                                                        // Buy it and save the reciept.
+                                                        // Buy it and save the receipt.
                                                         var executeOrder = await FirstPointComOrderPhoneNumber.PostAsync(nto.DialedNumber, _fpcusername, _fpcpassword).ConfigureAwait(false);
 
                                                         nto.Purchased = true;
@@ -271,7 +271,7 @@ namespace NumberSearch.Mvc
                                     // Log the success or failure of the operation.
                                     if (checkSend && checkSave)
                                     {
-                                        Log.Information($"[Background Worker] Sucessfully sent out email {message.EmailId} for order {order.OrderId}.");
+                                        Log.Information($"[Background Worker] Successfully sent out email {message.EmailId} for order {order.OrderId}.");
                                     }
                                     else
                                     {
