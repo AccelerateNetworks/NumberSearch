@@ -135,7 +135,7 @@ namespace Messaging.Tests
         public async Task SendSMSMessageAsync()
         {
             var _client = await GetHttpClientWithValidBearerTokenAsync();
-            var message = new SendMessageRequest { MediaURLs = Array.Empty<string>(), Message = "This is an SMS Message test.", MSISDN = "12068589313", To = "12068589312" };
+            var message = new SendMessageRequest { MediaURLs = Array.Empty<string>(), Message = "This is an SMS Message test.", MSISDN = "2068589313", To = "2068589312" };
             var response = await _client.PostAsJsonAsync("/message/send?test=true", message);
             var details = await response.Content.ReadFromJsonAsync<SendMessageResponse>();
             Assert.NotNull(details);

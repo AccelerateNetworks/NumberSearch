@@ -949,9 +949,9 @@ try
 
     app.MapPost("/message/forward/test", async Task<Results<Ok<string>, BadRequest<string>>> (ForwardedMessage message, MessagingContext db) =>
     {
-        return message.ClientSecret is "thisisatest"
+        return message.ClientSecret is "thisisatest" && message.From.Length == 11 && message.To.Length > 10
         ? TypedResults.Ok("The incoming message was received and forwarded to the client.")
-        : TypedResults.BadRequest("The client secret could not be matched for this number.");
+        : TypedResults.BadRequest("The client secret could not be matched for this number or the numbers were incorrectly formatted.");
     }).WithOpenApi(x => new(x) { Summary = "Endpoint that can be used as the callback URL for a registered client to support functional testing of the message forwarding endpoints.", Description = "For testing purposes only." });
 
     app.MapPost("/message/send/test", async Task<Results<Ok<FirstPointResponse>, BadRequest<FirstPointResponse>>> (HttpContext context) =>
@@ -962,9 +962,9 @@ try
         string msisdn = context.Request.Form["msisdn"].ToString();
         string messagebody = context.Request.Form["messagebody"].ToString();
 
-        return !string.IsNullOrWhiteSpace(username) && username == firstPointUsername && !string.IsNullOrWhiteSpace(password) && password == firstPointPassword
+        return !string.IsNullOrWhiteSpace(username) && username == firstPointUsername && !string.IsNullOrWhiteSpace(password) && password == firstPointPassword && msisdn.Length == 11 && to.Length > 10
                 ? TypedResults.Ok(new FirstPointResponse { Response = new Response { Text = "OK", Code = 200, DeveloperText = "The outbound message was received and the vendor credentials matched." } })
-                : TypedResults.BadRequest(new FirstPointResponse { Response = new Response { Text = "BadRequest", Code = 500, DeveloperText = "The outbound message did not include the required credentials to authenticate with the vendor." } });
+                : TypedResults.BadRequest(new FirstPointResponse { Response = new Response { Text = "BadRequest", Code = 500, DeveloperText = "The outbound message did not include the required credentials to authenticate with the vendor or the numbers were incorrectly formatted." } });
     }).WithOpenApi(x => new(x) { Summary = "Endpoint that can be used to support functional testing of the message sending endpoints without actually sending it to the vendor.", Description = "For testing purposes only." });
 
     app.Run();
