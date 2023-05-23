@@ -17,6 +17,7 @@ namespace Messaging.Tests
         private readonly IConfiguration _configuration;
         private readonly ITestOutputHelper _output;
 
+
         public Functional(WebApplicationFactory<Program> factory, ITestOutputHelper output)
         {
             _httpClient = factory.CreateClient();
@@ -145,16 +146,47 @@ namespace Messaging.Tests
         }
 
         //[Fact]
-        //public async Task SendMMSMessageAsync()  
+        //public async Task SendMMSMessageAsync()
         //{
         //    var _client = await GetHttpClientWithValidBearerTokenAsync();
-        //    var message = new SendMessageRequest { MediaURLs = new string[] { "https://acceleratenetworks.com/images/scaled/DSC08263-3.jpg" }, Message = "This is an MMS Message test.", MSISDN = "12068589313", To = "12067696361" };
+        //    var message = new SendMessageRequest { MediaURLs = new string[] { "https://acceleratenetworks.com/images/scaled/accelerate.png" }, Message = "This is an MMS Message test.", MSISDN = "12068589313", To = "" };
         //    var response = await _client.PostAsJsonAsync("/message/send?test=true", message);
         //    var details = await response.Content.ReadFromJsonAsync<SendMessageResponse>();
         //    Assert.NotNull(details);
         //    _output.WriteLine(await response.Content.ReadAsStringAsync());
         //    Assert.True(response.IsSuccessStatusCode);
         //    Assert.True(details.MessageSent);
+        //}
+
+
+        //[Fact]
+        //public async Task MMSSendTestAsync()
+        //{
+        //    string PComNetUsername = _configuration.GetConnectionString("PComNetUsername") ?? string.Empty;
+        //    string PComNetPassword = _configuration.GetConnectionString("PComNetPassword") ?? string.Empty;
+
+        //    // Act
+        //    using (var httpClient = new HttpClient())
+        //    {
+        //        using (var request = new HttpRequestMessage(new HttpMethod("POST"), "https://mmsc01.1pcom.net/MMS_Send"))
+        //        {
+        //            var multipartContent = new MultipartFormDataContent
+        //            {
+        //                { new StringContent(PComNetUsername), "username" },
+        //                { new StringContent(PComNetPassword), "password" },
+        //                { new StringContent(""), "recip" },
+        //                { new StringContent("12068589313"), "ani" },
+        //                { new ByteArrayContent(File.ReadAllBytes("C:\\Users\\thoma\\Downloads\\0228cc08-a403-4a12-85cf-c8bd33fdf14apart-001.SMIL")), "ufiles", "part-001.SMIL" },
+        //                { new ByteArrayContent(File.ReadAllBytes("C:\\Users\\thoma\\Downloads\\0228cc08-a403-4a12-85cf-c8bd33fdf14apart-002.txt")), "ufiles", "part-002.txt" },
+        //                { new ByteArrayContent(File.ReadAllBytes("C:\\Users\\thoma\\Source\\Repos\\AccelerateNetworks\\NumberSearch\\NumberSearch.Mvc\\wwwroot\\images\\scaled\\accelerate.png")), "ufiles", Path.GetFileName("C:\\Users\\thoma\\Source\\Repos\\AccelerateNetworks\\NumberSearch\\NumberSearch.Mvc\\wwwroot\\images\\scaled\\accelerate.png") }
+        //            };
+        //            request.Content = multipartContent;
+
+        //            var response = await httpClient.SendAsync(request);
+
+        //            _output.WriteLine(await response.Content.ReadAsStringAsync());
+        //        }
+        //    }
         //}
 
         [Fact]

@@ -13,7 +13,9 @@ using NumberSearch.Mvc.Models;
 using ServiceReference;
 
 using System;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -165,6 +167,7 @@ namespace NumberSearch.Tests
             Assert.NotEmpty(result.data);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
+
 
         //[Fact]
         //public async Task CreateAndSendAnInvoiceAsync()

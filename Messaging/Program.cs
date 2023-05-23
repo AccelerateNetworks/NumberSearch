@@ -26,6 +26,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Net.Mime;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
@@ -482,57 +483,40 @@ try
         try
         {
             FirstPointResponse sendMessage = new();
-            // Handle MMSes
-            //if (message.MediaURLs.Any())
-            //{
-            //    //var spacesConfig = new AmazonS3Config
-            //    //{
-            //    //    ServiceURL = s3ServiceURL,
-            //    //};
-            //    //using var spacesClient = new AmazonS3Client(digitalOceanSpacesAccessKey, digitalOceanSpacesSecretKey, spacesConfig);
-            //    //using var fileUtil = new TransferUtility(spacesClient);
+            //Handle MMSes
+            if (message.MediaURLs.Any())
+            {
+                var multipartContent = new MultipartFormDataContent {
+                        { new StringContent(firstPointUsername), "username" },
+                        { new StringContent(firstPointPassword), "password" },
+                        { new StringContent(toForward.to), "recip" },
+                        { new StringContent(toForward.msisdn), "ani" },
+                };
 
-            //    List<byte[]> files = new();
+                // capture the media urls as byte[]'s
+                foreach (string fileURL in message.MediaURLs)
+                {
+                    var url = new Uri(fileURL);
+                    string filename = url.Segments.LastOrDefault() ?? string.Empty;
+                    var data = await fileURL.GetBytesAsync();
+                    multipartContent.Add(new ByteArrayContent(data), "ufiles", filename);
+                }
 
-            //    // capture the media urls as byte[]'s
-            //    foreach (string fileURL in message.MediaURLs)
-            //    {
-            //        // Won't need to do this if the links are passed in as presigned URLs
-            //        // https://docs.aws.amazon.com/AmazonS3/latest/userguide/ShareObjectPreSignedURL.html
+                // pass them on to the vendor
+                var MMSResponse = await firstPointMMSOutbound.PostAsync(multipartContent).ReceiveString();
 
-            //        //var fileRequest = new TransferUtilityDownloadRequest
-            //        //{
-            //        //    BucketName = digitalOceanSpacesBucket,
-            //        //    Key = $"{toForward.Id}{file}",   
-            //        //    h
-            //        //};
-            //        //await fileUtil.DownloadAsync(fileRequest);
-
-            //        files.Add(await fileURL.GetBytesAsync());
-            //    }
-
-            //    var content = await File.ReadAllBytesAsync("C:\\Users\\thoma\\Source\\Repos\\AccelerateNetworks\\NumberSearch\\Messaging\\test.txt");
-
-            //    var fileContent = new MemoryStream(content);
-
-            //    // pass them on to the vendor
-            //    sendMessage = await firstPointMMSOutbound.PostMultipartAsync(mp => mp
-            //    .AddString("username", firstPointUsername)
-            //    .AddString("password", firstPointPassword)
-            //    .AddString("ani", toForward.msisdn)
-            //    .AddString("recip", toForward.to)
-            //    .AddFile("ufile", fileContent, "text.txt", "text/plain")
-            //    )
-            //    .ReceiveJson<FirstPointResponse>();
-            //}
-            //else
-            //{
+                // Parse the oddly formatted response.
+                var toJSON = JsonSerializer.Deserialize<FirstPointResponseMMS>(MMSResponse);
+                sendMessage = new FirstPointResponse { Response = toJSON?.Response ?? new() };
+            }
+            else
+            {
                 sendMessage = test ?? false ? await "https://sms.callpipe.com/message/send/test"
                 .PostUrlEncodedAsync(toForward)
                 .ReceiveJson<FirstPointResponse>() : await firstPointSMSOutbound
                 .PostUrlEncodedAsync(toForward)
                 .ReceiveJson<FirstPointResponse>();
-            //}
+            }
 
             Log.Information(System.Text.Json.JsonSerializer.Serialize(sendMessage));
 
@@ -1000,6 +984,13 @@ namespace Models
         [JsonPropertyName("response")]
         public Response Response { get; set; } = new();
     }
+
+    public class FirstPointResponseMMS
+    {
+        [JsonPropertyName("0")]
+        public Response Response { get; set; } = new();
+    }
+
     public class Response
     {
         [JsonPropertyName("code")]
