@@ -20,19 +20,19 @@
             @if (Model.Accessories.Any())
             {
                 <li class="nav-item" role="presentation">
-                    <a class="nav-link" href="Hardware" id="home" role="tab" aria-selected="true">Phones</a>
+                    <a class="nav-link" href="Hardware" id="phones" role="tab" aria-selected="true">Phones</a>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <a class="nav-link active" id="profile" href="Accessories" role="tab" aria-selected="false">Accessories</a>
+                    <a class="nav-link active" id="accessories" href="Accessories" role="tab" aria-selected="false">Accessories</a>
                 </li>
             }
             else
             {
                 <li class="nav-item" role="presentation">
-                    <a class="nav-link active" id="home" href="Hardware" role="tab" aria-selected="true">Phones</a>
+                    <a class="nav-link active" id="phones" href="Hardware" role="tab" aria-selected="true">Phones</a>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <a class="nav-link" id="profile" href="Accessories" role="tab" aria-selected="false">Accessories</a>
+                    <a class="nav-link" id="accessories" href="Accessories" role="tab" aria-selected="false">Accessories</a>
                 </li>
             }
         </ul>
@@ -40,7 +40,7 @@
         <div class="tab-content" id="myTabContent">
             @if (Model.Accessories.Any())
             {
-                <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                <div class="tab-pane fade show active" id="accessoriescontent" role="tabpanel" aria-labelledby="accessories-tab">
                     <div class="row row-cols-1 row-cols-md-3">
                         @if (Model?.Cart?.ProductOrders is not null && Model?.Accessories is not null && Model.Accessories.Any())
                         {
@@ -59,12 +59,12 @@
                                     <div class="card h-100 shadow">
                                         @if (string.IsNullOrWhiteSpace(product.VendorFeatures))
                                         {
-                                            <img class="card-img-top" src="@product.Image" loading="lazy" />
+                                            <img class="card-img-top" src="@product.Image" title="@product.Name" loading="lazy" />
                                         }
                                         else
                                         {
                                             <a href="Hardware/@product.Name">
-                                                <img class="card-img-top" src="@product.Image" loading="lazy" />
+                                                <img class="card-img-top" src="@product.Image" title="@product.Name" loading="lazy" />
                                             </a>
                                         }
                                         <div class="card-body">
@@ -121,7 +121,7 @@
             }
             else
             {
-                <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                <div class="tab-pane fade show active" id="phonescontent" role="tabpanel" aria-labelledby="phones-tab">
                     <div class="row row-cols-1 row-cols-md-3">
                         @if (Model?.Cart?.ProductOrders is not null && Model?.Phones is not null)
                         {
@@ -140,12 +140,12 @@
                                     <div class="card h-100 shadow">
                                         @if (string.IsNullOrWhiteSpace(product.VendorFeatures))
                                         {
-                                            <img class="card-img-top" src="@product.Image" loading="lazy" />
+                                            <img class="card-img-top" src="@product.Image" title="@product.Name" loading="lazy" />
                                         }
                                         else
                                         {
                                             <a href="Hardware/@product.Name">
-                                                <img class="card-img-top" src="@product.Image" loading="lazy" />
+                                                <img class="card-img-top" src="@product.Image" title="@product.Name" loading="lazy" />
                                             </a>
                                         }
                                         <div class="card-body">
