@@ -765,7 +765,7 @@ namespace NumberSearch.Tests
         {
             // Arrange
             // Act
-            var results = await E911Record.GetAsync("", bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+            var results = await E911Record.GetAsync("12062574158", bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
 
             // Assert
             Assert.NotNull(results);
@@ -1698,21 +1698,19 @@ namespace NumberSearch.Tests
             var info = new EmergencyInformation
             {
                 EmergencyInformationId = Guid.NewGuid(),
-                Address = "123 Sesemy Street",
-                AlertGroup = "123",
+                AddressLine1 = "123 Sesame Street",
                 City = "Seattle",
-                CreatedDate = DateTime.Now,
+                BulkVSLastModificationDate = DateTime.Now,
                 DateIngested = DateTime.Now,
                 DialedNumber = "1231231234",
-                FullName = "Big Bird",
                 IngestedFrom = "IntegrationTest",
-                ModifyDate = DateTime.Now,
-                Note = "This is an integration test.",
+                ModifiedDate = DateTime.Now,
                 State = "WA",
-                TeliId = "1231231",
-                UnitNumber = "123",
-                UnitType = "Condo",
-                Zip = "99999"
+                Zip = "99999",
+                RawResponse = "Test is a test.",
+                Sms = string.Empty,
+                AddressLine2 = string.Empty,
+                CallerName = "Test",
             };
 
             var result = await info.PostAsync(conn);
@@ -1722,7 +1720,7 @@ namespace NumberSearch.Tests
             var fromDbResult = await EmergencyInformation.GetByIdAsync(info.EmergencyInformationId, conn).ConfigureAwait(false);
             Assert.NotNull(fromDbResult);
             Assert.True(info.IngestedFrom == fromDbResult.IngestedFrom);
-            fromDbResult.Note = "This is an integration test.2";
+            fromDbResult.CallerName = "Test2";
             var checkUpdate = await fromDbResult.PutAsync(conn).ConfigureAwait(false);
             Assert.True(checkUpdate);
             var checkDelete = await fromDbResult.DeleteAsync(conn).ConfigureAwait(false);

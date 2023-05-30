@@ -188,13 +188,13 @@ public partial class numberSearchContext : DbContext
         {
             entity.Property(e => e.EmergencyInformationId).HasDefaultValueSql("uuid_generate_v4()");
 
-            entity.Property(e => e.Address).HasColumnType("character varying");
+            entity.Property(e => e.AddressLine1).HasColumnType("character varying");
 
-            entity.Property(e => e.AlertGroup).HasColumnType("character varying");
+            entity.Property(e => e.AddressLine2).HasColumnType("character varying");
 
             entity.Property(e => e.City).HasColumnType("character varying");
 
-            entity.Property(e => e.CreatedDate).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.BulkVSLastModificationDate).HasColumnType("timestamp without time zone");
 
             entity.Property(e => e.DateIngested).HasColumnType("timestamp without time zone");
 
@@ -202,21 +202,17 @@ public partial class numberSearchContext : DbContext
 
             entity.Property(e => e.EmergencyInformationId).HasDefaultValueSql("uuid_generate_v4()");
 
-            entity.Property(e => e.FullName).HasColumnType("character varying");
+            entity.Property(e => e.CallerName).HasColumnType("character varying");
 
             entity.Property(e => e.IngestedFrom).HasColumnType("character varying");
 
-            entity.Property(e => e.ModifyDate).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.ModifiedDate).HasColumnType("timestamp without time zone");
 
-            entity.Property(e => e.Note).HasColumnType("character varying");
+            entity.Property(e => e.Sms).HasColumnType("character varying");
 
             entity.Property(e => e.State).HasColumnType("character varying");
 
-            entity.Property(e => e.TeliId).HasColumnType("character varying");
-
-            entity.Property(e => e.UnitNumber).HasColumnType("character varying");
-
-            entity.Property(e => e.UnitType).HasColumnType("character varying");
+            entity.Property(e => e.RawResponse).HasColumnType("character varying");
 
             entity.Property(e => e.Zip).HasColumnType("character varying");
         });

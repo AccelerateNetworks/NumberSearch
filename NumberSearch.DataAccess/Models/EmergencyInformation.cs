@@ -10,39 +10,38 @@ namespace NumberSearch.DataAccess
 {
     public class EmergencyInformation
     {
-        public Guid EmergencyInformationId { get; set; }
+        public Guid EmergencyInformationId { get; set; } = Guid.NewGuid();
         public string DialedNumber { get; set; } = string.Empty;
         public string IngestedFrom { get; set; } = string.Empty;
-        public DateTime DateIngested { get; set; }
-        public string TeliId { get; set; } = string.Empty;
-        public string FullName { get; set; } = string.Empty;
-        public string Address { get; set; } = string.Empty;
+        public DateTime DateIngested { get; set; } = DateTime.Now;
+        public string CallerName { get; set; } = string.Empty;
+        public string AddressLine1 { get; set; } = string.Empty;
+        public string AddressLine2 { get; set; } = string.Empty;
         public string City { get; set; } = string.Empty;
         public string State { get; set; } = string.Empty;
         public string Zip { get; set; } = string.Empty;
-        public string UnitType { get; set; } = string.Empty;
-        public string UnitNumber { get; set; } = string.Empty;
-        public DateTime? CreatedDate { get; set; }
-        public DateTime? ModifyDate { get; set; }
-        public string AlertGroup { get; set; } = string.Empty;
-        public string Note { get; set; } = string.Empty;
+        public string Sms { get; set; } = string.Empty;
+        public string RawResponse { get; set; } = string.Empty;
+        public DateTime? BulkVSLastModificationDate { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+
 
         public static async Task<IEnumerable<EmergencyInformation>> GetAllAsync(string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);
 
             return await connection
-                .QueryAsync<EmergencyInformation>("SELECT \"EmergencyInformationId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"TeliId\", \"FullName\", \"Address\", \"City\", \"State\", \"Zip\", \"UnitType\", \"UnitNumber\", \"CreatedDate\", \"ModifyDate\", \"AlertGroup\", \"Note\" FROM public.\"EmergencyInformation\"")
+                .QueryAsync<EmergencyInformation>("""SELECT "EmergencyInformationId", "DialedNumber", "IngestedFrom", "DateIngested", "CallerName", "AddressLine1", "AddressLine2", "City", "State", "Zip", "Sms", "BulkVSLastModificationDate", "ModifiedDate", "RawResponse" FROM public."EmergencyInformation" """)
                 .ConfigureAwait(false);
         }
 
-        public static async Task<EmergencyInformation> GetByIdAsync(Guid emergencyinformationId, string connectionString)
+        public static async Task<EmergencyInformation> GetByIdAsync(Guid EmergencyInformationId, string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);
 
             return await connection
-                .QueryFirstOrDefaultAsync<EmergencyInformation>("SELECT \"EmergencyInformationId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"TeliId\", \"FullName\", \"Address\", \"City\", \"State\", \"Zip\", \"UnitType\", \"UnitNumber\", \"CreatedDate\", \"ModifyDate\", \"AlertGroup\", \"Note\" FROM public.\"EmergencyInformation\" " +
-                "WHERE \"EmergencyInformationId\" = @emergencyinformationId", new { emergencyinformationId })
+                .QueryFirstOrDefaultAsync<EmergencyInformation>("SELECT \"EmergencyInformationId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"CallerName\", \"AddressLine1\", \"AddressLine2\", \"City\", \"State\", \"Zip\", \"Sms\", \"BulkVSLastModificationDate\", \"ModifiedDate\", \"RawResponse\" FROM public.\"EmergencyInformation\" " +
+                "WHERE \"EmergencyInformationId\" = @EmergencyInformationId", new { EmergencyInformationId })
                 .ConfigureAwait(false);
         }
 
@@ -51,7 +50,7 @@ namespace NumberSearch.DataAccess
             await using var connection = new NpgsqlConnection(connectionString);
 
             return await connection
-                .QueryAsync<EmergencyInformation>("SELECT \"EmergencyInformationId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"TeliId\", \"FullName\", \"Address\", \"City\", \"State\", \"Zip\", \"UnitType\", \"UnitNumber\", \"CreatedDate\", \"ModifyDate\", \"AlertGroup\", \"Note\" FROM public.\"EmergencyInformation\" WHERE \"DialedNumber\" = @dialedNumber", new { dialedNumber })
+                .QueryAsync<EmergencyInformation>("SELECT \"EmergencyInformationId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"CallerName\", \"AddressLine1\", \"AddressLine2\", \"City\", \"State\", \"Zip\", \"Sms\", \"BulkVSLastModificationDate\", \"ModifiedDate\", \"RawResponse\" FROM public.\"EmergencyInformation\" WHERE \"DialedNumber\" = @dialedNumber", new { dialedNumber })
                 .ConfigureAwait(false);
         }
 
@@ -60,9 +59,9 @@ namespace NumberSearch.DataAccess
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"EmergencyInformation\" (\"EmergencyInformationId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"TeliId\", \"FullName\", \"Address\", \"City\", \"State\", \"Zip\", \"UnitType\", \"UnitNumber\", \"CreatedDate\", \"ModifyDate\", \"AlertGroup\", \"Note\") " +
-                "VALUES ( @EmergencyInformationId, @DialedNumber, @IngestedFrom, @DateIngested, @TeliId, @FullName, @Address, @City, @State, @Zip, @UnitType, @UnitNumber, @CreatedDate, @ModifyDate, @AlertGroup, @Note )",
-                new { EmergencyInformationId, DialedNumber, IngestedFrom, DateIngested, TeliId, FullName, Address, City, State, Zip, UnitType, UnitNumber, CreatedDate, ModifyDate, AlertGroup, Note })
+                .ExecuteAsync("INSERT INTO public.\"EmergencyInformation\" (\"EmergencyInformationId\", \"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"CallerName\", \"AddressLine1\", \"AddressLine2\", \"City\", \"State\", \"Zip\", \"Sms\", \"BulkVSLastModificationDate\", \"ModifiedDate\", \"RawResponse\") " +
+                "VALUES ( @EmergencyInformationId, @DialedNumber, @IngestedFrom, @DateIngested, @CallerName, @AddressLine1, @AddressLine2, @City, @State, @Zip, @Sms,  @BulkVSLastModificationDate, @ModifiedDate, @RawResponse )",
+                new { EmergencyInformationId, DialedNumber, IngestedFrom, DateIngested, CallerName, AddressLine1, AddressLine2, City, State, Zip, Sms, BulkVSLastModificationDate, ModifiedDate, RawResponse })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -80,8 +79,8 @@ namespace NumberSearch.DataAccess
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("UPDATE public.\"EmergencyInformation\" SET \"DialedNumber\" = @DialedNumber, \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"TeliId\" = @TeliId, \"FullName\" = @FullName, \"Address\" = @Address, \"City\" = @City, \"State\" = @State, \"Zip\" = @Zip, \"UnitType\" = @UnitType, \"UnitNumber\" = @UnitNumber, \"CreatedDate\" = @CreatedDate, \"ModifyDate\" = @ModifyDate, \"AlertGroup\" = @AlertGroup, \"Note\" = @Note WHERE \"EmergencyInformationId\" = @EmergencyInformationId",
-                new { DialedNumber, IngestedFrom, DateIngested, TeliId, FullName, Address, City, State, Zip, UnitType, UnitNumber, CreatedDate, ModifyDate, AlertGroup, Note, EmergencyInformationId })
+                .ExecuteAsync("UPDATE public.\"EmergencyInformation\" SET \"EmergencyInformationId\"=@EmergencyInformationId, \"DialedNumber\"=@DialedNumber, \"IngestedFrom\"=@IngestedFrom, \"DateIngested\"=@DateIngested, \"CallerName\"=@CallerName, \"AddressLine1\"=@AddressLine1, \"AddressLine2\"=@AddressLine2, \"City\"=@City, \"State\"=@State, \"Zip\"=@Zip, \"Sms\"=@Sms, \"BulkVSLastModificationDate\"=@BulkVSLastModificationDate, \"ModifiedDate\"=@ModifiedDate, \"RawResponse\"=@RawResponse WHERE \"EmergencyInformationId\" = @EmergencyInformationId",
+                new { DialedNumber, IngestedFrom, DateIngested, CallerName, AddressLine1, AddressLine2, City, State, Zip, Sms, BulkVSLastModificationDate, ModifiedDate, RawResponse, EmergencyInformationId })
                 .ConfigureAwait(false);
 
             if (result == 1)

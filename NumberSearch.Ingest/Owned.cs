@@ -115,6 +115,9 @@ namespace NumberSearch.Ingest
             // Match up owned numbers and their billingClients.
             _ = await MatchOwnedNumbersToBillingClientsAsync(configuration.Postgresql).ConfigureAwait(false);
 
+            // Link up E911 registrations to owned numbers.
+            await VerifyEmergencyInformationAsync(configuration.Postgresql, configuration.BulkVSUsername, configuration.BulkVSPassword).ConfigureAwait(false);
+
             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
             var lockEntry = await IngestStatistics.GetLockAsync("OwnedNumbers", configuration.Postgresql).ConfigureAwait(false);
             _ = await lockEntry.DeleteAsync(configuration.Postgresql).ConfigureAwait(false);
@@ -211,7 +214,7 @@ namespace NumberSearch.Ingest
                     if (checkExisting is false || number is null)
                     {
                         var matchingPort = portedPhoneNumbers.Where(x => x.PortedDialedNumber == item.DialedNumber).FirstOrDefault();
-                        if (matchingPort is not null && !string.IsNullOrWhiteSpace(matchingPort.RequestStatus) && matchingPort.RequestStatus is not "COMPLETE" )
+                        if (matchingPort is not null && !string.IsNullOrWhiteSpace(matchingPort.RequestStatus) && matchingPort.RequestStatus is not "COMPLETE")
                         {
                             // If it is a ported number and the port has not complete mark it as ported in.
                             item.Status = "Porting In";
@@ -570,14 +573,110 @@ namespace NumberSearch.Ingest
             return serviceProviderChanged;
         }
 
-        public static async Task<IEnumerable<OwnedPhoneNumber>> VerifyEmergencyInformationAsync(IEnumerable<OwnedPhoneNumber> owned, string connectionString)
+        public static async Task VerifyEmergencyInformationAsync(string connectionString, string bulkVSUsername, string bulkVSPassword)
         {
-            Log.Information($"[OwnedNumbers] Verifying Emergency Information for {owned?.Count()} Owned Phone numbers.");
-
             var emergencyInformation = await EmergencyInformation.GetAllAsync(connectionString).ConfigureAwait(false);
-            // TODO
 
-            return owned ?? new List<OwnedPhoneNumber>();
+            Log.Information($"[OwnedNumbers] Verifying Emergency Information for {emergencyInformation?.Count()} Owned Phone numbers.");
+
+            var ownedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
+
+            var e911Registrations = await E911Record.GetAllAsync(bulkVSUsername, bulkVSPassword);
+
+            foreach (var record in e911Registrations)
+            {
+                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(record.TN, out var number);
+
+                var ownedNumber = ownedNumbers.FirstOrDefault(x => x.DialedNumber == number.DialedNumber);
+                if (checkParse && ownedNumber is not null && ownedNumber.EmergencyInformationId is not null && ownedNumber.EmergencyInformationId.HasValue)
+                {
+                    var existing = emergencyInformation.FirstOrDefault(x => x.EmergencyInformationId == ownedNumber.EmergencyInformationId.GetValueOrDefault());
+
+                    if (existing is not null && existing.DialedNumber == number.DialedNumber)
+                    {
+                        // Update the existing record with the current data.
+                        existing.Sms = record.Sms.Any() ? string.Join(',', record.Sms) : string.Empty;
+                        existing.RawResponse = JsonSerializer.Serialize(record);
+                        existing.BulkVSLastModificationDate = existing.BulkVSLastModificationDate != record.LastModification ? record.LastModification : existing.BulkVSLastModificationDate;
+                        existing.ModifiedDate = DateTime.Now;
+                        existing.CallerName = existing.CallerName != record.CallerName ? record.CallerName : existing.CallerName;
+                        existing.AddressLine1 = existing.AddressLine1 != record.AddressLine1 ? record.AddressLine1 : existing.AddressLine1;
+                        existing.AddressLine2 = existing.AddressLine2 != record.AddressLine2 ? record.AddressLine2 : existing.AddressLine2;
+                        existing.City = existing.City != record.City ? record.City : existing.City;
+                        existing.State = existing.State != record.State ? record.State : existing.State;
+                        existing.Zip = existing.Zip != record.Zip ? record.Zip : existing.Zip;
+
+                        var checkUpdate = await existing.PutAsync(connectionString);
+
+                        if (!checkUpdate)
+                        {
+                            Log.Error($"Failed to update E911 record for {existing.DialedNumber} from {JsonSerializer.Serialize(record)}");
+                        }
+                    }
+                    else
+                    {
+                        // Create a new record to replace the existing one.
+                        var registration = new EmergencyInformation
+                        {
+                            DialedNumber = number.DialedNumber,
+                            Sms = record.Sms.Any() ? string.Join(',', record.Sms) : string.Empty,
+                            State = record.State,
+                            City = record.City,
+                            Zip = record.Zip,
+                            CallerName = record.CallerName,
+                            AddressLine1 = record.AddressLine1,
+                            AddressLine2 = record.AddressLine2,
+                            BulkVSLastModificationDate = record.LastModification,
+                            DateIngested = DateTime.Now,
+                            IngestedFrom = "BulkVS",
+                            ModifiedDate = DateTime.Now,
+                            RawResponse = JsonSerializer.Serialize(record),
+                        };
+
+                        ownedNumber.EmergencyInformationId = registration.EmergencyInformationId;
+
+                        var checkCreate = await registration.PostAsync(connectionString);
+                        var checkUpdate = await ownedNumber.PutAsync(connectionString);
+
+                        if (!checkCreate && !checkUpdate)
+                        {
+                            Log.Error($"Failed to create E911 record for {number.DialedNumber} from {JsonSerializer.Serialize(record)}");
+                        }
+                    }
+                }
+                else if (checkParse && ownedNumber is not null && ownedNumber.DialedNumber == number.DialedNumber)
+                {
+                    // Create a new E911 record if none is linked to this owned number.
+                    var registration = new EmergencyInformation
+                    {
+                        DialedNumber = number.DialedNumber,
+                        Sms = record.Sms.Any() ? string.Join(',', record.Sms) : string.Empty,
+                        State = record.State,
+                        City = record.City,
+                        Zip = record.Zip,
+                        CallerName = record.CallerName,
+                        AddressLine1 = record.AddressLine1,
+                        AddressLine2 = record.AddressLine2,
+                        BulkVSLastModificationDate = record.LastModification,
+                        DateIngested = DateTime.Now,
+                        IngestedFrom = "BulkVS",
+                        ModifiedDate = DateTime.Now,
+                        RawResponse = JsonSerializer.Serialize(record),
+                    };
+
+                    ownedNumber.EmergencyInformationId = registration.EmergencyInformationId;
+
+                    var checkCreate = await registration.PostAsync(connectionString);
+                    var checkUpdate = await ownedNumber.PutAsync(connectionString);
+
+                    if (!checkCreate && !checkUpdate)
+                    {
+                        Log.Error($"Failed to create E911 record for {number.DialedNumber} from {JsonSerializer.Serialize(record)}");
+                    }
+                }
+
+                // Do nothing if we can't find a matching owned number for this e911 registration.
+            }
         }
 
         public static async Task<bool> SendPortingNotificationEmailAsync(IEnumerable<ServiceProviderChanged> changes, string smtpUsername, string smtpPassword, string emailPrimary, string emailCC, string connectionString)

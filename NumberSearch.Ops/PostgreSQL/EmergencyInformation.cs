@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace AccelerateNetworks.Operations
@@ -11,17 +10,15 @@ namespace AccelerateNetworks.Operations
         public string DialedNumber { get; set; } = null!;
         public string IngestedFrom { get; set; } = null!;
         public DateTime DateIngested { get; set; }
-        public string? TeliId { get; set; }
-        public string? FullName { get; set; }
-        public string? Address { get; set; }
+        public string? CallerName { get; set; }
+        public string? AddressLine1 { get; set; }
+        public string? AddressLine2 { get; set; }
         public string? City { get; set; }
         public string? State { get; set; }
         public string? Zip { get; set; }
-        public string? UnitType { get; set; }
-        public string? UnitNumber { get; set; }
-        public DateTime? CreatedDate { get; set; }
-        public DateTime? ModifyDate { get; set; }
-        public string? AlertGroup { get; set; }
-        public string? Note { get; set; }
+        public string? Sms { get; set; }
+        public string? RawResponse { get; set; }
+        public DateTime? BulkVSLastModificationDate { get; set; }
+        public DateTime? ModifiedDate { get; set; }
     }
 }

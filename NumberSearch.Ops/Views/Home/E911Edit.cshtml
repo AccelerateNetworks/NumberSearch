@@ -16,9 +16,6 @@
                 </th>
                 <th>Status</th>
                 <th>Physical Location</th>
-                <th>
-                    Notes
-                </th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -27,7 +24,7 @@
                 <td>
                     <h4>@Model?.DialedNumber</h4>
                 </td>
-                <td data-order="@Model?.ModifyDate?.Ticks">
+                <td data-order="@Model?.ModifiedDate?.Ticks">
                     @{
                         var ingestedBadge = Model?.IngestedFrom;
                         switch (Model?.IngestedFrom)
@@ -44,30 +41,17 @@
                         }
                     }
                     @Html.Raw(ingestedBadge)
-                    <strong>Alert Group</strong>
-                    <p>@Model?.AlertGroup</p>
                     <strong>Last Modified</strong>
-                    <p>@Model?.ModifyDate</p>
+                    <p>@Model?.ModifiedDate</p>
                     <strong>Created</strong>
-                    <p>@Model?.CreatedDate</p>
+                    <p>@Model?.DateIngested</p>
                 </td>
                 <td>
                     <strong>Address</strong>
-                    <p>@Model?.Address, @Model?.City, @Model?.State @Model?.Zip </p>
-                    @{
-                        if (!(string.IsNullOrWhiteSpace(Model?.UnitType)))
-                        {
-                            <p>Unit @Model?.UnitNumber</p>
-                            <strong>Unit Type</strong>
-                            <p>@Model?.UnitType</p>
-                        }
-                    }
+                    <p>@Model?.AddressLine1 @Model?.AddressLine2, @Model?.City, @Model?.State @Model?.Zip </p>
                 </td>
                 <td>
-                    @Model?.Note
-                </td>
-                <td>
-                    <a href="https://www.google.com/maps/place/@Model?.Address,+@Model?.City,+@Model?.State+@Model?.Zip/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+                    <a href="https://www.google.com/maps/place/@Model?.AddressLine1,+@Model?.City,+@Model?.State+@Model?.Zip/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
                         Map
                     </a>
                 </td>

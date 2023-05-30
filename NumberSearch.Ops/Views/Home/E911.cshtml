@@ -13,9 +13,6 @@
                 </th>
                 <th>Status</th>
                 <th>Physical Location</th>
-                <th>
-                    Notes
-                </th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -26,7 +23,7 @@
                     <td>
                         <h4>@info.DialedNumber</h4>
                     </td>
-                    <td data-order="@info?.ModifyDate?.Ticks">
+                    <td data-order="@info?.ModifiedDate?.Ticks">
                         @{
                             var ingestedBadge = info?.IngestedFrom;
                             switch (info?.IngestedFrom)
@@ -43,31 +40,18 @@
                             }
                         }
                         @Html.Raw(ingestedBadge)
-                        <strong>Alert Group</strong>
-                        <p>@info?.AlertGroup</p>
                         <strong>Last Modified</strong>
-                        <p>@info?.ModifyDate</p>
+                        <p>@info?.ModifiedDate</p>
                         <strong>Created</strong>
-                        <p>@info?.CreatedDate</p>
+                        <p>@info?.DateIngested</p>
                     </td>
                     <td>
                         <strong>Address</strong>
-                        <p>@info?.Address, @info?.City, @info?.State @info?.Zip </p>
-                        @{
-                            if (!(string.IsNullOrWhiteSpace(info?.UnitType)))
-                            {
-                                <p>Unit @info.UnitNumber</p>
-                                <strong>Unit Type</strong>
-                                <p>@info.UnitType</p>
-                            }
-                        }
-                    </td>
-                    <td>
-                        @info?.Note
+                        <p>@info?.AddressLine1 @info?.AddressLine2, @info?.City, @info?.State @info?.Zip </p>
                     </td>
                     <td>
                         <div class="btn-group">
-                            <a href="https://www.google.com/maps/place/@info?.Address,+@info?.City,+@info?.State+@info?.Zip/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+                            <a href="https://www.google.com/maps/place/@info?.AddressLine1,+@info?.City,+@info?.State+@info?.Zip/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
                                 Map
                             </a>
                             <a class="btn btn-danger text-light" href="/Home/E911/@info?.DialedNumber">Edit</a>

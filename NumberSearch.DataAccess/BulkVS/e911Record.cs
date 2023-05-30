@@ -15,7 +15,7 @@ namespace NumberSearch.DataAccess.BulkVS
         public string TN { get; set; } = string.Empty;
         [JsonPropertyName("Caller Name")]
         [JsonProperty("Caller Name")]
-        public bool CallerName { get; set; }
+        public string CallerName { get; set; }
         [JsonPropertyName("Address Line 1")]
         [JsonProperty("Address Line 1")]
         public string AddressLine1 { get; set; } = string.Empty;
@@ -30,24 +30,45 @@ namespace NumberSearch.DataAccess.BulkVS
         [JsonProperty("Last Modification")]
         public DateTime LastModification { get; set; }
 
-        public static async Task<E911Record> GetAsync(string dialedNumber, string username, string password)
+        public static async Task<E911Record[]> GetAsync(string dialedNumber, string username, string password)
         {
             string baseUrl = "https://portal.bulkvs.com/api/v1.0/";
             string endpoint = "e911Record";
             string numberParameter = $"?Number={dialedNumber}";
-            string limitParameter = $"?Limit=100";
+            string limitParameter = $"&Limit=100";
             string route = $"{baseUrl}{endpoint}{numberParameter}{limitParameter}";
             try
             {
                 return await route.WithBasicAuth(username, password)
-                    .GetJsonAsync<E911Record>()
+                    .GetJsonAsync<E911Record[]>()
                     .ConfigureAwait(false);
             }
             catch (FlurlHttpException ex)
             {
                 Log.Warning($"[E911] [BulkVS] No results found for number {dialedNumber}.");
+                var response = await ex.GetResponseStringAsync();
                 Log.Warning(await ex.GetResponseStringAsync());
-                return new();
+                return Array.Empty<E911Record>();
+            }
+        }
+
+        public static async Task<E911Record[]> GetAllAsync(string username, string password)
+        {
+            string baseUrl = "https://portal.bulkvs.com/api/v1.0/";
+            string endpoint = "e911Record";
+            string limitParameter = $"?Limit=9999";
+            string route = $"{baseUrl}{endpoint}{limitParameter}";
+            try
+            {
+                return await route.WithBasicAuth(username, password)
+                    .GetJsonAsync<E911Record[]>()
+                    .ConfigureAwait(false);
+            }
+            catch (FlurlHttpException ex)
+            {
+                Log.Warning($"[E911] [BulkVS] No results found.");
+                Log.Warning(await ex.GetResponseStringAsync());
+                return Array.Empty<E911Record>();
             }
         }
 
