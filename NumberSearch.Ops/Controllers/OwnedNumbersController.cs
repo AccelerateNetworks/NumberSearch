@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -28,8 +29,17 @@ public class OwnedNumbersController : Controller
         if (string.IsNullOrWhiteSpace(dialedNumber))
         {
             // Show all orders
-            var orders = await _context.OwnedPhoneNumbers.OrderByDescending(x => x.DialedNumber).AsNoTracking().ToListAsync();
-            return View("OwnedNumbers", orders);
+            var ownedNumbers = await _context.OwnedPhoneNumbers.OrderByDescending(x => x.DialedNumber).AsNoTracking().ToListAsync();
+            var portedNumbers = await _context.PortedPhoneNumbers.ToArrayAsync();
+            var purchasedNumbers = await _context.PurchasedPhoneNumbers.ToArrayAsync();
+            var e911s = await _context.EmergencyInformation.ToArrayAsync();
+            var viewOrders = new List<OwnedNumberResult>();
+            foreach (var ownedNumber in ownedNumbers)
+            {
+                viewOrders.Add(new OwnedNumberResult { EmergencyInformation = e911s.FirstOrDefault(x => x.DialedNumber == ownedNumber.DialedNumber) ?? new(), Owned = ownedNumber, PortedPhoneNumbers = portedNumbers.Where(x => x.PortedDialedNumber == ownedNumber.DialedNumber).ToArray(), PurchasedPhoneNumbers = purchasedNumbers.Where(x => x.DialedNumber == ownedNumber.DialedNumber).ToArray() });
+            }
+
+            return View("OwnedNumbers", viewOrders.ToArray());
         }
         else
         {
@@ -38,13 +48,23 @@ public class OwnedNumbersController : Controller
             {
                 var portedNumbers = await _context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == dialedNumber).ToArrayAsync();
                 var purchasedNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == dialedNumber).ToArrayAsync();
-                return View("OwnedNumberEdit", new OwnedNumberResult { PurchasedPhoneNumbers = purchasedNumbers, PortedPhoneNumbers = portedNumbers, Owned = order });
+                var e911 = await _context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
+                return View("OwnedNumberEdit", new OwnedNumberResult { PurchasedPhoneNumbers = purchasedNumbers, PortedPhoneNumbers = portedNumbers, Owned = order, EmergencyInformation = e911 ?? new() });
             }
             else
             {
                 // Show all orders
-                var orders = await _context.OwnedPhoneNumbers.OrderByDescending(x => x.DialedNumber).AsNoTracking().ToListAsync();
-                return View("OwnedNumbers", orders);
+                var ownedNumbers = await _context.OwnedPhoneNumbers.OrderByDescending(x => x.DialedNumber).AsNoTracking().ToListAsync();
+                var portedNumbers = await _context.PortedPhoneNumbers.ToArrayAsync();
+                var purchasedNumbers = await _context.PurchasedPhoneNumbers.ToArrayAsync();
+                var e911s = await _context.EmergencyInformation.ToArrayAsync();
+                var viewOrders = new List<OwnedNumberResult>();
+                foreach (var ownedNumber in ownedNumbers)
+                {
+                    viewOrders.Add(new OwnedNumberResult { EmergencyInformation = e911s.FirstOrDefault(x => x.DialedNumber == ownedNumber.DialedNumber) ?? new(), Owned = ownedNumber, PortedPhoneNumbers = portedNumbers.Where(x => x.PortedDialedNumber == ownedNumber.DialedNumber).ToArray(), PurchasedPhoneNumbers = purchasedNumbers.Where(x => x.DialedNumber == ownedNumber.DialedNumber).ToArray() });
+                }
+
+                return View("OwnedNumbers", viewOrders.ToArray());
             }
         }
     }

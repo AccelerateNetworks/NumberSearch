@@ -1,20 +1,22 @@
 ﻿@using AccelerateNetworks.Operations
-@model IEnumerable<OwnedPhoneNumber>
+@model OwnedNumberResult[]
 @{
     ViewData["Title"] = "Owned Phone Numbers";
 }
 <h1 class="display-4 p-3">🏢 Owned Numbers</h1>
-<p>Total: <strong>@Model.Count()</strong> |
-    Active: <strong>@Model.Where(x => x.Status is "Active").Count()</strong> 
-    Cancelled: <strong>@Model.Where(x => x.Status is "Cancelled").Count()</strong> 
-    Porting In: <strong>@Model.Where(x => x.Status is "Porting In").Count()</strong> 
-    Porting Out: <strong>@Model.Where(x => x.Status is "Porting Out").Count()</strong>
+<p>
+    Total: <strong>@Model.Count()</strong> |
+    Active: <strong>@Model.Where(x => x.Owned.Status is "Active").Count()</strong>
+    Cancelled: <strong>@Model.Where(x => x.Owned.Status is "Cancelled").Count()</strong>
+    Porting In: <strong>@Model.Where(x => x.Owned.Status is "Porting In").Count()</strong>
+    Porting Out: <strong>@Model.Where(x => x.Owned.Status is "Porting Out").Count()</strong>
     |
     @{
-        foreach (string provider in Model.Select(x => x.IngestedFrom).Distinct())
+        foreach (string provider in Model.Select(x => x.Owned.IngestedFrom).Distinct())
         {
-            string numbersForProider = $"{provider}: <strong>{Model.Where(x => x.IngestedFrom == provider).Count()}</strong> ";
-            @Html.Raw(numbersForProider);
+            string numbersForProider = $"{provider}: <strong>{Model.Where(x => x.Owned.IngestedFrom == provider).Count()}</strong> ";
+            @Html.Raw(numbersForProider)
+            ;
         }
     }
 </p>
@@ -25,17 +27,17 @@
                 <th scope="col">Number</th>
                 <th>Status</th>
                 <th scope="col">Provider</th>
+                <th>E911</th>
                 <th>Notes</th>
-                <th>Client and Billing Id</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             @{
-                foreach (var number in Model.Where(x => x.IngestedFrom != "Test"))
+                foreach (var number in Model.Where(x => x.Owned.IngestedFrom != "Test"))
                 {
-                    var ingestedBadge = number.IngestedFrom;
-                    switch (number.IngestedFrom)
+                    var ingestedBadge = number.Owned.IngestedFrom;
+                    switch (number.Owned.IngestedFrom)
                     {
                         case "FirstPointCom":
                             ingestedBadge = "<h4><span class='badge bg-info'>FirstPointCom</span></h4>";
@@ -57,9 +59,9 @@
                     @number.DateIngested
                     </span>
                     </h4>*@
-                            <h4>@number.DialedNumber</h4>
+                            <h4>@number.Owned.DialedNumber</h4>
                             @{
-                                if (number.Active)
+                                if (number.Owned.Active)
                                 {
                                     <h4><span class="badge bg-success">Active</span></h4>
                                 }
@@ -70,30 +72,56 @@
                             }
                         </td>
                         <td>
-                            @number.Status
+                            @number.Owned.Status
                         </td>
                         <td>
                             @Html.Raw(ingestedBadge)
                             <p>
                                 Last Updated
-                                @number.DateUpdated.ToShortDateString()
+                                @number.Owned.DateUpdated.ToShortDateString()
                             </p>
 
                         </td>
                         <td>
-                            <p>@number.Notes</p>
+                            @if (number?.Owned.EmergencyInformationId is not null)
+                            {
+                                <p>
+                                    Registered on @number?.EmergencyInformation.BulkVSLastModificationDate?.ToShortDateString()
+                                </p>
+                                <p>
+                                    @number?.EmergencyInformation.CallerName
+                                </p>
+                                <p>
+                                    @number?.EmergencyInformation.AddressLine1
+                                    @number?.EmergencyInformation.AddressLine2
+                                </p>
+                                <p>
+                                    @number?.EmergencyInformation.City
+                                    @number?.EmergencyInformation.State
+                                    @number?.EmergencyInformation.Zip
+                                </p>
+                                <p>
+                                    Last verified on @number?.EmergencyInformation.ModifiedDate?.ToShortDateString()
+                                </p>
+                            }
                         </td>
                         <td>
-                            <p>@number.OwnedBy</p>
-                            <p>@number.BillingClientId</p>
+                            @if (!string.IsNullOrWhiteSpace(number?.Owned.OwnedBy))
+                            {
+                                <p>@number.Owned.OwnedBy</p>
+                            }
+                            <p>@number?.Owned.Notes</p>
                         </td>
+                        @*<td>
+                <p>@number.Owned.BillingClientId</p>
+                </td>*@
                         <td>
                             <div class="btn-group" role="group" aria-label="Basic example">
-                                <a class="btn btn-danger text-light" href="/Home/OwnedNumbers/@number.DialedNumber" target="_blank">Edit</a>
+                                <a class="btn btn-danger text-light" href="/Home/OwnedNumbers/@number.Owned.DialedNumber" target="_blank">Edit</a>
                                 @{
-                                    if (!string.IsNullOrWhiteSpace(number.BillingClientId))
+                                    if (!string.IsNullOrWhiteSpace(number.Owned.BillingClientId))
                                     {
-                                        <a href="https://billing.acceleratenetworks.com/clients/@number?.BillingClientId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
+                                        <a href="https://billing.acceleratenetworks.com/clients/@number?.Owned.BillingClientId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
                                             Billing
                                         </a>
                                     }
@@ -105,9 +133,9 @@
                                     }
                                 }
                                 @{
-                                    if (number?.EmergencyInformationId is not null)
+                                    if (number?.Owned.EmergencyInformationId is not null)
                                     {
-                                        <a href="/Home/EmergencyInformation/@number.DialedNumber" class="btn btn-info text-light" target="_blank">
+                                        <a href="/Home/E911/@number.Owned.DialedNumber" class="btn btn-info text-light" target="_blank">
                                             Emergency
                                         </a>
                                     }
