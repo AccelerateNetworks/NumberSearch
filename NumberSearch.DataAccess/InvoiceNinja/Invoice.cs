@@ -222,7 +222,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
             string endpoint = "invoices";
-            if (entity_type is not null && entity_type.Equals("quote"))
+            if (entity_type is not null && entity_type is "quote")
             {
                 endpoint = "quotes";
             }
@@ -249,7 +249,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
             string endpoint = "invoices";
-            if (entity_type is not null && entity_type.Equals("quote"))
+            if (entity_type is not null && entity_type is "quote")
             {
                 endpoint = "quotes";
             }
@@ -274,7 +274,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
             string endpoint = "invoices";
-            if (entity_type is not null && entity_type.Equals("quote"))
+            if (entity_type is not null && entity_type is "quote")
             {
                 endpoint = "quotes";
             }

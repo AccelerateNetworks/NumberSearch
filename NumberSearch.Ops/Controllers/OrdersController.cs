@@ -1602,6 +1602,8 @@ public class OrdersController : Controller
                                 auto_bill_enabled = false,
                             };
 
+                            string partialMessage = string.Empty;
+
                             // Submit them to the billing system if they have items.
                             if (upfrontInvoice.line_items.Any() && reoccurringInvoice.line_items.Any())
                             {
@@ -1624,6 +1626,7 @@ public class OrdersController : Controller
                                     Log.Error(error);
                                     Log.Warning("[Checkout] Failed to find existing onetime invoice in the billing system.");
                                     //return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing onetime invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                    partialMessage = $"Failed to find existing onetime and reoccurring invoices in the billing system 😡";
                                 }
 
                                 // If it doesn't exist create it, otherwise update it.
@@ -1769,7 +1772,7 @@ public class OrdersController : Controller
                                 {
                                     if (!string.IsNullOrWhiteSpace(order.BillingInvoiceReoccuringId))
                                     {
-                                        createNewReoccurringInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
+                                        createNewReoccurringInvoice = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
                                     }
                                 }
                                 catch (FlurlHttpException ex)
@@ -1777,7 +1780,8 @@ public class OrdersController : Controller
                                     Log.Fatal("[Checkout] Failed to find existing invoices in the billing system.");
                                     var error = await ex.GetResponseStringAsync();
                                     Log.Fatal(error);
-                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                    //return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                    partialMessage = $"Failed to find existing reoccurring invoices in the billing system 😡";
                                 }
 
                                 if (string.IsNullOrWhiteSpace(createNewReoccurringInvoice.id))
@@ -1846,7 +1850,7 @@ public class OrdersController : Controller
                                 {
                                     if (!string.IsNullOrWhiteSpace(order.BillingInvoiceId))
                                     {
-                                        createNewOneTimeInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
+                                        createNewOneTimeInvoice = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
                                     }
                                 }
                                 catch (FlurlHttpException ex)
@@ -1857,8 +1861,8 @@ public class OrdersController : Controller
                                     Log.Fatal("[Checkout] Failed to find existing invoices in the billing system.");
                                     // Suppress this because we want this process to continue along anyway.
                                     //return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 Did someone manually delete them?!? {message}", AlertType = "alert-danger" });
+                                    partialMessage = $"Failed to find existing onetime invoices in the billing system 😡";
                                 }
-
 
                                 // If it doesn't exist create it, otherwise update it.
                                 if (string.IsNullOrWhiteSpace(createNewOneTimeInvoice.id))
@@ -1924,7 +1928,7 @@ public class OrdersController : Controller
                             _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                             await _context.SaveChangesAsync();
 
-                            return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Successfully deleted the existing Invoices and created new Invoices for this quote! 🥳", AlertType = "alert-success" });
+                            return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Generated the invoices for this quote! 🥳 {partialMessage}", AlertType = "alert-success" });
                         }
                         else
                         {
@@ -1939,6 +1943,8 @@ public class OrdersController : Controller
                                 auto_bill = "always",
                                 auto_bill_enabled = true,
                             };
+
+                            string partialMessage = string.Empty;
 
                             // Submit them to the billing system if they have items.
                             if (upfrontInvoice.line_items.Any() && reoccurringInvoice.line_items.Any() && order is not null)
@@ -1962,6 +1968,7 @@ public class OrdersController : Controller
                                     var error = await ex.GetResponseStringAsync();
                                     Log.Fatal(error);
                                     //return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                    partialMessage = $"Failed to find existing onetime and reoccurring invoices in the billing system 😡";
                                 }
 
                                 if (string.IsNullOrWhiteSpace(createNewOneTimeInvoice.id))
@@ -2078,6 +2085,7 @@ public class OrdersController : Controller
                                     var error = await ex.GetResponseStringAsync();
                                     Log.Fatal(error);
                                     //return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                    partialMessage = $"Failed to find existing reoccurring invoice in the billing system 😡";
                                 }
 
 
@@ -2155,6 +2163,7 @@ public class OrdersController : Controller
                                     var error = await ex.GetResponseStringAsync();
                                     Log.Fatal(error);
                                     //return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                    partialMessage = $"Failed to find existing onetime invoices in the billing system 😡";
                                 }
 
                                 if (string.IsNullOrWhiteSpace(createNewOneTimeInvoice.id))
@@ -2219,7 +2228,7 @@ public class OrdersController : Controller
                                 await _context.SaveChangesAsync();
                             }
 
-                            return View("OrderEdit", new EditOrderResult { Order = order ?? new(), Cart = cart, Message = $"Successfully deleted the existing Invoices and created new Invoices for this order! 🥳", AlertType = "alert-success" });
+                            return View("OrderEdit", new EditOrderResult { Order = order ?? new(), Cart = cart, Message = $"Generated the invoices for this order! 🥳 {partialMessage}", AlertType = "alert-success" });
                         }
                     }
                     catch (Exception ex)
