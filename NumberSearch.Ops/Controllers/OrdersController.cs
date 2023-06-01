@@ -482,6 +482,34 @@ public class OrdersController : Controller
                                     {
                                         Log.Information(JsonSerializer.Serialize(response));
                                         order.E911ServiceNumber = response.TN;
+                                        var emergencyRecord = new EmergencyInformation
+                                        {
+                                            AddressLine1 = response.AddressLine1,
+                                            AddressLine2 = response.AddressLine2,
+                                            BulkVSLastModificationDate = response.LastModification,
+                                            CallerName = response.CallerName,
+                                            RawResponse = JsonSerializer.Serialize(response),
+                                            City = response.City,
+                                            DateIngested = DateTime.Now,
+                                            DialedNumber = phoneNumber.DialedNumber,
+                                            Sms = response.Sms.Any() ? string.Join(',', response.Sms) : string.Empty,
+                                            State = response.State,
+                                            EmergencyInformationId = Guid.NewGuid(),
+                                            IngestedFrom = "BulkVS",
+                                            ModifiedDate = DateTime.Now,
+                                            Zip = response.Zip
+                                        };
+                                        // Save the record to our database
+                                        _context.EmergencyInformation.Add(emergencyRecord);
+
+                                        // Updated the owned number that we registered for E911 service if it exists.
+                                        var owned = await _context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == phoneNumber.DialedNumber);
+
+                                        if (owned is not null && owned.DialedNumber == phoneNumber.DialedNumber)
+                                        {
+                                            owned.EmergencyInformationId = emergencyRecord.EmergencyInformationId;
+                                        }
+
                                         await _context.SaveChangesAsync();
 
                                         var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();

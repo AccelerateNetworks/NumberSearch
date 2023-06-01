@@ -10,6 +10,7 @@ namespace NumberSearch.Ops
         public PortedPhoneNumber[] PortedPhoneNumbers { get; set; } = Array.Empty<PortedPhoneNumber>();
         public PurchasedPhoneNumber[] PurchasedPhoneNumbers { get; set; } = Array.Empty<PurchasedPhoneNumber>();
         public EmergencyInformation EmergencyInformation { get; set; } = new();
+        public Order[] RelatedOrders { get; set; } = Array.Empty<Order>();
         public string Message { get; set; } = string.Empty;
     }
 }

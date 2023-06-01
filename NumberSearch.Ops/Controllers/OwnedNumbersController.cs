@@ -3,8 +3,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
+using NuGet.Packaging;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,47 +28,63 @@ public class OwnedNumbersController : Controller
     [Route("/Home/OwnedNumbers/{dialedNumber}")]
     public async Task<IActionResult> OwnedNumbers(string dialedNumber)
     {
-        if (string.IsNullOrWhiteSpace(dialedNumber))
+        if (!string.IsNullOrWhiteSpace(dialedNumber))
         {
-            // Show all orders
-            var ownedNumbers = await _context.OwnedPhoneNumbers.OrderByDescending(x => x.DialedNumber).AsNoTracking().ToListAsync();
-            var portedNumbers = await _context.PortedPhoneNumbers.ToArrayAsync();
-            var purchasedNumbers = await _context.PurchasedPhoneNumbers.ToArrayAsync();
-            var e911s = await _context.EmergencyInformation.ToArrayAsync();
-            var viewOrders = new List<OwnedNumberResult>();
-            foreach (var ownedNumber in ownedNumbers)
+            var owned = await _context.OwnedPhoneNumbers.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
+            if (owned is not null && owned.DialedNumber == dialedNumber)
             {
-                viewOrders.Add(new OwnedNumberResult { EmergencyInformation = e911s.FirstOrDefault(x => x.DialedNumber == ownedNumber.DialedNumber) ?? new(), Owned = ownedNumber, PortedPhoneNumbers = portedNumbers.Where(x => x.PortedDialedNumber == ownedNumber.DialedNumber).ToArray(), PurchasedPhoneNumbers = purchasedNumbers.Where(x => x.DialedNumber == ownedNumber.DialedNumber).ToArray() });
-            }
-
-            return View("OwnedNumbers", viewOrders.ToArray());
-        }
-        else
-        {
-            var order = await _context.OwnedPhoneNumbers.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
-            if (order is not null && order.DialedNumber == dialedNumber)
-            {
-                var portedNumbers = await _context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == dialedNumber).ToArrayAsync();
-                var purchasedNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == dialedNumber).ToArrayAsync();
+                var orderIds = new List<Guid>();
+                var localPortedNumbers = await _context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == dialedNumber).ToArrayAsync();
+                var localPurchasedNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == dialedNumber).ToArrayAsync();
                 var e911 = await _context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
-                return View("OwnedNumberEdit", new OwnedNumberResult { PurchasedPhoneNumbers = purchasedNumbers, PortedPhoneNumbers = portedNumbers, Owned = order, EmergencyInformation = e911 ?? new() });
-            }
-            else
-            {
-                // Show all orders
-                var ownedNumbers = await _context.OwnedPhoneNumbers.OrderByDescending(x => x.DialedNumber).AsNoTracking().ToListAsync();
-                var portedNumbers = await _context.PortedPhoneNumbers.ToArrayAsync();
-                var purchasedNumbers = await _context.PurchasedPhoneNumbers.ToArrayAsync();
-                var e911s = await _context.EmergencyInformation.ToArrayAsync();
-                var viewOrders = new List<OwnedNumberResult>();
-                foreach (var ownedNumber in ownedNumbers)
+
+                // Get the orderIds for all the related orders.
+                var portedOrders = localPortedNumbers.Where(x => x.OrderId.HasValue && x.OrderId != Guid.Empty).Select(x => x.OrderId.Value).ToList();
+                orderIds.AddRange(portedOrders);
+                var purchasedOrders = localPurchasedNumbers.Where(x => x.OrderId != Guid.Empty).Select(x => x.OrderId).ToList();
+                orderIds.AddRange(purchasedOrders);
+
+                var relatedOrders = new List<Order>();
+
+                foreach (var id in orderIds.Distinct())
                 {
-                    viewOrders.Add(new OwnedNumberResult { EmergencyInformation = e911s.FirstOrDefault(x => x.DialedNumber == ownedNumber.DialedNumber) ?? new(), Owned = ownedNumber, PortedPhoneNumbers = portedNumbers.Where(x => x.PortedDialedNumber == ownedNumber.DialedNumber).ToArray(), PurchasedPhoneNumbers = purchasedNumbers.Where(x => x.DialedNumber == ownedNumber.DialedNumber).ToArray() });
+                    var order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == id);
+                    if (order is not null && order.OrderId == id)
+                    {
+                        relatedOrders.Add(order);
+                    }
                 }
 
-                return View("OwnedNumbers", viewOrders.ToArray());
+                return View("OwnedNumberEdit", new OwnedNumberResult
+                {
+                    PurchasedPhoneNumbers = localPurchasedNumbers,
+                    PortedPhoneNumbers = localPortedNumbers,
+                    Owned = owned,
+                    EmergencyInformation = e911 ?? new(),
+                    RelatedOrders = relatedOrders.ToArray(),
+                });
             }
+
         }
+
+        // Show all orders
+        var ownedNumbers = await _context.OwnedPhoneNumbers.OrderByDescending(x => x.DialedNumber).AsNoTracking().ToListAsync();
+        var portedNumbers = await _context.PortedPhoneNumbers.ToArrayAsync();
+        var purchasedNumbers = await _context.PurchasedPhoneNumbers.ToArrayAsync();
+        var e911s = await _context.EmergencyInformation.ToArrayAsync();
+        var viewOrders = new List<OwnedNumberResult>();
+        foreach (var ownedNumber in ownedNumbers)
+        {
+            viewOrders.Add(new OwnedNumberResult
+            {
+                EmergencyInformation = e911s.FirstOrDefault(x => x.DialedNumber == ownedNumber.DialedNumber) ?? new(),
+                Owned = ownedNumber,
+                PortedPhoneNumbers = portedNumbers.Where(x => x.PortedDialedNumber == ownedNumber.DialedNumber).ToArray(),
+                PurchasedPhoneNumbers = purchasedNumbers.Where(x => x.DialedNumber == ownedNumber.DialedNumber).ToArray()
+            });
+        }
+
+        return View("OwnedNumbers", viewOrders.ToArray());
     }
 
     [Authorize]
