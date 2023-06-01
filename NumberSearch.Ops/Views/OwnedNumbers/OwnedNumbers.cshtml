@@ -104,6 +104,11 @@
                                     Last verified on @number?.EmergencyInformation.ModifiedDate?.ToShortDateString()
                                 </p>
                             }
+                            else
+                            {
+                                // TODO: Add this number to your cart in MVC and bump you to the Orders page.
+                                <a class="btn btn-outline-primary">Create a Regisitration Order for this Number</a>
+                            }
                         </td>
                         <td>
                             @if (!string.IsNullOrWhiteSpace(number?.Owned.OwnedBy))

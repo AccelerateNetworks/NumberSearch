@@ -21,6 +21,8 @@ using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading.Tasks;
 
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
 namespace NumberSearch.Ops.Controllers;
 [ApiExplorerSettings(IgnoreApi = true)]
 public class OrdersController : Controller
@@ -1498,7 +1500,7 @@ public class OrdersController : Controller
 
                         var billingTaxRate = new TaxRateDatum();
 
-                        if (specificTaxRate is not null && specificTaxRate.rate is not null)
+                        if (specificTaxRate is not null && specificTaxRate.rate is not null && specificTaxRate.rate1 > 0)
                         {
                             var rateName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(specificTaxRate.rate.name.ToLowerInvariant());
                             var taxRateName = $"{rateName}, WA - {specificTaxRate.loccode}";
@@ -1570,7 +1572,8 @@ public class OrdersController : Controller
                             id = billingClient.id,
                             line_items = onetimeItems.ToArray(),
                             tax_name1 = billingTaxRate.name,
-                            tax_rate1 = billingTaxRate.rate
+                            tax_rate1 = billingTaxRate.rate,
+                            client_id = billingClient.id
                         };
 
                         // If they want just a Quote, create a quote in the billing system, not an invoice.
@@ -1606,276 +1609,315 @@ public class OrdersController : Controller
                                 var BillingInvoiceId = string.Empty;
                                 var BillingInvoiceReoccuringId = string.Empty;
 
-                                if (!string.IsNullOrWhiteSpace(order.BillingInvoiceId))
+                                var createNewOneTimeInvoice = new InvoiceDatum();
+
+                                try
+                                {
+                                    if (!string.IsNullOrWhiteSpace(order.BillingInvoiceId))
+                                    {
+                                        createNewOneTimeInvoice = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
+                                    }
+                                }
+                                catch (FlurlHttpException ex)
+                                {
+                                    var error = await ex.GetResponseStringAsync();
+                                    Log.Error(error);
+                                    Log.Warning("[Checkout] Failed to find existing onetime invoice in the billing system.");
+                                    //return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing onetime invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                }
+
+                                // If it doesn't exist create it, otherwise update it.
+                                if (string.IsNullOrWhiteSpace(createNewOneTimeInvoice.id) || createNewOneTimeInvoice.id != order.BillingInvoiceId)
                                 {
                                     try
                                     {
-                                        var createNewOneTimeInvoice = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
-
-                                        // If it doesn't exist create it, otherwise update it.
-                                        if (createNewOneTimeInvoice is null || createNewOneTimeInvoice.id != order.BillingInvoiceId)
+                                        createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        if (string.IsNullOrWhiteSpace(createNewOneTimeInvoice?.id) && string.IsNullOrWhiteSpace(createNewOneTimeInvoice?.client_id))
                                         {
-                                            try
-                                            {
-                                                createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                                if (string.IsNullOrWhiteSpace(createNewOneTimeInvoice?.id) && string.IsNullOrWhiteSpace(createNewOneTimeInvoice?.client_id))
-                                                {
-                                                    BillingInvoiceId = createNewOneTimeInvoice?.id;
-                                                    BillingClientId = createNewOneTimeInvoice?.client_id;
-                                                }
-                                            }
-                                            catch (FlurlHttpException ex)
-                                            {
-                                                var error = await ex.GetResponseStringAsync();
-                                                Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                                Log.Error(error);
-                                                Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
-                                            }
-                                        }
-                                        else
-                                        {
-                                            // Update the existing invoice.
-                                            try
-                                            {
-                                                createNewOneTimeInvoice.line_items = upfrontInvoice.line_items;
-                                                createNewOneTimeInvoice = await createNewOneTimeInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                                if (string.IsNullOrWhiteSpace(createNewOneTimeInvoice?.id) && string.IsNullOrWhiteSpace(createNewOneTimeInvoice?.client_id))
-                                                {
-                                                    BillingInvoiceId = createNewOneTimeInvoice?.id;
-                                                    BillingClientId = createNewOneTimeInvoice?.client_id;
-                                                }
-                                            }
-                                            catch (FlurlHttpException ex)
-                                            {
-                                                var error = await ex.GetResponseStringAsync();
-                                                Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                                Log.Error(error);
-                                                Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
-                                            }
+                                            BillingInvoiceId = createNewOneTimeInvoice?.id;
+                                            BillingClientId = createNewOneTimeInvoice?.client_id;
                                         }
                                     }
                                     catch (FlurlHttpException ex)
                                     {
                                         var error = await ex.GetResponseStringAsync();
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
                                         Log.Error(error);
-                                        Log.Warning("[Checkout] Failed to find existing onetime invoice in the billing system.");
+                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
-
-                                if (!string.IsNullOrWhiteSpace(order.BillingInvoiceReoccuringId))
+                                else
                                 {
+                                    // Update the existing invoice.
                                     try
                                     {
-                                        var createNewReoccurringInvoice = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
-
-                                        if (createNewReoccurringInvoice is null)
+                                        createNewOneTimeInvoice.line_items = upfrontInvoice.line_items;
+                                        createNewOneTimeInvoice = await createNewOneTimeInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        if (string.IsNullOrWhiteSpace(createNewOneTimeInvoice?.id) && string.IsNullOrWhiteSpace(createNewOneTimeInvoice?.client_id))
                                         {
-                                            try
-                                            {
-                                                createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                                var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                                if (string.IsNullOrWhiteSpace(createNewReoccurringInvoice?.id) && string.IsNullOrWhiteSpace(createNewReoccurringInvoice?.client_id))
-                                                {
-                                                    BillingInvoiceReoccuringId = createNewReoccurringInvoice?.id;
-                                                }
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                                Log.Fatal(ex?.Message ?? "No Message found.");
-                                                Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
-                                                Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
-                                            }
-                                        }
-                                        else
-                                        {
-                                            // Update the existing invoice.
-                                            try
-                                            {
-                                                createNewReoccurringInvoice.line_items = reoccurringInvoice.line_items;
-                                                createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                                var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                                if (string.IsNullOrWhiteSpace(createNewReoccurringInvoice?.id) && string.IsNullOrWhiteSpace(createNewReoccurringInvoice?.client_id))
-                                                {
-                                                    BillingInvoiceReoccuringId = createNewReoccurringInvoice?.id;
-                                                }
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                                Log.Fatal(ex?.Message ?? "No Message found.");
-                                                Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
-                                                Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
-                                            }
+                                            BillingInvoiceId = createNewOneTimeInvoice?.id;
+                                            BillingClientId = createNewOneTimeInvoice?.client_id;
                                         }
                                     }
                                     catch (FlurlHttpException ex)
                                     {
                                         var error = await ex.GetResponseStringAsync();
-                                        Log.Fatal(JsonSerializer.Serialize(error));
-                                        Log.Warning("[Checkout] Failed to find existing reoccurring invoice in the billing system.");
+                                        Log.Fatal("[Checkout] Failed to update the existing invoices in the billing system.");
+                                        Log.Error(error);
+                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update the existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
 
-                                // Update the order with the billing system's client and the two invoice Id's.
-                                order.BillingClientId = string.IsNullOrWhiteSpace(BillingClientId) ? order.BillingClientId : BillingClientId;
-                                order.BillingInvoiceId = string.IsNullOrWhiteSpace(BillingInvoiceId) ? order.BillingInvoiceId : BillingInvoiceId;
-                                order.BillingInvoiceReoccuringId = string.IsNullOrWhiteSpace(BillingInvoiceReoccuringId) ? order.BillingInvoiceReoccuringId : BillingInvoiceReoccuringId;
-
-                                _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
-                                await _context.SaveChangesAsync();
-
-                                var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(BillingClientId ?? string.Empty, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
-                                var oneTimeLink = invoiceLinks.Where(x => x.id == BillingInvoiceId).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-                                var reoccurringLink = invoiceLinks.Where(x => x.id == BillingInvoiceReoccuringId).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-
-                                if (!string.IsNullOrWhiteSpace(reoccurringLink))
+                                var createNewReoccurringInvoice = new InvoiceDatum();
+                                try
                                 {
-                                    order.ReoccuringInvoiceLink = reoccurringLink;
+                                    if (!string.IsNullOrWhiteSpace(order.BillingInvoiceReoccuringId))
+                                    {
+                                        createNewReoccurringInvoice = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
+                                    }
+                                }
+                                catch (FlurlHttpException ex)
+                                {
+                                    Log.Warning("[Checkout] Failed to find existing reoccurring invoice in the billing system.");
+                                    var error = await ex.GetResponseStringAsync();
+                                    Log.Error(error);
+                                    Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find the existing  reoccurring invoice in the billing system 😡 {error}", AlertType = "alert-danger" });
+
                                 }
 
-                                if (!string.IsNullOrWhiteSpace(oneTimeLink))
+                                if (string.IsNullOrWhiteSpace(createNewReoccurringInvoice.id))
                                 {
-                                    order.UpfrontInvoiceLink = oneTimeLink;
+                                    try
+                                    {
+                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        if (string.IsNullOrWhiteSpace(createNewReoccurringInvoice?.id) && string.IsNullOrWhiteSpace(createNewReoccurringInvoice?.client_id))
+                                        {
+                                            BillingInvoiceReoccuringId = createNewReoccurringInvoice?.id;
+                                        }
+                                    }
+                                    catch (FlurlHttpException ex)
+                                    {
+                                        var error = await ex.GetResponseStringAsync();
+                                        Log.Fatal("[Checkout] Failed to create new invoices in the billing system.");
+                                        Log.Error(error);
+                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create new invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                    }
+                                }
+                                else
+                                {
+                                    // Update the existing invoice.
+                                    try
+                                    {
+                                        createNewReoccurringInvoice.line_items = reoccurringInvoice.line_items;
+                                        createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        if (string.IsNullOrWhiteSpace(createNewReoccurringInvoice?.id) && string.IsNullOrWhiteSpace(createNewReoccurringInvoice?.client_id))
+                                        {
+                                            BillingInvoiceReoccuringId = createNewReoccurringInvoice?.id;
+                                        }
+                                    }
+                                    catch (FlurlHttpException ex)
+                                    {
+                                        var error = await ex.GetResponseStringAsync();
+                                        Log.Fatal("[Checkout] Failed to update the existing invoices in the billing system.");
+                                        Log.Error(error);
+                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update the existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                    }
+                                }
+
+                                try
+                                {
+                                    // Update the order with the billing system's client and the two invoice Id's.
+                                    order.BillingClientId = string.IsNullOrWhiteSpace(BillingClientId) ? order.BillingClientId : BillingClientId;
+                                    order.BillingInvoiceId = string.IsNullOrWhiteSpace(BillingInvoiceId) ? order.BillingInvoiceId : BillingInvoiceId;
+                                    order.BillingInvoiceReoccuringId = string.IsNullOrWhiteSpace(BillingInvoiceReoccuringId) ? order.BillingInvoiceReoccuringId : BillingInvoiceReoccuringId;
+
+                                    _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
+                                    await _context.SaveChangesAsync();
+
+                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(BillingClientId ?? string.Empty, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
+                                    var oneTimeLink = invoiceLinks.Where(x => x.id == BillingInvoiceId).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var reoccurringLink = invoiceLinks.Where(x => x.id == BillingInvoiceReoccuringId).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+
+                                    if (!string.IsNullOrWhiteSpace(reoccurringLink))
+                                    {
+                                        order.ReoccuringInvoiceLink = reoccurringLink;
+                                    }
+
+                                    if (!string.IsNullOrWhiteSpace(oneTimeLink))
+                                    {
+                                        order.UpfrontInvoiceLink = oneTimeLink;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Log.Error(ex.Message);
+                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update the order with the new invoices. 😡 {ex.Message}", AlertType = "alert-danger" });
                                 }
 
                             }
                             else if (reoccurringInvoice.line_items.Any())
                             {
-                                if (!string.IsNullOrWhiteSpace(order.BillingInvoiceReoccuringId))
+                                var createNewReoccurringInvoice = new InvoiceDatum();
+                                try
+                                {
+                                    if (!string.IsNullOrWhiteSpace(order.BillingInvoiceReoccuringId))
+                                    {
+                                        createNewReoccurringInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
+                                    }
+                                }
+                                catch (FlurlHttpException ex)
+                                {
+                                    Log.Fatal("[Checkout] Failed to find existing invoices in the billing system.");
+                                    var error = await ex.GetResponseStringAsync();
+                                    Log.Fatal(error);
+                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                }
+
+                                if (string.IsNullOrWhiteSpace(createNewReoccurringInvoice.id))
                                 {
                                     try
                                     {
-                                        var createNewReoccurringInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
-
-                                        if (createNewReoccurringInvoice is null)
-                                        {
-                                            try
-                                            {
-                                                createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                                var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                                Log.Fatal(ex?.Message ?? "No Message found.");
-                                                Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
-                                                Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
-                                            }
-                                        }
-                                        else
-                                        {
-                                            // Update the existing invoice.
-                                            try
-                                            {
-                                                createNewReoccurringInvoice.line_items = reoccurringInvoice.line_items;
-                                                createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                                var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                                Log.Fatal(ex?.Message ?? "No Message found.");
-                                                Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
-                                                Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
-                                            }
-                                        }
-
-                                        if (createNewReoccurringInvoice is not null)
-                                        {
-                                            // Update the order with the billing system's client and the two invoice Id's.
-                                            order.BillingClientId = createNewReoccurringInvoice.client_id.ToString(CultureInfo.CurrentCulture);
-                                            order.BillingInvoiceReoccuringId = createNewReoccurringInvoice.id.ToString(CultureInfo.CurrentCulture);
-
-                                            _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
-                                            await _context.SaveChangesAsync();
-
-                                            var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccurringInvoice.client_id, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
-                                            var reoccurringLink = invoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-
-                                            if (!string.IsNullOrWhiteSpace(reoccurringLink))
-                                            {
-                                                order.ReoccuringInvoiceLink = reoccurringLink;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Log.Fatal("[Checkout] Invoices were not successfully created in the billing system.");
-                                        }
+                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
-                                    catch
+                                    catch (FlurlHttpException ex)
                                     {
-                                        Log.Fatal("[Checkout] Failed to find existing invoices in the billing system.");
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
+                                        var error = await ex.GetResponseStringAsync();
+                                        Log.Fatal(error);
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
+                                }
+                                else
+                                {
+                                    // Update the existing invoice.
+                                    try
+                                    {
+                                        createNewReoccurringInvoice.line_items = reoccurringInvoice.line_items;
+                                        createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (FlurlHttpException ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
+                                        var error = await ex.GetResponseStringAsync();
+                                        Log.Fatal(error);
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                    }
+                                }
+
+                                try
+                                {
+                                    // Update the order with the billing system's client and the two invoice Id's.
+                                    order.BillingClientId = createNewReoccurringInvoice.client_id.ToString(CultureInfo.CurrentCulture);
+                                    order.BillingInvoiceReoccuringId = createNewReoccurringInvoice.id.ToString(CultureInfo.CurrentCulture);
+
+                                    _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
+                                    await _context.SaveChangesAsync();
+
+                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccurringInvoice.client_id, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
+                                    var reoccurringLink = invoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+
+                                    if (!string.IsNullOrWhiteSpace(reoccurringLink))
+                                    {
+                                        order.ReoccuringInvoiceLink = reoccurringLink;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Log.Fatal(ex.Message ?? "No message found.");
+                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update order with the new invoices. 😡 {ex.Message}", AlertType = "alert-danger" });
                                 }
                             }
                             else if (upfrontInvoice.line_items.Any())
                             {
-                                if (!string.IsNullOrWhiteSpace(order.BillingInvoiceId))
+                                var createNewOneTimeInvoice = new InvoiceDatum();
+
+                                try
+                                {
+                                    if (!string.IsNullOrWhiteSpace(order.BillingInvoiceId))
+                                    {
+                                        createNewOneTimeInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
+                                    }
+                                }
+                                catch (FlurlHttpException ex)
+                                {
+                                    // TODO add failure message for better UX.
+                                    var message = await ex.GetResponseStringAsync();
+                                    Log.Fatal(message);
+                                    Log.Fatal("[Checkout] Failed to find existing invoices in the billing system.");
+                                    // Suppress this because we want this process to continue along anyway.
+                                    //return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 Did someone manually delete them?!? {message}", AlertType = "alert-danger" });
+                                }
+
+
+                                // If it doesn't exist create it, otherwise update it.
+                                if (string.IsNullOrWhiteSpace(createNewOneTimeInvoice.id))
                                 {
                                     try
                                     {
-                                        var createNewOneTimeInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
-
-                                        // If it doesn't exist create it, otherwise update it.
-                                        if (createNewOneTimeInvoice is null)
-                                        {
-                                            try
-                                            {
-                                                createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                                Log.Fatal(ex?.Message ?? "No Message found.");
-                                                Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
-                                                Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
-                                            }
-                                        }
-                                        else
-                                        {
-                                            // Update the existing invoice.
-                                            try
-                                            {
-                                                createNewOneTimeInvoice.line_items = upfrontInvoice.line_items;
-                                                createNewOneTimeInvoice = await createNewOneTimeInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                                Log.Fatal(ex?.Message ?? "No Message found.");
-                                                Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
-                                                Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
-                                            }
-                                        }
-
-                                        if (createNewOneTimeInvoice is not null)
-                                        {
-                                            // Update the order with the billing system's client and the two invoice Id's.
-                                            order.BillingClientId = createNewOneTimeInvoice.client_id.ToString(CultureInfo.CurrentCulture);
-                                            order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
-
-                                            _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
-                                            await _context.SaveChangesAsync();
-
-                                            var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
-                                            Log.Information(JsonSerializer.Serialize(invoiceLinks));
-                                            var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-
-                                            if (!string.IsNullOrWhiteSpace(oneTimeLink))
-                                            {
-                                                order.UpfrontInvoiceLink = oneTimeLink;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Log.Fatal("[Checkout] Invoices were not successfully created in the billing system.");
-                                        }
+                                        createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
-                                    catch
+                                    catch (FlurlHttpException ex)
                                     {
-                                        Log.Fatal("[Checkout] Failed to find existing invoices in the billing system.");
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        var message = await ex.GetResponseStringAsync();
+                                        Log.Fatal(message);
+                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create new invoices in the billing system 😡 {message}", AlertType = "alert-danger" });
                                     }
+                                }
+                                else
+                                {
+                                    // Update the existing invoice.
+                                    try
+                                    {
+                                        createNewOneTimeInvoice.line_items = upfrontInvoice.line_items;
+                                        createNewOneTimeInvoice = await createNewOneTimeInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (FlurlHttpException ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        var message = await ex.GetResponseStringAsync();
+                                        Log.Fatal(message);
+                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update existing invoices in the billing system 😡 {message}", AlertType = "alert-danger" });
+                                    }
+                                }
+
+                                try
+                                {
+                                    // Update the order with the billing system's client and the two invoice Id's.
+                                    order.BillingClientId = createNewOneTimeInvoice.client_id.ToString(CultureInfo.CurrentCulture);
+                                    order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
+
+                                    _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
+                                    await _context.SaveChangesAsync();
+
+                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
+                                    Log.Information(JsonSerializer.Serialize(invoiceLinks));
+                                    var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+
+                                    if (!string.IsNullOrWhiteSpace(oneTimeLink))
+                                    {
+                                        order.UpfrontInvoiceLink = oneTimeLink;
+                                    }
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    // TODO add failure message for better UX.
+                                    Log.Fatal(ex.Message);
+                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update the order with the new invoices. 😡 {ex.Message}", AlertType = "alert-danger" });
                                 }
                             }
 
@@ -1901,244 +1943,273 @@ public class OrdersController : Controller
                             // Submit them to the billing system if they have items.
                             if (upfrontInvoice.line_items.Any() && reoccurringInvoice.line_items.Any() && order is not null)
                             {
-                                if (!string.IsNullOrWhiteSpace(order.BillingInvoiceId) && !string.IsNullOrWhiteSpace(order.BillingInvoiceReoccuringId))
+
+                                var createNewOneTimeInvoice = new InvoiceDatum();
+                                var createNewReoccurringInvoice = new ReccurringInvoiceDatum();
+
+                                try
+                                {
+                                    if (!string.IsNullOrWhiteSpace(order.BillingInvoiceId) && !string.IsNullOrWhiteSpace(order.BillingInvoiceReoccuringId))
+                                    {
+                                        createNewOneTimeInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
+                                        createNewReoccurringInvoice = await ReccurringInvoice.GetByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
+                                    }
+                                }
+                                catch (FlurlHttpException ex)
+                                {
+                                    Log.Fatal("[Checkout] Failed to find existing the invoices in the billing system.");
+                                    Log.Fatal(JsonSerializer.Serialize(createNewOneTimeInvoice));
+                                    var error = await ex.GetResponseStringAsync();
+                                    Log.Fatal(error);
+                                    //return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                }
+
+                                if (string.IsNullOrWhiteSpace(createNewOneTimeInvoice.id))
                                 {
                                     try
                                     {
-                                        var createNewOneTimeInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
-                                        var createNewReoccurringInvoice = await ReccurringInvoice.GetByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
-
-                                        if (createNewOneTimeInvoice is null)
-                                        {
-                                            try
-                                            {
-                                                createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                                Log.Fatal(ex?.Message ?? "No Message found.");
-                                                Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
-                                                Log.Fatal(JsonSerializer.Serialize(createNewOneTimeInvoice));
-                                            }
-                                        }
-                                        else
-                                        {
-                                            try
-                                            {
-                                                createNewOneTimeInvoice.line_items = upfrontInvoice.line_items;
-                                                createNewOneTimeInvoice = await createNewOneTimeInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                                Log.Fatal(ex?.Message ?? "No Message found.");
-                                                Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
-                                                Log.Fatal(JsonSerializer.Serialize(createNewOneTimeInvoice));
-                                            }
-                                        }
-
-                                        if (createNewReoccurringInvoice is null)
-                                        {
-                                            try
-                                            {
-                                                // Create
-                                                createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                                Log.Fatal(ex?.Message ?? "No Message found.");
-                                                Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
-                                                Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
-                                            }
-                                        }
-                                        else
-                                        {
-                                            try
-                                            {
-                                                // Update
-                                                createNewReoccurringInvoice.line_items = reoccurringInvoice.line_items;
-                                                createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                                Log.Fatal(ex?.Message ?? "No Message found.");
-                                                Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
-                                                Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
-                                            }
-                                        }
-
-                                        if (createNewOneTimeInvoice is not null && createNewReoccurringInvoice is not null)
-                                        {
-                                            // Update the order with the billing system's client and the two invoice Id's.
-                                            order.BillingClientId = createNewOneTimeInvoice.client_id.ToString(CultureInfo.CurrentCulture);
-                                            order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
-                                            order.BillingInvoiceReoccuringId = createNewReoccurringInvoice.id.ToString(CultureInfo.CurrentCulture);
-
-                                            _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
-                                            await _context.SaveChangesAsync();
-
-                                            var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
-                                            var recurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
-                                            var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-                                            var reoccurringLink = recurringInvoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-
-                                            if (!string.IsNullOrWhiteSpace(reoccurringLink))
-                                            {
-                                                order.ReoccuringInvoiceLink = reoccurringLink;
-                                            }
-
-                                            if (!string.IsNullOrWhiteSpace(oneTimeLink))
-                                            {
-                                                order.UpfrontInvoiceLink = oneTimeLink;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Log.Fatal("[Checkout] Invoices were not successfully created in the billing system.");
-                                        }
+                                        createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
-                                    catch
+                                    catch (FlurlHttpException ex)
                                     {
-                                        Log.Fatal("[Checkout] Failed to find existing invoices in the billing system.");
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(JsonSerializer.Serialize(createNewOneTimeInvoice));
+                                        var error = await ex.GetResponseStringAsync();
+                                        Log.Fatal(error);
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                    }
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        createNewOneTimeInvoice.line_items = upfrontInvoice.line_items;
+                                        createNewOneTimeInvoice = await createNewOneTimeInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (FlurlHttpException ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(JsonSerializer.Serialize(createNewOneTimeInvoice));
+                                        var error = await ex.GetResponseStringAsync();
+                                        Log.Fatal(error);
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
 
+                                if (string.IsNullOrWhiteSpace(createNewReoccurringInvoice.id))
+                                {
+                                    try
+                                    {
+                                        // Create
+                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (FlurlHttpException ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
+                                        var error = await ex.GetResponseStringAsync();
+                                        Log.Fatal(error);
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                    }
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        // Update
+                                        createNewReoccurringInvoice.line_items = reoccurringInvoice.line_items;
+                                        createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (FlurlHttpException ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
+                                        var error = await ex.GetResponseStringAsync();
+                                        Log.Fatal(error);
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                    }
+                                }
+
+                                try
+                                {
+                                    // Update the order with the billing system's client and the two invoice Id's.
+                                    order.BillingClientId = createNewOneTimeInvoice.client_id.ToString(CultureInfo.CurrentCulture);
+                                    order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
+                                    order.BillingInvoiceReoccuringId = createNewReoccurringInvoice.id.ToString(CultureInfo.CurrentCulture);
+
+                                    _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
+                                    await _context.SaveChangesAsync();
+
+                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
+                                    var recurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
+                                    var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var reoccurringLink = recurringInvoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+
+                                    if (!string.IsNullOrWhiteSpace(reoccurringLink))
+                                    {
+                                        order.ReoccuringInvoiceLink = reoccurringLink;
+                                    }
+
+                                    if (!string.IsNullOrWhiteSpace(oneTimeLink))
+                                    {
+                                        order.UpfrontInvoiceLink = oneTimeLink;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Log.Fatal(ex.Message);
+                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update the order with the new invoices. 😡 {ex.Message}", AlertType = "alert-danger" });
+                                }
                             }
                             else if (reoccurringInvoice.line_items.Any() && order is not null)
                             {
-                                if (!string.IsNullOrWhiteSpace(order.BillingInvoiceReoccuringId))
+                                var createNewReoccurringInvoice = new ReccurringInvoiceDatum();
+
+                                try
+                                {
+                                    if (!string.IsNullOrWhiteSpace(order.BillingInvoiceReoccuringId))
+                                    {
+                                        createNewReoccurringInvoice = await ReccurringInvoice.GetByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
+                                    }
+                                }
+                                catch (FlurlHttpException ex)
+                                {
+                                    Log.Fatal("[Checkout] Failed to find existing invoices in the billing system.");
+                                    var error = await ex.GetResponseStringAsync();
+                                    Log.Fatal(error);
+                                    //return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                }
+
+
+                                if (string.IsNullOrWhiteSpace(createNewReoccurringInvoice.id))
                                 {
                                     try
                                     {
-                                        var createNewReoccurringInvoice = await ReccurringInvoice.GetByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
-
-                                        if (createNewReoccurringInvoice is null)
-                                        {
-                                            try
-                                            {
-                                                createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                                Log.Fatal(ex?.Message ?? "No Message found.");
-                                                Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
-                                                Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
-                                            }
-                                        }
-                                        else
-                                        {
-                                            try
-                                            {
-                                                createNewReoccurringInvoice.line_items = reoccurringInvoice.line_items;
-                                                createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                                Log.Fatal(ex?.Message ?? "No Message found.");
-                                                Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
-                                                Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
-                                            }
-                                        }
-
-                                        if (createNewReoccurringInvoice is not null)
-                                        {
-                                            // Update the order with the billing system's client and the two invoice Id's.
-                                            order.BillingClientId = createNewReoccurringInvoice.client_id.ToString(CultureInfo.CurrentCulture);
-                                            order.BillingInvoiceReoccuringId = createNewReoccurringInvoice.id.ToString(CultureInfo.CurrentCulture);
-
-                                            _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
-                                            await _context.SaveChangesAsync();
-
-                                            var invoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewReoccurringInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
-                                            var reoccurringLink = invoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-
-                                            if (!string.IsNullOrWhiteSpace(reoccurringLink))
-                                            {
-                                                order.ReoccuringInvoiceLink = reoccurringLink;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Log.Fatal("[Checkout] Invoices were not successfully created in the billing system.");
-                                        }
+                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
-                                    catch
+                                    catch (FlurlHttpException ex)
                                     {
-                                        Log.Fatal("[Checkout] Failed to find existing invoices in the billing system.");
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
+                                        var error = await ex.GetResponseStringAsync();
+                                        Log.Fatal(error);
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
-
                                 }
+                                else
+                                {
+                                    try
+                                    {
+                                        createNewReoccurringInvoice.line_items = reoccurringInvoice.line_items;
+                                        createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (FlurlHttpException ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to update the invoices in the billing system.");
+                                        Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
+                                        var error = await ex.GetResponseStringAsync();
+                                        Log.Fatal(error);
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                    }
+                                }
+
+                                try
+                                {
+                                    // Update the order with the billing system's client and the two invoice Id's.
+                                    order.BillingClientId = createNewReoccurringInvoice.client_id.ToString(CultureInfo.CurrentCulture);
+                                    order.BillingInvoiceReoccuringId = createNewReoccurringInvoice.id.ToString(CultureInfo.CurrentCulture);
+
+                                    _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
+                                    await _context.SaveChangesAsync();
+
+                                    var invoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewReoccurringInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
+                                    var reoccurringLink = invoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+
+                                    if (!string.IsNullOrWhiteSpace(reoccurringLink))
+                                    {
+                                        order.ReoccuringInvoiceLink = reoccurringLink;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Log.Fatal(ex.Message);
+                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update order with new invoices. 😡 {ex.Message}", AlertType = "alert-danger" });
+                                }
+
                             }
                             else if (upfrontInvoice.line_items.Any() && order is not null)
                             {
-                                if (!string.IsNullOrWhiteSpace(order.BillingInvoiceId))
+
+                                var createNewOneTimeInvoice = new InvoiceDatum();
+
+                                try
+                                {
+                                    if (!string.IsNullOrWhiteSpace(order.BillingInvoiceId))
+                                    {
+                                        createNewOneTimeInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
+                                    }
+                                }
+                                catch (FlurlHttpException ex)
+                                {
+                                    Log.Fatal("[Checkout] Failed to find existing invoices in the billing system.");
+                                    var error = await ex.GetResponseStringAsync();
+                                    Log.Fatal(error);
+                                    //return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                }
+
+                                if (string.IsNullOrWhiteSpace(createNewOneTimeInvoice.id))
                                 {
                                     try
                                     {
-                                        var createNewOneTimeInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
-
-                                        if (createNewOneTimeInvoice is null)
-                                        {
-                                            try
-                                            {
-                                                createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                                Log.Fatal(ex?.Message ?? "No Message found.");
-                                                Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
-                                                Log.Fatal(JsonSerializer.Serialize(createNewOneTimeInvoice));
-                                            }
-                                        }
-                                        else
-                                        {
-                                            try
-                                            {
-                                                createNewOneTimeInvoice.line_items = upfrontInvoice.line_items;
-                                                createNewOneTimeInvoice = await upfrontInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                                Log.Fatal(ex?.Message ?? "No Message found.");
-                                                Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
-                                                Log.Fatal(JsonSerializer.Serialize(createNewOneTimeInvoice));
-                                            }
-                                        }
-
-                                        if (createNewOneTimeInvoice is not null)
-                                        {
-                                            // Update the order with the billing system's client and the two invoice Id's.
-                                            order.BillingClientId = createNewOneTimeInvoice.client_id.ToString(CultureInfo.CurrentCulture);
-                                            order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
-
-                                            _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
-                                            await _context.SaveChangesAsync();
-
-                                            var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
-                                            var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-
-                                            if (!string.IsNullOrWhiteSpace(oneTimeLink))
-                                            {
-                                                order.UpfrontInvoiceLink = oneTimeLink;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Log.Fatal("[Checkout] Invoices were not successfully created in the billing system.");
-                                        }
+                                        createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
-                                    catch
+                                    catch (FlurlHttpException ex)
                                     {
-                                        Log.Fatal("[Checkout] Failed to find existing invoices in the billing system.");
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(JsonSerializer.Serialize(createNewOneTimeInvoice));
+                                        var error = await ex.GetResponseStringAsync();
+                                        Log.Fatal(error);
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        createNewOneTimeInvoice.line_items = upfrontInvoice.line_items;
+                                        createNewOneTimeInvoice = await upfrontInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    }
+                                    catch (FlurlHttpException ex)
+                                    {
+                                        Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
+                                        Log.Fatal(JsonSerializer.Serialize(createNewOneTimeInvoice));
+                                        var error = await ex.GetResponseStringAsync();
+                                        Log.Fatal(error);
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                    }
+                                }
 
+                                try
+                                {
+                                    // Update the order with the billing system's client and the two invoice Id's.
+                                    order.BillingClientId = createNewOneTimeInvoice.client_id.ToString(CultureInfo.CurrentCulture);
+                                    order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
+
+                                    _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
+                                    await _context.SaveChangesAsync();
+
+                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
+                                    var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+
+                                    if (!string.IsNullOrWhiteSpace(oneTimeLink))
+                                    {
+                                        order.UpfrontInvoiceLink = oneTimeLink;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Log.Fatal(ex.Message);
+                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update order with new invoices. 😡 {ex.Message}", AlertType = "alert-danger" });
                                 }
                             }
 
@@ -2158,7 +2229,7 @@ public class OrdersController : Controller
                 }
                 else
                 {
-                    return View("OrderEdit", new EditOrderResult { Order = order, Message = $"Failed to regenerate the invoices for {order.OrderId}. Either the order could not be found or there are no Product Orders assocated with this Order. 🤔", AlertType = "alert-danger" });
+                    return View("OrderEdit", new EditOrderResult { Order = order, Message = $"Failed to regenerate the invoices for {order.OrderId}. Either the order could not be found or there are no Product Orders associated with this Order. 🤔", AlertType = "alert-danger" });
                 }
             }
         }
