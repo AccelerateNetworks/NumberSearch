@@ -757,9 +757,10 @@
                     if (ported is not null && ported.Any() && Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted > DateTime.MinValue)
                     {
                         <hr class="mb-4">
-                        @*<input type="text" hidden name="AddPortingInfo" value="true" />
-                <button asp-controller="Cart" asp-action="PortingInformation" asp-route-id="@Model?.Order?.OrderId" class="btn btn-primary btn-lg btn-block" type="submit" value="Submit">Add Porting Information</button>*@
+                        <h4 class="mb-3">Next Steps</h4>
+                        <p>Now that you've complete your order, please fillout these two pages so we can bring your existing phone numbers onto our network and configure your phones with the correct extentions. If you have any questions please contact your sales representative or our support staff at (206) 858-8757.</p>
                         <a asp-controller="Cart" asp-action="PortingInformation" asp-route-id="@Model?.Order?.OrderId" class="btn btn-primary btn-lg btn-block shadow">Add Porting Information</a>
+                        <a href="/Cart/Order/@Model?.Order?.OrderId/NewClient" class="btn btn-primary btn-lg btn-block shadow">Add New Client Setup Information</a>
                     }
                     else if (Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted == DateTime.MinValue)
                     {
