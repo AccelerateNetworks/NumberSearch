@@ -103,11 +103,17 @@
                                 <p>
                                     Last verified on @number?.EmergencyInformation.ModifiedDate?.ToShortDateString()
                                 </p>
+                                if (number?.Owned.EmergencyInformationId is not null)
+                                {
+                                    <a href="/Home/E911/@number.Owned.DialedNumber" class="btn btn-info text-light" target="_blank">
+                                        View Emergency Information
+                                    </a>
+                                }
                             }
                             else
                             {
                                 // TODO: Add this number to your cart in MVC and bump you to the Orders page.
-                                <a class="btn btn-outline-primary">Create a Regisitration Order for this Number</a>
+                                <p>No registration found.</p>
                             }
                         </td>
                         <td>
@@ -117,12 +123,9 @@
                             }
                             <p>@number?.Owned.Notes</p>
                         </td>
-                        @*<td>
-                <p>@number.Owned.BillingClientId</p>
-                </td>*@
                         <td>
                             <div class="btn-group" role="group" aria-label="Basic example">
-                                <a class="btn btn-danger text-light" href="/Home/OwnedNumbers/@number.Owned.DialedNumber" target="_blank">Edit</a>
+                                <a class="btn btn-danger text-light" href="/Home/OwnedNumbers/@number?.Owned.DialedNumber" target="_blank">Edit</a>
                                 @{
                                     if (!string.IsNullOrWhiteSpace(number.Owned.BillingClientId))
                                     {
@@ -137,20 +140,7 @@
                                         </a>
                                     }
                                 }
-                                @{
-                                    if (number?.Owned.EmergencyInformationId is not null)
-                                    {
-                                        <a href="/Home/E911/@number.Owned.DialedNumber" class="btn btn-info text-light" target="_blank">
-                                            Emergency
-                                        </a>
-                                    }
-                                    else
-                                    {
-                                        <a class="btn btn-outline-info disabled">
-                                            Emergency
-                                        </a>
-                                    }
-                                }
+                                <a class="btn btn-outline-primary" href="/Cart/Checkout/E911Registration/{@number?.Owned.DialedNumber}">Create an E911 Regisitration Order</a>
                             </div>
                         </td>
                     </tr>

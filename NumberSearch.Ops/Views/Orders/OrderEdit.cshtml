@@ -368,10 +368,27 @@
         {
             <div class="col">
                 <div class="mb-3">
-                    @{
-                        var registeredNumber = Model?.Order?.E911ServiceNumber ?? "E911 Number Not Set";
+                    @if (Model?.EmergencyInformation is not null)
+                    {
+                        <p>
+                            Registered on @Model?.EmergencyInformation.BulkVSLastModificationDate?.ToShortDateString()
+                        </p>
+                        <p>
+                            @Model?.EmergencyInformation.CallerName
+                        </p>
+                        <p>
+                            @Model?.EmergencyInformation.AddressLine1
+                            @Model?.EmergencyInformation.AddressLine2
+                        </p>
+                        <p>
+                            @Model?.EmergencyInformation.City
+                            @Model?.EmergencyInformation.State
+                            @Model?.EmergencyInformation.Zip
+                        </p>
+                        <p>
+                            Last verified on @Model?.EmergencyInformation.ModifiedDate?.ToShortDateString()
+                        </p>
                     }
-                    <p>@registeredNumber @@ @Model?.Order?.UnparsedAddress</p>
                 </div>
             </div>
         }

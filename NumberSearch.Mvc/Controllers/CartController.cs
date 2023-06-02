@@ -5,6 +5,7 @@ using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.InvoiceNinja;
@@ -27,12 +28,15 @@ namespace NumberSearch.Mvc.Controllers
         private readonly string _postgresql;
         private readonly string _invoiceNinjaToken;
         private readonly string _emailOrders;
+        private readonly MvcConfiguration _configuration;
+
 
         public CartController(MvcConfiguration mvcConfiguration)
         {
             _postgresql = mvcConfiguration.PostgresqlProd;
             _invoiceNinjaToken = mvcConfiguration.InvoiceNinjaToken;
             _emailOrders = mvcConfiguration.EmailOrders;
+            _configuration = mvcConfiguration;
         }
 
         [HttpGet]
@@ -124,6 +128,73 @@ namespace NumberSearch.Mvc.Controllers
 
                 _ = cart.SetToSession(HttpContext.Session);
             }
+
+            return View("Order", cart);
+        }
+
+        [HttpGet]
+        [Route("Cart/Checkout/E911Registration/{dialedNumber}")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> CheckoutAsync(string dialedNumber)
+        {
+            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
+            var cart = new Cart();
+
+            // Create a GUID for an order to prevent multiple order submissions from repeated button clicking.
+            cart.Order.OrderId = Guid.NewGuid();
+            cart.Order.CustomerNotes = "This is an E911 Registration order.";
+            cart.Order.SalesEmail = "dan@acceleratenetworks.com";
+            cart.Order.Quote = false;
+
+            var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var number);
+
+            if (checkParse)
+            {
+                // Find the number if it already exists.
+                var matching = await OwnedPhoneNumber.GetByDialedNumberAsync(number.DialedNumber, _postgresql);
+                if (matching.DialedNumber != number.DialedNumber)
+                {
+                    return View("Index", cart);
+                }
+
+                var portedPhoneNumber = new PortedPhoneNumber
+                {
+                    PortedPhoneNumberId = Guid.NewGuid(),
+                    PortedDialedNumber = matching.DialedNumber,
+                    Completed = true,
+                    RequestStatus = "COMPLETE",
+                    DateFirmOrderCommitment = DateTime.Now,
+                    DateIngested = matching.DateIngested,
+                    IngestedFrom = matching.IngestedFrom,
+                    NPA = number.NPA,
+                    NXX = number.NXX,
+                    XXXX = number.XXXX,
+                    Portable = true,
+                    RawResponse = "This ported number entry was created from an Owned Number in order to register it for E911 service, by attaching it to an address supplied in the order.",
+                    OrderId = cart.Order.OrderId,
+                };
+
+                var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), PortedDialedNumber = portedPhoneNumber.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber?.PortedPhoneNumberId, Quantity = 1 };
+                var checkAdd = cart.AddPortedPhoneNumber(portedPhoneNumber!, productOrder);
+
+                // Add a coupon to make it a no cost order.
+                var coupons = await Coupon.GetAllAsync(_postgresql);
+                var waivePort = coupons.FirstOrDefault(x => x.Type == "Port");
+
+                if (waivePort is not null)
+                {
+                    var productOrderCoupon = new ProductOrder
+                    {
+                        ProductOrderId = Guid.NewGuid(),
+                        CouponId = waivePort.CouponId,
+                        Quantity = 1
+                    };
+
+                    var checkAddCoupon = cart.AddCoupon(waivePort, productOrderCoupon);
+                }
+            }
+
+            _ = cart.SetToSession(HttpContext.Session);
 
             return View("Order", cart);
         }

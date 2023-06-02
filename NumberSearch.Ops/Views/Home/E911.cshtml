@@ -13,15 +13,17 @@
                 </th>
                 <th>Status</th>
                 <th>Physical Location</th>
+                <th>Raw Response</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var info in Model)
             {
+                var smsDisplay = string.IsNullOrWhiteSpace(info?.Sms) ? "No SMS numbers registered." : info.Sms;
                 <tr>
                     <td>
-                        <h4>@info.DialedNumber</h4>
+                        <h4>@info?.DialedNumber</h4>
                     </td>
                     <td data-order="@info?.ModifiedDate?.Ticks">
                         @{
@@ -40,15 +42,20 @@
                             }
                         }
                         @Html.Raw(ingestedBadge)
+                        <strong>Date Registered for Service</strong>
+                        <p>@info?.BulkVSLastModificationDate</p>
                         <strong>Last Modified</strong>
                         <p>@info?.ModifiedDate</p>
-                        <strong>Created</strong>
-                        <p>@info?.DateIngested</p>
                     </td>
                     <td>
+                        <strong>Caller Name</strong>
+                        <p>@info?.CallerName </p>
                         <strong>Address</strong>
                         <p>@info?.AddressLine1 @info?.AddressLine2, @info?.City, @info?.State @info?.Zip </p>
+                        <strong>SMS</strong>
+                        <p>@smsDisplay</p>
                     </td>
+                    <td>@info?.RawResponse</td>
                     <td>
                         <div class="btn-group">
                             <a href="https://www.google.com/maps/place/@info?.AddressLine1,+@info?.City,+@info?.State+@info?.Zip/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
