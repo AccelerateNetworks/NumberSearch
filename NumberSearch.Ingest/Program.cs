@@ -585,6 +585,8 @@ namespace NumberSearch.Ingest
             public string Call48Username { get; set; } = string.Empty;
             public string Call48Password { get; set; } = string.Empty;
             public string CallWithUsAPIKEY { get; set; } = string.Empty;
+            public string FusionPBXUsername { get; set; } = string.Empty;
+            public string FusionPBXPassword { get; set; } = string.Empty;
         }
     }
 }

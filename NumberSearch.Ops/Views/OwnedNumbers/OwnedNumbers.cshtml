@@ -28,6 +28,7 @@
                 <th>Status</th>
                 <th scope="col">Provider</th>
                 <th>E911</th>
+                <th>FusionPBX</th>
                 <th>Notes</th>
                 <th>Actions</th>
             </tr>
@@ -117,6 +118,10 @@
                             }
                         </td>
                         <td>
+                            <p>@number?.Owned.FPBXDomainName</p>
+                            <p>@number?.Owned.FPBXDomainDescription</p>
+                        </td>
+                        <td>
                             @if (!string.IsNullOrWhiteSpace(number?.Owned.OwnedBy))
                             {
                                 <p>@number.Owned.OwnedBy</p>
@@ -125,22 +130,29 @@
                         </td>
                         <td>
                             <div class="btn-group" role="group" aria-label="Basic example">
-                                <a class="btn btn-danger text-light" href="/Home/OwnedNumbers/@number?.Owned.DialedNumber" target="_blank">Edit</a>
-                                @{
-                                    if (!string.IsNullOrWhiteSpace(number.Owned.BillingClientId))
-                                    {
-                                        <a href="https://billing.acceleratenetworks.com/clients/@number?.Owned.BillingClientId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
-                                            Billing
-                                        </a>
-                                    }
-                                    else
-                                    {
-                                        <a class="btn btn-outline-success disabled">
-                                            Billing
-                                        </a>
-                                    }
+                                <a class="btn btn-warning text-light" href="/Home/OwnedNumbers/@number?.Owned.DialedNumber" target="_blank">Edit</a>
+                                @if (!string.IsNullOrWhiteSpace(number?.Owned?.FPBXDomainName))
+                                {
+                                    <a class="btn btn-primary" href="https://@number?.Owned?.FPBXDomainName/app/destinations/destination_edit.php?id=@number?.Owned?.FPBXDestinationId" target="_blank">Destination</a>
+                                    <a class="btn btn-secondary" href="https://@number?.Owned?.FPBXDomainName/core/domains/domain_edit.php?id=@number?.Owned?.FPBXDomainId" target="_blank">Domain</a>
                                 }
-                                <a class="btn btn-outline-primary" href="https://acceleratenetworks.com/Cart/Checkout/E911Registration/{@number?.Owned.DialedNumber}">Create an E911 Regisitration Order</a>
+                                else
+                                {
+                                    <a class="btn btn-outline-primary disabled">Destination</a>
+                                    <a class="btn btn-outline-secondary disabled">Domain</a>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(number?.Owned.BillingClientId))
+                                {
+                                    <a href="https://billing.acceleratenetworks.com/clients/@number?.Owned.BillingClientId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
+                                        Billing
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a class="btn btn-outline-success disabled">
+                                        Billing
+                                    </a>
+                                }
                             </div>
                         </td>
                     </tr>

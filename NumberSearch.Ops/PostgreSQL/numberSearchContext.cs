@@ -437,13 +437,17 @@ public partial class numberSearchContext : DbContext
 
             entity.Property(e => e.IngestedFrom).HasColumnType("character varying");
 
-            entity.Property(e => e.Lidbcnam)
-                .HasColumnType("character varying")
-                .HasColumnName("LIDBCNAM");
-
             entity.Property(e => e.OwnedBy).HasColumnType("character varying");
 
             entity.Property(e => e.OwnedPhoneNumberId).HasDefaultValueSql("uuid_generate_v4()");
+
+            entity.Property(e => e.Notes)
+.HasColumnType("character varying")
+.HasColumnName("Notes");
+
+            entity.Property(e => e.OwnedBy)
+.HasColumnType("character varying")
+.HasColumnName("OwnedBy");
 
             entity.Property(e => e.SPID)
                 .HasColumnType("character varying")
@@ -452,6 +456,39 @@ public partial class numberSearchContext : DbContext
             entity.Property(e => e.SPIDName)
                 .HasColumnType("character varying")
                 .HasColumnName("SPIDName");
+
+            entity.Property(e => e.BillingClientId)
+    .HasColumnType("character varying")
+    .HasColumnName("BillingClientId");
+
+            entity.Property(e => e.LIDBCNAM)
+    .HasColumnType("character varying")
+    .HasColumnName("LIDBCNAM");
+
+            entity.Property(e => e.Status)
+.HasColumnType("character varying")
+.HasColumnName("Status");
+
+            entity.Property(e => e.FusionPBXClientId)
+.HasColumnType("character varying")
+.HasColumnName("FusionPBXClientId");
+
+            entity.Property(e => e.DateUpdated).HasColumnType("timestamp without time zone");
+
+
+            entity.Property(e => e.EmergencyInformationId);
+
+            entity.Property(e => e.FPBXDomainId);
+
+            entity.Property(e => e.FPBXDestinationId);
+
+            entity.Property(e => e.FPBXDomainName)
+    .HasColumnType("character varying")
+    .HasColumnName("FPBXDomainName");
+
+            entity.Property(e => e.FPBXDomainDescription)
+    .HasColumnType("character varying")
+    .HasColumnName("FPBXDomainDescription");
         });
 
         modelBuilder.Entity<PhoneMenuOption>(entity =>

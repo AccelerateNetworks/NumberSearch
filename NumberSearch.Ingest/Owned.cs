@@ -1,7 +1,10 @@
 ﻿using FirstCom;
 
+using Flurl.Http;
+
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
+using NumberSearch.DataAccess.FusionPBX;
 
 using PhoneNumbersNA;
 
@@ -10,6 +13,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -37,9 +41,9 @@ namespace NumberSearch.Ingest
             }
             catch (Exception ex)
             {
-                Log.Fatal("[OwnedNumbers] Failed to retrive owned numbers for FirstPointCom.");
+                Log.Fatal("[OwnedNumbers] Failed to retrieve owned numbers for FirstPointCom.");
                 Log.Fatal(ex.Message);
-                Log.Fatal(ex?.StackTrace ?? "No stacktrace found.");
+                Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
             }
 
             try
@@ -52,9 +56,9 @@ namespace NumberSearch.Ingest
             }
             catch (Exception ex)
             {
-                Log.Fatal("[OwnedNumbers] Failed to retrive owned numbers for BulkVS.");
+                Log.Fatal("[OwnedNumbers] Failed to retrieve owned numbers for BulkVS.");
                 Log.Fatal(ex.Message);
-                Log.Fatal(ex?.StackTrace ?? "No stacktrace found.");
+                Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
             }
 
             // If we ingested any owned numbers update the database.
@@ -66,7 +70,7 @@ namespace NumberSearch.Ingest
             }
             else
             {
-                Log.Fatal("[OwnedNumbers] No ownend numbers ingested. Skipping submission to the database.");
+                Log.Fatal("[OwnedNumbers] No owned numbers ingested. Skipping submission to the database.");
                 ownedNumberStats = new IngestStatistics
                 {
                     StartDate = start,
@@ -118,6 +122,9 @@ namespace NumberSearch.Ingest
             // Link up E911 registrations to owned numbers.
             await VerifyEmergencyInformationAsync(configuration.Postgresql, configuration.BulkVSUsername, configuration.BulkVSPassword).ConfigureAwait(false);
 
+            // Match numbers to destinations and domains in FusionPBX.
+            await MatchOwnedNumbersToFusionPBXAsync(configuration.Postgresql, configuration.FusionPBXUsername, configuration.FusionPBXPassword);
+
             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
             var lockEntry = await IngestStatistics.GetLockAsync("OwnedNumbers", configuration.Postgresql).ConfigureAwait(false);
             _ = await lockEntry.DeleteAsync(configuration.Postgresql).ConfigureAwait(false);
@@ -148,6 +155,72 @@ namespace NumberSearch.Ingest
             {
                 Log.Fatal("[OwnedNumbers] Failed to completed the ingest process.");
             }
+        }
+
+        public static async Task MatchOwnedNumbersToFusionPBXAsync(string connectionString, string fusionPBXUsername, string fusionPBXPassword)
+        {
+            Log.Information($"[OwnedNumbers] FusionPBX data for Owned Phone numbers.");
+
+            var ownedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
+
+            foreach (var ownedNumber in ownedNumbers)
+            {
+                bool updated = false;
+
+                try
+                {
+                    var destination = await DestinationDetails.GetByDialedNumberAsync(ownedNumber.DialedNumber, fusionPBXUsername, fusionPBXPassword);
+
+                    if (destination is not null && !string.IsNullOrWhiteSpace(destination.domain_uuid))
+                    {
+                        var checkDestinationuuid = Guid.TryParse(destination.destination_uuid, out var parsedDestionationId);
+
+                        if (ownedNumber.FPBXDestinationId != parsedDestionationId)
+                        {
+                            ownedNumber.FPBXDestinationId = parsedDestionationId;
+                            updated = true;
+                        }
+
+                        var domain = await DomainDetails.GetByDomainIdAsync(destination.domain_uuid, fusionPBXUsername, fusionPBXPassword);
+
+                        if (domain is not null && !string.IsNullOrWhiteSpace(domain.domain_name))
+                        {
+                            if (ownedNumber.FPBXDomainName != domain.domain_name)
+                            {
+                                ownedNumber.FPBXDomainName = domain.domain_name;
+                                updated = true;
+                            }
+
+                            if (ownedNumber.FPBXDomainDescription != domain.domain_description)
+                            {
+                                ownedNumber.FPBXDomainDescription = domain.domain_description;
+                                updated = true;
+                            }
+
+                            var checkDomainuuid = Guid.TryParse(domain.domain_uuid, out var parsedDomainId);
+
+                            if (checkDomainuuid && ownedNumber.FPBXDomainId != parsedDomainId)
+                            {
+                                ownedNumber.FPBXDomainId = parsedDomainId;
+                                updated = true;
+                            }
+                        }
+                    }
+                }
+                catch (FlurlHttpException ex)
+                {
+                    var message = await ex.GetResponseStringAsync();
+                    Log.Warning($"[OwnedNumbers] Failed to find destination and domain information for owned number {ownedNumber.DialedNumber} : {message}");
+                }
+
+                if (updated)
+                {
+                    _ = await ownedNumber.PutAsync(connectionString);
+                    Log.Information($"[OwnedNumbers] Updated FusionPBX data for Owned Phone number {ownedNumber.DialedNumber}");
+                }
+            }
+
+            Log.Information($"[OwnedNumbers] Updated FusionPBX data for Owned Phone numbers.");
         }
 
         public static async Task<IEnumerable<OwnedPhoneNumber>> FirstPointComAsync(string username, string password)
@@ -494,7 +567,6 @@ namespace NumberSearch.Ingest
 
             return stats;
         }
-
 
         public class ServiceProviderChanged
         {

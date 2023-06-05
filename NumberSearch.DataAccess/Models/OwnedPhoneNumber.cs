@@ -25,6 +25,11 @@ namespace NumberSearch.DataAccess
         public DateTime DateUpdated { get; set; } = DateTime.Now;
         public string Status { get; set; } = string.Empty;
         public string FusionPBXClientId { get; set; } = string.Empty;
+        public Guid? FPBXDomainId { get; set; } = null;
+        public Guid? FPBXDestinationId { get; set; } = null;
+        public string FPBXDomainName { get; set; } = string.Empty;
+        public string FPBXDomainDescription { get; set; } = string.Empty;
+
 
         /// <summary>
         /// Get every owned phone number.
@@ -36,7 +41,7 @@ namespace NumberSearch.DataAccess
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<OwnedPhoneNumber>("""SELECT "OwnedPhoneNumberId", "DialedNumber", "IngestedFrom", "DateIngested", "Active", "BillingClientId", "OwnedBy", "Notes", "SPID", "SPIDName", "LIDBCNAM", "EmergencyInformationId", "DateUpdated", "Status", "FusionPBXClientId" FROM public."OwnedPhoneNumbers" """)
+                .QueryAsync<OwnedPhoneNumber>("""SELECT "OwnedPhoneNumberId", "DialedNumber", "IngestedFrom", "DateIngested", "Active", "BillingClientId", "OwnedBy", "Notes", "SPID", "SPIDName", "LIDBCNAM", "EmergencyInformationId", "DateUpdated", "Status", "FusionPBXClientId", "FPBXDomainId", "FPBXDestinationId", "FPBXDomainName", "FPBXDomainDescription" FROM public."OwnedPhoneNumbers" """)
                 .ConfigureAwait(false);
             return result;
         }
@@ -51,7 +56,7 @@ namespace NumberSearch.DataAccess
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryFirstOrDefaultAsync<OwnedPhoneNumber>("""SELECT "OwnedPhoneNumberId", "DialedNumber", "IngestedFrom", "DateIngested", "Active", "BillingClientId", "OwnedBy", "Notes", "SPID", "SPIDName", "LIDBCNAM", "EmergencyInformationId", "DateUpdated", "Status", "FusionPBXClientId" FROM public."OwnedPhoneNumbers" WHERE "DialedNumber" = @dialedNumber""", new { dialedNumber })
+                .QueryFirstOrDefaultAsync<OwnedPhoneNumber>("""SELECT "OwnedPhoneNumberId", "DialedNumber", "IngestedFrom", "DateIngested", "Active", "BillingClientId", "OwnedBy", "Notes", "SPID", "SPIDName", "LIDBCNAM", "EmergencyInformationId", "DateUpdated", "Status", "FusionPBXClientId", "FPBXDomainId", "FPBXDestinationId", "FPBXDomainName", "FPBXDomainDescription" FROM public."OwnedPhoneNumbers" WHERE "DialedNumber" = @dialedNumber""", new { dialedNumber })
                 .ConfigureAwait(false);
 
             return result;
@@ -70,8 +75,8 @@ namespace NumberSearch.DataAccess
             DateIngested = DateTime.Now;
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"OwnedPhoneNumbers\" (\"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"Active\", \"BillingClientId\", \"OwnedBy\", \"Notes\", \"SPID\", \"SPIDName\", \"LIDBCNAM\", \"EmergencyInformationId\", \"DateUpdated\", \"Status\", \"FusionPBXClientId\") VALUES (@DialedNumber, @IngestedFrom, @DateIngested, @Active, @BillingClientId, @OwnedBy, @Notes, @SPID, @SPIDName, @LIDBCNAM, @EmergencyInformationId, @DateUpdated, @Status, @FusionPBXClientId)",
-                new { DialedNumber, IngestedFrom, DateIngested, Active, BillingClientId, OwnedBy, Notes, SPID, SPIDName, LIDBCNAM, EmergencyInformationId, DateUpdated, Status, FusionPBXClientId })
+                .ExecuteAsync("INSERT INTO public.\"OwnedPhoneNumbers\" (\"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"Active\", \"BillingClientId\", \"OwnedBy\", \"Notes\", \"SPID\", \"SPIDName\", \"LIDBCNAM\", \"EmergencyInformationId\", \"DateUpdated\", \"Status\", \"FusionPBXClientId\", \"FPBXDomainId\", \"FPBXDestinationId\", \"FPBXDomainName\", \"FPBXDomainDescription\") VALUES (@DialedNumber, @IngestedFrom, @DateIngested, @Active, @BillingClientId, @OwnedBy, @Notes, @SPID, @SPIDName, @LIDBCNAM, @EmergencyInformationId, @DateUpdated, @Status, @FusionPBXClientId, @FPBXDomainId, @FPBXDestinationId, @FPBXDomainName, @FPBXDomainDescription)",
+                new { DialedNumber, IngestedFrom, DateIngested, Active, BillingClientId, OwnedBy, Notes, SPID, SPIDName, LIDBCNAM, EmergencyInformationId, DateUpdated, Status, FusionPBXClientId, FPBXDomainId, FPBXDestinationId, FPBXDomainName, FPBXDomainDescription })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -97,8 +102,8 @@ namespace NumberSearch.DataAccess
             DateIngested = DateTime.Now;
 
             var result = await connection
-                .ExecuteAsync("UPDATE public.\"OwnedPhoneNumbers\" SET \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"Active\" = @Active, \"BillingClientId\" = @BillingClientId, \"OwnedBy\" = @OwnedBy, \"Notes\" = @Notes, \"SPID\" = @SPID, \"SPIDName\" = @SPIDName, \"LIDBCNAM\" = @LIDBCNAM, \"EmergencyInformationId\" = @EmergencyInformationId, \"DateUpdated\" = @DateUpdated, \"Status\" = @Status, \"FusionPBXClientId\" = @FusionPBXClientId WHERE \"OwnedPhoneNumberId\" = @OwnedPhoneNumberId",
-                new { IngestedFrom, DateIngested, Active, BillingClientId, OwnedBy, Notes, SPID, SPIDName, LIDBCNAM, EmergencyInformationId, DateUpdated, Status, FusionPBXClientId, OwnedPhoneNumberId })
+                .ExecuteAsync("UPDATE public.\"OwnedPhoneNumbers\" SET \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"Active\" = @Active, \"BillingClientId\" = @BillingClientId, \"OwnedBy\" = @OwnedBy, \"Notes\" = @Notes, \"SPID\" = @SPID, \"SPIDName\" = @SPIDName, \"LIDBCNAM\" = @LIDBCNAM, \"EmergencyInformationId\" = @EmergencyInformationId, \"DateUpdated\" = @DateUpdated, \"Status\" = @Status, \"FusionPBXClientId\" = @FusionPBXClientId, \"FPBXDomainId\" = @FPBXDomainId, \"FPBXDestinationId\" = @FPBXDestinationId, \"FPBXDomainName\" = @FPBXDomainName, \"FPBXDomainDescription\" = @FPBXDomainDescription WHERE \"OwnedPhoneNumberId\" = @OwnedPhoneNumberId",
+                new { IngestedFrom, DateIngested, Active, BillingClientId, OwnedBy, Notes, SPID, SPIDName, LIDBCNAM, EmergencyInformationId, DateUpdated, Status, FusionPBXClientId, FPBXDomainId, FPBXDestinationId, FPBXDomainName, FPBXDomainDescription, OwnedPhoneNumberId })
                 .ConfigureAwait(false);
 
             if (result == 1)

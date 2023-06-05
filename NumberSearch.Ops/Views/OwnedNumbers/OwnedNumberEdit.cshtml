@@ -35,6 +35,7 @@
             </a>
         }
     }
+    <a class="btn btn-warning text-light" href="https://acceleratenetworks.com/Cart/Checkout/E911Registration/{@Model?.Owned.DialedNumber}">Create an E911 Regisitration Order</a>
 </div>
 <form action="/Home/OwnedNumbers/@Model?.Owned.DialedNumber" method="post" class="needs-validation">
     @Html.AntiForgeryToken()

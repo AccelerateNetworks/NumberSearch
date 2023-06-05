@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
+using NumberSearch.DataAccess.FusionPBX;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.LCGuide;
 using NumberSearch.DataAccess.Models;
@@ -16,6 +17,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.Intrinsics.Arm;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -453,6 +455,33 @@ namespace NumberSearch.Tests
             Assert.True(string.IsNullOrWhiteSpace(result.RateCenter));
         }
 
+        [Fact]
+        public async Task GetDestinationDetailsAsync()
+        {
+            // Arrange
+
+            // Act
+            var result = await DestinationDetails.GetByDialedNumberAsync("4254541206", _configuration.FusionPBXUsername, _configuration.FusionPBXPassword).ConfigureAwait(false);
+
+            // Assert        
+            Assert.True(result.destination_enabled);
+            output.WriteLine(JsonSerializer.Serialize(result));
+
+        }
+
+        [Fact]
+        public async Task GetDomainDetailsAsync()
+        {
+            // Arrange
+
+            // Act
+            var result = await DomainDetails.GetByDomainIdAsync("f86cace8-9d5c-47df-b084-48e6cb58a95d", _configuration.FusionPBXUsername, _configuration.FusionPBXPassword).ConfigureAwait(false);
+
+            // Assert        
+            Assert.True(!string.IsNullOrWhiteSpace(result.domain_name));
+            output.WriteLine(JsonSerializer.Serialize(result));
+
+        }
 
         [Fact]
         public async Task CallWithUsLRNLookupAsync()
