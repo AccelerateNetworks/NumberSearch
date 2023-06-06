@@ -614,6 +614,41 @@ namespace NumberSearch.Tests
             output.WriteLine($"{count} Results Reviewed");
         }
 
+
+        [Fact]
+        public async Task FirstComGetRoutingTestAsync()
+        {
+            var result = await FirstCom.FirstPointComSMS.GetSMSRoutingByDialedNumberAsync("12069574634", pComNetCredentials.Username, pComNetCredentials.Password);
+
+            Assert.NotNull(result);
+            Assert.True(result.QueryResult.text is "OK");
+            Assert.True(result.QueryResult.code is 0);
+            Assert.True(result.epid is 265);
+            output.WriteLine(JsonSerializer.Serialize(result));
+        }
+
+        [Fact]
+        public async Task FirstComGetSMSEnableTestAsync()
+        {
+            var result = await FirstCom.FirstPointComSMS.EnableSMSByDialedNumberAsync("12069574634", pComNetCredentials.Username, pComNetCredentials.Password);
+
+            Assert.NotNull(result);
+            Assert.True(result.text is "That number is already provisioned.");
+            Assert.True(result.code is -1);
+            output.WriteLine(JsonSerializer.Serialize(result));
+        }
+
+        [Fact]
+        public async Task FirstComGetRouteSMSToEPIDTestAsync()
+        {
+            var result = await FirstCom.FirstPointComSMS.RouteSMSToEPIDByDialedNumberAsync("12069574634", 265, pComNetCredentials.Username, pComNetCredentials.Password);
+
+            Assert.NotNull(result);
+            Assert.True(result.text is "Routed OK!");
+            Assert.True(result.code is 0);
+            output.WriteLine(JsonSerializer.Serialize(result));
+        }
+
         [Fact]
         public async Task BulkVSRESTNpaNxxGetAsyncTestAsync()
         {

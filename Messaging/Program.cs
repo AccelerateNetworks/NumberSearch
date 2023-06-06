@@ -1,6 +1,8 @@
 using Amazon.S3;
 using Amazon.S3.Transfer;
 
+using FirstCom;
+
 using Flurl.Http;
 
 using Messaging;
@@ -25,6 +27,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Net.Mime;
+using System.ServiceModel.Channels;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -359,14 +362,22 @@ try
 
             if (existingRegistration is not null)
             {
+                bool updated = false;
                 // If they really are different update the record.
-                if (existingRegistration.CallbackUrl != registration.CallbackUrl || existingRegistration.ClientSecret != registration.ClientSecret)
+                if (existingRegistration.ClientSecret != registration.ClientSecret)
                 {
-                    existingRegistration.CallbackUrl = registration.CallbackUrl;
                     existingRegistration.ClientSecret = registration.ClientSecret;
-                    await db.SaveChangesAsync();
                 }
 
+                if (existingRegistration.CallbackUrl != registration.CallbackUrl)
+                {
+                    existingRegistration.CallbackUrl = registration.CallbackUrl;
+                }
+
+                if (updated)
+                {
+                    await db.SaveChangesAsync();
+                }
                 // Otherwise do nothing.
             }
             else
@@ -379,11 +390,41 @@ try
                 });
                 await db.SaveChangesAsync();
             }
+
+            try
+            {
+                // Verify that this number is routed through our upstream provider.
+                string dialedNumber = asDialedNumber.Type is not PhoneNumbersNA.NumberType.ShortCode ? $"1{asDialedNumber.DialedNumber}" : asDialedNumber.DialedNumber;
+                var checkRouted = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber, firstPointUsername, firstPointPassword);
+                Log.Information(System.Text.Json.JsonSerializer.Serialize(checkRouted));
+                if (checkRouted.QueryResult.code is not 0 || checkRouted.epid is not 265)
+                {
+                    // Enabled routing and set the EPID if the number is not already routed.
+                    var enableSMS = FirstPointComSMS.EnableSMSByDialedNumberAsync(dialedNumber, firstPointUsername, firstPointPassword);
+                    Log.Information(System.Text.Json.JsonSerializer.Serialize(enableSMS));
+                    var setRouting = FirstPointComSMS.RouteSMSToEPIDByDialedNumberAsync(dialedNumber, 265, firstPointUsername, firstPointPassword);
+                    Log.Information(System.Text.Json.JsonSerializer.Serialize(setRouting));
+                }
+                // Do nothing.
+
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                Log.Error(ex.StackTrace ?? "No stack trace found.");
+                return TypedResults.BadRequest(new RegistrationResponse
+                {
+                    DialedNumber = registration.DialedNumber,
+                    CallbackUrl = registration.CallbackUrl,
+                    Registered = false,
+                    Message = $"Failed to enabled messaging service through EndStream for this dialed number. Please email dan@acceleratenetworks.com to report this outage. {ex.Message}"
+                });
+            }
         }
         catch (Exception ex)
         {
             Log.Error(ex.Message);
-            Log.Error(ex.StackTrace ?? "No stacktrace found.");
+            Log.Error(ex.StackTrace ?? "No stack trace found.");
             return TypedResults.BadRequest(new RegistrationResponse
             {
                 DialedNumber = registration.DialedNumber,
