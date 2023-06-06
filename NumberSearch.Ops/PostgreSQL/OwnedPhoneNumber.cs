@@ -23,6 +23,6 @@ namespace AccelerateNetworks.Operations
         public Guid? FPBXDestinationId { get; set; } = null;
         public string? FPBXDomainName { get; set; } = string.Empty;
         public string? FPBXDomainDescription { get; set; } = string.Empty;
-
+        public string? SMSRoute { get; set; } = string.Empty;
     }
 }

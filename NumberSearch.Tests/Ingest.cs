@@ -9,6 +9,7 @@ using ServiceReference;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Xunit;
 using Xunit.Abstractions;
@@ -102,6 +103,12 @@ namespace NumberSearch.Tests
         //public async Task TestFusionPBXDataUpdateAsync()
         //{
         //    await Owned.MatchOwnedNumbersToFusionPBXAsync(ingestConfiguration.Postgresql, ingestConfiguration.FusionPBXUsername, ingestConfiguration.FusionPBXPassword);
+        //}
+
+        //[Fact]
+        //public async Task TestSMSRoutingAsync()
+        //{
+        //    await Owned.VerifySMSRoutingAsync(ingestConfiguration.Postgresql, ingestConfiguration.PComNetUsername, ingestConfiguration.PComNetPassword);
         //}
 
         //[Fact]

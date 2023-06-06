@@ -489,6 +489,10 @@ public partial class numberSearchContext : DbContext
             entity.Property(e => e.FPBXDomainDescription)
     .HasColumnType("character varying")
     .HasColumnName("FPBXDomainDescription");
+
+            entity.Property(e => e.SMSRoute)
+.HasColumnType("character varying")
+.HasColumnName("SMSRoute");
         });
 
         modelBuilder.Entity<PhoneMenuOption>(entity =>

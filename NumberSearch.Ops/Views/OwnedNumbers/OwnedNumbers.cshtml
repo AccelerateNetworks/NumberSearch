@@ -29,6 +29,7 @@
                 <th scope="col">Provider</th>
                 <th>E911</th>
                 <th>FusionPBX</th>
+                <th>Messaging</th>
                 <th>Notes</th>
                 <th>Actions</th>
             </tr>
@@ -120,6 +121,16 @@
                         <td>
                             <p>@number?.Owned.FPBXDomainName</p>
                             <p>@number?.Owned.FPBXDomainDescription</p>
+                        </td>
+                        <td>
+                            @if (string.IsNullOrWhiteSpace(number?.Owned.SMSRoute))
+                            {
+                                <p>No SMS routing found.</p>
+                            }
+                            else
+                            {
+                                <p>@number?.Owned.SMSRoute</p>
+                            }
                         </td>
                         <td>
                             @if (!string.IsNullOrWhiteSpace(number?.Owned.OwnedBy))

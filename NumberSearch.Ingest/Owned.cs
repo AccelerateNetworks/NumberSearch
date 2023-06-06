@@ -125,6 +125,9 @@ namespace NumberSearch.Ingest
             // Match numbers to destinations and domains in FusionPBX.
             await MatchOwnedNumbersToFusionPBXAsync(configuration.Postgresql, configuration.FusionPBXUsername, configuration.FusionPBXPassword);
 
+            // Verify SMS routing with Endstream.
+            await VerifySMSRoutingAsync(configuration.Postgresql, configuration.PComNetUsername, configuration.PComNetPassword);
+
             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
             var lockEntry = await IngestStatistics.GetLockAsync("OwnedNumbers", configuration.Postgresql).ConfigureAwait(false);
             _ = await lockEntry.DeleteAsync(configuration.Postgresql).ConfigureAwait(false);
@@ -157,9 +160,50 @@ namespace NumberSearch.Ingest
             }
         }
 
+        public static async Task VerifySMSRoutingAsync(string connectionString, string pComNetUsername, string pComNetPassword)
+        {
+            Log.Information($"[OwnedNumbers] Verifying SMS Routing for Owned Phone numbers.");
+
+            var ownedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
+
+            foreach (var number in ownedNumbers)
+            {
+                bool updated = false;
+                try
+                {
+                    var checkSMSRouting = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync($"1{number.DialedNumber}", pComNetUsername, pComNetPassword);
+                    if (!string.IsNullOrWhiteSpace(checkSMSRouting.route))
+                    {
+                        // Update the owned number with the route.
+                        if (number.SMSRoute != checkSMSRouting.route)
+                        {
+                            number.SMSRoute = checkSMSRouting.route;
+                            updated = true;
+                        }
+                    }
+                    else
+                    {
+                        Log.Error($"[OwnedNumbers] Could not verify SMS routing for {number.DialedNumber} with FirstPointCom. {JsonSerializer.Serialize(checkSMSRouting)}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"[OwnedNumbers] Could not verify SMS routing for {number.DialedNumber} with FirstPointCom. {ex.Message}");
+                }
+
+                if (updated)
+                {
+                    var checkUpdate = await number.PutAsync(connectionString);
+                    Log.Information($"[OwnedNumbers] Updated SMS routing for {number.DialedNumber} with FirstPointCom to {number.SMSRoute}.");
+                }
+            }
+
+            Log.Information($"[OwnedNumbers] Verified SMS Routing for {ownedNumbers.Count()} Owned Phone numbers.");
+        }
+
         public static async Task MatchOwnedNumbersToFusionPBXAsync(string connectionString, string fusionPBXUsername, string fusionPBXPassword)
         {
-            Log.Information($"[OwnedNumbers] FusionPBX data for Owned Phone numbers.");
+            Log.Information($"[OwnedNumbers] Matching FusionPBX data for Owned Phone numbers.");
 
             var ownedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
 
@@ -492,12 +536,12 @@ namespace NumberSearch.Ingest
             var updatedExisting = 0;
 
             var numbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
-            var purcahsed = await PurchasedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
+            var purchased = await PurchasedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
             var ported = await PortedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
 
-            foreach (var number in numbers.Where(x => string.IsNullOrWhiteSpace(x.BillingClientId)))
+            foreach (var number in numbers)
             {
-                var match = purcahsed.Where(x => x.DialedNumber == number.DialedNumber).FirstOrDefault();
+                var match = purchased.Where(x => x.DialedNumber == number.DialedNumber).FirstOrDefault();
 
                 if (match is null)
                 {
@@ -511,6 +555,9 @@ namespace NumberSearch.Ingest
                     }
 
                     var order = await Order.GetByIdAsync(match2.OrderId ?? Guid.NewGuid(), connectionString).ConfigureAwait(false);
+
+                    //var badLink = $"https://billing.acceleratenetworks.com/clients/{number.BillingClientId}/edit";
+                    //var checkLink = badLink.GetStringAsync();
 
                     if (order is not null && !string.IsNullOrWhiteSpace(order?.BillingClientId))
                     {
