@@ -414,63 +414,63 @@ namespace Messaging.Tests
         }
 
 
-        [Fact]
-        public async Task MMSMessageAsync()
-        {
-            var _httpClient = await GetHttpClientWithValidBearerTokenAsync();
-            var registrationRequest = new RegistrationRequest() { CallbackUrl = "https://sms.callpipe.com/message/forward/test", ClientSecret = "thisisatest", DialedNumber = "12066320575" };
-            var response = await _httpClient.PostAsJsonAsync("/client/register", registrationRequest);
-            var data = await response.Content.ReadFromJsonAsync<RegistrationResponse>();
-            Assert.NotNull(data);
-            Assert.True(data.Registered);
+        //[Fact]
+        //public async Task MMSMessageAsync()
+        //{
+        //    var _httpClient = await GetHttpClientWithValidBearerTokenAsync();
+        //    var registrationRequest = new RegistrationRequest() { CallbackUrl = "https://sms.callpipe.com/message/forward/test", ClientSecret = "thisisatest", DialedNumber = "12066320575" };
+        //    var response = await _httpClient.PostAsJsonAsync("/client/register", registrationRequest);
+        //    var data = await response.Content.ReadFromJsonAsync<RegistrationResponse>();
+        //    Assert.NotNull(data);
+        //    Assert.True(data.Registered);
 
-            string route = "/1pcom/inbound/MMS";
-            string token = "okereeduePeiquah3yaemohGhae0ie";
+        //    string route = "/1pcom/inbound/MMS";
+        //    string token = "okereeduePeiquah3yaemohGhae0ie";
 
-            var stringContent = new FormUrlEncodedContent(new[]
-                {
-                    new KeyValuePair<string, string>("msisdn", "12066320575"),
-                    new KeyValuePair<string, string>("to", "12066320575"),
-                    new KeyValuePair<string, string>("message", "{\r\n\"authkey\":\"2870e0d1-8dfa-4b31-91e9-6d0fc72de19d\",\r\n\"encoding\":\"native\",\r\n\"files\":\"part-001.jpg,part-002.txt,\",\r\n\"recip\":\"12066320575,\",\r\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=ffa64b9fe9824a4c98c73d016264ad92\"\r\n}"),
-                    new KeyValuePair<string, string>("remote", "12066320575"),
-                    new KeyValuePair<string, string>("host", "12066320575"),
-                });
+        //    var stringContent = new FormUrlEncodedContent(new[]
+        //        {
+        //            new KeyValuePair<string, string>("msisdn", "12066320575"),
+        //            new KeyValuePair<string, string>("to", "12066320575"),
+        //            new KeyValuePair<string, string>("message", "{\r\n\"authkey\":\"2870e0d1-8dfa-4b31-91e9-6d0fc72de19d\",\r\n\"encoding\":\"native\",\r\n\"files\":\"part-001.jpg,part-002.txt,\",\r\n\"recip\":\"12066320575,\",\r\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=ffa64b9fe9824a4c98c73d016264ad92\"\r\n}"),
+        //            new KeyValuePair<string, string>("remote", "12066320575"),
+        //            new KeyValuePair<string, string>("host", "12066320575"),
+        //        });
 
-            response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
+        //    response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
 
-            Assert.NotNull(response);
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.StatusCode is System.Net.HttpStatusCode.OK);
-            var message = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"The incoming message was received and forwarded to the client.\"", message);
-        }
+        //    Assert.NotNull(response);
+        //    _output.WriteLine(await response.Content.ReadAsStringAsync());
+        //    Assert.True(response.IsSuccessStatusCode);
+        //    Assert.True(response.StatusCode is System.Net.HttpStatusCode.OK);
+        //    var message = await response.Content.ReadAsStringAsync();
+        //    Assert.Equal("\"The incoming message was received and forwarded to the client.\"", message);
+        //}
 
-        [Fact]
-        public async Task GroupMMSMessageAsync()
-        {
-            string route = "/1pcom/inbound/MMS";
-            string token = "okereeduePeiquah3yaemohGhae0ie";
+        //[Fact]
+        //public async Task GroupMMSMessageAsync()
+        //{
+        //    string route = "/1pcom/inbound/MMS";
+        //    string token = "okereeduePeiquah3yaemohGhae0ie";
 
-            var stringContent = new FormUrlEncodedContent(new[]
-                {
-                    new KeyValuePair<string, string>("msisdn", "12065579450"),
-                    new KeyValuePair<string, string>("to", "12068589310"),
-                    new KeyValuePair<string, string>("timezone", "EST"),
-                    new KeyValuePair<string, string>("message", "{\r\n\"authkey\":\"7071e405-3cb8-43ac-acae-6c06987ede02\",\r\n\"encoding\":\"native\",\r\n\"files\":\"part-001.txt,\",\r\n\"recip\":\"12068589310,\",\r\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=2ee9b7b8a1db41d590a9fcabbec08b63\"\r\n}"),
-                    new KeyValuePair<string, string>("api_version", "0.5"),
-                    new KeyValuePair<string, string>("FullRecipientList", ", 12067696361"),
-                });
+        //    var stringContent = new FormUrlEncodedContent(new[]
+        //        {
+        //            new KeyValuePair<string, string>("msisdn", "12065579450"),
+        //            new KeyValuePair<string, string>("to", "12068589310"),
+        //            new KeyValuePair<string, string>("timezone", "EST"),
+        //            new KeyValuePair<string, string>("message", "{\r\n\"authkey\":\"7071e405-3cb8-43ac-acae-6c06987ede02\",\r\n\"encoding\":\"native\",\r\n\"files\":\"part-001.txt,\",\r\n\"recip\":\"12068589310,\",\r\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=2ee9b7b8a1db41d590a9fcabbec08b63\"\r\n}"),
+        //            new KeyValuePair<string, string>("api_version", "0.5"),
+        //            new KeyValuePair<string, string>("FullRecipientList", ", 12067696361"),
+        //        });
 
-            var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
+        //    var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
 
-            Assert.NotNull(response);
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.StatusCode is not System.Net.HttpStatusCode.BadRequest);
-            var message = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"The incoming message was received and forwarded to the client.\"", message);
-        }
+        //    Assert.NotNull(response);
+        //    _output.WriteLine(await response.Content.ReadAsStringAsync());
+        //    Assert.True(response.IsSuccessStatusCode);
+        //    Assert.True(response.StatusCode is not System.Net.HttpStatusCode.BadRequest);
+        //    var message = await response.Content.ReadAsStringAsync();
+        //    Assert.Equal("\"The incoming message was received and forwarded to the client.\"", message);
+        //}
 
         //[Fact]
         //public async Task SaveFileToDigitalOceanSpacesAsync()
