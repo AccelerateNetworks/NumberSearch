@@ -46,6 +46,8 @@ variables:
   ConnectionStrings.S3ServiceURL: $(S3ServiceURL)
   ConnectionStrings.OpsUsername: $(OpsUsername)
   ConnectionStrings.OpsPassword: $(OpsPassword)
+  ConnectionStrings.FusionPBXUsername: $(FusionPBXUsername)
+  ConnectionStrings.FusionPBXPassword: $(FusionPBXPassword)
   ApplicationInsights.InstrumentationKey: $(AIInstrumentationKey)
   ApplicationInsights.ConnectionString: $(AIConnectionString)
 
