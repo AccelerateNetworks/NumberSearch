@@ -1,3 +1,6 @@
+using Amazon.S3;
+using Amazon.S3.Transfer;
+
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 
@@ -23,6 +26,7 @@ namespace Messaging.Tests
             _httpClient = factory.CreateClient();
             _configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
+                .AddUserSecrets("1828a61a-a56d-4b8c-b4dd-ae4309d19d44")
                 .AddUserSecrets("328593cf-cbb9-48e9-8938-e38a44c8291d")
                 .Build();
             _output = output;
@@ -414,86 +418,91 @@ namespace Messaging.Tests
         }
 
 
-        //[Fact]
-        //public async Task MMSMessageAsync()
-        //{
-        //    var _httpClient = await GetHttpClientWithValidBearerTokenAsync();
-        //    var registrationRequest = new RegistrationRequest() { CallbackUrl = "https://sms.callpipe.com/message/forward/test", ClientSecret = "thisisatest", DialedNumber = "12066320575" };
-        //    var response = await _httpClient.PostAsJsonAsync("/client/register", registrationRequest);
-        //    var data = await response.Content.ReadFromJsonAsync<RegistrationResponse>();
-        //    Assert.NotNull(data);
-        //    Assert.True(data.Registered);
+        [Fact]
+        public async Task MMSMessageAsync()
+        {
+            var _httpClient = await GetHttpClientWithValidBearerTokenAsync();
+            var registrationRequest = new RegistrationRequest() { CallbackUrl = "https://sms.callpipe.com/message/forward/test", ClientSecret = "thisisatest", DialedNumber = "12066320575" };
+            var response = await _httpClient.PostAsJsonAsync("/client/register", registrationRequest);
+            var data = await response.Content.ReadFromJsonAsync<RegistrationResponse>();
+            Assert.NotNull(data);
+            Assert.True(data.Registered);
 
-        //    string route = "/1pcom/inbound/MMS";
-        //    string token = "okereeduePeiquah3yaemohGhae0ie";
+            string route = "/1pcom/inbound/MMS";
+            string token = "okereeduePeiquah3yaemohGhae0ie";
 
-        //    var stringContent = new FormUrlEncodedContent(new[]
-        //        {
-        //            new KeyValuePair<string, string>("msisdn", "12066320575"),
-        //            new KeyValuePair<string, string>("to", "12066320575"),
-        //            new KeyValuePair<string, string>("message", "{\r\n\"authkey\":\"2870e0d1-8dfa-4b31-91e9-6d0fc72de19d\",\r\n\"encoding\":\"native\",\r\n\"files\":\"part-001.jpg,part-002.txt,\",\r\n\"recip\":\"12066320575,\",\r\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=ffa64b9fe9824a4c98c73d016264ad92\"\r\n}"),
-        //            new KeyValuePair<string, string>("remote", "12066320575"),
-        //            new KeyValuePair<string, string>("host", "12066320575"),
-        //        });
+            var stringContent = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("msisdn", "12066320575"),
+                    new KeyValuePair<string, string>("to", "12066320575"),
+                    new KeyValuePair<string, string>("message", "{\r\n\"authkey\":\"2870e0d1-8dfa-4b31-91e9-6d0fc72de19d\",\r\n\"encoding\":\"native\",\r\n\"files\":\"part-001.jpg,part-002.txt,\",\r\n\"recip\":\"12066320575,\",\r\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=ffa64b9fe9824a4c98c73d016264ad92\"\r\n}"),
+                    new KeyValuePair<string, string>("remote", "12066320575"),
+                    new KeyValuePair<string, string>("host", "12066320575"),
+                });
 
-        //    response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
+            response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
 
-        //    Assert.NotNull(response);
-        //    _output.WriteLine(await response.Content.ReadAsStringAsync());
-        //    Assert.True(response.IsSuccessStatusCode);
-        //    Assert.True(response.StatusCode is System.Net.HttpStatusCode.OK);
-        //    var message = await response.Content.ReadAsStringAsync();
-        //    Assert.Equal("\"The incoming message was received and forwarded to the client.\"", message);
-        //}
+            Assert.NotNull(response);
+            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            Assert.True(response.IsSuccessStatusCode);
+            Assert.True(response.StatusCode is System.Net.HttpStatusCode.OK);
+            var message = await response.Content.ReadAsStringAsync();
+            Assert.Equal("\"The incoming message was received and forwarded to the client.\"", message);
+        }
 
-        //[Fact]
-        //public async Task GroupMMSMessageAsync()
-        //{
-        //    string route = "/1pcom/inbound/MMS";
-        //    string token = "okereeduePeiquah3yaemohGhae0ie";
+        // This will break if the Amazon.S3 library is newer than version 3.7.104.25 (2023/06/01)
+        [Fact]
+        public async Task GroupMMSMessageAsync()
+        {
+            string route = "/1pcom/inbound/MMS";
+            string token = "okereeduePeiquah3yaemohGhae0ie";
 
-        //    var stringContent = new FormUrlEncodedContent(new[]
-        //        {
-        //            new KeyValuePair<string, string>("msisdn", "12065579450"),
-        //            new KeyValuePair<string, string>("to", "12068589310"),
-        //            new KeyValuePair<string, string>("timezone", "EST"),
-        //            new KeyValuePair<string, string>("message", "{\r\n\"authkey\":\"7071e405-3cb8-43ac-acae-6c06987ede02\",\r\n\"encoding\":\"native\",\r\n\"files\":\"part-001.txt,\",\r\n\"recip\":\"12068589310,\",\r\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=2ee9b7b8a1db41d590a9fcabbec08b63\"\r\n}"),
-        //            new KeyValuePair<string, string>("api_version", "0.5"),
-        //            new KeyValuePair<string, string>("FullRecipientList", ", 12067696361"),
-        //        });
+            var stringContent = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("msisdn", "12065579450"),
+                    new KeyValuePair<string, string>("to", "12068589310"),
+                    new KeyValuePair<string, string>("timezone", "EST"),
+                    new KeyValuePair<string, string>("message", "{\r\n\"authkey\":\"7071e405-3cb8-43ac-acae-6c06987ede02\",\r\n\"encoding\":\"native\",\r\n\"files\":\"part-001.txt,\",\r\n\"recip\":\"12068589310,\",\r\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=2ee9b7b8a1db41d590a9fcabbec08b63\"\r\n}"),
+                    new KeyValuePair<string, string>("api_version", "0.5"),
+                    new KeyValuePair<string, string>("FullRecipientList", ", 12067696361"),
+                });
 
-        //    var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
+            var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
 
-        //    Assert.NotNull(response);
-        //    _output.WriteLine(await response.Content.ReadAsStringAsync());
-        //    Assert.True(response.IsSuccessStatusCode);
-        //    Assert.True(response.StatusCode is not System.Net.HttpStatusCode.BadRequest);
-        //    var message = await response.Content.ReadAsStringAsync();
-        //    Assert.Equal("\"The incoming message was received and forwarded to the client.\"", message);
-        //}
+            Assert.NotNull(response);
+            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            Assert.True(response.IsSuccessStatusCode);
+            Assert.True(response.StatusCode is not System.Net.HttpStatusCode.BadRequest);
+            var message = await response.Content.ReadAsStringAsync();
+            Assert.Equal("\"The incoming message was received and forwarded to the client.\"", message);
+        }
 
         //[Fact]
         //public async Task SaveFileToDigitalOceanSpacesAsync()
         //{
-        //    using var fileStream = new FileStream("", FileMode.Open, FileAccess.Read);
+        //    using var fileStream = new FileStream("C:\\Users\\thoma\\Source\\Repos\\AccelerateNetworks\\NumberSearch\\Messaging\\appsettings.json", FileMode.Open, FileAccess.Read);
         //    string fileName = "appsettings.json";
-        //    var _awsAccessKey = "";
-        //    var _awsSecretKey = "";
-        //    var bucketName = "MessagingAPIIntegrationTest";
+        //    var _awsAccessKey = "DO00Y9BM9MYP7388TQ2V";
+        //    var _awsSecretKey = "QorC09arfKbBW3jzw0vb1GJZw86c2ytwFOOFvV+Vn6U";
+        //    var bucketName = _configuration.GetConnectionString("BucketName") ?? string.Empty;
         //    var config = new AmazonS3Config
         //    {
-        //        ServiceURL = ""
+        //        ServiceURL = _configuration.GetConnectionString("S3ServiceURL") ?? string.Empty,
+        //        //SignatureVersion = "v4",
         //    };
         //    var client = new AmazonS3Client(_awsAccessKey, _awsSecretKey, config);
-        //    var bucket = await client.PutBucketAsync(bucketName);
+        //    var bucket = await client.ListBucketsAsync();
         //    var fileUtil = new TransferUtility(client);
         //    var fileRequest = new TransferUtilityUploadRequest
         //    {
         //        BucketName = bucketName,
         //        InputStream = fileStream,
         //        StorageClass = S3StorageClass.Standard,
+        //        PartSize = fileStream.Length,
         //        Key = fileName,
         //        CannedACL = S3CannedACL.PublicRead,
+        //        //DisablePayloadSigning = true,
+               
         //    };
         //    await fileUtil.UploadAsync(fileRequest);
         //    string mediaURL = $"{config.ServiceURL}{bucketName}/{fileRequest.Key}";

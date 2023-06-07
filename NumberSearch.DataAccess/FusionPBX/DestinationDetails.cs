@@ -1,5 +1,6 @@
 ﻿using Flurl.Http;
 
+using System;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.FusionPBX
@@ -39,11 +40,17 @@ namespace NumberSearch.DataAccess.FusionPBX
         public string destination_order { get; set; } = string.Empty;
         public string destination_distinctive_ring { get; set; } = string.Empty;
         public string destination_conditions { get; set; } = string.Empty;
-        public string destination_actions { get; set; } = string.Empty;
+        public DestinationAction[] destination_actions { get; set; } = Array.Empty<DestinationAction>();
         public string insert_date { get; set; } = string.Empty;
         public string insert_user { get; set; } = string.Empty;
         public string update_date { get; set; } = string.Empty;
         public string update_user { get; set; } = string.Empty;
+
+        public class DestinationAction
+        {
+            public string destination_app { get; set; } = string.Empty;
+            public string destination_data { get; set; } = string.Empty;
+    }
 
         public static async Task<DestinationDetails> GetByDialedNumberAsync(string dialedNumber, string username, string password)
         {
@@ -53,6 +60,8 @@ namespace NumberSearch.DataAccess.FusionPBX
             var response = await url
                 .WithBasicAuth(username, password)
                 .PostJsonAsync(new { action = "destination-details", number = dialedNumber });
+
+            //var s = await response.GetStringAsync();
 
             return await response.GetJsonAsync<DestinationDetails>();
         }
