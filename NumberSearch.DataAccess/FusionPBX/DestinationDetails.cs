@@ -50,7 +50,7 @@ namespace NumberSearch.DataAccess.FusionPBX
         {
             public string destination_app { get; set; } = string.Empty;
             public string destination_data { get; set; } = string.Empty;
-    }
+        }
 
         public static async Task<DestinationDetails> GetByDialedNumberAsync(string dialedNumber, string username, string password)
         {
