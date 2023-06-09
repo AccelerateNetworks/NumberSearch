@@ -451,6 +451,7 @@ namespace Messaging.Tests
         }
 
         // This will break if the Amazon.S3 library is newer than version 3.7.104.25 (2023/06/01)
+        // https://github.com/aws/aws-sdk-net/issues/2622
         [Fact]
         public async Task GroupMMSMessageAsync()
         {

@@ -1,13 +1,18 @@
 ﻿using AccelerateNetworks.Operations;
 
+using Flurl.Http;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 using NuGet.Packaging;
 
+using NumberSearch.Ops.Models;
+
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,10 +22,26 @@ namespace NumberSearch.Ops.Controllers;
 public class OwnedNumbersController : Controller
 {
     private readonly numberSearchContext _context;
+    private readonly OpsConfig _config;
 
-    public OwnedNumbersController(numberSearchContext context)
+    public OwnedNumbersController(numberSearchContext context, OpsConfig opsConfig)
     {
         _context = context;
+        _config = opsConfig;
+    }
+
+    public class ClientRegistration
+    {
+        [Key]
+        public Guid ClientRegistrationId { get; set; } = Guid.NewGuid();
+        [DataType(DataType.PhoneNumber)]
+        public string AsDialed { get; set; } = string.Empty;
+        [DataType(DataType.Url)]
+        public string CallbackUrl { get; set; } = string.Empty;
+        [DataType(DataType.DateTime)]
+        public DateTime DateRegistered { get; set; } = DateTime.Now;
+        [DataType(DataType.Password)]
+        public string ClientSecret { get; set; } = string.Empty;
     }
 
     [Authorize]
@@ -72,6 +93,10 @@ public class OwnedNumbersController : Controller
         var portedNumbers = await _context.PortedPhoneNumbers.ToArrayAsync();
         var purchasedNumbers = await _context.PurchasedPhoneNumbers.ToArrayAsync();
         var e911s = await _context.EmergencyInformation.ToArrayAsync();
+        var registeredNumbers = await "https://sms.callpipe.com/client/all"
+            .WithOAuthBearerToken(_config.MessagingAPIJWT)
+            .GetJsonAsync<ClientRegistration[]>();
+
         var viewOrders = new List<OwnedNumberResult>();
         foreach (var ownedNumber in ownedNumbers)
         {
@@ -80,7 +105,8 @@ public class OwnedNumbersController : Controller
                 EmergencyInformation = e911s.FirstOrDefault(x => x.DialedNumber == ownedNumber.DialedNumber) ?? new(),
                 Owned = ownedNumber,
                 PortedPhoneNumbers = portedNumbers.Where(x => x.PortedDialedNumber == ownedNumber.DialedNumber).ToArray(),
-                PurchasedPhoneNumbers = purchasedNumbers.Where(x => x.DialedNumber == ownedNumber.DialedNumber).ToArray()
+                PurchasedPhoneNumbers = purchasedNumbers.Where(x => x.DialedNumber == ownedNumber.DialedNumber).ToArray(),
+                ClientRegistration = registeredNumbers.FirstOrDefault(x => x.AsDialed == ownedNumber.DialedNumber) ?? new()
             });
         }
 

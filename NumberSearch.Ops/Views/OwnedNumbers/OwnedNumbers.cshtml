@@ -25,8 +25,6 @@
         <thead>
             <tr>
                 <th scope="col">Number</th>
-                <th>Status</th>
-                <th scope="col">Provider</th>
                 <th>E911</th>
                 <th>FusionPBX</th>
                 <th>Messaging</th>
@@ -53,39 +51,37 @@
                     }
                     <tr>
                         <td scope="row">
-                            @*<a href="https://acceleratenetworks.com/cart/order/@order.OrderId" class="btn btn-primary">
-                    View Order
-                    </a>*@
-                            @*<h4 class="d-flex justify-content-between align-items-center mt-3">
-                    <span class="badge badge-info badge-pill">
-                    @number.DateIngested
-                    </span>
-                    </h4>*@
                             <h4>@number.Owned.DialedNumber</h4>
                             @{
-                                if (number.Owned.Active)
+                                if (number.Owned.Status is "Active")
                                 {
                                     <h4><span class="badge bg-success">Active</span></h4>
                                 }
+                                else if (number.Owned.Status is "Cancelled")
+                                {
+                                    <h4><span class="badge bg-danger">Cancelled</span></h4>
+                                }
+                                else if (number.Owned.Status is "Porting In")
+                                {
+                                    <h4><span class="badge bg-info">Porting In</span></h4>
+                                }
+                                else if (number.Owned.Status is "Porting Out")
+                                {
+                                    <h4><span class="badge bg-warning">Porting Out</span></h4>
+                                }
                                 else
                                 {
-                                    <h4><span class="badge bg-danger">Inactive</span></h4>
+                                    <h4><span class="badge bg-secondary">@number.Owned.Status</span></h4>
                                 }
                             }
-                        </td>
-                        <td>
-                            @number.Owned.Status
-                        </td>
-                        <td>
                             @Html.Raw(ingestedBadge)
                             <p>
                                 Last Updated
                                 @number.Owned.DateUpdated.ToShortDateString()
                             </p>
-
                         </td>
                         <td>
-                            @if (number?.Owned.EmergencyInformationId is not null)
+                            @if (number?.EmergencyInformation.DialedNumber == number?.Owned.DialedNumber)
                             {
                                 <p>
                                     Registered on @number?.EmergencyInformation.BulkVSLastModificationDate?.ToShortDateString()
@@ -115,55 +111,65 @@
                             else
                             {
                                 // TODO: Add this number to your cart in MVC and bump you to the Orders page.
-                                <p>No registration found.</p>
+                                <p>No address registered.</p>
                             }
                         </td>
                         <td>
-                            <p>@number?.Owned.FPBXDomainName</p>
-                            <p>@number?.Owned.FPBXDomainDescription</p>
-                        </td>
-                        <td>
-                            @if (string.IsNullOrWhiteSpace(number?.Owned.SMSRoute))
+                            @if (!string.IsNullOrWhiteSpace(number?.Owned?.FPBXDomainName))
                             {
-                                <p>No SMS routing found.</p>
+                                <p>@number?.Owned.FPBXDomainName</p>
+                                <p>
+                                    <a class="btn btn-outline-primary" href="https://@number?.Owned?.FPBXDomainName/app/destinations/destination_edit.php?id=@number?.Owned?.FPBXDestinationId" target="_blank">Destination</a>
+                                </p>
+                                <p>@number?.Owned.FPBXDomainDescription</p>
+                                <p>
+                                    <a class="btn btn-outline-secondary" href="https://@number?.Owned?.FPBXDomainName/core/domains/domain_edit.php?id=@number?.Owned?.FPBXDomainId" target="_blank">Domain</a>
+                                </p>
                             }
                             else
                             {
-                                <p>@number?.Owned.SMSRoute</p>
+                                <p>No Destination found in FusionPBX.</p>
+                                <p>No Domain found in FusionPBX.</p>
+                            }
+                        </td>
+                        <td>
+                            @if (string.IsNullOrWhiteSpace(number?.Owned?.SMSRoute) && string.IsNullOrWhiteSpace(@number?.ClientRegistration?.CallbackUrl))
+                            {
+                                <p>No upstream routing found.</p>
+                                <p>No message forwarding URL registered.</p>
+                            }
+                            else if (string.IsNullOrWhiteSpace(number?.Owned?.SMSRoute) && !string.IsNullOrWhiteSpace(@number?.ClientRegistration?.CallbackUrl))
+                            {
+                                <p>❌ No upstream routing found.</p>
+                                <p>✔️ Forwarded to @number?.ClientRegistration?.CallbackUrl</p>
+                                <div class="alert alert-warning" role="alert">
+                                    Inbound messages will not be forwarded. Please register with sms.callpipe.com.
+                                </div>
+                            }
+                            else if (!string.IsNullOrWhiteSpace(number?.Owned?.SMSRoute) && string.IsNullOrWhiteSpace(@number?.ClientRegistration?.CallbackUrl))
+                            {
+                                <p>✔️ Routed to @number?.Owned.SMSRoute</p>
+                                <p>❌ No message forwarding URL registered.</p>
+                                <div class="alert alert-warning" role="alert">
+                                    Inbound messages will not be forwarded. Please register with sms.callpipe.com.
+                                </div>
+                            }
+                            else
+                            {
+                                <p>✔️ Routed to @number?.Owned.SMSRoute</p>
+                                <p>✔️ Forwarded to @number?.ClientRegistration?.CallbackUrl</p>
                             }
                         </td>
                         <td>
                             @if (!string.IsNullOrWhiteSpace(number?.Owned.OwnedBy))
                             {
-                                <p>@number.Owned.OwnedBy</p>
+                                <p>Owned by @number.Owned.OwnedBy</p>
                             }
                             <p>@number?.Owned.Notes</p>
                         </td>
                         <td>
-                            <div class="btn-group" role="group" aria-label="Basic example">
+                            <div class="btn-group-vertical" role="group" aria-label="Vertical button group">
                                 <a class="btn btn-warning text-light" href="/Home/OwnedNumbers/@number?.Owned.DialedNumber" target="_blank">Edit</a>
-                                @if (!string.IsNullOrWhiteSpace(number?.Owned?.FPBXDomainName))
-                                {
-                                    <a class="btn btn-primary" href="https://@number?.Owned?.FPBXDomainName/app/destinations/destination_edit.php?id=@number?.Owned?.FPBXDestinationId" target="_blank">Destination</a>
-                                    <a class="btn btn-secondary" href="https://@number?.Owned?.FPBXDomainName/core/domains/domain_edit.php?id=@number?.Owned?.FPBXDomainId" target="_blank">Domain</a>
-                                }
-                                else
-                                {
-                                    <a class="btn btn-outline-primary disabled">Destination</a>
-                                    <a class="btn btn-outline-secondary disabled">Domain</a>
-                                }
-                                @if (!string.IsNullOrWhiteSpace(number?.Owned.BillingClientId))
-                                {
-                                    <a href="https://billing.acceleratenetworks.com/clients/@number?.Owned.BillingClientId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
-                                        Billing
-                                    </a>
-                                }
-                                else
-                                {
-                                    <a class="btn btn-outline-success disabled">
-                                        Billing
-                                    </a>
-                                }
                             </div>
                         </td>
                     </tr>
