@@ -15,7 +15,7 @@ namespace NumberSearch.DataAccess.BulkVS
         public string TN { get; set; } = string.Empty;
         [JsonPropertyName("Caller Name")]
         [JsonProperty("Caller Name")]
-        public string CallerName { get; set; }
+        public string CallerName { get; set; } = string.Empty;
         [JsonPropertyName("Address Line 1")]
         [JsonProperty("Address Line 1")]
         public string AddressLine1 { get; set; } = string.Empty;

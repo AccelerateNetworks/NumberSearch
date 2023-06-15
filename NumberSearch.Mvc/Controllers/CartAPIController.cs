@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
-using NumberSearch.DataAccess.Call48;
-using NumberSearch.DataAccess.Peerless;
 using NumberSearch.Mvc.Models;
 
 using Serilog;
@@ -652,51 +650,6 @@ namespace NumberSearch.Mvc.Controllers
                 else
                 {
                     Log.Warning($"[FirstPointCom] Failed to find {phoneNumber.DialedNumber} in {results.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
-
-                    // Remove numbers that are unpurchasable.
-                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
-
-                    // Sadly its gone. And the user needs to pick a different number.
-                    return BadRequest($"{dialedPhoneNumber} is no longer available.");
-                }
-            }
-            else if (phoneNumber.IngestedFrom == "Call48")
-            {
-                // Verify that Call48 has the number.
-                var credentials = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
-                var results = await Search.GetLocalNumbersAsync(phoneNumber.State, string.Empty, phoneNumber.NPA.ToString(), phoneNumber.NXX.ToString(), credentials.data.token).ConfigureAwait(false);
-                var matchingNumber = results.data.result.Where(x => x?.did_number is not null && x.did_number.Replace("-", string.Empty) == phoneNumber.DialedNumber).FirstOrDefault();
-
-                if (matchingNumber != null && matchingNumber?.did_number.Replace("-", string.Empty) == phoneNumber.DialedNumber)
-                {
-                    purchasable = true;
-                    Log.Information($"[Call48] Found {phoneNumber.DialedNumber} in {results?.data?.result?.Length} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
-                }
-                else
-                {
-                    Log.Warning($"[Call48] Failed to find {phoneNumber.DialedNumber} in {results?.data?.result?.Length} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
-
-                    // Remove numbers that are unpurchasable.
-                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
-
-                    // Sadly its gone. And the user needs to pick a different number.
-                    return BadRequest($"{dialedPhoneNumber} is no longer available.");
-                }
-            }
-            else if (phoneNumber.IngestedFrom == "Peerless")
-            {
-                // Verify that Peerless has the number.
-                var numbers = await DidFind.GetByDialedNumberAsync(phoneNumber.NPA.ToString("000"), phoneNumber.NXX.ToString("000"), phoneNumber.XXXX.ToString("0000"), _peerlessApiKey);
-                // Sometimes Call48 includes dashes in their numbers for no reason.
-                var matchingNumber = numbers.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
-                if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
-                {
-                    purchasable = true;
-                    Log.Information($"[Peerless] Found {phoneNumber.DialedNumber} in {numbers.Length} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}, {phoneNumber.XXXX}.");
-                }
-                else
-                {
-                    Log.Warning($"[Peerless] Failed to find {phoneNumber.DialedNumber} in {numbers.Length} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}, {phoneNumber.XXXX}.");
 
                     // Remove numbers that are unpurchasable.
                     var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);

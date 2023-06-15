@@ -7,17 +7,13 @@ using NumberSearch.DataAccess.FusionPBX;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.LCGuide;
 using NumberSearch.DataAccess.Models;
-using NumberSearch.DataAccess.Peerless;
 using NumberSearch.DataAccess.TeleDynamics;
 using NumberSearch.Mvc.Models;
 
 using ServiceReference;
 
 using System;
-using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Runtime.Intrinsics.Arm;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -498,79 +494,6 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
-        public async Task PeerlessGetPhoneNumbersTestAsync()
-        {
-            // Arrange
-            string npa = "425";
-
-            // Act
-            var results = await DidFind.GetByNPAAsync(npa, _peerlessApiKey).ConfigureAwait(false);
-
-            // Assert
-            Assert.NotNull(results);
-            Assert.NotEmpty(results);
-            int count = 0;
-
-            foreach (var result in results.ToArray())
-            {
-                output.WriteLine(result.DialedNumber);
-                Assert.True(result.NPA > 99);
-                Assert.True(result.NXX > 99);
-                Assert.True(result.XXXX > 1);
-                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-                Assert.False(string.IsNullOrWhiteSpace(result.City));
-                Assert.False(string.IsNullOrWhiteSpace(result.State));
-                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
-                count++;
-            }
-            output.WriteLine($"{count} Results Reviewed");
-        }
-
-
-        [Fact]
-        public async Task PeerlessGetPhoneNumbersByRateCenterTestAsync()
-        {
-            // Arrange
-            string ratecenter = "BREWSTER";
-
-            // Act
-            var results = await DidFind.GetByRateCenterAsync(ratecenter, _peerlessApiKey).ConfigureAwait(false);
-
-            // Assert
-            Assert.NotNull(results);
-            Assert.NotEmpty(results);
-            int count = 0;
-
-            foreach (var result in results.ToArray())
-            {
-                output.WriteLine(result.DialedNumber);
-                Assert.True(result.NPA > 99);
-                Assert.True(result.NXX > 99);
-                Assert.True(result.XXXX > 1);
-                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-                Assert.False(string.IsNullOrWhiteSpace(result.City));
-                Assert.False(string.IsNullOrWhiteSpace(result.State));
-                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
-                count++;
-            }
-            output.WriteLine($"{count} Results Reviewed");
-        }
-
-        //[Fact]
-        //public async Task PeerlessGetNXXsTestAsync()
-        //{
-        //    // Arrange
-        //    var npa = 206;
-
-        //    // Act
-        //    var results = await Lerg.GetAsync(npa, _peerlessApiKey).ConfigureAwait(false);
-
-        //    // Assert
-        //    Assert.NotNull(results);
-        //    output.WriteLine(JsonSerializer.Serialize(results));
-        //}
-
-        [Fact]
         public async Task PComNetDIDInventorySearchAsyncTestAsync()
         {
             var DIDSearch = new DIDOrderQuery
@@ -633,7 +556,7 @@ namespace NumberSearch.Tests
             var result = await FirstCom.FirstPointComSMS.EnableSMSByDialedNumberAsync("12069574634", pComNetCredentials.Username, pComNetCredentials.Password);
 
             Assert.NotNull(result);
-            Assert.True(result.text is "That number is already provisioned.");
+            Assert.True(result.text is "That number is already provisioned/Unavailable.");
             Assert.True(result.code is -1);
             output.WriteLine(JsonSerializer.Serialize(result));
         }

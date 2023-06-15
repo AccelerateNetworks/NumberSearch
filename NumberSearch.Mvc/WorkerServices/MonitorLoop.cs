@@ -6,8 +6,6 @@ using Microsoft.Extensions.Hosting;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
-using NumberSearch.DataAccess.Call48;
-using NumberSearch.DataAccess.Peerless;
 using NumberSearch.Mvc.Models;
 
 using Serilog;
@@ -126,59 +124,6 @@ namespace NumberSearch.Mvc
                                                         var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
 
                                                         Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from BulkVS.");
-                                                    }
-                                                    else if (nto.IngestedFrom == "Call48")
-                                                    {
-                                                        // Find the number.
-                                                        var credentials = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
-
-                                                        // Buy it and save the receipt.
-                                                        var executeOrder = await Purchase.PurchasePhoneNumberAsync(nto, credentials.data.token).ConfigureAwait(false);
-
-                                                        nto.Purchased = true;
-                                                        productOrder.DateOrdered = DateTime.Now;
-                                                        productOrder.OrderResponse = JsonSerializer.Serialize(executeOrder);
-                                                        productOrder.Completed = executeOrder.code is 200;
-
-                                                        var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
-                                                        var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
-
-                                                        Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from Call48.");
-                                                    }
-                                                    else if (nto.IngestedFrom == "Peerless")
-                                                    {
-                                                        var purchaseOrder = new DidOrderRequest
-                                                        {
-                                                            customer_name = "ACCELERN8230",
-                                                            order_numbers = new OrderNumber[]
-                                                            {
-                                                                    new OrderNumber
-                                                                    {
-                                                                        did = nto.DialedNumber,
-                                                                        connection_type = "trunk",
-                                                                        trunk_name = "ACCELERN8230_SFO555930",
-                                                                        extension_id = string.Empty,
-                                                                        cnam_delivery = false,
-                                                                        cnam_storage = false,
-                                                                        cnam_storage_name = string.Empty,
-                                                                        e911 = false,
-                                                                        address = new { },
-                                                                        directory_listing = new { },
-                                                                    }
-                                                            }
-                                                        };
-
-                                                        var checkPurchase = await purchaseOrder.PostAsync(_peerlessApiKey).ConfigureAwait(false);
-
-                                                        nto.Purchased = true;
-                                                        productOrder.DateOrdered = DateTime.Now;
-                                                        productOrder.OrderResponse = JsonSerializer.Serialize(checkPurchase);
-                                                        productOrder.Completed = !string.IsNullOrWhiteSpace(checkPurchase.order_id);
-
-                                                        var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
-                                                        var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
-
-                                                        Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from Peerless.");
                                                     }
                                                     else if (nto.IngestedFrom == "FirstPointCom")
                                                     {

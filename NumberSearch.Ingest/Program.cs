@@ -31,9 +31,6 @@ namespace NumberSearch.Ingest
                 BulkVSPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSPassword")) ? throw new Exception("BulkVSPassword config key is blank.") : config.GetConnectionString("BulkVSPassword") ?? string.Empty,
                 PComNetUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("PComNetUsername")) ? throw new Exception("PComNetUsername config key is blank.") : config.GetConnectionString("PComNetUsername") ?? string.Empty,
                 PComNetPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("PComNetPassword")) ? throw new Exception("PComNetPassword config key is blank.") : config.GetConnectionString("PComNetPassword") ?? string.Empty,
-                PeerlessAPIKey = string.IsNullOrWhiteSpace(config.GetConnectionString("PeerlessAPIKey")) ? throw new Exception("PeerlessAPIKey config key is blank.") : config.GetConnectionString("PeerlessAPIKey") ?? string.Empty,
-                Call48Username = string.IsNullOrWhiteSpace(config.GetConnectionString("Call48Username")) ? throw new Exception("Call48Username config key is blank.") : config.GetConnectionString("Call48Username") ?? string.Empty,
-                Call48Password = string.IsNullOrWhiteSpace(config.GetConnectionString("Call48Password")) ? throw new Exception("Call48Password config key is blank.") : config.GetConnectionString("Call48Password") ?? string.Empty,
                 SmtpUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("SmtpUsername")) ? throw new Exception("SmtpUsername config key is blank.") : config.GetConnectionString("SmtpUsername") ?? string.Empty,
                 SmtpPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("SmtpPassword")) ? throw new Exception("SmtpPassword config key is blank.") : config.GetConnectionString("SmtpPassword") ?? string.Empty,
                 EmailOrders = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailOrders")) ? throw new Exception("EmailOrders config key is blank.") : config.GetConnectionString("EmailOrders") ?? string.Empty,
@@ -57,9 +54,6 @@ namespace NumberSearch.Ingest
             // Priority ingest timers.
             var bulkVSPriortyTimer = new Stopwatch();
             var firstPointComPriortyTimer = new Stopwatch();
-            var teleMessagePriortyTimer = new Stopwatch();
-            var call48PriortyTimer = new Stopwatch();
-            var peerlessPriortyTimer = new Stopwatch();
             var orderUpdatesTimer = new Stopwatch();
             // 20 Minutes in miliseconds
             var priortyIngestCycleTime = 3600000;
@@ -75,9 +69,6 @@ namespace NumberSearch.Ingest
                     var cycles = await IngestCycle.GetAllAsync(appConfig.Postgresql).ConfigureAwait(false);
                     var bulkVSCycle = cycles.Where(x => x.IngestedFrom == "BulkVS").FirstOrDefault();
                     var firstPointComCycle = cycles.Where(x => x.IngestedFrom == "FirstPointCom").FirstOrDefault();
-                    var teleMessageCycle = cycles.Where(x => x.IngestedFrom == "TeleMessage").FirstOrDefault();
-                    var peerlessCycle = cycles.Where(x => x.IngestedFrom == "Peerless").FirstOrDefault();
-                    var call48Cycle = cycles.Where(x => x.IngestedFrom == "Call48").FirstOrDefault();
                     var ownedNumbersCycle = cycles.Where(x => x.IngestedFrom == "OwnedNumbers").FirstOrDefault();
 
                     // Ingest phone numbers from BulkVS.
@@ -332,128 +323,6 @@ namespace NumberSearch.Ingest
                         }
                     }
 
-                    // Ingest phone numbers from Peerless.
-                    if (peerlessCycle != null && (peerlessCycle.Enabled || peerlessCycle.RunNow))
-                    {
-                        var lastRun = await IngestStatistics.GetLastIngestAsync("Peerless", appConfig.Postgresql).ConfigureAwait(false);
-
-                        //if (lastRun != null && (lastRun.StartDate < (start - peerlessCycle.CycleTime) || peerlessCycle.RunNow))
-                        //{
-                        //    Log.Information($"[Peerless] Last Run of {lastRun.IngestedFrom} started at {lastRun.StartDate} and ended at {lastRun.EndDate}");
-
-                        //    Log.Information($"[Peerless] Cycle time is {peerlessCycle?.CycleTime}");
-                        //    Log.Information($"[Peerless] Enabled is {peerlessCycle?.Enabled}");
-
-                        //    // Prevent another run from starting while this is still going.
-                        //    var lockingStats = new IngestStatistics
-                        //    {
-                        //        IngestedFrom = "Peerless",
-                        //        StartDate = DateTime.Now,
-                        //        EndDate = DateTime.Now,
-                        //        IngestedNew = 0,
-                        //        FailedToIngest = 0,
-                        //        NumbersRetrived = 0,
-                        //        Removed = 0,
-                        //        Unchanged = 0,
-                        //        UpdatedExisting = 0,
-                        //        Lock = true
-                        //    };
-
-                        //    var checkLock = await lockingStats.PostAsync(postgresSQL).ConfigureAwait(false);
-
-                        //    // Ingest all avalible numbers from the TeleMessage.
-                        //    Log.Information("[Peerless] Ingesting data from Peerless");
-                        //    var peerlessStats = await Provider.PeerlessAsync(PhoneNumbersNA.AreaCode.All, peerlessApiKey, postgresSQL).ConfigureAwait(false);
-
-                        //    // Remove the lock from the database to prevent it from getting cluttered with blank entries.
-                        //    var lockEntry = await IngestStatistics.GetLockAsync("Peerless", postgresSQL).ConfigureAwait(false);
-                        //    var checkRemoveLock = await lockEntry.DeleteAsync(postgresSQL).ConfigureAwait(false);
-
-                        //    // Remove all of the old numbers from the database.
-                        //    Log.Information("[Peerless] Removing old Peerless numbers from the database.");
-                        //    var peerlessCleanUp = await PhoneNumber.DeleteOldByProvider(start, peerlessCycle.CycleTime, "Peerless", postgresSQL).ConfigureAwait(false);
-
-                        //    var combined = new IngestStatistics
-                        //    {
-                        //        StartDate = peerlessStats.StartDate,
-                        //        EndDate = peerlessCleanUp.EndDate,
-                        //        FailedToIngest = peerlessStats.FailedToIngest,
-                        //        IngestedFrom = peerlessStats.IngestedFrom,
-                        //        IngestedNew = peerlessStats.IngestedNew,
-                        //        Lock = false,
-                        //        NumbersRetrived = peerlessStats.NumbersRetrived,
-                        //        Removed = peerlessCleanUp.Removed,
-                        //        Unchanged = peerlessStats.Unchanged,
-                        //        UpdatedExisting = peerlessStats.UpdatedExisting,
-                        //        Priority = false
-                        //    };
-
-                        //    if (await combined.PostAsync(postgresSQL).ConfigureAwait(false))
-                        //    {
-                        //        Log.Information("[Peerless] Completed the Peerless ingest process.");
-                        //    }
-                        //    else
-                        //    {
-                        //        Log.Fatal("[Peerless] Failed to completed the Peerless ingest process.");
-                        //    }
-
-                        //    if (peerlessCycle.RunNow)
-                        //    {
-                        //        peerlessCycle.RunNow = false;
-                        //        var checkRunNow = peerlessCycle.PutAsync(postgresSQL).ConfigureAwait(false);
-                        //    }
-                        //}
-
-                        // Priority ingest.
-                        if (lastRun != null && ((peerlessPriortyTimer.ElapsedMilliseconds >= priortyIngestCycleTime) || (!peerlessPriortyTimer.IsRunning)))
-                        {
-                            if (!peerlessPriortyTimer.IsRunning)
-                            {
-                                peerlessPriortyTimer.Start();
-                            }
-
-                            // Restart the one hour timer.
-                            peerlessPriortyTimer.Restart();
-
-                            Log.Information($"[Peerless] Priority ingest started at {DateTime.Now}.");
-
-                            // Ingest priority numbers from the TeleMessage.
-                            Log.Information("[Peerless] Ingesting priority data from Peerless");
-                            var peerlessStats = await Provider.PeerlessAsync(Peerless.PriorityRateCenters, appConfig.PeerlessAPIKey, appConfig.Postgresql).ConfigureAwait(false);
-
-                            var combined = new IngestStatistics
-                            {
-                                StartDate = peerlessStats.StartDate,
-                                EndDate = DateTime.Now,
-                                FailedToIngest = peerlessStats.FailedToIngest,
-                                IngestedFrom = peerlessStats.IngestedFrom,
-                                IngestedNew = peerlessStats.IngestedNew,
-                                Lock = false,
-                                NumbersRetrived = peerlessStats.NumbersRetrived,
-                                Removed = 0,
-                                Unchanged = peerlessStats.Unchanged,
-                                UpdatedExisting = peerlessStats.UpdatedExisting,
-                                Priority = true
-                            };
-
-                            // Remove stale priority numbers
-                            foreach (var code in AreaCode.Priority)
-                            {
-                                var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, new TimeSpan(priortyIngestCycleTime), code, lastRun.IngestedFrom, appConfig.Postgresql).ConfigureAwait(false);
-                                combined.Removed += removedNumbers.Removed;
-                            }
-
-                            if (await combined.PostAsync(appConfig.Postgresql).ConfigureAwait(false))
-                            {
-                                Log.Information("[Peerless] Completed the priority ingest process.");
-                            }
-                            else
-                            {
-                                Log.Fatal("[Peerless] Failed to complete the priority ingest process.");
-                            }
-                        }
-                    }
-
                     // Ingest all the phone numbers we own.
                     if (ownedNumbersCycle is not null && (ownedNumbersCycle.Enabled || ownedNumbersCycle.RunNow))
                     {
@@ -508,7 +377,7 @@ namespace NumberSearch.Ingest
                         {
                             // Verify that all the Executive numbers are still purchasable for the priority area codes.
                             await Provider.VerifyAddToCartAsync(AreaCode.Priority, "Executive", appConfig.Postgresql, appConfig.BulkVSUsername, appConfig.BulkVSPassword,
-                                appConfig.TeleAPI, appConfig.PComNetUsername, appConfig.PComNetPassword, appConfig.Call48Username, appConfig.Call48Password, appConfig.PeerlessAPIKey);
+                                appConfig.PComNetUsername, appConfig.PComNetPassword);
                         }
                         catch (Exception ex)
                         {
@@ -533,7 +402,7 @@ namespace NumberSearch.Ingest
             finally
             {
                 // Hopefully we never get here.
-                Log.Fatal("[Heartbeat] This is a complete application failure. We've broken out of the infinte loop.");
+                Log.Fatal("[Heartbeat] This is a complete application failure. We've broken out of the infinite loop.");
 
                 // Notify someone that there's been a failure.
                 var notificationEmail = new Email
@@ -572,7 +441,6 @@ namespace NumberSearch.Ingest
             public string SmtpPassword { get; set; } = string.Empty;
             public string MicrosoftClientId { get; set; } = string.Empty;
             public string MicrosoftClientSecret { get; set; } = string.Empty;
-            public string PeerlessAPIKey { get; set; } = string.Empty;
             public string InvoiceNinjaToken { get; set; } = string.Empty;
             public string Data247Username { get; set; } = string.Empty;
             public string Data247Password { get; set; } = string.Empty;
@@ -582,8 +450,6 @@ namespace NumberSearch.Ingest
             public string AzureStorageAccount { get; set; } = string.Empty;
             public string TeleDynamicsUsername { get; set; } = string.Empty;
             public string TeleDynamicsPassword { get; set; } = string.Empty;
-            public string Call48Username { get; set; } = string.Empty;
-            public string Call48Password { get; set; } = string.Empty;
             public string CallWithUsAPIKEY { get; set; } = string.Empty;
             public string FusionPBXUsername { get; set; } = string.Empty;
             public string FusionPBXPassword { get; set; } = string.Empty;
