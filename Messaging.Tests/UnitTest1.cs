@@ -82,7 +82,7 @@ namespace Messaging.Tests
             Assert.True(data.Registered);
             Assert.Equal("2063333341", data.DialedNumber);
             Assert.Equal("https://sms.callpipe.com/swagger/index.html", data.CallbackUrl);
-            Assert.True(string.IsNullOrWhiteSpace(data.Message));
+            Assert.True(!string.IsNullOrWhiteSpace(data.Message));
 
             // Verify that the newly registered client exists.
             response = await _httpClient.GetAsync("/client?asDialed=2063333341");

@@ -355,6 +355,8 @@ try
             });
         }
 
+        string message = string.Empty;
+
         try
         {
             // Update existing registrations before creating new ones.
@@ -367,11 +369,13 @@ try
                 if (existingRegistration.ClientSecret != registration.ClientSecret)
                 {
                     existingRegistration.ClientSecret = registration.ClientSecret;
+                    updated = true;
                 }
 
                 if (existingRegistration.CallbackUrl != registration.CallbackUrl)
                 {
                     existingRegistration.CallbackUrl = registration.CallbackUrl;
+                    updated = true;
                 }
 
                 if (updated)
@@ -400,10 +404,17 @@ try
                 if (checkRouted.QueryResult.code is not 0 || checkRouted.epid is not 265)
                 {
                     // Enabled routing and set the EPID if the number is not already routed.
-                    var enableSMS = FirstPointComSMS.EnableSMSByDialedNumberAsync(dialedNumber, firstPointUsername, firstPointPassword);
+                    var enableSMS = await FirstPointComSMS.EnableSMSByDialedNumberAsync(dialedNumber, firstPointUsername, firstPointPassword);
                     Log.Information(System.Text.Json.JsonSerializer.Serialize(enableSMS));
-                    var setRouting = FirstPointComSMS.RouteSMSToEPIDByDialedNumberAsync(dialedNumber, 265, firstPointUsername, firstPointPassword);
+                    var setRouting = await FirstPointComSMS.RouteSMSToEPIDByDialedNumberAsync(dialedNumber, 265, firstPointUsername, firstPointPassword);
                     Log.Information(System.Text.Json.JsonSerializer.Serialize(setRouting));
+                    var checkRoutedAgain = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber, firstPointUsername, firstPointPassword);
+                    Log.Information(System.Text.Json.JsonSerializer.Serialize(checkRouted));
+                    message = $"Attempted to set and enable SMS routing for {dialedNumber}. SMS Enabled? {enableSMS.text} Routing Set? {setRouting.text} SMS Routed? {checkRoutedAgain.QueryResult.text}";
+                }
+                else
+                {
+                    message = $"This number is routed for SMS service with our upstream vendor: {checkRouted.QueryResult.text}";
                 }
                 // Do nothing.
 
@@ -434,7 +445,7 @@ try
             });
         }
 
-        return TypedResults.Ok(new RegistrationResponse { DialedNumber = asDialedNumber.DialedNumber, CallbackUrl = registration.CallbackUrl, Registered = true });
+        return TypedResults.Ok(new RegistrationResponse { DialedNumber = asDialedNumber.DialedNumber, CallbackUrl = registration.CallbackUrl, Registered = true, Message = message });
 
     })
         .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Register a client for message forwarding.", Description = "Boy I wish I had more to say about this, lmao." });
