@@ -35,7 +35,8 @@
             </a>
         }
     }
-    <a class="btn btn-warning text-light" href="https://acceleratenetworks.com/Cart/Checkout/E911Registration/{@Model?.Owned.DialedNumber}">Create an E911 Regisitration Order</a>
+    @*    <a class="btn btn-warning text-light" href="https://acceleratenetworks.com/Cart/Checkout/E911Registration/{@Model?.Owned.DialedNumber}">Create an E911 Regisitration Order</a>
+    *@
 </div>
 <form action="/Home/OwnedNumbers/@Model?.Owned.DialedNumber" method="post" class="needs-validation">
     @Html.AntiForgeryToken()
@@ -92,11 +93,67 @@
 </form>
 <br />
 
+@if (Model?.EmergencyInformation?.DialedNumber == Model?.Owned?.DialedNumber)
+{
+    // show the existing registration
+    <h4 class="mb-3">E911 Registration</h4>
+    <div class="table-responsive shadow-sm mb-3">
+        <table class="table table-striped table-borderless table-hover">
+            <thead>
+                <tr>
+                    <th>Number</th>
+                    <th>CallerId</th>
+                    <th>Address</th>
+                    <th>First Registered</th>
+                    <th>Last Verified</th>
+                    <th>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td>
+                        @Model?.EmergencyInformation.DialedNumber
+                    </td>
+                    <td>
+                        @Model?.EmergencyInformation?.CallerName
+                    </td>
+                    <td>
+                        @Model?.EmergencyInformation?.AddressLine1
+                        @Model?.EmergencyInformation?.AddressLine2
+                        @Model?.EmergencyInformation?.City
+                        @Model?.EmergencyInformation?.State
+                        @Model?.EmergencyInformation?.Zip
+                    </td>
+                    <td>
+                        @Model?.EmergencyInformation?.BulkVSLastModificationDate?.ToShortDateString()
+                    </td>
+                    <td>
+                        @Model?.EmergencyInformation?.ModifiedDate?.ToShortDateString()
+                    </td>
+                    <td>
+                        <a href="/Home/E911/@Model?.EmergencyInformation?.DialedNumber" class="btn btn-outline-secondary" target="_blank">
+                            View E911
+                        </a>
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    // show the form for registering the number
+
+}
+
 @if (Model?.PortedPhoneNumbers.Any() ?? false)
 {
-    <h1 class="display-4 p-3">Related Ported Numbers</h1>
-    <div class="table-responsive">
-        <table class="table table-striped table-borderless table-hover" id="table">
+    <h4 class="mb-3">Related Ported Numbers</h4>
+    <div class="table-responsive shadow-sm mb-3">
+        <table class="table table-striped table-borderless table-hover">
             <thead>
                 <tr>
                     <th scope="col">
@@ -118,7 +175,6 @@
                         Completed
                     </th>
                     <th scope="col">
-                        OrderId
                     </th>
                     @*                <th></th>
                 *@
@@ -147,7 +203,9 @@
                             @product?.Completed
                         </td>
                         <td>
-                            @product?.OrderId
+                            <a href="/Home/Order/@product?.OrderId" class="btn btn-outline-primary">
+                                Edit Order
+                            </a>
                         </td>
                         @*                    <td>
                 <div class="btn-group" role="group" aria-label="Basic example">
@@ -165,8 +223,8 @@
 }
 @if (Model?.PurchasedPhoneNumbers.Any() ?? false)
 {
-    <h1 class="display-4 p-3">Related Purchased Numbers</h1>
-    <div class="table-responsive">
+    <h4 class="mb-3">Related Purchased Numbers</h4>
+    <div class="table-responsive shadow-sm mb-3">
         <table class="table table-striped table-borderless table-hover">
             <thead>
                 <tr>
@@ -189,7 +247,6 @@
                         Completed
                     </th>
                     <th scope="col">
-                        OrderId
                     </th>
                     @*                <th></th>
                 *@
@@ -218,7 +275,9 @@
                             @product?.Completed
                         </td>
                         <td>
-                            @product?.OrderId
+                            <a href="/Home/Order/@product?.OrderId" class="btn btn-outline-primary">
+                                Edit Order
+                            </a>
                         </td>
                         @*                    <td>
                 <div class="btn-group" role="group" aria-label="Basic example">
@@ -237,8 +296,8 @@
 
 @if (Model?.RelatedOrders.Any() ?? false)
 {
-    <h1 class="display-4 p-3">Related Orders</h1>
-    <div class="table-responsive">
+    <h4 class="mb-3">Related Orders</h4>
+    <div class="table-responsive shadow-sm mb-3">
         <table class="table table-striped table-borderless table-hover">
             <thead>
                 <tr>

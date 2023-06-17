@@ -358,40 +358,67 @@
 </form>
 @if ((Model?.Cart?.PurchasedPhoneNumbers is not null && Model.Cart.PurchasedPhoneNumbers.Any()) || (Model?.Cart?.PortedPhoneNumbers is not null && Model.Cart.PortedPhoneNumbers.Any()))
 {
-    <h4 class="mb-3">E911 Registration</h4>
+    <h4 class="mb-3">E911 Registrations</h4>
     <div class="row">
-        @if (string.IsNullOrWhiteSpace(Model?.Order?.E911ServiceNumber))
-        {
-            <p>E911 Number Not Set</p>
-        }
-        else
-        {
-            <div class="col">
-                <div class="mb-3">
-                    @if (Model?.EmergencyInformation is not null)
-                    {
-                        <p>
-                            Registered on @Model?.EmergencyInformation.BulkVSLastModificationDate?.ToShortDateString()
-                        </p>
-                        <p>
-                            @Model?.EmergencyInformation.CallerName
-                        </p>
-                        <p>
-                            @Model?.EmergencyInformation.AddressLine1
-                            @Model?.EmergencyInformation.AddressLine2
-                        </p>
-                        <p>
-                            @Model?.EmergencyInformation.City
-                            @Model?.EmergencyInformation.State
-                            @Model?.EmergencyInformation.Zip
-                        </p>
-                        <p>
-                            Last verified on @Model?.EmergencyInformation.ModifiedDate?.ToShortDateString()
-                        </p>
-                    }
-                </div>
+
+        <div class="col">
+            <div class="mb-3">
+                @if (Model?.EmergencyInformation is not null && Model.EmergencyInformation.Any())
+                {
+                    <div class="table-responsive shadow-sm">
+                        <table class="table table-striped table-borderless table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Number</th>
+                                    <th>CallerId</th>
+                                    <th>Address</th>
+                                    <th>First Registered</th>
+                                    <th>Last Verified</th>
+                                    <th>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var registration in Model.EmergencyInformation)
+                                {
+                                    <tr>
+                                        <td>
+                                            @registration.DialedNumber
+                                        </td>
+                                        <td>
+                                            @registration?.CallerName
+                                        </td>
+                                        <td>
+                                            @registration?.AddressLine1
+                                            @registration?.AddressLine2
+                                            @registration?.City
+                                            @registration?.State
+                                            @registration?.Zip
+                                        </td>
+                                        <td>
+                                            @registration?.BulkVSLastModificationDate?.ToShortDateString()
+                                        </td>
+                                        <td>
+                                            @registration?.ModifiedDate?.ToShortDateString()
+                                        </td>
+                                        <td>
+                                            <a href="/Home/OwnedNumbers/@registration?.DialedNumber" class="btn btn-outline-secondary" target="_blank">
+                                                Edit Owned Number
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p>No registered numbers in this order.</p>
+                }
             </div>
-        }
+        </div>
+
     </div>
 }
 @{
@@ -468,6 +495,7 @@
                                     foreach (var item in Model.Cart.PurchasedPhoneNumbers)
                                     {
                                         var checkFind = productOrders.TryGetValue(item.DialedNumber!.ToString(), out var productOrder);
+                                        var registered = Model?.EmergencyInformation.FirstOrDefault(x => x.DialedNumber == item.DialedNumber);
                                         if (checkFind)
                                         {
                                             var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX?.ToString("0000")}";
@@ -511,17 +539,17 @@
                                                         <a href="/ProductOrders/Delete/@productOrder?.ProductOrderId" class="btn btn-outline-danger">
                                                             Delete
                                                         </a>
-                                                        @if (string.IsNullOrWhiteSpace(Model?.Order?.E911ServiceNumber))
+                                                        @if (registered is not null && registered.DialedNumber == item?.DialedNumber)
                                                         {
                                                             <a href="/Home/Order/@Model?.Order?.OrderId/RegisterE911?serviceNumber=@item?.DialedNumber" class="btn btn-danger">
-                                                                Register for E911
+                                                                Re-register for E911
                                                             </a>
                                                         }
-                                                        else if (Model?.Order?.E911ServiceNumber == item?.DialedNumber)
+                                                        else
                                                         {
-                                                            <button class="btn btn-danger" disabled>
-                                                                Registered for E911
-                                                            </button>
+                                                            <a href="/Home/Order/@Model?.Order?.OrderId/RegisterE911?serviceNumber=@item?.DialedNumber" class="btn btn-warning text-light">
+                                                                Register for E911
+                                                            </a>
                                                         }
                                                     </div>
                                                 </td>
@@ -539,6 +567,7 @@
                                     var calculatedCost = 20;
 
                                     var productOrder = Model!.Cart.ProductOrders?.Where(x => x.PortedDialedNumber == item.PortedDialedNumber).FirstOrDefault();
+                                    var registered = Model?.EmergencyInformation.FirstOrDefault(x => x.DialedNumber == item.PortedDialedNumber);
 
                                     var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
                                     var formattedNumber = $"({item?.NPA}) {item?.NXX}-{item?.XXXX.ToString("0000")}";
@@ -556,17 +585,17 @@
                                                 <a href="/ProductOrders/Delete/@productOrder?.ProductOrderId" class="btn btn-outline-danger">
                                                     Delete
                                                 </a>
-                                                @if (string.IsNullOrWhiteSpace(Model?.Order?.E911ServiceNumber))
+                                                @if (registered is not null && registered.DialedNumber == item?.PortedDialedNumber)
                                                 {
                                                     <a href="/Home/Order/@Model?.Order?.OrderId/RegisterE911?serviceNumber=@item?.PortedDialedNumber" class="btn btn-danger">
-                                                        Register for E911
+                                                        Re-register for E911
                                                     </a>
                                                 }
-                                                else if (Model?.Order?.E911ServiceNumber == item?.PortedDialedNumber)
+                                                else
                                                 {
-                                                    <button class="btn btn-danger" disabled>
-                                                        Registered for E911
-                                                    </button>
+                                                    <a href="/Home/Order/@Model?.Order?.OrderId/RegisterE911?serviceNumber=@item?.PortedDialedNumber" class="btn btn-warning text-light">
+                                                        Register for E911
+                                                    </a>
                                                 }
                                             </div>
                                         </td>

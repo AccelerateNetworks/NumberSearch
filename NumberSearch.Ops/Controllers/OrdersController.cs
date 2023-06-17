@@ -134,7 +134,27 @@ public class OrdersController : Controller
                 var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
                 var productItems = await _context.ProductItems.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToArrayAsync();
                 var portRequest = await _context.PortRequests.AsNoTracking().FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
-                var emergency = await _context.EmergencyInformation.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == order.E911ServiceNumber);
+
+                // Find numbers registered for E911 service manually.
+                var e911Registrations = new List<EmergencyInformation>();
+
+                foreach (var number in purchasedPhoneNumbers)
+                {
+                    var match = await _context.EmergencyInformation.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == number.DialedNumber);
+                    if (match is not null)
+                    {
+                        e911Registrations.Add(match);
+                    }
+                }
+
+                foreach (var number in portedPhoneNumbers)
+                {
+                    var match = await _context.EmergencyInformation.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == number.PortedDialedNumber);
+                    if (match is not null)
+                    {
+                        e911Registrations.Add(match);
+                    }
+                }
 
                 var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
                 var products = new List<Product>();
@@ -182,7 +202,7 @@ public class OrdersController : Controller
                     PurchasedPhoneNumbers = purchasedPhoneNumbers
                 };
 
-                return View("OrderEdit", new EditOrderResult { Order = order, PortRequest = portRequest ?? new(), ProductItems = productItems, EmergencyInformation = emergency ?? new(), Cart = cart });
+                return View("OrderEdit", new EditOrderResult { Order = order, PortRequest = portRequest ?? new(), ProductItems = productItems, EmergencyInformation = e911Registrations.ToArray(), Cart = cart });
             }
         }
     }
