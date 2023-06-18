@@ -69,5 +69,13 @@ namespace NumberSearch.Mvc.Controllers
         {
             return View();
         }
+
+        [HttpGet]
+        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
+        [OutputCache(Duration = 30)]
+        public IActionResult Linphone()
+        {
+            return View();
+        }
     }
 }

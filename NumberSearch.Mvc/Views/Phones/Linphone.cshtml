@@ -1,0 +1,124 @@
+@{
+    ViewData["Title"] = "Linphone";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <br />
+    <div class="pricing-header mx-auto p-2 text-center">
+        <h1 class="display-4">How to use Linphone Desktop</h1>
+    </div>
+    <br />
+    <div class="row mb-0">
+        <div class="col-sm-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header">
+                    <h4 class="my-0 font-weight-normal text-center">Table of Contents</h4>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li>
+                            <a href="#setup">
+                                🕹️ Setup Linphone
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#configureaudio">
+                                ☎️ Configure Audio
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#troubleshooting">
+                                🧑‍🦯 Troubleshooting
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 mb-4">
+            <div class="card shadow">
+                <img class="card-img-top" src="/images/scaled/DP750_720_combination_3-400.png" title="DP720" />
+                <div class="card-body">
+                    <div class="card-title">
+                        <h4 class="display-4">
+                            Linphone Desktop
+                        </h4>
+                    </div>
+                    <p class="card-text">Need a solution that can serve your workplace from the computer you already own?</p>
+                    <a class="btn btn-primary" href="~/Hardware/Linphone">Buy Now</a>
+                    @*<a class="btn btn-outline-primary" target="_blank" href="https://www.grandstream.com/products/ip-voice-telephony/dect-cordless/product/dp720">Grandstream Support</a>*@
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="card-deck mb-3">
+            <div class="col-12">
+                <div class="card mb-4 shadow">
+                    <div class="card-header">
+                        <h4 class="my-0 font-weight-normal text-center" id="setup">🕹️ Setup Linphone Desktop</h4>
+                    </div>
+                    @*                    <div class="card-img">
+                    <div class="embed-responsive embed-responsive-16by9">
+                    <iframe loading="lazy" class="embed-responsive-item" src="https://www.youtube.com/embed/jrNNzguBxRw?playlist=jrNNzguBxRw&loop=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    </div>*@
+                    <div class="card-body">
+                        <p>
+                            To setup Linphone Desktop, download Linphone for Windows, MacOS or Linux and install Linphone using the file downloaded*.
+                        </p>
+                        <p>
+                            Open the Linphone Desktop application once installed, allowing private and public network access if prompted. Choose Fetch Remote Configuration, and fill in the Provisioning URL (available in the organization's FusionPBX portal** under Applications => Linphone), press Fetch and Apply, then click on the dialpad to the right of the search field to dial 425-499-7999 which will play music.
+                        </p>
+                        <p>* Installation requires administrator access on the computer, please contact IT if you do not have administrator access on the computer you are using. Accelerate Networks does not have administrator access to computers and does not offer general Windows or MacOS IT services .</p>
+                        <p>** Need help? Call or text 206-858-8757 or email support@acceleratenetworks.com and we can help you access the FusionPBX portal. Do not go to FusionPBX.com, this will not direct to the organization's FusionPBX portal.</p>
+                    </div>
+                    @*                    <div class="card-footer text-body-secondary">
+                    If this video is unavailble please refresh the page.
+                    </div>*@
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="card mb-4 shadow">
+                    <div class="card-header">
+                        <h4 class="my-0 font-weight-normal text-center" id="configureaudio">☎️ Configure Audio</h4>
+                    </div>
+                    @*                    <div class="card-img">
+                    <div class="embed-responsive embed-responsive-16by9">
+                    <iframe loading="lazy" class="embed-responsive-item" src="https://www.youtube.com/embed/P5HtpWS7MzM?playlist=P5HtpWS7MzM&loop=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    </div>*@
+                    <div class="card-body">
+                        <p>
+                            Audio settings can be managed in the upper right corner under the triple bar => Preferences then select the Playback Device (a speaker or headset you want to listen to the call on), Capture Device (a microphone on a headset or webcam), and Ringer Device (the speakers you would like to ring when receiving a call) and the volume level for each. Call our echo test line by dialing *9664 to test your microphone and speaker volume.
+                        </p>
+                    </div>
+                    @*                    <div class="card-footer text-body-secondary">
+                    If this video is unavailble please refresh the page.
+                    </div>*@
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="card mb-4 shadow">
+                    <div class="card-header">
+                        <h4 class="my-0 font-weight-normal text-center" id="troubleshooting">🧑‍🦯 Troubleshooting</h4>
+                    </div>
+                    @*                    <div class="card-img">
+                    <div class="embed-responsive embed-responsive-16by9">
+                    <iframe loading="lazy" class="embed-responsive-item" src="https://www.youtube.com/embed/-Gl-HnKqI1A?playlist=-Gl-HnKqI1A&loop=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    </div>*@
+                    <div class="card-body">
+                        <p>
+                            If you run into any issues, head to the triple bar => Preferences => Advanced and toggle Debug Logs on, then exit the preferences, recreate the issue that occurred, head back into the triple bar => Preferences => Advanced and pick Send Logs, describe what happened (Example: I was on the phone with X and Y thing happened) and email this to support@acceleratenetworks.com.
+                        </p>
+                    </div>
+                    @*                    <div class="card-footer text-body-secondary">
+                    If this video is unavailble please refresh the page.
+                    </div>*@
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -49,6 +49,10 @@
 		<ProjectReference Include="..\NumberSearch.DataAccess\NumberSearch.DataAccess.csproj" />
 	</ItemGroup>
 	<ItemGroup>
+		<Content Update="Views\Phones\Linphone.cshtml">
+		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+		  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
 		<Content Update="wwwroot\accelerate-white.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
