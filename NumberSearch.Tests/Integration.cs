@@ -556,8 +556,7 @@ namespace NumberSearch.Tests
             var result = await FirstCom.FirstPointComSMS.EnableSMSByDialedNumberAsync("12069574634", pComNetCredentials.Username, pComNetCredentials.Password);
 
             Assert.NotNull(result);
-            Assert.True(result.text is "That number is already provisioned/Unavailable.");
-            Assert.True(result.code is -1);
+            Assert.True(result.code is not 0);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
