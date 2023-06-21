@@ -1,0 +1,112 @@
+@{
+    ViewData["Title"] = "ANMobile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <br />
+    <div class="pricing-header mx-auto p-2 text-center">
+        <h1 class="display-4">How to use AN Mobile</h1>
+    </div>
+    <br />
+    <div class="row mb-0">
+        <div class="col-sm-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header">
+                    <h4 class="my-0 font-weight-normal text-center">Table of Contents</h4>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li>
+                            <a href="#setup">
+                                🕹️ Setup AN Mobile
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#troubleshooting">
+                                😵‍💫 Troubleshooting
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 mb-4">
+            <div class="card shadow">
+                <img class="card-img-top" src="/images/scaled/ANMobileiOS-400.webp" title="AN Mobile" />
+                <div class="card-body">
+                    <div class="card-title">
+                        <h4 class="display-4">
+                            AN Mobile
+                        </h4>
+                    </div>
+                    <p class="card-text">Need a solution that can serve your workplace from the computer you already own?</p>
+                    <a class="btn btn-primary" href="~/Hardware/ANMobile">Buy Now</a>
+                    @*<a class="btn btn-outline-primary" target="_blank" href="https://www.grandstream.com/products/ip-voice-telephony/dect-cordless/product/dp720">Grandstream Support</a>*@
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="card-deck mb-3">
+            <div class="col-12">
+                <div class="card mb-4 shadow">
+                    <div class="card-header">
+                        <h4 class="my-0 font-weight-normal text-center" id="setup">🕹️ Setup AN Mobile</h4>
+                    </div>
+                    @*                    <div class="card-img">
+                    <div class="embed-responsive embed-responsive-16by9">
+                    <iframe loading="lazy" class="embed-responsive-item" src="https://www.youtube.com/embed/jrNNzguBxRw?playlist=jrNNzguBxRw&loop=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    </div>*@
+                    <div class="card-body">
+                        <p>
+                            To setup Accelerate Networks Mobile, go to the <a href="https://apps.apple.com/us/app/accelerate-networks-mobile/id1560522124" target="_blank">Apple App Store</a> for iPhone or <a href="https://play.google.com/store/apps/details?id=com.acceleratenetworks.mobile&pli=1" target="_blank">Google Play Store</a> on Android to install the app*.
+                        </p>
+                        <p>
+                            * Installation requires administrator access on the smartphone (iCloud or Google Account access), please contact IT if you do not have administrator access on the computer you are using. Accelerate Networks does not have administrator access to phones and does not offer general iOS or Android IT services.
+                        </p>
+                        <p>
+                            If the Android device does not have Google Play, <a href="https://git.callpipe.com/AccelerateNetworks/an-mobile-android/-/jobs" target="_blank">download the .apk file here</a> by clicking on the top Passed ✔️ job, then click Browse under Job artifacts on the right hand sidebar and download the file which has a tile beginning with "linphone-android-release" and ends in .apk
+                        </p>
+                        <p>
+                            ** All permissions except Contacts need to be granted for Accelerate Networks Mobile need to be granted for the app to function.
+                        </p>
+                        <p>
+                            Our app is open source software that does not use your contacts, files, data, location unless it is directly beneficial to serving you, the end user. Our <a href="https://github.com/AccelerateNetworks/an-mobile-ios" target="_blank">iOS</a> and <a href="https://github.com/AccelerateNetworks/an-mobile-android" target="_blank">Android</a> code are public so you can tell exactly what the app does.
+                        </p>
+                        <p>
+                            We appreciate you granting us these permissions and we do not use these permissions when not needed to help you!
+                        </p>
+                        <p>
+                            *** Need help? Call or text 206-858-8757 or email <a href="mailto:support@acceleratenetworks.com">support@acceleratenetworks.com</a> and we can help you access the FusionPBX portal. Do not go to FusionPBX.com, this will not direct to the organization's FusionPBX portal.
+                        </p>
+                    </div>
+                    @*                    <div class="card-footer text-body-secondary">
+                    If this video is unavailble please refresh the page.
+                    </div>*@
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="card mb-4 shadow">
+                    <div class="card-header">
+                        <h4 class="my-0 font-weight-normal text-center" id="troubleshooting">😵‍💫 Troubleshooting</h4>
+                    </div>
+                    @*                    <div class="card-img">
+                    <div class="embed-responsive embed-responsive-16by9">
+                    <iframe loading="lazy" class="embed-responsive-item" src="https://www.youtube.com/embed/-Gl-HnKqI1A?playlist=-Gl-HnKqI1A&loop=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    </div>*@
+                    <div class="card-body">
+                        <p>
+                            If you run into any issues, head to the quadruple bar (upper left) => Settings => Advanced and toggle Debug Logs on, press the back arrow twice, recreate the issue that occurred in the app, head back into the quadruple bar => Settings => Advanced and pick Send Logs, describe what happened (Example: I was on the phone with X and Y thing happened) and email this to <a href="mailto:support@acceleratenetworks.com">support@acceleratenetworks.com</a>.
+                        </p>
+                    </div>
+                    @*                    <div class="card-footer text-body-secondary">
+                    If this video is unavailble please refresh the page.
+                    </div>*@
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
