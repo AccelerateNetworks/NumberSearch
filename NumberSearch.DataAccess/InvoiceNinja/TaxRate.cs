@@ -36,7 +36,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public bool is_owner { get; set; }
         public string id { get; set; } = string.Empty;
         public string name { get; set; } = string.Empty;
-        public decimal rate { get; set; }
+        public decimal rate { get; set; } = 0M;
         public bool is_inclusive { get; set; }
         public int updated_at { get; set; }
         public object archived_at { get; set; } = new();

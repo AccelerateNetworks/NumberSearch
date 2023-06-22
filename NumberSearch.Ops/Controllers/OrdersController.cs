@@ -1496,32 +1496,39 @@ public class OrdersController : Controller
 
                         // Handle the tax information for the invoice and fall back to simpler queries if we get failures.
                         NumberSearch.DataAccess.SalesTax? specificTaxRate = null;
-                        try
-                        {
-                            // Use our own API
-                            specificTaxRate = await NumberSearch.DataAccess.SalesTax.GetLocalAPIAsync(order.Address ?? string.Empty, string.Empty, order.Zip ?? string.Empty).ConfigureAwait(false);
-                        }
-                        catch
-                        {
-                            Log.Fatal($"[Checkout] Failed to get the Sale Tax rate from the local API for {order.Address}, {order.Zip}.");
-                        }
-
-                        if (specificTaxRate is null)
+                        if (order.State is "WA" || order.State is "Washington")
                         {
                             try
                             {
-                                // Fall back to using the state's API
-                                specificTaxRate = await NumberSearch.DataAccess.SalesTax.GetAsync(order.Address ?? string.Empty, order.City ?? string.Empty, order.Zip ?? string.Empty).ConfigureAwait(false);
+                                // Use our own API
+                                specificTaxRate = await NumberSearch.DataAccess.SalesTax.GetLocalAPIAsync(order.Address ?? string.Empty, string.Empty, order.Zip ?? string.Empty).ConfigureAwait(false);
                             }
                             catch
                             {
-                                Log.Fatal($"[Checkout] Failed to get the Sale Tax rate from the state's API for {order.City}, {order.Zip}.");
+                                Log.Fatal($"[Checkout] Failed to get the Sale Tax rate from the local API for {order.Address}, {order.Zip}.");
+                            }
+
+                            if (specificTaxRate is null)
+                            {
+                                try
+                                {
+                                    // Fall back to using the state's API
+                                    specificTaxRate = await NumberSearch.DataAccess.SalesTax.GetAsync(order.Address ?? string.Empty, order.City ?? string.Empty, order.Zip ?? string.Empty).ConfigureAwait(false);
+                                }
+                                catch
+                                {
+                                    Log.Fatal($"[Checkout] Failed to get the Sale Tax rate from the state's API for {order.City}, {order.Zip}.");
+                                }
                             }
                         }
 
-                        var billingTaxRate = new TaxRateDatum();
+                        var billingTaxRate = new TaxRateDatum
+                        {
+                            name = "None",
+                            rate = 0M
+                        };
 
-                        if (specificTaxRate is not null && specificTaxRate.rate is not null && specificTaxRate.rate1 > 0)
+                        if (specificTaxRate is not null && specificTaxRate.loccode > 0 && specificTaxRate.loccode < 15 && string.IsNullOrWhiteSpace(specificTaxRate.rate?.name) && (order.State is "WA" || order.State is "Washington"))
                         {
                             var rateName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(specificTaxRate.rate.name.ToLowerInvariant());
                             var taxRateName = $"{rateName}, WA - {specificTaxRate.loccode}";
@@ -1545,6 +1552,12 @@ public class OrdersController : Controller
                         else
                         {
                             Log.Information($"[Checkout] Failed to get the Tax Rate from WA State.");
+                        }
+
+                        // Just in case things go wrong.
+                        if (billingTaxRate.rate > 15 || billingTaxRate.rate < 0)
+                        {
+                            billingTaxRate.rate = 0;
                         }
 
                         // Create a billing client and send out an invoice.
