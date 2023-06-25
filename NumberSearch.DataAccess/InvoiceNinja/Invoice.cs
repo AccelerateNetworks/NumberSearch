@@ -134,6 +134,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public decimal line_total { get; set; }
         public decimal gross_line_total { get; set; }
         public decimal tax_amount { get; set; }
+        public string tax_id { get; set; } = string.Empty;
     }
 
     public class Invitation
@@ -262,7 +263,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             var result = await url
                 .WithHeader(tokenHeader, token)
                 .WithHeader(contentHeader, contentHeaderValue)
-                .PutJsonAsync(new { id, line_items })
+                .PutJsonAsync(new { id, line_items, tax_name1, tax_rate1 })
                 .ReceiveJson<InvoiceSingle>()
                 .ConfigureAwait(false);
 
@@ -327,10 +328,10 @@ namespace NumberSearch.DataAccess.InvoiceNinja
 
             var result = await url
                 .WithHeader(tokenHeader, token)
-                .GetJsonAsync<ReccurringInvoice>()
+                .GetJsonAsync<ReccurringInvoiceSingle>()
                 .ConfigureAwait(false);
 
-            return result?.data?.FirstOrDefault() ?? new();
+            return result?.data ?? new();
         }
     }
 
@@ -445,11 +446,11 @@ namespace NumberSearch.DataAccess.InvoiceNinja
                 .WithHeader(requestedHeader, requestedHeaderValue)
                 .WithHeader(contentHeader, contentHeaderValue)
                 .PutJsonAsync(new { client_id, tax_name1, tax_rate1, entity_type, frequency_id, auto_bill_enabled, auto_bill, line_items })
-                .ReceiveJson<ReccurringInvoice>()
+                .ReceiveJson<ReccurringInvoiceSingle>()
                 .ConfigureAwait(false);
 
             // Unwrap the data we want from the single-field parent object.
-            return result?.data?.FirstOrDefault() ?? new();
+            return result?.data ?? new();
         }
     }
 }

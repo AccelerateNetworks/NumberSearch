@@ -2025,7 +2025,12 @@ public class OrdersController : Controller
                                     try
                                     {
                                         createNewOneTimeInvoice.line_items = upfrontInvoice.line_items;
-                                        createNewOneTimeInvoice = await createNewOneTimeInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        if (createNewOneTimeInvoice.tax_name1 != upfrontInvoice.tax_name1)
+                                        {
+                                            createNewOneTimeInvoice.tax_name1 = upfrontInvoice.tax_name1;
+                                            createNewOneTimeInvoice.tax_rate1 = upfrontInvoice.tax_rate1;
+                                        }
+                                        createNewOneTimeInvoice = await createNewOneTimeInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
                                     catch (FlurlHttpException ex)
                                     {
@@ -2059,6 +2064,11 @@ public class OrdersController : Controller
                                     {
                                         // Update
                                         createNewReoccurringInvoice.line_items = reoccurringInvoice.line_items;
+                                        if (createNewReoccurringInvoice.tax_name1 != reoccurringInvoice.tax_name1)
+                                        {
+                                            createNewReoccurringInvoice.tax_name1 = reoccurringInvoice.tax_name1;
+                                            createNewReoccurringInvoice.tax_rate1 = reoccurringInvoice.tax_rate1;
+                                        }
                                         createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
                                     }
                                     catch (FlurlHttpException ex)
