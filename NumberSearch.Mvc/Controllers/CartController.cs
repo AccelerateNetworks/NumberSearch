@@ -1384,7 +1384,7 @@ Accelerate Networks
                                 confirmationEmail.CalendarInvite = icalString;
                             }
 
-                            // If there are notes on the order don't send out any emails.
+                            // If there are notes on the order don't send out any emails to the customer.
                             if (string.IsNullOrWhiteSpace(order.CustomerNotes))
                             {
                                 // Queue up the confirmation email.
@@ -1394,7 +1394,7 @@ Accelerate Networks
                             else
                             {
                                 confirmationEmail.Completed = false;
-                                confirmationEmail.DoNotSend = true;
+                                confirmationEmail.PrimaryEmailAddress = _emailOrders;
                                 var checkSave = await confirmationEmail.PostAsync(_postgresql).ConfigureAwait(false);
                                 Log.Information($"Skipped sending out the confirmation emails for {order.OrderId} due to customer notes.");
                             }
