@@ -8,7 +8,7 @@
 <div class="btn-group pb-3" role="group" aria-label="Basic example">
     @*    <a class="btn btn-primary" href="/Home/OwnedNumbers">Return to List</a>
     *@    @{
-        if (!string.IsNullOrWhiteSpace(Model?.Owned.BillingClientId))
+        if (!string.IsNullOrWhiteSpace(Model?.Owned?.BillingClientId))
         {
             <a href="https://billing.acceleratenetworks.com/clients/@Model?.Owned.BillingClientId/edit" class="btn btn-success" target="_blank" rel="noopener noreferrer">
                 Billing
@@ -43,7 +43,7 @@
     <div class="row">
         <div class="col-md-6 mb-3">
             <label for="firstName">Dialed Number</label>
-            <input asp-for="Owned.DialedNumber" type="text" class="form-control" id="DialedNumber" disabled readonly>
+            <input asp-for="Owned.DialedNumber" type="text" class="form-control" id="DialedNumber" readonly>
         </div>
         <div class="col-md-6 mb-3">
             <div class="form-check form-switch">
