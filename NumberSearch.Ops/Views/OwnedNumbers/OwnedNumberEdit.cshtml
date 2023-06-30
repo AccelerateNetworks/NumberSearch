@@ -43,7 +43,7 @@
     <div class="row">
         <div class="col-md-6 mb-3">
             <label for="firstName">Dialed Number</label>
-            <input asp-for="Owned.DialedNumber" type="text" class="form-control" id="DialedNumber" readonly>
+            <input asp-for="Owned.DialedNumber" type="text" class="form-control" id="DialedNumber" disabled readonly>
         </div>
         <div class="col-md-6 mb-3">
             <div class="form-check form-switch">
@@ -55,11 +55,11 @@
     <div class="row">
         <div class="col-md-6 mb-3">
             <label for="firstName">Ingested From</label>
-            <input asp-for="Owned.IngestedFrom" type="text" class="form-control" id="IngestedFrom" readonly>
+            <input asp-for="Owned.IngestedFrom" type="text" class="form-control" id="IngestedFrom" disabled readonly>
         </div>
         <div class="col-md-6 mb-3">
             <label for="lastName">Ingested Date</label>
-            <input asp-for="Owned.DateIngested" type="text" class="form-control" id="DateIngested" readonly>
+            <input asp-for="Owned.DateIngested" type="text" class="form-control" id="DateIngested" disabled readonly>
         </div>
     </div>
     <div class="row">
@@ -71,11 +71,11 @@
     <div class="row">
         <div class="col-md-6 mb-3">
             <label for="lastName">Service Provider</label>
-            <input asp-for="Owned.SPIDName" type="text" class="form-control" id="SPIDName" readonly>
+            <input asp-for="Owned.SPIDName" type="text" class="form-control" id="SPIDName" disabled readonly>
         </div>
         <div class="col-md-6 mb-3">
             <label for="lastName">Service Provider Id</label>
-            <input asp-for="Owned.SPID" type="text" class="form-control" id="SPID" readonly>
+            <input asp-for="Owned.SPID" type="text" class="form-control" id="SPID" disabled readonly>
         </div>
     </div>
     <div class="row">
@@ -86,6 +86,16 @@
         <div class="col-md-6 mb-3">
             <label for="lastName">Owned By</label>
             <input asp-for="Owned.OwnedBy" type="text" class="form-control" id="OwnedBy">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="firstName">Status</label>
+            <input asp-for="Owned.Status" type="text" class="form-control" id="Status" disabled readonly>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="lastName">SMSRoute</label>
+            <input asp-for="Owned.SMSRoute" type="text" class="form-control" id="SMSRoute" disabled readonly>
         </div>
     </div>
     <button type="submit" class="btn btn-danger">Update</button>

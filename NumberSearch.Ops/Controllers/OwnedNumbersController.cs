@@ -117,7 +117,7 @@ public class OwnedNumbersController : Controller
     [Route("/Home/OwnedNumbers/{dialedNumber}")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> OwnedNumberUpdate(OwnedPhoneNumber number)
+    public async Task<IActionResult> OwnedNumberUpdate(OwnedNumberResult number)
     {
         if (number is null)
         {
@@ -125,24 +125,21 @@ public class OwnedNumbersController : Controller
         }
         else
         {
-            var order = await _context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == number.DialedNumber);
-            if (order is not null)
+            var existing = await _context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == number.Owned.DialedNumber);
+            if (existing is not null)
             {
-                order.Notes = number.Notes;
-                order.OwnedBy = number.OwnedBy;
-                order.BillingClientId = number.BillingClientId;
-                order.Active = number.Active;
-                order.SPID = order.SPID;
-                order.SPIDName = order.SPIDName;
+                existing.Notes = number.Owned.Notes;
+                existing.OwnedBy = number.Owned.OwnedBy;
+                existing.BillingClientId = number.Owned.BillingClientId;
+                existing.Active = number.Owned.Active;
 
-                var orderToUpdate = await _context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == number.DialedNumber);
-                _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
+                var orderToUpdate = await _context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == number.Owned.DialedNumber);
                 await _context.SaveChangesAsync();
             }
 
-            var portedNumbers = await _context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == number.DialedNumber).ToArrayAsync();
-            var purchasedNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == number.DialedNumber).ToArrayAsync();
-            return View("OwnedNumberEdit", new OwnedNumberResult { PurchasedPhoneNumbers = purchasedNumbers, PortedPhoneNumbers = portedNumbers, Owned = order });
+            var portedNumbers = await _context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == number.Owned.DialedNumber).ToArrayAsync();
+            var purchasedNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == number.Owned.DialedNumber).ToArrayAsync();
+            return View("OwnedNumberEdit", new OwnedNumberResult { PurchasedPhoneNumbers = purchasedNumbers, PortedPhoneNumbers = portedNumbers, Owned = existing });
         }
     }
 }
