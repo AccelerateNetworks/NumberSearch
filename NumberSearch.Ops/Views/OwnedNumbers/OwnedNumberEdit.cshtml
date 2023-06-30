@@ -4,7 +4,22 @@
     ViewData["Title"] = "Owned Phone Number";
 }
 <h1 class="display-4 p-3">🏢 Owned Numbers</h1>
-
+@if (!string.IsNullOrWhiteSpace(Model?.Message))
+{
+    if (string.IsNullOrWhiteSpace(Model?.AlertType))
+    {
+        <div class="alert alert-danger col-12" role="alert">
+            @Model?.Message
+        </div>
+    }
+    else
+    {
+        var alertType = Model?.AlertType ?? "alert-danger";
+        <div class="alert @alertType col-12" role="alert">
+            @Model?.Message
+        </div>
+    }
+}
 <div class="btn-group pb-3" role="group" aria-label="Basic example">
     @*    <a class="btn btn-primary" href="/Home/OwnedNumbers">Return to List</a>
     *@    @{

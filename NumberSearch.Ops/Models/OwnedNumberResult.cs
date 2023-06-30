@@ -15,5 +15,6 @@ namespace NumberSearch.Ops
         public Order[] RelatedOrders { get; set; } = Array.Empty<Order>();
         public ClientRegistration ClientRegistration { get; set; } = new();
         public string Message { get; set; } = string.Empty;
+        public string AlertType { get; set;} = string.Empty;
     }
 }

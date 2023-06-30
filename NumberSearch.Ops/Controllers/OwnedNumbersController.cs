@@ -135,11 +135,17 @@ public class OwnedNumbersController : Controller
 
                 var orderToUpdate = await _context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == number.Owned.DialedNumber);
                 await _context.SaveChangesAsync();
-            }
 
-            var portedNumbers = await _context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == number.Owned.DialedNumber).ToArrayAsync();
-            var purchasedNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == number.Owned.DialedNumber).ToArrayAsync();
-            return View("OwnedNumberEdit", new OwnedNumberResult { PurchasedPhoneNumbers = purchasedNumbers, PortedPhoneNumbers = portedNumbers, Owned = existing });
+                var portedNumbers = await _context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == number.Owned.DialedNumber).ToArrayAsync();
+                var purchasedNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == number.Owned.DialedNumber).ToArrayAsync();
+                return View("OwnedNumberEdit", new OwnedNumberResult { Message = $"✔️ Updated {number.Owned.DialedNumber}!", AlertType = "alert-success", PurchasedPhoneNumbers = purchasedNumbers, PortedPhoneNumbers = portedNumbers, Owned = existing });
+            }
+            else
+            {
+                var portedNumbers = await _context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == number.Owned.DialedNumber).ToArrayAsync();
+                var purchasedNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == number.Owned.DialedNumber).ToArrayAsync();
+                return View("OwnedNumberEdit", new OwnedNumberResult { Message = $"❌ Failed to update {number.Owned.DialedNumber}!", AlertType = "alert-danger", PurchasedPhoneNumbers = purchasedNumbers, PortedPhoneNumbers = portedNumbers, Owned = existing });
+            }
         }
     }
 }
