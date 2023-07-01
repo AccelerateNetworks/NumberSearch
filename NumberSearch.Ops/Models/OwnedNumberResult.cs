@@ -17,5 +17,10 @@ namespace NumberSearch.Ops
         public string Message { get; set; } = string.Empty;
         public string AlertType { get; set; } = string.Empty;
         public string UnparsedAddress { get; set; } = string.Empty;
+        public string AddressUnitType { get; set; } = string.Empty;
+        public string AddressUnitNumber { get; set; } = string.Empty;
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string BusinessName { get; set; } = string.Empty;
     }
 }

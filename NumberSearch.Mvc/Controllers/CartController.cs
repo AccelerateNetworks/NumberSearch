@@ -511,7 +511,7 @@ namespace NumberSearch.Mvc.Controllers
                                                     {
                                                         product_key = coupon.Name,
                                                         notes = coupon.Description,
-                                                        cost = 60 * -1,
+                                                        cost = 75 * -1,
                                                         quantity = 1
                                                     });
                                                 }
@@ -603,7 +603,7 @@ namespace NumberSearch.Mvc.Controllers
                                     {
                                         product_key = "Onsite Hardware Installation",
                                         notes = $"We'll come visit you and get all your phones setup.",
-                                        cost = 60,
+                                        cost = 75,
                                         quantity = 1
                                     });
                                 }
