@@ -118,6 +118,19 @@
 </form>
 <br />
 
+<form action="Home/OwnedNumbers/@Model?.Owned.DialedNumber/RegisterE911" method="post">
+    <div class="mb-3" id="searchForm">
+        <label for="address">Address</label>
+        <input asp-for="UnparsedAddress" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" data-toggle="dropdown" required>
+        <ul class="list-group" role="menu" aria-labelledby="menu1" id="addressOptions">
+        </ul>
+        <small class="text-muted">
+            @*If it doesn't have a placeholder value give it a example*@
+            Enter the shipping address for this order, or the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
+        </small>
+    </div>
+</form>
+
 @if (Model?.EmergencyInformation?.DialedNumber == Model?.Owned?.DialedNumber)
 {
     // show the existing registration
