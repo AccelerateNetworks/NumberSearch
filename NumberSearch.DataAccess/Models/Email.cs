@@ -106,7 +106,7 @@ namespace NumberSearch.DataAccess
 
             DateSent = DateTime.Now;
 
-            // We don't want this to throw execeptions because they are expensive.
+            // We don't want this to throw exceptions because they are expensive.
             try
             {
                 var outboundMessage = new MimeMessage

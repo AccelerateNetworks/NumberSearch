@@ -97,6 +97,12 @@ namespace NumberSearch.Tests
         //}
 
         //[Fact]
+        //public async Task DailyBreifingEmailToDan()
+        //{
+        //    var checkRun = await Orders.DailyBriefingEmailAsync(ingestConfiguration);
+        //}
+
+        //[Fact]
         //public async Task TestFusionPBXDataUpdateAsync()
         //{
         //    await Owned.MatchOwnedNumbersToFusionPBXAsync(ingestConfiguration.Postgresql, ingestConfiguration.FusionPBXUsername, ingestConfiguration.FusionPBXPassword);

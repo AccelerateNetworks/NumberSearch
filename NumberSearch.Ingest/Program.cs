@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.Models;
@@ -6,8 +7,11 @@ using NumberSearch.DataAccess.Models;
 using Serilog;
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Ingest
@@ -55,6 +59,7 @@ namespace NumberSearch.Ingest
             var bulkVSPriortyTimer = new Stopwatch();
             var firstPointComPriortyTimer = new Stopwatch();
             var orderUpdatesTimer = new Stopwatch();
+            var dailyStatusEmail = new Stopwatch(); ;
             // 20 Minutes in miliseconds
             var priortyIngestCycleTime = 3600000;
 
@@ -70,6 +75,16 @@ namespace NumberSearch.Ingest
                     var bulkVSCycle = cycles.Where(x => x.IngestedFrom == "BulkVS").FirstOrDefault();
                     var firstPointComCycle = cycles.Where(x => x.IngestedFrom == "FirstPointCom").FirstOrDefault();
                     var ownedNumbersCycle = cycles.Where(x => x.IngestedFrom == "OwnedNumbers").FirstOrDefault();
+                    var dailyCycle = new IngestCycle
+                    {
+                        CycleTime = TimeSpan.FromDays(1),
+                        Enabled = true,
+                        IngestCycleId = Guid.NewGuid(),
+                        IngestedFrom = "DailyEmails",
+                        LastUpdate = DateTime.Now,
+                        RunNow = false,
+                    };
+
 
                     // Ingest phone numbers from BulkVS.
                     if (bulkVSCycle is not null && (bulkVSCycle.Enabled || bulkVSCycle.RunNow))
@@ -363,7 +378,7 @@ namespace NumberSearch.Ingest
                     }
 
                     // Update orders from the billing system.
-                    if (((orderUpdatesTimer.ElapsedMilliseconds >= priortyIngestCycleTime) || (!orderUpdatesTimer.IsRunning)))
+                    if ((orderUpdatesTimer.ElapsedMilliseconds >= priortyIngestCycleTime) || (!orderUpdatesTimer.IsRunning))
                     {
                         if (!orderUpdatesTimer.IsRunning)
                         {
@@ -383,6 +398,76 @@ namespace NumberSearch.Ingest
                         {
                             Log.Error(ex.Message);
                             Log.Error(ex.StackTrace ?? "No stack trace found.");
+                        }
+                    }
+
+                    // Send out daily status email.
+                    if (dailyCycle is not null && (dailyCycle.Enabled || dailyCycle.RunNow))
+                    {
+                        var lastRun = await IngestStatistics.GetLastIngestAsync("DailyEmails", appConfig.Postgresql).ConfigureAwait(false);
+
+                        // If the last ingest was run to recently do nothing.
+                        if (lastRun is not null && (lastRun.StartDate < (start - dailyCycle.CycleTime) || dailyCycle.RunNow))
+                        {
+                            Log.Information($"Last Run of {lastRun?.IngestedFrom} started at {lastRun?.StartDate} and ended at {lastRun?.EndDate}");
+
+                            Log.Information($"[DailyEmails] Cycle time is {dailyCycle?.CycleTime}");
+                            Log.Information($"[DailyEmails] Enabled is {dailyCycle?.Enabled}");
+
+                            // Prevent another run from starting while this is still going.
+                            var lockingStats = new IngestStatistics
+                            {
+                                IngestedFrom = "DailyEmails",
+                                StartDate = DateTime.Now,
+                                EndDate = DateTime.Now,
+                                IngestedNew = 0,
+                                FailedToIngest = 0,
+                                NumbersRetrived = 0,
+                                Removed = 0,
+                                Unchanged = 0,
+                                UpdatedExisting = 0,
+                                Lock = true
+                            };
+
+                            var checkLock = await lockingStats.PostAsync(appConfig.Postgresql).ConfigureAwait(false);
+
+                            // Now create a nicely formatted email from this nonsense lmao.
+                            var checkBriefing = await Orders.DailyBriefingEmailAsync(appConfig);
+
+                            // Remove the lock from the database to prevent it from getting cluttered with blank entries.
+                            var lockEntry = await IngestStatistics.GetLockAsync("DailyEmails", appConfig.Postgresql).ConfigureAwait(false);
+                            var checkRemoveLock = await lockEntry.DeleteAsync(appConfig.Postgresql).ConfigureAwait(false);
+
+                            var combined = new IngestStatistics
+                            {
+                                StartDate = lockEntry.StartDate,
+                                EndDate = DateTime.Now,
+                                FailedToIngest = 0,
+                                IngestedFrom = "DailyEmails",
+                                IngestedNew = 0,
+                                Lock = false,
+                                NumbersRetrived = 0,
+                                Removed = 0,
+                                Unchanged = 0,
+                                UpdatedExisting = 0,
+                                Priority = false
+                            };
+
+                            if (await combined.PostAsync(appConfig.Postgresql).ConfigureAwait(false))
+                            {
+                                Log.Information($"[DailyEmails] Completed the ingest process {DateTime.Now}.");
+                            }
+                            else
+                            {
+                                Log.Fatal($"[DailyEmails] Failed to completed the ingest process {DateTime.Now}.");
+                            }
+
+                            if (bulkVSCycle.RunNow)
+                            {
+                                bulkVSCycle.RunNow = false;
+                                var checkRunNow = bulkVSCycle.PutAsync(appConfig.Postgresql).ConfigureAwait(false);
+                            }
+
                         }
                     }
 

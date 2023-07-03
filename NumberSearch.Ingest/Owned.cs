@@ -13,7 +13,6 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -97,14 +96,6 @@ namespace NumberSearch.Ingest
                 {
                     Log.Information($"[OwnedNumbers] Emailing out a notification that {changedNumbers.Count()} numbers LRN updates.");
                     var checkSend = await SendPortingNotificationEmailAsync(changedNumbers, configuration.SmtpUsername, configuration.SmtpPassword, configuration.EmailDan, configuration.EmailOrders, configuration.Postgresql).ConfigureAwait(false);
-                }
-
-                var orderStatuses = await Orders.IncompleteOrderRemindersAsync(configuration.Postgresql).ConfigureAwait(false);
-
-                if (orderStatuses != null && orderStatuses.Any())
-                {
-                    Log.Information($"[OwnedNumbers] Emailing out a notification for {orderStatuses.Count()} incomplete orders.");
-                    var checkSend = await Orders.SendOrderReminderEmailAsync(orderStatuses, configuration.SmtpUsername, configuration.SmtpPassword, configuration.EmailDan, configuration.EmailOrders, configuration.Postgresql).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)

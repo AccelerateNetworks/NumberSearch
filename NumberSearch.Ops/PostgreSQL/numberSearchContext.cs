@@ -425,6 +425,11 @@ public partial class numberSearchContext : DbContext
             entity.Property(e => e.UpfrontInvoiceLink).HasColumnType("character varying");
 
             entity.Property(e => e.Zip).HasColumnType("character varying");
+
+            entity.Property(e => e.DateConvertedFromQuote).HasColumnType("timestamp without time zone");
+
+            entity.Property(e => e.DateCompleted).HasColumnType("timestamp without time zone");
+
         });
 
         modelBuilder.Entity<OwnedPhoneNumber>(entity =>

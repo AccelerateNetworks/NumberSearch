@@ -306,7 +306,7 @@ public class OrdersController : Controller
             }
             else
             {
-                Log.Error($"[Checkout] Failed automatic address formating.");
+                Log.Error($"[Checkout] Failed automatic address formatting.");
             }
 
             // Fillout the address2 information from its components.
@@ -318,6 +318,14 @@ public class OrdersController : Controller
             if (order is not null && existingOrder is not null)
             {
                 order.DateSubmitted = existingOrder.DateSubmitted;
+                if (order.Quote is true && existingOrder.Quote is false)
+                {
+                    order.DateConvertedFromQuote = DateTime.Now;
+                }
+                if (order.Completed is true && existingOrder.Completed is false)
+                {
+                    order.DateCompleted = DateTime.Now;
+                }
                 _context.Entry(existingOrder).CurrentValues.SetValues(order);
                 await _context.SaveChangesAsync();
 

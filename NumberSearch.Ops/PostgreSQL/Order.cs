@@ -33,5 +33,7 @@ namespace AccelerateNetworks.Operations
         public string? UnparsedAddress { get; set; }
         public Guid? MergedOrderId { get; set; }
         public string? E911ServiceNumber { get; set; }
+        public DateTime? DateConvertedFromQuote { get; set; }
+        public DateTime? DateCompleted { get; set; }
     }
 }
