@@ -1,0 +1,107 @@
+﻿@using System.Text.Json;
+@using System.Text.Json.Serialization;
+@using NumberSearch.DataAccess;
+@model NumberSearch.Mvc.SalesDashboard;
+
+@{
+    ViewData["Title"] = "Ingests";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <div class="table-responsive shadow-sm mt-3 mb-3">
+                <table class="table table-hover table-striped table-borderless">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Sales Email</th>
+                            <th>Orders</th>
+                            <th>Quotes</th>
+                            <th>Completed</th>
+                            <th>Most Recent Order</th>
+                            <th>Most Recent Quote</th>
+                            <th>Orders this Quarter</th>
+                            <th>Orders this Month</th>
+                            <th>Orders this Week</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model?.Orders.Length > 0)
+                        {
+                            var groupedByEmail = Model.Orders.GroupBy(x => x.SalesEmail);
+                            int rank = 0;
+                            foreach (var salesGroup in groupedByEmail.OrderByDescending(x => x.Count()))
+                            {
+                                rank += 1;
+                                string salesEmail = string.IsNullOrWhiteSpace(salesGroup.FirstOrDefault()?.SalesEmail) ? "No sales email" : salesGroup.FirstOrDefault()?.SalesEmail ?? string.Empty;
+                                int countOrders = salesGroup.Count(x => x.Quote is false);
+                                int countQuotes = salesGroup.Count(x => x.Quote);
+                                int countCompleted = salesGroup.Count(x => x.Completed);
+                                Order? mostRecentOrder = salesGroup.Where(x => x.Quote is false).MaxBy(x => x.DateSubmitted);
+                                Order? mostRecentQuote = salesGroup.Where(x => x.Quote).MaxBy(x => x.DateSubmitted);
+                                string recentOrder = mostRecentOrder?.DateSubmitted.ToShortDateString() ?? "None found";
+                                string recentQuote = mostRecentQuote?.DateSubmitted.ToShortDateString() ?? "None found";
+                                int sumOrdersByQuarter = salesGroup.Count(x => x.DateSubmitted >= DateTime.Now.AddMonths(-3));
+                                int sumOrdersByMonth = salesGroup.Count(x => x.DateSubmitted >= DateTime.Now.AddMonths(-1));
+                                int sumOrdersByWeek = salesGroup.Count(x => x.DateSubmitted >= DateTime.Now.AddDays(-7));
+
+                                <tr>
+                                    <td>@rank</td>
+                                    <td>
+                                        @salesEmail
+                                    </td>
+                                    <td>
+                                        @countOrders
+                                    </td>
+                                    <td>
+                                        @countQuotes
+                                    </td>
+                                    <td>
+                                        @countCompleted
+                                    </td>
+                                    <td>
+                                        @if (mostRecentOrder is not null)
+                                        {
+                                            string name = string.IsNullOrWhiteSpace(mostRecentOrder.BusinessName) ? $"{mostRecentOrder.FirstName} {mostRecentOrder.LastName}" : mostRecentOrder.BusinessName;
+                                            <a href="https://acceleratenetworks.com/cart/order/@mostRecentOrder.OrderId" target="_blank">@name</a>
+
+                                            <p>@recentOrder</p>
+                                        }
+                                        else
+                                        {
+                                            @recentOrder
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (mostRecentQuote is not null)
+                                        {
+                                            string name = string.IsNullOrWhiteSpace(mostRecentQuote.BusinessName) ? $"{mostRecentQuote.FirstName} {mostRecentQuote.LastName}" : mostRecentQuote.BusinessName;
+                                            <a href="https://acceleratenetworks.com/cart/order/@mostRecentQuote.OrderId" target="_blank">@name</a>
+
+                                            <p>@recentQuote</p>
+                                        }
+                                        else
+                                        {
+                                            @recentQuote
+                                        }
+                                    </td>
+                                    <td>
+                                        @sumOrdersByQuarter
+                                    </td>
+                                    <td>
+                                        @sumOrdersByMonth
+                                    </td>
+                                    <td>
+                                        @sumOrdersByWeek
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

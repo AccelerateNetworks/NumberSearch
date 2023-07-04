@@ -46,5 +46,18 @@ namespace NumberSearch.Mvc.Controllers
                 TotalTollFreeNumbers = numberTypeCounts.Where(x => x.NumberType == "Tollfree").Select(x => x.Count).FirstOrDefault(),
             });
         }
+
+        [HttpGet]
+        [ResponseCache(Duration = 30, Location = ResponseCacheLocation.Any)]
+        [OutputCache(Duration = 30)]
+        public async Task<IActionResult> SalesDashboardAsync()
+        {
+            var orders = await Order.GetAllAsync(_postgresql);
+
+            return View("Sales", new SalesDashboard
+            {
+               Orders = orders.ToArray(),
+            });
+        }
     }
 }
