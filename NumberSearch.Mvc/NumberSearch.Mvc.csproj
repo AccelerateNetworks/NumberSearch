@@ -155,6 +155,9 @@
 		<Content Update="wwwroot\images\original\accelerate-white.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Update="wwwroot\images\original\anmobile752023.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Update="wwwroot\images\original\DECT Cordless.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
