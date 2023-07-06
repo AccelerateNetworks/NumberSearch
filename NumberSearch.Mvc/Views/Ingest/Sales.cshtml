@@ -20,17 +20,23 @@
             {
                 string salesEmail = string.IsNullOrWhiteSpace(rep.FirstOrDefault()?.SalesEmail) ? "None" : rep.FirstOrDefault()?.SalesEmail.Replace(".", "").Split('@')[0] ?? string.Empty;
                 var byMonth = rep.GroupBy(x => x.DateSubmitted.Month);
-                List<int> countByMonth = new List<int>();
+                List<int> countByMonthAll = new List<int>();
+                List<int> countByMonthOrder = new List<int>();
+                List<int> countByMonthQuote = new List<int>();
                 for (var i = DateTime.Now.AddMonths(-6).Month; i <= DateTime.Now.Month; i++)
                 {
-                    countByMonth.Add(rep.Where(x => x.DateSubmitted.Month == i).Count());
+                    countByMonthAll.Add(rep.Where(x => x.DateSubmitted.Month == i).Count());
+                    countByMonthOrder.Add(rep.Where(x => x.DateSubmitted.Month == i && x.Quote is false).Count());
+                    countByMonthQuote.Add(rep.Where(x => x.DateSubmitted.Month == i && x.Quote).Count());
                 }
                 //@Html.Raw($"const {salesEmail} = {JsonSerializer.Serialize(countByMonth)}\n")
-                @Html.Raw($"const {salesEmail}Data = {{ label: '{salesEmail}', data: {JsonSerializer.Serialize(countByMonth)} }}\n")
-                
+                @Html.Raw($"const {salesEmail}Data = {{ label: '{salesEmail}', data: {JsonSerializer.Serialize(countByMonthAll)} }}\n")
+                @Html.Raw($"const {salesEmail}DataOrder = {{ label: 'Orders', borderColor: 'rgba(54, 162, 235, 0.5)', data: {JsonSerializer.Serialize(countByMonthOrder)} }}\n")
+                @Html.Raw($"const {salesEmail}DataQuote = {{ label: 'Quotes', borderColor: 'rgba(154, 162, 235, 0.5)', data: {JsonSerializer.Serialize(countByMonthQuote)} }}\n")
+
                 dataSets.Add($"{salesEmail}Data");
             }
-            @Html.Raw($"let dataSets = [{string.Join(",", dataSets)}]\n")
+            @Html.Raw($"const dataSets = [{string.Join(",", dataSets)}]\n")
 
             List<string> months = new();
             for (var i = DateTime.Now.AddMonths(-6).Month; i <= DateTime.Now.Month; i++)
@@ -111,7 +117,9 @@
                                 int sumOrdersByMonth = salesGroup.Count(x => x.DateSubmitted >= DateTime.Now.AddMonths(-1));
                                 int sumOrdersByWeek = salesGroup.Count(x => x.DateSubmitted >= DateTime.Now.AddDays(-7));
                                 string solo = $"{salesEmail}Data";
-                                <tr onclick="quoteAndOrder([@solo])">
+                                string order = $"{salesEmail}DataOrder";
+                                string quote = $"{salesEmail}DataQuote";
+                                <tr onclick="updateChart(@solo, @order, @quote)">
                                     <td>@rank</td>
                                     <td>
                                         @salesEmail
@@ -174,7 +182,7 @@
 <script>
     const ctx = document.getElementById('myChart');
 
-    new Chart(ctx, {
+    let chart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: months,
@@ -194,27 +202,8 @@
         },
     });
 
-    function quoteAndOrder(data) {
-        const ctx = document.getElementById('myChart');
-
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: data
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    title: {
-                        display: true,
-                        text: 'Orders by Sales Rep'
-                    }
-                }
-            },
-        });
+    function updateChart(all, order, quote) {
+        chart.data.datasets = [all, order, quote];
+        chart.update();
     }
 </script>
