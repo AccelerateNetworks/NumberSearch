@@ -48,8 +48,8 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpGet]
-        //[ResponseCache(Duration = 30, Location = ResponseCacheLocation.Any)]
-        //[OutputCache(Duration = 30)]
+        [ResponseCache(Duration = 30, Location = ResponseCacheLocation.Any)]
+        [OutputCache(Duration = 30)]
         public async Task<IActionResult> SalesDashboardAsync()
         {
             var orders = await Order.GetAllAsync(_postgresql);
