@@ -1,6 +1,7 @@
 ﻿@using System.Text.Json;
 @using System.Text.Json.Serialization;
 @using NumberSearch.DataAccess;
+@using System.Globalization;
 @model NumberSearch.Mvc.SalesDashboard;
 
 @{
@@ -14,64 +15,32 @@
         {
             var graphData = Model.Orders.Where(x => x.DateSubmitted >= DateTime.Now.AddMonths(-6)).GroupBy(x => x.SalesEmail).OrderBy(x => x.Count()).ToArray();
             var commaString = string.Empty;
+            List<string> dataSets = new();
             foreach (var rep in graphData)
             {
                 string salesEmail = string.IsNullOrWhiteSpace(rep.FirstOrDefault()?.SalesEmail) ? "None" : rep.FirstOrDefault()?.SalesEmail.Replace(".", "").Split('@')[0] ?? string.Empty;
                 var byMonth = rep.GroupBy(x => x.DateSubmitted.Month);
                 List<int> countByMonth = new List<int>();
-                foreach (var month in byMonth)
+                for (var i = DateTime.Now.AddMonths(-6).Month; i <= DateTime.Now.Month; i++)
                 {
-                    countByMonth.Add(month.Count());
+                    countByMonth.Add(rep.Where(x => x.DateSubmitted.Month == i).Count());
                 }
-                @Html.Raw($"const {salesEmail} = {JsonSerializer.Serialize(rep)}\n")
+                //@Html.Raw($"const {salesEmail} = {JsonSerializer.Serialize(countByMonth)}\n")
+                @Html.Raw($"const {salesEmail}Data = {{ label: '{salesEmail}', data: {JsonSerializer.Serialize(countByMonth)} }}\n")
+                
+                dataSets.Add($"{salesEmail}Data");
             }
+            @Html.Raw($"let dataSets = [{string.Join(",", dataSets)}]\n")
+
+            List<string> months = new();
+            for (var i = DateTime.Now.AddMonths(-6).Month; i <= DateTime.Now.Month; i++)
+            {
+                months.Add(new DateTime(2023, i, 1)
+                .ToString("MMM", CultureInfo.InvariantCulture));
+            }
+            @Html.Raw($"const months = {JsonSerializer.Serialize(months)}\n")
         }
     }
-
-                        const numIngests = Array.from({
-            length: numbersRetrivedArr
-        }, (_, index) => index + 1);
-
-    const numbersRetrivedObj = {
-        name: "NumbersRetrived",
-        values: numbersRetrivedArr
-    };
-    const ingestedNewObj = {
-        name: "IngestedNew",
-        values: ingestedNewArr
-    };
-    const failedToIngestObj = {
-        name: "FailedToIngest",
-        values: failedToIngestArr
-    };
-    const updatedExistingObj = {
-        name: "UpdatedExisting",
-        values: updatedExisting
-    };
-    const unchangedObj = {
-        name: "Unchanged",
-        values: unchangedArr
-    };
-    const removedObj = {
-        name: "Removed",
-        values: removedArr
-    };
-    const seriesArr = [numbersRetrivedObj, ingestedNewObj, failedToIngestObj, updatedExistingObj, unchangedObj,
-        removedObj
-    ];
-    const arrArr = [numbersRetrivedArr]
-    const numIngestsArr = Array.from({
-        length: numbersRetrivedArr
-    }, (_, index) => index + 1);
-    //create new data object to store map off of
-
-    const youData = {
-        y: "# of Items",
-        series: seriesArr,
-        numIngests: numIngestsArr
-    }
-
-
 </script>
 
 <style type="text/css">
@@ -130,7 +99,7 @@
                             foreach (var salesGroup in groupedByEmail.OrderByDescending(x => x.Count()))
                             {
                                 rank += 1;
-                                string salesEmail = string.IsNullOrWhiteSpace(salesGroup.FirstOrDefault()?.SalesEmail) ? "No sales email" : salesGroup.FirstOrDefault()?.SalesEmail ?? string.Empty;
+                                string salesEmail = string.IsNullOrWhiteSpace(salesGroup.FirstOrDefault()?.SalesEmail) ? "None" : salesGroup.FirstOrDefault()?.SalesEmail.Replace(".", "").Split('@')[0] ?? string.Empty;
                                 int countOrders = salesGroup.Count(x => x.Quote is false);
                                 int countQuotes = salesGroup.Count(x => x.Quote);
                                 int countCompleted = salesGroup.Count(x => x.Completed);
@@ -141,8 +110,8 @@
                                 int sumOrdersByQuarter = salesGroup.Count(x => x.DateSubmitted >= DateTime.Now.AddMonths(-3));
                                 int sumOrdersByMonth = salesGroup.Count(x => x.DateSubmitted >= DateTime.Now.AddMonths(-1));
                                 int sumOrdersByWeek = salesGroup.Count(x => x.DateSubmitted >= DateTime.Now.AddDays(-7));
-
-                                <tr>
+                                string solo = $"{salesEmail}Data";
+                                <tr onclick="quoteAndOrder([@solo])">
                                     <td>@rank</td>
                                     <td>
                                         @salesEmail
@@ -201,37 +170,51 @@
     </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    var ctx = document.getElementById('myChart');
-    var myChart = new Chart(ctx, {
+    const ctx = document.getElementById('myChart');
+
+    new Chart(ctx, {
         type: 'line',
         data: {
-            labels: dateArr,
-            datasets: [{
-                label: 'Count of Phone Numbers Ingested',
-                data: numbersRetrivedArr,
-                backgroundColor: [
-                    'rgba(75, 192, 192, 0.2)',
-                    'rgba(153, 102, 255, 0.2)',
-                    'rgba(255, 159, 64, 0.2)'
-                ],
-                borderColor: [
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)'
-                ],
-                borderWidth: 1
-            }]
+            labels: months,
+            datasets: dataSets
         },
         options: {
-            scales: {
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: false
-                    }
-                }]
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Orders by Sales Rep'
+                }
             }
-        }
+        },
     });
+
+    function quoteAndOrder(data) {
+        const ctx = document.getElementById('myChart');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: data
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Orders by Sales Rep'
+                    }
+                }
+            },
+        });
+    }
 </script>
