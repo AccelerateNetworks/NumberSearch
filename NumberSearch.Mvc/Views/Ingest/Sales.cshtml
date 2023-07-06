@@ -8,7 +8,102 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<script type="text/javascript">
+    @{
+        if (Model?.Orders is not null)
+        {
+            var graphData = Model.Orders.Where(x => x.DateSubmitted >= DateTime.Now.AddMonths(-6)).GroupBy(x => x.SalesEmail).OrderBy(x => x.Count()).ToArray();
+            var commaString = string.Empty;
+            foreach (var rep in graphData)
+            {
+                string salesEmail = string.IsNullOrWhiteSpace(rep.FirstOrDefault()?.SalesEmail) ? "None" : rep.FirstOrDefault()?.SalesEmail.Replace(".", "").Split('@')[0] ?? string.Empty;
+                var byMonth = rep.GroupBy(x => x.DateSubmitted.Month);
+                List<int> countByMonth = new List<int>();
+                foreach (var month in byMonth)
+                {
+                    countByMonth.Add(month.Count());
+                }
+                @Html.Raw($"const {salesEmail} = {JsonSerializer.Serialize(rep)}\n")
+            }
+        }
+    }
+
+                        const numIngests = Array.from({
+            length: numbersRetrivedArr
+        }, (_, index) => index + 1);
+
+    const numbersRetrivedObj = {
+        name: "NumbersRetrived",
+        values: numbersRetrivedArr
+    };
+    const ingestedNewObj = {
+        name: "IngestedNew",
+        values: ingestedNewArr
+    };
+    const failedToIngestObj = {
+        name: "FailedToIngest",
+        values: failedToIngestArr
+    };
+    const updatedExistingObj = {
+        name: "UpdatedExisting",
+        values: updatedExisting
+    };
+    const unchangedObj = {
+        name: "Unchanged",
+        values: unchangedArr
+    };
+    const removedObj = {
+        name: "Removed",
+        values: removedArr
+    };
+    const seriesArr = [numbersRetrivedObj, ingestedNewObj, failedToIngestObj, updatedExistingObj, unchangedObj,
+        removedObj
+    ];
+    const arrArr = [numbersRetrivedArr]
+    const numIngestsArr = Array.from({
+        length: numbersRetrivedArr
+    }, (_, index) => index + 1);
+    //create new data object to store map off of
+
+    const youData = {
+        y: "# of Items",
+        series: seriesArr,
+        numIngests: numIngestsArr
+    }
+
+
+</script>
+
+<style type="text/css">
+    /* 13. Basic Styling with CSS */
+
+    /* Style the lines by removing the fill and applying a stroke */
+    .line {
+        fill: none;
+        stroke: #ffab00;
+        stroke-width: 3;
+    }
+
+    .overlay {
+        fill: none;
+        pointer-events: all;
+    }
+
+    /* Style the dots by assigning a fill and stroke */
+    .dot {
+        fill: #ffab00;
+        stroke: #fff;
+    }
+
+    .focus circle {
+        fill: none;
+        stroke: steelblue;
+    }
+</style>
+
 <div class="container">
+    <canvas id="myChart" width="400" height="200" class="pb-5"></canvas>
+
     <div class="row">
         <div class="col">
             <div class="table-responsive shadow-sm mt-3 mb-3">
@@ -105,3 +200,38 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+<script>
+    var ctx = document.getElementById('myChart');
+    var myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dateArr,
+            datasets: [{
+                label: 'Count of Phone Numbers Ingested',
+                data: numbersRetrivedArr,
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: false
+                    }
+                }]
+            }
+        }
+    });
+</script>

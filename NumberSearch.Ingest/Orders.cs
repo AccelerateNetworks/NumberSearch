@@ -63,20 +63,20 @@ namespace NumberSearch.Ingest
                     }
                 }
                 // Orders converted from quotes?
-                else if (order.Quote is false && order.Completed is false && order.DateConvertedFromQuote?.Date == DateTime.Today)
+                else if (order.Quote is false && order.Completed is false && order.DateConvertedFromQuote >= DateTime.Now.AddDays(-1))
                 {
                     ordersConvertedFromQuotesToday.Add(order);
                 }
                 // Orders completed today?
-                else if (order.Quote is false && order.Completed is true && order.DateCompleted?.Date == DateTime.Today)
+                else if (order.Quote is false && order.Completed is true && order.DateCompleted >= DateTime.Now.AddDays(-1))
                 {
                     ordersCompletedToday.Add(order);
                 }
-                else if (order.Quote is false && order.Completed is false && order.DateSubmitted.Date == DateTime.Today)
+                else if (order.Quote is false && order.Completed is false && order.DateSubmitted >= DateTime.Now.AddDays(-1))
                 {
                     ordersSubmittedToday.Add(order);
                 }
-                else if (order.Quote is true && order.DateSubmitted.Date == DateTime.Today)
+                else if (order.Quote is true && order.DateSubmitted >= DateTime.Now.AddDays(-1))
                 {
                     quotesSubmittedToday.Add(order);
                 }
