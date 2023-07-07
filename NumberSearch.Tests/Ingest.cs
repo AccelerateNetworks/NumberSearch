@@ -97,6 +97,12 @@ namespace NumberSearch.Tests
         //}
 
         //[Fact]
+        //public async Task UnassignedAsync()
+        //{
+        //    _ = await Owned.OfferUnassignedNumberForSaleAsync(ingestConfiguration.Postgresql);
+        //}  
+
+        //[Fact]
         //public async Task DailyBreifingEmailToDan()
         //{
         //    var checkRun = await Orders.DailyBriefingEmailAsync(ingestConfiguration);

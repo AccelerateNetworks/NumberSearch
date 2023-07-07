@@ -458,9 +458,9 @@ namespace NumberSearch.Ingest
                 {
                     var number = await DataAccess.PhoneNumber.GetAsync(item.DialedNumber, connectionString).ConfigureAwait(false);
 
-                    if (number is null)
+                    if (number is null || item.DialedNumber != number.DialedNumber)
                     {
-                        var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number?.DialedNumber ?? string.Empty, out var phoneNumber);
+                        var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item?.DialedNumber ?? string.Empty, out var phoneNumber);
 
                         if (checkParse && phoneNumber is not null)
                         {
@@ -471,7 +471,8 @@ namespace NumberSearch.Ingest
                                 XXXX = phoneNumber.XXXX,
                                 DialedNumber = phoneNumber.DialedNumber ?? string.Empty,
                                 DateIngested = item.DateIngested,
-                                IngestedFrom = "OwnedNumber"
+                                IngestedFrom = "OwnedNumber",
+                                Purchased = false
                             };
 
                             newUnassigned.Add(number);
@@ -488,6 +489,7 @@ namespace NumberSearch.Ingest
                     {
                         number.DateIngested = item.DateIngested;
                         number.IngestedFrom = "OwnedNumber";
+                        number.Purchased = false;
 
                         var checkCreate = await number.PutAsync(connectionString).ConfigureAwait(false);
                         updatedExisting++;

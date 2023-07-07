@@ -578,9 +578,9 @@ namespace NumberSearch.DataAccess
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("UPDATE public.\"PhoneNumbers\" SET \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"NumberType\" = @NumberType, \"Purchased\" = @Purchased, \"City\" = @City, \"State\" = @State " +
+                .ExecuteAsync("UPDATE public.\"PhoneNumbers\" SET \"DialedNumber\" = @DialedNumber, \"NPA\" = @NPA, \"NXX\" = @NXX, \"XXXX\" = @XXXX, \"City\" = @City, \"State\" = @State, \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"NumberType\" = @NumberType, \"Purchased\" = @Purchased " +
                 "WHERE \"DialedNumber\" = @DialedNumber",
-                new { IngestedFrom, DateIngested, NumberType, Purchased, City, State, DialedNumber })
+                new { DialedNumber, NPA, NXX, XXXX, City, State, IngestedFrom, DateIngested, NumberType, Purchased })
                 .ConfigureAwait(false);
 
             if (result == 1)
