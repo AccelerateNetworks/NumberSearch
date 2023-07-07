@@ -25,9 +25,6 @@ using Serilog.Events;
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
-using System.Net.Mime;
-using System.ServiceModel.Channels;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -278,6 +275,9 @@ try
 
             if (registration is not null && !string.IsNullOrWhiteSpace(registration.AsDialed) && registration.AsDialed == asDialedNumber.DialedNumber)
             {
+                // At Finns request NANPA numbers are now 1 prefixed to match with the POST client/register endpoint.
+                string dialedNumber = asDialedNumber.Type is not PhoneNumbersNA.NumberType.ShortCode ? $"1{asDialedNumber.DialedNumber}" : asDialedNumber.DialedNumber;
+                registration.AsDialed = dialedNumber;
                 return TypedResults.Ok(registration);
             }
             else
@@ -328,6 +328,40 @@ try
 
     })
         .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all registered clients.", Description = "This is intended to be used for debugging client registrations." });
+
+    //app.MapGet("/client/usage", async Task<Results<Ok<ClientRegistration[]>, BadRequest<string>, NotFound<string>>> (MessagingContext db) =>
+    //{
+    //    try
+    //    {
+
+    //        var registrations = await db.ClientRegistrations.ToArrayAsync();
+    //        foreach (var reg in registrations)
+    //        {
+    //            var inboundMMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).ToArrayAsync();
+    //            var outboundMMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.MMS).ToArrayAsync();
+    //            var inboundSMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).ToArrayAsync();
+    //            var outboundSMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.SMS).ToArrayAsync();
+    //        }
+
+    //        if (registrations is not null && registrations.Any())
+    //        {
+    //            return TypedResults.Ok(registrations);
+    //        }
+    //        else
+    //        {
+    //            return TypedResults.NotFound($"No clients are currently registered for service.");
+    //        }
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        Log.Error(ex.Message);
+    //        Log.Error(ex.StackTrace ?? "No stacktrace found.");
+    //        return TypedResults.BadRequest(ex.Message);
+    //    }
+
+    //})
+    //.RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all registered clients.", Description = "This is intended to be used for debugging client registrations." });
+
 
     app.MapPost("/client/register", async Task<Results<Ok<RegistrationResponse>, BadRequest<RegistrationResponse>>> (RegistrationRequest registration, MessagingContext db) =>
     {
