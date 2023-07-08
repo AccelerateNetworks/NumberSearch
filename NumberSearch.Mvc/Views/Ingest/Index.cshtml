@@ -11,101 +11,71 @@
     @{
         if (Model?.Ingests is not null)
         {
-            var graphData = Model.Ingests.Where(x => x.StartDate > DateTime.Now.AddHours(-12)).OrderBy(x => x.StartDate).ToArray();
-            var commaString = string.Empty;
-            foreach (var ingest in graphData)
-            {
-                commaString += $"{ingest.NumbersRetrived}, ";
-            }
-            @Html.Raw($"var numbersRetrivedArr = [{commaString}];")
-
-            commaString = string.Empty;
-            foreach (var ingest in graphData)
-            {
-                commaString += $"{ingest.IngestedNew}, ";
-            }
-            @Html.Raw($"var ingestedNewArr = [{commaString}];")
-
-            commaString = string.Empty;
-            foreach (var ingest in graphData)
-            {
-                commaString += $"{ingest.FailedToIngest}, ";
-            }
-            @Html.Raw($"var failedToIngestArr = [{commaString}];")
-
-            commaString = string.Empty;
-            foreach (var ingest in graphData)
-            {
-                commaString += $"{ingest.UpdatedExisting}, ";
-            }
-            @Html.Raw($"var updatedExisting = [{commaString}];")
-
-            commaString = string.Empty;
-            foreach (var ingest in graphData)
-            {
-                commaString += $"{ingest.Unchanged}, ";
-            }
-            @Html.Raw($"var unchangedArr = [{commaString}];")
-
-            commaString = string.Empty;
-            foreach (var ingest in graphData)
-            {
-                commaString += $"{ingest.Removed}, ";
-            }
-            @Html.Raw($"var removedArr = [{commaString}];")
-
-            commaString = string.Empty;
-            foreach (var ingest in graphData)
-            {
-                commaString += $"\"{ingest.StartDate.ToString("h:mm tt")}\", ";
-            }
-            @Html.Raw($"var dateArr = [{commaString}];")
+            var graphData = Model.Ingests.Where(x => x.StartDate > DateTime.Now.AddHours(-24)).OrderBy(x => x.StartDate).ToArray();
+            @Html.Raw($"const numbersRetrivedArr = {JsonSerializer.Serialize(graphData.Select(x => x.NumbersRetrived))};\n");
+            @Html.Raw($"const ingestedNewArr = {JsonSerializer.Serialize(graphData.Select(x => x.IngestedNew))};\n");
+            @Html.Raw($"const failedToIngestArr = {JsonSerializer.Serialize(graphData.Select(x => x.FailedToIngest))};\n");
+            @Html.Raw($"const updatedExisting = {JsonSerializer.Serialize(graphData.Select(x => x.UpdatedExisting))};\n");
+            @Html.Raw($"const removedArr = {JsonSerializer.Serialize(graphData.Select(x => x.Removed))};\n");
+            @Html.Raw($"const dateArr = {JsonSerializer.Serialize(graphData.Select(x => x.StartDate.ToString("h:mm tt")))};\n");
         }
     }
 
-                    const numIngests = Array.from({
-            length: numbersRetrivedArr
-        }, (_, index) => index + 1);
+    const inventory = [{
+                label: 'Total Numbers Ingested',
+                data: numbersRetrivedArr,
+                borderWidth: 1
+            },
+            {
+                label: 'New',
+                data: ingestedNewArr,
+                                backgroundColor: [
+                    'rgba(75, 192, 192, 1)',
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                ],
+                borderWidth: 1
+            },
+                        {
+                label: 'Updated',
+                data: updatedExisting,
+                                backgroundColor: [
+                    'rgba(54, 162, 235, 0.3)',
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                ],
+                borderWidth: 1
+            }];
 
-    const numbersRetrivedObj = {
-        name: "NumbersRetrived",
-        values: numbersRetrivedArr
-    };
-    const ingestedNewObj = {
-        name: "IngestedNew",
-        values: ingestedNewArr
-    };
-    const failedToIngestObj = {
-        name: "FailedToIngest",
-        values: failedToIngestArr
-    };
-    const updatedExistingObj = {
-        name: "UpdatedExisting",
-        values: updatedExisting
-    };
-    const unchangedObj = {
-        name: "Unchanged",
-        values: unchangedArr
-    };
-    const removedObj = {
-        name: "Removed",
-        values: removedArr
-    };
-    const seriesArr = [numbersRetrivedObj, ingestedNewObj, failedToIngestObj, updatedExistingObj, unchangedObj,
-        removedObj
-    ];
-    const arrArr = [numbersRetrivedArr]
-    const numIngestsArr = Array.from({
-        length: numbersRetrivedArr
-    }, (_, index) => index + 1);
-    //create new data object to store map off of
-
-    const youData = {
-        y: "# of Items",
-        series: seriesArr,
-        numIngests: numIngestsArr
-    }
-
+    const churn =  [{
+                label: 'Newly Ingested Numbers',
+                data: ingestedNewArr,
+                borderWidth: 1
+            },
+            {
+                label: 'Failed To Ingest',
+                data: failedToIngestArr,
+                                backgroundColor: [
+                    'rgba(255, 99, 132, 1)',
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                ],
+                borderWidth: 1
+            },
+                        {
+                label: 'Removed After Failing to be Reingested',
+                data: removedArr,
+                                backgroundColor: [
+                    'rgba(255, 159, 64, 0.3)',
+                ],
+                borderColor: [
+                    'rgba(255, 159, 64, 1)',
+                ],
+                borderWidth: 1
+            }];
 
 </script>
 
@@ -142,8 +112,15 @@
         <h1 class="display-4 p-2">Ingests</h1>
     </div>
 
-    <canvas id="myChart" width="400" height="200" class="pb-5"></canvas>
-
+    <canvas id="myChart" width="400" height="200" class="pb-3"></canvas>
+    <div class="btn-group btn-group-toggle pb-3" data-toggle="buttons">
+      <label class="btn btn-outline-secondary active">
+        <input type="radio" name="options" id="option1" checked onclick="showInventory()"> Inventory
+      </label>
+      <label class="btn btn-outline-secondary">
+        <input type="radio" name="options" id="option2" onclick="showChurn()"> Churn
+      </label>
+    </div>
     @{
         if (Model is not null && Model?.Ingests is not null && Model.Ingests.Any() && Model?.AreaCodes is not null)
         {
@@ -152,8 +129,8 @@
     @total
     </div>*@
             var timeAgo = DateTime.Now - Model.Ingests.FirstOrDefault()?.StartDate;
-            var last = $"Last ingest performed {timeAgo.GetValueOrDefault().Minutes} Minutes ago.";
-            var oneHour = DateTime.Now - DateTime.Now.AddHours(-1);
+            var last = $"Last ingest performed {timeAgo.GetValueOrDefault().ToString(@"hh\:mm\:ss")} seconds ago.";
+            var oneHour = DateTime.Now - DateTime.Now.AddHours(-6);
             if (timeAgo > oneHour)
             {
                 <div class="alert alert-danger" role="alert">
@@ -183,7 +160,7 @@
             //<h1 class="display-4 p-2">
             //    Provider Health @statusSymbol
             //</h1>
-            <h4>@Model?.TotalPhoneNumbers Phone Numbers Total</h4>
+            <h4>@Model?.TotalPhoneNumbers Phone Numbers in Inventory</h4>
             <div class="table-responsive shadow-sm mt-3">
                 <table class="table table-hover table-striped table-borderless">
                     <thead>
@@ -200,32 +177,21 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
+     <tr>
                             <td>
-                                All Numbers
+                                Standard
                             </td>
                             <td>
-                                @Model?.TotalPhoneNumbers
-                            </td>
-                            <td>
-                                100.00 %
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                Executive
-                            </td>
-                            <td>
-                                @Model?.TotalExecutiveNumbers
+                                @Model?.TotalStandardNumbers
                             </td>
                             <td>
                                 @{
-                                    var executivePortion = Model?.TotalExecutiveNumbers * 100M / Model?.TotalPhoneNumbers;
+                                    var standardPortion = Model?.TotalStandardNumbers * 100M / Model?.TotalPhoneNumbers;
                                 }
-                                @executivePortion!.Value.ToString("F") %
+                                @standardPortion!.Value.ToString("F") %
                             </td>
                         </tr>
-                        <tr>
+                                                <tr>
                             <td>
                                 Premium
                             </td>
@@ -239,18 +205,19 @@
                                 @premiumPortion!.Value.ToString("F") %
                             </td>
                         </tr>
+                   
                         <tr>
                             <td>
-                                Standard
+                                Executive
                             </td>
                             <td>
-                                @Model?.TotalStandardNumbers
+                                @Model?.TotalExecutiveNumbers
                             </td>
                             <td>
                                 @{
-                                    var standardPortion = Model?.TotalStandardNumbers * 100M / Model?.TotalPhoneNumbers;
+                                    var executivePortion = Model?.TotalExecutiveNumbers * 100M / Model?.TotalPhoneNumbers;
                                 }
-                                @standardPortion!.Value.ToString("F") %
+                                @executivePortion!.Value.ToString("F") %
                             </td>
                         </tr>
                         <tr>
@@ -270,6 +237,9 @@
                     </tbody>
                 </table>
             </div>
+            <h4 class="pb-3 pt-3">
+                Area Code Health
+            </h4>
             <div class="table-responsive shadow-sm mt-3">
                 <table class="table table-hover table-striped table-borderless">
                     <thead>
@@ -302,12 +272,15 @@
                     </tbody>
                 </table>
             </div>
-            <div class="table-responsive shadow-sm mt-3">
+            <h4 class="pb-3 pt-3">
+                Provider Health
+            </h4>
+            <div class="table-responsive shadow-sm">
                 <table class="table table-hover table-striped table-borderless">
                     <thead>
                         <tr>
                             <th>
-                                Provider
+                                Number Provider
                             </th>
                             <th>
                                 Current Count
@@ -343,10 +316,15 @@
                                     </td>
                                     <td>
                                         @{
-                                            var portion = currentCount?.Count ?? 0 * 100M / Model?.TotalPhoneNumbers;
+                                            decimal total = Convert.ToDecimal(Model?.TotalPhoneNumbers);
+                                            decimal portion = 0M;
+                                            if (currentCount?.Count > 0)
+                                            {
+                                                portion = (currentCount.Count / total) * 100M;
+                                            }
                                         }
                                         @currentCount?.Count
-                                        (@portion!.Value.ToString("F") %)
+                                        (@portion.ToString("F") %)
                                     </td>
                                     <td>
                                         @{
@@ -368,7 +346,17 @@
                                                 var doubleTicks = runTimes?.Average(x => x.Ticks);
                                                 var longTicks = Convert.ToInt64(doubleTicks);
                                                 var averageRunTime = new TimeSpan(longTicks);
+                                                if(averageRunTime.Hours > 0)
+                                                {
                                                 formattedRunTime = $"{averageRunTime.Hours} Hours and {averageRunTime.Minutes} Minutes";
+
+                                                } else
+                                                {
+                                                formattedRunTime = $"{averageRunTime.Minutes} Minutes";                                                    
+                                                }
+                                            } else
+                                            {
+                                                formattedRunTime = "None";
                                             }
                                         }
                                         @formattedRunTime
@@ -384,7 +372,16 @@
                                             if (runTimesSeven.Count() > 0)
                                             {
                                                 var longest = runTimesSeven.Max();
+                                                if(longest.Hours > 0)
+                                                {
                                                 formattedLongest = $"{longest.Hours} Hours and {longest.Minutes} Minutes";
+                                                } else
+                                                {
+                                                formattedLongest = $"{longest.Minutes} Minutes";                                                    
+                                                }
+                                            }else
+                                            {
+                                                formattedRunTime = "None";
                                             }
                                         }
                                         @formattedLongest
@@ -392,7 +389,7 @@
                                     <td>
                                         @{
                                             var churn = ingests.Count() > 0 ? ingests?.Average(x => x.Removed) : 0;
-                                            var formattedChurn = $"{churn!.Value.ToString("F")} Numbers Removed";
+                                            var formattedChurn = $"{churn!.Value.ToString("F0")} Numbers Removed";
                                         }
                                         @formattedChurn
                                     </td>
@@ -402,9 +399,9 @@
                     </tbody>
                 </table>
             </div>
-            <h1 class="display-4 p-3">
+            <h4 class="pb-3 pt-3">
                 Logged Ingests
-            </h1>
+            </h4>
             <div class="table-responsive shadow-sm mb-4">
                 <table class="table table-hover table-striped table-borderless">
                     <thead>
@@ -469,25 +466,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
 <script>
     var ctx = document.getElementById('myChart');
-    var myChart = new Chart(ctx, {
+    const chart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: dateArr,
-            datasets: [{
-                label: 'Count of Phone Numbers Ingested',
-                data: numbersRetrivedArr,
-                backgroundColor: [
-                    'rgba(75, 192, 192, 0.2)',
-                    'rgba(153, 102, 255, 0.2)',
-                    'rgba(255, 159, 64, 0.2)'
-                ],
-                borderColor: [
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)'
-                ],
-                borderWidth: 1
-            }]
+            datasets: inventory
         },
         options: {
             scales: {
@@ -499,4 +482,14 @@
             }
         }
     });
+
+    function showInventory() {
+        chart.data.datasets = inventory;
+        chart.update();
+    }
+
+        function showChurn() {
+        chart.data.datasets = churn;
+        chart.update();
+    }
 </script>

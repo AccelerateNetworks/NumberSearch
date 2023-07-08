@@ -20,8 +20,8 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpGet]
-        [ResponseCache(Duration = 30, Location = ResponseCacheLocation.Any)]
-        [OutputCache(Duration = 30)]
+        //[ResponseCache(Duration = 30, Location = ResponseCacheLocation.Any)]
+        //[OutputCache(Duration = 30)]
         public async Task<IActionResult> IndexAsync()
         {
             var ingests = await IngestStatistics.GetAllAsync(_postgresql).ConfigureAwait(false);
