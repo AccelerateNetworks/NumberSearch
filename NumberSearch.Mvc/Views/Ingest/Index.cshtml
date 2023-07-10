@@ -441,7 +441,12 @@
                                         }
                                         else
                                         {
-                                            <td>@ingest?.IngestedFrom</td>
+                                            string badge = string.Empty;
+                                            if (ingest?.Priority ?? false)
+                                            {
+                                                badge = $"<span class='badge badge-primary'>{ingest?.Priority}</span>";
+                                            }
+                                            <td>@ingest?.IngestedFrom @badge</td>
                                             <td>@ingest!.NumbersRetrived</td>
                                             <td>@ingest.IngestedNew</td>
                                             <td>@ingest.FailedToIngest</td>

@@ -2,6 +2,8 @@
 
 using Flurl.Http;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.FusionPBX;
@@ -23,6 +25,33 @@ namespace NumberSearch.Ingest
 {
     public class Owned
     {
+
+        public static async Task OwnedDailyAsync(IngestConfiguration appConfig)
+        {
+
+            // Prevent another run from starting while this is still going.
+            var lockingStats = new IngestStatistics
+            {
+                IngestedFrom = "OwnedNumbers",
+                StartDate = DateTime.Now,
+                EndDate = DateTime.Now,
+                IngestedNew = 0,
+                FailedToIngest = 0,
+                NumbersRetrived = 0,
+                Removed = 0,
+                Unchanged = 0,
+                UpdatedExisting = 0,
+                Lock = true
+            };
+
+            var checkLock = await lockingStats.PostAsync(appConfig.Postgresql).ConfigureAwait(false);
+            await Owned.IngestAsync(appConfig);
+
+            // Remove the lock from the database to prevent it from getting cluttered with blank entries.
+            var lockEntry = await IngestStatistics.GetLockAsync("FirstPointCom", appConfig.Postgresql).ConfigureAwait(false);
+            var checkRemoveLock = await lockEntry.DeleteAsync(appConfig.Postgresql).ConfigureAwait(false);
+        }
+
         public async static Task IngestAsync(IngestConfiguration configuration)
         {
             Log.Information("[OwnedNumbers] Ingesting data for OwnedNumbers.");

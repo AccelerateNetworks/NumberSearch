@@ -1,5 +1,7 @@
 ﻿using NumberSearch.DataAccess;
 
+using Serilog;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +15,39 @@ namespace NumberSearch.Ingest
 {
     public class Orders
     {
+        public static async Task<IngestStatistics> EmailDailyAsync(IngestConfiguration appConfig)
+        {
+            DateTime start = DateTime.Now;
 
+            var checkBriefing = await Orders.DailyBriefingEmailAsync(appConfig);
+
+            var combined = new IngestStatistics
+            {
+                StartDate = start,
+                EndDate = DateTime.Now,
+                FailedToIngest = 0,
+                IngestedFrom = "DailyEmails",
+                IngestedNew = 0,
+                Lock = false,
+                NumbersRetrived = 0,
+                Removed = 0,
+                Unchanged = 0,
+                UpdatedExisting = 0,
+                Priority = false
+            };
+
+
+            if (await combined.PostAsync(appConfig.Postgresql).ConfigureAwait(false))
+            {
+                Log.Information($"[DailyEmails] Sent out the emails {DateTime.Now}.");
+            }
+            else
+            {
+                Log.Fatal($"[DailyEmails] Failed to send out the emails {DateTime.Now}.");
+            }
+
+            return combined;
+        }
         public static async Task<bool> DailyBriefingEmailAsync(IngestConfiguration appConfig)
         {
             // Gather all of the info to put into the daily email.

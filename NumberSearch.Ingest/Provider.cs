@@ -2,6 +2,7 @@
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
+using NumberSearch.DataAccess.Models;
 
 using Serilog;
 
@@ -10,6 +11,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+
+using static NumberSearch.Ingest.Program;
 
 namespace NumberSearch.Ingest
 {
@@ -82,6 +85,213 @@ namespace NumberSearch.Ingest
             stats.IngestedFrom = "BulkVS";
 
             return stats;
+        }
+
+        public static async Task<IngestStatistics> BulkVSDailyAsync(IngestConfiguration appConfig)
+        {
+            // Prevent another run from starting while this is still going.
+            var lockingStats = new IngestStatistics
+            {
+                IngestedFrom = "BulkVS",
+                StartDate = DateTime.Now,
+                EndDate = DateTime.Now,
+                IngestedNew = 0,
+                FailedToIngest = 0,
+                NumbersRetrived = 0,
+                Removed = 0,
+                Unchanged = 0,
+                UpdatedExisting = 0,
+                Lock = true
+            };
+
+            var checkLock = await lockingStats.PostAsync(appConfig.Postgresql).ConfigureAwait(false);
+
+            // Ingest all available phones numbers from the BulkVs API.
+            Log.Information("Ingesting data from BulkVS");
+            var BulkVSStats = await Provider.BulkVSAsync(appConfig.BulkVSUsername, appConfig.BulkVSPassword, PhoneNumbersNA.AreaCode.All, appConfig.Postgresql).ConfigureAwait(false);
+
+            // Remove the lock from the database to prevent it from getting cluttered with blank entries.
+            var lockEntry = await IngestStatistics.GetLockAsync("BulkVS", appConfig.Postgresql).ConfigureAwait(false);
+            var checkRemoveLock = await lockEntry.DeleteAsync(appConfig.Postgresql).ConfigureAwait(false);
+
+            // Remove all of the old numbers from the database.
+            Log.Information("[BulkVS] Removing old numbers from the database.");
+            var bulkVSCleanUp = await PhoneNumber.DeleteOldByProvider(lockingStats.StartDate, TimeSpan.FromDays(1), "BulkVS", appConfig.Postgresql).ConfigureAwait(false);
+
+            var combined = new IngestStatistics
+            {
+                StartDate = BulkVSStats.StartDate,
+                EndDate = bulkVSCleanUp.EndDate,
+                FailedToIngest = BulkVSStats.FailedToIngest,
+                IngestedFrom = BulkVSStats.IngestedFrom,
+                IngestedNew = BulkVSStats.IngestedNew,
+                Lock = false,
+                NumbersRetrived = BulkVSStats.NumbersRetrived,
+                Removed = bulkVSCleanUp.Removed,
+                Unchanged = BulkVSStats.Unchanged,
+                UpdatedExisting = BulkVSStats.UpdatedExisting,
+                Priority = false
+            };
+
+            if (await combined.PostAsync(appConfig.Postgresql).ConfigureAwait(false))
+            {
+                Log.Information($"[BulkVS] Completed the ingest process {DateTime.Now}.");
+            }
+            else
+            {
+                Log.Fatal($"[BulkVS] Failed to completed the ingest process {DateTime.Now}.");
+            }
+
+            return combined;
+        }
+
+        public static async Task<IngestStatistics> BulkVSPriorityAsync(IngestConfiguration appConfig)
+        {
+            DateTime start = DateTime.Now;
+            Log.Information($"[BulkVS] Priority ingest started at {start}.");
+
+            // Ingest priority phones numbers from the BulkVs API.
+            Log.Information("[BulkVS] Ingesting priority data from BulkVS.");
+            var BulkVSStats = await Provider.BulkVSAsync(appConfig.BulkVSUsername, appConfig.BulkVSPassword, AreaCode.Priority, appConfig.Postgresql).ConfigureAwait(false);
+
+            var combined = new IngestStatistics
+            {
+                StartDate = BulkVSStats.StartDate,
+                EndDate = DateTime.Now,
+                FailedToIngest = BulkVSStats.FailedToIngest,
+                IngestedFrom = BulkVSStats.IngestedFrom,
+                IngestedNew = BulkVSStats.IngestedNew,
+                Lock = false,
+                NumbersRetrived = BulkVSStats.NumbersRetrived,
+                Removed = 0,
+                Unchanged = BulkVSStats.Unchanged,
+                UpdatedExisting = BulkVSStats.UpdatedExisting,
+                Priority = true
+            };
+
+            // Remove stale priority numbers
+            foreach (var code in AreaCode.Priority)
+            {
+                var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, TimeSpan.FromMinutes(20), code, "BulkVS", appConfig.Postgresql).ConfigureAwait(false);
+                combined.Removed += removedNumbers.Removed;
+            }
+
+            if (await combined.PostAsync(appConfig.Postgresql).ConfigureAwait(false))
+            {
+                Log.Information($"[BulkVS] Completed the priority ingest process {DateTime.Now}.");
+            }
+            else
+            {
+                Log.Fatal($"[BulkVS] Failed to completed the priority ingest process {DateTime.Now}.");
+            }
+
+            Log.Information($"[BulkVS] [PortRequests] Priority ingest of Port Request statuses started at {DateTime.Now}.");
+
+            // Update the statuses of all the active port requests with BulkVS.
+            await PortRequests.UpdateStatusesBulkVSAsync(appConfig);
+
+            return combined;
+        }
+
+        public static async Task<IngestStatistics> FirstPointComPriorityAsync(IngestConfiguration appConfig)
+        {
+            DateTime start = DateTime.Now;
+            Log.Debug($"[FirstPointCom] Priority ingest started at {start}");
+
+
+            // Ingest priority numbers in the FirsPointCom API.
+            Log.Information("[FirstPointCom] Ingesting priority data from FirstPointCom");
+            var FirstPointComStats = await Provider.FirstPointComAsync(appConfig.PComNetUsername, appConfig.PComNetPassword, AreaCode.Priority, appConfig.Postgresql).ConfigureAwait(false);
+
+            var combined = new IngestStatistics
+            {
+                StartDate = FirstPointComStats.StartDate,
+                EndDate = DateTime.Now,
+                FailedToIngest = FirstPointComStats.FailedToIngest,
+                IngestedFrom = FirstPointComStats.IngestedFrom,
+                IngestedNew = FirstPointComStats.IngestedNew,
+                Lock = false,
+                NumbersRetrived = FirstPointComStats.NumbersRetrived,
+                Removed = 0,
+                Unchanged = FirstPointComStats.Unchanged,
+                UpdatedExisting = FirstPointComStats.UpdatedExisting,
+                Priority = true
+            };
+
+            // Remove stale priority numbers
+            foreach (var code in AreaCode.Priority)
+            {
+                var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, TimeSpan.FromMinutes(20), code, "FirstPointCom", appConfig.Postgresql).ConfigureAwait(false);
+                combined.Removed += removedNumbers.Removed;
+            }
+
+            if (await combined.PostAsync(appConfig.Postgresql).ConfigureAwait(false))
+            {
+                Log.Information($"[FirstPointCom] Completed the priority ingest process {DateTime.Now}.");
+            }
+            else
+            {
+                Log.Fatal($"[FirstPointCom] Failed to completed the priority ingest process {DateTime.Now}.");
+            }
+
+            return combined;
+        }
+
+        public static async Task<IngestStatistics> FirstPointComDailyAsync(IngestConfiguration appConfig)
+        {
+            // Prevent another run from starting while this is still going.
+            var lockingStats = new IngestStatistics
+            {
+                IngestedFrom = "FirstPointCom",
+                StartDate = DateTime.Now,
+                EndDate = DateTime.Now,
+                IngestedNew = 0,
+                FailedToIngest = 0,
+                NumbersRetrived = 0,
+                Removed = 0,
+                Unchanged = 0,
+                UpdatedExisting = 0,
+                Lock = true
+            };
+
+            var checkLock = await lockingStats.PostAsync(appConfig.Postgresql).ConfigureAwait(false);
+
+            // Ingest all available numbers in the FirsPointCom API.
+            Log.Information("[FirstPointCom] Ingesting data from FirstPointCom");
+            var FirstPointComStats = await Provider.FirstPointComAsync(appConfig.PComNetUsername, appConfig.PComNetPassword, PhoneNumbersNA.AreaCode.All, appConfig.Postgresql).ConfigureAwait(false);
+
+            // Remove the lock from the database to prevent it from getting cluttered with blank entries.
+            var lockEntry = await IngestStatistics.GetLockAsync("FirstPointCom", appConfig.Postgresql).ConfigureAwait(false);
+            var checkRemoveLock = await lockEntry.DeleteAsync(appConfig.Postgresql).ConfigureAwait(false);
+
+            // Remove all of the old numbers from the database.
+            Log.Information("[FirstPointCom] Removing old FirstPointCom numbers from the database.");
+            var firstPointComCleanUp = await PhoneNumber.DeleteOldByProvider(lockingStats.StartDate, TimeSpan.FromDays(1), "FirstPointCom", appConfig.Postgresql).ConfigureAwait(false);
+
+            var combined = new IngestStatistics
+            {
+                StartDate = FirstPointComStats.StartDate,
+                EndDate = firstPointComCleanUp.EndDate,
+                FailedToIngest = FirstPointComStats.FailedToIngest,
+                IngestedFrom = FirstPointComStats.IngestedFrom,
+                IngestedNew = FirstPointComStats.IngestedNew,
+                Lock = false,
+                NumbersRetrived = FirstPointComStats.NumbersRetrived,
+                Removed = firstPointComCleanUp.Removed,
+                Unchanged = FirstPointComStats.Unchanged,
+                UpdatedExisting = FirstPointComStats.UpdatedExisting,
+                Priority = false
+            };
+
+            if (await combined.PostAsync(appConfig.Postgresql).ConfigureAwait(false))
+            {
+                Log.Information($"[FirstPointCom] Completed the FirstPointCom ingest process {DateTime.Now}.");
+            }
+            else
+            {
+                Log.Fatal($"[FirstPointCom] Failed to completed the FirstPointCom ingest process {DateTime.Now}.");
+            }
+            return combined;
         }
 
         public static async Task VerifyAddToCartAsync(int[] areaCodes, string numberType, string _postgresql, string _bulkVSusername,
