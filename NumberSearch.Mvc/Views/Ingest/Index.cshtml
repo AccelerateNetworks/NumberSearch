@@ -12,7 +12,7 @@
         if (Model?.Ingests is not null)
         {
             var graphData = Model.Ingests.Where(x => x.StartDate > DateTime.Now.AddHours(-24)).OrderBy(x => x.StartDate).ToArray();
-            @Html.Raw($"const numbersretrievedArr = {JsonSerializer.Serialize(graphData.Select(x => x.Numbersretrieved))};\n");
+            @Html.Raw($"const numbersretrievedArr = {JsonSerializer.Serialize(graphData.Select(x => x.NumbersRetrived))};\n");
             @Html.Raw($"const ingestedNewArr = {JsonSerializer.Serialize(graphData.Select(x => x.IngestedNew))};\n");
             @Html.Raw($"const failedToIngestArr = {JsonSerializer.Serialize(graphData.Select(x => x.FailedToIngest))};\n");
             @Html.Raw($"const updatedExisting = {JsonSerializer.Serialize(graphData.Select(x => x.UpdatedExisting))};\n");
@@ -429,7 +429,7 @@
                                         if (ingest?.IngestedFrom == "All")
                                         {
                                             <td class="table-success">@ingest?.IngestedFrom</td>
-                                            <td class="table-success">@ingest!.Numbersretrieved</td>
+                                            <td class="table-success">@ingest!.NumbersRetrived</td>
                                             <td class="table-success">@ingest.IngestedNew</td>
                                             <td class="table-success">@ingest.FailedToIngest</td>
                                             <td class="table-success">@ingest.UpdatedExisting</td>
@@ -447,7 +447,7 @@
                                                 badge = $"<span class='badge badge-primary'>{ingest?.Priority}</span>";
                                             }
                                             <td>@ingest?.IngestedFrom @badge</td>
-                                            <td>@ingest!.Numbersretrieved</td>
+                                            <td>@ingest!.NumbersRetrived</td>
                                             <td>@ingest.IngestedNew</td>
                                             <td>@ingest.FailedToIngest</td>
                                             <td>@ingest.UpdatedExisting</td>

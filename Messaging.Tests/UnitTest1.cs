@@ -89,7 +89,7 @@ namespace Messaging.Tests
             var client = await response.Content.ReadFromJsonAsync<ClientRegistration>();
             Assert.NotNull(client);
             _output.WriteLine(await response.Content.ReadAsStringAsync());
-            Assert.Equal("2063333341", client.AsDialed);
+            Assert.Equal("12063333341", client.AsDialed);
             Assert.Equal("https://sms.callpipe.com/swagger/index.html", data.CallbackUrl);
         }
 
