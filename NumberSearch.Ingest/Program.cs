@@ -56,6 +56,16 @@ namespace NumberSearch.Ingest
 
             try
             {
+                if (!dailyTimer.IsRunning)
+                {
+                    dailyTimer.Start();
+                }
+
+                if (!priorityTimer.IsRunning)
+                {
+                    priorityTimer.Start();
+                }
+
                 // To infinity and beyond.
                 while (true)
                 {
@@ -64,10 +74,6 @@ namespace NumberSearch.Ingest
                     // Priority Ingest
                     if (priorityTimer.Elapsed >= priortyCycle)
                     {
-                        if (!priorityTimer.IsRunning)
-                        {
-                            priorityTimer.Start();
-                        }
                         priorityTimer.Restart();
 
                         var bulkVS = await Provider.BulkVSPriorityAsync(appConfig);
@@ -80,10 +86,6 @@ namespace NumberSearch.Ingest
                     // Daily Ingest
                     if (dailyTimer.Elapsed >= dailyCycle)
                     {
-                        if (!dailyTimer.IsRunning)
-                        {
-                            dailyTimer.Start();
-                        }
                         dailyTimer.Restart();
 
                         var bulkVS = await Provider.BulkVSDailyAsync(appConfig);
@@ -92,7 +94,7 @@ namespace NumberSearch.Ingest
                         var email = await Orders.EmailDailyAsync(appConfig);
                     }
 
-                    Log.Information("[Heartbeat] Cycle complete.");
+                    Log.Information($"[Heartbeat] Cycle complete. Daily Timer ElapsedMilliseconds: {dailyTimer.ElapsedMilliseconds}");
 
                     // Limit this to 1 request every 10 seconds to the database.
                     await Task.Delay(10000).ConfigureAwait(false);
