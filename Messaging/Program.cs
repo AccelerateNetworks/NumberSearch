@@ -1308,5 +1308,7 @@ namespace Models
         public DateTime DateRegistered { get; set; } = DateTime.Now;
         [DataType(DataType.Password)]
         public string ClientSecret { get; set; } = string.Empty;
+        public bool RegisteredUpstream { get; set; } = false;
+        public string UpstreamStatusDescription { get; set; } = string.Empty;
     }
 }

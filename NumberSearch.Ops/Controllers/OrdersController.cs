@@ -17,11 +17,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading.Tasks;
-
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NumberSearch.Ops.Controllers;
 [ApiExplorerSettings(IgnoreApi = true)]
@@ -62,7 +59,7 @@ public class OrdersController : Controller
             var pairs = new List<OrderProducts>();
 
             // Show only the relevant Orders to a Sales rep.
-            if (User.IsInRole("Sales"))
+            if (User.IsInRole("Sales") && !User.IsInRole("Support"))
             {
                 var user = await _userManager.FindByNameAsync(User.Identity?.Name ?? string.Empty);
 
@@ -71,7 +68,6 @@ public class OrdersController : Controller
                     orders = await _context.Orders
                         .Where(x => (x.Quote != true) && (x.SalesEmail == user.Email))
                         .OrderByDescending(x => x.DateSubmitted)
-                        .Take(100)
                         .AsNoTracking()
                         .ToListAsync();
                 }
@@ -80,7 +76,6 @@ public class OrdersController : Controller
                     orders = await _context.Orders
                         .Where(x => x.Quote != true)
                         .OrderByDescending(x => x.DateSubmitted)
-                        .Take(100)
                         .AsNoTracking()
                         .ToListAsync();
                 }
@@ -90,7 +85,6 @@ public class OrdersController : Controller
                 orders = await _context.Orders
                     .Where(x => x.Quote != true)
                     .OrderByDescending(x => x.DateSubmitted)
-                    .Take(100)
                     .AsNoTracking()
                     .ToListAsync();
             }
@@ -223,7 +217,7 @@ public class OrdersController : Controller
         var pairs = new List<OrderProducts>();
 
         // Show only the relevant Orders to a Sales rep.
-        if (User.IsInRole("Sales"))
+        if (User.IsInRole("Sales") && !User.IsInRole("Support"))
         {
             var user = await _userManager.FindByNameAsync(User?.Identity?.Name ?? string.Empty);
 
@@ -232,7 +226,6 @@ public class OrdersController : Controller
                 orders = await _context.Orders
                     .Where(x => x.Quote && (x.SalesEmail == user.Email))
                     .OrderByDescending(x => x.DateSubmitted)
-                    .Take(100)
                     .AsNoTracking()
                     .ToListAsync();
             }
@@ -241,7 +234,6 @@ public class OrdersController : Controller
                 orders = await _context.Orders.Where(x => x.Quote)
                     .OrderByDescending(x => x.DateSubmitted)
                     .AsNoTracking()
-                    .Take(100)
                     .ToListAsync();
             }
         }
@@ -250,7 +242,6 @@ public class OrdersController : Controller
             orders = await _context.Orders.Where(x => x.Quote)
                     .OrderByDescending(x => x.DateSubmitted)
                     .AsNoTracking()
-                    .Take(100)
                     .ToListAsync();
         }
 
