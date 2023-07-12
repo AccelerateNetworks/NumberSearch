@@ -80,12 +80,12 @@ namespace Messaging.Tests
             Assert.NotNull(data);
             _output.WriteLine(await response.Content.ReadAsStringAsync());
             Assert.True(data.Registered);
-            Assert.Equal("2063333341", data.DialedNumber);
+            Assert.Equal("12063333341", data.DialedNumber);
             Assert.Equal("https://sms.callpipe.com/swagger/index.html", data.CallbackUrl);
             Assert.True(!string.IsNullOrWhiteSpace(data.Message));
 
             // Verify that the newly registered client exists.
-            response = await _httpClient.GetAsync("/client?asDialed=2063333341");
+            response = await _httpClient.GetAsync("/client?asDialed=12063333341");
             var client = await response.Content.ReadFromJsonAsync<ClientRegistration>();
             Assert.NotNull(client);
             _output.WriteLine(await response.Content.ReadAsStringAsync());

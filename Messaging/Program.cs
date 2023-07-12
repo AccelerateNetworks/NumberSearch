@@ -278,6 +278,11 @@ try
                 // At Finns request NANPA numbers are now 1 prefixed to match with the POST client/register endpoint.
                 string dialedNumber = asDialedNumber.Type is not PhoneNumbersNA.NumberType.ShortCode ? $"1{asDialedNumber.DialedNumber}" : asDialedNumber.DialedNumber;
                 registration.AsDialed = dialedNumber;
+
+                // Verify that this number is routed through our upstream provider.
+                var checkRouted = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber, firstPointUsername, firstPointPassword);
+                registration.RegisteredUpstream = checkRouted.QueryResult.code is 0 && checkRouted.epid is 265;
+                registration.UpstreamStatusDescription = checkRouted.QueryResult.text;
                 return TypedResults.Ok(registration);
             }
             else
@@ -390,6 +395,47 @@ try
         }
 
         string message = string.Empty;
+        bool registeredUpstream = false;
+        string upstreamStatusDescription = string.Empty;
+        string dialedNumber = asDialedNumber.Type is not PhoneNumbersNA.NumberType.ShortCode ? $"1{asDialedNumber.DialedNumber}" : asDialedNumber.DialedNumber;
+
+        try
+        {
+            // Verify that this number is routed through our upstream provider.
+            var checkRouted = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber, firstPointUsername, firstPointPassword);
+            Log.Information(System.Text.Json.JsonSerializer.Serialize(checkRouted));
+            registeredUpstream = checkRouted.QueryResult.code is 0 && checkRouted.epid is 265;
+            upstreamStatusDescription = checkRouted.QueryResult.text;
+            if (checkRouted.QueryResult.code is not 0 || checkRouted.epid is not 265)
+            {
+                // Enabled routing and set the EPID if the number is not already routed.
+                var enableSMS = await FirstPointComSMS.EnableSMSByDialedNumberAsync(dialedNumber, firstPointUsername, firstPointPassword);
+                Log.Information(System.Text.Json.JsonSerializer.Serialize(enableSMS));
+                var setRouting = await FirstPointComSMS.RouteSMSToEPIDByDialedNumberAsync(dialedNumber, 265, firstPointUsername, firstPointPassword);
+                Log.Information(System.Text.Json.JsonSerializer.Serialize(setRouting));
+                var checkRoutedAgain = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber, firstPointUsername, firstPointPassword);
+                Log.Information(System.Text.Json.JsonSerializer.Serialize(checkRouted));
+                registeredUpstream = checkRouted.QueryResult.code is 0 && checkRouted.epid is 265;
+                upstreamStatusDescription = checkRouted.QueryResult.text;
+                message = $"Attempted to set and enable SMS routing for {dialedNumber}. SMS Enabled? {enableSMS.text} Routing Set? {setRouting.text} SMS Routed? {checkRoutedAgain.QueryResult.text}";
+            }
+            else
+            {
+                message = $"This number is routed for SMS service with our upstream vendor: {checkRouted.QueryResult.text}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex.Message);
+            Log.Error(ex.StackTrace ?? "No stack trace found.");
+            return TypedResults.BadRequest(new RegistrationResponse
+            {
+                DialedNumber = registration.DialedNumber,
+                CallbackUrl = registration.CallbackUrl,
+                Registered = false,
+                Message = $"Failed to enabled messaging service through EndStream for this dialed number. Please email dan@acceleratenetworks.com to report this outage. {ex.Message}"
+            });
+        }
 
         try
         {
@@ -412,6 +458,18 @@ try
                     updated = true;
                 }
 
+                if(existingRegistration.RegisteredUpstream != registeredUpstream)
+                {
+                    existingRegistration.RegisteredUpstream = registeredUpstream;
+                    updated = true;
+                }
+
+                if (existingRegistration.UpstreamStatusDescription != upstreamStatusDescription)
+                {
+                    existingRegistration.UpstreamStatusDescription = upstreamStatusDescription;
+                    updated = true;
+                }
+
                 if (updated)
                 {
                     await db.SaveChangesAsync();
@@ -420,50 +478,15 @@ try
             }
             else
             {
-                await db.AddAsync(new ClientRegistration
+                db.Add(new ClientRegistration
                 {
                     AsDialed = asDialedNumber.DialedNumber,
                     CallbackUrl = registration.CallbackUrl,
                     ClientSecret = registration.ClientSecret,
+                    RegisteredUpstream = registeredUpstream,
+                    UpstreamStatusDescription = upstreamStatusDescription,
                 });
                 await db.SaveChangesAsync();
-            }
-
-            try
-            {
-                // Verify that this number is routed through our upstream provider.
-                string dialedNumber = asDialedNumber.Type is not PhoneNumbersNA.NumberType.ShortCode ? $"1{asDialedNumber.DialedNumber}" : asDialedNumber.DialedNumber;
-                var checkRouted = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber, firstPointUsername, firstPointPassword);
-                Log.Information(System.Text.Json.JsonSerializer.Serialize(checkRouted));
-                if (checkRouted.QueryResult.code is not 0 || checkRouted.epid is not 265)
-                {
-                    // Enabled routing and set the EPID if the number is not already routed.
-                    var enableSMS = await FirstPointComSMS.EnableSMSByDialedNumberAsync(dialedNumber, firstPointUsername, firstPointPassword);
-                    Log.Information(System.Text.Json.JsonSerializer.Serialize(enableSMS));
-                    var setRouting = await FirstPointComSMS.RouteSMSToEPIDByDialedNumberAsync(dialedNumber, 265, firstPointUsername, firstPointPassword);
-                    Log.Information(System.Text.Json.JsonSerializer.Serialize(setRouting));
-                    var checkRoutedAgain = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber, firstPointUsername, firstPointPassword);
-                    Log.Information(System.Text.Json.JsonSerializer.Serialize(checkRouted));
-                    message = $"Attempted to set and enable SMS routing for {dialedNumber}. SMS Enabled? {enableSMS.text} Routing Set? {setRouting.text} SMS Routed? {checkRoutedAgain.QueryResult.text}";
-                }
-                else
-                {
-                    message = $"This number is routed for SMS service with our upstream vendor: {checkRouted.QueryResult.text}";
-                }
-                // Do nothing.
-
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex.Message);
-                Log.Error(ex.StackTrace ?? "No stack trace found.");
-                return TypedResults.BadRequest(new RegistrationResponse
-                {
-                    DialedNumber = registration.DialedNumber,
-                    CallbackUrl = registration.CallbackUrl,
-                    Registered = false,
-                    Message = $"Failed to enabled messaging service through EndStream for this dialed number. Please email dan@acceleratenetworks.com to report this outage. {ex.Message}"
-                });
             }
         }
         catch (Exception ex)
@@ -479,7 +502,7 @@ try
             });
         }
 
-        return TypedResults.Ok(new RegistrationResponse { DialedNumber = asDialedNumber.DialedNumber, CallbackUrl = registration.CallbackUrl, Registered = true, Message = message });
+        return TypedResults.Ok(new RegistrationResponse { DialedNumber = dialedNumber, CallbackUrl = registration.CallbackUrl, Registered = true, Message = message, RegisteredUpstream =registeredUpstream, UpstreamStatusDescription = upstreamStatusDescription });
 
     })
         .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Register a client for message forwarding.", Description = "Boy I wish I had more to say about this, lmao." });
@@ -1294,6 +1317,8 @@ namespace Models
         public bool Registered { get; set; } = false;
         [DataType(DataType.Text)]
         public string Message { get; set; } = string.Empty;
+        public bool RegisteredUpstream { get; set; } = false;
+        public string UpstreamStatusDescription { get; set; } = string.Empty;
     }
 
     public class ClientRegistration
