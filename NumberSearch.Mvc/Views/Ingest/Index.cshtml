@@ -11,71 +11,77 @@
     @{
         if (Model?.Ingests is not null)
         {
-            var graphData = Model.Ingests.Where(x => x.StartDate > DateTime.Now.AddHours(-24)).OrderBy(x => x.StartDate).ToArray();
-            @Html.Raw($"const numbersretrievedArr = {JsonSerializer.Serialize(graphData.Select(x => x.NumbersRetrived))};\n");
-            @Html.Raw($"const ingestedNewArr = {JsonSerializer.Serialize(graphData.Select(x => x.IngestedNew))};\n");
-            @Html.Raw($"const failedToIngestArr = {JsonSerializer.Serialize(graphData.Select(x => x.FailedToIngest))};\n");
-            @Html.Raw($"const updatedExisting = {JsonSerializer.Serialize(graphData.Select(x => x.UpdatedExisting))};\n");
-            @Html.Raw($"const removedArr = {JsonSerializer.Serialize(graphData.Select(x => x.Removed))};\n");
-            @Html.Raw($"const dateArr = {JsonSerializer.Serialize(graphData.Select(x => x.StartDate.ToString("h:mm tt")))};\n");
+            var graphData = Model.Ingests.Where(x => x.StartDate > DateTime.Now.AddHours(-24) && x.Priority).OrderBy(x => x.StartDate).ToArray();
+            @Html.Raw($"const numbersretrievedArr = {JsonSerializer.Serialize(graphData.Select(x => x.NumbersRetrived))};\n")
+            ;
+            @Html.Raw($"const ingestedNewArr = {JsonSerializer.Serialize(graphData.Select(x => x.IngestedNew))};\n")
+            ;
+            @Html.Raw($"const failedToIngestArr = {JsonSerializer.Serialize(graphData.Select(x => x.FailedToIngest))};\n")
+            ;
+            @Html.Raw($"const updatedExisting = {JsonSerializer.Serialize(graphData.Select(x => x.UpdatedExisting))};\n")
+            ;
+            @Html.Raw($"const removedArr = {JsonSerializer.Serialize(graphData.Select(x => x.Removed))};\n")
+            ;
+            @Html.Raw($"const dateArr = {JsonSerializer.Serialize(graphData.Select(x => x.StartDate.ToString("h:mm tt")))};\n")
+            ;
         }
     }
 
-    const inventory = [{
-                label: 'Total Numbers Ingested',
-                data: numbersretrievedArr,
-                borderWidth: 1
-            },
-            {
-                label: 'New',
-                data: ingestedNewArr,
-                                backgroundColor: [
-                    'rgba(75, 192, 192, 1)',
-                ],
-                borderColor: [
-                    'rgba(75, 192, 192, 1)',
-                ],
-                borderWidth: 1
-            },
-                        {
-                label: 'Updated',
-                data: updatedExisting,
-                                backgroundColor: [
-                    'rgba(54, 162, 235, 0.3)',
-                ],
-                borderColor: [
-                    'rgba(54, 162, 235, 1)',
-                ],
-                borderWidth: 1
-            }];
+        const inventory = [{
+        label: 'Total Numbers Ingested',
+        data: numbersretrievedArr,
+        borderWidth: 1
+    },
+    {
+        label: 'New',
+        data: ingestedNewArr,
+        backgroundColor: [
+            'rgba(75, 192, 192, 1)',
+        ],
+        borderColor: [
+            'rgba(75, 192, 192, 1)',
+        ],
+        borderWidth: 1
+    },
+    {
+        label: 'Updated',
+        data: updatedExisting,
+        backgroundColor: [
+            'rgba(54, 162, 235, 0.3)',
+        ],
+        borderColor: [
+            'rgba(54, 162, 235, 1)',
+        ],
+        borderWidth: 1
+    }];
 
-    const churn =  [{
-                label: 'Newly Ingested Numbers',
-                data: ingestedNewArr,
-                borderWidth: 1
-            },
-            {
-                label: 'Failed To Ingest',
-                data: failedToIngestArr,
-                                backgroundColor: [
-                    'rgba(255, 99, 132, 1)',
-                ],
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                ],
-                borderWidth: 1
-            },
-                        {
-                label: 'Removed After Failing to be Reingested',
-                data: removedArr,
-                                backgroundColor: [
-                    'rgba(255, 159, 64, 0.3)',
-                ],
-                borderColor: [
-                    'rgba(255, 159, 64, 1)',
-                ],
-                borderWidth: 1
-            }];
+    const churn = [{
+        label: 'Newly Ingested Numbers',
+        data: ingestedNewArr,
+        borderWidth: 1
+    },
+    {
+        label: 'Failed To Ingest',
+        data: failedToIngestArr,
+        backgroundColor: [
+            'rgba(255, 99, 132, 1)',
+        ],
+        borderColor: [
+            'rgba(255, 99, 132, 1)',
+        ],
+        borderWidth: 1
+    },
+    {
+        label: 'Removed After Failing to be Reingested',
+        data: removedArr,
+        backgroundColor: [
+            'rgba(255, 159, 64, 0.3)',
+        ],
+        borderColor: [
+            'rgba(255, 159, 64, 1)',
+        ],
+        borderWidth: 1
+    }];
 
 </script>
 
@@ -114,12 +120,12 @@
 
     <canvas id="myChart" width="400" height="200" class="pb-3"></canvas>
     <div class="btn-group btn-group-toggle pb-3" data-toggle="buttons">
-      <label class="btn btn-outline-secondary active">
-        <input type="radio" name="options" id="option1" checked onclick="showInventory()"> Inventory
-      </label>
-      <label class="btn btn-outline-secondary">
-        <input type="radio" name="options" id="option2" onclick="showChurn()"> Churn
-      </label>
+        <label class="btn btn-outline-secondary active">
+            <input type="radio" name="options" id="option1" checked onclick="showInventory()"> Inventory
+        </label>
+        <label class="btn btn-outline-secondary">
+            <input type="radio" name="options" id="option2" onclick="showChurn()"> Churn
+        </label>
     </div>
     @{
         if (Model is not null && Model?.Ingests is not null && Model.Ingests.Any() && Model?.AreaCodes is not null)
@@ -177,7 +183,7 @@
                         </tr>
                     </thead>
                     <tbody>
-     <tr>
+                        <tr>
                             <td>
                                 Standard
                             </td>
@@ -191,7 +197,7 @@
                                 @standardPortion!.Value.ToString("F") %
                             </td>
                         </tr>
-                                                <tr>
+                        <tr>
                             <td>
                                 Premium
                             </td>
@@ -205,7 +211,7 @@
                                 @premiumPortion!.Value.ToString("F") %
                             </td>
                         </tr>
-                   
+
                         <tr>
                             <td>
                                 Executive
@@ -346,15 +352,17 @@
                                                 var doubleTicks = runTimes?.Average(x => x.Ticks);
                                                 var longTicks = Convert.ToInt64(doubleTicks);
                                                 var averageRunTime = new TimeSpan(longTicks);
-                                                if(averageRunTime.Hours > 0)
+                                                if (averageRunTime.Hours > 0)
                                                 {
-                                                formattedRunTime = $"{averageRunTime.Hours} Hours and {averageRunTime.Minutes} Minutes";
+                                                    formattedRunTime = $"{averageRunTime.Hours} Hours and {averageRunTime.Minutes} Minutes";
 
-                                                } else
-                                                {
-                                                formattedRunTime = $"{averageRunTime.Minutes} Minutes";                                                    
                                                 }
-                                            } else
+                                                else
+                                                {
+                                                    formattedRunTime = $"{averageRunTime.Minutes} Minutes";
+                                                }
+                                            }
+                                            else
                                             {
                                                 formattedRunTime = "None";
                                             }
@@ -372,14 +380,16 @@
                                             if (runTimesSeven.Count() > 0)
                                             {
                                                 var longest = runTimesSeven.Max();
-                                                if(longest.Hours > 0)
+                                                if (longest.Hours > 0)
                                                 {
-                                                formattedLongest = $"{longest.Hours} Hours and {longest.Minutes} Minutes";
-                                                } else
-                                                {
-                                                formattedLongest = $"{longest.Minutes} Minutes";                                                    
+                                                    formattedLongest = $"{longest.Hours} Hours and {longest.Minutes} Minutes";
                                                 }
-                                            }else
+                                                else
+                                                {
+                                                    formattedLongest = $"{longest.Minutes} Minutes";
+                                                }
+                                            }
+                                            else
                                             {
                                                 formattedRunTime = "None";
                                             }
@@ -444,9 +454,13 @@
                                             string badge = string.Empty;
                                             if (ingest?.Priority ?? false)
                                             {
-                                                badge = $"<span class='badge badge-primary'>{ingest?.Priority}</span>";
+                                                badge = $"<span class='badge badge-primary'>Priority</span>";
                                             }
-                                            <td>@ingest?.IngestedFrom @badge</td>
+                                            else
+                                            {
+                                                badge = $"<span class='badge badge-success'>Complete</span>";
+                                            }
+                                            <td><h5>@ingest?.IngestedFrom</h5> @Html.Raw(badge)</td>
                                             <td>@ingest!.NumbersRetrived</td>
                                             <td>@ingest.IngestedNew</td>
                                             <td>@ingest.FailedToIngest</td>
@@ -493,7 +507,7 @@
         chart.update();
     }
 
-        function showChurn() {
+    function showChurn() {
         chart.data.datasets = churn;
         chart.update();
     }
