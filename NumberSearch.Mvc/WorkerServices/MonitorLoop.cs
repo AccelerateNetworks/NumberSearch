@@ -113,7 +113,7 @@ namespace NumberSearch.Mvc
 
                                                         var orderResponse = await executeOrder.PostAsync(_bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
 
-                                                        nto.Purchased = true;
+                                                        nto.Purchased = string.IsNullOrWhiteSpace(orderResponse?.Failed?.Description);
                                                         productOrder.DateOrdered = DateTime.Now;
                                                         // Keep the raw response as a receipt.
                                                         productOrder.OrderResponse = JsonSerializer.Serialize(orderResponse);
@@ -130,7 +130,7 @@ namespace NumberSearch.Mvc
                                                         // Buy it and save the receipt.
                                                         var executeOrder = await FirstPointComOrderPhoneNumber.PostAsync($"1{nto.DialedNumber}", _fpcusername, _fpcpassword).ConfigureAwait(false);
 
-                                                        nto.Purchased = true;
+                                                        nto.Purchased = executeOrder.code == 0;
                                                         productOrder.DateOrdered = DateTime.Now;
                                                         productOrder.OrderResponse = JsonSerializer.Serialize(executeOrder);
                                                         productOrder.Completed = executeOrder.code == 0;
