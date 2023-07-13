@@ -593,7 +593,7 @@ try
         {
             FirstPointResponse sendMessage = new();
             //Handle MMSes
-            if (message.MediaURLs.Any())
+            if (message.MediaURLs.Length > 0 && !string.IsNullOrWhiteSpace(message.MediaURLs.FirstOrDefault()))
             {
                 var multipartContent = new MultipartFormDataContent {
                         { new StringContent(firstPointUsername), "username" },
