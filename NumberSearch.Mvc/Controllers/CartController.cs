@@ -123,6 +123,14 @@ namespace NumberSearch.Mvc.Controllers
                     Cart = cart
                 });
             }
+            else if (handsets > 0 && basestations > 0 && basestations > handsets)
+            {
+                return View("Index", new CartResult
+                {
+                    Message = "❌ The hardware in your cart does not make sense. 5 cordless handsets can be paired to 1 base station, please order fewer base stations. Call us at 206-858-8757 for help!",
+                    Cart = cart
+                });
+            }
             else
             {
                 return View("Index", new CartResult
