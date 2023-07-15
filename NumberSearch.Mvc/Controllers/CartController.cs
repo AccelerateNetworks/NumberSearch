@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.ServiceModel.Channels;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -77,28 +78,50 @@ namespace NumberSearch.Mvc.Controllers
 
                         var checkSet = cart.SetToSession(HttpContext.Session);
                         cart = Cart.GetFromSession(HttpContext.Session);
+                    }
+                }
 
-                        return View("Index", new CartResult
-                        {
-                            Cart = cart
-                        });
-                    }
-                    else
-                    {
-                        return View("Index", new CartResult
-                        {
-                            Cart = cart
-                        });
-                    }
-                }
-                else
+            }
+
+            // Check cordless phone to base station ratio
+            var cordless = cart.Products.Where(x => x.Name.Contains("DP")).ToArray();
+            int handsets = 0;
+            int basestations = 0;
+            foreach (var item in cordless)
+            {
+                var productOrder = cart.ProductOrders.FirstOrDefault(x => x.ProductId == item.ProductId);
+                if (productOrder is not null)
                 {
-                    // Do nothing and return to the cart.
-                    return View("Index", new CartResult
+                    if (item.Name.Contains("DP750"))
                     {
-                        Cart = cart
-                    });
+                        basestations += productOrder.Quantity;
+                    }
+                    if (item.Name.Contains("DP752"))
+                    {
+                        basestations += productOrder.Quantity;
+                    }
+                    if (item.Name.Contains("DP720"))
+                    {
+                        handsets += productOrder.Quantity;
+                    }
+                    if (item.Name.Contains("DP722"))
+                    {
+                        handsets += productOrder.Quantity;
+                    }
+                    if (item.Name.Contains("DP730"))
+                    {
+                        handsets += productOrder.Quantity;
+                    }
                 }
+            }
+            // 5 to 1 ratio of handsets per base station cannot be exceeded.
+            if (handsets > 0 && basestations > 0 && handsets > (basestations * 5))
+            {
+                return View("Index", new CartResult
+                {
+                    Message = "❌ The hardware in your cart does not make sense. Only 5 cordless handsets can be paired to 1 base station, please add more base stations. Call us at 206-858-8757 for help!",
+                    Cart = cart
+                });
             }
             else
             {
@@ -107,6 +130,7 @@ namespace NumberSearch.Mvc.Controllers
                     Cart = cart
                 });
             }
+
         }
 
         [HttpGet]
