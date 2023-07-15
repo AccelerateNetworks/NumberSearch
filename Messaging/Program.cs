@@ -458,7 +458,7 @@ try
                     updated = true;
                 }
 
-                if(existingRegistration.RegisteredUpstream != registeredUpstream)
+                if (existingRegistration.RegisteredUpstream != registeredUpstream)
                 {
                     existingRegistration.RegisteredUpstream = registeredUpstream;
                     updated = true;
@@ -502,7 +502,7 @@ try
             });
         }
 
-        return TypedResults.Ok(new RegistrationResponse { DialedNumber = dialedNumber, CallbackUrl = registration.CallbackUrl, Registered = true, Message = message, RegisteredUpstream =registeredUpstream, UpstreamStatusDescription = upstreamStatusDescription });
+        return TypedResults.Ok(new RegistrationResponse { DialedNumber = dialedNumber, CallbackUrl = registration.CallbackUrl, Registered = true, Message = message, RegisteredUpstream = registeredUpstream, UpstreamStatusDescription = upstreamStatusDescription });
 
     })
         .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Register a client for message forwarding.", Description = "Boy I wish I had more to say about this, lmao." });
@@ -620,11 +620,19 @@ try
             }
             else
             {
-                sendMessage = test ?? false ? await "https://sms.callpipe.com/message/send/test"
-                .PostUrlEncodedAsync(toForward)
-                .ReceiveJson<FirstPointResponse>() : await firstPointSMSOutbound
-                .PostUrlEncodedAsync(toForward)
-                .ReceiveJson<FirstPointResponse>();
+                if (toForward.messagebody.Length > 160)
+                {
+                    Log.Error($"SMS Message body length exceeded. Length: {toForward.messagebody.Length}");
+                    return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. SMS Message body length exceeded. Length: {toForward.messagebody.Length}", MessageSent = false });
+                }
+                else
+                {
+                    sendMessage = test ?? false ? await "https://sms.callpipe.com/message/send/test"
+                    .PostUrlEncodedAsync(toForward)
+                    .ReceiveJson<FirstPointResponse>() : await firstPointSMSOutbound
+                    .PostUrlEncodedAsync(toForward)
+                    .ReceiveJson<FirstPointResponse>();
+                }
             }
 
             Log.Information(System.Text.Json.JsonSerializer.Serialize(sendMessage));
