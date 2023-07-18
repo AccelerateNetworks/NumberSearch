@@ -109,6 +109,12 @@ namespace NumberSearch.Tests
         //}
 
         //[Fact]
+        //public async Task OwnedNumers()
+        //{
+        //    await Owned.OwnedDailyAsync(ingestConfiguration);
+        //}
+
+        //[Fact]
         //public async Task TestFusionPBXDataUpdateAsync()
         //{
         //    await Owned.MatchOwnedNumbersToFusionPBXAsync(ingestConfiguration.Postgresql, ingestConfiguration.FusionPBXUsername, ingestConfiguration.FusionPBXPassword);

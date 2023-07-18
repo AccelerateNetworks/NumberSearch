@@ -48,7 +48,7 @@ namespace NumberSearch.Ingest
             await Owned.IngestAsync(appConfig);
 
             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
-            var lockEntry = await IngestStatistics.GetLockAsync("FirstPointCom", appConfig.Postgresql).ConfigureAwait(false);
+            var lockEntry = await IngestStatistics.GetLockAsync("OwnedNumbers", appConfig.Postgresql).ConfigureAwait(false);
             var checkRemoveLock = await lockEntry.DeleteAsync(appConfig.Postgresql).ConfigureAwait(false);
         }
 
