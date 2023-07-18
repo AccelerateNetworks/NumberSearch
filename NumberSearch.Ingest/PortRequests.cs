@@ -4,6 +4,7 @@ using NumberSearch.DataAccess.BulkVS;
 using Serilog;
 
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,7 +20,7 @@ namespace NumberSearch.Ingest
 
             var bulkVSPortRequests = await PortTn.GetAllAsync(configuration.BulkVSUsername, configuration.BulkVSPassword).ConfigureAwait(false);
 
-            foreach (var request in bulkVSPortRequests.ToArray())
+            foreach (var request in bulkVSPortRequests.Where(x => x.OrderId == "1626870").ToArray())
             {
                 var portedNumbers = await PortedPhoneNumber.GetByExternalIdAsync(request.OrderId, configuration.Postgresql).ConfigureAwait(false);
 
@@ -228,6 +229,64 @@ Accelerate Networks
                 }
 
                 Log.Information("[BulkVS] Completed the port request update process.");
+            }
+        }
+
+        public async static Task UpdatePortRequestsAndNumbersByExternalIdAsync(IngestConfiguration configuration)
+        {
+            Log.Information("[BulkVS] [PortRequests] Ingesting Port Request statuses using the external OrderId.");
+
+            var portRequests = await PortRequest.GetAllAsync(configuration.Postgresql);
+            var notCompleted = portRequests.Where(x => x.VendorSubmittedTo is "BulkVS" && x.RequestStatus is not "COMPLETE" && !string.IsNullOrWhiteSpace(x.BulkVSId)).ToArray();
+            foreach (var request in notCompleted)
+            {
+                string[] OrderIds = request.BulkVSId.Replace(" ","").Split(",");
+                foreach (var orderId in OrderIds)
+                {
+                    PortTn bulkVSPortRequest = await PortTn.GetAsync(orderId, configuration.BulkVSUsername, configuration.BulkVSPassword);
+                    var firstNumber = bulkVSPortRequest.TNList.FirstOrDefault();
+                    if (bulkVSPortRequest.OrderDetails.OrderId == orderId && firstNumber is not null && !string.IsNullOrWhiteSpace(firstNumber.LNPStatus))
+                    {
+                        request.RequestStatus = firstNumber.LNPStatus;
+
+                        var related = await PortedPhoneNumber.GetByPortRequestIdAsync(request.PortRequestId, configuration.Postgresql);
+                        foreach (var port in related)
+                        {
+                            var match = bulkVSPortRequest.TNList.FirstOrDefault(x => x.TN.Contains(port.PortedDialedNumber));
+                            if (match is not null && !string.IsNullOrWhiteSpace(match.LNPStatus) && port.RequestStatus != match.LNPStatus)
+                            {
+                                port.RequestStatus = match.LNPStatus;
+                                port.ExternalPortRequestId = bulkVSPortRequest.OrderDetails.OrderId;
+                                var checkRDDParse = DateTime.TryParse(match.RDD, out var FOCDate);
+                                if (checkRDDParse)
+                                {
+                                    port.DateFirmOrderCommitment = FOCDate;
+                                }
+                                var checkUpdate = await port.PutAsync(configuration.Postgresql);
+                            }
+                        }
+                    }
+                }
+                var checkUpdated = await request.PutAsync(configuration.Postgresql);
+            }
+
+            var portedNumbers = await PortedPhoneNumber.GetAllAsync(configuration.Postgresql);
+            var inComplete = portedNumbers.Where(x => x.RequestStatus is not "COMPLETE" && !string.IsNullOrWhiteSpace(x.ExternalPortRequestId)).ToArray();
+            foreach (var number in inComplete)
+            {
+                PortTn bulkVSPortRequest = await PortTn.GetAsync(number.ExternalPortRequestId, configuration.BulkVSUsername, configuration.BulkVSPassword);
+                var match = bulkVSPortRequest.TNList.FirstOrDefault(x => x.TN.Contains(number.PortedDialedNumber));
+                if (bulkVSPortRequest.OrderDetails.OrderId == number.ExternalPortRequestId && match is not null && !string.IsNullOrWhiteSpace(match.LNPStatus) && number.RequestStatus != match.LNPStatus)
+                {
+                    number.RequestStatus = match.LNPStatus;
+                    number.ExternalPortRequestId = bulkVSPortRequest.OrderDetails.OrderId;
+                    var checkRDDParse = DateTime.TryParse(match.RDD, out var FOCDate);
+                    if (checkRDDParse)
+                    {
+                        number.DateFirmOrderCommitment = FOCDate;
+                    }
+                    var checkUpdate = await number.PutAsync(configuration.Postgresql);
+                }
             }
         }
     }

@@ -87,7 +87,13 @@ namespace NumberSearch.Tests
         //[Fact]
         //public async Task TestBulkVSPortStatusUpdates()
         //{
-        //    await PortRequests.UpdateStatusesBulkVSAsync(configuration);
+        //    await PortRequests.UpdatePortRequestByExternalIdAsync(ingestConfiguration);
+        //}
+
+        //[Fact]
+        //public async Task TestOwnedNumbersIngestAsync()
+        //{
+        //    await Owned.IngestAsync(ingestConfiguration);
         //}
 
         //[Fact]

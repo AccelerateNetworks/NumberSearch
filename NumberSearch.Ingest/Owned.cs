@@ -2,8 +2,6 @@
 
 using Flurl.Http;
 
-using Microsoft.Extensions.Logging.Abstractions;
-
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.FusionPBX;
@@ -147,6 +145,9 @@ namespace NumberSearch.Ingest
 
             // Verify SMS routing with Endstream.
             await VerifySMSRoutingAsync(configuration.Postgresql, configuration.PComNetUsername, configuration.PComNetPassword);
+
+            // Update the statuses on old or orphaned port requests and ported numbers.
+            await PortRequests.UpdatePortRequestsAndNumbersByExternalIdAsync(configuration);
 
             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
             var lockEntry = await IngestStatistics.GetLockAsync("OwnedNumbers", configuration.Postgresql).ConfigureAwait(false);
