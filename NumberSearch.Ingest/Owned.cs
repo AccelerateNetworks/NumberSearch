@@ -57,20 +57,20 @@ namespace NumberSearch.Ingest
             var start = DateTime.Now;
 
             // Ingest all owned numbers from the providers.
-            //try
-            //{
-            //    var firstComNumbers = await FirstPointComAsync(configuration.PComNetUsername, configuration.PComNetPassword).ConfigureAwait(false);
-            //    if (firstComNumbers != null)
-            //    {
-            //        allNumbers.AddRange(firstComNumbers);
-            //    };
-            //}
-            //catch (Exception ex)
-            //{
-            //    Log.Fatal("[OwnedNumbers] Failed to retrieve owned numbers for FirstPointCom.");
-            //    Log.Fatal(ex.Message);
-            //    Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
-            //}
+            try
+            {
+                var firstComNumbers = await FirstPointComAsync(configuration.PComNetUsername, configuration.PComNetPassword).ConfigureAwait(false);
+                if (firstComNumbers != null)
+                {
+                    allNumbers.AddRange(firstComNumbers);
+                };
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal("[OwnedNumbers] Failed to retrieve owned numbers for FirstPointCom.");
+                Log.Fatal(ex.Message);
+                Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
+            }
 
             try
             {
