@@ -57,20 +57,20 @@ namespace NumberSearch.Ingest
             var start = DateTime.Now;
 
             // Ingest all owned numbers from the providers.
-            try
-            {
-                var firstComNumbers = await FirstPointComAsync(configuration.PComNetUsername, configuration.PComNetPassword).ConfigureAwait(false);
-                if (firstComNumbers != null)
-                {
-                    allNumbers.AddRange(firstComNumbers);
-                };
-            }
-            catch (Exception ex)
-            {
-                Log.Fatal("[OwnedNumbers] Failed to retrieve owned numbers for FirstPointCom.");
-                Log.Fatal(ex.Message);
-                Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
-            }
+            //try
+            //{
+            //    var firstComNumbers = await FirstPointComAsync(configuration.PComNetUsername, configuration.PComNetPassword).ConfigureAwait(false);
+            //    if (firstComNumbers != null)
+            //    {
+            //        allNumbers.AddRange(firstComNumbers);
+            //    };
+            //}
+            //catch (Exception ex)
+            //{
+            //    Log.Fatal("[OwnedNumbers] Failed to retrieve owned numbers for FirstPointCom.");
+            //    Log.Fatal(ex.Message);
+            //    Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
+            //}
 
             try
             {
@@ -92,7 +92,7 @@ namespace NumberSearch.Ingest
             if (allNumbers.Count > 0)
             {
                 Log.Information($"[OwnedNumbers] Submitting {allNumbers.Count} numbers to the database.");
-                ownedNumberStats = await SubmitOwnedNumbersAsync(allNumbers.DistinctBy(x => x.DialedNumber), configuration.Postgresql).ConfigureAwait(false);
+                ownedNumberStats = await SubmitOwnedNumbersAsync(allNumbers.DistinctBy(x => x.DialedNumber), configuration.Postgresql, configuration.BulkVSUsername, configuration.BulkVSPassword).ConfigureAwait(false);
             }
             else
             {
@@ -332,7 +332,7 @@ namespace NumberSearch.Ingest
             return numbers.Any() ? numbers.ToArray() : new List<OwnedPhoneNumber>();
         }
 
-        public static async Task<IngestStatistics> SubmitOwnedNumbersAsync(IEnumerable<OwnedPhoneNumber> newlyIngested, string connectionString)
+        public static async Task<IngestStatistics> SubmitOwnedNumbersAsync(IEnumerable<OwnedPhoneNumber> newlyIngested, string connectionString, string bulkVSUsername, string bulkVSPassword)
         {
             var start = DateTime.Now;
             var ingestedNew = 0;
@@ -354,8 +354,16 @@ namespace NumberSearch.Ingest
                         var matchingPort = portedPhoneNumbers.Where(x => x.PortedDialedNumber == item.DialedNumber).FirstOrDefault();
                         if (matchingPort is not null && !string.IsNullOrWhiteSpace(matchingPort.RequestStatus) && matchingPort.RequestStatus is not "COMPLETE")
                         {
-                            // If it is a ported number and the port has not complete mark it as ported in.
-                            item.Status = "Porting In";
+                            var externalStatus = await TnRecord.GetByDialedNumberAsync(item.DialedNumber, bulkVSUsername, bulkVSPassword);
+                            if (externalStatus?.Status is not "Active")
+                            {
+                                // If it is a ported number and the port has not complete mark it as ported in.
+                                item.Status = "Porting In";
+                            }
+                            else
+                            {
+                                item.Status = "Active";
+                            }
                         }
                         else
                         {
@@ -381,8 +389,16 @@ namespace NumberSearch.Ingest
                         var matchingPort = portedPhoneNumbers.Where(x => x.PortedDialedNumber == item.DialedNumber).FirstOrDefault();
                         if (matchingPort is not null && !string.IsNullOrWhiteSpace(matchingPort.RequestStatus) && matchingPort.RequestStatus is not "COMPLETE")
                         {
-                            // If it is a ported number and the port has not complete mark it as ported in.
-                            number.Status = "Porting In";
+                            var externalStatus = await TnRecord.GetByDialedNumberAsync(item.DialedNumber, bulkVSUsername, bulkVSPassword);
+                            if (externalStatus?.Status is not "Active")
+                            {
+                                // If it is a ported number and the port has not complete mark it as ported in.
+                                number.Status = "Porting In";
+                            }
+                            else
+                            {
+                                number.Status = "Active";
+                            }
                         }
                         else
                         {

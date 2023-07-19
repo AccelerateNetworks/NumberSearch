@@ -75,6 +75,25 @@ namespace NumberSearch.DataAccess.BulkVS
             }
         }
 
+        public static async Task<TnRecord> GetByDialedNumberAsync(string dialedNumber, string username, string password)
+        {
+            string baseUrl = "https://portal.bulkvs.com/api/v1.0/";
+            string endpoint = "tnRecord";
+            string numberParameter = $"?Number=1{dialedNumber}";
+            string route = $"{baseUrl}{endpoint}{numberParameter}";
+            try
+            {
+                var results = await route.WithBasicAuth(username, password).GetJsonAsync<TnRecord[]>().ConfigureAwait(false);
+                return results.FirstOrDefault() ?? new();
+            }
+            catch (FlurlHttpException ex)
+            {
+                Log.Warning($"[Ingest] [OwnedNumbers] [BulkVS] No results found.");
+                Log.Warning(await ex.GetResponseStringAsync());
+                return new();
+            }
+        }
+
         public static async Task<PhoneNumber[]> GetAsync(string username, string password)
         {
             var results = await GetRawAsync(username, password).ConfigureAwait(false);

@@ -90,11 +90,11 @@ namespace NumberSearch.Tests
         //    await PortRequests.UpdatePortRequestByExternalIdAsync(ingestConfiguration);
         //}
 
-        //[Fact]
-        //public async Task TestOwnedNumbersIngestAsync()
-        //{
-        //    await Owned.IngestAsync(ingestConfiguration);
-        //}
+        [Fact]
+        public async Task TestOwnedNumbersIngestAsync()
+        {
+            await Owned.IngestAsync(ingestConfiguration);
+        }
 
         //[Fact]
         //public async Task TestTeliPortStatusUpdates()
