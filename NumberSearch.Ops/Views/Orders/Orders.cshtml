@@ -129,9 +129,15 @@
                                         </a>
                                     }
                                     @if (!string.IsNullOrWhiteSpace(order?.Order?.ReoccuringInvoiceLink))
-                                    {
+                                    { 
                                         <a href="@order?.Order?.ReoccuringInvoiceLink" class="btn btn-outline-primary" target="_blank" rel="noopener noreferrer">
                                             View Recurring Quote
+                                        </a>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(order?.Order?.BillingClientId))
+                                    {
+                                        <a href="https://billing.acceleratenetworks.com/clients/@order?.Order?.BillingClientId" class="btn btn-outline-info" target="_blank" rel="noopener noreferrer">
+                                            View Billing Client
                                         </a>
                                     }
                                 </div>

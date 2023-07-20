@@ -151,6 +151,16 @@
     <div class="row mb-3">
         <div class="col">
             <div class="d-grid gap-2">
+                @if (!string.IsNullOrWhiteSpace(Model?.Order?.BillingClientId))
+                {
+                    <a href="https://billing.acceleratenetworks.com/clients/@Model?.Order?.BillingClientId" class="btn btn-outline-info" target="_blank" rel="noopener noreferrer">
+                        View Billing Client
+                    </a>
+                }
+            </div>
+        </div>
+        <div class="col">
+            <div class="d-grid gap-2">
                 @if (!string.IsNullOrWhiteSpace(Model?.Order?.BillingInvoiceId))
                 {
                     <a href="@Model?.Order?.UpfrontInvoiceLink" class="btn btn-outline-primary" target="_blank" rel="noopener noreferrer">
@@ -168,16 +178,6 @@
                     </a>
                 }
             </div>
-        </div>
-        <div class="col">
-            @*           <div class="d-grid gap-2">
-            @if (!string.IsNullOrWhiteSpace(Model?.Order?.BillingClientId))
-            {
-            <a href="https://billing.acceleratenetworks.com/client/@Model?.Order?.BillingClientId" class="btn btn-outline-info" target="_blank" rel="noopener noreferrer">
-            View Billing System Client
-            </a>
-            }
-            </div>*@
         </div>
     </div>
     <h4 class="mb-3">Billing Information</h4>
