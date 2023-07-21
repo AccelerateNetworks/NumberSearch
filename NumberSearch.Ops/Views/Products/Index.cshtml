@@ -17,6 +17,7 @@
                 <th scope="col">
                     Price
                 </th>
+                <th>Hours for Install</th>
                 <th scope="col">
                     Description
                 </th>
@@ -27,7 +28,7 @@
                     Public
                 </th>
                 <th>
-                    Quantity Avalible
+                    Quantity Available
                 </th>
                 <th scope="col">
                     Actions
@@ -44,6 +45,9 @@
                         </td>
                         <td>
                             @product?.Price
+                        </td>
+                        <td>
+                            @product?.InstallTime
                         </td>
                         <td>
                             @product?.Description

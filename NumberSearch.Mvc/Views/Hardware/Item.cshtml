@@ -95,7 +95,7 @@
                 </div>
             }
         </div>
-        @if (!string.IsNullOrWhiteSpace(Model?.Product?.VendorDescription))
+        @if (!string.IsNullOrWhiteSpace(Model?.Product?.VendorDescription) && string.IsNullOrWhiteSpace(Model?.Product?.MarkdownContent))
         {
             <div class="row">
                 <div class="col-12">
@@ -105,6 +105,21 @@
                         </div>
                         <div class="card-body">
                             <p>@Model?.Product?.VendorDescription</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (!string.IsNullOrWhiteSpace(Model?.Product?.MarkdownContent))
+        {
+            <div class="row">
+                <div class="col-12">
+                    <div class="card mb-4 shadow">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal text-center" id="initialsetup">Description</h4>
+                        </div>
+                        <div class="card-body">
+                            @Html.Raw(@Markdig.Markdown.ToHtml(Model.Product.MarkdownContent))
                         </div>
                     </div>
                 </div>

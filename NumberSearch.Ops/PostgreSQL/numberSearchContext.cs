@@ -693,6 +693,10 @@ public partial class numberSearchContext : DbContext
             entity.Property(e => e.VendorDescription).HasColumnType("character varying");
 
             entity.Property(e => e.VendorFeatures).HasColumnType("character varying");
+
+            entity.Property(e => e.MarkdownContent).HasColumnType("character varying");
+
+            entity.Property(e => e.InstallTime).HasColumnType("numeric");
         });
 
         modelBuilder.Entity<ProductOrder>(entity =>

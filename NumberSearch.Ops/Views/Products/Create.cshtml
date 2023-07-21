@@ -21,6 +21,11 @@
                 <span asp-validation-for="Price" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
+                <input asp-for="InstallTime" type="number" class="form-control" min="0" />
+                <label asp-for="InstallTime" class="control-label">Required Install Time in Hours</label>
+                <span asp-validation-for="InstallTime" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
                 <textarea asp-for="Description" class="form-control" style="height: 10vh"></textarea>
                 <label asp-for="Description" class="form-label"></label>
                 <span asp-validation-for="Description" class="text-danger"></span>
@@ -78,6 +83,11 @@
                 <textarea asp-for="VendorFeatures" class="form-control" style="height: 10vh"></textarea>
                 <label asp-for="VendorFeatures" class="form-label"></label>
                 <span asp-validation-for="VendorFeatures" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <textarea asp-for="MarkdownContent" class="form-control" style="height: 10vh"></textarea>
+                <label asp-for="MarkdownContent" class="control-label">Markdown entered here will replace text in the VendorFeatures</label>
+                <span asp-validation-for="MarkdownContent" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary mt-3 mb-3" />

@@ -18,5 +18,7 @@ namespace AccelerateNetworks.Operations
         public string? Tags { get; set; }
         public string? VendorDescription { get; set; }
         public string? VendorFeatures { get; set; }
+        public string? MarkdownContent { get; set; }
+        public decimal InstallTime { get; set; }
     }
 }

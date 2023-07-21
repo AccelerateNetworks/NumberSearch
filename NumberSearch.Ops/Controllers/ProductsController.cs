@@ -98,7 +98,7 @@ public class ProductsController : Controller
     [Authorize]
     [ValidateAntiForgeryToken]
     [HttpPost("/Products/Edit/{id}")]
-    public async Task<IActionResult> Edit(Guid id, [Bind("ProductId,Name,Price,Description,Image,Public,QuantityAvailable,SupportLink,DisplayPriority,VendorPartNumber,Type,Tags,VendorDescription,VendorFeatures")] Product product)
+    public async Task<IActionResult> Edit(Guid id, [Bind("ProductId,Name,Price,InstallTime,Description,Image,Public,QuantityAvailable,SupportLink,DisplayPriority,VendorPartNumber,Type,Tags,VendorDescription,VendorFeatures,MarkdownContent")] Product product)
     {
         if (id != product.ProductId)
         {
