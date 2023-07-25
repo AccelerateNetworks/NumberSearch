@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.InvoiceNinja;
@@ -273,14 +274,14 @@ public class OrdersController : Controller
     [Route("/Home/Order/{orderId}")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> OrderUpdate(Order order)
+    public async Task<IActionResult> OrderUpdate([Bind("OrderId,FirstName,LastName,Email,Address,Address2,City,State,Zip,DateSubmitted,BusinessName,CustomerNotes,BillingClientId,BillingInvoiceId,Quote,BillingInvoiceReoccuringId,SalesEmail,BackgroundWorkCompleted,Completed,InstallDate,UpfrontInvoiceLink,ReoccuringInvoiceLink,OnsiteInstallation,AddressUnitType,AddressUnitNumber,UnparsedAddress,MergedOrderId,E911ServiceNumber,DateConvertedFromQuote,DateCompleted")] Order order)
     {
         if (order is null)
         {
             return Redirect("/Home/Order");
         }
 
-        var existingOrder = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
+        var existingOrder = await _context.Orders.AsNoTracking().FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
 
         try
         {
@@ -309,7 +310,7 @@ public class OrdersController : Controller
             if (order is not null && existingOrder is not null)
             {
                 order.DateSubmitted = existingOrder.DateSubmitted;
-                if (order.Quote is true && existingOrder.Quote is false)
+                if (order.Quote is false && existingOrder.Quote is true)
                 {
                     order.DateConvertedFromQuote = DateTime.Now;
                 }
@@ -317,61 +318,54 @@ public class OrdersController : Controller
                 {
                     order.DateCompleted = DateTime.Now;
                 }
-                _context.Entry(existingOrder).CurrentValues.SetValues(order);
+
+                // Get fresh invoice links
+                if (!string.IsNullOrWhiteSpace(order.BillingClientId) && !string.IsNullOrWhiteSpace(order.BillingInvoiceReoccuringId))
+                {
+                    var recurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(order.BillingClientId, _invoiceNinjaToken).ConfigureAwait(false);
+                    var reoccurringLink = recurringInvoiceLinks.Where(x => x.id == order.BillingInvoiceReoccuringId).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+
+                    if (!string.IsNullOrWhiteSpace(reoccurringLink))
+                    {
+                        order.ReoccuringInvoiceLink = reoccurringLink;
+                    }
+                    else
+                    {
+                        var quoteLinks = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
+                        reoccurringLink = quoteLinks?.invitations.FirstOrDefault()?.link;
+                        if (!string.IsNullOrWhiteSpace(reoccurringLink))
+                        {
+                            order.ReoccuringInvoiceLink = reoccurringLink;
+                        }
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(order.BillingClientId) && !string.IsNullOrWhiteSpace(order.BillingInvoiceId))
+                {
+                    var oneTimeInvoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(order.BillingClientId, _invoiceNinjaToken, false).ConfigureAwait(false);
+                    var oneTimeLink = oneTimeInvoiceLinks.Where(x => x.id == order.BillingInvoiceId).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+
+                    if (!string.IsNullOrWhiteSpace(oneTimeLink))
+                    {
+                        order.UpfrontInvoiceLink = oneTimeLink;
+                    }
+                    else
+                    {
+                        var quoteLinks = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
+                        oneTimeLink = quoteLinks?.invitations.FirstOrDefault()?.link;
+                        if (!string.IsNullOrWhiteSpace(oneTimeLink))
+                        {
+                            order.UpfrontInvoiceLink = oneTimeLink;
+                        }
+                    }
+                }
+
+                // Update the existing order
+                _context.Update(order);
                 await _context.SaveChangesAsync();
 
-                var productOrders = await _context.ProductOrders.AsNoTracking().Where(x => x.OrderId == order.OrderId).ToListAsync();
-                var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.AsNoTracking().Where(x => x.OrderId == order.OrderId).ToListAsync();
-                var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.AsNoTracking().Where(x => x.OrderId == order.OrderId).ToListAsync();
-                var portedPhoneNumbers = await _context.PortedPhoneNumbers.AsNoTracking().Where(x => x.OrderId == order.OrderId).ToListAsync();
+                var cart = await GetOrderEditCartAsync(order);
                 var productItems = await _context.ProductItems.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToArrayAsync();
-
-                var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
-                var products = new List<Product>();
-                foreach (var productId in productsToGet)
-                {
-                    var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == productId);
-                    if (product is not null)
-                    {
-                        products.Add(product);
-                    }
-                }
-
-                var servicesToGet = productOrders.Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
-                var services = new List<Service>();
-                foreach (var serviceId in servicesToGet)
-                {
-                    var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == serviceId);
-                    if (service is not null)
-                    {
-                        services.Add(service);
-                    }
-                }
-
-                var couponsToGet = productOrders.Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
-                var coupons = new List<Coupon>();
-                foreach (var couponId in couponsToGet)
-                {
-                    var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == couponId);
-                    if (coupon is not null)
-                    {
-                        coupons.Add(coupon);
-                    }
-                }
-
-                var cart = new Cart
-                {
-                    Order = order,
-                    PhoneNumbers = new List<PhoneNumber>(),
-                    ProductOrders = productOrders,
-                    Products = products,
-                    Services = services,
-                    Coupons = coupons,
-                    PortedPhoneNumbers = portedPhoneNumbers,
-                    VerifiedPhoneNumbers = verifiedPhoneNumbers,
-                    PurchasedPhoneNumbers = purchasedPhoneNumbers
-                };
-
                 return View("OrderEdit", new EditOrderResult { Order = order, ProductItems = productItems, Cart = cart, Message = "Order updated successfully! 😘", AlertType = "alert-success" });
             }
             else
@@ -381,60 +375,64 @@ public class OrdersController : Controller
         }
         catch (Exception ex)
         {
-            var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).ToListAsync();
-            var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-            var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
-            var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToListAsync();
+            var cart = await GetOrderEditCartAsync(order);
             var productItems = await _context.ProductItems.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToArrayAsync();
-
-            var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
-            var products = new List<Product>();
-            foreach (var productId in productsToGet)
-            {
-                var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == productId);
-                if (product is not null)
-                {
-                    products.Add(product);
-                }
-            }
-
-            var servicesToGet = productOrders.Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
-            var services = new List<Service>();
-            foreach (var serviceId in servicesToGet)
-            {
-                var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == serviceId);
-                if (service is not null)
-                {
-                    services.Add(service);
-                }
-            }
-
-            var couponsToGet = productOrders.Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
-            var coupons = new List<Coupon>();
-            foreach (var couponId in couponsToGet)
-            {
-                var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == couponId);
-                if (coupon is not null)
-                {
-                    coupons.Add(coupon);
-                }
-            }
-
-            var cart = new Cart
-            {
-                Order = order,
-                PhoneNumbers = new List<PhoneNumber>(),
-                ProductOrders = productOrders,
-                Products = products,
-                Services = services,
-                Coupons = coupons,
-                PortedPhoneNumbers = portedPhoneNumbers,
-                VerifiedPhoneNumbers = verifiedPhoneNumbers,
-                PurchasedPhoneNumbers = purchasedPhoneNumbers
-            };
-
             return View("OrderEdit", new EditOrderResult { Order = order, ProductItems = productItems, Cart = cart, Message = $"Failed to update this order! 😠\r\n{ex.Message}\r\n{ex.StackTrace}", AlertType = "alert-danger" });
         }
+    }
+
+    private async Task<Cart> GetOrderEditCartAsync(Order order)
+    {
+        var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+        var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+        var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+        var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+
+        var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
+        var products = new List<Product>();
+        foreach (var productId in productsToGet)
+        {
+            var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == productId);
+            if (product is not null)
+            {
+                products.Add(product);
+            }
+        }
+
+        var servicesToGet = productOrders.Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
+        var services = new List<Service>();
+        foreach (var serviceId in servicesToGet)
+        {
+            var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == serviceId);
+            if (service is not null)
+            {
+                services.Add(service);
+            }
+        }
+
+        var couponsToGet = productOrders.Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
+        var coupons = new List<Coupon>();
+        foreach (var couponId in couponsToGet)
+        {
+            var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == couponId);
+            if (coupon is not null)
+            {
+                coupons.Add(coupon);
+            }
+        }
+
+        return new Cart
+        {
+            Order = order,
+            PhoneNumbers = new List<PhoneNumber>(),
+            ProductOrders = productOrders,
+            Products = products,
+            Services = services,
+            Coupons = coupons,
+            PortedPhoneNumbers = portedPhoneNumbers,
+            VerifiedPhoneNumbers = verifiedPhoneNumbers,
+            PurchasedPhoneNumbers = purchasedPhoneNumbers
+        };
     }
 
     [Authorize]

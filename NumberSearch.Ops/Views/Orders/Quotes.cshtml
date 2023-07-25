@@ -57,13 +57,13 @@
                                 <div class="btn-group mt-2" role="group" aria-label="Basic example">
                                     @if (!string.IsNullOrWhiteSpace(order?.Order?.UpfrontInvoiceLink))
                                     {
-                                        <a href="order?.Order?.UpfrontInvoiceLink" class="btn btn-outline-success" target="_blank" rel="noopener noreferrer">
+                                        <a href="@order?.Order?.UpfrontInvoiceLink" class="btn btn-outline-success" target="_blank" rel="noopener noreferrer">
                                             View Upfront Quote
                                         </a>
                                     }
                                     @if (!string.IsNullOrWhiteSpace(order?.Order?.ReoccuringInvoiceLink))
                                     {
-                                        <a href="order?.Order?.ReoccuringInvoiceLink" class="btn btn-outline-primary" target="_blank" rel="noopener noreferrer">
+                                        <a href="@order?.Order?.ReoccuringInvoiceLink" class="btn btn-outline-primary" target="_blank" rel="noopener noreferrer">
                                             View Recurring Quote
                                         </a>
                                     }
