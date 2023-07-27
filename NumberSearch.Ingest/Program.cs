@@ -52,7 +52,7 @@ namespace NumberSearch.Ingest
             Stopwatch priorityTimer = new();
             Stopwatch dailyTimer = new();
             TimeSpan dailyCycle = TimeSpan.FromDays(1);
-            TimeSpan priortyCycle = TimeSpan.FromMinutes(20);
+            TimeSpan priorityCycle = TimeSpan.FromMinutes(30);
 
             try
             {
@@ -72,7 +72,7 @@ namespace NumberSearch.Ingest
                     var start = DateTime.Now;
 
                     // Priority Ingest
-                    if (priorityTimer.Elapsed >= priortyCycle)
+                    if (priorityTimer.Elapsed >= priorityCycle)
                     {
                         priorityTimer.Restart();
 
@@ -81,6 +81,7 @@ namespace NumberSearch.Ingest
                         // Verify that all the Executive numbers are still purchasable for the priority area codes.
                         await Provider.VerifyAddToCartAsync(AreaCode.Priority, "Executive", appConfig.Postgresql, appConfig.BulkVSUsername, appConfig.BulkVSPassword,
                             appConfig.PComNetUsername, appConfig.PComNetPassword);
+                        await Owned.MatchOwnedNumbersToFusionPBXAsync(appConfig.Postgresql, appConfig.FusionPBXUsername, appConfig.FusionPBXPassword);
                     }
 
                     // Daily Ingest
