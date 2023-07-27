@@ -220,6 +220,10 @@
             </tbody>
         </table>
     </div>
+    // show the form for registering the number
+    <div class="alert alert-danger col-12" role="alert">
+        🚨 Existing E911 Registration found for this number. Using the Registration form below will replace the Existing E911 Registration.
+    </div>
 }
 else
 {
@@ -227,26 +231,27 @@ else
     <div class="alert alert-warning col-12" role="alert">
         🚨 No E911 Registration found for this number.
     </div>
-    <h4 class="mb-3">E911 Address Registration</h4>
-    <form action="/Home/OwnedNumbers/@Model?.Owned.DialedNumber/RegisterE911" method="post">
-        @Html.AntiForgeryToken()
-        <div class="mb-3" id="searchForm">
-            <label for="address">Service Address for this Number</label>
-            <input asp-for="UnparsedAddress" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" data-toggle="dropdown" required>
-            <ul class="list-group" role="menu" aria-labelledby="menu1" id="addressOptions">
-            </ul>
-            <small class="text-muted">
-                @*If it doesn't have a placeholder value give it a example*@
-                Enter the service address for this number, or the address of the physical phone (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
-            </small>
-        </div>
-        <div class="row">
-            <div class="col">
-                <div class="form-floating mb-3">
-                    <select asp-for="AddressUnitType" class="form-select d-block w-100" id="unitType">
-                        <option></option>
-                        @{
-                            var unitTypes = new string[] {
+}
+<h4 class="mb-3">E911 Address Registration</h4>
+<form action="/Home/OwnedNumbers/@Model?.Owned.DialedNumber/RegisterE911" method="post">
+    @Html.AntiForgeryToken()
+    <div class="mb-3" id="searchForm">
+        <label for="address">Service Address for this Number</label>
+        <input asp-for="UnparsedAddress" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" data-toggle="dropdown" required>
+        <ul class="list-group" role="menu" aria-labelledby="menu1" id="addressOptions">
+        </ul>
+        <small class="text-muted">
+            @*If it doesn't have a placeholder value give it a example*@
+            Enter the service address for this number, or the address of the physical phone (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
+        </small>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="form-floating mb-3">
+                <select asp-for="AddressUnitType" class="form-select d-block w-100" id="unitType">
+                    <option></option>
+                    @{
+                        var unitTypes = new string[] {
                     "Apartment",
                     "Basement",
                     "Building",
@@ -270,59 +275,59 @@ else
                     "Upper",
                                 };
 
-                            foreach (var unitType in unitTypes)
-                            {
-                                <option>@unitType</option>
-                            }
+                        foreach (var unitType in unitTypes)
+                        {
+                            <option>@unitType</option>
                         }
-                    </select>
-                    <label for="unitType">Unit Type <span class="text-muted">(Optional)</span></label>
-                    <small class="text-muted">
-                        Optionally enter a unit type (ex. Apartment)
-                    </small>
-                </div>
-            </div>
-            <div class="col">
-                <div class="form-floating mb-3">
-                    <input asp-for="AddressUnitNumber" type="text" class="form-control" id="address2" placeholder="307">
-                    <label for="address2">Unit Number <span class="text-muted">(Optional)</span></label>
-                    <small class="text-muted">
-                        Optionally enter a unit number (ex. 307)
-                    </small>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <p>This is used for the Caller Name presented to 911 operators, using the Business Name is recommended.</p>
-            <div class="col-md-6 mb-3">
-                <label for="firstName">First name</label>
-                <input asp-for="FirstName" type="text" class="form-control" id="firstName" placeholder="Alexander" required>
+                    }
+                </select>
+                <label for="unitType">Unit Type <span class="text-muted">(Optional)</span></label>
                 <small class="text-muted">
-                    Enter your first name
-                </small>
-            </div>
-            <div class="col-md-6 mb-3">
-                <label for="lastName">Last name</label>
-                <input asp-for="LastName" type="text" class="form-control" id="lastName" placeholder="Bell" required>
-                <small class="text-muted">
-                    Enter your last name
+                    Optionally enter a unit type (ex. Apartment)
                 </small>
             </div>
         </div>
-
-        <div class="mb-3">
-            <label for="email">Business Name <span class="text-muted">(Optional)</span></label>
-            <input asp-for="BusinessName" type="text" class="form-control" id="businessName" placeholder="ACME Corporation">
+        <div class="col">
+            <div class="form-floating mb-3">
+                <input asp-for="AddressUnitNumber" type="text" class="form-control" id="address2" placeholder="307">
+                <label for="address2">Unit Number <span class="text-muted">(Optional)</span></label>
+                <small class="text-muted">
+                    Optionally enter a unit number (ex. 307)
+                </small>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <p>This is used for the Caller Name presented to 911 operators, using the Business Name is recommended.</p>
+        <div class="col-md-6 mb-3">
+            <label for="firstName">First name</label>
+            <input asp-for="FirstName" type="text" class="form-control" id="firstName" placeholder="Alexander" required>
             <small class="text-muted">
-                Enter the name of your business or the organization that you represent
+                Enter your first name
             </small>
         </div>
+        <div class="col-md-6 mb-3">
+            <label for="lastName">Last name</label>
+            <input asp-for="LastName" type="text" class="form-control" id="lastName" placeholder="Bell" required>
+            <small class="text-muted">
+                Enter your last name
+            </small>
+        </div>
+    </div>
 
-        <button type="submit" class="btn btn-warning text-light">Register</button>
-        <br />
-    </form>
+    <div class="mb-3">
+        <label for="email">Business Name <span class="text-muted">(Optional)</span></label>
+        <input asp-for="BusinessName" type="text" class="form-control" id="businessName" placeholder="ACME Corporation">
+        <small class="text-muted">
+            Enter the name of your business or the organization that you represent
+        </small>
+    </div>
+
+    <button type="submit" class="btn btn-warning text-light">Register</button>
     <br />
-}
+</form>
+<br />
+
 
 @if (Model?.PortedPhoneNumbers.Any() ?? false)
 {
