@@ -9,19 +9,19 @@
             count += item.Quantity * 1;
         }
 
-        <div id="cartButton" class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6 p-2">
+        <div id="cartButton" class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6">
             <a id="headerCart" class="btn btn-lg btn-outline-success" asp-controller="Cart" asp-action="Index">🛒&nbsp;<span id="cartCounter" class="badge badge-success badge-pill">@count</span></a>
         </div>
-        <div id="contactButton" class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6 text-center p-2 d-none">
+        <div id="contactButton" class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6 text-center d-none">
             <a href="tel:+1-206-858-8757" class="btn btn-lg btn-outline-dark">(206) 858-8757</a>
         </div>
     }
     else
     {
-        <div id="cartButton" class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6 p-2 d-none">
+        <div id="cartButton" class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6 d-none">
             <a id="headerCart" class="btn btn-lg btn-outline-success" asp-controller="Cart" asp-action="Index">🛒&nbsp;<span id="cartCounter" class="badge badge-success badge-pill">0</span></a>
         </div>
-        <div id="contactButton" class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6 text-center p-2">
+        <div id="contactButton" class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6 text-center">
             <a href="tel:+1-206-858-8757" class="btn btn-lg btn-outline-dark">(206) 858-8757</a>
         </div>
     }
