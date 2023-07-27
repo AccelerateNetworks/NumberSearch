@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Runtime.Serialization.ContractNamespaceAttribute("http://tempuri.org/", ClrNamespace="tempuri.org")]
+[assembly: System.Runtime.Serialization.ContractNamespaceAttribute("https://tempuri.org/", ClrNamespace="tempuri.org")]
 
 namespace tempuri.org
 {
@@ -16,7 +16,7 @@ namespace tempuri.org
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="OCNLATAResult2", Namespace="http://tempuri.org/")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="OCNLATAResult2", Namespace="https://tempuri.org/")]
     public partial class OCNLATAResult2 : tempuri.org.EndstreamBaseObject
     {
         
@@ -263,7 +263,7 @@ namespace tempuri.org
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="EndstreamBaseObject", Namespace="http://tempuri.org/")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="EndstreamBaseObject", Namespace="https://tempuri.org/")]
     [System.Runtime.Serialization.KnownTypeAttribute(typeof(tempuri.org.OCNLATAResult2))]
     public partial class EndstreamBaseObject : object
     {
@@ -276,10 +276,10 @@ namespace tempuri.org
 public interface OCNLATAdipSoap
 {
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/APITestCall", ReplyAction="*")]
+    [System.ServiceModel.OperationContractAttribute(Action="https://tempuri.org/APITestCall", ReplyAction="*")]
     System.Threading.Tasks.Task<APITestCallResponse> APITestCallAsync(APITestCallRequest request);
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/RequestOCNLATA", ReplyAction="*")]
+    [System.ServiceModel.OperationContractAttribute(Action="https://tempuri.org/RequestOCNLATA", ReplyAction="*")]
     System.Threading.Tasks.Task<RequestOCNLATAResponse> RequestOCNLATAAsync(RequestOCNLATARequest request);
 }
 
@@ -290,7 +290,7 @@ public interface OCNLATAdipSoap
 public partial class APITestCallRequest
 {
     
-    [System.ServiceModel.MessageBodyMemberAttribute(Name="APITestCall", Namespace="http://tempuri.org/", Order=0)]
+    [System.ServiceModel.MessageBodyMemberAttribute(Name="APITestCall", Namespace="https://tempuri.org/", Order=0)]
     public APITestCallRequestBody Body;
     
     public APITestCallRequest()
@@ -322,7 +322,7 @@ public partial class APITestCallRequestBody
 public partial class APITestCallResponse
 {
     
-    [System.ServiceModel.MessageBodyMemberAttribute(Name="APITestCallResponse", Namespace="http://tempuri.org/", Order=0)]
+    [System.ServiceModel.MessageBodyMemberAttribute(Name="APITestCallResponse", Namespace="https://tempuri.org/", Order=0)]
     public APITestCallResponseBody Body;
     
     public APITestCallResponse()
@@ -338,7 +338,7 @@ public partial class APITestCallResponse
 [System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
 [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-[System.Runtime.Serialization.DataContractAttribute(Namespace="http://tempuri.org/")]
+[System.Runtime.Serialization.DataContractAttribute(Namespace="https://tempuri.org/")]
 public partial class APITestCallResponseBody
 {
     
@@ -362,7 +362,7 @@ public partial class APITestCallResponseBody
 public partial class RequestOCNLATARequest
 {
     
-    [System.ServiceModel.MessageBodyMemberAttribute(Name="RequestOCNLATA", Namespace="http://tempuri.org/", Order=0)]
+    [System.ServiceModel.MessageBodyMemberAttribute(Name="RequestOCNLATA", Namespace="https://tempuri.org/", Order=0)]
     public RequestOCNLATARequestBody Body;
     
     public RequestOCNLATARequest()
@@ -378,7 +378,7 @@ public partial class RequestOCNLATARequest
 [System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
 [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-[System.Runtime.Serialization.DataContractAttribute(Namespace="http://tempuri.org/")]
+[System.Runtime.Serialization.DataContractAttribute(Namespace="https://tempuri.org/")]
 public partial class RequestOCNLATARequestBody
 {
     
@@ -414,7 +414,7 @@ public partial class RequestOCNLATARequestBody
 public partial class RequestOCNLATAResponse
 {
     
-    [System.ServiceModel.MessageBodyMemberAttribute(Name="RequestOCNLATAResponse", Namespace="http://tempuri.org/", Order=0)]
+    [System.ServiceModel.MessageBodyMemberAttribute(Name="RequestOCNLATAResponse", Namespace="https://tempuri.org/", Order=0)]
     public RequestOCNLATAResponseBody Body;
     
     public RequestOCNLATAResponse()
@@ -430,7 +430,7 @@ public partial class RequestOCNLATAResponse
 [System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.1")]
 [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-[System.Runtime.Serialization.DataContractAttribute(Namespace="http://tempuri.org/")]
+[System.Runtime.Serialization.DataContractAttribute(Namespace="https://tempuri.org/")]
 public partial class RequestOCNLATAResponseBody
 {
     
@@ -561,11 +561,11 @@ public partial class OCNLATAdipSoapClient : System.ServiceModel.ClientBase<OCNLA
     {
         if ((endpointConfiguration == EndpointConfiguration.OCNLATAdipSoap))
         {
-            return new System.ServiceModel.EndpointAddress("http://www.endstream.com/endstreamws/OCNLATAdip.asmx");
+            return new System.ServiceModel.EndpointAddress("https://www.endstream.com/endstreamws/OCNLATAdip.asmx");
         }
         if ((endpointConfiguration == EndpointConfiguration.OCNLATAdipSoap12))
         {
-            return new System.ServiceModel.EndpointAddress("http://www.endstream.com/endstreamws/OCNLATAdip.asmx");
+            return new System.ServiceModel.EndpointAddress("https://www.endstream.com/endstreamws/OCNLATAdip.asmx");
         }
         throw new System.InvalidOperationException(string.Format("Could not find endpoint with name \'{0}\'.", endpointConfiguration));
     }

@@ -10,7 +10,7 @@ using NumberSearch.DataAccess.Models;
 using NumberSearch.DataAccess.TeleDynamics;
 using NumberSearch.Mvc.Models;
 
-using ServiceReference;
+using ServiceReference1;
 
 using System;
 using System.Linq;
@@ -498,10 +498,10 @@ namespace NumberSearch.Tests
         {
             var DIDSearch = new DIDOrderQuery
             {
-                DID = "12062670472",
-                NPA = "206",
-                NXX = "267",
-                RateCenter = "SEATTLE"
+                DID = string.Empty,
+                NPA = string.Empty,
+                NXX = string.Empty,
+                RateCenter = string.Empty
             };
             var ReturnAmount = 100;
 

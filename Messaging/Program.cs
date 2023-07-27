@@ -879,7 +879,7 @@ try
             Log.Error(ex.Message);
             Log.Error(ex.StackTrace ?? "No stacktrace found.");
             Log.Information("Failed to read form data by field name.");
-            return TypedResults.BadRequest("Failed to read form data by field name.");
+            return TypedResults.BadRequest(ex.Message);
         }
 
     }).WithOpenApi(x => new(x) { Summary = "Receive an MMS Message.", Description = "Submit inbound messages to this endpoint." });

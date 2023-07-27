@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Models;
 
 using System.Net.Http.Json;
+using System.Net.Mime;
 
 using Xunit.Abstractions;
 using Xunit.Priority;

@@ -1,0 +1,44 @@
+{
+  "ExtendedData": {
+    "inputs": [
+      "https://api.1pcom.net/ws2/DIDManagement.asmx?WSDL"
+    ],
+    "collectionTypes": [
+      "System.Array",
+      "System.Collections.Generic.Dictionary`2"
+    ],
+    "namespaceMappings": [
+      "*, ServiceReference1"
+    ],
+    "references": [
+      "BouncyCastle.Cryptography, {BouncyCastle.Cryptography, 2.1.1}",
+      "C:\\Users\\thoma\\Source\\Repos\\AccelerateNetworks\\NumberSearch\\FirstCom\\bin\\Debug\\net7.0\\NumberSearch.DataAccess.dll",
+      "Dapper, {Dapper, 2.0.123}",
+      "Flurl, {Flurl, 3.0.6}",
+      "Flurl.Http, {Flurl.Http, 3.2.4}",
+      "MailKit, {MailKit, 4.0.0}",
+      "Microsoft.AspNetCore.Http.Features, {Microsoft.AspNetCore.Http.Features, 5.0.17}",
+      "Microsoft.Extensions.Logging.Abstractions, {Microsoft.Extensions.Logging.Abstractions, 6.0.0}",
+      "Microsoft.Extensions.ObjectPool, {Microsoft.Extensions.ObjectPool, 6.0.16}",
+      "Microsoft.Extensions.Primitives, {Microsoft.Extensions.Primitives, 5.0.1}",
+      "MimeKit, {MimeKit, 4.0.0}",
+      "Newtonsoft.Json, {Newtonsoft.Json, 13.0.3}",
+      "Npgsql, {Npgsql, 7.0.4}",
+      "PhoneNumbersNA, {PhoneNumbersNA, 1.0.12}",
+      "Serilog, {Serilog, 2.12.0}",
+      "System.Formats.Asn1, {System.Formats.Asn1, 6.0.0}",
+      "System.IO.Pipelines, {System.IO.Pipelines, 5.0.2}",
+      "System.Reflection.DispatchProxy, {System.Reflection.DispatchProxy, 4.7.1}",
+      "System.Runtime.CompilerServices.Unsafe, {System.Runtime.CompilerServices.Unsafe, 6.0.0}",
+      "System.Security.AccessControl, {System.Security.AccessControl, 6.0.0}",
+      "System.Security.Cryptography.Pkcs, {System.Security.Cryptography.Pkcs, 6.0.2}",
+      "System.Security.Cryptography.Xml, {System.Security.Cryptography.Xml, 6.0.1}",
+      "System.ServiceModel.Http, {System.ServiceModel.Http, 6.0.0}",
+      "System.ServiceModel.Primitives, {System.ServiceModel.Primitives, 6.0.0}",
+      "System.ServiceModel.Security, {System.ServiceModel.Security, 6.0.0}",
+      "System.Text.Encoding.CodePages, {System.Text.Encoding.CodePages, 6.0.0}"
+    ],
+    "targetFramework": "net7.0",
+    "typeReuseMode": "All"
+  }
+}
