@@ -3,11 +3,12 @@
 }
 @model List<WriteAs.NET.Client.Models.Post>
 
-<section class="text-light p-5" style="background-color: #3279B2">
+<section class="text-light" style="background-color: #3279B2">
     <div class="container py-5 py-md-6 py-lg-7 mb-7 text-center">
         <div class="row justify-content-center">
             <div class="col-lg-10 col-md-11">
-                <h1 class="display-3 text-light">Learn about our Services</h1>
+                <h1 class="display-3 text-light d-none d-sm-block">Learn about our Services</h1>
+                <h4 class="display-4 text-light d-block d-sm-none">Learn about our Services</h4>
                 <p class="lead text-white">Your questions, answered right here.</p>
             </div>
         </div>
@@ -22,7 +23,7 @@
                 var content = Markdig.Markdown.ToHtml(post.Body);
                 content = content.Replace("<img", "<img class=\"img-fluid\"");
                 <div class="row">
-                    <div class="col-8 offset-2 mb-5">
+                    <div class="col-lg-8 col-md-10 col-sm-12 offset-lg-2 offset-md-1 mb-5">
                         <h1>@post.Title</h1>
                         <hr>
                         <p>@post.LastUpdatedDate.ToShortDateString()</p>
