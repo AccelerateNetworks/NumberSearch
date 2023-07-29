@@ -65,712 +65,730 @@
     }
 </script>
 
-<div class="container">
-    <br />
-    <div class="pricing-header mx-auto p-2 text-center">
-        @{
-            if (Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted == DateTime.MinValue)
-            {
-                <h1 class="display-4">Complete Your Order</h1>
-            }
-            else if (Model?.Order?.DateSubmitted > DateTime.MinValue)
-            {
-                <h1 class="display-4">Your Completed Order</h1>
-            }
-        }
-    </div>
-    <br />
-    <div class="row d-flex align-content-end">
-        @{
-            if (Model?.Order is not null && Model.Order.Completed)
-            {
-                <div class="col-md-12 order-md-1 pb-5">
-                    <div class="progress" style="height: 3px;">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </div>
-                <div class="col">
-                    <h4>
-                        <span class="badge badge-success badge-pill">☎️ Submitted</span>
-                    </h4>
-                </div>
-                <div class="col">
-                    <h4>
-                        <span class="badge badge-success  badge-pill">⚙️ Processed</span>
-                    </h4>
-                </div>
-                <div class="col">
-                    <h4>
-                        <span class="badge badge-success badge-pill">🎉 Completed</span>
-                    </h4>
-                </div>
-            }
-            else if (Model?.Order is not null && Model.Order.BackgroundWorkCompleted)
-            {
-                <div class="col-md-12 order-md-1 pb-5">
-                    <div class="progress" style="height: 3px;">
-                        <div class="progress-bar" role="progressbar" style="width: 66%;" aria-valuenow="66" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </div>
-                <div class="col">
-                    <h4>
-                        <span class="badge badge-primary badge-pill">☎️ Submitted</span>
-                    </h4>
-                </div>
-                <div class="col">
-                    <h4>
-                        <span class="badge badge-primary badge-pill">⚙️ Processing</span>
-                    </h4>
-                </div>
-                if ((purchased is not null) && (purchased.Any()) && (purchased?.Where(x => x.Completed is true).ToArray().Length == purchased?.Length))
-                {
-                    <div class="col">
-                        <h4>
-                            <span class="badge badge-primary badge-pill">✔️ Purchased</span>
-                        </h4>
-                    </div>
-                }
-                else if (purchased is not null && purchased.Any())
-                {
-                    <div class="col">
-                        <h4>
-                            <span class="badge badge-primary badge-pill">❓ Purchased</span>
-                        </h4>
-                    </div>
-                }
-                var c = ported?.Where(x => x.Completed is true).ToArray().Length;
-                if ((ported is not null) && (ported.Any()) && (ported?.Where(x => x.Completed is true).ToArray().Length == ported?.Length))
-                {
-                    <div class="col">
-                        <h4>
-                            <span class="badge badge-primary badge-pill">✔️ Transferred</span>
-                        </h4>
-                    </div>
-                }
-                else if (ported is not null && ported.Any())
-                {
-                    <div class="col">
-                        <h4>
-                            <span class="badge badge-primary badge-pill">❓ Transferred</span>
-                        </h4>
-                    </div>
-                }
-                <div class="col">
-                    <h4>
-                        <span class="badge badge-secondary badge-pill">Completed</span>
-                    </h4>
-                </div>
-            }
-            else if (Model?.Order?.DateSubmitted > DateTime.MinValue)
-            {
-                <div class="col-md-12 order-md-1 pb-5">
-                    <div class="progress" style="height: 3px;">
-                        <div class="progress-bar" role="progressbar" style="width: 33%;" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </div>
-                <div class="col">
-                    <h4>
-                        <span class="badge badge-primary badge-pill">☎️ Submitted</span>
-                    </h4>
-                </div>
-                <div class="col">
-                    <h4>
-                        <span class="badge badge-secondary badge-pill">Processed</span>
-                    </h4>
-                </div>
-                <div class="col">
-                    <h4>
-                        <span class="badge badge-secondary badge-pill">Completed</span>
-                    </h4>
-                </div>
-            }
-            else
-            {
-                <div class="col-md-12 order-md-1 pb-5">
-                    <div class="progress" style="height: 3px;">
-                        <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </div>
-                <div class="col">
-                    <h4>
-                        <span class="badge badge-secondary badge-pill">Submitted</span>
-                    </h4>
-                </div>
-                <div class="col">
-                    <h4>
-                        <span class="badge badge-secondary badge-pill">Processed</span>
-                    </h4>
-                </div>
-                <div class="col">
-                    <h4>
-                        <span class="badge badge-secondary badge-pill">Completed</span>
-                    </h4>
-                </div>
-            }
-        }
-    </div>
-    <div class="row">
-        <div class="col-md-4 order-md-2 mb-4">
-            <h4 class="d-flex justify-content-between align-items-center mb-3">
-                <span class="text-muted">Your Order</span>
+
+<section class="text-light" style="background-color: #3279B2">
+    <div class="container py-5 py-md-6 py-lg-7 mb-7 text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-md-11">
                 @{
-                    int sumOfItems = 0;
-                    if (Model?.ProductOrders is not null && Model.ProductOrders.Any())
+                    string name = string.IsNullOrWhiteSpace(Model?.Order?.BusinessName) ? $"{Model?.Order?.FirstName} {Model?.Order?.LastName}" : Model.Order.BusinessName;
+                    if (Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted == DateTime.MinValue)
                     {
-                        foreach (NumberSearch.DataAccess.ProductOrder item in Model.ProductOrders)
-                        {
-                            sumOfItems += item.Quantity * 1;
-                        }
+                        <h1 class="display-3 text-light d-none d-sm-block">Complete Your Order</h1>
+                        <h4 class="display-4 text-light d-block d-sm-none">Complete Your Order</h4>
+                        <p class="lead text-white">Welcome to our network!</p>
+                    }
+                    else if (Model?.Order?.Completed is true)
+                    {
+                        <h1 class="display-3 text-light d-none d-sm-block">Your Completed Order</h1>
+                        <h4 class="display-4 text-light d-block d-sm-none">Your Completed Order</h4>
+                        <p class="lead text-white">Welcome to our network <strong>@name</strong>!</p>
+
+                    }
+                    else if (Model?.Order?.DateSubmitted > DateTime.MinValue)
+                    {
+                        <h1 class="display-3 text-light d-none d-sm-block">Your Submitted Order</h1>
+                        <h4 class="display-4 text-light d-block d-sm-none">Your Submitted Order</h4>
+                        <p class="lead text-white">Welcome to our network <strong>@name</strong>!</p>
                     }
                 }
-                <span class="badge badge-success badge-pill">@sumOfItems</span>
-            </h4>
-            <ul class="list-group mb-3">
-                @{
-                    var productsTotal = 0;
-                    var servicesTotal = 0;
-                    var numbersTotal = 0;
-                    var portedTotal = 0;
-                    var verifiedTotal = 0;
-                    var couponTotal = 0;
-                    if (numbers is not null)
+            </div>
+        </div>
+    </div>
+</section>
+<div class="pt-3">
+    <div class="container">
+        <div class="row d-flex align-content-end">
+            @{
+                if (Model?.Order is not null && Model.Order.Completed)
+                {
+                    <div class="col">
+                        <h4>
+                            <span class="badge badge-success badge-pill">☎️ Submitted</span>
+                        </h4>
+                    </div>
+                    <div class="col">
+                        <h4>
+                            <span class="badge badge-success  badge-pill">⚙️ Processed</span>
+                        </h4>
+                    </div>
+                    <div class="col">
+                        <h4>
+                            <span class="badge badge-success badge-pill">🎉 Completed</span>
+                        </h4>
+                    </div>
+                    <div class="col-md-12 pb-3">
+                        <div class="progress" style="height: 3px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 100%; background-color: #3279B2;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                }
+                else if (Model?.Order is not null && Model.Order.BackgroundWorkCompleted)
+                {
+                    <div class="col">
+                        <h4>
+                            <span class="badge badge-success badge-pill">☎️ Submitted</span>
+                        </h4>
+                    </div>
+                    <div class="col">
+                        <h4>
+                            <span class="badge badge-success badge-pill">⚙️ Processing</span>
+                        </h4>
+                    </div>
+                    if ((purchased is not null) && (purchased.Any()) && (purchased?.Where(x => x.Completed is true).ToArray().Length == purchased?.Length))
                     {
-                        foreach (var number in numbers)
+                        <div class="col">
+                            <h4>
+                                <span class="badge badge-success badge-pill">✔️ Purchased</span>
+                            </h4>
+                        </div>
+                    }
+                    else if (purchased is not null && purchased.Any())
+                    {
+                        <div class="col">
+                            <h4>
+                                <span class="badge badge-primary badge-pill">❓ Purchased</span>
+                            </h4>
+                        </div>
+                    }
+                    var c = ported?.Where(x => x.Completed is true).ToArray().Length;
+                    if ((ported is not null) && (ported.Any()) && (ported?.Where(x => x.Completed is true).ToArray().Length == ported?.Length))
+                    {
+                        <div class="col">
+                            <h4>
+                                <span class="badge badge-success badge-pill">✔️ Transferred</span>
+                            </h4>
+                        </div>
+                    }
+                    else if (ported is not null && ported.Any())
+                    {
+                        <div class="col">
+                            <h4>
+                                <span class="badge badge-primary badge-pill">❓ Transferred</span>
+                            </h4>
+                        </div>
+                    }
+                    <div class="col">
+                        <h4>
+                            <span class="badge badge-secondary badge-pill">Completed</span>
+                        </h4>
+                    </div>
+                    <div class="col-md-12 pb-3">
+                        <div class="progress" style="height: 3px;">
+                            <div class="progress-bar" role="progressbar" style="width: 66%; background-color: #3279B2;" aria-valuenow="66" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                }
+                else if (Model?.Order?.DateSubmitted > DateTime.MinValue)
+                {
+                    <div class="col">
+                        <h4>
+                            <span class="badge badge-primary badge-pill">☎️ Submitted</span>
+                        </h4>
+                    </div>
+                    <div class="col">
+                        <h4>
+                            <span class="badge badge-secondary badge-pill">Processed</span>
+                        </h4>
+                    </div>
+                    <div class="col">
+                        <h4>
+                            <span class="badge badge-secondary badge-pill">Completed</span>
+                        </h4>
+                    </div>
+                    <div class="col-md-12 pb-3">
+                        <div class="progress" style="height: 3px;">
+                            <div class="progress-bar" role="progressbar" style="width: 33%; background-color: #3279B2;" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="col">
+                        <h4>
+                            <span class="badge badge-secondary badge-pill">Submitted</span>
+                        </h4>
+                    </div>
+                    <div class="col">
+                        <h4>
+                            <span class="badge badge-secondary badge-pill">Processed</span>
+                        </h4>
+                    </div>
+                    <div class="col">
+                        <h4>
+                            <span class="badge badge-secondary badge-pill">Completed</span>
+                        </h4>
+                    </div>
+                    <div class="col-md-12 pb-3">
+                        <div class="progress" style="height: 3px;">
+                            <div class="progress-bar" role="progressbar" style="width: 0%; background-color: #3279B2;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+        <div class="row">
+            <div class="col-md-4 order-md-2">
+                <h4 class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Your Order</span>
+                    @{
+                        int sumOfItems = 0;
+                        if (Model?.ProductOrders is not null && Model.ProductOrders.Any())
                         {
-                            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                                <div>
+                            foreach (NumberSearch.DataAccess.ProductOrder item in Model.ProductOrders)
+                            {
+                                sumOfItems += item.Quantity * 1;
+                            }
+                        }
+                    }
+                    <span class="badge badge-success badge-pill">@sumOfItems</span>
+                </h4>
+                <ul class="list-group mb-3">
+                    @{
+                        var productsTotal = 0;
+                        var servicesTotal = 0;
+                        var numbersTotal = 0;
+                        var portedTotal = 0;
+                        var verifiedTotal = 0;
+                        var couponTotal = 0;
+                        if (numbers is not null)
+                        {
+                            foreach (var number in numbers)
+                            {
+                                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                                    <div>
+                                        @{
+                                            <h6 class="my-0">Phone Number ❓</h6>
+                                        }
+                                        <small class="text-muted">(@number.NPA) @number.NXX.ToString("000") @number.XXXX.ToString("0000")</small>
+                                    </div>
                                     @{
-                                        <h6 class="my-0">Phone Number ❓</h6>
+                                        if (number.NumberType == "Executive")
+                                        {
+                                            numbersTotal += 200;
+                                            <span class="text-muted">$200</span>
+                                        }
+                                        else if (number.NumberType == "Premium")
+                                        {
+                                            numbersTotal += 40;
+                                            <span class="text-muted">$40</span>
+                                        }
+                                        else
+                                        {
+                                            numbersTotal += 20;
+                                            <span class="text-muted">$20</span>
+                                        }
                                     }
-                                    <small class="text-muted">(@number.NPA) @number.NXX.ToString("000") @number.XXXX.ToString("0000")</small>
-                                </div>
-                                @{
-                                    if (number.NumberType == "Executive")
+                                </li>
+                            }
+                        }
+
+                        if (purchased is not null)
+                        {
+                            foreach (var number in purchased)
+                            {
+                                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                                    @if (number.NumberType == "Executive")
                                     {
                                         numbersTotal += 200;
+                                        <div>
+                                            <h6 class="my-0">Executive Phone Number ✔️</h6>
+                                            @{
+                                                if (number.NPA == 0 && number.NXX == 0 && number.XXXX == 0)
+                                                {
+                                                    <small class="text-muted">@number.DialedNumber</small>
+                                                }
+                                                else
+                                                {
+                                                    <small class="text-muted">(@number.NPA) @number.NXX.ToString("000") @number.XXXX.ToString("0000")</small>
+                                                }
+                                            }
+                                        </div>
                                         <span class="text-muted">$200</span>
                                     }
                                     else if (number.NumberType == "Premium")
                                     {
                                         numbersTotal += 40;
+                                        <div>
+                                            <h6 class="my-0">Premium Phone Number ✔️</h6>
+                                            @{
+                                                if (number.NPA == 0 && number.NXX == 0 && number.XXXX == 0)
+                                                {
+                                                    <small class="text-muted">@number.DialedNumber</small>
+                                                }
+                                                else
+                                                {
+                                                    <small class="text-muted">(@number.NPA) @number.NXX.ToString("000") @number.XXXX.ToString("0000")</small>
+                                                }
+                                            }
+                                        </div>
                                         <span class="text-muted">$40</span>
                                     }
                                     else
                                     {
                                         numbersTotal += 20;
+                                        <div>
+                                            <h6 class="my-0">Phone Number ✔️</h6>
+                                            @{
+                                                if (number.NPA == 0 && number.NXX == 0 && number.XXXX == 0)
+                                                {
+                                                    <small class="text-muted">@number.DialedNumber</small>
+                                                }
+                                                else
+                                                {
+                                                    <small class="text-muted">(@number.NPA) @number.NXX.ToString("000") @number.XXXX.ToString("0000")</small>
+                                                }
+                                            }
+                                        </div>
                                         <span class="text-muted">$20</span>
                                     }
-                                }
-                            </li>
+                                </li>
+                            }
                         }
-                    }
 
-                    if (purchased is not null)
-                    {
-                        foreach (var number in purchased)
+
+                        if (ported is not null)
                         {
-                            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                                @if (number.NumberType == "Executive")
-                                {
-                                    numbersTotal += 200;
-                                    <div>
-                                        <h6 class="my-0">Executive Phone Number ✔️</h6>
-                                        @{
-                                            if (number.NPA == 0 && number.NXX == 0 && number.XXXX == 0)
-                                            {
-                                                <small class="text-muted">@number.DialedNumber</small>
-                                            }
-                                            else
-                                            {
-                                                <small class="text-muted">(@number.NPA) @number.NXX.ToString("000") @number.XXXX.ToString("0000")</small>
-                                            }
-                                        }
-                                    </div>
-                                    <span class="text-muted">$200</span>
-                                }
-                                else if (number.NumberType == "Premium")
-                                {
-                                    numbersTotal += 40;
-                                    <div>
-                                        <h6 class="my-0">Premium Phone Number ✔️</h6>
-                                        @{
-                                            if (number.NPA == 0 && number.NXX == 0 && number.XXXX == 0)
-                                            {
-                                                <small class="text-muted">@number.DialedNumber</small>
-                                            }
-                                            else
-                                            {
-                                                <small class="text-muted">(@number.NPA) @number.NXX.ToString("000") @number.XXXX.ToString("0000")</small>
-                                            }
-                                        }
-                                    </div>
-                                    <span class="text-muted">$40</span>
-                                }
-                                else
-                                {
-                                    numbersTotal += 20;
-                                    <div>
-                                        <h6 class="my-0">Phone Number ✔️</h6>
-                                        @{
-                                            if (number.NPA == 0 && number.NXX == 0 && number.XXXX == 0)
-                                            {
-                                                <small class="text-muted">@number.DialedNumber</small>
-                                            }
-                                            else
-                                            {
-                                                <small class="text-muted">(@number.NPA) @number.NXX.ToString("000") @number.XXXX.ToString("0000")</small>
-                                            }
-                                        }
-                                    </div>
-                                    <span class="text-muted">$20</span>
-                                }
-                            </li>
-                        }
-                    }
+                            foreach (var number in ported)
+                            {
+                                // Discount one ported number for each service they purchase.
+                                var calculatedCost = 20;
 
-
-                    if (ported is not null)
-                    {
-                        foreach (var number in ported)
-                        {
-                            // Discount one ported number for each service they purchase.
-                            var calculatedCost = 20;
-
-                            var date = number.DateFirmOrderCommitment is null ? "Date Not Set" : number.DateFirmOrderCommitment.GetValueOrDefault(DateTime.Now).ToShortDateString();
-                            var status = string.IsNullOrWhiteSpace(number.RequestStatus) ? "Status Not Set" : number.RequestStatus;
-                            portedTotal += calculatedCost;
-                            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                                <div>
-                                    @if (number.Completed)
-                                    {
-                                        if (number.PortedDialedNumber.IsTollfree())
+                                var date = number.DateFirmOrderCommitment is null ? "Date Not Set" : number.DateFirmOrderCommitment.GetValueOrDefault(DateTime.Now).ToShortDateString();
+                                var status = string.IsNullOrWhiteSpace(number.RequestStatus) ? "Status Not Set" : number.RequestStatus;
+                                portedTotal += calculatedCost;
+                                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                                    <div>
+                                        @if (number.Completed)
                                         {
-                                            <h6 class="my-0">Porting Tollfree Number ✔️</h6>
+                                            if (number.PortedDialedNumber.IsTollfree())
+                                            {
+                                                <h6 class="my-0">Porting Tollfree Number ✔️</h6>
+                                            }
+                                            else
+                                            {
+                                                <h6 class="my-0">Porting Phone Number ✔️</h6>
+                                            }
                                         }
                                         else
                                         {
-                                            <h6 class="my-0">Porting Phone Number ✔️</h6>
+                                            if (number.PortedDialedNumber.IsTollfree())
+                                            {
+                                                <h6 class="my-0">Porting Tollfree Number ❓</h6>
+                                            }
+                                            else
+                                            {
+                                                <h6 class="my-0">Porting Phone Number ❓</h6>
+                                            }
                                         }
+                                        <small class="text-muted">(@number.NPA) @number.NXX @number.XXXX.ToString("0000")</small>
+                                        @if (number.DateFirmOrderCommitment is not null && !string.IsNullOrWhiteSpace(number.RequestStatus))
+                                        {
+                                            <h6 class="text-muted">@status - @date</h6>
+                                        }
+                                    </div>
+                                    <span class="text-muted">$@calculatedCost</span>
+                                </li>
+                            }
+                        }
+
+                        if (verified is not null)
+                        {
+                            foreach (var number in verified)
+                            {
+                                verifiedTotal += 10;
+                                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                                    <div>
+                                        <h6 class="my-0">Verified Phone Number</h6>
+                                        <small class="text-muted">(@number.NPA) @number.NXX @number.XXXX.ToString("0000")</small>
+                                    </div>
+                                    <span class="text-muted">$10</span>
+                                </li>
+                            }
+                        }
+
+                        if (products is not null && productOrders is not null)
+                        {
+                            foreach (var product in products)
+                            {
+                                var productOrder = productOrders[product!.ProductId.ToString()];
+                                var localTotal = productOrder.Quantity * product.Price;
+                                productsTotal += localTotal;
+                                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                                    <div>
+                                        <h6 class="my-0">
+                                            @product.Name
+                                            @if (productOrder.Quantity > 1)
+                                            {
+                                                <small>x @productOrder.Quantity</small>
+                                            }
+                                        </h6>
+                                        <small class="text-muted">@product.Description</small>
+                                    </div>
+                                    <span class="text-muted">$@localTotal</span>
+                                </li>
+                            }
+                        }
+
+                        if (services is not null && productOrders is not null)
+                        {
+                            foreach (var service in services)
+                            {
+                                var productOrder = productOrders[service!.ServiceId.ToString()];
+                                var localTotal = productOrder.Quantity * service.Price;
+                                servicesTotal += localTotal;
+                                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                                    <div>
+                                        <h6 class="my-0">
+                                            @service.Name
+                                            @if (productOrder.Quantity > 1)
+                                            {
+                                                <small>x @productOrder.Quantity</small>
+                                            }
+                                        </h6>
+                                        <small class="text-muted">@service.Description</small>
+                                    </div>
+                                    <span class="text-muted">$@localTotal</span>
+                                </li>
+                            }
+                        }
+
+                        if (coupons is not null && productOrders is not null)
+                        {
+                            foreach (var coupon in coupons)
+                            {
+                                var productOrder = productOrders[coupon!.CouponId.ToString()];
+                                var localTotal = 0;
+                                if (coupon.Type == "Port")
+                                {
+                                    localTotal = portedTotal;
+                                    couponTotal += localTotal * -1;
+                                }
+                                else if (coupon.Type == "Install")
+                                {
+                                    localTotal = 75;
+                                    couponTotal += localTotal * -1;
+                                }
+                                else if (coupon.Type == "Number")
+                                {
+                                    if (coupon.Name.Contains("20"))
+                                    {
+                                        var discountTo20 = numbers is not null && numbers.Any() ? numbers.Length * 20 :
+                                        purchased is not null && purchased.Any() ? purchased.Length * 20 : 0;
+                                        localTotal = numbersTotal - discountTo20;
+                                        couponTotal += localTotal * -1;
                                     }
                                     else
                                     {
-                                        if (number.PortedDialedNumber.IsTollfree())
-                                        {
-                                            <h6 class="my-0">Porting Tollfree Number ❓</h6>
-                                        }
-                                        else
-                                        {
-                                            <h6 class="my-0">Porting Phone Number ❓</h6>
-                                        }
+                                        localTotal = numbersTotal;
+                                        couponTotal += localTotal * -1;
                                     }
-                                    <small class="text-muted">(@number.NPA) @number.NXX @number.XXXX.ToString("0000")</small>
-                                    @if (number.DateFirmOrderCommitment is not null && !string.IsNullOrWhiteSpace(number.RequestStatus))
-                                    {
-                                        <h6 class="text-muted">@status - @date</h6>
-                                    }
-                                </div>
-                                <span class="text-muted">$@calculatedCost</span>
-                            </li>
-                        }
-                    }
-
-                    if (verified is not null)
-                    {
-                        foreach (var number in verified)
-                        {
-                            verifiedTotal += 10;
-                            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                                <div>
-                                    <h6 class="my-0">Verified Phone Number</h6>
-                                    <small class="text-muted">(@number.NPA) @number.NXX @number.XXXX.ToString("0000")</small>
-                                </div>
-                                <span class="text-muted">$10</span>
-                            </li>
-                        }
-                    }
-
-                    if (products is not null && productOrders is not null)
-                    {
-                        foreach (var product in products)
-                        {
-                            var productOrder = productOrders[product!.ProductId.ToString()];
-                            var localTotal = productOrder.Quantity * product.Price;
-                            productsTotal += localTotal;
-                            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                                <div>
-                                    <h6 class="my-0">
-                                        @product.Name
-                                        @if (productOrder.Quantity > 1)
-                                        {
-                                            <small>x @productOrder.Quantity</small>
-                                        }
-                                    </h6>
-                                    <small class="text-muted">@product.Description</small>
-                                </div>
-                                <span class="text-muted">$@localTotal</span>
-                            </li>
-                        }
-                    }
-
-                    if (services is not null && productOrders is not null)
-                    {
-                        foreach (var service in services)
-                        {
-                            var productOrder = productOrders[service!.ServiceId.ToString()];
-                            var localTotal = productOrder.Quantity * service.Price;
-                            servicesTotal += localTotal;
-                            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                                <div>
-                                    <h6 class="my-0">
-                                        @service.Name
-                                        @if (productOrder.Quantity > 1)
-                                        {
-                                            <small>x @productOrder.Quantity</small>
-                                        }
-                                    </h6>
-                                    <small class="text-muted">@service.Description</small>
-                                </div>
-                                <span class="text-muted">$@localTotal</span>
-                            </li>
-                        }
-                    }
-
-                    if (coupons is not null && productOrders is not null)
-                    {
-                        foreach (var coupon in coupons)
-                        {
-                            var productOrder = productOrders[coupon!.CouponId.ToString()];
-                            var localTotal = 0;
-                            if (coupon.Type == "Port")
-                            {
-                                localTotal = portedTotal;
-                                couponTotal += localTotal * -1;
-                            }
-                            else if (coupon.Type == "Install")
-                            {
-                                localTotal = 75;
-                                couponTotal += localTotal * -1;
-                            }
-                            else if (coupon.Type == "Number")
-                            {
-                                if (coupon.Name.Contains("20"))
+                                }
+                                else if (coupon.Type == "Service")
                                 {
-                                    var discountTo20 = numbers is not null && numbers.Any() ? numbers.Length * 20 :
-                                    purchased is not null && purchased.Any() ? purchased.Length * 20 : 0;
-                                    localTotal = numbersTotal - discountTo20;
-                                    couponTotal += localTotal * -1;
+                                    var servicesToDiscount = services is not null && services.Any() ? services.Where(x => x.Name.Contains("5G")).ToArray() : null;
+                                    if (servicesToDiscount is not null)
+                                    {
+                                        var partnerDiscount = 0;
+                                        foreach (var service in servicesToDiscount)
+                                        {
+                                            var productOrderToDiscount = productOrders[service!.ServiceId.ToString()];
+                                            if (productOrderToDiscount is not null)
+                                            {
+                                                partnerDiscount += productOrderToDiscount.Quantity * 10;
+                                            }
+                                        }
+                                        localTotal = partnerDiscount;
+                                        couponTotal += localTotal * -1;
+                                    }
                                 }
                                 else
                                 {
-                                    localTotal = numbersTotal;
+                                    // Hand custom coupon amounts.
+                                    localTotal = coupon.Value;
                                     couponTotal += localTotal * -1;
                                 }
+                                <li class="list-group-item d-flex justify-content-between lh-condensed bg-light">
+                                    <div class="text-success">
+                                        <h6 class="my-0">
+                                            @coupon.Name
+                                        </h6>
+                                        <small class="text-success">@coupon.Description</small>
+                                    </div>
+                                    <span class="text-success">$@localTotal</span>
+                                </li>
                             }
-                            else if (coupon.Type == "Service")
-                            {
-                                var servicesToDiscount = services is not null && services.Any() ? services.Where(x => x.Name.Contains("5G")).ToArray() : null;
-                                if (servicesToDiscount is not null)
-                                {
-                                    var partnerDiscount = 0;
-                                    foreach (var service in servicesToDiscount)
-                                    {
-                                        var productOrderToDiscount = productOrders[service!.ServiceId.ToString()];
-                                        if (productOrderToDiscount is not null)
-                                        {
-                                            partnerDiscount += productOrderToDiscount.Quantity * 10;
-                                        }
-                                    }
-                                    localTotal = partnerDiscount;
-                                    couponTotal += localTotal * -1;
-                                }
-                            }
-                            else
-                            {
-                                // Hand custom coupon amounts.
-                                localTotal = coupon.Value;
-                                couponTotal += localTotal * -1;
-                            }
-                            <li class="list-group-item d-flex justify-content-between lh-condensed bg-light">
-                                <div class="text-success">
-                                    <h6 class="my-0">
-                                        @coupon.Name
-                                    </h6>
-                                    <small class="text-success">@coupon.Description</small>
-                                </div>
-                                <span class="text-success">$@localTotal</span>
-                            </li>
                         }
                     }
-                }
-                <li class="list-group-item d-flex justify-content-between lh-condensed">
-                    <div>
-                        <h6>Total (USD)</h6>
-                        <small class="text-muted">Plus installation, state and local taxes</small>
+                    <li class="list-group-item d-flex justify-content-between lh-condensed">
+                        <div>
+                            <h6>Total (USD)</h6>
+                            <small class="text-muted">Plus installation, state and local taxes</small>
+                        </div>
+                        @{
+                            var total = numbersTotal + portedTotal + productsTotal + servicesTotal + verifiedTotal + couponTotal;
+                            <strong>$@total</strong>
+                        }
+                    </li>
+                    @{
+                        if (Model?.Order is not null && Model.Order.DateSubmitted > DateTime.Now.AddYears(-99))
+                        {
+                            <h4 class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="text-muted">Submitted On</span>
+                            </h4>
+                            <h4 class="d-flex justify-content-between align-items-center">
+                                <span class="badge badge-info badge-pill">@Model.Order.DateSubmitted</span>
+                            </h4>
+                        }
+                        if (!string.IsNullOrWhiteSpace(Model?.Order?.UpfrontInvoiceLink) && !string.IsNullOrWhiteSpace(Model?.Order?.ReoccuringInvoiceLink))
+                        {
+                            <h4 class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Pay Now</span>
+                            </h4>
+                            <div class="btn-group" role="group" aria-label="billing links">
+                                <a class="btn btn-primary" href="@Model?.Order?.UpfrontInvoiceLink" target="_blank" rel="noopener noreferrer">Upfront</a>
+                                <a class="btn btn-primary" href="@Model?.Order?.ReoccuringInvoiceLink" target="_blank" rel="noopener noreferrer">Monthly</a>
+                            </div>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(Model?.Order?.UpfrontInvoiceLink))
+                        {
+                            <h4 class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Pay Now</span>
+                            </h4>
+                            <a class="btn btn-primary" href="@Model?.Order?.UpfrontInvoiceLink" target="_blank" rel="noopener noreferrer">Upfront</a>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(Model?.Order?.ReoccuringInvoiceLink))
+                        {
+                            <h4 class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Pay Now</span>
+                            </h4>
+                            <a class="btn btn-primary" href="@Model?.Order?.ReoccuringInvoiceLink" target="_blank" rel="noopener noreferrer">Monthly</a>
+                        }
+                    }
+                </ul>
+            </div>
+            <div class="col-md-8 order-md-1">
+                <h4 class="mb-3">Billing Information</h4>
+                <form asp-controller="Cart" asp-action="Submit" method="post">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="Order!.OrderId" type="text" value="@Model?.Order?.OrderId" hidden />
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="firstName">First name</label>
+                            <input asp-for="Order!.FirstName" type="text" class="form-control" id="firstName" placeholder="Alexander" required>
+                            <small class="text-muted">
+                                Enter your first name
+                            </small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="lastName">Last name</label>
+                            <input asp-for="Order!.LastName" type="text" class="form-control" id="lastName" placeholder="Bell" required>
+                            <small class="text-muted">
+                                Enter your last name
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email">Business Name <span class="text-muted">(Optional)</span></label>
+                        <input asp-for="Order!.BusinessName" type="text" class="form-control" id="businessName" placeholder="ACME Corporation">
+                        <small class="text-muted">
+                            Enter the name of your business or the organization that you represent
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email">Email </label>
+                        <input asp-for="Order!.Email" type="email" class="form-control" id="email" placeholder="tom@myspace.com" required>
+                        <small class="text-muted">
+                            Enter an email address for shipping updates and order information
+                        </small>
+                    </div>
+
+                    @if (Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted > DateTime.MinValue)
+                    {
+                        <div class="mb-3" id="searchForm">
+                            <label for="address">Address</label>
+                            <input asp-for="Order!.UnparsedAddress" type="text" class="form-control" id="address" readonly>
+                            <small class="text-muted">
+                                @*If it doesn't have a placeholder value give it a example*@
+                                Enter the shipping address for this order, or the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
+                            </small>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-3" id="searchForm">
+                            <label for="address">Address</label>
+                            <input asp-for="Order!.UnparsedAddress" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" data-toggle="dropdown" required>
+                            <ul class="list-group" role="menu" aria-labelledby="menu1" id="addressOptions">
+                            </ul>
+                            <small class="text-muted">
+                                @*If it doesn't have a placeholder value give it a example*@
+                                Enter the shipping address for this order, or the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
+                            </small>
+                        </div>
+                    }
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="unitType">Unit Type <span class="text-muted">(Optional)</span></label>
+                            <select asp-for="Order!.AddressUnitType" class="custom-select d-block w-100" id="unitType">
+                                @{
+                                    var unitTypes = new string[] {
+                                "Apartment",
+                                "Basement",
+                                "Building",
+                                "Department",
+                                "Floor",
+                                "Front",
+                                "Hanger",
+                                "Lobby",
+                                "Lot",
+                                "Lower",
+                                "Office",
+                                "Penthouse",
+                                "Pier",
+                                "Rear",
+                                "Room",
+                                "Side",
+                                "Space",
+                                "Suite",
+                                "Trailer",
+                                "Unit",
+                                "Upper",
+                                                        };
+
+                                    foreach (var unitType in unitTypes)
+                                    {
+                                        <option>@unitType</option>
+                                    }
+                                }
+                            </select>
+                            <small class="text-muted">
+                                Optionally enter a unit type
+                            </small>
+                        </div>
+                        <div class="col-md-8 mb-3">
+                            <label for="address2">Unit Number <span class="text-muted">(Optional)</span></label>
+                            <input asp-for="Order!.AddressUnitNumber" type="text" class="form-control" id="address2" placeholder="307">
+                            <small class="text-muted">
+                                Optionally enter a unit number
+                            </small>
+                        </div>
+                    </div>
+                    <h4 class="mb-3">Installation Information</h4>
+                    @{
+                        if (Model?.Order?.DateSubmitted > DateTime.MinValue && (Model?.Products?.Any() ?? false))
+                        {
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="installationType">Installation Location</label>
+                                    <div class="form-group">
+                                        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                            <label class="btn btn-outline-secondary">
+                                                <input asp-for="Order!.OnsiteInstallation" type="radio" id="ltoption1" value="false" disabled> Remote
+                                            </label>
+                                            <label class="btn btn-outline-secondary">
+                                                <input asp-for="Order!.OnsiteInstallation" type="radio" id="ltoption2" value="true" disabled> Onsite
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-8 mb-3">
+                                    <p>Remote installation is free, safe, and done virtually. We'll guide you through every step of plugging in your pre-configured phones!</p>
+                                    <p>Onsite installation is available in the Greater Seattle Area for a $75 call out charge. Time spent onsite is billed at $125 per hour.</p>
+                                </div>
+                            </div>
+                        }
+                        else if (Model?.Products?.Any() ?? false)
+                        {
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="installationType">Installation Location</label>
+                                    <div class="form-group">
+                                        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                            <label class="btn btn-outline-secondary">
+                                                <input asp-for="Order!.OnsiteInstallation" type="radio" id="ltoption1" value="false" checked> Remote
+                                            </label>
+                                            <label class="btn btn-outline-secondary">
+                                                <input asp-for="Order!.OnsiteInstallation" type="radio" id="ltoption2" value="true"> Onsite
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-8 mb-3">
+                                    <p>Remote installation is free, safe, and done virtually. We'll guide you through every step of plugging in your pre-configured phones!</p>
+                                    <p>Onsite installation is available in the Greater Seattle Area for a $75 call out charge. Time spent onsite is billed at $125 per hour.</p>
+                                </div>
+                            </div>
+                        }
+                    }
+                    <div class="row">
+                        <div class="col-md-6 mb-3" id="installDateContainer">
+                            <label for="installdate">Preferred Install Date <span class="text-muted">(Optional)</span></label>
+                            @{
+                                if (Model?.Order?.InstallDate is null && (Model?.Products?.Any() ?? false))
+                                {
+                                    <input asp-for="Order!.InstallDate" type="datetime-local" class="form-control" id="installdate" min="@DateTime.Now.AddDays(3).ToString(" yyyy-MM-ddThh:mm")" max="@DateTime.Now.AddDays(31).ToString(" yyyy-MM-ddThh:mm")" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}">
+                                    <small class="text-muted">
+                                        Optionally chose an install date
+                                    </small>
+                                }
+                                else
+                                {
+                                    <input asp-for="Order!.InstallDate" type="datetime-local" class="form-control" id="installdate" readonly>
+                                }
+                            }
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="sales">Sales Representative <span class="text-muted">(Optional)</span></label>
+                            <select asp-for="Order!.SalesEmail" class="custom-select mr-sm-2" id="sales">
+                                <option value="" selected>Choose...</option>
+                                <option value="dan@acceleratenetworks.com">Dan</option>
+                                <option value="scott@acceleratenetworks.com">Scott</option>
+                                <option value="support@acceleratenetworks.com">Support</option>
+                                <option value="tyler@acceleratenetworks.com">Tyler</option>
+                            </select>
+                            <small class="text-muted">
+                                Optionally enter the name of your sales representive
+                            </small>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="customernotes">Notes <span class="text-muted">(Optional)</span></label>
+                            <input asp-for="Order!.CustomerNotes" type="text" class="form-control" id="customernotes" placeholder="Add important information for our staff">
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-check">
+                                <input asp-for="Order!.Quote" type="checkbox" class="form-check-input" id="defaultCheck1">
+                                <label class="form-check-label" for="defaultCheck1">
+                                    Please send a quote
+                                </label>
+                            </div>
+                        </div>
                     </div>
                     @{
-                        var total = numbersTotal + portedTotal + productsTotal + servicesTotal + verifiedTotal + couponTotal;
-                        <strong>$@total</strong>
-                    }
-                </li>
-                @{
-                    if (Model?.Order is not null && Model.Order.DateSubmitted > DateTime.Now.AddYears(-99))
-                    {
-                        <h4 class="d-flex justify-content-between align-items-center mt-3">
-                            <span class="text-muted">Submitted On</span>
-                        </h4>
-                        <h4 class="d-flex justify-content-between align-items-center mt-3">
-                            <span class="badge badge-info badge-pill">@Model.Order.DateSubmitted</span>
-                        </h4>
-                    }
-                    if (!string.IsNullOrWhiteSpace(Model?.Order?.UpfrontInvoiceLink) && !string.IsNullOrWhiteSpace(Model?.Order?.ReoccuringInvoiceLink))
-                    {
-                        <h4 class="d-flex justify-content-between align-items-center mt-3">
-                            <span class="text-muted">Pay Now</span>
-                        </h4>
-                        <div class="btn-group mt-3" role="group" aria-label="billing links">
-                            <a class="btn btn-primary" href="@Model?.Order?.UpfrontInvoiceLink" target="_blank" rel="noopener noreferrer">Upfront</a>
-                            <a class="btn btn-primary" href="@Model?.Order?.ReoccuringInvoiceLink" target="_blank" rel="noopener noreferrer">Monthly</a>
-                        </div>
-                    }
-                    else if (!string.IsNullOrWhiteSpace(Model?.Order?.UpfrontInvoiceLink))
-                    {
-                        <h4 class="d-flex justify-content-between align-items-center mt-3">
-                            <span class="text-muted">Pay Now</span>
-                        </h4>
-                        <a class="btn btn-primary mt-3" href="@Model?.Order?.UpfrontInvoiceLink" target="_blank" rel="noopener noreferrer">Upfront</a>
-                    }
-                    else if (!string.IsNullOrWhiteSpace(Model?.Order?.ReoccuringInvoiceLink))
-                    {
-                        <h4 class="d-flex justify-content-between align-items-center mt-3">
-                            <span class="text-muted">Pay Now</span>
-                        </h4>
-                        <a class="btn btn-primary mt-3" href="@Model?.Order?.ReoccuringInvoiceLink" target="_blank" rel="noopener noreferrer">Monthly</a>
-                    }
-                }
-            </ul>
-        </div>
-        <div class="col-md-8 order-md-1 pb-5">
-            <h4 class="mb-3">Billing Information</h4>
-            <form asp-controller="Cart" asp-action="Submit" method="post">
-                @Html.AntiForgeryToken()
-                <input asp-for="Order!.OrderId" type="text" value="@Model?.Order?.OrderId" hidden />
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="firstName">First name</label>
-                        <input asp-for="Order!.FirstName" type="text" class="form-control" id="firstName" placeholder="Alexander" required>
-                        <small class="text-muted">
-                            Enter your first name
-                        </small>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="lastName">Last name</label>
-                        <input asp-for="Order!.LastName" type="text" class="form-control" id="lastName" placeholder="Bell" required>
-                        <small class="text-muted">
-                            Enter your last name
-                        </small>
-                    </div>
-                </div>
 
-                <div class="mb-3">
-                    <label for="email">Business Name <span class="text-muted">(Optional)</span></label>
-                    <input asp-for="Order!.BusinessName" type="text" class="form-control" id="businessName" placeholder="ACME Corporation">
-                    <small class="text-muted">
-                        Enter the name of your business or the organization that you represent
-                    </small>
-                </div>
-
-                <div class="mb-3">
-                    <label for="email">Email </label>
-                    <input asp-for="Order!.Email" type="email" class="form-control" id="email" placeholder="tom@myspace.com" required>
-                    <small class="text-muted">
-                        Enter an email address for shipping updates and order information
-                    </small>
-                </div>
-
-                @if (Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted > DateTime.MinValue)
-                {
-                    <div class="mb-3" id="searchForm">
-                        <label for="address">Address</label>
-                        <input asp-for="Order!.UnparsedAddress" type="text" class="form-control" id="address" readonly>
-                        <small class="text-muted">
-                            @*If it doesn't have a placeholder value give it a example*@
-                            Enter the shipping address for this order, or the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
-                        </small>
-                    </div>
-                }
-                else
-                {
-                    <div class="mb-3" id="searchForm">
-                        <label for="address">Address</label>
-                        <input asp-for="Order!.UnparsedAddress" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" data-toggle="dropdown" required>
-                        <ul class="list-group" role="menu" aria-labelledby="menu1" id="addressOptions">
-                        </ul>
-                        <small class="text-muted">
-                            @*If it doesn't have a placeholder value give it a example*@
-                            Enter the shipping address for this order, or the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
-                        </small>
-                    </div>
-                }
-
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label for="unitType">Unit Type <span class="text-muted">(Optional)</span></label>
-                        <select asp-for="Order!.AddressUnitType" class="custom-select d-block w-100" id="unitType">
-                            @{
-                                var unitTypes = new string[] {
-                            "Apartment",
-                            "Basement",
-                            "Building",
-                            "Department",
-                            "Floor",
-                            "Front",
-                            "Hanger",
-                            "Lobby",
-                            "Lot",
-                            "Lower",
-                            "Office",
-                            "Penthouse",
-                            "Pier",
-                            "Rear",
-                            "Room",
-                            "Side",
-                            "Space",
-                            "Suite",
-                            "Trailer",
-                            "Unit",
-                            "Upper",
-                                                };
-
-                                foreach (var unitType in unitTypes)
-                                {
-                                    <option>@unitType</option>
-                                }
-                            }
-                        </select>
-                        <small class="text-muted">
-                            Optionally enter a unit type
-                        </small>
-                    </div>
-                    <div class="col-md-8 mb-3">
-                        <label for="address2">Unit Number <span class="text-muted">(Optional)</span></label>
-                        <input asp-for="Order!.AddressUnitNumber" type="text" class="form-control" id="address2" placeholder="307">
-                        <small class="text-muted">
-                            Optionally enter a unit number
-                        </small>
-                    </div>
-                </div>
-                <br />
-                <h4 class="mb-3">Installation Information</h4>
-                @{
-                    if (Model?.Order?.DateSubmitted > DateTime.MinValue && (Model?.Products?.Any() ?? false))
-                    {
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="installationType">Installation Location</label>
-                                <div class="form-group">
-                                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                        <label class="btn btn-outline-secondary">
-                                            <input asp-for="Order!.OnsiteInstallation" type="radio" id="ltoption1" value="false" disabled> Remote
-                                        </label>
-                                        <label class="btn btn-outline-secondary">
-                                            <input asp-for="Order!.OnsiteInstallation" type="radio" id="ltoption2" value="true" disabled> Onsite
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-8 mb-3">
-                                <p>Remote installation is free, safe, and done virtually. We'll guide you through every step of plugging in your pre-configured phones!</p>
-                                <p>Onsite installation is available in the Greater Seattle Area for a $75 call out charge. Time spent onsite is billed at $125 per hour.</p>
-                            </div>
-                        </div>
-                    }
-                    else if (Model?.Products?.Any() ?? false)
-                    {
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="installationType">Installation Location</label>
-                                <div class="form-group">
-                                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                        <label class="btn btn-outline-secondary">
-                                            <input asp-for="Order!.OnsiteInstallation" type="radio" id="ltoption1" value="false" checked> Remote
-                                        </label>
-                                        <label class="btn btn-outline-secondary">
-                                            <input asp-for="Order!.OnsiteInstallation" type="radio" id="ltoption2" value="true"> Onsite
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-8 mb-3">
-                                <p>Remote installation is free, safe, and done virtually. We'll guide you through every step of plugging in your pre-configured phones!</p>
-                                <p>Onsite installation is available in the Greater Seattle Area for a $75 call out charge. Time spent onsite is billed at $125 per hour.</p>
-                            </div>
-                        </div>
-                    }
-                }
-                <div class="row">
-                    <div class="col-md-6 mb-3" id="installDateContainer">
-                        <label for="installdate">Preferred Install Date <span class="text-muted">(Optional)</span></label>
-                        @{
-                            if (Model?.Order?.InstallDate is null && (Model?.Products?.Any() ?? false))
-                            {
-                                <input asp-for="Order!.InstallDate" type="datetime-local" class="form-control" id="installdate" min="@DateTime.Now.AddDays(3).ToString(" yyyy-MM-ddThh:mm")" max="@DateTime.Now.AddDays(31).ToString(" yyyy-MM-ddThh:mm")" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}">
-                                <small class="text-muted">
-                                    Optionally chose an install date
-                                </small>
-                            }
-                            else
-                            {
-                                <input asp-for="Order!.InstallDate" type="datetime-local" class="form-control" id="installdate" readonly>
-                            }
+                        if (ported is not null && ported.Any() && Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted > DateTime.MinValue)
+                        {
+                            <hr class="mb-3">
+                            <h4 class="mb-3">Next Steps</h4>
+                            <p>Now that you've complete your order, please fillout these two pages so we can bring your existing phone numbers onto our network and configure your phones with the correct extentions. If you have any questions please contact your sales representative or our support staff at (206) 858-8757.</p>
+                            <a asp-controller="Cart" asp-action="PortingInformation" asp-route-id="@Model?.Order?.OrderId" class="btn btn-primary btn-lg btn-block shadow">Add Porting Information</a>
+                            <a href="/Cart/Order/@Model?.Order?.OrderId/NewClient" class="btn btn-primary btn-lg btn-block shadow">Add New Client Setup Information</a>
                         }
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="sales">Sales Representative <span class="text-muted">(Optional)</span></label>
-                        <select asp-for="Order!.SalesEmail" class="custom-select mr-sm-2" id="sales">
-                            <option value="" selected>Choose...</option>
-                            <option value="dan@acceleratenetworks.com">Dan</option>
-                            <option value="scott@acceleratenetworks.com">Scott</option>
-                            <option value="support@acceleratenetworks.com">Support</option>
-                            <option value="tyler@acceleratenetworks.com">Tyler</option>
-                        </select>
-                        <small class="text-muted">
-                            Optionally enter the name of your sales representive
-                        </small>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <label for="customernotes">Notes <span class="text-muted">(Optional)</span></label>
-                        <input asp-for="Order!.CustomerNotes" type="text" class="form-control" id="customernotes" placeholder="Add important information for our staff">
-                    </div>
-                    <div class="col-md-12">
-                        <div class="form-check">
-                            <input asp-for="Order!.Quote" type="checkbox" class="form-check-input" id="defaultCheck1">
-                            <label class="form-check-label" for="defaultCheck1">
-                                Please send a quote
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                @{
+                        else if (Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted == DateTime.MinValue)
+                        {
 
-                    if (ported is not null && ported.Any() && Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted > DateTime.MinValue)
-                    {
-                        <hr class="mb-4">
-                        <h4 class="mb-3">Next Steps</h4>
-                        <p>Now that you've complete your order, please fillout these two pages so we can bring your existing phone numbers onto our network and configure your phones with the correct extentions. If you have any questions please contact your sales representative or our support staff at (206) 858-8757.</p>
-                        <a asp-controller="Cart" asp-action="PortingInformation" asp-route-id="@Model?.Order?.OrderId" class="btn btn-primary btn-lg btn-block shadow">Add Porting Information</a>
-                        <a href="/Cart/Order/@Model?.Order?.OrderId/NewClient" class="btn btn-primary btn-lg btn-block shadow">Add New Client Setup Information</a>
+                            <hr class="mb-4">
+                            <button class="btn btn-primary btn-lg btn-block shadow" type="submit" value="Submit">Submit your Order</button>
+                        }
                     }
-                    else if (Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted == DateTime.MinValue)
-                    {
-
-                        <hr class="mb-4">
-                        <button class="btn btn-primary btn-lg btn-block shadow" type="submit" value="Submit">Submit your Order</button>
-                    }
-                }
-                <br />
-            </form>
+                    <br />
+                </form>
+            </div>
         </div>
     </div>
 </div>
