@@ -5,7 +5,6 @@ using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.InvoiceNinja;
@@ -17,7 +16,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.ServiceModel.Channels;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -157,6 +155,45 @@ namespace NumberSearch.Mvc.Controllers
             {
                 // Create a GUID for an order to prevent multiple order submissions from repeated button clicking.
                 cart.Order.OrderId = Guid.NewGuid();
+
+                // Default to Onsite Installation if there is hardware in the cart.
+                if (cart?.Products is not null && cart.Products.Count > 0)
+                {
+                    cart.Order.OnsiteInstallation = true;
+
+                    // Add the call out charge and install estimate to the Cart
+                    Product onsite = await Product.GetByIdAsync(Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"), _postgresql);
+                    Product estimate = await Product.GetByIdAsync(Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"), _postgresql);
+
+                    // Sum all of the install time estimates.
+                    decimal totalInstallTime = 0m;
+                    foreach (var item in cart.Products)
+                    {
+                        var quantity = cart.ProductOrders?.Where(x => x.ProductId == item.ProductId).FirstOrDefault();
+
+                        if (item.InstallTime > 0m && quantity is not null)
+                        {
+                            totalInstallTime += item.InstallTime * quantity.Quantity;
+                        }
+                    }
+
+                    var productOrderOnsite = new ProductOrder
+                    {
+                        ProductOrderId = Guid.NewGuid(),
+                        ProductId = onsite.ProductId,
+                        Quantity = 1
+                    };
+
+                    var productOrderEstimate = new ProductOrder
+                    {
+                        ProductOrderId = Guid.NewGuid(),
+                        ProductId = estimate.ProductId,
+                        Quantity = decimal.ToInt32(Math.Ceiling(totalInstallTime))
+                    };
+
+                    _ = cart.AddProduct(onsite, productOrderOnsite);
+                    _ = cart.AddProduct(estimate, productOrderEstimate);
+                }
 
                 _ = cart.SetToSession(HttpContext.Session);
             }
@@ -340,7 +377,7 @@ namespace NumberSearch.Mvc.Controllers
                         }
                         else
                         {
-                            Log.Error($"[Checkout] Failed automatic address formating.");
+                            Log.Error($"[Checkout] Failed automatic address formatting.");
                         }
 
                         // Fillout the address2 information from its components.
@@ -419,6 +456,57 @@ namespace NumberSearch.Mvc.Controllers
 
                             if (cart is not null && cart.ProductOrders is not null)
                             {
+                                if (cart.Products is not null && cart.Products.Count > 0)
+                                {
+                                    // Add the call out charge and install estimate to the Cart
+                                    Product onsite = await Product.GetByIdAsync(Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"), _postgresql);
+                                    Product estimate = await Product.GetByIdAsync(Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"), _postgresql);
+
+                                    // Sum all of the install time estimates.
+                                    decimal totalInstallTime = 0m;
+                                    foreach (var item in cart.Products)
+                                    {
+                                        var quantity = cart.ProductOrders?.Where(x => x.ProductId == item.ProductId).FirstOrDefault();
+
+                                        if (item.InstallTime > 0m && quantity is not null)
+                                        {
+                                            totalInstallTime += item.InstallTime * quantity.Quantity;
+                                        }
+                                    }
+
+                                    var productOrderOnsite = new ProductOrder
+                                    {
+                                        ProductOrderId = Guid.NewGuid(),
+                                        ProductId = onsite.ProductId,
+                                        Quantity = 1
+                                    };
+
+                                    var productOrderEstimate = new ProductOrder
+                                    {
+                                        ProductOrderId = Guid.NewGuid(),
+                                        ProductId = estimate.ProductId,
+                                        Quantity = decimal.ToInt32(Math.Ceiling(totalInstallTime))
+                                    };
+
+                                    if (order.OnsiteInstallation)
+                                    {
+                                        var checkOnsiteExists = cart.Products.FirstOrDefault(x => x.ProductId == Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"));
+                                        var checkEstimateExists = cart.Products.FirstOrDefault(x => x.ProductId == Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"));
+
+                                        if (checkOnsiteExists is null && checkEstimateExists is null)
+                                        {
+                                            _ = cart.AddProduct(onsite, productOrderOnsite);
+                                            _ = cart.AddProduct(estimate, productOrderEstimate);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // Remove 
+                                        _ = cart.RemoveProduct(onsite, productOrderOnsite);
+                                        _ = cart.RemoveProduct(estimate, productOrderEstimate);
+                                    }
+                                }
+
                                 foreach (var productOrder in cart.ProductOrders)
                                 {
                                     productOrder.OrderId = order.OrderId;
@@ -536,7 +624,7 @@ namespace NumberSearch.Mvc.Controllers
                                             }
                                             else if (coupon.Type == "Install")
                                             {
-                                                // If they have selected onsite installation this coupon removes a $60 charge.
+                                                // If they have selected onsite installation this coupon removes a $75 charge.
                                                 if (order.OnsiteInstallation)
                                                 {
                                                     onetimeItems.Add(new Line_Items
@@ -629,17 +717,7 @@ namespace NumberSearch.Mvc.Controllers
                             // Handle hardware installation scenarios, if hardware is in the order.
                             if (cart?.Products is not null && cart.Products.Any())
                             {
-                                if (order.OnsiteInstallation)
-                                {
-                                    onetimeItems.Add(new Line_Items
-                                    {
-                                        product_key = "Onsite Hardware Installation",
-                                        notes = $"We'll come visit you and get all your phones setup.",
-                                        cost = 75,
-                                        quantity = 1
-                                    });
-                                }
-                                else
+                                if (!order.OnsiteInstallation)
                                 {
                                     onetimeItems.Add(new Line_Items
                                     {
@@ -677,7 +755,7 @@ namespace NumberSearch.Mvc.Controllers
                                 }
                             }
 
-                            // Handle the tax information for the invoice and fall back to simplier queries if we get failures.
+                            // Handle the tax information for the invoice and fall back to simpler queries if we get failures.
                             SalesTax specificTaxRate = null!;
                             if (order.State is "WA" || order.State is "Washington")
                             {

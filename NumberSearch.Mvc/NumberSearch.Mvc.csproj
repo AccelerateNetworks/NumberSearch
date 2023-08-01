@@ -413,6 +413,9 @@
 		<Content Update="wwwroot\images\scaled\MukilteoChamber-320.webp">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Update="wwwroot\images\scaled\onsiteInstall-400.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Update="wwwroot\images\scaled\qacc-logo.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>

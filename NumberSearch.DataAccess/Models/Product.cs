@@ -118,7 +118,7 @@ namespace NumberSearch.DataAccess
                 .ExecuteAsync("UPDATE public.\"Products\" " +
                 "SET \"Name\" = @Name, \"Price\" = @Price, \"Description\" = @Description, \"Image\" = @Image, \"Public\" = @Public, \"QuantityAvailable\" = @QuantityAvailable, \"SupportLink\" = @SupportLink, \"DisplayPriority\" = @DisplayPriority, \"VendorPartNumber\" = @VendorPartNumber, \"Type\" = @Type, \"Tags\" = @Tags, \"VendorDescription\" = @VendorDescription, \"VendorFeatures\" = @VendorFeatures, \"MarkdownContent\" = @MarkdownContent, \"InstallTime\" = @InstallTime " +
                 "WHERE \"ProductId\" = @ProductId",
-                new { Name, Price, Description, Image, Public, ProductId, QuantityAvailable, SupportLink, DisplayPriority, VendorPartNumber, Type, VendorDescription, VendorFeatures, MarkdownContent, InstallTime })
+                new { Name, Price, Description, Image, Public, ProductId, QuantityAvailable, SupportLink, DisplayPriority, VendorPartNumber, Type, Tags, VendorDescription, VendorFeatures, MarkdownContent, InstallTime })
                 .ConfigureAwait(false);
 
             if (result == 1)

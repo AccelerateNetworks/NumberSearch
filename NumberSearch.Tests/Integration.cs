@@ -166,6 +166,19 @@ namespace NumberSearch.Tests
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
+        //[Fact]
+        //public async Task SetAllHardwareInstallTimesTo15Minutes()
+        //{
+        //    // Act
+        //    var result = await Product.GetAllAsync(postgresql);
+
+        //    foreach (var item in result)
+        //    {
+        //        item.InstallTime = 0.25m;
+        //        var checkUpdate = await item.PutAsync(postgresql);
+        //        Assert.True(checkUpdate);
+        //    }
+        //}
 
         //[Fact]
         //public async Task CreateAndSendAnInvoiceAsync()
