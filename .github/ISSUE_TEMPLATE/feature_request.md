@@ -1,22 +1,17 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
-title: ''
-labels: ''
-assignees: ''
+about: Suggest an improvement for this project
+title: "[FEATURE]"
+labels: enhancement
+assignees: uncheckederror
 
 ---
 
-**How will this improve revenue or reduce our costs? Please provide a complete explanation!**
-
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+**What is the problem that this feature solves?**
+A clear and concise description of what the problem is. Ex. I'm always frustrated when...
 
 **Describe the solution you'd like**
 A clear and concise description of what you want to happen.
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
-
-**Additional context**
-Add any other context or screenshots about the feature request here.
+**How will this improve revenue or reduce our costs?**
+Not having this feature cost us a sale.
