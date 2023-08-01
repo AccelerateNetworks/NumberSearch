@@ -430,6 +430,7 @@ public partial class numberSearchContext : DbContext
 
             entity.Property(e => e.DateCompleted).HasColumnType("timestamp without time zone");
 
+            entity.Property(e => e.ContactPhoneNumber).HasColumnType("character varying");
         });
 
         modelBuilder.Entity<OwnedPhoneNumber>(entity =>

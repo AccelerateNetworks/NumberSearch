@@ -614,20 +614,36 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="email">Business Name <span class="text-muted">(Optional)</span></label>
+                        <label for="business">Business Name <span class="text-muted">(Optional)</span></label>
                         <input asp-for="Order!.BusinessName" type="text" class="form-control" id="businessName" placeholder="ACME Corporation">
                         <small class="text-muted">
                             Enter the name of your business or the organization that you represent
                         </small>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="email">Email </label>
-                        <input asp-for="Order!.Email" type="email" class="form-control" id="email" placeholder="tom@myspace.com" required>
-                        <small class="text-muted">
-                            Enter an email address for shipping updates and order information
-                        </small>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email">Email </label>
+                                <input asp-for="Order!.Email" type="email" class="form-control" id="email" placeholder="tom@myspace.com" required>
+                                <small class="text-muted">
+                                    Enter an email address for shipping updates and order information
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="contact">Direct Phone Number</label>
+                                <input asp-for="Order!.ContactPhoneNumber" type="tel" class="form-control" id="phone" placeholder="2068588757" required>
+                                <small class="text-muted">
+                                    What number can we call to talk to you?
+                                </small>
+                            </div>
+                        </div>
                     </div>
+
+
+
 
                     @if (Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted > DateTime.MinValue)
                     {
@@ -768,10 +784,9 @@
                         <div class="col-md-6 mb-3">
                             <label for="sales">Sales Representative <span class="text-muted">(Optional)</span></label>
                             <select asp-for="Order!.SalesEmail" class="custom-select mr-sm-2" id="sales">
-                                <option value="" selected>Choose...</option>
+                                <option value="support@acceleratenetworks.com">Support</option>
                                 <option value="dan@acceleratenetworks.com">Dan</option>
                                 <option value="scott@acceleratenetworks.com">Scott</option>
-                                <option value="support@acceleratenetworks.com">Support</option>
                                 <option value="tyler@acceleratenetworks.com">Tyler</option>
                             </select>
                             <small class="text-muted">
@@ -794,7 +809,6 @@
                         </div>
                     </div>
                     @{
-
                         if (ported is not null && ported.Any() && Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted > DateTime.MinValue)
                         {
                             <hr class="mb-3">

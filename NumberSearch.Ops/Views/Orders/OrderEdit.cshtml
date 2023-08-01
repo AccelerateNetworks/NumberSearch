@@ -197,12 +197,14 @@
         <div class="col">
             <div class="form-floating mb-3">
                 <input asp-for="Order.BusinessName" type="text" class="form-control" id="businessName" placeholder="American Telegraph and Telephone Company">
-                <label for="email">Business Name (Optional)</label>
+                <label for="business">Business Name (Optional)</label>
                 <div class="invalid-feedback">
                     Please enter a valid business name.
                 </div>
             </div>
         </div>
+    </div>
+    <div class="row">
         <div class="col">
             <div class="form-floating mb-3">
                 <input asp-for="Order.Email" type="email" class="form-control" id="email" placeholder="you@example.com" required>
@@ -210,6 +212,24 @@
                 <div class="invalid-feedback">
                     Please enter a valid email address for shipping updates.
                 </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-floating mb-3">
+                <input asp-for="Order.ContactPhoneNumber" type="tel" class="form-control" id="phone" placeholder="2068588757">
+                <label for="phone">Direct Phone Number</label>
+                <small class="invalid-feedback">
+                    What number can we call to talk to you?
+                </small>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-floating mb-3" hidden>
+                <input type="text" class="form-control" id="phone" placeholder="2068588757">
+                <label for="contact">Direct Phone Number</label>
+                <small class="invalid-feedback">
+                    What number can we call to talk to you?
+                </small>
             </div>
         </div>
     </div>
@@ -298,10 +318,10 @@
         <div class="col mb-3">
             <div class="form-floating mb-3">
                 <select asp-for="Order.SalesEmail" class="form-select mr-sm-2" id="sales">
-                    <option selected>Choose...</option>
-                    <option value="scott@acceleratenetworks.com">Scott</option>
-                    <option value="kyle@acceleratenetworks.com">Kyle</option>
+                    <option value="support@acceleratenetworks.com">Support</option>
                     <option value="dan@acceleratenetworks.com">Dan</option>
+                    <option value="scott@acceleratenetworks.com">Scott</option>
+                    <option value="tyler@acceleratenetworks.com">Tyler</option>
                 </select>
                 <label for="sales">Sales Representative</label>
             </div>
@@ -435,7 +455,7 @@
         <div class="row mt-3">
             <div class="col">
                 <div class="table-responsive shadow-sm">
-                    <table class="table table-striped table-borderless table-hover">
+                    <table class="table table-striped table-borderless table-hover m-0">
                         <thead>
                             <tr>
                                 <th>Name</th>
