@@ -359,6 +359,72 @@ public class OrdersController : Controller
                     }
                 }
 
+                if (order.OnsiteInstallation != existingOrder.OnsiteInstallation)
+                {
+                    var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).ToListAsync();
+                    var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
+                    var products = new List<Product>();
+                    foreach (var productId in productsToGet)
+                    {
+                        var product = await _context.Products.FirstOrDefaultAsync(x => x.ProductId == productId);
+                        if (product is not null)
+                        {
+                            products.Add(product);
+                        }
+                    }
+
+                    // Add the call out charge and install estimate to the Cart
+                    var onsite = await _context.Products.FindAsync(Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"));
+                    var estimate = await _context.Products.FindAsync(Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"));
+
+                    // Sum all of the install time estimates.
+                    decimal totalInstallTime = 0m;
+                    foreach (var item in products)
+                    {
+                        var quantity = productOrders?.Where(x => x.ProductId == item.ProductId).FirstOrDefault();
+
+                        if (item.InstallTime > 0m && quantity is not null)
+                        {
+                            totalInstallTime += item.InstallTime * quantity.Quantity;
+                        }
+                    }
+
+                    var productOrderOnsite = new ProductOrder
+                    {
+                        ProductOrderId = Guid.NewGuid(),
+                        ProductId = onsite?.ProductId,
+                        Quantity = 1,
+                        OrderId = order.OrderId,
+                    };
+
+                    var productOrderEstimate = new ProductOrder
+                    {
+                        ProductOrderId = Guid.NewGuid(),
+                        ProductId = estimate?.ProductId,
+                        Quantity = decimal.ToInt32(Math.Ceiling(totalInstallTime)),
+                        OrderId = order.OrderId,
+                    };
+
+                    // Add the install charges if they're not already in the Cart.
+                    var checkOnsiteExists = productOrders.FirstOrDefault(x => x.ProductId == Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"));
+                    var checkEstimateExists = productOrders.FirstOrDefault(x => x.ProductId == Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"));
+
+                    if (order.OnsiteInstallation)
+                    {
+                        if (checkOnsiteExists is null && checkEstimateExists is null)
+                        {
+                            _context.Add(productOrderOnsite);
+                            _context.Add(productOrderEstimate);
+                        }
+                    }
+                    else
+                    {
+                        // Remove the install charges as this is now a remote install.
+                        _context.Remove(checkOnsiteExists ?? new());
+                        _context.Remove(checkEstimateExists ?? new());
+                    }
+                }
+
                 // Update the existing order
                 _context.Update(order);
                 await _context.SaveChangesAsync();
