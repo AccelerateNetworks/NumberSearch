@@ -17,8 +17,8 @@
 
 <script type="text/javascript">
     function handleSearchQuery(textBox) {
-        var route = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest?text=';
-        var suffix = '&maxSuggestions=5&countryCode=USA,CAN&f=pjson';
+        let route = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest?text=';
+        let suffix = '&maxSuggestions=5&countryCode=USA,CAN&f=pjson';
         fetch(`${route}${textBox.value}${suffix}`)
             .then(
                 function (response) {
@@ -30,25 +30,25 @@
 
                     // Examine the text in the response
                     response.json().then(function (data) {
-                        var options = '';
-                        var longestResult = 0;
+                        let options = '';
+                        let longestResult = 0;
                         if (data.suggestions != undefined) {
-                            for (var i = 0; i < data.suggestions.length; i++) {
+                            for (let i = 0; i < data.suggestions.length; i++) {
                                 options += `<li class='list-group-item' onclick='setAddress(this.innerHTML)'>${data.suggestions[i].text}</li>`;
                                 if (longestResult < data.suggestions[i].text.length) {
                                     longestResult = data.suggestions[i].text.length;
                                 }
                             }
 
-                            var datalist = document.getElementById("addressOptions");
+                            let datalist = document.getElementById("addressOptions");
                             datalist.innerHTML = options;
                             datalist.hidden = false;
                         }
 
-                        var textBox = document.getElementById("address");
+                        let textBox = document.getElementById("address");
                         textBox.focus();
 
-                        console.log(datalist);
+                        //console.log(datalist);
                     });
                 }
             )
@@ -58,10 +58,33 @@
     }
 
     function setAddress(address) {
-        var textBox = document.getElementById("address");
+        let textBox = document.getElementById("address");
         textBox.value = address;
-        var datalist = document.getElementById("addressOptions");
+        let datalist = document.getElementById("addressOptions");
         datalist.hidden = true;
+    }
+
+    function installItems(hide) {
+        let onsite = document.getElementById("onsiteinstallation");
+        let estimate = document.getElementById("estimatedinstallationtime");
+        let itemsCount = document.getElementById("itemsCount");
+        let cartCounter = document.getElementById("cartCounter");
+
+        if (hide) {
+            onsite.hidden = true;
+            estimate.hidden = true;
+            onsite.classList.remove("d-flex");
+            estimate.classList.remove("d-flex");
+            itemsCount.innerText = parseInt(itemsCount.innerText) - 2;
+            cartCounter.innerText = parseInt(cartCounter.innerText) - 2;
+        } else {
+            onsite.hidden = false;
+            estimate.hidden = false;
+            onsite.classList.add("d-flex");
+            estimate.classList.add("d-flex");
+            itemsCount.innerText = parseInt(itemsCount.innerText) + 2;
+            cartCounter.innerText = parseInt(cartCounter.innerText) + 2;
+        }
     }
 </script>
 
@@ -241,7 +264,7 @@
                             }
                         }
                     }
-                    <span class="badge badge-success badge-pill">@sumOfItems</span>
+                    <span class="badge badge-success badge-pill" id="itemsCount">@sumOfItems</span>
                 </h4>
                 <ul class="list-group mb-3">
                     @{
@@ -414,7 +437,8 @@
                                 var productOrder = productOrders[product!.ProductId.ToString()];
                                 var localTotal = productOrder.Quantity * product.Price;
                                 productsTotal += localTotal;
-                                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                                string htmlId = product.Name.Trim().Replace(" ", "").ToLowerInvariant();
+                                <li class="list-group-item d-flex justify-content-between lh-condensed" id="@htmlId">
                                     <div>
                                         <h6 class="my-0">
                                             @product.Name
@@ -709,10 +733,10 @@
                                     <div class="form-group">
                                         <div class="btn-group btn-group-toggle" data-toggle="buttons">
                                             <label class="btn btn-outline-secondary">
-                                                <input asp-for="Order!.OnsiteInstallation" type="radio" id="ltoption1" value="false"> Remote
+                                                <input asp-for="Order!.OnsiteInstallation" type="radio" id="ltoption1" value="false" onclick="installItems(true)"> Remote
                                             </label>
                                             <label class="btn btn-outline-secondary">
-                                                <input asp-for="Order!.OnsiteInstallation" type="radio" id="ltoption2" value="true"> Onsite
+                                                <input asp-for="Order!.OnsiteInstallation" type="radio" id="ltoption2" value="true" onclick="installItems(false)"> Onsite
                                             </label>
                                         </div>
                                     </div>

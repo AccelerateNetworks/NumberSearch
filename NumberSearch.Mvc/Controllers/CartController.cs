@@ -78,7 +78,6 @@ namespace NumberSearch.Mvc.Controllers
                         cart = Cart.GetFromSession(HttpContext.Session);
                     }
                 }
-
             }
 
             // Check cordless phone to base station ratio
@@ -490,6 +489,7 @@ namespace NumberSearch.Mvc.Controllers
 
                                     if (order.OnsiteInstallation)
                                     {
+                                        // Add the install charges if they're not already in the Cart.
                                         var checkOnsiteExists = cart.Products.FirstOrDefault(x => x.ProductId == Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"));
                                         var checkEstimateExists = cart.Products.FirstOrDefault(x => x.ProductId == Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"));
 
@@ -501,7 +501,7 @@ namespace NumberSearch.Mvc.Controllers
                                     }
                                     else
                                     {
-                                        // Remove 
+                                        // Remove the install charges as this is now a remote install.
                                         _ = cart.RemoveProduct(onsite, productOrderOnsite);
                                         _ = cart.RemoveProduct(estimate, productOrderEstimate);
                                     }
