@@ -127,7 +127,7 @@ namespace NumberSearch.Mvc.Controllers
                             $"{number.LrnLookup.LIDBName},{number.LrnLookup.lrn},{number.LrnLookup.ocn},{number.LrnLookup.activation}");
                     }
 
-                    return File(Encoding.UTF8.GetBytes(builder.ToString()), "text/csv", "users.csv");
+                    return File(Encoding.UTF8.GetBytes(builder.ToString()), "text/csv", $"AccelerateNetworksPhoneNumbers{DateTime.Now.ToString("yyyyMMddTHHmmss")}.csv");
                 }
 
                 // Add all the numbers to the cart.
