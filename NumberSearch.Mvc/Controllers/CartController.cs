@@ -790,7 +790,7 @@ namespace NumberSearch.Mvc.Controllers
                             };
 
                             // Validation rules to prevent impossible tax rates.
-                            if (specificTaxRate is not null && specificTaxRate.loccode > 0 && specificTaxRate.loccode < 15 && string.IsNullOrWhiteSpace(specificTaxRate.rate?.name) && (order.State is "WA" || order.State is "Washington"))
+                            if (specificTaxRate is not null && specificTaxRate.rate1 > 0 && specificTaxRate.rate1 < 0.15M && !string.IsNullOrWhiteSpace(specificTaxRate.rate?.name) && (order.State is "WA" || order.State is "Washington"))
                             {
                                 var rateName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(specificTaxRate.rate.name.ToLowerInvariant());
                                 var taxRateName = $"{rateName}, WA - {specificTaxRate.loccode}";

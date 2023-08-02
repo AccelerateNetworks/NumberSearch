@@ -287,7 +287,7 @@ try
             }
             else
             {
-                return TypedResults.NotFound($"Failed to find a client registration for {asDialed}.");
+                return TypedResults.NotFound($"Failed to find a client registration for {asDialed}. Parsed as {asDialed}. Please use the client/register endpoint to register a callback URL for this number and enable it for SMS service.");
             }
         }
         catch (Exception ex)
