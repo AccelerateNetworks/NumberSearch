@@ -127,7 +127,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 var lookup = new LookupController(_configuration);
 
-                var port = await lookup.VerifyPortablityAsync(cleanedQuery);
+                var port = await lookup.VerifyPortabilityAsync(cleanedQuery);
 
                 if (port.Portable)
                 {

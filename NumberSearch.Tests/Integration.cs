@@ -398,14 +398,14 @@ namespace NumberSearch.Tests
 
             // Act
             var lookup = new NumberSearch.Mvc.Controllers.LookupController(_configuration);
-            var result = await lookup.VerifyPortablityAsync(phoneNumber1);
+            var result = await lookup.VerifyPortabilityAsync(phoneNumber1);
 
             // Assert        
             Assert.NotNull(result);
             Assert.False(result.Portable);
             output.WriteLine(JsonSerializer.Serialize(result));
 
-            result = await lookup.VerifyPortablityAsync(phoneNumber2);
+            result = await lookup.VerifyPortabilityAsync(phoneNumber2);
 
             // Assert        
             Assert.NotNull(result);

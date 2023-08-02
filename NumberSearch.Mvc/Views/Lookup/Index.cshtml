@@ -400,6 +400,11 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="row">
+                    <div class="col">
+                        <a class="btn btn-outline-primary mt-3" href="/Lookup/BulkPort?dialedNumber=@Model?.DialedNumber&csv=true">Export to CSV</a>
+                    </div>
+                </div>
             </div>
         }
         if (Model != null && Model?.Wireless != null && Model.Wireless.Any())
@@ -596,7 +601,13 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="row">
+                    <div class="col">
+                        <a class="btn btn-outline-primary mt-3" href="/Lookup/BulkPort?dialedNumber=@Model?.DialedNumber&csv=true">Export to CSV</a>
+                    </div>
+                </div>
             </div>
         }
     }
+
 </div>

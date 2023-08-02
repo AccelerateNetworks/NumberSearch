@@ -11,7 +11,10 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace NumberSearch.Mvc.Controllers
 {
@@ -87,7 +90,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [HttpGet]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public async Task<IActionResult> BulkPortAsync(string dialedNumber)
+        public async Task<IActionResult> BulkPortAsync(string dialedNumber, bool csv)
         {
             // Add portable numbers to cart in bulk
             if (!string.IsNullOrWhiteSpace(dialedNumber))
@@ -112,6 +115,20 @@ namespace NumberSearch.Mvc.Controllers
 
                 // Separate wireless numbers out from the rest.
                 var wirelessPortable = results.Where(x => x.Wireless && x.Portable).ToArray();
+
+                if (csv)
+                {
+                    var builder = new StringBuilder();
+                    builder.AppendLine("PortedDialedNumber,City,State,DateIngested,Wireless,Portable,LastPorted,SPID,LATA,LEC,LECType,LIDBName,LRN,OCN,Activation");
+                    foreach (var number in results)
+                    {
+                        builder.AppendLine($"{number.PortedDialedNumber},{number.City},{number.State},{number.DateIngested},{number.Wireless},{number.Portable}," +
+                            $"{number.LrnLookup.LastPorted},{number.LrnLookup.spid},{number.LrnLookup.lata},{number.LrnLookup.lec},{number.LrnLookup.lectype}," +
+                            $"{number.LrnLookup.LIDBName},{number.LrnLookup.lrn},{number.LrnLookup.ocn},{number.LrnLookup.activation}");
+                    }
+
+                    return File(Encoding.UTF8.GetBytes(builder.ToString()), "text/csv", "users.csv");
+                }
 
                 // Add all the numbers to the cart.
                 foreach (var portableNumber in portableNumbers)
@@ -155,7 +172,7 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
-        public async Task<PortedPhoneNumber> VerifyPortablityAsync(string number)
+        public async Task<PortedPhoneNumber> VerifyPortabilityAsync(string number)
         {
             var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number, out var phoneNumber);
 
