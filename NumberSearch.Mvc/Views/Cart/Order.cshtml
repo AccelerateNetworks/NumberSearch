@@ -801,6 +801,14 @@
                         </div>
                         <div class="col-md-12">
                             <div class="form-check">
+                                <input asp-for="Order!.NoEmail" type="checkbox" class="form-check-input" id="defaultCheck1">
+                                <label class="form-check-label" for="defaultCheck1">
+                                    Do not send a confirmation email
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-check">
                                 <input asp-for="Order!.Quote" type="checkbox" class="form-check-input" id="defaultCheck1">
                                 <label class="form-check-label" for="defaultCheck1">
                                     Please send a quote

@@ -391,7 +391,9 @@ namespace NumberSearch.Mvc.Controllers
                         // Send a confirmation email.
                         if (submittedOrder)
                         {
+                            bool NoEmail = order.NoEmail;
                             order = await Order.GetByIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                            order.NoEmail = NoEmail;
 
                             // Submit the number orders and track the total cost.
                             var onetimeItems = new List<Line_Items>();
@@ -1427,19 +1429,20 @@ Accelerate Networks
                                 confirmationEmail.CalendarInvite = icalString;
                             }
 
-                            // If there are notes on the order don't send out any emails to the customer.
-                            if (string.IsNullOrWhiteSpace(order.CustomerNotes))
-                            {
-                                // Queue up the confirmation email.
-                                confirmationEmail.Completed = false;
-                                var checkSave = await confirmationEmail.PostAsync(_postgresql).ConfigureAwait(false);
-                            }
-                            else
+                            // Suppress the confirmation emails.
+                            if (order.NoEmail)
                             {
                                 confirmationEmail.Completed = false;
                                 confirmationEmail.PrimaryEmailAddress = string.IsNullOrWhiteSpace(order.SalesEmail) ? "support@acceleratenetworks.com" : order.SalesEmail;
                                 var checkSave = await confirmationEmail.PostAsync(_postgresql).ConfigureAwait(false);
-                                Log.Information($"Skipped sending out the confirmation emails for {order.OrderId} due to customer notes.");
+                                Log.Information($"Suppressed sending out the confirmation emails for {order.OrderId}.");
+                            }
+                            else
+                            {
+                                // Queue up the confirmation email.
+                                confirmationEmail.Completed = false;
+                                var checkSave = await confirmationEmail.PostAsync(_postgresql).ConfigureAwait(false);
+                                Log.Information($"Sent out the confirmation emails for {order.OrderId}.");
                             }
 
                             // Allow the background work to commence.

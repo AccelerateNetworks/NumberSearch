@@ -28,6 +28,7 @@ namespace NumberSearch.DataAccess
         public string BillingInvoiceId { get; set; } = string.Empty;
         public decimal SalesTax { get; set; }
         public bool Quote { get; set; }
+        public bool NoEmail { get; set; }
         public string BillingInvoiceReoccuringId { get; set; } = string.Empty;
         public string SalesEmail { get; set; } = string.Empty;
         public bool BackgroundWorkCompleted { get; set; }
