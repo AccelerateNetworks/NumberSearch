@@ -361,10 +361,11 @@ try
 
                 foreach (var reg in registrations)
                 {
-                    int inboundMMS = await db.Messages.Where(x => (x.To == reg.AsDialed || x.From.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).CountAsync();
-                    int outboundMMS = await db.Messages.Where(x => (x.To == reg.AsDialed || x.From.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.MMS).CountAsync();
-                    int inboundSMS = await db.Messages.Where(x => (x.To == reg.AsDialed || x.From.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).CountAsync();
-                    int outboundSMS = await db.Messages.Where(x => (x.To == reg.AsDialed || x.From.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.SMS).CountAsync();
+
+                    int inboundMMS = await db.Messages.Where(x => (x.From == reg.AsDialed || x.To.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).CountAsync();
+                    int outboundMMS = await db.Messages.Where(x => (x.From == reg.AsDialed || x.To.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.MMS).CountAsync();
+                    int inboundSMS = await db.Messages.Where(x => (x.From == reg.AsDialed || x.To.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).CountAsync();
+                    int outboundSMS = await db.Messages.Where(x => (x.From == reg.AsDialed || x.To.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.SMS).CountAsync();
                     summary.Add(new UsageSummary { AsDialed = reg.AsDialed, InboundMMSCount = inboundMMS, OutboundMMSCount = outboundMMS, InboundSMSCount = inboundSMS, OutboundSMSCount = outboundSMS });
                 }
 
