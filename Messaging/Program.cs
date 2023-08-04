@@ -361,11 +361,21 @@ try
 
                 foreach (var reg in registrations)
                 {
+                    var checkAsDialed = PhoneNumbersNA.PhoneNumber.TryParse(reg.AsDialed, out var asDialedNumber);
 
-                    int inboundMMS = await db.Messages.Where(x => (x.From == reg.AsDialed || x.To.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).CountAsync();
-                    int outboundMMS = await db.Messages.Where(x => (x.From == reg.AsDialed || x.To.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.MMS).CountAsync();
-                    int inboundSMS = await db.Messages.Where(x => (x.From == reg.AsDialed || x.To.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).CountAsync();
-                    int outboundSMS = await db.Messages.Where(x => (x.From == reg.AsDialed || x.To.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.SMS).CountAsync();
+                    if (asDialedNumber.Type is not PhoneNumbersNA.NumberType.ShortCode)
+                    {
+                        asDialed = $"1{asDialedNumber.DialedNumber}";
+                    }
+                    else
+                    {
+                        asDialed = asDialedNumber.DialedNumber;
+                    }
+
+                    int inboundMMS = await db.Messages.Where(x => (x.From == asDialed || x.To.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).CountAsync();
+                    int outboundMMS = await db.Messages.Where(x => (x.From == asDialed || x.To.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.MMS).CountAsync();
+                    int inboundSMS = await db.Messages.Where(x => (x.From == asDialed || x.To.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).CountAsync();
+                    int outboundSMS = await db.Messages.Where(x => (x.From == asDialed || x.To.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.SMS).CountAsync();
                     summary.Add(new UsageSummary { AsDialed = reg.AsDialed, InboundMMSCount = inboundMMS, OutboundMMSCount = outboundMMS, InboundSMSCount = inboundSMS, OutboundSMSCount = outboundSMS });
                 }
 
@@ -399,11 +409,19 @@ try
 
                 if (reg is not null && !string.IsNullOrWhiteSpace(reg.AsDialed))
                 {
-                    var inboundMMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).CountAsync();
-                    var outboundMMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.MMS).CountAsync();
-                    var inboundSMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).CountAsync();
-                    var outboundSMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.SMS).CountAsync();
+                    if (asDialedNumber.Type is not PhoneNumbersNA.NumberType.ShortCode)
+                    {
+                        asDialed = $"1{asDialedNumber.DialedNumber}";
+                    }
+                    else
+                    {
+                        asDialed = asDialedNumber.DialedNumber;
+                    }
 
+                    var inboundMMS = await db.Messages.Where(x => (x.To.Contains(asDialed) || x.From == asDialed) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).CountAsync();
+                    var outboundMMS = await db.Messages.Where(x => (x.To.Contains(asDialed) || x.From == asDialed) && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.MMS).CountAsync();
+                    var inboundSMS = await db.Messages.Where(x => (x.To.Contains(asDialed) || x.From == asDialed) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).CountAsync();
+                    var outboundSMS = await db.Messages.Where(x => (x.To.Contains(asDialed) || x.From == asDialed) && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.SMS).CountAsync();
                     var summary = new UsageSummary { AsDialed = reg.AsDialed, InboundMMSCount = inboundMMS, OutboundMMSCount = outboundMMS, InboundSMSCount = inboundSMS, OutboundSMSCount = outboundSMS };
                     return TypedResults.Ok(new UsageSummary[] { summary });
                 }
