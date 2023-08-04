@@ -18,6 +18,8 @@ using Microsoft.OpenApi.Models;
 
 using Models;
 
+using Org.BouncyCastle.Ocsp;
+
 using Prometheus;
 
 using Serilog;
@@ -343,13 +345,19 @@ try
             {
                 var registrations = await db.ClientRegistrations.ToArrayAsync();
                 List<UsageSummary> summary = new();
+
+                var inboundMMS = await db.Messages.Where(x => x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).CountAsync();
+                var outboundMMS = await db.Messages.Where(x => x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.MMS).CountAsync();
+                var inboundSMS = await db.Messages.Where(x => x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).CountAsync();
+                var outboundSMS = await db.Messages.Where(x => x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.SMS).CountAsync();
+                summary.Add(new UsageSummary { AsDialed = "Total", InboundMMSCount = inboundMMS, OutboundMMSCount = outboundMMS, InboundSMSCount = inboundSMS, OutboundSMSCount = outboundSMS });
+
                 foreach (var reg in registrations)
                 {
-                    var inboundMMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).CountAsync();
-                    var outboundMMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.MMS).CountAsync();
-                    var inboundSMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).CountAsync();
-                    var outboundSMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.SMS).CountAsync();
-
+                    inboundMMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).CountAsync();
+                    outboundMMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.MMS).CountAsync();
+                    inboundSMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).CountAsync();
+                    outboundSMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.SMS).CountAsync();
                     summary.Add(new UsageSummary { AsDialed = reg.AsDialed, InboundMMSCount = inboundMMS, OutboundMMSCount = outboundMMS, InboundSMSCount = inboundSMS, OutboundSMSCount = outboundSMS });
                 }
 
@@ -697,6 +705,37 @@ try
                 // Parse the oddly formatted response.
                 var toJSON = JsonSerializer.Deserialize<FirstPointResponseMMS>(MMSResponse);
                 sendMessage = new FirstPointResponse { Response = toJSON?.Response ?? new() };
+
+                if (sendMessage is not null && sendMessage?.Response?.Text is "OK")
+                {
+                    var record = new MessageRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        Content = message?.Message ?? string.Empty,
+                        DateReceivedUTC = DateTime.UtcNow,
+                        From = message?.MSISDN ?? "MSISDN was blank",
+                        To = message?.To ?? "To was blank",
+                        MediaURLs = string.Empty,
+                        MessageSource = MessageSource.Outgoing,
+                        MessageType = MessageType.MMS,
+                        RawRequest = System.Text.Json.JsonSerializer.Serialize(multipartContent),
+                        RawResponse = MMSResponse
+                    };
+
+                    db.Messages.Add(record);
+                    await db.SaveChangesAsync();
+
+                    // Let the caller know that delivery status for specific numbers.
+                    return TypedResults.Ok(new SendMessageResponse
+                    {
+                        Message = $"MMS Message sent to {record.To}",
+                        MessageSent = true,
+                    });
+                }
+                else
+                {
+                    return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(sendMessage)}" });
+                }
             }
             else
             {
@@ -713,39 +752,37 @@ try
                     .PostUrlEncodedAsync(toForward)
                     .ReceiveJson<FirstPointResponse>();
                 }
-            }
 
-            Log.Information(System.Text.Json.JsonSerializer.Serialize(sendMessage));
-
-            if (sendMessage is not null && sendMessage?.Response?.Text is "OK")
-            {
-                var record = new MessageRecord
+                if (sendMessage is not null && sendMessage?.Response?.Text is "OK")
                 {
-                    Id = Guid.NewGuid(),
-                    Content = message?.Message ?? string.Empty,
-                    DateReceivedUTC = DateTime.UtcNow,
-                    From = message?.MSISDN ?? "MSISDN was blank",
-                    To = message?.To ?? "To was blank",
-                    MediaURLs = string.Empty,
-                    MessageSource = MessageSource.Outgoing,
-                    MessageType = MessageType.SMS,
-                    RawRequest = System.Text.Json.JsonSerializer.Serialize(message),
-                    RawResponse = System.Text.Json.JsonSerializer.Serialize(sendMessage)
-                };
+                    var record = new MessageRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        Content = message?.Message ?? string.Empty,
+                        DateReceivedUTC = DateTime.UtcNow,
+                        From = message?.MSISDN ?? "MSISDN was blank",
+                        To = message?.To ?? "To was blank",
+                        MediaURLs = string.Empty,
+                        MessageSource = MessageSource.Outgoing,
+                        MessageType = MessageType.SMS,
+                        RawRequest = System.Text.Json.JsonSerializer.Serialize(toForward),
+                        RawResponse = System.Text.Json.JsonSerializer.Serialize(sendMessage)
+                    };
 
-                db.Messages.Add(record);
-                await db.SaveChangesAsync();
+                    db.Messages.Add(record);
+                    await db.SaveChangesAsync();
 
-                // Let the caller know that delivery status for specific numbers.
-                return TypedResults.Ok(new SendMessageResponse
+                    // Let the caller know that delivery status for specific numbers.
+                    return TypedResults.Ok(new SendMessageResponse
+                    {
+                        Message = $"SMS Message sent to {record.To}",
+                        MessageSent = true,
+                    });
+                }
+                else
                 {
-                    Message = $"Message sent to {record.To}",
-                    MessageSent = true,
-                });
-            }
-            else
-            {
-                return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(sendMessage)}" });
+                    return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(sendMessage)}" });
+                }
             }
         }
         catch (FlurlHttpException ex)
