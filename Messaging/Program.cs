@@ -27,6 +27,7 @@ using Serilog.Events;
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography;
 using System.ServiceModel.Channels;
 using System.Text;
 using System.Text.Json;
@@ -298,7 +299,7 @@ try
         catch (Exception ex)
         {
             Log.Error(ex.Message);
-            Log.Error(ex.StackTrace ?? "No stacktrace found.");
+            Log.Error(ex.StackTrace ?? "No stack trace found.");
             return TypedResults.BadRequest(ex.Message);
         }
 
@@ -346,20 +347,24 @@ try
             try
             {
                 var registrations = await db.ClientRegistrations.ToArrayAsync();
-                List<UsageSummary> summary = new();
-
-                var inboundMMS = await db.Messages.Where(x => x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).CountAsync();
-                var outboundMMS = await db.Messages.Where(x => x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.MMS).CountAsync();
-                var inboundSMS = await db.Messages.Where(x => x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).CountAsync();
-                var outboundSMS = await db.Messages.Where(x => x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.SMS).CountAsync();
-                summary.Add(new UsageSummary { AsDialed = "Total", InboundMMSCount = inboundMMS, OutboundMMSCount = outboundMMS, InboundSMSCount = inboundSMS, OutboundSMSCount = outboundSMS });
+                List<UsageSummary> summary = new()
+                {
+                    new UsageSummary
+                    {
+                        AsDialed = "Total",
+                        InboundMMSCount = await db.Messages.Where(x => x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).CountAsync(),
+                        OutboundMMSCount = await db.Messages.Where(x => x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.MMS).CountAsync(),
+                        InboundSMSCount = await db.Messages.Where(x => x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).CountAsync(),
+                        OutboundSMSCount = await db.Messages.Where(x => x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.SMS).CountAsync()
+                    }
+                };
 
                 foreach (var reg in registrations)
                 {
-                    inboundMMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).CountAsync();
-                    outboundMMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.MMS).CountAsync();
-                    inboundSMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).CountAsync();
-                    outboundSMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.SMS).CountAsync();
+                    int inboundMMS = await db.Messages.Where(x => (x.To == reg.AsDialed || x.From.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).CountAsync();
+                    int outboundMMS = await db.Messages.Where(x => (x.To == reg.AsDialed || x.From.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.MMS).CountAsync();
+                    int inboundSMS = await db.Messages.Where(x => (x.To == reg.AsDialed || x.From.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).CountAsync();
+                    int outboundSMS = await db.Messages.Where(x => (x.To == reg.AsDialed || x.From.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.SMS).CountAsync();
                     summary.Add(new UsageSummary { AsDialed = reg.AsDialed, InboundMMSCount = inboundMMS, OutboundMMSCount = outboundMMS, InboundSMSCount = inboundSMS, OutboundSMSCount = outboundSMS });
                 }
 
