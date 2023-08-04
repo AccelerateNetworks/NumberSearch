@@ -335,39 +335,76 @@ try
     })
         .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all registered clients.", Description = "This is intended to be used for debugging client registrations." });
 
-    //app.MapGet("/client/usage", async Task<Results<Ok<ClientRegistration[]>, BadRequest<string>, NotFound<string>>> (MessagingContext db) =>
-    //{
-    //    try
-    //    {
+    app.MapGet("/client/usage", async Task<Results<Ok<UsageSummary[]>, BadRequest<string>, NotFound<string>>> (MessagingContext db, string? asDialed) =>
+    {
+        if (string.IsNullOrWhiteSpace(asDialed))
+        {
+            try
+            {
+                var registrations = await db.ClientRegistrations.ToArrayAsync();
+                List<UsageSummary> summary = new();
+                foreach (var reg in registrations)
+                {
+                    var inboundMMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).CountAsync();
+                    var outboundMMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.MMS).CountAsync();
+                    var inboundSMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).CountAsync();
+                    var outboundSMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.SMS).CountAsync();
 
-    //        var registrations = await db.ClientRegistrations.ToArrayAsync();
-    //        foreach (var reg in registrations)
-    //        {
-    //            var inboundMMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).ToArrayAsync();
-    //            var outboundMMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.MMS).ToArrayAsync();
-    //            var inboundSMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).ToArrayAsync();
-    //            var outboundSMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.SMS).ToArrayAsync();
-    //        }
+                    summary.Add(new UsageSummary { AsDialed = reg.AsDialed, InboundMMSCount = inboundMMS, OutboundMMSCount = outboundMMS, InboundSMSCount = inboundSMS, OutboundSMSCount = outboundSMS });
+                }
 
-    //        if (registrations is not null && registrations.Any())
-    //        {
-    //            return TypedResults.Ok(registrations);
-    //        }
-    //        else
-    //        {
-    //            return TypedResults.NotFound($"No clients are currently registered for service.");
-    //        }
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        Log.Error(ex.Message);
-    //        Log.Error(ex.StackTrace ?? "No stacktrace found.");
-    //        return TypedResults.BadRequest(ex.Message);
-    //    }
+                if (summary.Count > 0)
+                {
+                    return TypedResults.Ok(summary.ToArray());
+                }
+                else
+                {
+                    return TypedResults.NotFound($"No clients are currently registered for service.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                Log.Error(ex.StackTrace ?? "No stack trace found.");
+                return TypedResults.BadRequest(ex.Message);
+            }
+        }
+        else
+        {
+            var checkAsDialed = PhoneNumbersNA.PhoneNumber.TryParse(asDialed, out var asDialedNumber);
+            if (!checkAsDialed)
+            {
+                return TypedResults.BadRequest("AsDialed number couldn't be parsed as a valid NANP (North American Number Plan) number.");
+            }
 
-    //})
-    //.RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all registered clients.", Description = "This is intended to be used for debugging client registrations." });
+            try
+            {
+                var reg = await db.ClientRegistrations.FirstOrDefaultAsync(x => x.AsDialed == asDialedNumber.DialedNumber);
 
+                if (reg is not null && !string.IsNullOrWhiteSpace(reg.AsDialed))
+                {
+                    var inboundMMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).CountAsync();
+                    var outboundMMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.MMS).CountAsync();
+                    var inboundSMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).CountAsync();
+                    var outboundSMS = await db.Messages.Where(x => x.To == reg.AsDialed && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.SMS).CountAsync();
+
+                    var summary = new UsageSummary { AsDialed = reg.AsDialed, InboundMMSCount = inboundMMS, OutboundMMSCount = outboundMMS, InboundSMSCount = inboundSMS, OutboundSMSCount = outboundSMS };
+                    return TypedResults.Ok(new UsageSummary[] { summary });
+                }
+                else
+                {
+                    return TypedResults.NotFound($"Failed to find a client registration for {asDialed}.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                Log.Error(ex.StackTrace ?? "No stack trace found.");
+                return TypedResults.BadRequest(ex.Message);
+            }
+        }
+    })
+    .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all registered clients.", Description = "This is intended to be used for debugging client registrations." });
 
     app.MapPost("/client/register", async Task<Results<Ok<RegistrationResponse>, BadRequest<RegistrationResponse>>> (RegistrationRequest registration, MessagingContext db) =>
     {
@@ -1305,6 +1342,15 @@ namespace Models
         public string to { get; set; } = string.Empty;
         public string msisdn { get; set; } = string.Empty;
         public string messagebody { get; set; } = string.Empty;
+    }
+
+    public class UsageSummary
+    {
+        public string AsDialed { get; set; } = string.Empty;
+        public int OutboundMMSCount { get; set; }
+        public int InboundMMSCount { get; set; }
+        public int OutboundSMSCount { get; set; }
+        public int InboundSMSCount { get; set; }
     }
 
     public enum MessageType { SMS, MMS };
