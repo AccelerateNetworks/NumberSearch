@@ -33,6 +33,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
 Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
@@ -644,7 +646,32 @@ try
             }
             else
             {
-                return TypedResults.BadRequest(new SendMessageResponse { Message = $"MSISDN {message.MSISDN} could not be parsed as valid NANP (North American Numbering Plan) number. {System.Text.Json.JsonSerializer.Serialize(message)}" });
+                try
+                {
+                    var record = new MessageRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        Content = message?.Message ?? string.Empty,
+                        DateReceivedUTC = DateTime.UtcNow,
+                        From = message?.MSISDN ?? "MSISDN was blank",
+                        To = message?.To ?? "To was blank",
+                        MediaURLs = string.Empty,
+                        MessageSource = MessageSource.Outgoing,
+                        MessageType = message?.MediaURLs.Length > 0 ? MessageType.MMS : MessageType.SMS,
+                        RawRequest = System.Text.Json.JsonSerializer.Serialize(message),
+                        RawResponse = $"MSISDN {message?.MSISDN} could not be parsed as valid NANP (North American Numbering Plan) number."
+                    };
+
+                    db.Messages.Add(record);
+                    await db.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    // If this throws an exception then there is really nothing we can do as the DB is down and there's nothing to save to.
+                    Log.Fatal(ex.Message);
+                }
+
+                return TypedResults.BadRequest(new SendMessageResponse { Message = $"MSISDN {message?.MSISDN} could not be parsed as valid NANP (North American Numbering Plan) number. {System.Text.Json.JsonSerializer.Serialize(message)}" });
             }
         }
 
@@ -673,7 +700,32 @@ try
             }
             else
             {
-                return TypedResults.BadRequest(new SendMessageResponse { Message = $"To {message.To} could not be parsed as valid NANP (North American Numbering Plan) number. {System.Text.Json.JsonSerializer.Serialize(message)}" });
+                try
+                {
+                    var record = new MessageRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        Content = message?.Message ?? string.Empty,
+                        DateReceivedUTC = DateTime.UtcNow,
+                        From = message?.MSISDN ?? "MSISDN was blank",
+                        To = message?.To ?? "To was blank",
+                        MediaURLs = string.Empty,
+                        MessageSource = MessageSource.Outgoing,
+                        MessageType = message?.MediaURLs.Length > 0 ? MessageType.MMS : MessageType.SMS,
+                        RawRequest = System.Text.Json.JsonSerializer.Serialize(message),
+                        RawResponse = $"To {message?.To} could not be parsed as valid NANP (North American Numbering Plan) number."
+                    };
+
+                    db.Messages.Add(record);
+                    await db.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    // If this throws an exception then there is really nothing we can do as the DB is down and there's nothing to save to.
+                    Log.Fatal(ex.Message);
+                }
+
+                return TypedResults.BadRequest(new SendMessageResponse { Message = $"To {message?.To} could not be parsed as valid NANP (North American Numbering Plan) number. {System.Text.Json.JsonSerializer.Serialize(message)}" });
             }
         }
 
@@ -734,7 +786,24 @@ try
                 }
                 else
                 {
-                    return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(sendMessage)}" });
+                    var record = new MessageRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        Content = message?.Message ?? string.Empty,
+                        DateReceivedUTC = DateTime.UtcNow,
+                        From = message?.MSISDN ?? "MSISDN was blank",
+                        To = message?.To ?? "To was blank",
+                        MediaURLs = string.Empty,
+                        MessageSource = MessageSource.Outgoing,
+                        MessageType = MessageType.MMS,
+                        RawRequest = System.Text.Json.JsonSerializer.Serialize(multipartContent),
+                        RawResponse = MMSResponse
+                    };
+
+                    db.Messages.Add(record);
+                    await db.SaveChangesAsync();
+
+                    return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit the MMS message to FirstPoint. {MMSResponse}" });
                 }
             }
             else
@@ -781,7 +850,24 @@ try
                 }
                 else
                 {
-                    return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(sendMessage)}" });
+                    var record = new MessageRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        Content = message?.Message ?? string.Empty,
+                        DateReceivedUTC = DateTime.UtcNow,
+                        From = message?.MSISDN ?? "MSISDN was blank",
+                        To = message?.To ?? "To was blank",
+                        MediaURLs = string.Empty,
+                        MessageSource = MessageSource.Outgoing,
+                        MessageType = MessageType.SMS,
+                        RawRequest = System.Text.Json.JsonSerializer.Serialize(toForward),
+                        RawResponse = System.Text.Json.JsonSerializer.Serialize(sendMessage)
+                    };
+
+                    db.Messages.Add(record);
+                    await db.SaveChangesAsync();
+
+                    return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit SMS message to FirstPoint. {System.Text.Json.JsonSerializer.Serialize(sendMessage)}" });
                 }
             }
         }
@@ -789,17 +875,61 @@ try
         {
             var error = await ex.GetResponseStringAsync();
             Log.Error(error);
+
+            var record = new MessageRecord
+            {
+                Id = Guid.NewGuid(),
+                Content = message?.Message ?? string.Empty,
+                DateReceivedUTC = DateTime.UtcNow,
+                From = message?.MSISDN ?? "MSISDN was blank",
+                To = message?.To ?? "To was blank",
+                MediaURLs = string.Empty,
+                MessageSource = MessageSource.Outgoing,
+                MessageType = message?.MediaURLs.Length > 0 ? MessageType.MMS : MessageType.SMS,
+                RawRequest = System.Text.Json.JsonSerializer.Serialize(toForward),
+                RawResponse = error
+            };
+
+            db.Messages.Add(record);
+            await db.SaveChangesAsync();
+
             // Let the caller know that delivery status for specific numbers.
             return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. {error}" });
         }
         catch (Exception ex)
         {
             Log.Error(ex.Message);
+
+            try
+            {
+                var record = new MessageRecord
+                {
+                    Id = Guid.NewGuid(),
+                    Content = message?.Message ?? string.Empty,
+                    DateReceivedUTC = DateTime.UtcNow,
+                    From = message?.MSISDN ?? "MSISDN was blank",
+                    To = message?.To ?? "To was blank",
+                    MediaURLs = string.Empty,
+                    MessageSource = MessageSource.Outgoing,
+                    MessageType = message?.MediaURLs.Length > 0 ? MessageType.MMS : MessageType.SMS,
+                    RawRequest = System.Text.Json.JsonSerializer.Serialize(toForward),
+                    RawResponse = ex.Message
+                };
+
+                db.Messages.Add(record);
+                await db.SaveChangesAsync();
+            }
+            catch
+            {
+                // If this throws an exception then there is really nothing we can do as the DB is down and there's nothing to save to.
+                Log.Fatal(ex.Message);
+            }
+
             return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. {ex.Message}" });
         }
 
     })
-        .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Send an SMS Message.", Description = "Submit outbound messages to this endpoint. The 'to' field is a comma separated list of dialed numbers, or a single dialed number without commas. The 'msisdn' the dialed number of the client that is sending the message. The 'message' field is a string. No validation of the message field occurs before it is forwarded to our upstream vendors." });
+        .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Send an SMS or MMS Message.", Description = "Submit outbound messages to this endpoint. The 'to' field is a comma separated list of dialed numbers, or a single dialed number without commas. The 'msisdn' the dialed number of the client that is sending the message. The 'message' field is a string. No validation of the message field occurs before it is forwarded to our upstream vendors. If you include any file paths in the MediaURLs array the message will be sent as an MMS." });
 
     app.MapPost("1pcom/inbound/MMS", async Task<Results<Ok<string>, BadRequest<string>, Ok<ForwardedMessage>, UnauthorizedHttpResult>> (HttpContext context, string token, MessagingContext db) =>
     {
