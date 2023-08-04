@@ -25,6 +25,7 @@ using Serilog.Events;
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ServiceModel.Channels;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -507,29 +508,71 @@ try
     })
         .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Register a client for message forwarding.", Description = "Boy I wish I had more to say about this, lmao." });
 
-    app.MapGet("/message/all", async Task<Results<Ok<MessageRecord[]>, NotFound<string>, BadRequest<string>>> (MessagingContext db) =>
+    app.MapGet("/message/all", async Task<Results<Ok<MessageRecord[]>, NotFound<string>, BadRequest<string>>> (MessagingContext db, string? asDialed) =>
     {
-        try
+        if (string.IsNullOrWhiteSpace(asDialed))
         {
-            var messages = await db.Messages.OrderByDescending(x => x.DateReceivedUTC).Take(10).ToArrayAsync();
+            try
+            {
+                var messages = await db.Messages.OrderByDescending(x => x.DateReceivedUTC).Take(100).ToArrayAsync();
 
-            if (messages is not null && messages.Any())
-            {
-                return TypedResults.Ok(messages);
+                if (messages is not null && messages.Any())
+                {
+                    return TypedResults.Ok(messages);
+                }
+                else
+                {
+                    return TypedResults.NotFound($"No messages have been recorded.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return TypedResults.NotFound($"No messages have been recorded.");
+                Log.Error(ex.Message);
+                Log.Error(ex.StackTrace ?? "No stacktrace found.");
+                return TypedResults.BadRequest(ex.Message);
             }
         }
-        catch (Exception ex)
+        else
         {
-            Log.Error(ex.Message);
-            Log.Error(ex.StackTrace ?? "No stacktrace found.");
-            return TypedResults.BadRequest(ex.Message);
+            try
+            {
+                bool checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(asDialed, out var fromPhoneNumber);
+                if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
+                {
+                    if (fromPhoneNumber.Type is not PhoneNumbersNA.NumberType.ShortCode)
+                    {
+                        asDialed = $"1{fromPhoneNumber.DialedNumber}";
+                    }
+                    else
+                    {
+                        asDialed = fromPhoneNumber.DialedNumber;
+                    }
+
+                    var messages = await db.Messages.Where(x => x.From == asDialed || x.To.Contains(asDialed)).OrderByDescending(x => x.DateReceivedUTC).ToArrayAsync();
+
+                    if (messages is not null && messages.Any())
+                    {
+                        return TypedResults.Ok(messages);
+                    }
+                    else
+                    {
+                        return TypedResults.NotFound($"No messages have been recorded.");
+                    }
+                }
+                else
+                {
+                    return TypedResults.BadRequest($"asDialed {asDialed} could not be parsed as valid NANP (North American Numbering Plan) number.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                Log.Error(ex.StackTrace ?? "No stacktrace found.");
+                return TypedResults.BadRequest(ex.Message);
+            }
         }
     })
-        .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all sent and received messages.", Description = "This is intended to help you debug problems with message sending and delievery so you can see if it's this API or the upstream vendor that is causing problems." });
+        .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all sent and received messages.", Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems." });
 
     app.MapPost("/message/send", async Task<Results<Ok<SendMessageResponse>, BadRequest<SendMessageResponse>>> ([Microsoft.AspNetCore.Mvc.FromBody] SendMessageRequest message, bool? test, MessagingContext db) =>
     {
