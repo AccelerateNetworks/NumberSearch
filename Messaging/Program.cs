@@ -667,7 +667,7 @@ try
                 return TypedResults.BadRequest(ex.Message);
             }
     })
-    .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all sent and received messages.", Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems." });
+    .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all sent and received messages that failed.", Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems." });
 
     app.MapPost("/message/send", async Task<Results<Ok<SendMessageResponse>, BadRequest<SendMessageResponse>>> ([Microsoft.AspNetCore.Mvc.FromBody] SendMessageRequest message, bool? test, MessagingContext db) =>
     {
