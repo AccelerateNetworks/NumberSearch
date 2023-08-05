@@ -645,6 +645,30 @@ try
     })
         .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all sent and received messages.", Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems." });
 
+    app.MapGet("/message/all/failed", async Task<Results<Ok<MessageRecord[]>, NotFound<string>, BadRequest<string>>> (MessagingContext db, DateTime start, DateTime end) =>
+    {
+            try
+            {
+                var messages = await db.Messages.Where(x => !x.Succeeded && x.DateReceivedUTC > start && x.DateReceivedUTC <= end).OrderByDescending(x => x.DateReceivedUTC).ToArrayAsync();
+
+                if (messages is not null && messages.Any())
+                {
+                    return TypedResults.Ok(messages);
+                }
+                else
+                {
+                    return TypedResults.NotFound($"No failed messages have been recorded between {start} and {end}.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                Log.Error(ex.StackTrace ?? "No stack trace found.");
+                return TypedResults.BadRequest(ex.Message);
+            }
+    })
+    .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all sent and received messages.", Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems." });
+
     app.MapPost("/message/send", async Task<Results<Ok<SendMessageResponse>, BadRequest<SendMessageResponse>>> ([Microsoft.AspNetCore.Mvc.FromBody] SendMessageRequest message, bool? test, MessagingContext db) =>
     {
         var toForward = new toForwardOutbound
@@ -683,7 +707,7 @@ try
                         MessageSource = MessageSource.Outgoing,
                         MessageType = message?.MediaURLs.Length > 0 ? MessageType.MMS : MessageType.SMS,
                         RawRequest = System.Text.Json.JsonSerializer.Serialize(message),
-                        RawResponse = $"MSISDN {message?.MSISDN} could not be parsed as valid NANP (North American Numbering Plan) number."
+                        RawResponse = $"MSISDN {message?.MSISDN} could not be parsed as valid NANP (North American Numbering Plan) number.",
                     };
 
                     db.Messages.Add(record);
@@ -795,7 +819,8 @@ try
                         MessageSource = MessageSource.Outgoing,
                         MessageType = MessageType.MMS,
                         RawRequest = System.Text.Json.JsonSerializer.Serialize(multipartContent),
-                        RawResponse = MMSResponse
+                        RawResponse = MMSResponse,
+                        Succeeded = true
                     };
 
                     db.Messages.Add(record);
@@ -859,7 +884,8 @@ try
                         MessageSource = MessageSource.Outgoing,
                         MessageType = MessageType.SMS,
                         RawRequest = System.Text.Json.JsonSerializer.Serialize(toForward),
-                        RawResponse = System.Text.Json.JsonSerializer.Serialize(sendMessage)
+                        RawResponse = System.Text.Json.JsonSerializer.Serialize(sendMessage),
+                        Succeeded = true
                     };
 
                     db.Messages.Add(record);
@@ -992,6 +1018,14 @@ try
                 MessageType = MessageType.MMS,
             };
 
+            MessageRecord messageRecord = new MessageRecord
+            {
+                RawRequest = incomingRequest,
+                DateReceivedUTC = DateTime.UtcNow,
+                MessageSource = MessageSource.Incoming,
+                MessageType = MessageType.MMS,
+            };
+
             if (!string.IsNullOrWhiteSpace(msisdn))
             {
                 bool checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(msisdn, out var fromPhoneNumber);
@@ -1065,6 +1099,14 @@ try
                 else
                 {
                     Log.Error($"Failed to parse To {to} from incoming request {incomingRequest} please file a ticket with the message provider.");
+
+                    messageRecord.Content = toForward.Content;
+                    messageRecord.From = toForward.From;
+                    messageRecord.RawResponse = $"Failed to parse To {to} from incoming request {incomingRequest} please file a ticket with the message provider.";
+
+                    db.Messages.Add(messageRecord);
+                    await db.SaveChangesAsync();
+
                     return TypedResults.BadRequest($"To {to}{fullrecipientlist} could not be parsed as valid NANP (North American Numbering Plan) numbers. {incomingRequest}");
                 }
             }
@@ -1101,6 +1143,7 @@ try
                 }
             }
             toForward.MediaURLs = mediaURLs.ToArray();
+            messageRecord.MediaURLs = string.Join(',', toForward.MediaURLs);
 
             // We already know that it's good.
             _ = PhoneNumbersNA.PhoneNumber.TryParse(toForward.To, out var toRegisteredNumber);
@@ -1115,41 +1158,51 @@ try
                     var response = await client.CallbackUrl.PostJsonAsync(toForward);
                     Log.Information(await response.GetStringAsync());
                     Log.Information(System.Text.Json.JsonSerializer.Serialize(toForward));
+                    messageRecord.RawResponse = System.Text.Json.JsonSerializer.Serialize(toForward);
+                    messageRecord.Succeeded = true;
                 }
                 catch (FlurlHttpException ex)
                 {
-                    Log.Error(await ex.GetResponseStringAsync());
+                    string error = await ex.GetResponseStringAsync();
+                    Log.Error(error);
                     Log.Error(System.Text.Json.JsonSerializer.Serialize(client));
                     Log.Error(System.Text.Json.JsonSerializer.Serialize(toForward));
                     Log.Error($"Failed to forward message to {toForward.To}");
+                    messageRecord.RawResponse = $"Failed to forward message to {toForward.To} {error}";
                 }
-
-                MessageRecord record = toForward.ToMessageRecord(incomingRequest, System.Text.Json.JsonSerializer.Serialize(toForward));
 
                 try
                 {
-                    await db.Messages.AddAsync(record);
+                    await db.Messages.AddAsync(messageRecord);
                     await db.SaveChangesAsync();
                 }
                 catch (Exception ex)
                 {
-                    return TypedResults.BadRequest($"Failed to save incoming message to the database. {ex.Message} {System.Text.Json.JsonSerializer.Serialize(record)}");
+                    return TypedResults.BadRequest($"Failed to save incoming message to the database. {ex.Message} {System.Text.Json.JsonSerializer.Serialize(messageRecord)}");
                 }
 
-                Log.Information(System.Text.Json.JsonSerializer.Serialize(record));
+                Log.Information(System.Text.Json.JsonSerializer.Serialize(messageRecord));
                 return TypedResults.Ok("The incoming message was received and forwarded to the client.");
             }
             else
             {
                 Log.Warning($"{toForward.To} is not registered as a client.");
+
+                messageRecord.To = toForward.To;
+                messageRecord.From = toForward.From;
+                messageRecord.RawResponse = $"{toForward.To} is not registered as a client.";
+                db.Messages.Add(messageRecord);
+                await db.SaveChangesAsync();
+
                 return TypedResults.BadRequest($"{toForward.To} is not registered as a client.");
             }
         }
         catch (Exception ex)
         {
             Log.Error(ex.Message);
-            Log.Error(ex.StackTrace ?? "No stacktrace found.");
+            Log.Error(ex.StackTrace ?? "No stack trace found.");
             Log.Information("Failed to read form data by field name.");
+
             return TypedResults.BadRequest(ex.Message);
         }
 
@@ -1186,6 +1239,14 @@ try
             ForwardedMessage toForward = new()
             {
                 Content = message,
+                MessageSource = MessageSource.Incoming,
+                MessageType = MessageType.SMS,
+            };
+
+            MessageRecord messageRecord = new MessageRecord
+            {
+                RawRequest = incomingRequest,
+                DateReceivedUTC = DateTime.UtcNow,
                 MessageSource = MessageSource.Incoming,
                 MessageType = MessageType.SMS,
             };
@@ -1263,6 +1324,14 @@ try
                 else
                 {
                     Log.Error($"Failed to parse To {to} from incoming request {incomingRequest} please file a ticket with the message provider.");
+
+                    messageRecord.Content = toForward.Content;
+                    messageRecord.From = toForward.From;
+                    messageRecord.RawResponse = $"Failed to parse To {to} from incoming request {incomingRequest} please file a ticket with the message provider.";
+
+                    db.Messages.Add(messageRecord);
+                    await db.SaveChangesAsync();
+
                     return TypedResults.BadRequest($"To {to}{fullrecipientlist} could not be parsed as valid NANP (North American Numbering Plan) numbers. {incomingRequest}");
                 }
             }
@@ -1280,40 +1349,48 @@ try
                     var response = await client.CallbackUrl.PostJsonAsync(toForward);
                     Log.Information(await response.GetStringAsync());
                     Log.Information(System.Text.Json.JsonSerializer.Serialize(toForward));
+                    messageRecord.RawResponse = System.Text.Json.JsonSerializer.Serialize(toForward);
+                    messageRecord.Succeeded = true;
                 }
                 catch (FlurlHttpException ex)
                 {
-                    Log.Error(await ex.GetResponseStringAsync());
+                    string error = await ex.GetResponseStringAsync();
+                    Log.Error(error);
                     Log.Error(System.Text.Json.JsonSerializer.Serialize(client));
                     Log.Error(System.Text.Json.JsonSerializer.Serialize(toForward));
                     Log.Error($"Failed to forward message to {toForward.To}");
+                    messageRecord.RawResponse = $"Failed to forward message to {toForward.To} {error}";
                 }
-
-                MessageRecord record = toForward.ToMessageRecord(incomingRequest, System.Text.Json.JsonSerializer.Serialize(toForward));
-
                 try
                 {
-                    await db.Messages.AddAsync(record);
+                    await db.Messages.AddAsync(messageRecord);
                     await db.SaveChangesAsync();
                 }
                 catch (Exception ex)
                 {
-                    return TypedResults.BadRequest($"Failed to save incoming message to the database. {ex.Message} {System.Text.Json.JsonSerializer.Serialize(record)}");
+                    return TypedResults.BadRequest($"Failed to save incoming message to the database. {ex.Message} {System.Text.Json.JsonSerializer.Serialize(messageRecord)}");
                 }
 
-                Log.Information(System.Text.Json.JsonSerializer.Serialize(record));
+                Log.Information(System.Text.Json.JsonSerializer.Serialize(messageRecord));
                 return TypedResults.Ok("The incoming message was received and forwarded to the client.");
             }
             else
             {
                 Log.Warning($"{toForward.To} is not registered as a client.");
+
+                messageRecord.To = toForward.To;
+                messageRecord.From = toForward.From;
+                messageRecord.RawResponse = $"{toForward.To} is not registered as a client.";
+                db.Messages.Add(messageRecord);
+                await db.SaveChangesAsync();
+
                 return TypedResults.BadRequest($"{toForward.To} is not registered as a client.");
             }
         }
         catch (Exception ex)
         {
             Log.Error(ex.Message);
-            Log.Error(ex.StackTrace ?? "No stacktrace found.");
+            Log.Error(ex.StackTrace ?? "No stack trace found.");
             Log.Information("Failed to read form data by field name.");
             return TypedResults.BadRequest("Failed to read form data by field name.");
         }
@@ -1490,6 +1567,7 @@ namespace Models
         public DateTime DateReceivedUTC { get; set; } = DateTime.UtcNow;
         public string RawRequest { get; set; } = string.Empty;
         public string RawResponse { get; set; } = string.Empty;
+        public bool Succeeded { get; set; } = false;
     }
 
     // Format forward to client apps as JSON.
