@@ -829,7 +829,7 @@ try
                     // Let the caller know that delivery status for specific numbers.
                     return TypedResults.Ok(new SendMessageResponse
                     {
-                        Message = $"MMS Message sent to {record.To}",
+                        Message = $"MMS Message sent to {toForward.msisdn}",
                         MessageSent = true,
                     });
                 }
@@ -894,7 +894,7 @@ try
                     // Let the caller know that delivery status for specific numbers.
                     return TypedResults.Ok(new SendMessageResponse
                     {
-                        Message = $"SMS Message sent to {record.To}",
+                        Message = $"SMS Message sent to {toForward.msisdn}",
                         MessageSent = true,
                     });
                 }
