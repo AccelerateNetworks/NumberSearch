@@ -134,7 +134,7 @@ namespace Messaging.Tests
             Assert.False(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.BadRequest);
             var message = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"To 14445556543 could not be parsed as valid NANP (North American Numbering Plan) numbers. msisdn:15555551212, ,to:14445556543, ,message:Your Lyft code is 12345, \"", message);
+            Assert.Equal("\"To 14445556543 could not be parsed as valid NANP (North American Numbering Plan) numbers. msisdn:15555551212,to:14445556543,message:Your Lyft code is 12345\"", message);
         }
 
         [Fact]

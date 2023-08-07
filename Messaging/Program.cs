@@ -18,8 +18,6 @@ using Microsoft.OpenApi.Models;
 
 using Models;
 
-using Org.BouncyCastle.Ocsp;
-
 using Prometheus;
 
 using Serilog;
@@ -27,14 +25,10 @@ using Serilog.Events;
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Security.Cryptography;
-using System.ServiceModel.Channels;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
-
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -560,6 +554,37 @@ try
                 });
                 await db.SaveChangesAsync();
             }
+
+            // Forward failed incoming messages for this number.
+            var inboundMMS = await db.Messages.Where(x => x.To.Contains(asDialedNumber.DialedNumber) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).ToListAsync();
+            var inboundSMS = await db.Messages.Where(x => x.To.Contains(asDialedNumber.DialedNumber) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).ToListAsync();
+            inboundMMS.AddRange(inboundSMS);
+
+            foreach (var failedMessage in inboundMMS)
+            {
+                try
+                {
+                    // Forward to the newly registered callback URL.
+                    var messageToForward = System.Text.Json.JsonSerializer.Deserialize<ForwardedMessage>(failedMessage.ToForward);
+
+                    if (messageToForward is not null && !string.IsNullOrWhiteSpace(messageToForward.Content))
+                    {
+                        messageToForward.ClientSecret = registration.ClientSecret;
+                        var response = await registration.CallbackUrl.PostJsonAsync(messageToForward);
+                        string responseText = await response.GetStringAsync();
+                        Log.Information(responseText);
+                        Log.Information(System.Text.Json.JsonSerializer.Serialize(messageToForward));
+                        failedMessage.RawResponse = responseText;
+                        failedMessage.Succeeded = true;
+                        await db.SaveChangesAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex.Message);
+                    Log.Error(ex.StackTrace ?? "No stack trace found.");
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -647,25 +672,25 @@ try
 
     app.MapGet("/message/all/failed", async Task<Results<Ok<MessageRecord[]>, NotFound<string>, BadRequest<string>>> (MessagingContext db, DateTime start, DateTime end) =>
     {
-            try
-            {
-                var messages = await db.Messages.Where(x => !x.Succeeded && x.DateReceivedUTC > start && x.DateReceivedUTC <= end).OrderByDescending(x => x.DateReceivedUTC).ToArrayAsync();
+        try
+        {
+            var messages = await db.Messages.Where(x => !x.Succeeded && x.DateReceivedUTC > start && x.DateReceivedUTC <= end).OrderByDescending(x => x.DateReceivedUTC).ToArrayAsync();
 
-                if (messages is not null && messages.Any())
-                {
-                    return TypedResults.Ok(messages);
-                }
-                else
-                {
-                    return TypedResults.NotFound($"No failed messages have been recorded between {start} and {end}.");
-                }
-            }
-            catch (Exception ex)
+            if (messages is not null && messages.Any())
             {
-                Log.Error(ex.Message);
-                Log.Error(ex.StackTrace ?? "No stack trace found.");
-                return TypedResults.BadRequest(ex.Message);
+                return TypedResults.Ok(messages);
             }
+            else
+            {
+                return TypedResults.NotFound($"No failed messages have been recorded between {start} and {end}.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex.Message);
+            Log.Error(ex.StackTrace ?? "No stack trace found.");
+            return TypedResults.BadRequest(ex.Message);
+        }
     })
     .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all sent and received messages that failed.", Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems." });
 
@@ -999,7 +1024,7 @@ try
             //string timezone = context.Request.Form["timezone"].ToString();
             //string origtime = context.Request.Form["origtime"].ToString();
             string fullrecipientlist = context.Request.Form["FullRecipientList"].ToString();
-            string incomingRequest = string.Join(',', context.Request.Form.Select(x => $"{x.Key}:{x.Value}, "));
+            string incomingRequest = string.Join(',', context.Request.Form.Select(x => $"{x.Key}:{x.Value}"));
 
             // The message field is a JSON object.
             var MMSDescription = System.Text.Json.JsonSerializer.Deserialize<FirstPointMMSMessage>(message);
@@ -1156,9 +1181,11 @@ try
                 {
                     toForward.ClientSecret = client.ClientSecret;
                     var response = await client.CallbackUrl.PostJsonAsync(toForward);
-                    Log.Information(await response.GetStringAsync());
+                    string responseText = await response.GetStringAsync();
+                    Log.Information(responseText);
                     Log.Information(System.Text.Json.JsonSerializer.Serialize(toForward));
-                    messageRecord.RawResponse = System.Text.Json.JsonSerializer.Serialize(toForward);
+                    messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
+                    messageRecord.RawResponse = responseText;
                     messageRecord.Succeeded = true;
                 }
                 catch (FlurlHttpException ex)
@@ -1190,6 +1217,7 @@ try
 
                 messageRecord.To = toForward.To;
                 messageRecord.From = toForward.From;
+                messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
                 messageRecord.RawResponse = $"{toForward.To} is not registered as a client.";
                 db.Messages.Add(messageRecord);
                 await db.SaveChangesAsync();
@@ -1227,7 +1255,7 @@ try
             //string timezone = context.Request.Form["timezone"].ToString();
             //string origtime = context.Request.Form["origtime"].ToString();
             string fullrecipientlist = context.Request.Form["FullRecipientList"].ToString();
-            string incomingRequest = string.Join(',', context.Request.Form.Select(x => $"{x.Key}:{x.Value}, "));
+            string incomingRequest = string.Join(',', context.Request.Form.Select(x => $"{x.Key}:{x.Value}"));
 
             // Disabled because this secret value changes whenever.
             //if (serversecret != firstPointIncomingSMSSecret)
@@ -1347,9 +1375,11 @@ try
                 {
                     toForward.ClientSecret = client.ClientSecret;
                     var response = await client.CallbackUrl.PostJsonAsync(toForward);
-                    Log.Information(await response.GetStringAsync());
+                    string responseText = await response.GetStringAsync();
+                    Log.Information(responseText);
                     Log.Information(System.Text.Json.JsonSerializer.Serialize(toForward));
-                    messageRecord.RawResponse = System.Text.Json.JsonSerializer.Serialize(toForward);
+                    messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
+                    messageRecord.RawResponse = responseText;
                     messageRecord.Succeeded = true;
                 }
                 catch (FlurlHttpException ex)
@@ -1380,6 +1410,7 @@ try
 
                 messageRecord.To = toForward.To;
                 messageRecord.From = toForward.From;
+                messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
                 messageRecord.RawResponse = $"{toForward.To} is not registered as a client.";
                 db.Messages.Add(messageRecord);
                 await db.SaveChangesAsync();
@@ -1568,6 +1599,7 @@ namespace Models
         public string RawRequest { get; set; } = string.Empty;
         public string RawResponse { get; set; } = string.Empty;
         public bool Succeeded { get; set; } = false;
+        public string ToForward { get; set; } = string.Empty;
     }
 
     // Format forward to client apps as JSON.
