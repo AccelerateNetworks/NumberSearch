@@ -118,13 +118,8 @@
                             @if (!string.IsNullOrWhiteSpace(number?.Owned?.FPBXDomainName))
                             {
                                 <p>@number?.Owned.FPBXDomainName</p>
-                                <p>
-                                    <a class="btn btn-outline-primary" href="https://@number?.Owned?.FPBXDomainName/app/destinations/destination_edit.php?id=@number?.Owned?.FPBXDestinationId" target="_blank">Destination</a>
-                                </p>
                                 <p>@number?.Owned.FPBXDomainDescription</p>
-                                <p>
-                                    <a class="btn btn-outline-secondary" href="https://@number?.Owned?.FPBXDomainName/core/domains/domain_edit.php?id=@number?.Owned?.FPBXDomainId" target="_blank">Domain</a>
-                                </p>
+                                <p>DestinationId: @number?.Owned.FPBXDestinationId</p>
                             }
                             else
                             {
