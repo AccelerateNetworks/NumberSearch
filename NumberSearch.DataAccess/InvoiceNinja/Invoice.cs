@@ -165,6 +165,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public string vendor_id { get; set; } = string.Empty;
         public string status_id { get; set; } = string.Empty;
         public string design_id { get; set; } = string.Empty;
+        public string invoice_id { get; set; } = string.Empty;
         public string recurring_id { get; set; } = string.Empty;
         public int created_at { get; set; }
         public int updated_at { get; set; }

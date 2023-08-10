@@ -87,6 +87,21 @@ namespace NumberSearch.DataAccess
             return result;
         }
 
+        public static async Task<IEnumerable<Order>> GetAllQuotesAsync(string connectionString)
+        {
+            await using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<Order>
+                ("SELECT \"OrderId\", \"FirstName\", \"LastName\", \"Email\", \"Address\", \"Address2\", \"City\", \"State\", \"Zip\", \"DateSubmitted\", \"BusinessName\", \"CustomerNotes\", \"BillingClientId\", \"BillingInvoiceId\", \"Quote\", \"BillingInvoiceReoccuringId\", \"SalesEmail\", \"BackgroundWorkCompleted\", \"Completed\", \"InstallDate\", \"UpfrontInvoiceLink\", \"ReoccuringInvoiceLink\", \"OnsiteInstallation\", \"AddressUnitType\", \"AddressUnitNumber\", \"UnparsedAddress\", \"MergedOrderId\", \"E911ServiceNumber\", \"DateConvertedFromQuote\", \"DateCompleted\", \"ContactPhoneNumber\" " +
+                "FROM public.\"Orders\" " +
+                "WHERE \"Quote\" = true " +
+                "ORDER BY \"DateSubmitted\" DESC")
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
         public static async Task<IEnumerable<Order>> GetByBackGroundworkNotCompletedAsync(string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);

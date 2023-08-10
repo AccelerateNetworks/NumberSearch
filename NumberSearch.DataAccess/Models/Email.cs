@@ -18,7 +18,7 @@ namespace NumberSearch.DataAccess
 {
     public class Email
     {
-        public Guid EmailId { get; set; }
+        public Guid EmailId { get; set; } = Guid.NewGuid();
         public Guid OrderId { get; set; }
         public string PrimaryEmailAddress { get; set; } = string.Empty;
         public string SalesEmailAddress { get; set; } = string.Empty;
@@ -131,6 +131,12 @@ namespace NumberSearch.DataAccess
                 {
                     var sales = MailboxAddress.Parse(SalesEmailAddress);
                     outboundMessage.Cc.Add(sales);
+                }
+
+                if (!string.IsNullOrWhiteSpace(CarbonCopy) && CarbonCopy.Contains("@"))
+                {
+                    var cc = MailboxAddress.Parse(CarbonCopy);
+                    outboundMessage.Cc.Add(cc);
                 }
 
                 // If there's an attachment send it, if not just send the body.

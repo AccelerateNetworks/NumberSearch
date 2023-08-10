@@ -1523,6 +1523,11 @@ namespace NumberSearch.Tests
                 Assert.False(string.IsNullOrWhiteSpace(result.Email));
                 Assert.True(result.DateSubmitted > new DateTime(2019, 1, 1));
             }
+
+            var quotes = await Order.GetAllQuotesAsync(conn).ConfigureAwait(false);
+
+            Assert.NotNull(quotes);
+            Assert.NotEmpty(quotes);
         }
 
 

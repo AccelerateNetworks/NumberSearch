@@ -1,4 +1,7 @@
-﻿using NumberSearch.DataAccess;
+﻿using Flurl.Http;
+
+using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.InvoiceNinja;
 
 using Serilog;
 
@@ -247,6 +250,94 @@ namespace NumberSearch.Ingest
             var checkSave = await notificationEmail.PostAsync(appConfig.Postgresql).ConfigureAwait(false);
 
             return checkSend && checkSave;
+        }
+
+        public async static Task CheckForQuoteConversionsAsync(string postgresql, string invoiceNinjaToken, string emailUsername, string emailPassword)
+        {
+            Log.Information($"[Quote Conversion] Looking for quotes that were converted to invoices in the billing system.");
+
+            var orders = await Order.GetAllQuotesAsync(postgresql).ConfigureAwait(false);
+
+            // Don't both checking orders that are from before we upgraded to the current version of invoiceNinja.
+            foreach (var order in orders.Where(x => x.DateSubmitted > DateTime.Parse("02/01/2023")))
+            {
+                // Get the quotes in invoice ninja and see if they've been converted
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(order.BillingInvoiceId))
+                    {
+                        var upfront = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceId, invoiceNinjaToken);
+
+                        if (upfront is not null && upfront.id == order.BillingInvoiceId && !string.IsNullOrWhiteSpace(upfront.invoice_id))
+                        {
+                            var convertedInvoice = await Invoice.GetByIdAsync(upfront.invoice_id, invoiceNinjaToken);
+
+                            string newUpfrontLink = convertedInvoice.invitations.FirstOrDefault()?.link ?? string.Empty;
+
+                            order.BillingInvoiceId = convertedInvoice.id;
+                            order.UpfrontInvoiceLink = string.IsNullOrWhiteSpace(newUpfrontLink) ? order.UpfrontInvoiceLink : newUpfrontLink;
+                            order.Quote = false;
+                            order.DateConvertedFromQuote = DateTime.Now;
+
+                            var checkUpdate = await order.PutAsync(postgresql);
+                            string name = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName;
+                            var message = new Email
+                            {
+                                SalesEmailAddress = order.SalesEmail ?? "sales@acceleratenetworks.com",
+                                PrimaryEmailAddress = "orders@acceleratenetworks.com",
+                                CarbonCopy = "thomas.ryan@outlook.com",
+                                Subject = $"Quote {upfront.number} has been approved by {name}",
+                                OrderId = order.OrderId,
+                                MessageBody = $@"<p>Hi Sales Team,</p><p>The new invoice <a href='{order.UpfrontInvoiceLink}' target='_blank'>can be viewed here.</a> and the order <a href='https://ops.acceleratenetworks.com/Home/Order/{order.OrderId}' target='_blank'>can be edited here</a>, please follow up with the customer to set an install date and collect payment.</p><p>Have a great day, hombre! 🤠</p>"
+                            };
+
+                            // Send the message the email server.
+                            var checkSend = await message.SendEmailAsync(emailUsername,emailPassword).ConfigureAwait(false);
+
+                            // If it didn't work try it again.
+                            if (!checkSend)
+                            {
+                                checkSend = await message.SendEmailAsync(emailUsername, emailPassword).ConfigureAwait(false);
+                            }
+
+                            // Mark it as sent.
+                            message.DateSent = DateTime.Now;
+                            message.DoNotSend = false;
+                            message.Completed = checkSend;
+
+                            // Update the database with the email's new status.
+                            var checkSave = await message.PostAsync(postgresql).ConfigureAwait(false);
+
+                            // Log the success or failure of the operation.
+                            if (checkSend && checkSave)
+                            {
+                                Log.Information($"[Quote Conversion] Successfully sent out email {message.EmailId} for order {order.OrderId}.");
+                            }
+                            else
+                            {
+                                Log.Fatal($"[Quote Conversion] Failed to sent out the email {message.EmailId} for order {order.OrderId}.");
+                            }
+                        }
+                    }
+
+                    // This is too hard we'll deal with it later
+                    //if (!string.IsNullOrWhiteSpace(order.BillingInvoiceReoccuringId))
+                    //{
+                    //    var reoccurringQuote = Invoice.GetQuoteByIdAsync(order.BillingInvoiceReoccuringId, _mvcConfiguration.InvoiceNinjaToken);
+                    //    var reoccurring = ReccurringInvoice.GetByIdAsync(order.BillingInvoiceReoccuringId, _mvcConfiguration.InvoiceNinjaToken);
+                    //}
+                }
+                catch (FlurlHttpException ex)
+                {
+                    var error = await ex.GetResponseStringAsync();
+                    Log.Error(error);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex.Message);
+                    Log.Error(ex.StackTrace ?? "No stack trace found.");
+                }
+            }
         }
     }
 }

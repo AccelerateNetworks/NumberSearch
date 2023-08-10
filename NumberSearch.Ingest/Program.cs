@@ -34,7 +34,8 @@ namespace NumberSearch.Ingest
                 SmtpPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("SmtpPassword")) ? throw new Exception("SmtpPassword config key is blank.") : config.GetConnectionString("SmtpPassword") ?? string.Empty,
                 EmailOrders = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailOrders")) ? throw new Exception("EmailOrders config key is blank.") : config.GetConnectionString("EmailOrders") ?? string.Empty,
                 EmailDan = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailDan")) ? throw new Exception("EmailDan config key is blank.") : config.GetConnectionString("EmailDan") ?? string.Empty,
-                EmailTom = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailTom")) ? throw new Exception("EmailTom config key is blank.") : config.GetConnectionString("EmailTom") ?? string.Empty
+                EmailTom = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailTom")) ? throw new Exception("EmailTom config key is blank.") : config.GetConnectionString("EmailTom") ?? string.Empty,
+                InvoiceNinjaToken = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailTom")) ? throw new Exception("InvoiceNinjaToken config key is blank.") : config.GetConnectionString("InvoiceNinjaToken") ?? string.Empty,
             };
 
             Log.Logger = new LoggerConfiguration()
@@ -82,6 +83,7 @@ namespace NumberSearch.Ingest
                         await Provider.VerifyAddToCartAsync(AreaCode.Priority, "Executive", appConfig.Postgresql, appConfig.BulkVSUsername, appConfig.BulkVSPassword,
                             appConfig.PComNetUsername, appConfig.PComNetPassword);
                         await Owned.MatchOwnedNumbersToFusionPBXAsync(appConfig.Postgresql, appConfig.FusionPBXUsername, appConfig.FusionPBXPassword);
+                        await Orders.CheckForQuoteConversionsAsync(appConfig.Postgresql, appConfig.InvoiceNinjaToken, appConfig.SmtpUsername, appConfig.SmtpPassword);
                     }
 
                     // Daily Ingest

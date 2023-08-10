@@ -80,6 +80,7 @@ namespace NumberSearch.Tests
                 EmailTom = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailTom")) ? throw new Exception("EmailTom config key is blank.") : config.GetConnectionString("EmailTom") ?? string.Empty,
                 FusionPBXUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("FusionPBXUsername")) ? throw new Exception("FusionPBXUsername config key is blank.") : config.GetConnectionString("FusionPBXUsername") ?? string.Empty,
                 FusionPBXPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("FusionPBXPassword")) ? throw new Exception("FusionPBXPassword config key is blank.") : config.GetConnectionString("FusionPBXPassword") ?? string.Empty,
+                InvoiceNinjaToken = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailTom")) ? throw new Exception("InvoiceNinjaToken config key is blank.") : config.GetConnectionString("InvoiceNinjaToken") ?? string.Empty,
             };
             ingestConfiguration = appConfig;
         }
@@ -88,6 +89,12 @@ namespace NumberSearch.Tests
         //public async Task TestBulkVSPortStatusUpdates()
         //{
         //    await PortRequests.UpdatePortRequestByExternalIdAsync(ingestConfiguration);
+        //}
+
+        //[Fact]
+        //public async Task TestCheckForQuoteConversionsAsync()
+        //{
+        //    await Orders.CheckForQuoteConversionsAsync(ingestConfiguration.Postgresql, ingestConfiguration.InvoiceNinjaToken, ingestConfiguration.SmtpUsername, ingestConfiguration.SmtpPassword);
         //}
 
         //[Fact]
