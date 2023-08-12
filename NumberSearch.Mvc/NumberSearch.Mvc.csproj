@@ -122,6 +122,21 @@
 		<Content Update="wwwroot\favicon.ico">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Update="wwwroot\gifs\contacts20230811.webm">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\gifs\recordings20230811.webm">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\gifs\softphone20230111.mp4">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\gifs\voicemail20230811.webm">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\gifs\webtexting20230811.webm">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Update="wwwroot\GRP2612front.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
@@ -701,6 +716,7 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="wwwroot\lib\" />
+	  <Folder Include="wwwroot\gifs\" />
 	</ItemGroup>
 	<ProjectExtensions>
 		<VisualStudio><UserProperties /></VisualStudio>
