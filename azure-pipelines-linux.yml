@@ -49,6 +49,7 @@ variables:
   ConnectionStrings.FusionPBXUsername: $(FusionPBXUsername)
   ConnectionStrings.FusionPBXPassword: $(FusionPBXPassword)
   ConnectionStrings.MessagingAPIJWT: $(MessagingAPIJWT)
+  ConnectionStrings.MessagingURL: $(MessagingURL)
   ApplicationInsights.InstrumentationKey: $(AIInstrumentationKey)
   ApplicationInsights.ConnectionString: $(AIConnectionString)
 
