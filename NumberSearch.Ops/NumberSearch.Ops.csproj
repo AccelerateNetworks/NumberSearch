@@ -33,6 +33,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Messaging\Messaging.csproj" />
 		<ProjectReference Include="..\NumberSearch.DataAccess\NumberSearch.DataAccess.csproj" />
 	</ItemGroup>
 
