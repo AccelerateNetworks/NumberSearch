@@ -3,6 +3,7 @@
 using Flurl.Http;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 using Models;
 
@@ -33,8 +34,8 @@ namespace NumberSearch.Ops.Controllers
         {
             var stats = await $"{_baseUrl}client/usage".WithOAuthBearerToken(_messagingToken).GetJsonAsync<UsageSummary[]>();
             var failures = await $"{_baseUrl}message/all/failed?start={DateTime.Now.AddDays(-3).ToShortDateString()}&end={DateTime.Now.AddDays(1).ToShortDateString()}".WithOAuthBearerToken(_messagingToken).GetJsonAsync<MessageRecord[]>();
-
-            return View(new MessagingResult { UsageSummary = stats.OrderByDescending(x => x.OutboundSMSCount).ToArray(), FailedMessages = failures.OrderByDescending(x => x.DateReceivedUTC).ToArray() });
+            var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
+            return View(new MessagingResult { UsageSummary = stats.OrderByDescending(x => x.OutboundSMSCount).ToArray(), FailedMessages = failures.OrderByDescending(x => x.DateReceivedUTC).ToArray(), Owned = ownedNumbers});
         }
     }
 }

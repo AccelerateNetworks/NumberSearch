@@ -703,6 +703,20 @@ try
             messagebody = message.Message
         };
 
+        var record = new MessageRecord
+        {
+            Id = Guid.NewGuid(),
+            Content = message?.Message ?? string.Empty,
+            DateReceivedUTC = DateTime.UtcNow,
+            From = message?.MSISDN ?? "MSISDN was blank",
+            To = message?.To ?? "To was blank",
+            MediaURLs = string.Empty,
+            MessageSource = MessageSource.Outgoing,
+            MessageType = message?.MediaURLs.Length > 0 ? MessageType.MMS : MessageType.SMS,
+            RawRequest = System.Text.Json.JsonSerializer.Serialize(message),
+            RawResponse = $"MSISDN {message?.MSISDN} could not be parsed as valid NANP (North American Numbering Plan) number.",
+        };
+
         if (!string.IsNullOrWhiteSpace(message.MSISDN))
         {
             bool checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(message.MSISDN, out var fromPhoneNumber);
@@ -721,7 +735,7 @@ try
             {
                 try
                 {
-                    var record = new MessageRecord
+                    record = new MessageRecord
                     {
                         Id = Guid.NewGuid(),
                         Content = message?.Message ?? string.Empty,
@@ -775,7 +789,7 @@ try
             {
                 try
                 {
-                    var record = new MessageRecord
+                    record = new MessageRecord
                     {
                         Id = Guid.NewGuid(),
                         Content = message?.Message ?? string.Empty,
@@ -822,6 +836,11 @@ try
                     string filename = url.Segments.LastOrDefault() ?? string.Empty;
                     var data = await fileURL.GetBytesAsync();
                     multipartContent.Add(new ByteArrayContent(data), "ufiles", filename);
+
+                    if (filename.Contains(".txt"))
+                    {
+                        record.Content = await url.GetStringAsync();
+                    }
                 }
 
                 // pass them on to the vendor
@@ -833,10 +852,9 @@ try
 
                 if (sendMessage is not null && sendMessage?.Response?.Text is "OK")
                 {
-                    var record = new MessageRecord
+                    record = new MessageRecord
                     {
                         Id = Guid.NewGuid(),
-                        Content = message?.Message ?? string.Empty,
                         DateReceivedUTC = DateTime.UtcNow,
                         From = message?.MSISDN ?? "MSISDN was blank",
                         To = message?.To ?? "To was blank",
@@ -860,10 +878,9 @@ try
                 }
                 else
                 {
-                    var record = new MessageRecord
+                     record = new MessageRecord
                     {
                         Id = Guid.NewGuid(),
-                        Content = message?.Message ?? string.Empty,
                         DateReceivedUTC = DateTime.UtcNow,
                         From = message?.MSISDN ?? "MSISDN was blank",
                         To = message?.To ?? "To was blank",
@@ -898,7 +915,7 @@ try
 
                 if (sendMessage is not null && sendMessage?.Response?.Text is "OK")
                 {
-                    var record = new MessageRecord
+                    record = new MessageRecord
                     {
                         Id = Guid.NewGuid(),
                         Content = message?.Message ?? string.Empty,
@@ -925,7 +942,7 @@ try
                 }
                 else
                 {
-                    var record = new MessageRecord
+                    record = new MessageRecord
                     {
                         Id = Guid.NewGuid(),
                         Content = message?.Message ?? string.Empty,
@@ -951,7 +968,7 @@ try
             var error = await ex.GetResponseStringAsync();
             Log.Error(error);
 
-            var record = new MessageRecord
+            record = new MessageRecord
             {
                 Id = Guid.NewGuid(),
                 Content = message?.Message ?? string.Empty,
@@ -977,7 +994,7 @@ try
 
             try
             {
-                var record = new MessageRecord
+                record = new MessageRecord
                 {
                     Id = Guid.NewGuid(),
                     Content = message?.Message ?? string.Empty,
@@ -1046,6 +1063,7 @@ try
             MessageRecord messageRecord = new MessageRecord
             {
                 RawRequest = incomingRequest,
+                Content = toForward.Content,
                 DateReceivedUTC = DateTime.UtcNow,
                 MessageSource = MessageSource.Incoming,
                 MessageType = MessageType.MMS,
@@ -1164,6 +1182,12 @@ try
                         };
                         await fileUtil.UploadAsync(fileRequest);
                         mediaURLs.Add($"{spacesConfig.ServiceURL}{fileRequest.BucketName}/{fileRequest.Key}");
+
+                        // For debugging in Ops
+                        if (file.Contains(".txt"))
+                        {
+                            messageRecord.Content = await fileDownloadURL.GetStringAsync();
+                        }
                     }
                 }
             }
@@ -1177,14 +1201,15 @@ try
 
             if (client is not null && client.AsDialed == toRegisteredNumber.DialedNumber)
             {
+                toForward.ClientSecret = client.ClientSecret;
+                messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
+
                 try
                 {
-                    toForward.ClientSecret = client.ClientSecret;
                     var response = await client.CallbackUrl.PostJsonAsync(toForward);
                     string responseText = await response.GetStringAsync();
                     Log.Information(responseText);
                     Log.Information(System.Text.Json.JsonSerializer.Serialize(toForward));
-                    messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
                     messageRecord.RawResponse = responseText;
                     messageRecord.Succeeded = true;
                 }
@@ -1274,6 +1299,7 @@ try
             MessageRecord messageRecord = new MessageRecord
             {
                 RawRequest = incomingRequest,
+                Content = toForward.Content,
                 DateReceivedUTC = DateTime.UtcNow,
                 MessageSource = MessageSource.Incoming,
                 MessageType = MessageType.SMS,
@@ -1371,14 +1397,16 @@ try
 
             if (client is not null && client.AsDialed == toRegisteredNumber.DialedNumber)
             {
+                toForward.ClientSecret = client.ClientSecret;
+                messageRecord.Content = toForward.Content;
+                messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
+
                 try
                 {
-                    toForward.ClientSecret = client.ClientSecret;
                     var response = await client.CallbackUrl.PostJsonAsync(toForward);
                     string responseText = await response.GetStringAsync();
                     Log.Information(responseText);
                     Log.Information(System.Text.Json.JsonSerializer.Serialize(toForward));
-                    messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
                     messageRecord.RawResponse = responseText;
                     messageRecord.Succeeded = true;
                 }
@@ -1389,8 +1417,9 @@ try
                     Log.Error(System.Text.Json.JsonSerializer.Serialize(client));
                     Log.Error(System.Text.Json.JsonSerializer.Serialize(toForward));
                     Log.Error($"Failed to forward message to {toForward.To}");
-                    messageRecord.RawResponse = $"Failed to forward message to {toForward.To} {error}";
+                    messageRecord.RawResponse = $"Failed to forward message to {toForward.To} at {client.CallbackUrl} {error}";
                 }
+
                 try
                 {
                     await db.Messages.AddAsync(messageRecord);
@@ -1410,6 +1439,7 @@ try
 
                 messageRecord.To = toForward.To;
                 messageRecord.From = toForward.From;
+                messageRecord.Content = toForward.Content;
                 messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
                 messageRecord.RawResponse = $"{toForward.To} is not registered as a client.";
                 db.Messages.Add(messageRecord);
