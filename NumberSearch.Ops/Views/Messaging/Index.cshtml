@@ -4,7 +4,7 @@
 @model MessagingResult
 
 @{
-
+    ViewData["Title"] = "Messaging";
 }
 <div class="d-flex justify-content-between align-items-center">
     <h1 class="display-4 p-3">✉️ Messaging</h1>
@@ -38,7 +38,7 @@
                 string ToLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{result.To}</a>" : result.To;
                 
                 <tr>
-@*                     <td>@result.Succeeded</td>*@   
+                    @*<td>@result.Succeeded</td>*@   
                     <td>@result.DateReceivedUTC.ToLocalTime().ToShortDateString() @result.DateReceivedUTC.ToLocalTime().ToShortTimeString()</td>
                     <td>@result.MessageSource</td>
                     <td>@result.MessageType</td>
@@ -47,7 +47,7 @@
                     <td>@result.RawResponse</td>
                     <td>@result.Content</td>
                     @* <td>@result.MediaURLs</td> *@
-@*                     <td>@result.RawRequest</td>
+                    @*<td>@result.RawRequest</td>
                     <td>@result.ToForward</td> *@
 
                 </tr>
@@ -64,7 +64,9 @@
                 <th>Outbound MMS</th>
                 <th>Outbound SMS</th>
                 <th>Inbound SMS</th>
-                <th>Outbound MMS</th>
+                <th>Inbound MMS</th>
+                <th>Registered Upstream?</th>
+                <th>Upstream Status Description</th>
             </tr>
         </thead>
         <tbody>
@@ -80,6 +82,8 @@
                     <td>@result.OutboundSMSCount</td>
                     <td>@result.InboundSMSCount</td>
                     <td>@result.InboundMMSCount</td>
+                    <td>@result.RegisteredUpstream</td>
+                    <td>@result.UpstreamStatusDescription</td>
                 </tr>
             }
         </tbody>
