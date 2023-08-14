@@ -366,11 +366,6 @@ try
                         asDialed = asDialedNumber.DialedNumber;
                     }
 
-                    // Verify that this number is routed through our upstream provider.
-                    var checkRouted = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(asDialed, firstPointUsername, firstPointPassword);
-                    bool RegisteredUpstream = checkRouted.QueryResult.code is 0 && checkRouted.epid is 265;
-                    string UpstreamStatusDescription = checkRouted.QueryResult.text;
-
                     int inboundMMS = await db.Messages.Where(x => (x.From == asDialed || x.To.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).CountAsync();
                     int outboundMMS = await db.Messages.Where(x => (x.From == asDialed || x.To.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.MMS).CountAsync();
                     int inboundSMS = await db.Messages.Where(x => (x.From == asDialed || x.To.Contains(reg.AsDialed)) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).CountAsync();
@@ -382,8 +377,6 @@ try
                         OutboundMMSCount = outboundMMS,
                         InboundSMSCount = inboundSMS,
                         OutboundSMSCount = outboundSMS,
-                        RegisteredUpstream = RegisteredUpstream,
-                        UpstreamStatusDescription = UpstreamStatusDescription
                     });
                 }
 
@@ -426,11 +419,6 @@ try
                         asDialed = asDialedNumber.DialedNumber;
                     }
 
-                    // Verify that this number is routed through our upstream provider.
-                    var checkRouted = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(asDialed, firstPointUsername, firstPointPassword);
-                    bool RegisteredUpstream = checkRouted.QueryResult.code is 0 && checkRouted.epid is 265;
-                    string UpstreamStatusDescription = checkRouted.QueryResult.text;
-
                     var inboundMMS = await db.Messages.Where(x => (x.To.Contains(asDialed) || x.From == asDialed) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).CountAsync();
                     var outboundMMS = await db.Messages.Where(x => (x.To.Contains(asDialed) || x.From == asDialed) && x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.MMS).CountAsync();
                     var inboundSMS = await db.Messages.Where(x => (x.To.Contains(asDialed) || x.From == asDialed) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).CountAsync();
@@ -442,8 +430,6 @@ try
                         OutboundMMSCount = outboundMMS,
                         InboundSMSCount = inboundSMS,
                         OutboundSMSCount = outboundSMS,
-                        RegisteredUpstream = RegisteredUpstream,
-                        UpstreamStatusDescription = UpstreamStatusDescription
                     };
                     return TypedResults.Ok(new UsageSummary[] { summary });
                 }
@@ -1710,8 +1696,6 @@ namespace Models
         public int InboundMMSCount { get; set; }
         public int OutboundSMSCount { get; set; }
         public int InboundSMSCount { get; set; }
-        public bool RegisteredUpstream { get; set; } = false;
-        public string UpstreamStatusDescription { get; set; } = string.Empty;
     }
 
     public enum MessageType { SMS, MMS };
