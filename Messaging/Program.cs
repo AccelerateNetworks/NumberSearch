@@ -18,6 +18,8 @@ using Microsoft.OpenApi.Models;
 
 using Models;
 
+using Org.BouncyCastle.Ocsp;
+
 using Prometheus;
 
 using Serilog;
@@ -355,6 +357,8 @@ try
 
                 foreach (var reg in registrations)
                 {
+                    var x = reg.UpstreamStatusDescription;
+                    var y = reg.RegisteredUpstream;
                     var checkAsDialed = PhoneNumbersNA.PhoneNumber.TryParse(reg.AsDialed, out var asDialedNumber);
 
                     if (asDialedNumber.Type is not PhoneNumbersNA.NumberType.ShortCode)
@@ -377,6 +381,8 @@ try
                         OutboundMMSCount = outboundMMS,
                         InboundSMSCount = inboundSMS,
                         OutboundSMSCount = outboundSMS,
+                        RegisteredUpstream = reg.RegisteredUpstream,
+                        UpstreamStatusDescription = reg.UpstreamStatusDescription,
                     });
                 }
 
@@ -430,6 +436,8 @@ try
                         OutboundMMSCount = outboundMMS,
                         InboundSMSCount = inboundSMS,
                         OutboundSMSCount = outboundSMS,
+                        RegisteredUpstream = reg.RegisteredUpstream,
+                        UpstreamStatusDescription = reg.UpstreamStatusDescription,
                     };
                     return TypedResults.Ok(new UsageSummary[] { summary });
                 }
@@ -1696,6 +1704,8 @@ namespace Models
         public int InboundMMSCount { get; set; }
         public int OutboundSMSCount { get; set; }
         public int InboundSMSCount { get; set; }
+        public string UpstreamStatusDescription { get; set; } = string.Empty;
+        public bool RegisteredUpstream { get; set; } = false;
     }
 
     public enum MessageType { SMS, MMS };
