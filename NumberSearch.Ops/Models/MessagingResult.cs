@@ -14,5 +14,6 @@ namespace NumberSearch.Ops.Models
         public OwnedPhoneNumber[] Owned { get; set; } = Array.Empty<OwnedPhoneNumber>();
         public string Message { get; set; } = string.Empty;
         public string AlertType { get; set; } = string.Empty;
+        public RegistrationRequest RegistrationRequest { get; set; } = new();
     }
 }

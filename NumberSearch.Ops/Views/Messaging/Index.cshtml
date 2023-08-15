@@ -25,51 +25,36 @@
         </div>
     }
 }
-<h3>Failed Messages in the Last 3 Days</h3>
-<div class="table-responsive">
-    <table class="table table-striped table-borderless table-hover" id="table">
-        <thead>
-            <tr>
-                @*  <th>Succeeded?</th> *@
-                <th>Date Received PST</th>
-                <th>Message Source</th>
-                <th>Message Type</th>
-                <th>From</th>
-                <th>To</th>
-                <th>Raw Response</th>
-                <th>Content</th>
-                @* <th>Media URLs</th> *@
-                @*<th>Raw Request</th>
-                <th>To Forward</th> *@
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var result in Model.FailedMessages)
-            {
-                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(result.From, out var fromPhoneNumber);
-                var ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == fromPhoneNumber.DialedNumber);
-                string FromLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{result.From}</a>" : result.From;
-                checkParse = PhoneNumbersNA.PhoneNumber.TryParse(result.To, out var toPhoneNumber);
-                ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == toPhoneNumber.DialedNumber);
-                string ToLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{result.To}</a>" : result.To;
+<form action="/Messaging/Register" method="post" class="needs-validation">
+    @Html.AntiForgeryToken()
+    <h4 class="mb-3">Register a Phone Number for Messaging Service</h4>
+    <div class="row">
+        <div class="col">
+            <div class="form-floating mb-3">
+                <input asp-for="RegistrationRequest.DialedNumber" type="text" class="form-control" placeholder="The phone number you want to register.">
+                <label for="phoneNumber">Phone Number</label>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-floating mb-3">
+                <input asp-for="RegistrationRequest.CallbackUrl" type="text" class="form-control" placeholder="The webhook Url that you want inbound messages forwarded to.">
+                <label for="callbackUrl">Callback URL</label>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-floating mb-3">
+                <input asp-for="RegistrationRequest.ClientSecret" type="text" class="form-control" placeholder="The secret that will be required for validating messages to and from the registered client.">
+                <label for="clientSecret">Client Secret</label>
+            </div>
+            <div class="col">
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-outline-danger btn-block">Register</button>
+                </div>
+            </div>
+        </div>
 
-                <tr>
-                    @*<td>@result.Succeeded</td>*@
-                    <td data-order="@result.DateReceivedUTC.Ticks">@result.DateReceivedUTC.ToLocalTime().ToShortDateString() @result.DateReceivedUTC.ToLocalTime().ToShortTimeString()</td>
-                    <td>@result.MessageSource</td>
-                    <td>@result.MessageType</td>
-                    <td>@Html.Raw(FromLink)</td>
-                    <td>@Html.Raw(ToLink)</td>
-                    <td>@result.RawResponse</td>
-                    <td>@result.Content</td>
-                    @* <td>@result.MediaURLs</td> *@
-                    @*<td>@result.RawRequest</td>
-                <td>@result.ToForward</td> *@
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
+    </div>
+</form>
 <h3 class="pt-3">Messaging Usage by Phone Number</h3>
 <div class="table-responsive">
     <table class="table table-striped table-borderless table-hover">
@@ -113,6 +98,51 @@
                         <td></td>
                         <td>As of @DateTime.Now.ToShortDateString() @DateTime.Now.ToShortTimeString()</td>
                     }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<h3>Failed Messages in the Last 3 Days</h3>
+<div class="table-responsive">
+    <table class="table table-striped table-borderless table-hover" id="table">
+        <thead>
+            <tr>
+                @*  <th>Succeeded?</th> *@
+                <th>Date Received PST</th>
+                <th>Message Source</th>
+                <th>Message Type</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Raw Response</th>
+                <th>Content</th>
+                @* <th>Media URLs</th> *@
+                @*<th>Raw Request</th>
+                <th>To Forward</th> *@
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var result in Model.FailedMessages)
+            {
+                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(result.From, out var fromPhoneNumber);
+                var ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == fromPhoneNumber.DialedNumber);
+                string FromLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{result.From}</a>" : result.From;
+                checkParse = PhoneNumbersNA.PhoneNumber.TryParse(result.To, out var toPhoneNumber);
+                ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == toPhoneNumber.DialedNumber);
+                string ToLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{result.To}</a>" : result.To;
+
+                <tr>
+                    @*<td>@result.Succeeded</td>*@
+                    <td data-order="@result.DateReceivedUTC.Ticks">@result.DateReceivedUTC.ToLocalTime().ToShortDateString() @result.DateReceivedUTC.ToLocalTime().ToShortTimeString()</td>
+                    <td>@result.MessageSource</td>
+                    <td>@result.MessageType</td>
+                    <td>@Html.Raw(FromLink)</td>
+                    <td>@Html.Raw(ToLink)</td>
+                    <td>@result.RawResponse</td>
+                    <td>@result.Content</td>
+                    @* <td>@result.MediaURLs</td> *@
+                    @*<td>@result.RawRequest</td>
+                <td>@result.ToForward</td> *@
                 </tr>
             }
         </tbody>

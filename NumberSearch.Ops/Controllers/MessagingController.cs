@@ -1,5 +1,7 @@
 ﻿using AccelerateNetworks.Operations;
 
+using Amazon.S3.Model;
+
 using Flurl.Http;
 
 using Microsoft.AspNetCore.Authorization;
@@ -96,6 +98,27 @@ namespace NumberSearch.Ops.Controllers
                     CallbackUrl = refresh.CallbackUrl,
                     ClientSecret = refresh.ClientSecret,
                 };
+                var request = await $"{_baseUrl}client/register".WithOAuthBearerToken(_messagingToken).PostJsonAsync(registrationRequest);
+                var response = await request.GetJsonAsync<RegistrationResponse>();
+                message = $"✔️ Reregistration complete! {response.Message}";
+            }
+            var stats = await $"{_baseUrl}client/usage".WithOAuthBearerToken(_messagingToken).GetJsonAsync<UsageSummary[]>();
+            var failures = await $"{_baseUrl}message/all/failed?start={DateTime.Now.AddDays(-3).ToShortDateString()}&end={DateTime.Now.AddDays(1).ToShortDateString()}".WithOAuthBearerToken(_messagingToken).GetJsonAsync<MessageRecord[]>();
+            var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
+            return View("Index", new MessagingResult { UsageSummary = stats.OrderByDescending(x => x.OutboundSMSCount).ToArray(), FailedMessages = failures.OrderByDescending(x => x.DateReceivedUTC).ToArray(), Owned = ownedNumbers, Message = message, AlertType = alertType });
+        }
+
+        [Authorize]
+        [Route("/Messaging/Register")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegisterAsync([Bind("DialedNumber,CallbackUrl,ClientSecret")] RegistrationRequest registrationRequest)
+        {
+            string message = string.Empty;
+            string alertType = "alert-success";
+            bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(registrationRequest.DialedNumber, out var phoneNumber);
+            if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+            {
                 var request = await $"{_baseUrl}client/register".WithOAuthBearerToken(_messagingToken).PostJsonAsync(registrationRequest);
                 var response = await request.GetJsonAsync<RegistrationResponse>();
                 message = $"✔️ Reregistration complete! {response.Message}";
