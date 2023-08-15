@@ -104,6 +104,30 @@
     </table>
 </div>
 <h3>Failed Messages in the Last 3 Days</h3>
+<ul>
+    @foreach (var failed in Model.FailedMessages.GroupBy(x => x.To).OrderByDescending(x => x.Count()))
+    {
+        var number = failed.FirstOrDefault()?.To;
+        var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number ?? string.Empty, out var phoneNumber);
+        if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(number))
+        {
+            var ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == phoneNumber.DialedNumber);
+            string AsDialedLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{number}</a>" : number;
+            var usage = Model.UsageSummary.FirstOrDefault(x => x.AsDialed == number);
+            string registered = usage is not null ? $"Registered with sms.callpipe.com. {usage.RegisteredUpstream} Upstream Status: {usage.UpstreamStatusDescription} <a href='./Register?dialedNumber={phoneNumber.DialedNumber}'>Reregister</a>" : $"Not registered with sms.callpipe.com. <a href='./Register?dialedNumber={phoneNumber.DialedNumber}'>Register</a>";
+            <li>
+                @Html.Raw(AsDialedLink) has @failed.Count() failed messages. @Html.Raw(registered)
+            </li>
+        }
+        else
+        {
+            <li>
+                @number has @failed.Count() failed messages. File a GitHub issue for these so Tom can figure out why we're not recording a To number.
+            </li>
+        }
+    }
+</ul>
+
 <div class="table-responsive">
     <table class="table table-striped table-borderless table-hover" id="table">
         <thead>
