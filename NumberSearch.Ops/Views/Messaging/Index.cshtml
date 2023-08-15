@@ -23,7 +23,7 @@
                 <th>Raw Response</th>
                 <th>Content</th>
                 @* <th>Media URLs</th> *@
-@*                 <th>Raw Request</th>
+                @*<th>Raw Request</th>
                 <th>To Forward</th> *@
             </tr>
         </thead>
@@ -49,7 +49,6 @@
                     @* <td>@result.MediaURLs</td> *@
                     @*<td>@result.RawRequest</td>
                     <td>@result.ToForward</td> *@
-
                 </tr>
             }
         </tbody>
@@ -67,6 +66,7 @@
                 <th>Inbound MMS</th>
                 <th>Registered Upstream?</th>
                 <th>Upstream Status Description</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -84,6 +84,7 @@
                     <td>@result.InboundMMSCount</td>
                     <td>@result.RegisteredUpstream</td>
                     <td>@result.UpstreamStatusDescription</td>
+                    <td><a class="btn btn-primary" href="./RefreshStatus?dialedNumber=@result.AsDialed">Refresh Upstream</a></td>
                 </tr>
             }
         </tbody>

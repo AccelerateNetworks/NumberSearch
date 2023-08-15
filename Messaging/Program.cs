@@ -285,6 +285,12 @@ try
                 var checkRouted = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber, firstPointUsername, firstPointPassword);
                 registration.RegisteredUpstream = checkRouted.QueryResult.code is 0 && checkRouted.epid is 265;
                 registration.UpstreamStatusDescription = checkRouted.QueryResult.text;
+
+                // Don't pollute the registrations with 1 prefixed numbers.
+                registration.AsDialed = asDialedNumber.DialedNumber;
+                await db.SaveChangesAsync();
+
+                registration.AsDialed = dialedNumber;
                 return TypedResults.Ok(registration);
             }
             else
