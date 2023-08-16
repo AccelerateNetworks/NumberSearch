@@ -1452,6 +1452,26 @@ namespace NumberSearch.Tests
             Assert.Equal(email.EmailId, result.EmailId);
         }
 
+        //[Fact]
+        //public async Task TestSendEmailAsync()
+        //{
+        //    var email = new Email()
+        //    {
+        //        EmailId = Guid.NewGuid(),
+        //        PrimaryEmailAddress = "dan@acceleratenetworks.com",
+        //        SalesEmailAddress = "dan@acceleratenetworks.com",
+        //        CarbonCopy = "thomas.ryan@outlook.com",
+        //        Subject = $"Integration Test Email {DateTime.Now.ToShortTimeString()}",
+        //        MessageBody = "This is a test email send from the NumberSearch test suite. Please ignore, thanks!",
+        //        DateSent = DateTime.UtcNow,
+        //        Completed = false,
+        //        DoNotSend = false,
+        //    };
+        //    var check = await email.SendEmailAsync(_configuration.SmtpUsername, _configuration.SmtpPassword);
+        //    Assert.True(check);
+        //}
+
+
         [Fact]
         public async Task PostSentEmailAsync()
         {

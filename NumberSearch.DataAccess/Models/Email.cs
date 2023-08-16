@@ -160,7 +160,7 @@ namespace NumberSearch.DataAccess
                 smtp.MessageSent += (sender, args) => { };
                 smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
-                await smtp.ConnectAsync("mail.seattlemesh.net", 587, SecureSocketOptions.StartTls).ConfigureAwait(false);
+                await smtp.ConnectAsync("witcher.mxrouting.net", 587, SecureSocketOptions.StartTls).ConfigureAwait(false);
                 await smtp.AuthenticateAsync(username, password).ConfigureAwait(false);
                 await smtp.SendAsync(outboundMessage).ConfigureAwait(false);
                 await smtp.DisconnectAsync(true).ConfigureAwait(false);
