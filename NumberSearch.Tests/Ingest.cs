@@ -115,11 +115,11 @@ namespace NumberSearch.Tests
         //    _ = await Owned.OfferUnassignedNumberForSaleAsync(ingestConfiguration.Postgresql);
         //}  
 
-        //[Fact]
-        //public async Task DailyBreifingEmailToDan()
-        //{
-        //    var checkRun = await Orders.DailyBriefingEmailAsync(ingestConfiguration);
-        //}
+        [Fact]
+        public async Task DailyBreifingEmailToDan()
+        {
+            var checkRun = await Orders.DailyBriefingEmailAsync(ingestConfiguration);
+        }
 
         //[Fact]
         //public async Task OwnedNumers()
