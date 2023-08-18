@@ -114,7 +114,7 @@
             var ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == phoneNumber.DialedNumber);
             string AsDialedLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{number}</a>" : number;
             var usage = Model.UsageSummary.FirstOrDefault(x => x.AsDialed == number);
-            string email = ownedPhoneNumber.
+            @*string email = ownedPhoneNumber.*@  
             string registered = usage is not null ? $"Registered with sms.callpipe.com. {usage.RegisteredUpstream} Upstream Status: {usage.UpstreamStatusDescription} <a href='./Register?dialedNumber={phoneNumber.DialedNumber}'>Reregister</a>" 
             : $"Not registered with sms.callpipe.com. <a href='mailto:'>Upsell them with this email.</a>";
             <li>
