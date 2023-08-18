@@ -167,6 +167,27 @@
 		<Content Update="wwwroot\html_code.html">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Update="wwwroot\images\original\Accelerate Network - Grandstream GRP2612 600x400 2.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\original\Accelerate Network - Grandstream GRP2612 Full Size 2.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\original\Accelerate Network - YeaLink &amp; Headset 600x400.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\original\Accelerate Network - YeaLink 600x400.jpg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\original\Accelerate Network - YeaLink 600x400.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\original\Accelerate Network - YeaLink Full Size.jpg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\original\Accelerate Network - YeaLink Full Size.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Update="wwwroot\images\original\accelerate-white.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
