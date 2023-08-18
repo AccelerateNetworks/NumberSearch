@@ -353,6 +353,9 @@
 		<Content Update="wwwroot\images\scaled\GDS3710-400.webp">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Update="wwwroot\images\scaled\grandstreamgrp2612-scaled-carousel.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Update="wwwroot\images\scaled\GRP-Wallmount-400.webp">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
@@ -539,6 +542,9 @@
 		<Content Update="wwwroot\images\scaled\yealink-t53w-400.webp">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Update="wwwroot\images\scaled\yealink-t57w-scaled-carousel.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Update="wwwroot\images\scaled\Yealink-W53H-400.webp">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
@@ -562,6 +568,9 @@
 		</Content>
 		<Content Update="wwwroot\images\scaled\yealinkt57w-400.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\scaled\yealinkt57W-scaled-carousel.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\svg\01.svg">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
