@@ -227,6 +227,12 @@
 		<Content Update="wwwroot\images\original\favicon-194x194.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Update="wwwroot\images\original\Grandstream GXP2140 2 Web.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\original\Grandstream GXP2140 Web.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Update="wwwroot\images\original\GRP2612front.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
