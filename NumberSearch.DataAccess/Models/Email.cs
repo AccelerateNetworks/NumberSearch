@@ -97,7 +97,6 @@ namespace NumberSearch.DataAccess
         {
             // If any of the parameters are bad fail fast.
             if (string.IsNullOrWhiteSpace(PrimaryEmailAddress)
-                || string.IsNullOrWhiteSpace(CarbonCopy)
                 || string.IsNullOrWhiteSpace(Subject)
                 || string.IsNullOrWhiteSpace(MessageBody))
             {
@@ -124,7 +123,6 @@ namespace NumberSearch.DataAccess
                 var recipient = MailboxAddress.Parse(PrimaryEmailAddress);
 
                 outboundMessage.From.Add(ordersInbox);
-                outboundMessage.Cc.Add(ordersInbox);
                 outboundMessage.To.Add(recipient);
 
                 if (!string.IsNullOrWhiteSpace(SalesEmailAddress) && SalesEmailAddress.Contains("@"))
