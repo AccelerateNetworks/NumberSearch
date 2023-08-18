@@ -66,6 +66,15 @@ namespace NumberSearch.Ops.Controllers
         }
 
         [Authorize]
+        [Route("/Messaging/Failed")]
+        public async Task<IActionResult> FailedMessagesAsync()
+        {
+            var failures = await $"{_baseUrl}message/all/failed?start={DateTime.Now.AddDays(-3).ToShortDateString()}&end={DateTime.Now.AddDays(1).ToShortDateString()}".WithOAuthBearerToken(_messagingToken).GetJsonAsync<MessageRecord[]>();
+            var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
+            return View("Failed", new MessagingResult { FailedMessages = failures.OrderByDescending(x => x.DateReceivedUTC).ToArray(), Owned = ownedNumbers });
+        }
+
+        [Authorize]
         [Route("/Messaging/RefreshStatus")]
         public async Task<IActionResult> RefreshStatusAsync(string dialedNumber)
         {
