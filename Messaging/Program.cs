@@ -1230,6 +1230,8 @@ try
             if (client is not null && client.AsDialed == toRegisteredNumber.DialedNumber)
             {
                 toForward.ClientSecret = client.ClientSecret;
+                messageRecord.To = toForward.To;
+                messageRecord.From = toForward.From;
                 messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
 
                 try
@@ -1426,7 +1428,8 @@ try
             if (client is not null && client.AsDialed == toRegisteredNumber.DialedNumber)
             {
                 toForward.ClientSecret = client.ClientSecret;
-                messageRecord.Content = toForward.Content;
+                messageRecord.To = toForward.To;
+                messageRecord.From = toForward.From;
                 messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
 
                 try
@@ -1445,7 +1448,7 @@ try
                     Log.Error(System.Text.Json.JsonSerializer.Serialize(client));
                     Log.Error(System.Text.Json.JsonSerializer.Serialize(toForward));
                     Log.Error($"Failed to forward message to {toForward.To}");
-                    messageRecord.RawResponse = $"Failed to forward message to {toForward.To} at {client.CallbackUrl} {error}";
+                    messageRecord.RawResponse = $"Failed to forward message to {toForward.To} at {client.CallbackUrl} {ex.StatusCode} {error}";
                 }
 
                 try
