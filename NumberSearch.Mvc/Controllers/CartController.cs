@@ -335,7 +335,7 @@ namespace NumberSearch.Mvc.Controllers
                 // This is purely so that we can isolate the state of this call when it fails out.
                 Log.Information(JsonSerializer.Serialize(cart));
 
-                if (cart.ProductOrders is null || !cart.ProductOrders.Any() || true)
+                if (cart.ProductOrders is null || !cart.ProductOrders.Any())
                 {
                     // Give the user a better error message and tell them to try again
                     // Maybe save the cart to the database when the go to the cart page or when they hit the checkout button?
