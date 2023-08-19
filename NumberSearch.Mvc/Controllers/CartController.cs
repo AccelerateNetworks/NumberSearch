@@ -335,13 +335,15 @@ namespace NumberSearch.Mvc.Controllers
                 // This is purely so that we can isolate the state of this call when it fails out.
                 Log.Information(JsonSerializer.Serialize(cart));
 
-                if (cart.ProductOrders is null || !cart.ProductOrders.Any())
+                if (cart.ProductOrders is null || !cart.ProductOrders.Any() || true)
                 {
+                    // Give the user a better error message and tell them to try again
+                    // Maybe save the cart to the database when the go to the cart page or when they hit the checkout button?
                     Log.Error("[Checkout] There are no product orders in this sessions cart. How did we get here???");
                     // Reset the session and clear the Cart.
                     HttpContext.Session.Clear();
 
-                    return RedirectToAction("Cart", "Checkout");
+                    return View("Index", new CartResult { Message = "💀 The server disconnected and your Cart was lost. Please try it again now." });
                 }
 
                 if (order.OrderId != Guid.Empty)
