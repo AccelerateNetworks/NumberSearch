@@ -120,15 +120,15 @@ namespace NumberSearch.Ingest
                 {
                     quotesSubmittedToday.Add(order);
                 }
-                else if (order.InstallDate is not null && order.InstallDate.GetValueOrDefault().AddDays(7).ToShortDateString() == DateTime.Now.ToShortDateString())
+                else if (order.Quote is false && order.InstallDate is not null && order.InstallDate.Value.AddDays(7).Month == DateTime.Now.Month && order.InstallDate.Value.AddDays(7).Day == DateTime.Now.Day)
                 {
                     oneWeekFollowUp.Add(order);
                 }
-                else if (order.InstallDate is not null && order.InstallDate.GetValueOrDefault().AddMonths(1).ToShortDateString() == DateTime.Now.ToShortDateString())
+                else if (order.Quote is false && order.InstallDate is not null && order.InstallDate.Value.AddMonths(1).Month == DateTime.Now.Month && order.InstallDate.Value.AddMonths(1).Day == DateTime.Now.Day)
                 {
                     oneMonthFollowUp.Add(order);
                 }
-                else if (order.InstallDate is not null && order.InstallDate.GetValueOrDefault().AddYears(1).ToShortDateString() == DateTime.Now.ToShortDateString())
+                else if (order.Quote is false && order.InstallDate is not null && order.InstallDate.Value.AddYears(1).DayOfYear == DateTime.Now.DayOfYear)
                 {
                     yearlyFollowUp.Add(order);
                 }
@@ -255,9 +255,9 @@ namespace NumberSearch.Ingest
             }
 
             output.Append("<p>Quotes submitted today:</p><ul>");
-            if (quotesSubmittedToday.Count > 0)
+            if (oneMonthFollowUp.Count > 0)
             {
-                foreach (var item in quotesSubmittedToday)
+                foreach (var item in oneMonthFollowUp)
                 {
                     var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
                     var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
@@ -272,9 +272,9 @@ namespace NumberSearch.Ingest
             }
 
             output.Append("<p>Follow up with Installs from last week:</p><ul>");
-            if (oneWeekFollowUp.Count > 0)
+            if (yearlyFollowUp.Count > 0)
             {
-                foreach (var item in quotesSubmittedToday)
+                foreach (var item in yearlyFollowUp)
                 {
                     var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
                     var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;

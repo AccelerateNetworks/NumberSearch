@@ -476,6 +476,11 @@ try
             });
         }
 
+        if (string.IsNullOrWhiteSpace(registration.CallbackUrl) && !string.IsNullOrWhiteSpace(registration.Email))
+        {
+            // Register for email forwarding.
+        }
+
         // Validate the callback Url to prevent dumb errors.
         if (!Uri.IsWellFormedUriString(registration.CallbackUrl, UriKind.Absolute))
         {
@@ -1766,6 +1771,7 @@ namespace Models
         public string CallbackUrl { get; set; } = string.Empty;
         [DataType(DataType.Password)]
         public string ClientSecret { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
     }
 
     public class RegistrationResponse
