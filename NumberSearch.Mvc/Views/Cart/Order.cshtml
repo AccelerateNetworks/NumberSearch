@@ -108,11 +108,17 @@
                         <p class="lead text-white">Welcome to our network <strong>@name</strong>!</p>
 
                     }
-                    else if (Model?.Order?.DateSubmitted > DateTime.MinValue)
+                    else if (Model?.Order?.DateSubmitted > DateTime.MinValue && Model?.Order?.Quote is false)
                     {
                         <h1 class="display-3 text-light d-none d-sm-block">Your Submitted Order</h1>
                         <h4 class="display-4 text-light d-block d-sm-none">Your Submitted Order</h4>
                         <p class="lead text-white">Welcome to our network <strong>@name</strong>!</p>
+                    }
+                    else
+                    {
+                        <h1 class="display-3 text-light d-none d-sm-block">Your Quote</h1>
+                        <h4 class="display-4 text-light d-block d-sm-none">Your Quote</h4>
+                        <p class="lead text-white">We're excited for you to join our network <strong>@name</strong>!</p>
                     }
                 }
             </div>
@@ -253,7 +259,14 @@
         <div class="row">
             <div class="col-md-4 order-md-2">
                 <h4 class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="text-muted">Your Order</span>
+                    @if (Model?.Order?.Quote ?? false)
+                    {
+                        <span class="text-muted">Your Quote</span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Your Order</span>
+                    }
                     @{
                         int sumOfItems = 0;
                         if (Model?.ProductOrders is not null && Model.ProductOrders.Any())
