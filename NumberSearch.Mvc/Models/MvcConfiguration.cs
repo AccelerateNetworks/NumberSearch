@@ -24,6 +24,7 @@
         public string EmailOrders { get; set; } = string.Empty;
         public string EmailDan { get; set; } = string.Empty;
         public string EmailTom { get; set; } = string.Empty;
+        public string EmailSupport { get; set; } = string.Empty;
         public string AzureStorageAccount { get; set; } = string.Empty;
         public string TeleDynamicsUsername { get; set; } = string.Empty;
         public string TeleDynamicsPassword { get; set; } = string.Empty;

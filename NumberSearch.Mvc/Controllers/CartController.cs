@@ -27,6 +27,7 @@ namespace NumberSearch.Mvc.Controllers
         private readonly string _postgresql;
         private readonly string _invoiceNinjaToken;
         private readonly string _emailOrders;
+        private readonly string _emailSupport;
         private readonly MvcConfiguration _configuration;
 
 
@@ -35,6 +36,7 @@ namespace NumberSearch.Mvc.Controllers
             _postgresql = mvcConfiguration.PostgresqlProd;
             _invoiceNinjaToken = mvcConfiguration.InvoiceNinjaToken;
             _emailOrders = mvcConfiguration.EmailOrders;
+            _emailSupport = mvcConfiguration.EmailSupport;
             _configuration = mvcConfiguration;
         }
 
@@ -830,8 +832,8 @@ namespace NumberSearch.Mvc.Controllers
                             var confirmationEmail = new Email
                             {
                                 PrimaryEmailAddress = order.Email,
-                                SalesEmailAddress = order.SalesEmail,
-                                CarbonCopy = _emailOrders,
+                                SalesEmailAddress = string.IsNullOrWhiteSpace(order.SalesEmail) ? _emailSupport : order.SalesEmail,
+                                CarbonCopy = _emailSupport,
                                 MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
@@ -1435,7 +1437,7 @@ Accelerate Networks
                             if (order.NoEmail)
                             {
                                 confirmationEmail.Completed = false;
-                                confirmationEmail.PrimaryEmailAddress = string.IsNullOrWhiteSpace(order.SalesEmail) ? "support@acceleratenetworks.com" : order.SalesEmail;
+                                confirmationEmail.PrimaryEmailAddress = string.IsNullOrWhiteSpace(order.SalesEmail) ? _emailSupport : order.SalesEmail;
                                 var checkSave = await confirmationEmail.PostAsync(_postgresql).ConfigureAwait(false);
                                 Log.Information($"Suppressed sending out the confirmation emails for {order.OrderId}.");
                             }
