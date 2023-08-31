@@ -52,6 +52,18 @@
                                 @order?.Order?.DateSubmitted.ToString("MM/dd hh:mm tt") <span class="badge bg-@pillColor">
                                     @nextStep
                                 </span>
+                                @if (order?.Order is not null && order.Order.DateSubmitted > DateTime.Now.AddDays(-1))
+                                {
+                                    <span class="badge bg-danger">
+                                        ✨ New Today
+                                    </span>
+                                }
+                                else if (order?.Order is not null && order.Order.DateSubmitted > DateTime.Now.AddDays(-7))
+                                {
+                                    <span class="badge bg-primary">
+                                        🔍 This Week
+                                    </span>
+                                }
                             </p>
                             <p>
                                 <div class="btn-group mt-2" role="group" aria-label="Basic example">
@@ -299,6 +311,18 @@
                                 @order?.Order?.DateSubmitted.ToString("MM/dd hh:mm tt") <span class="badge bg-@pillColor">
                                     @nextStep
                                 </span>
+                                @if (order?.Order is not null && order.Order.DateSubmitted > DateTime.Now.AddDays(-1))
+                                {
+                                    <span class="badge bg-danger">
+                                        ✨ New Today
+                                    </span>
+                                }
+                                else if (order?.Order is not null && order.Order.DateSubmitted > DateTime.Now.AddDays(-7))
+                                {
+                                    <span class="badge bg-primary">
+                                        🔍 This Week
+                                    </span>
+                                }
                             </p>
                             <p>
                                 @order?.Order?.FirstName

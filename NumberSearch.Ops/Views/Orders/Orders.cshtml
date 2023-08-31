@@ -99,6 +99,18 @@
                                 @order?.Order?.DateSubmitted.ToString("MM/dd hh:mm tt") <span class="badge bg-@pillColor">
                                     @nextStep
                                 </span>
+                                @if (order?.Order is not null && order.Order.DateSubmitted > DateTime.Now.AddDays(-1))
+                                {
+                                    <span class="badge bg-danger">
+                                        ✨ New Today
+                                    </span>
+                                }
+                                else if (order?.Order is not null && order.Order.DateSubmitted > DateTime.Now.AddDays(-7))
+                                {
+                                    <span class="badge bg-primary">
+                                        🔍 This Week
+                                    </span>
+                                }
                             </p>
                             @if (order?.PortRequest is not null && order?.Order is not null && order.PortRequest.OrderId == order.Order.OrderId)
                             {
@@ -129,7 +141,7 @@
                                         </a>
                                     }
                                     @if (!string.IsNullOrWhiteSpace(order?.Order?.ReoccuringInvoiceLink))
-                                    { 
+                                    {
                                         <a href="@order?.Order?.ReoccuringInvoiceLink" class="btn btn-outline-primary" target="_blank" rel="noopener noreferrer">
                                             View Recurring Quote
                                         </a>
@@ -370,6 +382,18 @@
                                 @order?.Order?.DateSubmitted.ToString("MM/dd hh:mm tt") <span class="badge bg-@pillColor">
                                     @nextStep
                                 </span>
+                                @if (order?.Order is not null && order.Order.DateSubmitted > DateTime.Now.AddDays(-1))
+                                {
+                                    <span class="badge bg-danger">
+                                        ✨ New Today
+                                    </span>
+                                }
+                                else if (order?.Order is not null && order.Order.DateSubmitted > DateTime.Now.AddDays(-7))
+                                {
+                                    <span class="badge bg-primary">
+                                        🔍 This Week
+                                    </span>
+                                }
                             </p>
                             <p>
                                 @order?.Order?.FirstName
