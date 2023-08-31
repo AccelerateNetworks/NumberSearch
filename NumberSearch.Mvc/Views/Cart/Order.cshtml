@@ -1,4 +1,5 @@
 ﻿@using PhoneNumbersNA
+@using System
 @model NumberSearch.Mvc.Cart;
 
 @{
@@ -69,12 +70,16 @@
         let estimate = document.getElementById("estimatedinstallationtime");
         let itemsCount = document.getElementById("itemsCount");
         let cartCounter = document.getElementById("cartCounter");
+        let total = document.getElementById("sidebarTotal");
+        let onsiteTotal = document.getElementById("onsiteTotal");
 
         if (hide) {
             onsite.hidden = true;
             estimate.hidden = true;
             onsite.classList.remove("d-flex");
             estimate.classList.remove("d-flex");
+            let newTotal = parseInt(total.innerText.replace('$', '')) - parseInt(onsiteTotal.innerText);
+            total.innerText = `$${newTotal}`;
             itemsCount.innerText = parseInt(itemsCount.innerText) - 2;
             cartCounter.innerText = parseInt(cartCounter.innerText) - 2;
         } else {
@@ -82,6 +87,8 @@
             estimate.hidden = false;
             onsite.classList.add("d-flex");
             estimate.classList.add("d-flex");
+            let newTotal = parseInt(total.innerText.replace('$', '')) + parseInt(onsiteTotal.innerText);
+            total.innerText = `$${newTotal}`;
             itemsCount.innerText = parseInt(itemsCount.innerText) + 2;
             cartCounter.innerText = parseInt(cartCounter.innerText) + 2;
         }
@@ -287,6 +294,7 @@
                         var portedTotal = 0;
                         var verifiedTotal = 0;
                         var couponTotal = 0;
+                        var onsiteTotal = 0;
                         if (numbers is not null)
                         {
                             foreach (var number in numbers)
@@ -382,7 +390,6 @@
                             }
                         }
 
-
                         if (ported is not null)
                         {
                             foreach (var number in ported)
@@ -451,6 +458,10 @@
                                 var localTotal = productOrder.Quantity * product.Price;
                                 productsTotal += localTotal;
                                 string htmlId = product.Name.Trim().Replace(" ", "").ToLowerInvariant();
+                                if (productOrder.ProductId == Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4") || productOrder.ProductId == Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"))
+                                {
+                                    onsiteTotal += localTotal;
+                                }
                                 <li class="list-group-item d-flex justify-content-between lh-condensed" id="@htmlId">
                                     <div>
                                         <h6 class="my-0">
@@ -560,11 +571,12 @@
                     <li class="list-group-item d-flex justify-content-between lh-condensed">
                         <div>
                             <h6>Total (USD)</h6>
-                            <small class="text-muted">Plus installation, state and local taxes</small>
+                            <small class="text-muted">Plus state and local taxes</small>
                         </div>
                         @{
                             var total = numbersTotal + portedTotal + productsTotal + servicesTotal + verifiedTotal + couponTotal;
-                            <strong>$@total</strong>
+                            <strong id="sidebarTotal">$@total</strong>
+                            <div class="hidden" id="onsiteTotal">@onsiteTotal</div>
                         }
                     </li>
                     @{

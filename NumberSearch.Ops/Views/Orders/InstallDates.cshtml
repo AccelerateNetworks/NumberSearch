@@ -1,0 +1,37 @@
+﻿@model IEnumerable<AccelerateNetworks.Operations.Order>
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<div class="table-responsive">
+    <table class="table table-striped table-borderless table-hover" id="table">
+        <thead>
+            <tr>
+                <th>Submitted Date</th>
+                <th>Business Name</th>
+                <th>Converted from Quote Date</th>
+                <th>Install Date</th>
+                <th>Completed Date</th>
+                <th>Completed</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model)
+            {
+                string converted = order.DateConvertedFromQuote?.ToShortDateString() ?? "-";
+                string installed = order.InstallDate?.ToShortDateString() ?? "-";
+                string completed = order.DateCompleted?.ToShortDateString() ?? "-";
+                string name = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName;
+                <tr>
+                    <td data-order='@order.DateSubmitted.Ticks'>@order.DateSubmitted.ToShortDateString()</td>
+                    <td>@name</td>
+                    <td>@converted</td>
+                    <td>@installed</td>
+                    <td>@completed</td>
+                    <td>@order.Completed</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

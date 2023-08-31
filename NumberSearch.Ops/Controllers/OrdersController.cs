@@ -2349,4 +2349,43 @@ public class OrdersController : Controller
             }
         }
     }
+
+    [Authorize]
+    [Route("/Order/InstallDates")]
+    public async Task<IActionResult> InstallDatesAsync()
+    {
+        // Show all orders
+        var orders = new List<Order>();
+
+        // Show only the relevant Orders to a Sales rep.
+        if (User.IsInRole("Sales") && !User.IsInRole("Support"))
+        {
+            var user = await _userManager.FindByNameAsync(User?.Identity?.Name ?? string.Empty);
+
+            if (user is not null)
+            {
+                orders = await _context.Orders
+                    .Where(x => x.Quote && (x.SalesEmail == user.Email))
+                    .OrderByDescending(x => x.DateSubmitted)
+                    .AsNoTracking()
+                    .ToListAsync();
+            }
+            else
+            {
+                orders = await _context.Orders.Where(x => !x.Quote)
+                    .OrderByDescending(x => x.DateSubmitted)
+                    .AsNoTracking()
+                    .ToListAsync();
+            }
+        }
+        else
+        {
+            orders = await _context.Orders.Where(x => !x.Quote)
+                    .OrderByDescending(x => x.DateSubmitted)
+                    .AsNoTracking()
+                    .ToListAsync();
+        }
+
+        return View("InstallDates", orders);
+    }
 }
