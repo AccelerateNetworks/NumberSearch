@@ -87,7 +87,7 @@ namespace NumberSearch.Ingest
                     }
 
                     // Daily Ingest
-                    if (dailyTimer.Elapsed >= dailyCycle)
+                    if (dailyTimer.Elapsed >= dailyCycle || DateTime.Now == DateTime.Today.AddDays(1).AddSeconds(-1))
                     {
                         dailyTimer.Restart();
 
