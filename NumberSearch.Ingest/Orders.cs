@@ -374,7 +374,7 @@ namespace NumberSearch.Ingest
                             var message = new Email
                             {
                                 SalesEmailAddress = order.SalesEmail ?? "sales@acceleratenetworks.com",
-                                PrimaryEmailAddress = "orders@acceleratenetworks.com",
+                                PrimaryEmailAddress = "support@acceleratenetworks.com",
                                 CarbonCopy = "thomas.ryan@outlook.com",
                                 Subject = $"Quote {upfront.number} has been approved by {name}",
                                 OrderId = order.OrderId,
