@@ -15,5 +15,7 @@ namespace AccelerateNetworks.Operations
         public string? ShipmentTrackingLink { get; set; } = null!;
         public DateTime DateCreated { get; set; }
         public DateTime DateUpdated { get; set; }
+        public string? Carrier { get; set; } = null!;
+        public string? TrackingNumber { get; set; } = null!;
     }
 }

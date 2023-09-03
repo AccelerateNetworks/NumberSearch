@@ -335,23 +335,25 @@
             </div>
         </div>
     </div>
-    <h4 class="mb-3">Order Management</h4>
     <div class="row mb-3">
         <div class="col">
             <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-success">Update</button>
             </div>
+            <div class="form-text">Hit this button to save the changes you've made to this Order.</div>
         </div>
         <div class="col">
             <div class="d-grid gap-2">
                 <a href="/Home/Order/@Model?.Order?.OrderId/Delete" class="btn btn-danger btn-block">Delete</a>
             </div>
+            <div class="form-text">Hit this button to delete this Order. This cannot be undone.</div>
         </div>
         <div class="col">
             <a href="/Home/Order/@Model?.Order?.OrderId/Delete" class="btn btn-danger btn-block" hidden>Delete</a>
         </div>
     </div>
 </form>
+<h4 class="mb-3">Merge this Order with another Order</h4>
 <form action="/Home/Order/@Model?.Order?.OrderId/Merge" method="post">
     <div class="row mt-3">
         <div class="col">
@@ -365,13 +367,14 @@
                 <input name="mergeId" type="text" class="form-control" />
                 <label for="address">Id of the Order To Merge</label>
             </div>
+            <div class="form-text">Copy this Id from the URL of the other order. It will be the final segment of the URL, the part that comes after /Home/Order/</div>
         </div>
         <div class="col">
             <div class="mb-3">
-                <label for="address">Cannot be undone</label>
                 <div class="d-grid gap-2">
                     <button type="submit" class="btn btn-outline-danger btn-block">Merge</button>
                 </div>
+                <div class="form-text">Just like Deleting an Order, Merging another order into this Order cannot be undone.</div>
             </div>
         </div>
     </div>
@@ -380,7 +383,6 @@
 {
     <h4 class="mb-3">E911 Registrations</h4>
     <div class="row">
-
         <div class="col">
             <div class="mb-3">
                 @if (Model?.EmergencyInformation is not null && Model.EmergencyInformation.Any())
@@ -451,7 +453,7 @@
         || (Model?.Cart?.VerifiedPhoneNumbers is not null && Model.Cart.VerifiedPhoneNumbers.Any())
         || (Model?.Cart?.PurchasedPhoneNumbers is not null && Model.Cart.PurchasedPhoneNumbers.Any())))
     {
-        <h4 class="mb-3">Product Orders</h4>
+        <h4 class="mb-3">Cart</h4>
         <div class="row mt-3">
             <div class="col">
                 <div class="table-responsive shadow-sm">
@@ -748,31 +750,46 @@
             <div class="col">
                 <div class="d-grid gap-2">
                     <a href="/ProductOrders/Create?orderId=@Model?.Order?.OrderId" class="btn btn-outline-primary btn-block">
-                        Add Item
+                        Add Item to Order
                     </a>
+                    <div class="form-text">If you want to add more Items to this Order, use this button.</div>
                 </div>
             </div>
             <div class="col">
                 <div class="d-grid gap-2">
-                    <a href="/Home/Order/@Model?.Order?.OrderId/NewInvoices" class="btn btn-outline-warning btn-block">
-                        Regenerate Invoices
+                    <a href="/Home/Order/@Model?.Order?.OrderId/NewInvoices" class="btn btn-outline-secondary btn-block">
+                        Sync Invoices
                     </a>
+                    <div class="form-text">If you've added Items to this Order, use this button to updated the invoices in the billing system to match.</div>
                 </div>
             </div>
             <div class="col">
                 @if (Model?.Cart?.Products is not null && Model.Cart.Products.Any())
                 {
-                    <div class="d-grid gap-2">
-                        <a href="/Order/@Model?.Order?.OrderId/CreateProductItems" class="btn btn-warning text-white btn-block">
-                            Create Product Items
-                        </a>
-                    </div>
+                    <form action="/Order/@Model?.Order?.OrderId/CreateProductItems" method="get">
+                        <div class="input-group">
+                            <button class="btn btn-warning text-white btn-block" type="submit" id="button-addon1">
+                                Link to TeleDynamics Order
+                            </button>
+                            @if (Model?.ProductItems.Length > 0 && !string.IsNullOrWhiteSpace(Model?.ProductItems.FirstOrDefault()?.ExternalOrderId))
+                            {
+                                <input type="text" class="form-control" name="teleDynamicsOrderNumber" value="@Model?.ProductItems.FirstOrDefault()?.ExternalOrderId" aria-label="Example text with button addon" aria-describedby="button-addon1">
+                            }
+                            else
+                            {
+                                <input type="text" class="form-control" name="teleDynamicsOrderNumber" placeholder="Order #" aria-label="Example text with button addon" aria-describedby="button-addon1">
+                            }
+                        </div>
+                    </form>
+                    <div class="form-text">If you want to link this Order to an order for Hardware from TeleDynamics enter the Order # here and hit the button to ingest all of that information. Find the Order # at <a href="https://www.teledynamics.com/#/ordersAndQuotes" target="_blank">https://www.teledynamics.com/#/ordersAndQuotes</a></div>
                 }
             </div>
         </div>
         @if (Model?.ProductItems is not null && Model?.ProductItems?.Length > 0)
         {
             <h4 class="mb-3 mt-3">Assigned Hardware</h4>
+
+            <span class="small">If this doesn't autofill the information from the Linked order please file a bug on GitHub with the URL from this page and the Order # in the TeleDynamics system.</span>
             <div class="row mt-3">
                 <div class="col">
                     <div class="table-responsive shadow-sm">
@@ -783,7 +800,7 @@
                                     <th>Serial Number</th>
                                     <th>MAC Address</th>
                                     <th>Condition</th>
-                                    <th>TeleDynamics Order Id</th>
+                                    <th>TeleDynamics Order #</th>
                                     <th>Tracking</th>
                                     <th></th>
                                 </tr>
@@ -802,11 +819,11 @@
                                             <td>@item?.ExternalOrderId</td>
                                             @if (!string.IsNullOrWhiteSpace(item?.ShipmentTrackingLink))
                                             {
-                                                <td><a href="@item?.ShipmentTrackingLink" target="_blank" rel="noreferrer" class="btn btn-info">Tracking Status</a></td>
+                                                <td><a href="@item?.ShipmentTrackingLink" target="_blank" class="btn btn-info">@item?.Carrier - @item?.TrackingNumber</a></td>
                                             }
                                             else
                                             {
-                                                <td></td>
+                                                <td>@item?.Carrier - @item?.TrackingNumber</td>
                                             }
                                             <td>
                                                 <div class="btn-group" role="group" aria-label="Basic example">

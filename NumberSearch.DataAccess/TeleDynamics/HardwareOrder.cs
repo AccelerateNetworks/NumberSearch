@@ -16,8 +16,8 @@ namespace NumberSearch.DataAccess.TeleDynamics
             public string OrderNumber { get; set; } = string.Empty;
             public string PONumber { get; set; } = string.Empty;
             public string Status { get; set; } = string.Empty;
-            public int SubTotal { get; set; }
-            public int OrderTotal { get; set; }
+            public decimal SubTotal { get; set; }
+            public decimal OrderTotal { get; set; }
             public string BillingType { get; set; } = string.Empty;
             public bool HoldRequest { get; set; }
             public bool IsProvisioningOrder { get; set; }
@@ -45,7 +45,7 @@ namespace NumberSearch.DataAccess.TeleDynamics
         {
             public string Carrier { get; set; } = string.Empty;
             public string ShippingMethod { get; set; } = string.Empty;
-            public int Quote { get; set; }
+            public decimal Quote { get; set; }
         }
 
         public class ShippingAddress
@@ -92,8 +92,8 @@ namespace NumberSearch.DataAccess.TeleDynamics
             public string ProductName { get; set; } = string.Empty;
             public string PartNumber { get; set; } = string.Empty;
             public int Quantity { get; set; }
-            public int UnitPrice { get; set; }
-            public int ExtPrice { get; set; }
+            public decimal UnitPrice { get; set; }
+            public decimal ExtPrice { get; set; }
             public string Firmware { get; set; } = string.Empty;
             public Serializationinformation[] SerializationInformation { get; set; } = Array.Empty<Serializationinformation>();
             public bool IsBackorder { get; set; }
@@ -107,10 +107,10 @@ namespace NumberSearch.DataAccess.TeleDynamics
             public string SerialNumber { get; set; } = string.Empty;
         }
 
-        public static async Task<Order[]> SearchByPONumberAsync(string ponumber, string username, string password)
+        public static async Task<Order[]> SearchByPONumberAsync(string orderNumber, string username, string password)
         {
-            string baseUrl = "https://tdapi-sandbox.teledynamics.com/api/v1/orders";
-            string checkQuantityParameter = $"?searchCriteria={ponumber}";
+            string baseUrl = "https://tdapi.teledynamics.com/api/v1/orders";
+            string checkQuantityParameter = $"?searchCriteria={orderNumber}";
             string route = $"{baseUrl}{checkQuantityParameter}";
 
             try
@@ -125,26 +125,26 @@ namespace NumberSearch.DataAccess.TeleDynamics
             }
         }
 
-        public static async Task<Order> GetByPONumberAsync(string ponumber, string username, string password)
+        public static async Task<Order[]> GetByPONumberAsync(string ponumber, string username, string password)
         {
-            string baseUrl = "https://tdapi-sandbox.teledynamics.com/api/v1/orders/";
-            string route = $"{baseUrl}{ponumber}";
+            string baseUrl = "https://tdapi.teledynamics.com/api/v2/orders/";
+            string route = $"{baseUrl}{ponumber},";
 
             try
             {
-                return await route.WithBasicAuth(username, password).GetJsonAsync<Order>().ConfigureAwait(false);
+                return await route.WithBasicAuth(username, password).GetJsonAsync<Order[]>().ConfigureAwait(false);
             }
             catch (FlurlHttpException ex)
             {
                 var error = await ex.GetResponseStringAsync();
                 Log.Error(error);
-                return new();
+                return Array.Empty<Order>();
             }
         }
 
         public async Task<Order> PostAsync(string username, string password)
         {
-            string baseUrl = "https://tdapi-sandbox.teledynamics.com/api/v1/orders/";
+            string baseUrl = "https://tdapi.teledynamics.com/api/v1/orders/";
             string route = $"{baseUrl}";
 
             try

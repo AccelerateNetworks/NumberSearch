@@ -754,6 +754,10 @@ public partial class numberSearchContext : DbContext
             entity.Property(e => e.DateUpdated)
                 .HasColumnType("timestamp without time zone")
                 .HasDefaultValueSql("now()");
+
+            entity.Property(e => e.Carrier).HasColumnType("character varying");
+
+            entity.Property(e => e.TrackingNumber).HasColumnType("character varying");
         });
 
         modelBuilder.Entity<PurchasedPhoneNumber>(entity =>

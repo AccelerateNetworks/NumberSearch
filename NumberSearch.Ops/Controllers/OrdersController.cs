@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.InvoiceNinja;
+using NumberSearch.DataAccess.TeleDynamics;
 using NumberSearch.Ops.Models;
 
 using Serilog;
@@ -1202,7 +1203,7 @@ public class OrdersController : Controller
 
     [Authorize]
     [Route("/Order/{orderId}/CreateProductItems")]
-    public async Task<IActionResult> CreateProductItemsFromOrder(Guid? orderId)
+    public async Task<IActionResult> CreateProductItemsFromOrder(Guid? orderId, string teleDynamicsOrderNumber)
     {
         if (orderId is not null && orderId != Guid.Empty)
         {
@@ -1220,7 +1221,38 @@ public class OrdersController : Controller
                 var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
                 var productItems = await _context.ProductItems.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
 
+                string carrier = string.Empty;
+                string trackingNumber = string.Empty;
+                HardwareOrder.Orderline[] orderLines = Array.Empty<HardwareOrder.Orderline>();
+
+                if (!string.IsNullOrWhiteSpace(teleDynamicsOrderNumber))
+                {
+                    var teleDynamicsOrders = await HardwareOrder.SearchByPONumberAsync(teleDynamicsOrderNumber, _config.TeleDynamicsUsername, _config.TeleDynamicsPassword);
+                    if (teleDynamicsOrders is not null && teleDynamicsOrders.Length > 0)
+                    {
+                        var matchingOrder = teleDynamicsOrders.FirstOrDefault(x => x.OrderNumber == teleDynamicsOrderNumber);
+                        if (matchingOrder is not null && matchingOrder.OrderNumber == teleDynamicsOrderNumber)
+                        {
+                            if (!string.IsNullOrWhiteSpace(matchingOrder.PONumber))
+                            {
+                                var fullOrders = await HardwareOrder.GetByPONumberAsync(matchingOrder.PONumber.Trim(), _config.TeleDynamicsUsername, _config.TeleDynamicsPassword);
+                                if (fullOrders is not null && fullOrders.Length > 0)
+                                {
+                                    var matchingFullOrder = fullOrders.FirstOrDefault(x => x.OrderNumber == teleDynamicsOrderNumber);
+                                    if (matchingFullOrder is not null && matchingFullOrder.OrderNumber == teleDynamicsOrderNumber)
+                                    {
+                                        carrier = matchingFullOrder.Shipping.Carrier;
+                                        trackingNumber = matchingFullOrder.TrackingInformation.FirstOrDefault()?.TrackingNumber ?? string.Empty;
+                                        orderLines = matchingFullOrder.OrderLines;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 var products = new List<Product>();
+
                 foreach (var item in productOrders)
                 {
                     if (item is not null && item.ProductId is not null && item.ProductId != Guid.Empty)
@@ -1233,19 +1265,54 @@ public class OrdersController : Controller
                             // If items already exist, do not create them twice.
                             if (!productItems.Any() && item?.Quantity is not null && item.Quantity > 0)
                             {
+                                var matches = orderLines.FirstOrDefault(x => x.PartNumber.Contains(product.VendorPartNumber))?.SerializationInformation;
+
                                 // Create the product items here to track the serial numbers and condition of the hardware.
                                 for (var i = 0; i < item.Quantity; i++)
                                 {
-                                    var productItem = new ProductItem
+                                    if (matches is not null && matches.Length == item.Quantity)
                                     {
-                                        ProductId = product.ProductId,
-                                        DateCreated = DateTime.Now,
-                                        DateUpdated = DateTime.Now,
-                                        OrderId = order.OrderId,
-                                        ProductItemId = Guid.NewGuid(),
-                                    };
+                                        var match = matches[i];
+                                        string trackingLink = string.Empty;
 
-                                    _context.ProductItems.Add(productItem);
+                                        if (!string.IsNullOrWhiteSpace(trackingNumber) && carrier is "UPS")
+                                        {
+                                            trackingLink = $"https://www.ups.com/track?track=yes&trackNums={trackingNumber}&loc=en_US&requester=ST/trackdetails";
+                                        }
+                                        else if (!string.IsNullOrWhiteSpace(trackingNumber) && carrier is "FedEx")
+                                        {
+                                            trackingLink = $"https://www.fedex.com/fedextrack/?trknbr={trackingNumber}";
+                                        }
+
+                                        var productItem = new ProductItem
+                                        {
+                                            ProductId = product.ProductId,
+                                            DateCreated = DateTime.Now,
+                                            DateUpdated = DateTime.Now,
+                                            OrderId = order.OrderId,
+                                            ProductItemId = Guid.NewGuid(),
+                                            MACAddress = match.MAC ?? string.Empty,
+                                            SerialNumber = match.SerialNumber ?? string.Empty,
+                                            Condition = "New",
+                                            ShipmentTrackingLink = string.IsNullOrWhiteSpace(trackingLink) ? $"{carrier} - {trackingNumber}" : trackingLink,
+                                            Carrier = carrier,
+                                            TrackingNumber = trackingNumber,
+                                            ExternalOrderId = teleDynamicsOrderNumber
+                                        };
+                                        _context.ProductItems.Add(productItem);
+                                    }
+                                    else
+                                    {
+                                        var productItem = new ProductItem
+                                        {
+                                            ProductId = product.ProductId,
+                                            DateCreated = DateTime.Now,
+                                            DateUpdated = DateTime.Now,
+                                            OrderId = order.OrderId,
+                                            ProductItemId = Guid.NewGuid(),
+                                        };
+                                        _context.ProductItems.Add(productItem);
+                                    }
                                 }
                             }
                         }
