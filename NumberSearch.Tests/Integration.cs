@@ -99,11 +99,12 @@ namespace NumberSearch.Tests
         public async Task GetBillingInvoiceByIdAsync()
         {
             // Act
-            var result = await Invoice.GetByIdAsync("WPe92r3aLy", invoiceNinjaToken);
+            var result = await Invoice.GetByIdAsync("olejnL4ejN", invoiceNinjaToken);
 
             // Assert        
             Assert.NotNull(result);
-            Assert.Equal("WPe92r3aLy", result.id);
+            Assert.Equal("olejnL4ejN", result.id);
+            Assert.True(result.balance > 0);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 

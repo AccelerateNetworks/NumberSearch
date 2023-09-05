@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 using System.Collections.Generic;
 using AccelerateNetworks.Operations;
+using System;
 
 namespace AccelerateNetworks.Operations;
 
@@ -431,6 +432,8 @@ public partial class numberSearchContext : DbContext
             entity.Property(e => e.DateCompleted).HasColumnType("timestamp without time zone");
 
             entity.Property(e => e.ContactPhoneNumber).HasColumnType("character varying");
+
+            entity.Property(e => e.DateUpfrontInvoicePaid).HasColumnType("timestamp without time zone");
         });
 
         modelBuilder.Entity<OwnedPhoneNumber>(entity =>

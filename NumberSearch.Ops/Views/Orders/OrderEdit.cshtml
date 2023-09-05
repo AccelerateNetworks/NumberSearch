@@ -148,6 +148,26 @@
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col">
+            <div class="form-floating mb-3">
+                <input asp-for="Order.DateConvertedFromQuote" type="datetime-local" class="form-control">
+                <label for="dateConvertedFromQuote">Date Converted From Quote</label>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-floating mb-3">
+                <input asp-for="Order.DateUpfrontInvoicePaid" type="datetime-local" class="form-control">
+                <label for="dateUpfrontInvoicePaid">Date Upfront Invoice Paid</label>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-floating mb-3">
+                <input asp-for="Order.DateCompleted" type="datetime-local" class="form-control">
+                <label for="dateCompleted">Date Completed</label>
+            </div>
+        </div>
+    </div>
     <div class="row mb-3">
         <div class="col">
             <div class="d-grid gap-2">

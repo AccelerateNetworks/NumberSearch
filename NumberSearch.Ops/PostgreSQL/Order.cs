@@ -36,5 +36,7 @@ namespace AccelerateNetworks.Operations
         public DateTime? DateConvertedFromQuote { get; set; }
         public DateTime? DateCompleted { get; set; }
         public string? ContactPhoneNumber { get; set; }
+        public DateTime? DateUpfrontInvoicePaid { get; set; }
+
     }
 }
