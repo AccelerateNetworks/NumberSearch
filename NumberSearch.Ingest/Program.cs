@@ -84,6 +84,7 @@ namespace NumberSearch.Ingest
                             appConfig.PComNetUsername, appConfig.PComNetPassword);
                         await Owned.MatchOwnedNumbersToFusionPBXAsync(appConfig.Postgresql, appConfig.FusionPBXUsername, appConfig.FusionPBXPassword);
                         await Orders.CheckForQuoteConversionsAsync(appConfig.Postgresql, appConfig.InvoiceNinjaToken, appConfig.SmtpUsername, appConfig.SmtpPassword);
+                        await Orders.CheckForInvoicePaymentAsync(appConfig.Postgresql, appConfig.InvoiceNinjaToken, appConfig.SmtpUsername, appConfig.SmtpPassword);
                     }
 
                     // Daily Ingest
