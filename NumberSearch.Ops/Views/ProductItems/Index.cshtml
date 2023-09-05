@@ -47,7 +47,14 @@
                         @item?.Condition
                     </td>
                     <td>@item?.ExternalOrderId</td>
-                    <td><a href="@item?.ShipmentTrackingLink" target="_blank" rel="noreferrer" class="btn btn-info">Tracking Status</a></td>
+                    @if (!string.IsNullOrWhiteSpace(item?.ShipmentTrackingLink))
+                    {
+                        <td><a href="@item?.ShipmentTrackingLink" target="_blank" class="btn btn-info">@item?.Carrier - @item?.TrackingNumber</a></td>
+                    }
+                    else
+                    {
+                        <td>@item?.Carrier - @item?.TrackingNumber</td>
+                    }
                     <td>
                         <div class="btn-group" role="group" aria-label="Basic example">
                             <a href="/Home/Order/@item?.OrderId" class="btn btn-outline-primary">Order</a>

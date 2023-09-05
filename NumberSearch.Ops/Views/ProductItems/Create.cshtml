@@ -45,7 +45,11 @@
             </div>
             <div class="form-group">
                 <label asp-for="Condition" class="control-label"></label>
-                <input asp-for="Condition" class="form-control" />
+                <select asp-for="Condition" class="form-select" aria-label="Default select example">
+                    <option>Used</option>
+                    <option>New</option>
+                    <option>Refurbished</option>
+                </select>
                 <span asp-validation-for="Condition" class="text-danger"></span>
             </div>
             <div class="form-group">
