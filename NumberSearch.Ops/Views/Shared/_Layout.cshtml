@@ -26,79 +26,81 @@
                 </div>
                 <div class="offcanvas-body">
                     <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-                        <a class="nav-link text-dark" href="/Identity/Account/Login">
-                            🗺️   Apps
-                        </a>
                         @if (User.IsInRole("Support") || User.IsInRole("Sales"))
                         {
                             <a class="nav-link text-dark" " href="/Home/Order">
-                                🛒   Orders
+                                🛒 Orders
                             </a>
                             <a class="nav-link text-dark" href="/Home/Quotes">
-                                ✨   Quotes
+                                ✨ Quotes
                             </a>
                         }
                         @if (User.IsInRole("Support"))
                         {
-                            <a class="nav-link text-dark" href="/Home/TaxRates">
-                                ⚖️   Tax Rates
-                            </a>
-                            <a class="nav-link text-dark" href="https://acceleratenetworks.com/Hardware/PartnerPriceList" target="_blank">
-                                🎅   Partner Price List
-                            </a>
-                            <a class="nav-link text-dark" href="/Home/Emails/">
-                                📧    Sent Emails
-                            </a>
-                            <a class="nav-link text-dark" href="/Messaging">
-                                ✉️ Messaging Users
-                            </a>
+                            <hr />
                             <a class="nav-link text-dark" href="/Messaging/Failed">
-                                ✉️ Failed Messages
+                                🙅 Failed Messages
                             </a>
-                            <a class="nav-link text-dark" href="/Home/NumberOrders/">
-                                🧾   Purchased Numbers
+@*                             <a class="nav-link text-dark" href="/Identity/Account/Login">
+                                📱 Apps
+                            </a> *@
+@*                             <a class="nav-link text-dark" href="/Numbers/">
+                                ☎️ Available Numbers
+                            </a> *@
+                            <a class="nav-link text-dark" href="/Carriers">
+                                📯 Carriers
                             </a>
-                            <a class="nav-link text-dark" href="/Home/PortRequests/">
-                                🚢   Port Requests
-                            </a>
-                            <a class="nav-link text-dark" href="/Home/OwnedNumbers/">
-                                🏢   Owned Numbers
+                            <a class="nav-link text-dark" href="/Home/Coupons">
+                                🎟️ Coupons
                             </a>
                             <a class="nav-link text-dark" href="/Home/E911">
                                 🚨   E911
                             </a>
                             <a class="nav-link text-dark" href="/Products">
-                                🎁 Hardware
+                                ⚙️ Hardware
                             </a>
-                            <a class="nav-link text-dark" href="/Carriers">
-                                📯   Carriers
-                            </a>
+                            @*                             <a class="nav-link text-dark" href="/Home/Ingests/">
+                        💨   Ingest Configuration
+                        </a> *@
                             <a class="nav-link text-dark" href="/Lookups">
-                                🥠   Lookups
+                                👀 Lookups
                             </a>
-                            <a class="nav-link text-dark" href="/Numbers/">
-                                ☎️   Available Numbers
+                            <a class="nav-link text-dark" href="/Messaging">
+                                💬 Messaging Users
                             </a>
-                            <a class="nav-link text-dark" href="/ProductShipments">
-                                📦 Shipments
+                            @*                             <a class="nav-link text-dark" href="/Home/NumbersToVerify/">
+                        🛎️   Numbers To Verify
+                        </a> *@
+                            <a class="nav-link text-dark" href="/Home/OwnedNumbers/">
+                                🏢 Owned Numbers
                             </a>
-                            <a class="nav-link text-dark" href="/Home/Coupons">
-                                ✨ Coupons
+                            <a class="nav-link text-dark" href="https://acceleratenetworks.com/Hardware/PartnerPriceList" target="_blank">
+                                🎅 Partner Price List
                             </a>
-                            <a class="nav-link text-dark" href="/Home/NumbersToVerify/">
-                                🛎️   Numbers To Verify
+                            <a class="nav-link text-dark" href="/Home/PortRequests/">
+                                🚢 Port Requests
                             </a>
                             <a class="nav-link text-dark" href="/ProductItems">
                                 📦 Product Items
                             </a>
-                            <a class="nav-link text-dark" href="/Home/Ingests/">
-                                💨   Ingest Configuration
+                            <a class="nav-link text-dark" href="/Home/NumberOrders/">
+                                📞 Purchased Numbers
+                            </a>
+                            <a class="nav-link text-dark" href="/Home/Emails/">
+                                📧 Sent Emails
+                            </a>
+                            <a class="nav-link text-dark" href="/ProductShipments">
+                                📦 Shipments
+                            </a>
+                            <a class="nav-link text-dark" href="/Home/TaxRates">
+                                ⚖️ Tax Rates
+                            </a>
+                            <hr />
+                            <a class="nav-link text-dark" href="/Roles">
+                                👔 Roles
                             </a>
                             <a class="nav-link text-dark" href="/Users">
-                                🧑‍🤝‍🧑   Users
-                            </a>
-                            <a class="nav-link text-dark" href="/Roles">
-                                👔   Roles
+                                🧑‍🤝‍🧑 Users
                             </a>
                         }
                         <hr />
