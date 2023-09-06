@@ -96,7 +96,7 @@
                                 </a>
                             </h3>
                             <p class="text-muted">
-                                @order?.Order?.DateSubmitted.ToString("MM/dd hh:mm tt") <span class="badge bg-@pillColor">
+                                @order?.Order?.DateSubmitted.ToString("MM/dd/yy hh:mm tt") <span class="badge bg-@pillColor">
                                     @nextStep
                                 </span>
                                 @if (order?.Order is not null && order.Order.DateSubmitted > DateTime.Now.AddDays(-1))
@@ -379,7 +379,7 @@
                                 </a>
                             </h3>
                             <p class="text-muted">
-                                @order?.Order?.DateSubmitted.ToString("MM/dd hh:mm tt") <span class="badge bg-@pillColor">
+                                @order?.Order?.DateSubmitted.ToString("MM/dd/yy hh:mm tt") <span class="badge bg-@pillColor">
                                     @nextStep
                                 </span>
                                 @if (order?.Order is not null && order.Order.DateSubmitted > DateTime.Now.AddDays(-1))
