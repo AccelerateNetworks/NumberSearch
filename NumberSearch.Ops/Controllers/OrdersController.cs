@@ -342,20 +342,48 @@ public class OrdersController : Controller
 
                 if (!string.IsNullOrWhiteSpace(order.BillingClientId) && !string.IsNullOrWhiteSpace(order.BillingInvoiceId))
                 {
-                    var oneTimeInvoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(order.BillingClientId, _invoiceNinjaToken, false).ConfigureAwait(false);
-                    var oneTimeLink = oneTimeInvoiceLinks.Where(x => x.id == order.BillingInvoiceId).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                    try
+                    {
+                        var oneTimeInvoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(order.BillingClientId, _invoiceNinjaToken, false).ConfigureAwait(false);
+                        var oneTimeLink = oneTimeInvoiceLinks.Where(x => x.id == order.BillingInvoiceId).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
 
-                    if (!string.IsNullOrWhiteSpace(oneTimeLink))
-                    {
-                        order.UpfrontInvoiceLink = oneTimeLink;
-                    }
-                    else
-                    {
-                        var quoteLinks = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
-                        oneTimeLink = quoteLinks?.invitations.FirstOrDefault()?.link;
                         if (!string.IsNullOrWhiteSpace(oneTimeLink))
                         {
                             order.UpfrontInvoiceLink = oneTimeLink;
+                        }
+                        else
+                        {
+                            try
+                            {
+                                var quoteLinks = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
+                                oneTimeLink = quoteLinks?.invitations.FirstOrDefault()?.link;
+                                if (!string.IsNullOrWhiteSpace(oneTimeLink))
+                                {
+                                    order.UpfrontInvoiceLink = oneTimeLink;
+                                }
+                            }
+                            catch (FlurlHttpException ex)
+                            {
+                                if (ex.StatusCode is 404)
+                                {
+                                    return View("OrderEdit", new EditOrderResult { Order = order, ProductItems = await _context.ProductItems.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToArrayAsync(), Cart = await GetOrderEditCartAsync(order), Message = $"Failed to update this order! 😠\r\nThe BillingInvoiceId {order.BillingInvoiceId} is invalid. Please update or delete it.", AlertType = "alert-danger" });
+                                }
+                                else
+                                {
+                                    throw ex;
+                                }
+                            }
+                        }
+                    }
+                    catch (FlurlHttpException ex)
+                    {
+                        if (ex.StatusCode is 404)
+                        {
+                            return View("OrderEdit", new EditOrderResult { Order = order, ProductItems = await _context.ProductItems.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToArrayAsync(), Cart = await GetOrderEditCartAsync(order), Message = $"Failed to update this order! 😠\r\nThe BillingClientId {order.BillingClientId} is invalid. Please update or delete it.", AlertType = "alert-danger" });
+                        }
+                        else
+                        {
+                            throw ex;
                         }
                     }
                 }
