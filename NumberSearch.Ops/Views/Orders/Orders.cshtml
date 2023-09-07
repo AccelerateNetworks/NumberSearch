@@ -47,6 +47,11 @@
                             nextStep = $"⭕ Pending Quote";
                             pillColor = "warning";
                         }
+                        else if (order?.Order?.DateUpfrontInvoicePaid is null)
+                        {
+                            nextStep = $"❌ Unpaid";
+                            pillColor = "danger";
+                        }
                         else if (order?.PortRequest is null && order?.ProductOrders is not null && order.ProductOrders.Where(x => x.PortedPhoneNumberId.HasValue is true).Any())
                         {
                             nextStep = $"⭕ Need Port";
@@ -111,6 +116,17 @@
                                         🔍 This Week
                                     </span>
                                 }
+                                @if (order?.Order?.DateUpfrontInvoicePaid is null)
+                                {
+                                    <span class="badge bg-danger">
+                                        ❌ Unpaid
+                                    </span>
+                                } else
+                                {
+                                    <span class="badge bg-success">
+                                        💵 Paid @order?.Order?.DateUpfrontInvoicePaid.Value.ToShortDateString()
+                                    </span>
+                                }
                             </p>
                             @if (order?.PortRequest is not null && order?.Order is not null && order.PortRequest.OrderId == order.Order.OrderId)
                             {
@@ -160,7 +176,7 @@
                             <p>
                                 @order?.Order?.FirstName
                                 @order?.Order?.LastName
-                                <a href="mailto:@order?.Order?.Email" target="_blank" rel="noopener noreferrer">
+                                <a href="mailto:@order?.Order?.Email" target="_blank">
                                     @order?.Order?.Email
                                 </a>
                             </p>
