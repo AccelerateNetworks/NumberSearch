@@ -134,43 +134,63 @@
 </section>
 <div class="pt-3">
     <div class="container">
-        <div class="row d-flex align-content-end">
+        <div class="row">
             @{
-                if (Model?.Order is not null && Model.Order.Completed)
+                var submitted = Model?.Order.DateSubmitted > DateTime.MinValue;
+                var background = Model?.Order.BackgroundWorkCompleted;
+                var payment = Model?.Order?.DateUpfrontInvoicePaid is not null && Model.Order.DateUpfrontInvoicePaid > Model.Order.DateSubmitted;
+                var newNumbers = purchased is not null && purchased.Length > 0;
+                var hardware = products is not null && products.Length > 0;
+                var ports = ported is not null && ported.Length > 0;
+                var complete = Model?.Order.DateCompleted is not null || (Model?.Order.Completed ?? false);
+
+                int itemCount = 0;
+                int currentStep = 0;
+
+                if (submitted)
                 {
+                    itemCount++;
+                    currentStep++;
                     <div class="col">
                         <h4>
                             <span class="badge badge-success badge-pill">☎️ Submitted</span>
                         </h4>
-                    </div>
-                    <div class="col">
-                        <h4>
-                            <span class="badge badge-success  badge-pill">⚙️ Processed</span>
-                        </h4>
-                    </div>
-                    <div class="col">
-                        <h4>
-                            <span class="badge badge-success badge-pill">🎉 Completed</span>
-                        </h4>
-                    </div>
-                    <div class="col-md-12 pb-3">
-                        <div class="progress" style="height: 3px;">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: 100%; background-color: #3279B2;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
                     </div>
                 }
-                else if (Model?.Order is not null && Model.Order.BackgroundWorkCompleted)
+                else
                 {
+                    itemCount++;
                     <div class="col">
                         <h4>
-                            <span class="badge badge-success badge-pill">☎️ Submitted</span>
+                            <span class="badge badge-secondary badge-pill">❓ Submitted</span>
                         </h4>
                     </div>
+                }
+
+                if (payment)
+                {
+                    currentStep++;
+                    itemCount++;
                     <div class="col">
                         <h4>
-                            <span class="badge badge-success badge-pill">⚙️ Processing</span>
+                            <span class="badge badge-success badge-pill">✔️ Paid</span>
                         </h4>
                     </div>
+                }
+                else
+                {
+                    itemCount++;
+                    <div class="col">
+                        <h4>
+                            <span class="badge badge-secondary badge-pill">❓ Paid</span>
+                        </h4>
+                    </div>
+                }
+
+                if (newNumbers)
+                {
+                    currentStep++;
+                    itemCount++;
                     if ((purchased is not null) && (purchased.Any()) && (purchased?.Where(x => x.Completed is true).ToArray().Length == purchased?.Length))
                     {
                         <div class="col">
@@ -187,80 +207,63 @@
                             </h4>
                         </div>
                     }
-                    var c = ported?.Where(x => x.Completed is true).ToArray().Length;
-                    if ((ported is not null) && (ported.Any()) && (ported?.Where(x => x.Completed is true).ToArray().Length == ported?.Length))
+                }
+
+                if (ports)
+                {
+                    itemCount++;
+                    if ((ported is not null) && (ported.Length > 0) && (ported?.Where(x => x.Completed is true).ToArray().Length == ported?.Length))
                     {
+                        currentStep++;
                         <div class="col">
                             <h4>
                                 <span class="badge badge-success badge-pill">✔️ Transferred</span>
                             </h4>
                         </div>
                     }
-                    else if (ported is not null && ported.Any())
+                    else
                     {
                         <div class="col">
                             <h4>
-                                <span class="badge badge-primary badge-pill">❓ Transferred</span>
+                                <span class="badge badge-secondary badge-pill">❓ Transferred</span>
                             </h4>
                         </div>
                     }
-                    <div class="col">
-                        <h4>
-                            <span class="badge badge-secondary badge-pill">Completed</span>
-                        </h4>
-                    </div>
-                    <div class="col-md-12 pb-3">
-                        <div class="progress" style="height: 3px;">
-                            <div class="progress-bar" role="progressbar" style="width: 66%; background-color: #3279B2;" aria-valuenow="66" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                    </div>
                 }
-                else if (Model?.Order?.DateSubmitted > DateTime.MinValue)
+
+                if (complete)
                 {
+                    itemCount++;
+                    currentStep++;
                     <div class="col">
                         <h4>
-                            <span class="badge badge-primary badge-pill">☎️ Submitted</span>
+                            <span class="badge badge-success badge-pill">🎉 Completed</span>
                         </h4>
                     </div>
-                    <div class="col">
-                        <h4>
-                            <span class="badge badge-secondary badge-pill">Processed</span>
-                        </h4>
-                    </div>
-                    <div class="col">
-                        <h4>
-                            <span class="badge badge-secondary badge-pill">Completed</span>
-                        </h4>
-                    </div>
-                    <div class="col-md-12 pb-3">
-                        <div class="progress" style="height: 3px;">
-                            <div class="progress-bar" role="progressbar" style="width: 33%; background-color: #3279B2;" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                    </div>
+
                 }
                 else
                 {
+                    itemCount++;
                     <div class="col">
                         <h4>
-                            <span class="badge badge-secondary badge-pill">Submitted</span>
+                            <span class="badge badge-secondary badge-pill">❓ Completed</span>
                         </h4>
-                    </div>
-                    <div class="col">
-                        <h4>
-                            <span class="badge badge-secondary badge-pill">Processed</span>
-                        </h4>
-                    </div>
-                    <div class="col">
-                        <h4>
-                            <span class="badge badge-secondary badge-pill">Completed</span>
-                        </h4>
-                    </div>
-                    <div class="col-md-12 pb-3">
-                        <div class="progress" style="height: 3px;">
-                            <div class="progress-bar" role="progressbar" style="width: 0%; background-color: #3279B2;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
                     </div>
                 }
+
+                decimal width = (100 * currentStep) / itemCount;
+
+                if (complete)
+                {
+                    width = 100;
+                }
+
+                <div class="col-md-12 pb-3">
+                    <div class="progress" style="height: 3px;">
+                        <div class="progress-bar" role="progressbar" style="width: @width%; background-color: #3279B2;" aria-valuenow="@width" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
             }
         </div>
         <div class="row">
