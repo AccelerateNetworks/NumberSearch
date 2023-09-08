@@ -373,12 +373,12 @@ namespace NumberSearch.Ingest
                                 order.DateConvertedFromQuote = DateTime.Now;
 
                                 // If the converted invoice has been paid, mark it as paid.
-                                if (convertedInvoice.balance is 0)
+                                if (convertedInvoice.status_id is "4")
                                 {
                                     order.DateUpfrontInvoicePaid = DateTime.Now;
                                 }
 
-                                var invoiceStatus = convertedInvoice.balance is 0 ? "paid" : "approved";
+                                var invoiceStatus = convertedInvoice.status_id is "4" ? "paid" : "approved";
                                 var checkUpdate = await order.PutAsync(postgresql);
                                 string name = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName;
                                 var message = new Email
@@ -428,7 +428,7 @@ namespace NumberSearch.Ingest
 
                                 if (convertedInvoice is not null && convertedInvoice.id == order.BillingInvoiceId && !string.IsNullOrWhiteSpace(convertedInvoice.id))
                                 {
-                                    if (convertedInvoice.balance is 0)
+                                    if (convertedInvoice.status_id is "4")
                                     {
                                         // mark the upfront invoice as paid and update the link
                                         order.DateUpfrontInvoicePaid = DateTime.Now;
@@ -447,7 +447,7 @@ namespace NumberSearch.Ingest
 
                                     var checkUpdate = await order.PutAsync(postgresql);
                                     string name = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName;
-                                    var invoiceStatus = convertedInvoice.balance is 0 ? "paid" : "converted from a quote";
+                                    var invoiceStatus = convertedInvoice.status_id is "4" ? "paid" : "converted from a quote";
                                     var message = new Email
                                     {
                                         SalesEmailAddress = string.IsNullOrWhiteSpace(order.SalesEmail) ? string.Empty : order.SalesEmail,
@@ -533,7 +533,7 @@ namespace NumberSearch.Ingest
 
                         if (upfrontInvoice is not null && upfrontInvoice.id == order.BillingInvoiceId && !string.IsNullOrWhiteSpace(upfrontInvoice.id))
                         {
-                            if (upfrontInvoice.balance is 0)
+                            if (upfrontInvoice.status_id is "4")
                             {
                                 // mark the upfront invoice as paid and update the link
                                 order.DateUpfrontInvoicePaid = DateTime.Now;
@@ -551,7 +551,7 @@ namespace NumberSearch.Ingest
                             var checkUpdate = await order.PutAsync(postgresql);
 
                             // Only send the email of the invoice has actually been paid.
-                            if (order.DateUpfrontInvoicePaid is not null && upfrontInvoice.balance is 0)
+                            if (order.DateUpfrontInvoicePaid is not null && upfrontInvoice.status_id is "4")
                             {
                                 string name = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName;
                                 var message = new Email
