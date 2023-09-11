@@ -147,7 +147,8 @@ namespace NumberSearch.Mvc.Controllers
                         PortedPhoneNumber = port,
                         Cart = cart,
                         Query = query,
-                        Message = port.Wireless ? "This wireless phone number can likely be ported to our network!" : "This phone number can likely be ported to our network!"
+                        Message = port.Wireless ? "❌ This wireless phone number cannot be ported to our network!" : "❌ This phone number cannot be ported to our network!",
+                        AlertType = "alert-danger"            
                     });
                 }
             }

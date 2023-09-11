@@ -180,18 +180,6 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     var portable = await ValidatePortability.GetAsync(phoneNumber?.DialedNumber ?? string.Empty, _bulkVSUsername, _bulkVSPassword).ConfigureAwait(false);
 
-                    // Fail fast
-                    if (portable is null || portable?.Portable is false)
-                    {
-                        Log.Information($"[Portability] {phoneNumber?.DialedNumber} is not Portable.");
-
-                        return new PortedPhoneNumber
-                        {
-                            PortedDialedNumber = phoneNumber?.DialedNumber ?? string.Empty,
-                            Portable = false
-                        };
-                    }
-
                     // Lookup the number.
                     var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber?.DialedNumber ?? string.Empty, _bulkVSKey).ConfigureAwait(false);
 
@@ -239,6 +227,14 @@ namespace NumberSearch.Mvc.Controllers
                         LrnLookup = checkNumber,
                         Portable = true
                     };
+
+                    // Fail fast
+                    if (portable is null || portable?.Portable is false)
+                    {
+                        Log.Information($"[Portability] {phoneNumber?.DialedNumber} is not Portable.");
+
+                        portableNumber.Portable = false;
+                    }
 
                     return portableNumber;
                 }

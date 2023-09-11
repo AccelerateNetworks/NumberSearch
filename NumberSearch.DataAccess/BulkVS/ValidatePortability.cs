@@ -41,7 +41,11 @@ namespace NumberSearch.DataAccess.BulkVS
             {
                 Log.Warning($"[Portability] [BulkVS] No results found for number {dialedNumber}.");
                 Log.Warning(await ex.GetResponseStringAsync());
-                return new();
+                return new()
+                {
+                    TN = $"1{dialedNumber}",
+                    Portable = false,
+                };
             }
         }
     }
