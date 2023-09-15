@@ -384,7 +384,7 @@ namespace NumberSearch.Ingest
                                 var message = new Email
                                 {
                                     SalesEmailAddress = string.IsNullOrWhiteSpace(order.SalesEmail) ? string.Empty : order.SalesEmail,
-                                    PrimaryEmailAddress = "support@acceleratenetworks.com",
+                                    PrimaryEmailAddress = "dan@acceleratenetworks.com",
                                     CarbonCopy = "thomas.ryan@outlook.com",
                                     Subject = $"Quote {upfront.number} has been {invoiceStatus} by {name}",
                                     OrderId = order.OrderId,
@@ -451,7 +451,7 @@ namespace NumberSearch.Ingest
                                     var message = new Email
                                     {
                                         SalesEmailAddress = string.IsNullOrWhiteSpace(order.SalesEmail) ? string.Empty : order.SalesEmail,
-                                        PrimaryEmailAddress = "support@acceleratenetworks.com",
+                                        PrimaryEmailAddress = "dan@acceleratenetworks.com",
                                         CarbonCopy = "thomas.ryan@outlook.com",
                                         Subject = $"Invoice {convertedInvoice.number} has been {invoiceStatus} by {name}",
                                         OrderId = order.OrderId,
