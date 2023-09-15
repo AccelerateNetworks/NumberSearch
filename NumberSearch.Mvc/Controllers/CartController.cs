@@ -832,8 +832,8 @@ namespace NumberSearch.Mvc.Controllers
                             var confirmationEmail = new Email
                             {
                                 PrimaryEmailAddress = order.Email,
-                                SalesEmailAddress = string.IsNullOrWhiteSpace(order.SalesEmail) ? _emailSupport : order.SalesEmail,
-                                CarbonCopy = _emailSupport,
+                                SalesEmailAddress = string.IsNullOrWhiteSpace(order.SalesEmail) ? string.Empty : order.SalesEmail,
+                                CarbonCopy = _emailOrders,
                                 MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
@@ -1437,7 +1437,7 @@ Accelerate Networks
                             if (order.NoEmail)
                             {
                                 confirmationEmail.Completed = false;
-                                confirmationEmail.PrimaryEmailAddress = string.IsNullOrWhiteSpace(order.SalesEmail) ? _emailSupport : order.SalesEmail;
+                                confirmationEmail.PrimaryEmailAddress = string.IsNullOrWhiteSpace(order.SalesEmail) ? _emailOrders : order.SalesEmail;
                                 var checkSave = await confirmationEmail.PostAsync(_postgresql).ConfigureAwait(false);
                                 Log.Information($"Suppressed sending out the confirmation emails for {order.OrderId}.");
                             }
