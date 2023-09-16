@@ -8,6 +8,7 @@ using Flurl.Http;
 using MailKit.Security;
 
 using Messaging;
+using Messaging.Migrations;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -17,6 +18,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+
 using MimeKit;
 
 using Models;
@@ -807,6 +809,93 @@ try
         }
     })
     .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all sent and received messages that failed.", Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems." });
+
+    app.MapPost("/message/replay", async Task<Results<Ok<string>, NotFound<string>, BadRequest<string>>> (Guid id, MessagingContext db) =>
+    {
+        try
+        {
+            var messageRecord = await db.Messages.FirstOrDefaultAsync(x => x.Id == id && x.MessageSource == MessageSource.Incoming);
+            if (messageRecord is not null && messageRecord.Id == id && !string.IsNullOrWhiteSpace(messageRecord.ToForward))
+            {
+                var toForward = JsonSerializer.Deserialize<ForwardedMessage>(messageRecord.ToForward);
+                var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(toForward.To, out var toRegisteredNumber);
+
+                if (toForward is not null && checkTo)
+                {
+                    var client = await db.ClientRegistrations.FirstOrDefaultAsync(x => x.AsDialed == toRegisteredNumber.DialedNumber);
+
+                    if (client is not null && client.AsDialed == toRegisteredNumber.DialedNumber)
+                    {
+                        toForward.ClientSecret = client.ClientSecret;
+                        messageRecord.To = toForward.To;
+                        messageRecord.From = toForward.From;
+                        messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
+
+                        try
+                        {
+                            var response = await client.CallbackUrl.PostJsonAsync(toForward);
+                            string responseText = await response.GetStringAsync();
+                            Log.Information(responseText);
+                            Log.Information(System.Text.Json.JsonSerializer.Serialize(toForward));
+                            messageRecord.RawResponse = responseText;
+                            messageRecord.Succeeded = true;
+                        }
+                        catch (FlurlHttpException ex)
+                        {
+                            string error = await ex.GetResponseStringAsync();
+                            Log.Error(error);
+                            Log.Error(System.Text.Json.JsonSerializer.Serialize(client));
+                            Log.Error(System.Text.Json.JsonSerializer.Serialize(toForward));
+                            Log.Error($"Failed to forward message to {toForward.To}");
+                            messageRecord.RawResponse = $"Failed to forward message to {toForward.To} at {client.CallbackUrl} {ex.StatusCode} {error}";
+                        }
+
+                        try
+                        {
+                            await db.Messages.AddAsync(messageRecord);
+                            await db.SaveChangesAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            return TypedResults.BadRequest($"Failed to save incoming message to the database. {ex.Message} {System.Text.Json.JsonSerializer.Serialize(messageRecord)}");
+                        }
+
+                        Log.Information(System.Text.Json.JsonSerializer.Serialize(messageRecord));
+                        return TypedResults.Ok("The incoming message was replayed and forwarded to the client.");
+                    }
+                    else
+                    {
+                        Log.Warning($"{toForward.To} is not registered as a client.");
+
+                        messageRecord.To = toForward.To;
+                        messageRecord.From = toForward.From;
+                        messageRecord.Content = toForward.Content;
+                        messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
+                        messageRecord.RawResponse = $"{toForward.To} is not registered as a client.";
+                        db.Messages.Add(messageRecord);
+                        await db.SaveChangesAsync();
+
+                        return TypedResults.BadRequest($"{toForward.To} is not registered as a client.");
+                    }
+                }
+                else
+                {
+                    return TypedResults.BadRequest($"{messageRecord.ToForward} couldn't be parsed into an object from JSON. Please file an issue on GitHub.");
+                }
+            }
+            else
+            {
+                return TypedResults.NotFound($"No inbound message with an Id of {id} was found.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex.Message);
+            Log.Error(ex.StackTrace ?? "No stack trace found.");
+            return TypedResults.BadRequest(ex.Message);
+        }
+    })
+    .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Replay an inbound message.", Description = "This is intended to help you debug problems with message delivery so you can see if it's this API or the client app that is causing problems." });
 
     app.MapPost("/message/send", async Task<Results<Ok<SendMessageResponse>, BadRequest<SendMessageResponse>>> ([Microsoft.AspNetCore.Mvc.FromBody] SendMessageRequest message, bool? test, MessagingContext db) =>
     {
