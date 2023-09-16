@@ -108,36 +108,53 @@ namespace NumberSearch.Ingest
                     ordersConvertedFromQuotesToday.Add(order);
                 }
                 // Orders completed today?
-                else if (order.Quote is false && order.Completed is true && order.DateCompleted.HasValue is true && order.DateCompleted.Value >= DateTime.Now.AddDays(-2))
+                else if (order.Quote is false && order.Completed is true && order.DateCompleted.HasValue is true && order.DateCompleted.Value >= DateTime.Now.AddDays(-7))
                 {
                     ordersCompletedToday.Add(order);
                 }
-                else if (order.Quote is false && order.Completed is false && order.DateSubmitted >= DateTime.Now.AddDays(-2))
+                else if (order.Quote is false && order.Completed is false && order.DateSubmitted >= DateTime.Now.AddDays(-7))
                 {
                     ordersSubmittedToday.Add(order);
                 }
-                else if (order.Quote is true && order.DateSubmitted >= DateTime.Now.AddDays(-2))
+                else if (order.Quote is true && order.DateSubmitted >= DateTime.Now.AddDays(-7))
                 {
                     quotesSubmittedToday.Add(order);
                 }
-                else if (order.Quote is false && order.InstallDate is not null && order.InstallDate.Value.AddDays(7).Month == DateTime.Now.Month && order.InstallDate.Value.AddDays(7).Day == DateTime.Now.Day)
+                else if (order.Quote is false && order.InstallDate is not null && DateTime.Now.Ticks > order.InstallDate.Value.AddDays(7).Ticks && DateTime.Now.Ticks < order.InstallDate.Value.AddDays(7).Ticks)
                 {
                     oneWeekFollowUp.Add(order);
                 }
-                else if (order.Quote is false && order.InstallDate is not null && order.InstallDate.Value.AddMonths(1).Month == DateTime.Now.Month && order.InstallDate.Value.AddMonths(1).Day == DateTime.Now.Day)
+                else if (order.Quote is false && order.InstallDate is not null && DateTime.Now.Ticks > order.InstallDate.Value.AddMonths(1).Ticks && DateTime.Now.Ticks < order.InstallDate.Value.AddMonths(1).AddDays(7).Ticks)
                 {
                     oneMonthFollowUp.Add(order);
                 }
-                else if (order.Quote is false && order.InstallDate is not null && order.InstallDate.Value.AddYears(1).DayOfYear == DateTime.Now.DayOfYear)
+                else if (order.Quote is false && order.InstallDate is not null && DateTime.Now.Ticks > order.InstallDate.Value.AddYears(1).Ticks && DateTime.Now.Ticks < order.InstallDate.Value.AddYears(1).AddDays(7).Ticks)
                 {
                     yearlyFollowUp.Add(order);
                 }
             }
             var output = new StringBuilder();
 
-            output.Append("<p>Hey Dan,</p><p>Here's everything you need to know about the orders in the Accelerate Networks system.</p>");
+            output.Append("<p>Hey Support,</p><p>Here's everything you need to know about the orders in the Accelerate Networks system.</p>");
 
-            output.Append("<p>Orders completed today:</p><ul>");
+            output.Append("<p>Orders submitted today:</p><ul>");
+            if (ordersSubmittedToday.Count > 0)
+            {
+                foreach (var item in ordersSubmittedToday)
+                {
+                    var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
+                    var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
+                    var installDate = item?.InstallDate is not null ? item?.InstallDate.GetValueOrDefault().ToShortDateString() : "No install date set";
+                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName} - Install Date {installDate}</li>");
+                }
+                output.Append("</ul>");
+            }
+            else
+            {
+                output.Append("<li>None</li></ul>");
+            }
+
+            output.Append("<p>Orders completed this week:</p><ul>");
             if (ordersCompletedToday.Count > 0)
             {
                 foreach (var item in ordersCompletedToday)
@@ -145,7 +162,7 @@ namespace NumberSearch.Ingest
                     var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
                     var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "support@acceleratenetworks.com" : item.SalesEmail;
                     var completedDate = item?.DateCompleted is not null ? item?.DateCompleted.GetValueOrDefault().ToShortDateString() : "No completed date set";
-                    output.Append($"<li><a href='https://acceleratenetworks.com/cart/order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> submitted on {item.DateSubmitted.ToShortDateString()} - <a href=\"mailto:{item.SalesEmail}?subject={orderName}&body=<a href='https://acceleratenetworks.com/cart/order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a> - Completed on {completedDate}</li>");
+                    output.Append($"<li><a href='https://acceleratenetworks.com/cart/order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> submitted on {item.DateSubmitted.ToShortDateString()} - Completed on {completedDate}</li>");
                 }
                 output.Append("</ul>");
             }
@@ -154,30 +171,14 @@ namespace NumberSearch.Ingest
                 output.Append("<li>None</li></ul>");
             }
 
-            output.Append("<p>Converted from quotes today:</p><ul>");
-            if (ordersConvertedFromQuotesToday.Count > 0)
+            output.Append("<p>Quotes submitted this week:</p><ul>");
+            if (quotesSubmittedToday.Count > 0)
             {
-                foreach (var item in ordersConvertedFromQuotesToday)
+                foreach (var item in quotesSubmittedToday)
                 {
                     var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
                     var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
                     var installDate = item?.InstallDate is not null ? item?.InstallDate.GetValueOrDefault().ToShortDateString() : "No install date set";
-                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a> - {installDate}</li>");
-                }
-                output.Append("</ul>");
-            }
-            else
-            {
-                output.Append("<li>None</li></ul>");
-            }
-
-            output.Append("<p>Unsubmitted port requests:</p><ul>");
-            if (ordersWithUnsubmittedPortRequests.Count > 0)
-            {
-                foreach (var item in ordersWithUnsubmittedPortRequests)
-                {
-                    var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
-                    var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
                     output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a></li>");
                 }
                 output.Append("</ul>");
@@ -187,40 +188,73 @@ namespace NumberSearch.Ingest
                 output.Append("<li>None</li></ul>");
             }
 
-            output.Append("<p>Unfinished port requests:</p><ul>");
-            if (ordersWithUnfinishedPortRequests.Count > 0)
-            {
-                foreach (var item in ordersWithUnfinishedPortRequests)
-                {
-                    var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
-                    var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
-                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a></li>");
-                }
-                output.Append("</ul>");
-            }
-            else
-            {
-                output.Append("<li>None</li></ul>");
-            }
+            //output.Append("<p>Converted from quotes today:</p><ul>");
+            //if (ordersConvertedFromQuotesToday.Count > 0)
+            //{
+            //    foreach (var item in ordersConvertedFromQuotesToday)
+            //    {
+            //        var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
+            //        var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
+            //        var installDate = item?.InstallDate is not null ? item?.InstallDate.GetValueOrDefault().ToShortDateString() : "No install date set";
+            //        output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a> - {installDate}</li>");
+            //    }
+            //    output.Append("</ul>");
+            //}
+            //else
+            //{
+            //    output.Append("<li>None</li></ul>");
+            //}
 
-            output.Append("<p>Uncompleted orders with completed port requests:</p><ul>");
-            if (ordersWithCompletedPortRequests.Count > 0)
-            {
-                foreach (var item in ordersWithCompletedPortRequests)
-                {
-                    var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
-                    var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
-                    var installDate = item?.InstallDate is not null ? item?.InstallDate.GetValueOrDefault().ToShortDateString() : "No install date set";
-                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a> - {installDate}</li>");
-                }
-                output.Append("</ul>");
-            }
-            else
-            {
-                output.Append("<li>None</li></ul>");
-            }
+            //output.Append("<p>Unsubmitted port requests:</p><ul>");
+            //if (ordersWithUnsubmittedPortRequests.Count > 0)
+            //{
+            //    foreach (var item in ordersWithUnsubmittedPortRequests)
+            //    {
+            //        var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
+            //        var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
+            //        output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a></li>");
+            //    }
+            //    output.Append("</ul>");
+            //}
+            //else
+            //{
+            //    output.Append("<li>None</li></ul>");
+            //}
 
-            output.Append("<p>Uncompleted orders where the install date has passed in the last quarter:</p><ul>");
+            //output.Append("<p>Unfinished port requests:</p><ul>");
+            //if (ordersWithUnfinishedPortRequests.Count > 0)
+            //{
+            //    foreach (var item in ordersWithUnfinishedPortRequests)
+            //    {
+            //        var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
+            //        var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
+            //        output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a></li>");
+            //    }
+            //    output.Append("</ul>");
+            //}
+            //else
+            //{
+            //    output.Append("<li>None</li></ul>");
+            //}
+
+            //output.Append("<p>Uncompleted orders with completed port requests:</p><ul>");
+            //if (ordersWithCompletedPortRequests.Count > 0)
+            //{
+            //    foreach (var item in ordersWithCompletedPortRequests)
+            //    {
+            //        var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
+            //        var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
+            //        var installDate = item?.InstallDate is not null ? item?.InstallDate.GetValueOrDefault().ToShortDateString() : "No install date set";
+            //        output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a> - {installDate}</li>");
+            //    }
+            //    output.Append("</ul>");
+            //}
+            //else
+            //{
+            //    output.Append("<li>None</li></ul>");
+            //}
+
+            output.Append("<p>Incomplete orders where the install date has passed in the last quarter:</p><ul>");
             if (ordersToMarkCompleted.Count > 0)
             {
                 foreach (var item in ordersToMarkCompleted)
@@ -237,39 +271,6 @@ namespace NumberSearch.Ingest
                 output.Append("<li>None</li></ul>");
             }
 
-            output.Append("<p>Orders submitted today:</p><ul>");
-            if (ordersSubmittedToday.Count > 0)
-            {
-                foreach (var item in ordersSubmittedToday)
-                {
-                    var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
-                    var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
-                    var installDate = item?.InstallDate is not null ? item?.InstallDate.GetValueOrDefault().ToShortDateString() : "No install date set";
-                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a> - {installDate}</li>");
-                }
-                output.Append("</ul>");
-            }
-            else
-            {
-                output.Append("<li>None</li></ul>");
-            }
-
-            output.Append("<p>Quotes submitted today:</p><ul>");
-            if (oneMonthFollowUp.Count > 0)
-            {
-                foreach (var item in oneMonthFollowUp)
-                {
-                    var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
-                    var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
-                    var installDate = item?.InstallDate is not null ? item?.InstallDate.GetValueOrDefault().ToShortDateString() : "No install date set";
-                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a> - {installDate}</li>");
-                }
-                output.Append("</ul>");
-            }
-            else
-            {
-                output.Append("<li>None</li></ul>");
-            }
 
             output.Append("<p>Follow up with Installs from last week:</p><ul>");
             if (oneWeekFollowUp.Count > 0)
