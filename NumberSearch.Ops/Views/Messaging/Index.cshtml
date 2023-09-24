@@ -62,17 +62,13 @@
         <thead>
             <tr>
                 <th>Phone Number</th>
-                <th>Outbound MMS</th>
-                <th>Outbound SMS</th>
-                <th>Inbound SMS</th>
-                <th>Inbound MMS</th>
                 <th>Registered Upstream?</th>
                 <th>Upstream Status Description</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var result in Model.UsageSummary)
+            @foreach (var result in Model.ClientRegistrations)
             {
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(result.AsDialed, out var phoneNumber);
                 var ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == phoneNumber.DialedNumber);
@@ -80,25 +76,12 @@
 
                 <tr>
                     <td>@Html.Raw(AsDialedLink)</td>
-                    <td>@result.OutboundMMSCount</td>
-                    <td>@result.OutboundSMSCount</td>
-                    <td>@result.InboundSMSCount</td>
-                    <td>@result.InboundMMSCount</td>
-                    @if (result.AsDialed is not "Total")
-                    {
-                        <td>@result.RegisteredUpstream</td>
-                        <td>@result.UpstreamStatusDescription</td>
-                        <td>
-                            <a class="btn btn-primary" href="./RefreshStatus?dialedNumber=@result.AsDialed">Refresh Upstream</a>
-                            <a class="btn btn-primary" href="./Register?dialedNumber=@result.AsDialed">Reregister</a>
-                        </td>
-                    }
-                    else
-                    {
-                        <td></td>
-                        <td></td>
-                        <td>As of @DateTime.Now.ToShortDateString() @DateTime.Now.ToShortTimeString()</td>
-                    }
+                    <td>@result.RegisteredUpstream</td>
+                    <td>@result.UpstreamStatusDescription</td>
+                    <td>
+                        <a class="btn btn-primary" href="./RefreshStatus?dialedNumber=@result.AsDialed">Refresh Upstream</a>
+                        <a class="btn btn-primary" href="./Register?dialedNumber=@result.AsDialed">Reregister</a>
+                    </td>
                 </tr>
             }
         </tbody>

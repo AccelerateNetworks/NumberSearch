@@ -40,29 +40,28 @@ namespace NumberSearch.Ops.Controllers
         [Route("/Messaging/Index")]
         public async Task<IActionResult> IndexAsync()
         {
-            var stats = await $"{_baseUrl}client/usage".WithOAuthBearerToken(_messagingToken).GetJsonAsync<UsageSummary[]>();
-            var failures = await $"{_baseUrl}message/all/failed?start={DateTime.Now.AddDays(-3).ToShortDateString()}&end={DateTime.Now.AddDays(1).ToShortDateString()}".WithOAuthBearerToken(_messagingToken).GetJsonAsync<MessageRecord[]>();
+            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            bool refresh = false;
-            foreach (var number in stats)
-            {
-                if (number.RegisteredUpstream is false && number.AsDialed is not "Total")
-                {
-                    bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number.AsDialed, out var phoneNumber);
-                    if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
-                    {
-                        _ = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(_messagingToken).GetStringAsync();
-                        refresh = true;
-                    }
-                }
-            }
+            //bool refresh = false;
+            //foreach (var number in stats)
+            //{
+            //    if (number.RegisteredUpstream is false && number.AsDialed is not "Total")
+            //    {
+            //        bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number.AsDialed, out var phoneNumber);
+            //        if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+            //        {
+            //            _ = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(_messagingToken).GetStringAsync();
+            //            refresh = true;
+            //        }
+            //    }
+            //}
 
-            if (refresh)
-            {
-                stats = await $"{_baseUrl}client/usage".WithOAuthBearerToken(_messagingToken).GetJsonAsync<UsageSummary[]>();
-            }
+            //if (refresh)
+            //{
+            //    stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
+            //}
 
-            return View(new MessagingResult { UsageSummary = stats.OrderByDescending(x => x.OutboundSMSCount).ToArray(), FailedMessages = failures.OrderByDescending(x => x.DateReceivedUTC).ToArray(), Owned = ownedNumbers });
+            return View(new MessagingResult { ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray(), Owned = ownedNumbers });
         }
 
         [Authorize]
@@ -86,10 +85,9 @@ namespace NumberSearch.Ops.Controllers
                 var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration>();
                 message = $"🔃 Upstream Status {refresh.UpstreamStatusDescription} for {refresh.AsDialed} routed to {refresh.CallbackUrl}";
             }
-            var stats = await $"{_baseUrl}client/usage".WithOAuthBearerToken(_messagingToken).GetJsonAsync<UsageSummary[]>();
-            var failures = await $"{_baseUrl}message/all/failed?start={DateTime.Now.AddDays(-3).ToShortDateString()}&end={DateTime.Now.AddDays(1).ToShortDateString()}".WithOAuthBearerToken(_messagingToken).GetJsonAsync<MessageRecord[]>();
+            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            return View("Index", new MessagingResult { UsageSummary = stats.OrderByDescending(x => x.OutboundSMSCount).ToArray(), FailedMessages = failures.OrderByDescending(x => x.DateReceivedUTC).ToArray(), Owned = ownedNumbers, Message = message, AlertType = alertType });
+            return View("Index", new MessagingResult { ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray(), Owned = ownedNumbers, Message = message, AlertType = alertType });
         }
 
         [Authorize]
@@ -124,11 +122,9 @@ namespace NumberSearch.Ops.Controllers
                     result.AlertType = "alert-danger";
                 }
             }
-            var stats = await $"{_baseUrl}client/usage".WithOAuthBearerToken(_messagingToken).GetJsonAsync<UsageSummary[]>();
-            var failures = await $"{_baseUrl}message/all/failed?start={DateTime.Now.AddDays(-3).ToShortDateString()}&end={DateTime.Now.AddDays(1).ToShortDateString()}".WithOAuthBearerToken(_messagingToken).GetJsonAsync<MessageRecord[]>();
+            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            result.UsageSummary = stats.OrderByDescending(x => x.OutboundSMSCount).ToArray();
-            result.FailedMessages = failures.OrderByDescending(x => x.DateReceivedUTC).ToArray();
+            result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
             result.Owned = ownedNumbers;
             return View("Index", result);
         }
@@ -148,10 +144,9 @@ namespace NumberSearch.Ops.Controllers
                 var response = await request.GetJsonAsync<RegistrationResponse>();
                 message = $"✔️ Reregistration complete! {response.Message}";
             }
-            var stats = await $"{_baseUrl}client/usage".WithOAuthBearerToken(_messagingToken).GetJsonAsync<UsageSummary[]>();
-            var failures = await $"{_baseUrl}message/all/failed?start={DateTime.Now.AddDays(-3).ToShortDateString()}&end={DateTime.Now.AddDays(1).ToShortDateString()}".WithOAuthBearerToken(_messagingToken).GetJsonAsync<MessageRecord[]>();
+            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            return View("Index", new MessagingResult { UsageSummary = stats.OrderByDescending(x => x.OutboundSMSCount).ToArray(), FailedMessages = failures.OrderByDescending(x => x.DateReceivedUTC).ToArray(), Owned = ownedNumbers, Message = message, AlertType = alertType });
+            return View("Index", new MessagingResult { ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray(), Owned = ownedNumbers, Message = message, AlertType = alertType });
         }
     }
 }

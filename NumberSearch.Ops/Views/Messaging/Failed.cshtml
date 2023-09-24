@@ -36,7 +36,7 @@
         {
             var ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == phoneNumber.DialedNumber);
             string AsDialedLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{number}</a>" : number;
-            var usage = Model.UsageSummary.FirstOrDefault(x => x.AsDialed == number);
+            var usage = Model.ClientRegistrations.FirstOrDefault(x => x.AsDialed == number);
             string newLine = HttpUtility.UrlEncode(System.Environment.NewLine);
             string email = "support@acceleratenetworks.com";
             string subject = $"{failed.Count()} Messages received for {number}";
