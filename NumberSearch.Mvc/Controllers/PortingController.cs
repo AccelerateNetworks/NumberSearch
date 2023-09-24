@@ -67,6 +67,26 @@ namespace NumberSearch.Mvc.Controllers
 
             if (checkParse && phoneNumber is not null)
             {
+                return View("Index", new PortingResults
+                {
+                    PortedPhoneNumber = new PortedPhoneNumber
+                    {
+                        PortedDialedNumber = phoneNumber.DialedNumber ?? string.Empty,
+                        NPA = phoneNumber.NPA,
+                        NXX = phoneNumber.NXX,
+                        XXXX = phoneNumber.XXXX,
+                        City = string.Empty,
+                        State = string.Empty,
+                        DateIngested = DateTime.Now,
+                        IngestedFrom = "UserInput",
+                        Wireless = false,
+                        LrnLookup = new()
+                    },
+                    Cart = cart,
+                    Query = Query,
+                    Message = true ? "This wireless phone number can be ported to our network!" : "This phone number can be ported to our network!"
+                });
+
                 try
                 {
                     var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSAPIUsername, _bulkVSAPIPassword).ConfigureAwait(false);

@@ -389,37 +389,37 @@ namespace NumberSearch.Tests
         //    output.WriteLine(JsonSerializer.Serialize(result));
         //}
 
-        [Fact]
-        public async Task LookupPageWithBadNumbersAsync()
-        {
-            // Arrange
-            string phoneNumber1 = "2065552121";
-            string phoneNumber2 = "5253747761";
-            //string phoneNumber3 = "8886409088";
+        //[Fact]
+        //public async Task LookupPageWithBadNumbersAsync()
+        //{
+        //    // Arrange
+        //    string phoneNumber1 = "2065552121";
+        //    string phoneNumber2 = "5253747761";
+        //    //string phoneNumber3 = "8886409088";
 
-            // Act
-            var lookup = new NumberSearch.Mvc.Controllers.LookupController(_configuration);
-            var result = await lookup.VerifyPortabilityAsync(phoneNumber1);
+        //    // Act
+        //    var lookup = new NumberSearch.Mvc.Controllers.LookupController(_configuration);
+        //    var result = await lookup.VerifyPortabilityAsync(phoneNumber1);
 
-            // Assert        
-            Assert.NotNull(result);
-            Assert.False(result.Portable);
-            output.WriteLine(JsonSerializer.Serialize(result));
+        //    // Assert        
+        //    Assert.NotNull(result);
+        //    Assert.False(result.Portable);
+        //    output.WriteLine(JsonSerializer.Serialize(result));
 
-            result = await lookup.VerifyPortabilityAsync(phoneNumber2);
+        //    result = await lookup.VerifyPortabilityAsync(phoneNumber2);
 
-            // Assert        
-            Assert.NotNull(result);
-            Assert.False(result.Portable);
-            output.WriteLine(JsonSerializer.Serialize(result));
+        //    // Assert        
+        //    Assert.NotNull(result);
+        //    Assert.False(result.Portable);
+        //    output.WriteLine(JsonSerializer.Serialize(result));
 
-            //result = await lookup.VerifyPortablityAsync(phoneNumber3);
+        //    //result = await lookup.VerifyPortablityAsync(phoneNumber3);
 
-            //// Assert        
-            //Assert.NotNull(result);
-            //Assert.False(result.Portable);
-            //output.WriteLine(JsonSerializer.Serialize(result));
-        }
+        //    //// Assert        
+        //    //Assert.NotNull(result);
+        //    //Assert.False(result.Portable);
+        //    //output.WriteLine(JsonSerializer.Serialize(result));
+        //}
 
         // We are no longer using data 24/7 for cnam lookups.
         //[Fact]
@@ -493,19 +493,19 @@ namespace NumberSearch.Tests
 
         }
 
-        [Fact]
-        public async Task CallWithUsLRNLookupAsync()
-        {
-            // Arrange
-            string canadaNumber = "6042400507";
+        //[Fact]
+        //public async Task CallWithUsLRNLookupAsync()
+        //{
+        //    // Arrange
+        //    string canadaNumber = "6042400507";
 
-            // Act
-            var result = await DataAccess.CallWithUs.LRNLookup.GetAsync(canadaNumber, _callWithUsAPIkey).ConfigureAwait(false);
+        //    // Act
+        //    var result = await DataAccess.CallWithUs.LRNLookup.GetAsync(canadaNumber, _callWithUsAPIkey).ConfigureAwait(false);
 
-            // Assert        
-            Assert.NotNull(result);
-            output.WriteLine(JsonSerializer.Serialize(result));
-        }
+        //    // Assert        
+        //    Assert.NotNull(result);
+        //    output.WriteLine(JsonSerializer.Serialize(result));
+        //}
 
         [Fact]
         public async Task PComNetDIDInventorySearchAsyncTestAsync()

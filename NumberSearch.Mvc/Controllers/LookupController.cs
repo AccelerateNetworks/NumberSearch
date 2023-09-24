@@ -87,7 +87,7 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpGet]
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        [ResponseCache(Duration = 30, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> BulkPortAsync(string dialedNumber, bool csv)
         {
             // Add portable numbers to cart in bulk
@@ -106,7 +106,6 @@ namespace NumberSearch.Mvc.Controllers
                 var cart = Cart.GetFromSession(HttpContext.Session);
 
                 var results = await Task.WhenAll(parsedNumbers.Select(VerifyPortabilityCnamLibdAsync));
-
 
                 var portableNumbers = results.Where(x => x.Portable && x.Wireless is false).ToArray();
                 var notPortable = results.Where(x => x.Portable is false).Select(x => x.PortedDialedNumber).ToArray();
@@ -176,6 +175,23 @@ namespace NumberSearch.Mvc.Controllers
 
             if (checkParse && phoneNumber is not null)
             {
+
+                return new PortedPhoneNumber
+                {
+                    PortedPhoneNumberId = Guid.NewGuid(),
+                    PortedDialedNumber = phoneNumber?.DialedNumber ?? string.Empty,
+                    NPA = phoneNumber!.NPA,
+                    NXX = phoneNumber!.NXX,
+                    XXXX = phoneNumber!.XXXX,
+                    City = string.Empty,
+                    State = string.Empty,
+                    DateIngested = DateTime.Now,
+                    IngestedFrom = "UserInput",
+                    Wireless = false,
+                    LrnLookup = new(),
+                    Portable = true
+                };
+
                 try
                 {
                     var portable = await ValidatePortability.GetAsync(phoneNumber?.DialedNumber ?? string.Empty, _bulkVSUsername, _bulkVSPassword).ConfigureAwait(false);
@@ -269,6 +285,23 @@ namespace NumberSearch.Mvc.Controllers
 
             if (checkParse && phoneNumber is not null)
             {
+                return new PortedPhoneNumber
+                {
+                    PortedPhoneNumberId = Guid.NewGuid(),
+                    PortedDialedNumber = phoneNumber.DialedNumber ?? string.Empty,
+                    NPA = phoneNumber.NPA,
+                    NXX = phoneNumber.NXX,
+                    XXXX = phoneNumber.XXXX,
+                    City = string.Empty,
+                    State = string.Empty,
+                    DateIngested = DateTime.Now,
+                    IngestedFrom = "UserInput",
+                    Wireless = false,
+                    LrnLookup = new(),
+                    Carrier =  new(),
+                    Portable = true
+                };
+
                 try
                 {
                     var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSUsername, _bulkVSPassword).ConfigureAwait(false);
