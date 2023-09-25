@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.RateLimiting;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
@@ -18,6 +19,7 @@ using System.Threading.Tasks;
 namespace NumberSearch.Mvc.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
+    [EnableRateLimiting("lookup")]
     public class LookupController : Controller
     {
         private readonly string _postgresql;
@@ -36,6 +38,7 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpGet]
+        [DisableRateLimiting]
         [ResponseCache(Duration = 30, Location = ResponseCacheLocation.Any, NoStore = false)]
         public async Task<IActionResult> IndexAsync()
         {
@@ -62,6 +65,12 @@ namespace NumberSearch.Mvc.Controllers
                 }
 
                 var cart = Cart.GetFromSession(HttpContext.Session);
+
+                // If they have an invalid Session we don't want to waste any time running queries for them.
+                if (string.IsNullOrWhiteSpace(HttpContext.Session.Id) || !HttpContext.Session.IsAvailable || cart is null)
+                {
+                    return View("Index");
+                }
 
                 var results = new List<PortedPhoneNumber>();
                 await Parallel.ForEachAsync(parsedNumbers, async (number, token) =>

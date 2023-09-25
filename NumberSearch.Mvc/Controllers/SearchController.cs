@@ -27,13 +27,10 @@ namespace NumberSearch.Mvc.Controllers
         /// </summary>
         /// <param name="query"> A complete or partial phone number. </param>
         /// <returns> A view of nothing, or the result of the query. </returns>
-        [HttpGet("Search/")]
-        [HttpGet("Search/{Query}")]
-        [HttpPost("Search/")]
-        [HttpPost("Search/{Query}")]
+        [HttpGet("Search")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         [OutputCache(Duration = 3600, VaryByQueryKeys = new string[] { "query","city","failed","view","page" })]
-        public async Task<IActionResult> IndexAsync(string query, string city, string failed, string view, int page = 1)
+        public async Task<IActionResult> SearchAsync(string query, string city, string failed, string view, int page = 1)
         {
             // Fail fast
             if (string.IsNullOrWhiteSpace(query))
@@ -66,7 +63,7 @@ namespace NumberSearch.Mvc.Controllers
                 // Drop everything else.
             }
 
-            // Drop leading 1's to improve the copy/paste experiance.
+            // Drop leading 1's to improve the copy/paste experience.
             if (converted[0] == '1' && converted.Count >= 10)
             {
                 converted.Remove('1');
@@ -74,7 +71,7 @@ namespace NumberSearch.Mvc.Controllers
 
             var cleanedQuery = new string(converted.ToArray());
 
-            // Short curcit area code searches.
+            // Short circuit area code searches.
             if (cleanedQuery.Length == 3 && cleanedQuery.Equals(query, System.StringComparison.InvariantCultureIgnoreCase))
             {
                 var checkConvert = int.TryParse(cleanedQuery, out var code);

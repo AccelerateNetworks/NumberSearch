@@ -13,6 +13,10 @@ using Serilog;
 
 using System;
 using System.Globalization;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Threading.RateLimiting;
 
 namespace NumberSearch.Mvc
 {
@@ -66,6 +70,55 @@ namespace NumberSearch.Mvc
             services.AddHostedService<QueuedHostedService>();
             services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
             services.AddApplicationInsightsTelemetry();
+
+            services.AddRateLimiter(options =>
+            {
+                options.GlobalLimiter = PartitionedRateLimiter.CreateChained(
+                    PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+                        RateLimitPartition.GetFixedWindowLimiter(GetRemoteHostIpAddressUsingXForwardedFor(httpContext)?.ToString() ?? string.Empty, partition =>
+                            new FixedWindowRateLimiterOptions
+                            {
+                                AutoReplenishment = true,
+                                PermitLimit = 120,
+                                Window = TimeSpan.FromMinutes(1)
+                            })),
+                    PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+                        RateLimitPartition.GetFixedWindowLimiter(GetRemoteHostIpAddressUsingXForwardedFor(httpContext)?.ToString() ?? string.Empty, partition =>
+                            new FixedWindowRateLimiterOptions
+                            {
+                                AutoReplenishment = true,
+                                PermitLimit = 360,
+                                Window = TimeSpan.FromDays(1)
+                            })));
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            });
+        }
+
+        public IPAddress? GetRemoteHostIpAddressUsingXForwardedFor(HttpContext httpContext)
+        {
+            IPAddress? remoteIpAddress = null;
+            var forwardedFor = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+
+            if (!string.IsNullOrEmpty(forwardedFor))
+            {
+                var ips = forwardedFor.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                      .Select(s => s.Trim());
+
+                foreach (var ip in ips)
+                {
+                    if (IPAddress.TryParse(ip, out var address) &&
+                        (address.AddressFamily is AddressFamily.InterNetwork
+                         or AddressFamily.InterNetworkV6))
+                    {
+                        remoteIpAddress = address;
+                        break;
+                    }
+                }
+            }
+
+            remoteIpAddress ??= httpContext.Connection.RemoteIpAddress;
+
+            return remoteIpAddress;
         }
 
 
@@ -98,6 +151,7 @@ namespace NumberSearch.Mvc
                     ctx.Context.Response.Headers.Append("Expires", DateTime.UtcNow.AddDays(1).ToString("R", CultureInfo.InvariantCulture));
                 }
             });
+            app.UseRateLimiter();
 
             app.UseSecurityHeaders();
 

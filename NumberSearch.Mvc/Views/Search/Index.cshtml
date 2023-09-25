@@ -46,7 +46,8 @@
             </div>
             <div class="offset-xl-2 offset-lg-1"></div>
             <div class="col">
-                <form class="justify-content-center" action="/Search">
+                <form class="justify-content-center" method="get" asp-controller="Search" asp-action="Search">
+                    
                     <div class="form-group">
                         <div class="input-group mx-auto input-group-lg">
                             <div class="input-group-prepend">
@@ -115,7 +116,8 @@
         <div class="container">
             <div class="row">
                 <div class="col">
-                    <form action="/Search">
+                    <form method="get" asp-controller="Search" asp-action="SearchAsync">
+                        
                         <div class="btn-group btn-group-toggle pb-1 pb-md-3" data-toggle="buttons">
                             @{
                                 if (Model?.View == "Sequential")
@@ -391,7 +393,8 @@
                             </tbody>
                         </table>
                     </div>
-                    <form action="/Search">
+                    <form method="get" asp-controller="Search" asp-action="SearchAsync">
+                        
                         <div class="btn-group float-right pb-1 pb-md-3 pt-1 pt-md-3" role="group" aria-label="pagination">
                             @{
                                 if (Model?.Page > 1)
