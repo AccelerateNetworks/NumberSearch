@@ -98,7 +98,7 @@
                                             <p class="m-0">
                                                 Local Routing #
                                             </p>
-                                            <h6 class="m-0">@number?.LrnLookup?.lrn</h6>
+                                            <h6 class="m-0">@number?.LrnLookup?.LRN</h6>
                                             <p class="m-0 d-lg-none">
                                                 Caller Name
                                             </p>
@@ -139,7 +139,7 @@
                                         <td>
                                             @if (number?.Carrier is not null)
                                             {
-                                                <img src="@number.Carrier.LogoLink" alt="@number.Carrier.Name" title="LRN @number.LrnLookup.lrn" class="img-fluid p-1" style="max-height:5rem">
+                                                <img src="@number.Carrier.LogoLink" alt="@number.Carrier.Name" title="LRN @number.LrnLookup.LRN" class="img-fluid p-1" style="max-height:5rem">
                                             }
                                             else
                                             {
@@ -147,17 +147,17 @@
                                                     SPID
                                                 </p>
                                                 <p class="m-0 d-none d-md-block">
-                                                    @number?.LrnLookup?.spid
+                                                    @number?.LrnLookup?.SPID
                                                 </p>
                                                 <p class="m-0 d-none d-md-block">
                                                     LEC
                                                 </p>
                                                 <p class="m-0 d-none d-md-block">
-                                                    @number?.LrnLookup?.lec
+                                                    @number?.LrnLookup?.LEC
                                                 </p>
                                                 <p class="m-0 d-none d-md-block">LEC Type</p>
                                                 <p class="m-0 d-none d-md-block">
-                                                    @number?.LrnLookup?.lectype
+                                                    @number?.LrnLookup?.LECType
                                                 </p>
                                             }
                                             <p class="m-0">Type</p>
@@ -179,25 +179,25 @@
                                             <p class="m-0 d-md-none">
                                                 OCN
                                             </p>
-                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.ocn</h6>
+                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.OCN</h6>
                                             <p class="m-0 d-md-none">
                                                 SPID
                                             </p>
-                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.spid</h6>
+                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.SPID</h6>
                                             <p class="m-0 d-md-none">
                                                 LEC
                                             </p>
-                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.lec</h6>
+                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.LEC</h6>
                                         </td>
                                         <td class="d-none d-md-table-cell">
                                             <p class="m-0">
-                                                @number?.LrnLookup?.ocn
+                                                @number?.LrnLookup?.OCN
                                             </p>
                                             <p class="m-0">
-                                                @number?.LrnLookup?.spid
+                                                @number?.LrnLookup?.SPID
                                             </p>
                                             <p class="m-0">
-                                                @number?.LrnLookup?.lec
+                                                @number?.LrnLookup?.LEC
                                             </p>
                                         </td>
                                         <td class="d-none d-md-table-cell">

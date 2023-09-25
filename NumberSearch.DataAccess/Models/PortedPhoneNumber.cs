@@ -30,7 +30,7 @@ namespace NumberSearch.DataAccess
         public bool Completed { get; set; }
         public string RawResponse { get; set; } = string.Empty;
         // Only used by the porting process to get helpful information on the ported phone number.
-        public LrnBulkCnam LrnLookup { get; set; } = new();
+        public PhoneNumberLookup LrnLookup { get; set; } = new();
         public Carrier Carrier { get; set; } = new();
         public bool Portable { get; set; }
 

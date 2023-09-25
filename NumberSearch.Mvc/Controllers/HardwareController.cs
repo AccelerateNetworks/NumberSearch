@@ -70,7 +70,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [HttpGet("Hardware/PartnerPriceList")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
-        [OutputCache(Duration = 30)]
+        [OutputCache(Duration = 3600)]
         public async Task<IActionResult> PartnerPriceListAsync()
         {
 

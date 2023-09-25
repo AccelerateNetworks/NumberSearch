@@ -26,7 +26,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [HttpGet]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
-        [OutputCache(Duration = 30)]
+        [OutputCache(Duration = 3600, VaryByQueryKeys = new string[] { "query", "refresh" })]
         public async Task<IActionResult> IndexAsync(string query, bool refresh)
         {
             using var connection = new NpgsqlConnection(_postgresql);

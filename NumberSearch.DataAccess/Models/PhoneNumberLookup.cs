@@ -52,6 +52,10 @@ namespace NumberSearch.DataAccess
             DateIngested = DateTime.Now;
         }
 
+        public PhoneNumberLookup()
+        {
+        }
+
         /// <summary>
         /// Get all of the phone number lookups in the database.
         /// </summary>
@@ -64,6 +68,21 @@ namespace NumberSearch.DataAccess
             return await connection
                 .QueryAsync<PhoneNumberLookup>("SELECT \"PhoneNumberLookupId\", \"DialedNumber\", \"LRN\", \"OCN\", \"LATA\", \"City\", \"Ratecenter\", \"State\", \"Jurisdiction\", \"Local\", \"LEC\", \"LECType\", \"SPID\", \"LIDBName\", \"LastPorted\", \"IngestedFrom\", \"DateIngested\", \"CarrierId\" " +
                 "FROM public.\"PhoneNumberLookups\"")
+                .ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Get a specific phone number lookup from the database.
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        public static async Task<PhoneNumberLookup?> GetByDialedNumberAsync(string dialedNumber, string connectionString)
+        {
+            await using var connection = new NpgsqlConnection(connectionString);
+
+            return await connection
+                .QueryFirstOrDefaultAsync<PhoneNumberLookup>("SELECT \"PhoneNumberLookupId\", \"DialedNumber\", \"LRN\", \"OCN\", \"LATA\", \"City\", \"Ratecenter\", \"State\", \"Jurisdiction\", \"Local\", \"LEC\", \"LECType\", \"SPID\", \"LIDBName\", \"LastPorted\", \"IngestedFrom\", \"DateIngested\", \"CarrierId\" " +
+                "FROM public.\"PhoneNumberLookups\" WHERE \"DialedNumber\" = @DialedNumber", new { DialedNumber = dialedNumber })
                 .ConfigureAwait(false);
         }
 

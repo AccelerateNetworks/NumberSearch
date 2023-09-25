@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
@@ -35,60 +36,17 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpGet]
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public async Task<IActionResult> IndexAsync(string dialedNumber)
+        [ResponseCache(Duration = 30, Location = ResponseCacheLocation.Any, NoStore = false)]
+        public async Task<IActionResult> IndexAsync()
         {
-            // Lookup numbers in bulk
-            if (!string.IsNullOrWhiteSpace(dialedNumber))
-            {
-                var numberCanidates = dialedNumber.Trim().Replace(") ", "", StringComparison.CurrentCultureIgnoreCase).Replace("\r\n", " ", StringComparison.CurrentCultureIgnoreCase).Split(" ");
-
-                var parsedNumbers = new List<string>();
-
-                foreach (var query in numberCanidates)
-                {
-                    // Parse the query.
-                    var converted = new List<char>();
-                    foreach (var letter in query)
-                    {
-                        // Allow digits.
-                        if (char.IsDigit(letter))
-                        {
-                            converted.Add(letter);
-                        }
-                        // Drop everything else.
-                    }
-
-                    // Drop leading 1's to improve the copy/paste experience.
-                    if (converted.Count >= 10 && converted[0] == '1')
-                    {
-                        converted.Remove('1');
-                    }
-
-                    // Only if its a perfect number do we want to query for it.
-                    if (converted.Count == 10)
-                    {
-                        parsedNumbers.Add(new string(converted.ToArray()));
-                    }
-                }
-
-                var results = await Task.WhenAll(parsedNumbers.Select(InvestigateAsync));
-
-                return View("Index", new LookupResults
-                {
-                    DialedNumber = dialedNumber,
-                    Lookups = results
-                });
-            }
-            else
-            {
-                return View("Index");
-            }
+            return View("Index");
         }
 
-        [HttpGet]
-        [ResponseCache(Duration = 30, Location = ResponseCacheLocation.None, NoStore = true)]
-        public async Task<IActionResult> BulkPortAsync(string dialedNumber, bool csv)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        [OutputCache(Duration = 3600, VaryByQueryKeys = new string[] { "dialedNumber", "csv" })]
+        public async Task<IActionResult> BulkPortAsync([Bind("dialedNumber,csv")] string dialedNumber, bool csv)
         {
             // Add portable numbers to cart in bulk
             if (!string.IsNullOrWhiteSpace(dialedNumber))
@@ -105,7 +63,12 @@ namespace NumberSearch.Mvc.Controllers
 
                 var cart = Cart.GetFromSession(HttpContext.Session);
 
-                var results = await Task.WhenAll(parsedNumbers.Select(VerifyPortabilityCnamLibdAsync));
+                var results = new List<PortedPhoneNumber>();
+                await Parallel.ForEachAsync(parsedNumbers, async (number, token) =>
+                {
+                    var result = await VerifyPortabilityAsync(number);
+                    results.Add(result);
+                });
 
                 var portableNumbers = results.Where(x => x.Portable && x.Wireless is false).ToArray();
                 var notPortable = results.Where(x => x.Portable is false).Select(x => x.PortedDialedNumber).ToArray();
@@ -120,8 +83,8 @@ namespace NumberSearch.Mvc.Controllers
                     foreach (var number in results)
                     {
                         builder.AppendLine($"{number.PortedDialedNumber},{number.City},{number.State},{number.DateIngested},{number.Wireless},{number.Portable}," +
-                            $"{number.LrnLookup.LastPorted},{number.LrnLookup.spid},{number.LrnLookup.lata},{number.LrnLookup.lec},{number.LrnLookup.lectype}," +
-                            $"{number.LrnLookup.LIDBName},{number.LrnLookup.lrn},{number.LrnLookup.ocn},{number.LrnLookup.activation}");
+                            $"{number.LrnLookup.LastPorted},{number.LrnLookup.SPID},{number.LrnLookup.LATA},{number.LrnLookup.LEC},{number.LrnLookup.LECType}," +
+                            $"{number.LrnLookup.LIDBName},{number.LrnLookup.LRN},{number.LrnLookup.OCN},{number.LrnLookup.LastPorted}");
                     }
 
                     return File(Encoding.UTF8.GetBytes(builder.ToString()), "text/csv", $"AccelerateNetworksPhoneNumbers{DateTime.Now.ToString("yyyyMMddTHHmmss")}.csv");
@@ -169,139 +132,12 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
-        public async Task<PortedPhoneNumber> VerifyPortabilityAsync(string number)
-        {
-            var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number, out var phoneNumber);
-
-            if (checkParse && phoneNumber is not null)
-            {
-
-                return new PortedPhoneNumber
-                {
-                    PortedPhoneNumberId = Guid.NewGuid(),
-                    PortedDialedNumber = phoneNumber?.DialedNumber ?? string.Empty,
-                    NPA = phoneNumber!.NPA,
-                    NXX = phoneNumber!.NXX,
-                    XXXX = phoneNumber!.XXXX,
-                    City = string.Empty,
-                    State = string.Empty,
-                    DateIngested = DateTime.Now,
-                    IngestedFrom = "UserInput",
-                    Wireless = false,
-                    LrnLookup = new(),
-                    Portable = true
-                };
-
-                try
-                {
-                    var portable = await ValidatePortability.GetAsync(phoneNumber?.DialedNumber ?? string.Empty, _bulkVSUsername, _bulkVSPassword).ConfigureAwait(false);
-
-                    // Lookup the number.
-                    var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber?.DialedNumber ?? string.Empty, _bulkVSKey).ConfigureAwait(false);
-
-                    // Determine if the number is a wireless number.
-                    bool wireless = false;
-
-                    switch (checkNumber.lectype)
-                    {
-                        case "WIRELESS":
-                            wireless = true;
-                            break;
-                        case "PCS":
-                            wireless = true;
-                            break;
-                        case "P RESELLER":
-                            wireless = true;
-                            break;
-                        case "Wireless":
-                            wireless = true;
-                            break;
-                        case "W RESELLER":
-                            wireless = true;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    var numberName = await CnamBulkVs.GetAsync(phoneNumber?.DialedNumber ?? string.Empty, _bulkVSKey);
-                    checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName?.name ?? string.Empty;
-
-                    Log.Information($"[Portability] {number} is Portable.");
-
-                    var portableNumber = new PortedPhoneNumber
-                    {
-                        PortedPhoneNumberId = Guid.NewGuid(),
-                        PortedDialedNumber = phoneNumber?.DialedNumber ?? string.Empty,
-                        NPA = phoneNumber!.NPA,
-                        NXX = phoneNumber!.NXX,
-                        XXXX = phoneNumber!.XXXX,
-                        City = checkNumber.city,
-                        State = checkNumber.province,
-                        DateIngested = DateTime.Now,
-                        IngestedFrom = "UserInput",
-                        Wireless = wireless,
-                        LrnLookup = checkNumber,
-                        Portable = true
-                    };
-
-                    // Fail fast
-                    if (portable is null || portable?.Portable is false)
-                    {
-                        Log.Information($"[Portability] {phoneNumber?.DialedNumber} is not Portable.");
-
-                        portableNumber.Portable = false;
-                    }
-
-                    return portableNumber;
-                }
-                catch (Exception ex)
-                {
-                    Log.Information($"[Portability] {phoneNumber.DialedNumber} is not Portable.");
-                    Log.Fatal($"[Portability] {ex.Message}");
-                    Log.Fatal($"[Portability] {ex.InnerException}");
-
-                    return new PortedPhoneNumber
-                    {
-                        PortedDialedNumber = phoneNumber?.DialedNumber ?? string.Empty,
-                        Portable = false
-                    };
-                }
-            }
-            else
-            {
-                Log.Information($"[Portability] {number} is not Portable. Failed NPA, NXX, XXXX parsing.");
-
-                return new PortedPhoneNumber
-                {
-                    PortedDialedNumber = number,
-                    Portable = false
-                };
-            }
-        }
-
-        public async Task<PortedPhoneNumber> VerifyPortabilityCnamLibdAsync(string dialedNumber)
+        public async Task<PortedPhoneNumber> VerifyPortabilityAsync(string dialedNumber)
         {
             var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
 
             if (checkParse && phoneNumber is not null)
             {
-                return new PortedPhoneNumber
-                {
-                    PortedPhoneNumberId = Guid.NewGuid(),
-                    PortedDialedNumber = phoneNumber.DialedNumber ?? string.Empty,
-                    NPA = phoneNumber.NPA,
-                    NXX = phoneNumber.NXX,
-                    XXXX = phoneNumber.XXXX,
-                    City = string.Empty,
-                    State = string.Empty,
-                    DateIngested = DateTime.Now,
-                    IngestedFrom = "UserInput",
-                    Wireless = false,
-                    LrnLookup = new(),
-                    Carrier =  new(),
-                    Portable = true
-                };
-
                 try
                 {
                     var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSUsername, _bulkVSPassword).ConfigureAwait(false);
@@ -318,14 +154,17 @@ namespace NumberSearch.Mvc.Controllers
                         };
                     }
 
-                    LrnBulkCnam checkNumber;
+                    // This is free
+                    var checkNumber = await PhoneNumberLookup.GetByDialedNumberAsync(dialedNumber.Length is 10 ? $"1{dialedNumber}" : dialedNumber, _postgresql);
 
+                    bool freshQuery = false;
                     // Lookup the number.
-                    if (phoneNumber.Type is NumberType.Canada)
+                    if (checkNumber is null && phoneNumber.Type is NumberType.Canada)
                     {
+                        // Warning this costs $
                         var canada = await DataAccess.CallWithUs.LRNLookup.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _callWithUsAPIkey).ConfigureAwait(false);
 
-                        checkNumber = new LrnBulkCnam
+                        checkNumber = new PhoneNumberLookup(new LrnBulkCnam
                         {
                             lata = canada?.LATA ?? string.Empty,
                             lrn = canada?.LRN ?? string.Empty,
@@ -337,17 +176,29 @@ namespace NumberSearch.Mvc.Controllers
                             lectype = canada?.Prefix_Type ?? string.Empty,
                             city = canada?.Ratecenter ?? string.Empty,
                             province = canada?.State ?? string.Empty
-                        };
+                        });
+
+                        // Warning this costs $$$$
+                        //var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSKey);
+                        //checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName.name ?? string.Empty;
+                        freshQuery = true;
                     }
-                    else
+                    else if (checkNumber is null)
                     {
-                        checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSKey).ConfigureAwait(false);
+                        // Warning this costs $$$$
+                        var result = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSKey).ConfigureAwait(false);
+                        checkNumber = new PhoneNumberLookup(result);
+
+                        // Warning this costs $$$$
+                        //var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSKey);
+                        //checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName.name ?? string.Empty;
+                        freshQuery = true;
                     }
 
                     // Determine if the number is a wireless number.
                     bool wireless = false;
 
-                    switch (checkNumber.lectype)
+                    switch (checkNumber.LECType)
                     {
                         case "WIRELESS":
                             wireless = true;
@@ -368,17 +219,18 @@ namespace NumberSearch.Mvc.Controllers
                             break;
                     }
 
-                    var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSKey);
-                    checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName.name ?? string.Empty;
-
-                    // Log the lookup to the db.
-                    var lookup = new PhoneNumberLookup(checkNumber);
-                    var carrier = await Carrier.GetByOCNAsync(lookup.OCN, _postgresql).ConfigureAwait(false);
+                    // Find the carrier info
+                    var carrier = await Carrier.GetByOCNAsync(checkNumber.OCN, _postgresql).ConfigureAwait(false);
                     if (carrier is not null)
                     {
-                        lookup.CarrierId = carrier.CarrierId;
+                        checkNumber.CarrierId = carrier.CarrierId;
                     }
-                    var checkLog = await lookup.PostAsync(_postgresql).ConfigureAwait(false);
+
+                    // Log the lookup to the db if it's new.
+                    if (freshQuery)
+                    {
+                        var checkLog = await checkNumber.PostAsync(_postgresql).ConfigureAwait(false);
+                    }
 
                     Log.Information($"[Portability] {phoneNumber.DialedNumber} is Portable.");
 
@@ -389,8 +241,8 @@ namespace NumberSearch.Mvc.Controllers
                         NPA = phoneNumber.NPA,
                         NXX = phoneNumber.NXX,
                         XXXX = phoneNumber.XXXX,
-                        City = checkNumber.city,
-                        State = checkNumber.province,
+                        City = checkNumber.City,
+                        State = checkNumber.State,
                         DateIngested = DateTime.Now,
                         IngestedFrom = "UserInput",
                         Wireless = wireless,
@@ -409,7 +261,11 @@ namespace NumberSearch.Mvc.Controllers
 
                     return new PortedPhoneNumber
                     {
-                        PortedDialedNumber = dialedNumber,
+                        PortedPhoneNumberId = Guid.NewGuid(),
+                        PortedDialedNumber = phoneNumber.DialedNumber,
+                        NPA = phoneNumber.NPA,
+                        NXX = phoneNumber.NXX,
+                        XXXX = phoneNumber.XXXX,
                         Portable = false
                     };
                 }
@@ -420,50 +276,11 @@ namespace NumberSearch.Mvc.Controllers
 
                 return new PortedPhoneNumber
                 {
+                    PortedPhoneNumberId = Guid.NewGuid(),
                     PortedDialedNumber = dialedNumber,
                     Portable = false
                 };
             }
-        }
-
-        public async Task<LrnBulkCnam> InvestigateAsync(string number)
-        {
-            LrnBulkCnam checkNumber;
-
-            if (number.IsCanadian())
-            {
-                var canada = await DataAccess.CallWithUs.LRNLookup.GetAsync(number, _callWithUsAPIkey).ConfigureAwait(false);
-
-                checkNumber = new LrnBulkCnam
-                {
-                    lata = canada?.LATA ?? string.Empty,
-                    lrn = canada?.LRN ?? string.Empty,
-                    jurisdiction = canada?.State ?? string.Empty,
-                    ocn = canada?.OCN ?? string.Empty,
-                    ratecenter = canada?.Ratecenter ?? string.Empty,
-                    tn = number,
-                    lec = canada?.Company ?? string.Empty,
-                    lectype = canada?.Prefix_Type ?? string.Empty,
-                };
-            }
-            else
-            {
-                checkNumber = await LrnBulkCnam.GetAsync(number, _bulkVSKey).ConfigureAwait(false);
-            }
-
-            var numberName = await CnamBulkVs.GetAsync(number, _bulkVSKey);
-            checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName.name;
-
-            // Log the lookup to the db.
-            var lookup = new PhoneNumberLookup(checkNumber);
-            var carrier = await Carrier.GetByOCNAsync(lookup.OCN, _postgresql).ConfigureAwait(false);
-            if (carrier is not null)
-            {
-                lookup.CarrierId = carrier.CarrierId;
-            }
-            _ = await lookup.PostAsync(_postgresql).ConfigureAwait(false);
-
-            return checkNumber;
         }
     }
 }

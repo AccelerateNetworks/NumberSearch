@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 
 using NumberSearch.DataAccess;
 using NumberSearch.Mvc.Models;
@@ -31,6 +32,7 @@ namespace NumberSearch.Mvc.Controllers
         [HttpPost("Search/")]
         [HttpPost("Search/{Query}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        [OutputCache(Duration = 3600, VaryByQueryKeys = new string[] { "query","city","failed","view","page" })]
         public async Task<IActionResult> IndexAsync(string query, string city, string failed, string view, int page = 1)
         {
             // Fail fast

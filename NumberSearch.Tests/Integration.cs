@@ -682,6 +682,21 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task GetNumberLookupAsync()
+        {
+            // Arrange
+            var number = "12067696361";
+
+            // Act
+            var result = await PhoneNumberLookup.GetByDialedNumberAsync(number, postgresql);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(!string.IsNullOrWhiteSpace(result.SPID));
+            output.WriteLine(JsonSerializer.Serialize(result));
+        }
+
+        [Fact]
         public async Task BulkVSRESTGetAllOwnedNumbersAsync()
         {
             // Arrange

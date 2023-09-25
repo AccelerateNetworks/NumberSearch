@@ -25,6 +25,7 @@ namespace NumberSearch.Mvc.Controllers
         private readonly string _bulkVSAPIPassword;
         private readonly string _azureStorage;
         private readonly string _SmtpUsername;
+        private readonly MvcConfiguration _mvcConfiguration;
 
         public PortingController(MvcConfiguration mvcConfiguration)
         {
@@ -34,6 +35,7 @@ namespace NumberSearch.Mvc.Controllers
             _bulkVSAPIPassword = mvcConfiguration.BulkVSPassword;
             _azureStorage = mvcConfiguration.AzureStorageAccount;
             _SmtpUsername = mvcConfiguration.SmtpUsername;
+            _mvcConfiguration = mvcConfiguration;
         }
 
         [HttpGet]
@@ -67,83 +69,22 @@ namespace NumberSearch.Mvc.Controllers
 
             if (checkParse && phoneNumber is not null)
             {
-                return View("Index", new PortingResults
-                {
-                    PortedPhoneNumber = new PortedPhoneNumber
-                    {
-                        PortedDialedNumber = phoneNumber.DialedNumber ?? string.Empty,
-                        NPA = phoneNumber.NPA,
-                        NXX = phoneNumber.NXX,
-                        XXXX = phoneNumber.XXXX,
-                        City = string.Empty,
-                        State = string.Empty,
-                        DateIngested = DateTime.Now,
-                        IngestedFrom = "UserInput",
-                        Wireless = false,
-                        LrnLookup = new()
-                    },
-                    Cart = cart,
-                    Query = Query,
-                    Message = true ? "This wireless phone number can be ported to our network!" : "This phone number can be ported to our network!"
-                });
-
                 try
                 {
-                    var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSAPIUsername, _bulkVSAPIPassword).ConfigureAwait(false);
-
-                    // Determine if the number is a wireless number.
-                    var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSAPIKey).ConfigureAwait(false);
-
-                    bool wireless = false;
-
-                    switch (checkNumber.lectype)
-                    {
-                        case "WIRELESS":
-                            wireless = true;
-                            break;
-                        case "PCS":
-                            wireless = true;
-                            break;
-                        case "P RESELLER":
-                            wireless = true;
-                            break;
-                        case "Wireless":
-                            wireless = true;
-                            break;
-                        case "W RESELLER":
-                            wireless = true;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSAPIKey);
-                    checkNumber.LIDBName = numberName.name;
+                    var lookup = new LookupController(_mvcConfiguration);
+                    var portable = await lookup.VerifyPortabilityAsync(Query);
 
                     if (portable is not null && portable.Portable)
                     {
                         Log.Information($"[Portability] {phoneNumber.DialedNumber} is Portable.");
 
-                        var port = new PortedPhoneNumber
-                        {
-                            PortedDialedNumber = phoneNumber.DialedNumber ?? string.Empty,
-                            NPA = phoneNumber.NPA,
-                            NXX = phoneNumber.NXX,
-                            XXXX = phoneNumber.XXXX,
-                            City = checkNumber.city,
-                            State = checkNumber.province,
-                            DateIngested = DateTime.Now,
-                            IngestedFrom = "UserInput",
-                            Wireless = wireless,
-                            LrnLookup = checkNumber
-                        };
 
                         return View("Index", new PortingResults
                         {
-                            PortedPhoneNumber = port,
+                            PortedPhoneNumber = portable,
                             Cart = cart,
                             Query = Query,
-                            Message = wireless ? "This wireless phone number can be ported to our network!" : "This phone number can be ported to our network!"
+                            Message = portable.Wireless ? "✔️ This wireless phone number can be ported to our network!" : "✔️ This phone number can be ported to our network!"
                         });
                     }
                     else
@@ -156,12 +97,12 @@ namespace NumberSearch.Mvc.Controllers
                             NPA = phoneNumber.NPA,
                             NXX = phoneNumber.NXX,
                             XXXX = phoneNumber.XXXX,
-                            City = checkNumber.city,
-                            State = checkNumber.province,
+                            City = portable?.City ?? string.Empty,
+                            State = portable?.State ?? string.Empty,
                             DateIngested = DateTime.Now,
                             IngestedFrom = "UserInput",
-                            Wireless = wireless,
-                            LrnLookup = checkNumber
+                            Wireless = false,
+                            LrnLookup = portable?.LrnLookup ?? new()
                         };
 
                         return View("Index", new PortingResults
@@ -169,7 +110,7 @@ namespace NumberSearch.Mvc.Controllers
                             PortedPhoneNumber = port,
                             Cart = cart,
                             Query = Query,
-                            Message = wireless ? "This wireless phone number can likely be ported to our network!" : "This phone number can likely be ported to our network!"
+                            Message = port.Wireless ? "❌ This wireless phone number cannot be ported to our network." : "❌ This phone number cannot be ported to our network."
                         });
                     }
                 }
@@ -194,7 +135,7 @@ namespace NumberSearch.Mvc.Controllers
                         PortedPhoneNumber = port,
                         Cart = cart,
                         Query = Query,
-                        Message = "This phone number can likely be ported to our network!"
+                        Message = "❓ This phone number can likely be ported to our network!"
                     });
                 }
             }
@@ -203,7 +144,7 @@ namespace NumberSearch.Mvc.Controllers
                 return View("Index", new PortingResults
                 {
                     PortedPhoneNumber = new PortedPhoneNumber { },
-                    Message = $"Did you mean to Search for purchasable numbers? {Query} isn't transferable.",
+                    Message = $"❓ Did you mean to Search for purchasable numbers? {Query} isn't transferable.",
                     AlertType = "alert-warning",
                     Query = Query,
                     Cart = cart

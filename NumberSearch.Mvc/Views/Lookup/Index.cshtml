@@ -34,13 +34,14 @@
             </div>
             <div class="offset-xl-2 offset-lg-1"></div>
             <div class="col">
-                <form class="justify-content-center">
+                <form method="post" class="justify-content-center" asp-controller="Lookup" asp-action="BulkPort">
+                    @Html.AntiForgeryToken()
                     <div class="form-group">
                         <div class="input-group input-group-lg">
                             <textarea class="form-control" aria-label="With textarea" type="text" name="dialedNumber" placeholder="Up to 200 Numbers per Search" style="height:8rem;">@Model?.DialedNumber</textarea>
                         </div>
                         <div class="input-group mx-auto input-group-lg pt-2">
-                            <button type="submit" class="btn btn-lg btn-success btn-block" onclick="displayBusyIndicator(this)" asp-controller="Lookup" asp-action="BulkPort">Search</button>
+                            <button type="submit" class="btn btn-lg btn-success btn-block" onclick="displayBusyIndicator(this)">Search</button>
                         </div>
                     </div>
                 </form>
@@ -59,95 +60,6 @@
                             <div class="alert alert-danger" role="alert">
                                 @Model?.Message
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
-        if (Model != null && Model?.Lookups != null && Model.Lookups.Any())
-        {
-            <div class="container">
-                <div class="row">
-                    <div class="col-12">
-                        <h1 class="pt-1 pb-1" id="notportable">Lookups</h1>
-                    </div>
-                    <div class="col">
-                        <div class="table-responsive shadow-sm">
-                            <table class="table table-striped table-hover table-borderless m-0" id="investigated">
-                                <thead>
-                                    <tr>
-                                        <th>
-                                            Phone Number
-                                        </th>
-                                        <th class="d-sm-none">
-                                            Related Info
-                                        </th>
-                                        <th class="d-none d-sm-table-cell">
-                                            Last Port Date
-                                        </th>
-                                        <th class="d-none d-sm-table-cell">
-                                            Caller Name
-                                        </th>
-                                        <th class="d-none d-lg-table-cell">
-                                            Local Routing #
-                                        </th>
-                                        <th class="d-none d-md-table-cell">
-                                            Carrier
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @{
-                                        foreach (var number in Model.Lookups)
-                                        {
-                                            <tr>
-                                                <td>
-                                                    <h4>
-                                                        @number?.tn
-
-                                                    </h4>
-                                                    <p class="d-lg-none m-0">
-                                                        Local Routing #
-                                                    </p>
-                                                    <h6 class="d-lg-none m-0">@number?.lrn</h6>
-                                                </td>
-                                                <td>
-                                                    @number?.LastPorted
-                                                    <p class="d-sm-none">
-                                                        @number?.LIDBName
-                                                        -
-                                                        @number?.spid
-                                                        @number?.lec
-                                                        -
-                                                        @number?.lectype
-                                                    </p>
-                                                </td>
-                                                <td class="d-none d-sm-table-cell">
-                                                    @number?.LIDBName
-                                                    <p class="d-md-none">
-                                                        -
-                                                        @number?.spid
-                                                        @number?.lec
-                                                        -
-                                                        @number?.lectype
-                                                    </p>
-                                                </td>
-                                                <td class="d-none d-lg-table-cell">
-                                                    <h4>@number?.lrn</h4>
-                                                </td>
-                                                <td class="d-none d-md-table-cell">
-                                                    <p>
-                                                        @number?.spid
-                                                        @number?.lec
-                                                        -
-                                                        @number?.lectype
-                                                    </p>
-                                                </td>
-                                            </tr>
-                                        }
-                                    }
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 </div>
@@ -275,7 +187,7 @@
                                             <p class="m-0">
                                                 Local Routing #
                                             </p>
-                                            <h6 class="m-0">@number?.LrnLookup?.lrn</h6>
+                                            <h6 class="m-0">@number?.LrnLookup?.LRN</h6>
                                             <p class="m-0 d-lg-none">
                                                 Caller Name
                                             </p>
@@ -316,7 +228,7 @@
                                         <td>
                                             @if (number?.Carrier is not null)
                                             {
-                                                <img src="@number.Carrier.LogoLink" alt="@number.Carrier.Name" title="LRN @number.LrnLookup.lrn" class="img-fluid p-1" style="max-height:5rem">
+                                                <img src="@number.Carrier.LogoLink" alt="@number.Carrier.Name" title="LRN @number.LrnLookup.LRN" class="img-fluid p-1" style="max-height:5rem">
                                             }
                                             else
                                             {
@@ -324,17 +236,17 @@
                                                     SPID
                                                 </p>
                                                 <p class="m-0 d-none d-md-block">
-                                                    @number?.LrnLookup?.spid
+                                                    @number?.LrnLookup?.SPID
                                                 </p>
                                                 <p class="m-0 d-none d-md-block">
                                                     LEC
                                                 </p>
                                                 <p class="m-0 d-none d-md-block">
-                                                    @number?.LrnLookup?.lec
+                                                    @number?.LrnLookup?.LEC
                                                 </p>
                                                 <p class="m-0 d-none d-md-block">LEC Type</p>
                                                 <p class="m-0 d-none d-md-block">
-                                                    @number?.LrnLookup?.lectype
+                                                    @number?.LrnLookup?.LECType
                                                 </p>
                                             }
                                             <p class="m-0">Type</p>
@@ -356,25 +268,25 @@
                                             <p class="m-0 d-md-none">
                                                 OCN
                                             </p>
-                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.ocn</h6>
+                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.OCN</h6>
                                             <p class="m-0 d-md-none">
                                                 SPID
                                             </p>
-                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.spid</h6>
+                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.SPID</h6>
                                             <p class="m-0 d-md-none">
                                                 LEC
                                             </p>
-                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.lec</h6>
+                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.LEC</h6>
                                         </td>
                                         <td class="d-none d-md-table-cell">
                                             <p class="m-0">
-                                                @number?.LrnLookup?.ocn
+                                                @number?.LrnLookup?.OCN
                                             </p>
                                             <p class="m-0">
-                                                @number?.LrnLookup?.spid
+                                                @number?.LrnLookup?.SPID
                                             </p>
                                             <p class="m-0">
-                                                @number?.LrnLookup?.lec
+                                                @number?.LrnLookup?.LEC
                                             </p>
                                         </td>
                                         <td class="d-none d-md-table-cell">
@@ -472,11 +384,11 @@
                                     }
                                     <tr style="@color">
                                         <td>
-                                            <h4>@number?.LrnLookup?.tn?.Substring(1)</h4>
+                                            <h4>@number?.PortedDialedNumber</h4>
                                             <p class="m-0">
                                                 Local Routing #
                                             </p>
-                                            <h6 class="m-0">@number?.LrnLookup?.lrn</h6>
+                                            <h6 class="m-0">@number?.LrnLookup?.LRN</h6>
                                             <p class="m-0 d-lg-none">
                                                 Caller Name
                                             </p>
@@ -517,7 +429,7 @@
                                         <td>
                                             @if (number?.Carrier is not null)
                                             {
-                                                <img src="@number.Carrier.LogoLink" alt="@number.Carrier.Name" title="LRN @number.LrnLookup.lrn" class="img-fluid p-1" style="max-height:5rem">
+                                                <img src="@number.Carrier.LogoLink" alt="@number.Carrier.Name" title="LRN @number.LrnLookup.LRN" class="img-fluid p-1" style="max-height:5rem">
                                             }
                                             else
                                             {
@@ -525,17 +437,17 @@
                                                     SPID
                                                 </p>
                                                 <p class="m-0 d-none d-md-block">
-                                                    @number?.LrnLookup?.spid
+                                                    @number?.LrnLookup?.SPID
                                                 </p>
                                                 <p class="m-0 d-none d-md-block">
                                                     LEC
                                                 </p>
                                                 <p class="m-0 d-none d-md-block">
-                                                    @number?.LrnLookup?.lec
+                                                    @number?.LrnLookup?.LEC
                                                 </p>
                                                 <p class="m-0 d-none d-md-block">LEC Type</p>
                                                 <p class="m-0 d-none d-md-block">
-                                                    @number?.LrnLookup?.lectype
+                                                    @number?.LrnLookup?.LECType
                                                 </p>
                                             }
                                             <p class="m-0">Type</p>
@@ -557,25 +469,25 @@
                                             <p class="m-0 d-md-none">
                                                 OCN
                                             </p>
-                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.ocn</h6>
+                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.OCN</h6>
                                             <p class="m-0 d-md-none">
                                                 SPID
                                             </p>
-                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.spid</h6>
+                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.SPID</h6>
                                             <p class="m-0 d-md-none">
                                                 LEC
                                             </p>
-                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.lec</h6>
+                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.LEC</h6>
                                         </td>
                                         <td class="d-none d-md-table-cell">
                                             <p class="m-0">
-                                                @number?.LrnLookup?.ocn
+                                                @number?.LrnLookup?.OCN
                                             </p>
                                             <p class="m-0">
-                                                @number?.LrnLookup?.spid
+                                                @number?.LrnLookup?.SPID
                                             </p>
                                             <p class="m-0">
-                                                @number?.LrnLookup?.lec
+                                                @number?.LrnLookup?.LEC
                                             </p>
                                         </td>
                                         <td class="d-none d-md-table-cell">
