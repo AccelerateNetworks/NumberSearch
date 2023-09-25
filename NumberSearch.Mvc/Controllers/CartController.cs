@@ -5,6 +5,7 @@ using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.InvoiceNinja;
@@ -206,6 +207,7 @@ namespace NumberSearch.Mvc.Controllers
         [HttpGet("Cart/Order/{Id}")]
         [HttpPost("Cart/Order/{Id}")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
+        [OutputCache(Duration = 3600, VaryByQueryKeys = new string[] { "Id", "AddPortingInfo" })]
         public async Task<IActionResult> ExistingOrderAsync(Guid Id, bool? AddPortingInfo)
         {
             if (Id != Guid.Empty)

@@ -87,7 +87,7 @@ namespace NumberSearch.Mvc
                             new FixedWindowRateLimiterOptions
                             {
                                 AutoReplenishment = true,
-                                PermitLimit = 360,
+                                PermitLimit = 5760,
                                 Window = TimeSpan.FromDays(1)
                             })));
                 options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;

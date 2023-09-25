@@ -22,7 +22,7 @@ namespace NumberSearch.Mvc.Controllers
         [HttpGet("Home/Privacy")]
         [HttpGet("Privacy")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
-        [OutputCache(Duration = 30)]
+        [OutputCache(Duration = int.MaxValue)]
         public IActionResult Privacy()
         {
             return View();
@@ -38,7 +38,7 @@ namespace NumberSearch.Mvc.Controllers
         [HttpGet("Home/Support")]
         [HttpGet("Support")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
-        [OutputCache(Duration = 30)]
+        [OutputCache(Duration = int.MaxValue)]
         public IActionResult Support()
         {
             return View();
@@ -47,7 +47,7 @@ namespace NumberSearch.Mvc.Controllers
         [HttpGet("Home/About")]
         [HttpGet("About")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
-        [OutputCache(Duration = 30)]
+        [OutputCache(Duration = int.MaxValue)]
         public IActionResult About()
         {
             return View();
@@ -56,7 +56,7 @@ namespace NumberSearch.Mvc.Controllers
         [HttpGet("Home/Features")]
         [HttpGet("Features")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
-        [OutputCache(Duration = 30)]
+        [OutputCache(Duration = int.MaxValue)]
         public IActionResult Features()
         {
             return View();
@@ -65,7 +65,7 @@ namespace NumberSearch.Mvc.Controllers
         [HttpGet("Home/Careers")]
         [HttpGet("Careers")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
-        [OutputCache(Duration = 30)]
+        [OutputCache(Duration = int.MaxValue)]
         public IActionResult Careers()
         {
             return View();
@@ -73,7 +73,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [HttpGet("releases/android/RELEASE")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
-        [OutputCache(Duration = 30)]
+        [OutputCache(Duration = int.MaxValue)]
         public IActionResult AndroidReleaseFile()
         {
             return View();
