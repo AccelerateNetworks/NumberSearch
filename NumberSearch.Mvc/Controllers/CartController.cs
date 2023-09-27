@@ -1,6 +1,4 @@
-﻿using AccelerateNetworks.Operations;
-
-using Flurl.Http;
+﻿using Flurl.Http;
 
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;

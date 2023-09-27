@@ -59,7 +59,10 @@
             </div>
             <div class="form-group">
                 <label asp-for="Carrier" class="control-label"></label>
-                <input asp-for="Carrier" class="form-control" />
+                <select asp-for="Carrier" class="form-select" aria-label="Default select example">
+                    <option>UPS</option>
+                    <option>FedEx</option>
+                </select>                
                 <span asp-validation-for="Carrier" class="text-danger"></span>
             </div>
             <div class="form-group">

@@ -1,13 +1,12 @@
 ﻿using Dapper;
 
 using Npgsql;
-using NumberSearch.DataAccess;
 
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace AccelerateNetworks.Operations
+namespace NumberSearch.DataAccess
 {
     public class ProductItem
     {
