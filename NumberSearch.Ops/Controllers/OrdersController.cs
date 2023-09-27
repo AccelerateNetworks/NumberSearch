@@ -1343,6 +1343,46 @@ public class OrdersController : Controller
                                     }
                                 }
                             }
+                            else if (productItems.Any() && item?.Quantity is not null && item.Quantity > 0)
+                            {
+                                // Update them with the current tracking info
+                                List<DataAccess.TeleDynamics.HardwareOrder.Serializationinformation> devices = new();
+                                foreach (var line in orderLines)
+                                {
+                                    foreach (var device in line.SerializationInformation)
+                                    {
+                                        devices.Add(device);
+                                    }
+                                }
+
+                                foreach (var unit in productItems)
+                                {
+                                    var match = devices?.Where(x => !string.IsNullOrWhiteSpace(x.MAC) && x.MAC == unit.MACAddress).FirstOrDefault();
+                                    match ??= devices?.Where(x => !string.IsNullOrWhiteSpace(x.SerialNumber) && x.SerialNumber == unit.SerialNumber).FirstOrDefault();
+                                    if (match is not null)
+                                    {
+                                        string trackingLink = string.Empty;
+
+                                        if (!string.IsNullOrWhiteSpace(trackingNumber) && carrier is "UPS")
+                                        {
+                                            trackingLink = $"https://www.ups.com/track?track=yes&trackNums={trackingNumber}&loc=en_US&requester=ST/trackdetails";
+                                        }
+                                        else if (!string.IsNullOrWhiteSpace(trackingNumber) && carrier is "FedEx")
+                                        {
+                                            trackingLink = $"https://www.fedex.com/fedextrack/?trknbr={trackingNumber}";
+                                        }
+
+                                        unit.SerialNumber = match.SerialNumber;
+                                        unit.MACAddress = match.MAC;
+                                        unit.Carrier = carrier;
+                                        unit.TrackingNumber = trackingNumber;
+                                        unit.Condition = "New";
+                                        unit.ShipmentTrackingLink = string.IsNullOrWhiteSpace(trackingLink) ? $"{carrier} - {trackingNumber}" : trackingLink;
+                                        unit.DateUpdated = DateTime.Now;
+                                        unit.ExternalOrderId = teleDynamicsOrderNumber;
+                                    }
+                                }
+                            }
                         }
                     }
                 }

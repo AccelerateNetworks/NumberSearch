@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AccelerateNetworks.Operations;
+
+using Microsoft.AspNetCore.Http;
 
 using NumberSearch.DataAccess;
 
@@ -17,6 +19,7 @@ namespace NumberSearch.Mvc
         public List<VerifiedPhoneNumber> VerifiedPhoneNumbers { get; set; } = new();
         public List<PurchasedPhoneNumber> PurchasedPhoneNumbers { get; set; } = new();
         public List<Coupon> Coupons { get; set; } = new();
+        public ProductItem Shipment { get; set; } = new();
         public Order Order { get; set; } = new();
 
         enum CartKey

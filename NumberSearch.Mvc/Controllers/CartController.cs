@@ -1,4 +1,6 @@
-﻿using Flurl.Http;
+﻿using AccelerateNetworks.Operations;
+
+using Flurl.Http;
 
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
@@ -206,8 +208,6 @@ namespace NumberSearch.Mvc.Controllers
         // Show orders that have already been submitted.
         [HttpGet("Cart/Order/{Id}")]
         [HttpPost("Cart/Order/{Id}")]
-        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
-        [OutputCache(Duration = 3600, VaryByQueryKeys = new string[] { "Id", "AddPortingInfo" })]
         public async Task<IActionResult> ExistingOrderAsync(Guid Id, bool? AddPortingInfo)
         {
             if (Id != Guid.Empty)
@@ -255,6 +255,8 @@ namespace NumberSearch.Mvc.Controllers
                     }
                 }
 
+                var shipment = await ProductItem.GetByOrderIdAsync(order.OrderId, _postgresql);
+
                 var cart = new Cart
                 {
                     Order = order,
@@ -265,7 +267,8 @@ namespace NumberSearch.Mvc.Controllers
                     Coupons = coupons,
                     PortedPhoneNumbers = portedPhoneNumbers.ToList(),
                     VerifiedPhoneNumbers = verifiedPhoneNumbers.ToList(),
-                    PurchasedPhoneNumbers = purchasedPhoneNumbers.ToList()
+                    PurchasedPhoneNumbers = purchasedPhoneNumbers.ToList(),
+                    Shipment = shipment?.FirstOrDefault() ?? new()
                 };
 
                 if (AddPortingInfo is not null)

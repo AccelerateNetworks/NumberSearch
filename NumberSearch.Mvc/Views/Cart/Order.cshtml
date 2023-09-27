@@ -607,15 +607,24 @@
                             <h4 class="d-flex justify-content-between align-items-center">
                                 <span class="text-muted">Pay Now</span>
                             </h4>
-                            <a class="btn btn-primary" href="@Model?.Order?.UpfrontInvoiceLink" target="_blank" rel="noopener noreferrer">Upfront</a>
+                            <a class="btn btn-primary mb-2" href="@Model?.Order?.UpfrontInvoiceLink" target="_blank" rel="noopener noreferrer">Upfront</a>
+
                         }
                         else if (!string.IsNullOrWhiteSpace(Model?.Order?.ReoccuringInvoiceLink))
                         {
                             <h4 class="d-flex justify-content-between align-items-center">
                                 <span class="text-muted">Pay Now</span>
                             </h4>
-                            <a class="btn btn-primary" href="@Model?.Order?.ReoccuringInvoiceLink" target="_blank" rel="noopener noreferrer">Monthly</a>
+                            <a class="btn btn-primary mb-2" href="@Model?.Order?.ReoccuringInvoiceLink" target="_blank" rel="noopener noreferrer">Monthly</a>
                         }
+                        if (Model?.Shipment is not null && !string.IsNullOrWhiteSpace(Model.Shipment.ShipmentTrackingLink))
+                        {
+                            <h4 class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Track Your Shipment</span>
+                            </h4>
+                            <a class="btn btn-primary" href="@Model?.Shipment.ShipmentTrackingLink" target="_blank" rel="noopener noreferrer">@Model?.Shipment?.Carrier - @Model?.Shipment?.TrackingNumber</a>
+                        }
+
                     }
                 </ul>
             </div>
