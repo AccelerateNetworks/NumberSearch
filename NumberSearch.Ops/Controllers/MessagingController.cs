@@ -4,9 +4,12 @@ using Amazon.S3.Model;
 
 using Azure;
 
+using FirstCom;
+
 using Flurl.Http;
 
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.Elfie.Model.Structures;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +17,8 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 
 using NumberSearch.Ops.Models;
+
+using Serilog;
 
 using System;
 using System.Linq;
@@ -155,21 +160,61 @@ namespace NumberSearch.Ops.Controllers
             bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(toEmail.DialedNumber, out var phoneNumber);
             if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
             {
+                bool registeredUpstream = false;
+                string upstreamStatusDescription = string.Empty;
+                string dialedNumber = phoneNumber.Type is not PhoneNumbersNA.NumberType.ShortCode ? $"1{phoneNumber.DialedNumber}" : phoneNumber.DialedNumber;
+
                 try
                 {
-                    var response = await FirstCom.FirstPointComSMS.SMSToEmailByDialedNumberAsync($"1{phoneNumber.DialedNumber}", toEmail.Email, _config.PComNetUsername, _config.PComNetPassword);
-                    result.Message = $"✔️ Reregistration complete! {response.text}";
-                }
-                catch (FlurlHttpException ex)
-                {
-                    result.ToEmail = new () { DialedNumber = $"1{phoneNumber.DialedNumber}", Email = toEmail?.Email ?? string.Empty };
-                    result.Message = $"❓Please register this number for service. {await ex.GetResponseStringAsync()}";
-                    result.AlertType = "alert-warning";
+                    // Verify that this number is routed through our upstream provider.
+                    var checkRouted = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber, _config.PComNetUsername, _config.PComNetPassword);
+                    Log.Information(System.Text.Json.JsonSerializer.Serialize(checkRouted));
+                    registeredUpstream = checkRouted.QueryResult.code is 0 && checkRouted.epid is 265;
+                    upstreamStatusDescription = checkRouted.QueryResult.text;
+                    if (checkRouted.QueryResult.code is not 0 || checkRouted.epid is not 265)
+                    {
+                        // Enabled routing and set the EPID if the number is not already routed.
+                        var enableSMS = await FirstPointComSMS.EnableSMSByDialedNumberAsync(dialedNumber, _config.PComNetUsername, _config.PComNetPassword);
+                        Log.Information(System.Text.Json.JsonSerializer.Serialize(enableSMS));
+                        var setRouting = await FirstPointComSMS.RouteSMSToEPIDByDialedNumberAsync(dialedNumber, 265, _config.PComNetUsername, _config.PComNetPassword);
+                        Log.Information(System.Text.Json.JsonSerializer.Serialize(setRouting));
+                        var checkRoutedAgain = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber, _config.PComNetUsername, _config.PComNetPassword);
+                        Log.Information(System.Text.Json.JsonSerializer.Serialize(checkRouted));
+                        registeredUpstream = checkRouted.QueryResult.code is 0 && checkRouted.epid is 265;
+                        upstreamStatusDescription = checkRouted.QueryResult.text;
+                        result.Message = $"Attempted to set and enable SMS routing for {dialedNumber}. SMS Enabled? {enableSMS.text} Routing Set? {setRouting.text} SMS Routed? {checkRoutedAgain.QueryResult.text}";
+                    }
+                    else
+                    {
+                        try
+                        {
+                            var response = await FirstCom.FirstPointComSMS.SMSToEmailByDialedNumberAsync(dialedNumber, toEmail.Email, _config.PComNetUsername, _config.PComNetPassword);
+                            result.Message = $"✔️ Reregistration complete! {response.text} This number is routed for SMS service with our upstream vendor: {checkRouted.QueryResult.text}";
+                        }
+                        catch (FlurlHttpException ex)
+                        {
+                            result.ToEmail = new() { DialedNumber = dialedNumber, Email = toEmail?.Email ?? string.Empty };
+                            result.Message = $"❓Please register this number for service. {checkRouted.QueryResult.text} {await ex.GetResponseStringAsync()} ";
+                            result.AlertType = "alert-warning";
+                        }
+                        catch (Exception ex)
+                        {
+                            result.Message = $"{ex.Message} {ex.StackTrace}";
+                            result.AlertType = "alert-danger";
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
-                    result.Message = $"{ex.Message} {ex.StackTrace}";
+                    Log.Error(ex.Message);
+                    Log.Error(ex.StackTrace ?? "No stack trace found.");
+                    result.Message = $"❌ Failed to enabled messaging service through EndStream for this dialed number. Please email dan@acceleratenetworks.com to report this outage. {ex.Message}";
                     result.AlertType = "alert-danger";
+                    var stats2 = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
+                    var ownedNumbers2 = await _context.OwnedPhoneNumbers.ToArrayAsync();
+                    result.ClientRegistrations = stats2.OrderByDescending(x => x.DateRegistered).ToArray();
+                    result.Owned = ownedNumbers2;
+                    return View("Index", result);
                 }
             }
             else
