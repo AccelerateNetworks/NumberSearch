@@ -31,12 +31,13 @@
     <h4 class="mb-3">Register a Phone Number for Messaging Service</h4>
     <div class="row">
         <div class="col">
+            <p>Phone Numbers registered for messaging service using this method are registered against sms.callpipe.com. After being received from the upstream vendor they will be forwarded along with the Client Secret to the Callback URL you set here. The client app can then use the Client Secret to verify that the incoming messages are legitimate.</p>
+        </div>
+        <div class="col">
             <div class="form-floating mb-3">
                 <input asp-for="RegistrationRequest.DialedNumber" type="text" class="form-control" placeholder="The phone number you want to register.">
                 <label for="phoneNumber">Phone Number</label>
             </div>
-        </div>
-        <div class="col">
             <div class="form-floating mb-3">
                 <input asp-for="RegistrationRequest.CallbackUrl" type="text" class="form-control" placeholder="The webhook Url that you want inbound messages forwarded to.">
                 <label for="callbackUrl">Callback URL</label>
@@ -80,7 +81,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 </form>
 <h3 class="pt-3">Messaging Usage by Phone Number</h3>
@@ -106,8 +106,8 @@
                     <td>@result.RegisteredUpstream</td>
                     <td>@result.UpstreamStatusDescription</td>
                     <td>
-                        <a class="btn btn-primary" href="./RefreshStatus?dialedNumber=@result.AsDialed">Refresh Upstream</a>
-                        <a class="btn btn-primary" href="./Register?dialedNumber=@result.AsDialed">Reregister</a>
+                        <a class="btn btn-primary" href="/Messaging/RefreshStatus?dialedNumber=@result.AsDialed">Refresh Upstream</a>
+                        <a class="btn btn-primary" href="/Messaging/Reregister?dialedNumber=@result.AsDialed">Reregister</a>
                     </td>
                 </tr>
             }

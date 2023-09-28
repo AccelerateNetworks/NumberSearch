@@ -93,7 +93,7 @@ namespace NumberSearch.Ops.Controllers
         }
 
         [Authorize]
-        [Route("/Messaging/Register")]
+        [Route("/Messaging/Reregister")]
         public async Task<IActionResult> RegisterAsync(string dialedNumber)
         {
             var result = new MessagingResult { AlertType = "alert-success" };
@@ -134,27 +134,35 @@ namespace NumberSearch.Ops.Controllers
 
         [Authorize]
         [Route("/Messaging/ToEmail")]
-        public async Task<IActionResult> MessagingToEmailAsync(string dialedNumber, string email)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MessagingToEmailAsync([Bind("DialedNumber,Email")] ToEmailRequest toEmail)
         {
             var result = new MessagingResult { AlertType = "alert-success" };
 
-            if (string.IsNullOrWhiteSpace(email) || !email.Contains('@'))
+            if (string.IsNullOrWhiteSpace(toEmail?.Email) || !toEmail.Email.Contains('@'))
             {
-                result.Message = $"❌ Email address is invalid. {email}";
+                result.Message = $"❌ Email address is invalid. {toEmail?.Email}";
                 result.AlertType = "alert-danger";
+
+                var stats1 = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
+                var ownedNumbers1 = await _context.OwnedPhoneNumbers.ToArrayAsync();
+                result.ClientRegistrations = stats1.OrderByDescending(x => x.DateRegistered).ToArray();
+                result.Owned = ownedNumbers1;
+                return View("Index", result);
             }
 
-            bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
+            bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(toEmail.DialedNumber, out var phoneNumber);
             if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
             {
                 try
                 {
-                    var response = await FirstCom.FirstPointComSMS.SMSToEmailByDialedNumberAsync(dialedNumber, email, _config.PComNetUsername, _config.PComNetPassword);
+                    var response = await FirstCom.FirstPointComSMS.SMSToEmailByDialedNumberAsync($"1{phoneNumber.DialedNumber}", toEmail.Email, _config.PComNetUsername, _config.PComNetPassword);
                     result.Message = $"✔️ Reregistration complete! {response.text}";
                 }
                 catch (FlurlHttpException ex)
                 {
-                    result.RegistrationRequest = new RegistrationRequest { DialedNumber = dialedNumber };
+                    result.ToEmail = new () { DialedNumber = $"1{phoneNumber.DialedNumber}", Email = toEmail?.Email ?? string.Empty };
                     result.Message = $"❓Please register this number for service. {await ex.GetResponseStringAsync()}";
                     result.AlertType = "alert-warning";
                 }
@@ -166,7 +174,7 @@ namespace NumberSearch.Ops.Controllers
             }
             else
             {
-                result.Message = $"❌ Dialed number is invalid. {dialedNumber}";
+                result.Message = $"❌ Dialed number is invalid. {toEmail.DialedNumber}";
                 result.AlertType = "alert-danger";
             }
 
@@ -178,8 +186,8 @@ namespace NumberSearch.Ops.Controllers
         }
 
         [Authorize]
-        [Route("/Messaging/Register")]
         [HttpPost]
+        [Route("/Messaging/Register")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RegisterAsync([Bind("DialedNumber,CallbackUrl,ClientSecret")] RegistrationRequest registrationRequest)
         {
