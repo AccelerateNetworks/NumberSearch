@@ -26,7 +26,7 @@ namespace FirstCom
             return await client.LongCodeShowRoutingAsync(Auth, dialedNumber).ConfigureAwait(false);
         }
 
-        public static async Task<QueryResult> EnableSMSByDialedNumberAsync (string dialedNumber, string username, string password)
+        public static async Task<QueryResult> EnableSMSByDialedNumberAsync(string dialedNumber, string username, string password)
         {
             var Auth = new Credentials
             {
@@ -50,6 +50,19 @@ namespace FirstCom
             using var client = new DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
 
             return await client.DIDRouteSMSToEPIDBasicAsync(Auth, dialedNumber, EPID).ConfigureAwait(false);
+        }
+
+        public static async Task<QueryResult> SMSToEmailByDialedNumberAsync(string dialedNumber, string email, string username, string password)
+        {
+            var Auth = new Credentials
+            {
+                Username = username,
+                Password = password
+            };
+
+            using var client = new DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
+
+            return await client.DIDRouteSMSToEmailAsync(Auth, dialedNumber, email).ConfigureAwait(false);
         }
     }
 }

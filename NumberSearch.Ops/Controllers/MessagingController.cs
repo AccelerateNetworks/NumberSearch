@@ -2,6 +2,8 @@
 
 using Amazon.S3.Model;
 
+using Azure;
+
 using Flurl.Http;
 
 using Microsoft.AspNetCore.Authorization;
@@ -116,12 +118,58 @@ namespace NumberSearch.Ops.Controllers
                     result.RegistrationRequest = new RegistrationRequest { DialedNumber = dialedNumber };
                     result.Message = $"❓Please register this number for service. {await ex.GetResponseStringAsync()}";
                     result.AlertType = "alert-warning";
-                } catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     result.Message = $"{ex.Message} {ex.StackTrace}";
                     result.AlertType = "alert-danger";
                 }
             }
+            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
+            var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
+            result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
+            result.Owned = ownedNumbers;
+            return View("Index", result);
+        }
+
+        [Authorize]
+        [Route("/Messaging/ToEmail")]
+        public async Task<IActionResult> MessagingToEmailAsync(string dialedNumber, string email)
+        {
+            var result = new MessagingResult { AlertType = "alert-success" };
+
+            if (string.IsNullOrWhiteSpace(email) || !email.Contains('@'))
+            {
+                result.Message = $"❌ Email address is invalid. {email}";
+                result.AlertType = "alert-danger";
+            }
+
+            bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
+            if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+            {
+                try
+                {
+                    var response = await FirstCom.FirstPointComSMS.SMSToEmailByDialedNumberAsync(dialedNumber, email, _config.PComNetUsername, _config.PComNetPassword);
+                    result.Message = $"✔️ Reregistration complete! {response.text}";
+                }
+                catch (FlurlHttpException ex)
+                {
+                    result.RegistrationRequest = new RegistrationRequest { DialedNumber = dialedNumber };
+                    result.Message = $"❓Please register this number for service. {await ex.GetResponseStringAsync()}";
+                    result.AlertType = "alert-warning";
+                }
+                catch (Exception ex)
+                {
+                    result.Message = $"{ex.Message} {ex.StackTrace}";
+                    result.AlertType = "alert-danger";
+                }
+            }
+            else
+            {
+                result.Message = $"❌ Dialed number is invalid. {dialedNumber}";
+                result.AlertType = "alert-danger";
+            }
+
             var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();

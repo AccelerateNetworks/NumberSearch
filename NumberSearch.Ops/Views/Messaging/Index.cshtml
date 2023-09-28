@@ -56,6 +56,33 @@
 
     </div>
 </form>
+<form action="/Messaging/ToEmail" method="post" class="needs-validation">
+    @Html.AntiForgeryToken()
+    <h4 class="mb-3">Register a Phone Number for Messaging to Email Service</h4>
+    <div class="row">
+        <div class="col">
+            <p>Phone Numbers that are registered for service using this method must already be enabled for SMS service and routed to our EPID with our upstream vendor. The numbers that are registered for this messaging to email service will not show up in the list of active users below as they are not registered against sms.callpipe.com but rather against the upstream vendor.</p>
+        </div>
+        <div class="col">
+            <div class="form-floating mb-3">
+                <input asp-for="ToEmail.DialedNumber" type="text" class="form-control" placeholder="The phone number you want to register.">
+                <label for="phoneNumber">Phone Number</label>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-floating mb-3">
+                <input asp-for="ToEmail.Email" type="email" class="form-control" placeholder="The email that the messages will be forwarded to.">
+                <label for="clientSecret">Email Address</label>
+            </div>
+            <div class="col">
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-outline-danger btn-block">Register</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</form>
 <h3 class="pt-3">Messaging Usage by Phone Number</h3>
 <div class="table-responsive">
     <table class="table table-striped table-borderless table-hover" id="table">

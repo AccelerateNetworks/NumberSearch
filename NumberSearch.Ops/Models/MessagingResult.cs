@@ -3,7 +3,6 @@
 using Models;
 
 using System;
-using System.Collections.Generic;
 
 namespace NumberSearch.Ops.Models
 {
@@ -15,5 +14,6 @@ namespace NumberSearch.Ops.Models
         public string Message { get; set; } = string.Empty;
         public string AlertType { get; set; } = string.Empty;
         public RegistrationRequest RegistrationRequest { get; set; } = new();
+        public ToEmailRequest ToEmail { get; set; } = new();
     }
 }
