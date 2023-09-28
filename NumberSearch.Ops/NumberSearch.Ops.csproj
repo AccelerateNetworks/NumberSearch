@@ -64,49 +64,25 @@
 		<Content Update="wwwroot\images\scaled\accelerate.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Update="wwwroot\images\scaled\accelerate.voicecontrols.net_login%28iPhone X%29.png">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\images\scaled\accelerate.voicecontrols.net_login%28iPhone X%29.webp">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\images\scaled\acceleratenetworks.app.erxes.io_%28iPhone X%29.png">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\images\scaled\acceleratenetworks.app.erxes.io_%28iPhone X%29.webp">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\images\scaled\acceleratenetworks.com_Lookup%28iPhone X%29.png">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\images\scaled\acceleratenetworks.com_Lookup%28iPhone X%29.webp">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\images\scaled\acceleratenetworks.sip.callpipe.com_%28iPhone X%29.png">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\images\scaled\acceleratenetworks.sip.callpipe.com_%28iPhone X%29.webp">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\images\scaled\billing.acceleratenetworks.com_login%28iPhone X%29.png">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\images\scaled\billing.acceleratenetworks.com_login%28iPhone X%29.webp">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\images\scaled\cloud.aidanis.online_login%28iPhone X%29.png">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\images\scaled\cloud.aidanis.online_login%28iPhone X%29.webp">
+		<Content Update="wwwroot\images\scaled\billing.webp">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\favicon-194x194.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Update="wwwroot\images\scaled\mail.seattlemesh.net_%28iPhone X%29.png">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		<Content Update="wwwroot\images\scaled\fusionpbx.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Update="wwwroot\images\scaled\mail.seattlemesh.net_%28iPhone X%29.webp">
+		<Content Update="wwwroot\images\scaled\github.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\scaled\lookup.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\scaled\teledynamics.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\scaled\ticketing.webp">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\js\site.js">
