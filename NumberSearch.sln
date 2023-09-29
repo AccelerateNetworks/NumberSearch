@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Messaging", "Messaging\Mess
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NumberSearch.Mvc", "NumberSearch.Mvc\NumberSearch.Mvc.csproj", "{BAF0B8F7-4BFB-4ED5-8540-E98540FC570F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messaging.Tests", "Messaging.Tests\Messaging.Tests.csproj", "{F7A31EB5-C271-4AA2-9421-F8B6E1798732}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Messaging.Tests", "Messaging.Tests\Messaging.Tests.csproj", "{F7A31EB5-C271-4AA2-9421-F8B6E1798732}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

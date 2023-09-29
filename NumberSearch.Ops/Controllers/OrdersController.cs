@@ -41,7 +41,6 @@ public class OrdersController : Controller
     }
 
     [Authorize]
-    [Route("/")]
     [Route("/Home/Order/")]
     [Route("/Home/Order/{orderId}")]
     public async Task<IActionResult> Orders(Guid? orderId)
