@@ -39,16 +39,9 @@ namespace NumberSearch.Ops.Pages
 
         public async Task OnGetAsync(string query)
         {
+
             // Show all orders
             var orders = new List<Order>();
-            var portRequests = await _context.PortRequests.AsNoTracking().ToArrayAsync();
-            var productOrders = await _context.ProductOrders.AsNoTracking().ToArrayAsync();
-            var purchasedNumbers = await _context.PurchasedPhoneNumbers.AsNoTracking().ToArrayAsync();
-            var verifiedNumbers = await _context.VerifiedPhoneNumbers.AsNoTracking().ToArrayAsync();
-            var portedPhoneNumbers = await _context.PortedPhoneNumbers.AsNoTracking().ToArrayAsync();
-            var products = await _context.Products.AsNoTracking().ToArrayAsync();
-            var services = await _context.Services.AsNoTracking().ToArrayAsync();
-            var pairs = new List<OrderProducts>();
 
             // Show only the relevant Orders to a Sales rep.
             if (User.IsInRole("Sales") && !User.IsInRole("Support"))
@@ -84,10 +77,48 @@ namespace NumberSearch.Ops.Pages
             if (!string.IsNullOrWhiteSpace(query))
             {
                 Query = query;
-                orders = orders.Where(x => x.BusinessName != null && x.BusinessName.Contains(Query)).ToList();
+
+                // Handle GUIDs
+                if (Query.Length is 36 && Guid.TryParse(Query, out var guidOutput))
+                {
+                    orders = orders.Where(x => x.OrderId == guidOutput).ToList();
+                }
+
+                if (orders.Count > 1)
+                {
+                    var searchResults = orders.Where(x => x.BusinessName != null
+                    && x.BusinessName.ToLowerInvariant().Contains(Query.ToLowerInvariant()))
+                        .ToList();
+
+                    // First Name
+                    searchResults.AddRange(orders.Where(x => !string.IsNullOrWhiteSpace(x.FirstName)
+                                    && x.FirstName.ToLowerInvariant().Contains(Query.ToLowerInvariant())));
+                    // Last Name
+                    searchResults.AddRange(orders.Where(x => !string.IsNullOrWhiteSpace(x.LastName)
+                                    && x.LastName.ToLowerInvariant().Contains(Query.ToLowerInvariant())));
+                    // First and Last Name
+                    searchResults.AddRange(orders.Where(x => !string.IsNullOrWhiteSpace(x.FirstName)
+                                    && !string.IsNullOrWhiteSpace(x.LastName)
+                                    && $"{x.FirstName} {x.LastName}".ToLowerInvariant().Contains(query.ToLowerInvariant())));
+
+                    // Phone Number
+                    searchResults.AddRange(orders.Where(x => !string.IsNullOrWhiteSpace(x.ContactPhoneNumber)
+                                    && x.ContactPhoneNumber.ToLowerInvariant().Contains(query.ToLowerInvariant())));
+
+                    orders = searchResults.Count > 0 ? searchResults : orders;
+                }
             }
 
-            foreach (var order in orders)
+            var portRequests = await _context.PortRequests.AsNoTracking().ToArrayAsync();
+            var productOrders = await _context.ProductOrders.AsNoTracking().ToArrayAsync();
+            var purchasedNumbers = await _context.PurchasedPhoneNumbers.AsNoTracking().ToArrayAsync();
+            var verifiedNumbers = await _context.VerifiedPhoneNumbers.AsNoTracking().ToArrayAsync();
+            var portedPhoneNumbers = await _context.PortedPhoneNumbers.AsNoTracking().ToArrayAsync();
+            var products = await _context.Products.AsNoTracking().ToArrayAsync();
+            var services = await _context.Services.AsNoTracking().ToArrayAsync();
+            var pairs = new List<OrderProducts>();
+
+            foreach (var order in orders.OrderByDescending(x => x.DateSubmitted))
             {
                 var orderProductOrders = productOrders.Where(x => x.OrderId == order.OrderId).ToArray();
                 var portRequest = portRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefault();

@@ -5,16 +5,70 @@
 }
 @using AccelerateNetworks.Operations;
 @model NumberSearch.Ops.Pages.OrdersModel
+<script type="text/javascript">
+    function handleSearchQuery(textBox) {
+        const routeStart = './Orders/Search';
+        fetch(`${routeStart}?query=${textBox.value}`)
+            .then(
+                function (response) {
+                    if (response.status !== 200) {
+                        console.log('Looks like there was a problem. Status Code: ' +
+                            response.status);
+                        return;
+                    }
+                    // Examine the text in the response
+                    response.json().then(function (data) {
+                        console.log(data);
+                        var options = '';
+                        for (var i = 0; i < data.length; i++) {
+                            options += '<option value="' + data[i] + '" />';
+                        }
+                        var datalist = document.createElement("datalist");
+                        datalist.id = 'realaccountoptions';
+                        datalist.innerHTML = options;
+                        var textBox = document.getElementById("searchInput");
+                        var check = document.getElementById('realaccountoptions');
+                        if (typeof (check) != 'undefined' && check != null) {
+                            check.remove();
+                        }
+                        textBox.appendChild(datalist);
+                        textBox.setAttribute('list', 'realaccountoptions');
+                        console.log(datalist);
+                    });
+                }
+            )
+            .catch(function (err) {
+                console.log('Fetch Error :-S', err);
+            });
+    }
+    function onInput(textBox) {
+        var val = document.getElementById("searchInput").value;
+        var check = document.getElementById('realaccountoptions');
+        if (typeof (check) != 'undefined' && check != null) {
+            var opts = document.getElementById('realaccountoptions').childNodes;
+            for (var i = 0; i < opts.length; i++) {
+                if (opts[i].value === val) {
+                    var form = document.getElementById("searchForm");
+                    form.submit();
+                }
+            }
+        }
+        handleSearchQuery(textBox);
+    }
+</script>
 <h1 class="display-4 p-3">🛒 Orders</h1>
 <div class="row">
-    <div class="col-xs-12 col-md-8 col-lg-6">
-        <form asp-page="./Orders" method="get">
+    <div class="col-xs-12 col-lg-6">
+        <form asp-page="./Orders" method="get" id="searchForm">
             <div class="input-group mb-3">
-                <input name="Query" value="@Model?.Query" type="text" class="form-control" placeholder="Filter by Business Name">
+                <input name="Query" id="searchInput" value="@Model?.Query" type="search" class="form-control" placeholder="Filter by Business Name or Name" onchange="handleSearchQuery(this)" autocomplete="off" oninput="onInput(this)">
                 <button class="btn btn-primary" type="submit" id="button-addon2">Filter</button>
                 <a class="btn btn-outline-secondary" href="./">Reset</a>
             </div>
         </form>
+    </div>
+    <div class="col-xs-12 col-lg-6">
+        <p>Enter the name of the business you'd like to find an Order for or the Name of the person who submitted that order. The search box will suggest unique Order and client names. Click on a suggestion to jump into the results. Not seeing what you're looking for? Type your filter in the box and click the Filter button and we'll search both Business and client names for a match. Want to see all Orders sorted from newest to oldest? Click the Reset button. Have the OrderId from the URL of an Order? Paste it into the search box and hit Enter.</p>
     </div>
 </div>
 <div class="table-responsive d-none d-md-block">

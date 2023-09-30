@@ -40,6 +40,72 @@ public class OrdersController : Controller
         _userManager = userManager;
     }
 
+    [HttpGet("/Orders/Search")]
+    public async Task<JsonResult> SearchOrdersAsync(string query)
+    {
+        // Show all orders
+        var orders = new List<Order>();
+
+        // Show only the relevant Orders to a Sales rep.
+        if (User.IsInRole("Sales") && !User.IsInRole("Support"))
+        {
+            var user = await _userManager.FindByNameAsync(User.Identity?.Name ?? string.Empty);
+
+            if (user is not null)
+            {
+                orders = await _context.Orders
+                    .Where(x => (x.Quote != true) && (x.SalesEmail == user.Email))
+                    .OrderByDescending(x => x.DateSubmitted)
+                    .AsNoTracking()
+                    .ToListAsync();
+            }
+            else
+            {
+                orders = await _context.Orders
+                    .Where(x => x.Quote != true)
+                    .OrderByDescending(x => x.DateSubmitted)
+                    .AsNoTracking()
+                    .ToListAsync();
+            }
+        }
+        else
+        {
+            orders = await _context.Orders
+                .Where(x => x.Quote != true)
+                .OrderByDescending(x => x.DateSubmitted)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            // Handle GUIDs
+            if (query.Length is 36 && Guid.TryParse(query, out var guidOutput))
+            {
+                orders = orders.Where(x => x.OrderId == guidOutput).ToList();
+            }
+
+            if (orders.Count > 1)
+            {
+                var searchResults = orders.Where(x => x.BusinessName != null
+                && x.BusinessName.ToLowerInvariant().Contains(query.ToLowerInvariant())).ToList();
+
+                // First and Last Name
+              searchResults.AddRange(orders.Where(x => !string.IsNullOrWhiteSpace(x.FirstName)
+                                && !string.IsNullOrWhiteSpace(x.LastName)
+                                && $"{x.FirstName} {x.LastName}".ToLowerInvariant().Contains(query.ToLowerInvariant())));
+
+                // Phone Number
+                searchResults.AddRange(orders.Where(x => !string.IsNullOrWhiteSpace(x?.ContactPhoneNumber)
+                && x.ContactPhoneNumber.Contains(query)));
+
+                orders = searchResults.Count > 0 ? searchResults : orders;
+            }
+        }
+
+      return new JsonResult(orders.Select(x => x?.BusinessName ?? $"{x?.FirstName} {x?.LastName}").Distinct().Take(5).ToArray());
+    }
+
     [Authorize]
     [Route("/Home/Order/")]
     [Route("/Home/Order/{orderId}")]
