@@ -605,7 +605,7 @@ namespace NumberSearch.Ingest
                 catch (FlurlHttpException ex)
                 {
                     var error = await ex.GetResponseStringAsync();
-                    Log.Error(error);
+                    Log.Error(ex.Message);
                 }
                 catch (Exception ex)
                 {

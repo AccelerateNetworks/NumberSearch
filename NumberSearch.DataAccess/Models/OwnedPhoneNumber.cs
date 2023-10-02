@@ -100,7 +100,7 @@ namespace NumberSearch.DataAccess
             await using var connection = new NpgsqlConnection(connectionString);
 
             // Set the creation date to now.
-            DateIngested = DateTime.Now;
+            DateUpdated = DateTime.Now;
 
             var result = await connection
                 .ExecuteAsync("UPDATE public.\"OwnedPhoneNumbers\" SET \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"Active\" = @Active, \"BillingClientId\" = @BillingClientId, \"OwnedBy\" = @OwnedBy, \"Notes\" = @Notes, \"SPID\" = @SPID, \"SPIDName\" = @SPIDName, \"LIDBCNAM\" = @LIDBCNAM, \"EmergencyInformationId\" = @EmergencyInformationId, \"DateUpdated\" = @DateUpdated, \"Status\" = @Status, \"FusionPBXClientId\" = @FusionPBXClientId, \"FPBXDomainId\" = @FPBXDomainId, \"FPBXDestinationId\" = @FPBXDestinationId, \"FPBXDomainName\" = @FPBXDomainName, \"FPBXDomainDescription\" = @FPBXDomainDescription, \"SMSRoute\" = @SMSRoute WHERE \"OwnedPhoneNumberId\" = @OwnedPhoneNumberId",

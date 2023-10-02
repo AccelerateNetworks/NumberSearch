@@ -186,7 +186,7 @@ namespace NumberSearch.Ingest
 
             var ownedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
 
-            foreach (var number in ownedNumbers)
+            foreach (var number in ownedNumbers.Where(x => x.Status == "Active"))
             {
                 bool updated = false;
                 try
@@ -203,7 +203,13 @@ namespace NumberSearch.Ingest
                     }
                     else
                     {
-                        Log.Error($"[OwnedNumbers] Could not verify SMS routing for {number.DialedNumber} with FirstPointCom. {JsonSerializer.Serialize(checkSMSRouting)}");
+                        Log.Error($"[OwnedNumbers] Could not verify SMS routing for {number.DialedNumber} with FirstPointCom. {checkSMSRouting.QueryResult.text}");
+                        // Update the owned number with the route.
+                        if (number.SMSRoute != checkSMSRouting.QueryResult.text)
+                        {
+                            number.SMSRoute = checkSMSRouting.QueryResult.text;
+                            updated = true;
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -214,7 +220,7 @@ namespace NumberSearch.Ingest
                 if (updated)
                 {
                     var checkUpdate = await number.PutAsync(connectionString);
-                    Log.Information($"[OwnedNumbers] Updated SMS routing for {number.DialedNumber} with FirstPointCom to {number.SMSRoute}.");
+                    Log.Information($"[OwnedNumbers] Updated SMS routing for {number.DialedNumber} with FirstPointCom.");
                 }
             }
 
@@ -308,7 +314,7 @@ namespace NumberSearch.Ingest
                 {
                     var results = await FirstPointComOwnedPhoneNumber.GetAsync(npa.ToString(), username, password).ConfigureAwait(false);
 
-                    Log.Information($"[OwnedNumbers] [FirstPointCom] Retrived {results.DIDOrder.Length} owned numbers.");
+                    Log.Information($"[OwnedNumbers] [FirstPointCom] Retrieved {results.DIDOrder.Length} owned numbers.");
 
                     foreach (var item in results.DIDOrder)
                     {
