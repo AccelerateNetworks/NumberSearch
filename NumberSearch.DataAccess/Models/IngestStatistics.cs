@@ -10,7 +10,7 @@ namespace NumberSearch.DataAccess
 {
     public class IngestStatistics
     {
-        public Guid? Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         public int NumbersRetrived { get; set; }
         public int IngestedNew { get; set; }
         public int FailedToIngest { get; set; }
@@ -18,10 +18,10 @@ namespace NumberSearch.DataAccess
         public int Unchanged { get; set; }
         public int Removed { get; set; }
         public string IngestedFrom { get; set; } = string.Empty;
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public bool Lock { get; set; }
-        public bool Priority { get; set; }
+        public DateTime StartDate { get; set; } = DateTime.Now;
+        public DateTime EndDate { get; set; } = DateTime.Now;
+        public bool Lock { get; set; } = false;
+        public bool Priority { get; set; } = false;
 
         public enum IngestSource
         {
@@ -72,32 +72,8 @@ namespace NumberSearch.DataAccess
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"Ingests\"( \"NumbersRetrived\", \"IngestedNew\", \"FailedToIngest\", \"UpdatedExisting\", \"Unchanged\", \"Removed\", \"IngestedFrom\", \"StartDate\", \"EndDate\", \"Lock\", \"Priority\") " +
-                "VALUES (@NumbersRetrived, @IngestedNew, @FailedToIngest, @UpdatedExisting, @Unchanged, @Removed, @IngestedFrom, @StartDate, @EndDate, @Lock, @Priority)", new { NumbersRetrived, IngestedNew, FailedToIngest, UpdatedExisting, Unchanged, Removed, IngestedFrom, StartDate, EndDate, Lock, Priority })
-                .ConfigureAwait(false);
-
-            if (result == 1)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Update a phone number that already exists in the database.
-        /// </summary>
-        /// <param name="connectionString"></param>
-        /// <returns></returns>
-        public async Task<bool> PutAsync(string connectionString)
-        {
-            await using var connection = new NpgsqlConnection(connectionString);
-
-            var result = await connection
-                .ExecuteAsync("UPDATE public.\"Ingests\" SET \"Id\" = @Id, \"NumbersRetrived\" = @NumbersRetrived, \"IngestedNew\" = @IngestedNew, \"FailedToIngest\" = @FailedToIngest, \"UpdatedExisting\" = @UpdatedExisting, \"Unchanged\" = @Unchanged, \"Removed\" = @Removed, \"IngestedFrom\" = @IngestedFrom, \"StartDate\" = @StartDate, \"EndDate\" = @EndDate, \"Lock\" = @Lock, \"Priority\" = @Priority WHERE \"Id\" = @Id",
-                new { Id, NumbersRetrived, IngestedNew, FailedToIngest, UpdatedExisting, Unchanged, Removed, IngestedFrom, StartDate, EndDate, Lock, Priority })
+                .ExecuteAsync("INSERT INTO public.\"Ingests\"(\"Id\", \"NumbersRetrived\", \"IngestedNew\", \"FailedToIngest\", \"UpdatedExisting\", \"Unchanged\", \"Removed\", \"IngestedFrom\", \"StartDate\", \"EndDate\", \"Lock\", \"Priority\") " +
+                "VALUES (@Id, @NumbersRetrived, @IngestedNew, @FailedToIngest, @UpdatedExisting, @Unchanged, @Removed, @IngestedFrom, @StartDate, @EndDate, @Lock, @Priority)", new { Id, NumbersRetrived, IngestedNew, FailedToIngest, UpdatedExisting, Unchanged, Removed, IngestedFrom, StartDate, EndDate, Lock, Priority })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -113,11 +89,6 @@ namespace NumberSearch.DataAccess
         public async Task<bool> DeleteAsync(string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);
-
-            if (!Id.HasValue)
-            {
-                return false;
-            }
 
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"Ingests\" WHERE \"Id\" = @Id", new { Id })
