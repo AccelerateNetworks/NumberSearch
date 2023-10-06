@@ -130,6 +130,12 @@ namespace NumberSearch.Ops.Controllers
                     result.AlertType = "alert-danger";
                 }
             }
+
+            // Refresh the status
+            if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+            {
+                var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration>();
+            }
             var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
@@ -222,7 +228,11 @@ namespace NumberSearch.Ops.Controllers
                 result.Message = $"❌ Dialed number is invalid. {toEmail.DialedNumber}";
                 result.AlertType = "alert-danger";
             }
-
+            // Refresh the status
+            if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+            {
+                var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration>();
+            }
             var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
@@ -244,6 +254,11 @@ namespace NumberSearch.Ops.Controllers
                 var request = await $"{_baseUrl}client/register".WithOAuthBearerToken(_messagingToken).PostJsonAsync(registrationRequest);
                 var response = await request.GetJsonAsync<RegistrationResponse>();
                 message = $"✔️ Reregistration complete! {response.Message}";
+            }
+            // Refresh the status
+            if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+            {
+                var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration>();
             }
             var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();

@@ -296,7 +296,7 @@ try
                 // Verify that this number is routed through our upstream provider.
                 var checkRouted = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber, firstPointUsername, firstPointPassword);
                 registration.RegisteredUpstream = checkRouted.QueryResult.code is 0 && checkRouted.epid is 265;
-                registration.UpstreamStatusDescription = checkRouted.QueryResult.text;
+                registration.UpstreamStatusDescription = $"{checkRouted?.eptype} {checkRouted?.additional} {checkRouted?.QueryResult.text}".Trim();
 
                 // Don't pollute the registrations with 1 prefixed numbers.
                 registration.AsDialed = asDialedNumber.DialedNumber;
