@@ -51,6 +51,8 @@ variables:
   ConnectionStrings.FusionPBXPassword: $(FusionPBXPassword)
   ConnectionStrings.MessagingAPIJWT: $(MessagingAPIJWT)
   ConnectionStrings.MessagingURL: $(MessagingURL)
+  ConnectionStrings.TwilioUsername: $(TwilioUsername)
+  ConnectionStrings.TwilioPassword: $(TwilioPassword)
   ApplicationInsights.InstrumentationKey: $(AIInstrumentationKey)
   ApplicationInsights.ConnectionString: $(AIConnectionString)
 
