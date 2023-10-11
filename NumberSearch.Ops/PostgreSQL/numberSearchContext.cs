@@ -502,6 +502,10 @@ public partial class numberSearchContext : DbContext
             entity.Property(e => e.SMSRoute)
 .HasColumnType("character varying")
 .HasColumnName("SMSRoute");
+
+            entity.Property(e => e.TwilioCarrierName)
+.HasColumnType("character varying")
+.HasColumnName("TwilioCarrierName");
         });
 
         modelBuilder.Entity<PhoneMenuOption>(entity =>

@@ -24,5 +24,6 @@ namespace AccelerateNetworks.Operations
         public string? FPBXDomainName { get; set; } = string.Empty;
         public string? FPBXDomainDescription { get; set; } = string.Empty;
         public string? SMSRoute { get; set; } = string.Empty;
+        public string? TwilioCarrierName { get; set; } = string.Empty;
     }
 }

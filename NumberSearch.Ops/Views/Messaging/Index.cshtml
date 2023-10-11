@@ -91,6 +91,7 @@
                 <th>Phone Number</th>
                 <th>Registered Upstream?</th>
                 <th>Upstream Status Description</th>
+                <th>Carrier Name</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -100,14 +101,16 @@
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(result.AsDialed, out var phoneNumber);
                 var ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == phoneNumber.DialedNumber);
                 string AsDialedLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{result.AsDialed}</a>" : result.AsDialed;
-
+                string Carrier = checkParse && ownedPhoneNumber is not null ? ownedPhoneNumber?.TwilioCarrierName ?? "No Data" : "No Data";
                 <tr>
                     <td>@Html.Raw(AsDialedLink)</td>
                     <td>@result.RegisteredUpstream</td>
                     <td>@result.UpstreamStatusDescription</td>
+                    <td>@Carrier</td>
                     <td>
                         <a class="btn btn-primary" href="/Messaging/RefreshStatus?dialedNumber=@result.AsDialed">Refresh Upstream</a>
                         <a class="btn btn-primary" href="/Messaging/Reregister?dialedNumber=@result.AsDialed">Reregister</a>
+                        <a class="btn btn-primary" href="/Messaging/TwilioCarrier?dialedNumber=@result.AsDialed">Refresh Carrier</a>
                     </td>
                 </tr>
             }

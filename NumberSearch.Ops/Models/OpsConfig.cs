@@ -29,5 +29,7 @@
         public string TeleDynamicsPassword { get; set; } = string.Empty;
         public string MessagingAPIJWT { get; set; } = string.Empty;
         public string MessagingURL { get; set; } = string.Empty;
+        public string TwilioUsername { get; set; } = string.Empty;
+        public string TwilioPassword { get; set; } = string.Empty;
     }
 }

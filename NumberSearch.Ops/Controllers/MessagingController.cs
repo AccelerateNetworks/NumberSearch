@@ -1,28 +1,22 @@
 ﻿using AccelerateNetworks.Operations;
 
-using Amazon.S3.Model;
-
-using Azure;
-
 using FirstCom;
 
 using Flurl.Http;
 
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.Elfie.Model.Structures;
 using Microsoft.EntityFrameworkCore;
 
 using Models;
 
+using NumberSearch.DataAccess.Twilio;
 using NumberSearch.Ops.Models;
 
 using Serilog;
 
 using System;
 using System.Linq;
-using System.Reflection.Metadata;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Ops.Controllers
@@ -263,6 +257,57 @@ namespace NumberSearch.Ops.Controllers
             var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             return View("Index", new MessagingResult { ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray(), Owned = ownedNumbers, Message = message, AlertType = alertType });
+        }
+
+        [Authorize]
+        [Route("/Messaging/TwilioCarrier")]
+        public async Task<IActionResult> TwilioCarrierAsync(string dialedNumber)
+        {
+            var result = new MessagingResult { AlertType = "alert-success" };
+            bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
+            if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+            {
+                try
+                {
+                    var response = await LineTypeIntelligenceResponse.GetByDialedNumberAsync(phoneNumber.DialedNumber, _config.TwilioUsername, _config.TwilioPassword);
+                    if (!string.IsNullOrWhiteSpace(response.line_type_intelligence.carrier_name))
+                    {
+                        // Update the owned number record
+                        var owned = await _context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == phoneNumber.DialedNumber);
+                        if (owned is not null)
+                        {
+                            owned.TwilioCarrierName = response.line_type_intelligence.carrier_name.Trim();
+                            await _context.SaveChangesAsync();
+                            result.Message = $"✔️ Refreshed Carrier Name from Twilio! {owned.TwilioCarrierName}";
+                        }
+                        else
+                        {
+                            result.Message = $"❌ Could not match {phoneNumber.DialedNumber} to an Owned Phone Number. {response.line_type_intelligence.carrier_name}";
+                        }
+                    }
+                    else
+                    {
+                        result.Message = $"❌ Twilio has no Carrier Name for this {phoneNumber.DialedNumber}.";
+                    }
+                }
+                catch (FlurlHttpException ex)
+                {
+                    result.RegistrationRequest = new RegistrationRequest { DialedNumber = dialedNumber };
+                    result.Message = $"❓Failed to query Twilio. {await ex.GetResponseStringAsync()}";
+                    result.AlertType = "alert-warning";
+                }
+                catch (Exception ex)
+                {
+                    result.Message = $"{ex.Message} {ex.StackTrace}";
+                    result.AlertType = "alert-danger";
+                }
+            }
+
+            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
+            var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
+            result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
+            result.Owned = ownedNumbers;
+            return View("Index", result);
         }
     }
 }
