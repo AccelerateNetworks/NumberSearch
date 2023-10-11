@@ -164,7 +164,8 @@ namespace NumberSearch.Mvc.Controllers
                     }
 
                     // This is free
-                    var checkNumber = await PhoneNumberLookup.GetByDialedNumberAsync(dialedNumber.Length is 10 ? $"1{dialedNumber}" : dialedNumber, _postgresql);
+                    //var checkNumber = await PhoneNumberLookup.GetByDialedNumberAsync(dialedNumber.Length is 10 ? $"1{dialedNumber}" : dialedNumber, _postgresql);
+                    PhoneNumberLookup checkNumber = null!;
 
                     bool freshQuery = false;
                     // Lookup the number.
