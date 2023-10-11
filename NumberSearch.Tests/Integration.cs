@@ -8,6 +8,7 @@ using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.LCGuide;
 using NumberSearch.DataAccess.Models;
 using NumberSearch.DataAccess.TeleDynamics;
+using NumberSearch.DataAccess.Twilio;
 using NumberSearch.Mvc.Models;
 
 using ServiceReference1;
@@ -372,6 +373,7 @@ namespace NumberSearch.Tests
         //    Assert.True(checkDelete.is_deleted);
         //}
 
+        // Disabled because it costs money
         //[Fact]
         //public async Task LRNLookupTestAsync()
         //{
@@ -386,6 +388,22 @@ namespace NumberSearch.Tests
         //    Assert.False(string.IsNullOrWhiteSpace(result.status));
         //    Assert.True(result.code == 200);
         //    Assert.False(string.IsNullOrWhiteSpace(result.data.lrn));
+        //    output.WriteLine(JsonSerializer.Serialize(result));
+        //}
+
+        // Disabled because it costs money
+        //[Fact]
+        //public async Task CarrierLookupTestAsync()
+        //{
+        //    // Arrange
+        //    string phoneNumber = "2065579450";
+
+        //    // Act
+        //    var result = await LineTypeIntelligenceResponse.GetByDialedNumberAsync(phoneNumber, _configuration.TwilioUsername, _configuration.TwilioPassword);
+
+        //    // Assert        
+        //    Assert.NotNull(result);
+        //    Assert.False(string.IsNullOrWhiteSpace(result.line_type_intelligence.carrier_name));
         //    output.WriteLine(JsonSerializer.Serialize(result));
         //}
 

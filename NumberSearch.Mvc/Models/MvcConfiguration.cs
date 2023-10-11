@@ -33,5 +33,7 @@
         public string CallWithUsAPIKEY { get; set; } = string.Empty;
         public string FusionPBXUsername { get; set; } = string.Empty;
         public string FusionPBXPassword { get; set; } = string.Empty;
+        public string TwilioUsername { get; set; } = string.Empty;
+        public string TwilioPassword { get; set; } = string.Empty;
     }
 }
