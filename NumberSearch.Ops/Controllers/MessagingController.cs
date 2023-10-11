@@ -270,7 +270,7 @@ namespace NumberSearch.Ops.Controllers
                 try
                 {
                     var response = await LineTypeIntelligenceResponse.GetByDialedNumberAsync(phoneNumber.DialedNumber, _config.TwilioUsername, _config.TwilioPassword);
-                    if (!string.IsNullOrWhiteSpace(response.line_type_intelligence.carrier_name))
+                    if (!string.IsNullOrWhiteSpace(response.line_type_intelligence?.carrier_name))
                     {
                         // Update the owned number record
                         var owned = await _context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == phoneNumber.DialedNumber);

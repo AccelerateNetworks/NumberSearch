@@ -15,7 +15,7 @@ namespace NumberSearch.DataAccess.Twilio
         public string country_code { get; set; }
         public object disposable_phone_number_risk { get; set; }
         public object identity_match { get; set; }
-        public LineTypeIntelligence line_type_intelligence { get; set; }
+        public LineTypeIntelligence line_type_intelligence { get; set; } = new();
         public object live_activity { get; set; }
         public string national_format { get; set; }
         public string phone_number { get; set; }
