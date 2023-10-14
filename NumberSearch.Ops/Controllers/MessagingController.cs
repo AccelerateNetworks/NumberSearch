@@ -260,6 +260,39 @@ namespace NumberSearch.Ops.Controllers
         }
 
         [Authorize]
+        [Route("/Messaging/Remove")]
+        public async Task<IActionResult> RemoveAsync(string dialedNumber)
+        {
+            var result = new MessagingResult { AlertType = "alert-success" };
+            bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
+            if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+            {
+                try
+                {
+                    var request = await $"{_baseUrl}client/remove?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(_messagingToken).PostAsync();
+                    var response = await request.GetStringAsync();
+                    result.Message = $"✔️ Reregistration removed! {response}";
+                }
+                catch (FlurlHttpException ex)
+                {
+                    result.Message = $"❓Failed to removed this registration. {await ex.GetResponseStringAsync()}";
+                    result.AlertType = "alert-warning";
+                }
+                catch (Exception ex)
+                {
+                    result.Message = $"{ex.Message} {ex.StackTrace}";
+                    result.AlertType = "alert-danger";
+                }
+            }
+
+            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
+            var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
+            result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
+            result.Owned = ownedNumbers;
+            return View("Index", result);
+        }
+
+        [Authorize]
         [Route("/Messaging/TwilioCarrier")]
         public async Task<IActionResult> TwilioCarrierAsync(string dialedNumber)
         {
