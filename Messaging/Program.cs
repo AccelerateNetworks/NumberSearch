@@ -720,6 +720,40 @@ try
     })
         .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Register a client for message forwarding.", Description = "Boy I wish I had more to say about this, lmao." });
 
+    app.MapPost("/client/remove", async Task<Results<Ok<string>, BadRequest<string>>> (string asDialed, MessagingContext db) =>
+    {
+        var checkAsDialed = PhoneNumbersNA.PhoneNumber.TryParse(asDialed, out var asDialedNumber);
+        if (!checkAsDialed)
+        {
+            return TypedResults.BadRequest($"Dialed number {asDialed} couldn't be parsed as a valid NANP (North American Number Plan) number.");
+        }
+
+        string message = string.Empty;
+        string dialedNumber = asDialedNumber.Type is not PhoneNumbersNA.NumberType.ShortCode ? $"1{asDialedNumber.DialedNumber}" : asDialedNumber.DialedNumber;
+
+        try
+        {
+            // Update existing registrations before creating new ones.
+            var existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == asDialedNumber.DialedNumber).FirstOrDefaultAsync();
+
+            if (existingRegistration is not null)
+            {
+                db.Remove(existingRegistration);
+                await db.SaveChangesAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex.Message);
+            Log.Error(ex.StackTrace ?? "No stack trace found.");
+            return TypedResults.BadRequest($"Failed to save the registration to the database. Please email dan@acceleratenetworks.com to report this outage. {ex.Message}");
+        }
+
+        return TypedResults.Ok($"The registration for {asDialed} has been removed.");
+    })
+    .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Register a client for message forwarding.", Description = "Boy I wish I had more to say about this, lmao." });
+
+
     app.MapGet("/message/all", async Task<Results<Ok<MessageRecord[]>, NotFound<string>, BadRequest<string>>> (MessagingContext db, string? asDialed) =>
     {
         if (string.IsNullOrWhiteSpace(asDialed))
