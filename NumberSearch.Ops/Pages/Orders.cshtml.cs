@@ -105,7 +105,7 @@ namespace NumberSearch.Ops.Pages
                     searchResults.AddRange(orders.Where(x => !string.IsNullOrWhiteSpace(x.ContactPhoneNumber)
                                     && x.ContactPhoneNumber.ToLowerInvariant().Contains(query.ToLowerInvariant())));
 
-                    orders = searchResults.Count > 0 ? searchResults : orders;
+                    orders = searchResults.Distinct().ToList();
                 }
             }
 
