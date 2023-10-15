@@ -144,11 +144,77 @@
     <div class="alert alert-secondary mt-3" role="alert">
         Please call <a href="tel:206-858-8757" class="h5">(206) 858-8757</a> for immediate help filling out this form. You can also email us at <a href="mailto:support@acceleratenetworks.com">support@acceleratenetworks.com</a>.
     </div>
-    <div class="row">
-        <form method="post">
-            <input type="text" class="form-control" asp-for="NewClient.NewClientId" id="newClientId" hidden>
-            <input type="text" class="form-control" asp-for="NewClient.OrderId" id="orderId" hidden>
-            <input type="text" class="form-control" asp-for="NewClient.BillingClientId" id="billingId" hidden>
+    <form method="post">
+        <input type="text" class="form-control" asp-for="NewClient.NewClientId" id="newClientId" hidden>
+        <input type="text" class="form-control" asp-for="NewClient.OrderId" id="orderId" hidden>
+        <input type="text" class="form-control" asp-for="NewClient.BillingClientId" id="billingId" hidden>
+        <h4 class="mb-3 mt-3">Internet Connection</h4>
+        <div class="row">
+            <div class="col-4">
+                <label for="ispname">Internet Service Provider (ISP) </label>
+                <input type="text" class="form-control" id="ispname" asp-for="NewClient.ISP" placeholder="Comcast">
+                <small class="text-muted">
+                    Who is your Internet Service Provider? (ex. Comcast)
+                </small>
+            </div>
+            <div class="col-4">
+                <label for="recontractingdate">Contract Start Date</label>
+                <input type="datetime-local" class="form-control" asp-for="NewClient.ContractStartDate" id="recontractingdate">
+                <small class="text-muted">
+                    When did your contract start with your ISP?
+                </small>
+            </div>
+            <div class="col-4 mb-3">
+                <label for="term">Term Commitment in Months</label>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="term" asp-for="NewClient.ContractCommitmentMonths" placeholder="6">
+                    <div class="input-group-append">
+                        <span class="input-group-text" id="basic-addon2">Months</span>
+                    </div>
+                    <small class="text-muted">
+                        For how long are you committed to your current ISP?
+                    </small>
+                </div>
+            </div>
+            <div class="col-4">
+                <label for="internetcost">Monthly Cost</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">$</span>
+                    </div>
+                    <input type="number" class="form-control" id="internetcost" asp-for="NewClient.ContractMonthlyCost" placeholder="200">
+                    <small class="text-muted">
+                        What are you paying per month for internet service?
+                    </small>
+                </div>
+            </div>
+            <div class="col-4">
+                <label for="upload">Upload Speed</label>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="upload" asp-for="NewClient.UploadSpeed" placeholder="1000">
+                    <div class="input-group-append">
+                        <span class="input-group-text" id="basic-addon2">Mbps</span>
+                    </div>
+                    <small class="text-muted">
+                        What is you internet upload speed? Test <a href="https://speed.cloudflare.com/" target="_blank">here</a>.
+                    </small>
+                </div>
+            </div>
+            <div class="col-4 mb-3">
+                <label for="download">Download Speed</label>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="download" asp-for="NewClient.DownloadSpeed" placeholder="100">
+                    <div class="input-group-append">
+                        <span class="input-group-text" id="basic-addon2">Mbps</span>
+                    </div>
+                    <small class="text-muted">
+                        What is you internet download speed? Test <a href="https://speed.cloudflare.com/" target="_blank">here</a>.
+                    </small>
+                </div>
+            </div>
+        </div>
+        <h4 class="mb-3 mt-3">Phone Tree</h4>
+        <div class="row">
             <div class="col">
                 <p>Who will be using each phone? Does anyone need an extension without a phone (eg: Voicemail to email or Mobile/PC app only)? What is each user’s email address? Do you have any extensions currently?</p>
                 <div class="table-responsive">
@@ -631,7 +697,6 @@
                         </div>
                     </div>
                 </div>
-
                 <p class="mt-3">Is there any custom hold music you would prefer to use? By default we play Claire De Lune and a few other classical songs as your music on hold.</p>
                 <div class="input-group">
                     <div class="form-group">
@@ -725,12 +790,10 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col">
                 <button type="submit" class="btn btn-success btn-lg btn-block mt-3"> Submit </button>
             </div>
-        </form>
-    </div>
+        </div>
+    </form>
     <div class="alert alert-secondary mt-3" role="alert">
         Please call <a href="tel:206-858-8757" class="h5">(206) 858-8757</a> for immedate help filling out this form. You can also email us at <a href="mailto:support@acceleratenetworks.com">support@acceleratenetworks.com</a>.
     </div>
