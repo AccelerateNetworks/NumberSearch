@@ -1159,7 +1159,7 @@ Accelerate Networks
                                                 order.UpfrontInvoiceLink = oneTimeLink;
                                             }
 
-                                            confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} and {createNewReoccurringInvoice.number} - Accelerate Networks";
+                                            confirmationEmail.Subject = $"Order {createNewOneTimeInvoice.number} and {createNewReoccurringInvoice.number} - Accelerate Networks";
                                             confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
@@ -1226,7 +1226,7 @@ Accelerate Networks
                                                 order.UpfrontInvoiceLink = oneTimeLink;
                                             }
 
-                                            confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} and {createNewReoccurringInvoice.number} - Accelerate Networks";
+                                            confirmationEmail.Subject = $"Order {createNewOneTimeInvoice.number} and {createNewReoccurringInvoice.number} - Accelerate Networks";
                                             confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
@@ -1280,7 +1280,7 @@ Accelerate Networks
                                                 order.UpfrontInvoiceLink = oneTimeLink;
                                             }
 
-                                            confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} - Accelerate Networks";
+                                            confirmationEmail.Subject = $"Order {createNewOneTimeInvoice.number} - Accelerate Networks";
                                             confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
