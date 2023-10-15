@@ -78,27 +78,36 @@
         <div class="col">
             <div class="d-grid gap-2">
                 <a href="https://acceleratenetworks.com/cart/order/@Model?.Order?.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                    Customer's View
+                    Client's View
                 </a>
             </div>
         </div>
         <div class="col">
             <div class="d-grid gap-2">
                 <a href="/Home/Emails/@Model?.Order?.OrderId" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
-                    View Related Emails
+                    Related Emails
                 </a>
             </div>
         </div>
-        <div class="col">
-            @if (Model?.PortRequest is not null && Model?.Order is not null && Model.PortRequest.OrderId == Model.Order.OrderId)
-            {
+        @if (Model?.PortRequest is not null && Model?.Order is not null && Model.PortRequest.OrderId == Model.Order.OrderId)
+        {
+            <div class="col">
+
                 <div class="d-grid gap-2">
                     <a href="/Home/PortRequests/@Model?.Order?.OrderId" class="btn btn-info text-white">
-                        Edit Related Port Request
+                        Related Port Request
                     </a>
                 </div>
-            }
-        </div>
+            </div>
+            <div class="col">
+
+                <div class="d-grid gap-2">
+                    <a href="/Home/PortRequests/@Model?.Order?.OrderId" class="btn btn-warning text-white">
+                        New Client Worksheet
+                    </a>
+                </div>
+            </div>
+        }
         <div class="col">
             <div class="mb-3">
                 <div class="form-check form-switch">

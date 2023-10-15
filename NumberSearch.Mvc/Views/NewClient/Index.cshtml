@@ -134,15 +134,15 @@
     <div class="container py-5 py-md-6 py-lg-7 mb-7 text-center">
         <div class="row justify-content-center">
             <div class="col-lg-10 col-md-11">
-                <h1 class="display-3 text-light">Tell us what you need</h1>
-                <p class="lead text-white">Help us get you all setup as our newest client.</p>
+                <h1 class="display-3 text-light">New Client Worksheet</h1>
+                <p class="lead text-white">Help us get you setup.</p>
             </div>
         </div>
     </div>
 </section>
 <div class="container">
     <div class="alert alert-secondary mt-3" role="alert">
-        Please call <a href="tel:206-858-8757" class="h5">(206) 858-8757</a> for immedate help filling out this form. You can also email us at <a href="mailto:support@acceleratenetworks.com">support@acceleratenetworks.com</a>.
+        Please call <a href="tel:206-858-8757" class="h5">(206) 858-8757</a> for immediate help filling out this form. You can also email us at <a href="mailto:support@acceleratenetworks.com">support@acceleratenetworks.com</a>.
     </div>
     <div class="row">
         <form method="post">
@@ -275,7 +275,7 @@
                     </div>
                 </div>
                 <div class="input-group mt-3" id="phoneMenuTextAreaDescription">
-                    <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.PhonesToRingOrMenuDescription" placeholder="What would you like your menu to say? Eg: Thanks for calling Business Name, press 1 for..."></textarea>
+                    <textarea class="form-control" rows="4" aria-label="With textarea" asp-for="NewClient.PhonesToRingOrMenuDescription" placeholder="What would you like your menu to say? Eg: Thanks for calling Business Name, press 1 for..."></textarea>
                 </div>
                 <div class="table-responsive" id="phoneMenuTable">
                     <table class="table table-borderless table-hover table-striped">
@@ -335,7 +335,7 @@
                 </div>
                 <p class="mt-3">What are your business hours? Do you want calls to route directly to voicemail or a menu after business hours or during lunch? </p>
                 <div class="input-group">
-                    <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.BusinessHours"></textarea>
+                    <textarea class="form-control" rows="2" aria-label="With textarea" asp-for="NewClient.BusinessHours"></textarea>
                 </div>
                 <p class="mt-3">Confirm whose voicemail box should receive calls outside of business hours.</p>
                 <div class="input-group">
@@ -435,7 +435,7 @@
                     </div>
                 </div>
                 <div class="input-group" id="TextingServiceTextArea">
-                    <input type="text" class="form-control" asp-for="NewClient.TextingServiceName" aria-label="TextingServiceName" aria-describedby="basic-addon1" placeholder="What are your Texting Services called?">
+                    <input type="text" class="form-control" rows="4" asp-for="NewClient.TextingServiceName" aria-label="TextingServiceName" aria-describedby="basic-addon1" placeholder="What are your Texting Services called?">
                 </div>
                 <p class="mt-3">Do you use any overhead paging speakers? What speakers and amplifier are in use, we recommend using a Snom PA1 paging adapter with most speaker systems.</p>
                 <div class="input-group">
@@ -465,7 +465,7 @@
                     </div>
                 </div>
                 <div class="input-group" id="OverheadPagingTextArea">
-                    <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.OverheadPagingDescription" placeholder=" What speakers and amplifier are in use, we recommend using a Snom PA1 paging adapter with most speaker systems."></textarea>
+                    <textarea class="form-control" rows="4" aria-label="With textarea" asp-for="NewClient.OverheadPagingDescription" placeholder="What speakers and amplifier are in use, we recommend using a Snom PA1 paging adapter with most speaker systems."></textarea>
                 </div>
                 <p class="mt-3">
                     Who do you intercom? Can they talk back to you or is it one way audio?
@@ -497,7 +497,7 @@
                     </div>
                 </div>
                 <div class="input-group" id="IntercomTextArea">
-                    <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.IntercomDescription" placeholder="Can they talk back to you or is it one way audio?"></textarea>
+                    <textarea class="form-control" rows="4" aria-label="With textarea" asp-for="NewClient.IntercomDescription" placeholder="Can they talk back to you or is it one way audio?"></textarea>
                 </div>
                 <p class="mt-3" id="IntercomInstructions">
                     List any intercom keys that should be configured below:
@@ -660,7 +660,7 @@
                     </div>
                 </div>
                 <div class="input-group" id="CustomMusicTextArea">
-                    <textarea class="form-control" aria-label="With textarea" asp-for="NewClient.HoldMusicDescription" placeholder="Is there any custom hold music you would prefer to use? By default we play Claire De Lune and a few other classical songs as your music on hold."></textarea>
+                    <textarea class="form-control" rows="4" aria-label="With textarea" asp-for="NewClient.HoldMusicDescription" placeholder="Is there any custom hold music you would prefer to use? By default we play Claire De Lune and a few other classical songs as your music on hold."></textarea>
                 </div>
                 <p class="mt-3">When a phone is offline, should calls be forwarded anywhere special? By default they will reach your voicemail or after hours menu.</p>
                 <div class="input-group">

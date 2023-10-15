@@ -5,7 +5,6 @@ using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OutputCaching;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.InvoiceNinja;
