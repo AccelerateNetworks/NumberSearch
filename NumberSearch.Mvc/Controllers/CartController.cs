@@ -966,7 +966,7 @@ Accelerate Networks
                                                 order.UpfrontInvoiceLink = oneTimeLink;
                                             }
 
-                                            confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} and {createNewReoccurringInvoice.number} from Accelerate Networks";
+                                            confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} and {createNewReoccurringInvoice.number} - Accelerate Networks";
                                             confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
@@ -1023,7 +1023,7 @@ Accelerate Networks
                                                 order.ReoccuringInvoiceLink = reoccurringLink;
                                             }
 
-                                            confirmationEmail.Subject = $"Quote {createNewReoccurringInvoice.number} from Accelerate Networks";
+                                            confirmationEmail.Subject = $"Quote {createNewReoccurringInvoice.number} - Accelerate Networks";
                                             confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
@@ -1077,7 +1077,7 @@ Accelerate Networks
                                                 order.UpfrontInvoiceLink = oneTimeLink;
                                             }
 
-                                            confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} from Accelerate Networks";
+                                            confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} - Accelerate Networks";
                                             confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
@@ -1159,7 +1159,7 @@ Accelerate Networks
                                                 order.UpfrontInvoiceLink = oneTimeLink;
                                             }
 
-                                            confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} and {createNewReoccurringInvoice.number} from Accelerate Networks";
+                                            confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} and {createNewReoccurringInvoice.number} - Accelerate Networks";
                                             confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
@@ -1226,7 +1226,7 @@ Accelerate Networks
                                                 order.UpfrontInvoiceLink = oneTimeLink;
                                             }
 
-                                            confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} and {createNewReoccurringInvoice.number} from Accelerate Networks";
+                                            confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} and {createNewReoccurringInvoice.number} - Accelerate Networks";
                                             confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
@@ -1280,7 +1280,7 @@ Accelerate Networks
                                                 order.UpfrontInvoiceLink = oneTimeLink;
                                             }
 
-                                            confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} from Accelerate Networks";
+                                            confirmationEmail.Subject = $"Quote {createNewOneTimeInvoice.number} - Accelerate Networks";
                                             confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
