@@ -30,7 +30,6 @@ namespace NumberSearch.Mvc.Controllers
         private readonly string _emailSupport;
         private readonly MvcConfiguration _configuration;
 
-
         public CartController(MvcConfiguration mvcConfiguration)
         {
             _postgresql = mvcConfiguration.PostgresqlProd;

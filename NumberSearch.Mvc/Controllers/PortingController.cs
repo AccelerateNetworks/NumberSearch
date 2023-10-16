@@ -268,7 +268,7 @@ namespace NumberSearch.Mvc.Controllers
                     portRequest.BillImagePath = fileName;
 
                     Log.Information($"[Port Request] BlobContainer: {containerClient.Name} BlobClient: {blobClient.Name}");
-                    Log.Information("[Port Request] Successfuly saved the bill image to the server and attached it to the confirmation email.");
+                    Log.Information("[Port Request] Successfully saved the bill image to the server and attached it to the confirmation email.");
                 }
                 catch (Exception ex)
                 {

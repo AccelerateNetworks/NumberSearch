@@ -6,9 +6,17 @@
 
     var orderedPhones = Model?.ProductOrders?.Where(x => x.ProductId != Guid.Empty).ToArray();
 }
+
+@*https://stackoverflow.com/questions/48613992/bootstrap-4-file-input-doesnt-show-the-file-name*@
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js"></script>
+
+
 <script type="text/javascript">
     $(document).ready(function () {
 
+        bsCustomFileInput.init()
         phoneMenuDiscription();
         textingServiceDescription();
         overheadPagingDescription();
@@ -144,7 +152,8 @@
     <div class="alert alert-secondary mt-3" role="alert">
         Please call <a href="tel:206-858-8757" class="h5">(206) 858-8757</a> for immediate help filling out this form. You can also email us at <a href="mailto:support@acceleratenetworks.com">support@acceleratenetworks.com</a>.
     </div>
-    <form method="post">
+    <form asp-controller="NewClient" asp-action="AddNewClientInformation" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
         <input type="text" class="form-control" asp-for="NewClient.NewClientId" id="newClientId" hidden>
         <input type="text" class="form-control" asp-for="NewClient.OrderId" id="orderId" hidden>
         <input type="text" class="form-control" asp-for="NewClient.BillingClientId" id="billingId" hidden>
@@ -200,7 +209,7 @@
                     </small>
                 </div>
             </div>
-            <div class="col-4 mb-3">
+            <div class="col-4">
                 <label for="download">Download Speed</label>
                 <div class="input-group">
                     <input type="number" class="form-control" id="download" asp-for="NewClient.DownloadSpeed" placeholder="100">
@@ -211,6 +220,36 @@
                         What is you internet download speed? Test <a href="https://speed.cloudflare.com/" target="_blank">here</a>.
                     </small>
                 </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <p class="mt-3">
+                    What router is the client using? Include the manufacturer's name and the model number of the router.
+                </p>
+                <div class="input-group">
+                    <input type="text" class="form-control" aria-label="router" aria-describedby="basic-addon1" asp-for="NewClient.ClientRouter" placeholder="Linksys T54W">
+                </div>
+                <p class="mt-3">
+                    Who is the client's IT vendor? What their primary contact is at said vendor (name, email & phone #)
+                </p>
+                <div class="input-group mb-3">
+                    <textarea class="form-control" rows="2" aria-label="With textarea" asp-for="NewClient.ClientITVendor" placeholder="Quick IT group Mike Mann mike@quickit.com 2065553456"></textarea>
+                </div>
+                <label for="inputGroupFile02">Networking Cabinet</label>
+                <div class="input-group">
+                    <div class="custom-file">
+                        <input asp-for="NewClient.BillImage" type="file" class="custom-file-input" id="inputGroupFile02" />
+                        <span asp-validation-for="NewClient.BillImage"></span>
+                        @{
+                            var billLabel = string.IsNullOrWhiteSpace(Model?.NewClient?.BillImagePath) ? "Choose Image" : Model?.NewClient?.BillImagePath;
+                        }
+                        <label class="custom-file-label" for="inputGroupFile02">@billLabel</label>
+                    </div>
+                </div>
+                <small class="text-muted">
+                    Please take a picture of the current networking cabinet or network hardware
+                </small>
             </div>
         </div>
         <h4 class="mb-3 mt-3">Phone Tree</h4>
