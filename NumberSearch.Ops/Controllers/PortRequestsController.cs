@@ -212,7 +212,6 @@ public class PortRequestsController : Controller
             fileBytes = downloadFileStream.ToArray();
         }
 
-
         return new FileContentResult(fileBytes, download.Value.ContentType)
         {
             FileDownloadName = billImage?.Name

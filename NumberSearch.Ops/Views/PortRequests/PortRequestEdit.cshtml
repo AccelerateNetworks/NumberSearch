@@ -65,29 +65,12 @@
                 </a>
             </div>
         </div>
-        @if (Model?.PortRequest?.OrderId is not null)
-        {
-            <div class="col">
-                <div class="d-grid gap-2">
-                    <a href="https://acceleratenetworks.com/cart/order/@Model?.Order?.OrderId" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
-                        Customer's View
-                    </a>
-                </div>
-            </div>
-        }
-        <div class="col">
-            <div class="d-grid gap-2">
-                <a href="/Home/Emails/@Model?.PortRequest?.OrderId" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
-                    View Related Emails
-                </a>
-            </div>
-        </div>
         @if (Model?.PortRequest is null)
         {
             <div class="col">
                 <div class="d-grid gap-2">
                     <div class="alert alert-danger mt-3" role="alert">
-                        This port request has not yet been submitted by the customer. <a href="https://acceleratenetworks.com/Cart/PortingInformation/{@Model?.Order?.OrderId}" target="_blank" rel="noopener noreferrer">Please make them fill out this form.</a>
+                        This port request has not yet been submitted. <a href="https://acceleratenetworks.com/Cart/PortingInformation/{@Model?.Order?.OrderId}" target="_blank" rel="noopener noreferrer">Please make them fill out this form.</a>
                     </div>
                 </div>
             </div>
@@ -97,6 +80,14 @@
             <div class="col">
                 <div class="d-grid gap-2">
                     <a class="btn btn-outline-success" href="/Home/BillImage/@Model?.Order?.OrderId" target="_blank">Losing Carrier Bill</a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="col">
+                <div class="d-grid gap-2">
+                    <a disabled class="btn btn-outline-success disabled" href="/Home/BillImage/@Model?.Order?.OrderId" target="_blank">No Bill Image Submitted</a>
                 </div>
             </div>
         }
