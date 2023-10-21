@@ -137,7 +137,7 @@ namespace NumberSearch.Ingest
 
             output.Append("<p>Hey Support,</p><p>Here's everything you need to know about the orders in the Accelerate Networks system.</p>");
 
-            output.Append("<p>Orders submitted today:</p><ul>");
+            output.Append("<p>Orders submitted this week:</p><ul>");
             if (ordersSubmittedToday.Count > 0)
             {
                 foreach (var item in ordersSubmittedToday)
@@ -145,7 +145,8 @@ namespace NumberSearch.Ingest
                     var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
                     var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
                     var installDate = item?.InstallDate is not null ? item?.InstallDate.GetValueOrDefault().ToShortDateString() : "No install date set";
-                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName} - Install Date {installDate}</li>");
+                    var paid = item?.DateUpfrontInvoicePaid is not null && item.DateUpfrontInvoicePaid.Value > item.DateSubmitted ? $"Paid {item.DateUpfrontInvoicePaid.Value.ToShortDateString()}" : "Unpaid"; 
+                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName} - Install Date {installDate} - <strong>{paid}</strong></li>");
                 }
                 output.Append("</ul>");
             }
