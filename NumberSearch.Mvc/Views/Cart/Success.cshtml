@@ -296,8 +296,14 @@
                             </div>
                         </div>
                         <small class="text-muted">
-                            Provide a copy of a recent bill that you recieved from your current phone service provider.
+                            Provide a copy of a recent bill that you received from your current phone service provider.
                         </small>
+                        @if (!string.IsNullOrWhiteSpace(Model?.PortRequest?.BillImagePath))
+                        {
+                            <div class="d-grid gap-2">
+                                <a class="btn btn-outline-success" href="https://ops.acceleratenetworks.com/Home/BillImage/@Model?.Order?.OrderId" target="_blank">Review Bill Image</a>
+                            </div>
+                        }
                     </div>
                 </div>
 

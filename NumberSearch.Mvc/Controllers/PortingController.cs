@@ -223,6 +223,101 @@ namespace NumberSearch.Mvc.Controllers
 
                 if (existing is not null && existing.OrderId != Guid.Empty && existing.OrderId == order.OrderId)
                 {
+                    // Update the existing port request.
+                    if (portRequest.BillImage != null && portRequest.BillImage.Length > 0)
+                    {
+                        try
+                        {
+                            using var stream = new System.IO.MemoryStream();
+                            await portRequest.BillImage.CopyToAsync(stream).ConfigureAwait(false);
+
+                            var fileExtension = Path.GetExtension(portRequest.BillImage.FileName);
+                            var fileName = $"{Guid.NewGuid()}{fileExtension}";
+
+                            // Create a BlobServiceClient object which will be used to create a container client
+                            BlobServiceClient blobServiceClient = new(_azureStorage);
+
+                            //Create a unique name for the container
+                            string containerName = existing.OrderId.ToString();
+
+                            // Create the container and return a container client object
+                            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+                            await containerClient.CreateIfNotExistsAsync();
+
+                            // Get a reference to a blob
+                            BlobClient blobClient = containerClient.GetBlobClient(fileName);
+
+                            // Open the file and upload its data
+                            // You have to rewind the MemoryStream before copying
+                            stream.Seek(0, SeekOrigin.Begin);
+                            await blobClient.UploadAsync(stream, true);
+
+                            existing.BillImagePath = fileName;
+
+                            Log.Information($"[Port Request] BlobContainer: {containerClient.Name} BlobClient: {blobClient.Name}");
+                            Log.Information("[Port Request] Successfully saved the bill image to the server and attached it to the confirmation email.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Fatal("[Port Request] Failed to save the bill image to the server and attach it to the confirmation email.");
+                            Log.Fatal($"[Port Request] {ex.Message}");
+                            Log.Fatal($"[Port Request] {ex.InnerException}");
+                        }
+                    }
+
+                    // Format the address information
+                    Log.Information($"[Port Request] Parsing address data from {portRequest.Address}");
+                    if (portRequest is not null && !string.IsNullOrWhiteSpace(portRequest.Address))
+                    {
+                        existing.Address = portRequest.Address;
+                        var addressParts = portRequest.Address.Split(", ");
+                        if (addressParts.Length > 4)
+                        {
+                            existing.Address = addressParts[0];
+                            existing.City = addressParts[1];
+                            existing.State = addressParts[2];
+                            existing.Zip = addressParts[3];
+                            Log.Information($"[Port Request] Address: {existing.Address} City: {existing.City} State: {existing.State} Zip: {existing.Zip}");
+                        }
+                        else
+                        {
+                            Log.Error($"[Port Request] Failed automatic address formatting.");
+                            return RedirectToAction("Cart", "Order", existing.OrderId);
+                        }
+                    }
+                    else
+                    {
+                        Log.Error($"[Port Request] No address information submitted.");
+                        return RedirectToAction("Cart", "Order", existing?.OrderId);
+                    }
+
+                    existing.BillingPhone = existing.BillingPhone != portRequest.BillingPhone ? portRequest.BillingPhone : existing.BillingPhone;
+                    existing.BusinessContact = existing.BusinessContact != portRequest.BusinessContact ? portRequest.BusinessContact : existing.BusinessContact;
+                    existing.ProviderAccountNumber = existing.ProviderAccountNumber != portRequest.ProviderAccountNumber ? portRequest.ProviderAccountNumber : existing.ProviderAccountNumber;
+                    existing.BusinessName = existing.BusinessName != portRequest.BusinessName ? portRequest.BusinessName : existing.BusinessName;
+                    existing.CallerId = existing.CallerId != portRequest.CallerId ? portRequest.CallerId : existing.CallerId;
+                    existing.ProviderPIN = existing.ProviderPIN != portRequest.ProviderPIN ? portRequest.ProviderPIN : existing.ProviderPIN;
+                    existing.PartialPort = existing.PartialPort != portRequest.PartialPort ? portRequest.PartialPort : existing.PartialPort;
+                    existing.PartialPortDescription = existing.PartialPortDescription != portRequest.PartialPortDescription ? portRequest.PartialPortDescription : existing.PartialPortDescription;
+                    existing.LocationType = existing.LocationType != portRequest.LocationType ? portRequest.LocationType : existing.LocationType;
+
+                    // Save the rest of the data to the DB.
+                    var checkExisting = await existing.PutAsync(_postgresql).ConfigureAwait(false);
+
+                    if (checkExisting && order is not null)
+                    {
+                        // Associate the ported numbers with their porting information.
+                        portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                        var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
+
+                        foreach (var number in portedNumbers)
+                        {
+                            number.PortRequestId = portRequest.PortRequestId;
+                            var checkPortUpdate = await number.PutAsync(_postgresql).ConfigureAwait(false);
+                        }
+                    }
+
                     // Reset the session and clear the Cart.
                     HttpContext.Session.Clear();
 
@@ -234,14 +329,12 @@ namespace NumberSearch.Mvc.Controllers
                 }
             }
 
-            var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
-
-            using var stream = new System.IO.MemoryStream();
-
             if (portRequest.BillImage != null && portRequest.BillImage.Length > 0)
             {
                 try
                 {
+                    using var stream = new System.IO.MemoryStream();
+
                     await portRequest.BillImage.CopyToAsync(stream).ConfigureAwait(false);
 
                     var fileExtension = Path.GetExtension(portRequest.BillImage.FileName);
@@ -294,7 +387,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
                 else
                 {
-                    Log.Error($"[Port Request] Failed automatic address formating.");
+                    Log.Error($"[Port Request] Failed automatic address formatting.");
                     return RedirectToAction("Cart", "Order", portRequest.OrderId);
                 }
             }
@@ -311,6 +404,8 @@ namespace NumberSearch.Mvc.Controllers
             {
                 // Associate the ported numbers with their porting information.
                 portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
 
                 string formattedNumbers = string.Empty;
 
