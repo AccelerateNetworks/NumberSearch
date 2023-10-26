@@ -301,7 +301,7 @@
                         @if (!string.IsNullOrWhiteSpace(Model?.PortRequest?.BillImagePath))
                         {
                             <div class="d-grid gap-2">
-                                <a class="btn btn-outline-success" href="https://ops.acceleratenetworks.com/Home/BillImage/@Model?.Order?.OrderId" target="_blank">Review Bill Image</a>
+                                <a class="btn btn-outline-success" href="https://ops.acceleratenetworks.com/Home/BillImage/@Model?.Order?.OrderId?fileName=@Model?.PortRequest?.BillImagePath" target="_blank">View Bill Image</a>
                             </div>
                         }
                     </div>

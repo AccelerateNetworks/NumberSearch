@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
+using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 
 using Serilog;
@@ -175,7 +176,7 @@ public class PortRequestsController : Controller
 
     [Authorize]
     [Route("/Home/BillImage/{orderId}/")]
-    public async Task<FileContentResult> DownloadAsync(string orderId)
+    public async Task<ActionResult> DownloadAsync(string orderId, string fileName)
     {
         // Create a BlobServiceClient object which will be used to create a container client
         BlobServiceClient blobServiceClient = new(_azureStorage);
@@ -193,24 +194,26 @@ public class PortRequestsController : Controller
             files.Add(item);
         }
 
-        var billImage = files.FirstOrDefault();
+        var billImage = files.FirstOrDefault(x => x.Name == fileName);
 
         if (billImage is null)
         {
-            //return new FileContentResult();
+            return View("PortRequestEdit", new PortRequestResult
+            {
+                Order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == new Guid(orderId)),
+                PortRequest = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == new Guid(orderId)),
+                PhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == new Guid(orderId)).ToArrayAsync(),
+                Message = $"❌ Couldn't find the bill image {fileName} for Order {orderId}."
+            });
         }
 
         var blobClient = containerClient.GetBlobClient(billImage?.Name);
         var download = await blobClient.DownloadAsync();
-
         var fileBytes = Array.Empty<byte>();
+        using var downloadFileStream = new MemoryStream();
+        await download.Value.Content.CopyToAsync(downloadFileStream);
+        fileBytes = downloadFileStream.ToArray();
 
-        using (var downloadFileStream = new MemoryStream())
-        {
-            await download.Value.Content.CopyToAsync(downloadFileStream);
-
-            fileBytes = downloadFileStream.ToArray();
-        }
 
         return new FileContentResult(fileBytes, download.Value.ContentType)
         {

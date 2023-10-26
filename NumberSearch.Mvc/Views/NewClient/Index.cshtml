@@ -253,7 +253,7 @@
                 @if (!string.IsNullOrWhiteSpace(Model?.NewClient?.BillImagePath))
                 {
                         <div class="d-grid gap-2">
-                            <a class="btn btn-outline-success" href="https://ops.acceleratenetworks.com/Home/BillImage/@Model?.Order?.OrderId" target="_blank">Review Network Cabinet Image</a>
+                            <a class="btn btn-outline-success" href="https://ops.acceleratenetworks.com/Home/BillImage/@Model?.Order?.OrderId?fileName=@Model?.NewClient?.BillImagePath" target="_blank">Review Network Cabinet Image</a>
                         </div>
                 }
             </div>
