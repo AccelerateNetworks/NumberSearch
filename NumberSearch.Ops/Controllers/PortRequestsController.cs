@@ -45,7 +45,7 @@ public class PortRequestsController : Controller
         _context = context;
     }
 
-    public async Task<PortedPhoneNumber> VerifyPortabilityAsync(string number)
+    public async Task<AccelerateNetworks.Operations.PortedPhoneNumber> VerifyPortabilityAsync(string number)
     {
         var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number, out var phoneNumber);
 
@@ -60,7 +60,7 @@ public class PortRequestsController : Controller
                 {
                     Log.Information($"[Portability] {phoneNumber.DialedNumber} is not Portable.");
 
-                    return new PortedPhoneNumber
+                    return new AccelerateNetworks.Operations.PortedPhoneNumber
                     {
                         PortedDialedNumber = number,
                         Portable = false
@@ -99,7 +99,7 @@ public class PortRequestsController : Controller
 
                 Log.Information($"[Portability] {phoneNumber.DialedNumber} is Portable.");
 
-                var portableNumber = new PortedPhoneNumber
+                var portableNumber = new AccelerateNetworks.Operations.PortedPhoneNumber
                 {
                     PortedPhoneNumberId = Guid.NewGuid(),
                     PortedDialedNumber = phoneNumber.DialedNumber!,
@@ -111,7 +111,7 @@ public class PortRequestsController : Controller
                     DateIngested = DateTime.Now,
                     IngestedFrom = "UserInput",
                     Wireless = wireless,
-                    LrnLookup = checkNumber,
+                    LrnLookup = new AccelerateNetworks.Operations.PhoneNumberLookup(checkNumber),
                     Portable = true
                 };
 
@@ -123,7 +123,7 @@ public class PortRequestsController : Controller
                 Log.Fatal($"[Portability] {ex.Message}");
                 Log.Fatal($"[Portability] {ex.InnerException}");
 
-                return new PortedPhoneNumber
+                return new AccelerateNetworks.Operations.PortedPhoneNumber
                 {
                     PortedDialedNumber = number,
                     Portable = false
@@ -134,7 +134,7 @@ public class PortRequestsController : Controller
         {
             Log.Information($"[Portability] {number} is not Portable. Failed NPA, NXX, XXXX parsing.");
 
-            return new PortedPhoneNumber
+            return new AccelerateNetworks.Operations.PortedPhoneNumber
             {
                 PortedDialedNumber = number,
                 Portable = false
@@ -324,7 +324,7 @@ public class PortRequestsController : Controller
 
                         numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
 
-                        var productOrder = new ProductOrder
+                        var productOrder = new AccelerateNetworks.Operations.ProductOrder
                         {
                             PortedDialedNumber = port.PortedDialedNumber,
                             PortedPhoneNumberId = port.PortedPhoneNumberId,

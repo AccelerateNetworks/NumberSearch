@@ -1,4 +1,8 @@
-﻿using System;
+﻿using Humanizer;
+
+using NumberSearch.DataAccess.BulkVS;
+
+using System;
 using System.Collections.Generic;
 
 namespace AccelerateNetworks.Operations
@@ -23,5 +27,29 @@ namespace AccelerateNetworks.Operations
         public string? IngestedFrom { get; set; }
         public DateTime DateIngested { get; set; }
         public Guid? CarrierId { get; set; }
+        public PhoneNumberLookup(LrnBulkCnam source)
+        {
+            PhoneNumberLookupId = Guid.NewGuid();
+            DialedNumber = source.tn;
+            Lrn = source.lrn;
+            Ocn = source.ocn;
+            Lata = source.lata;
+            City = source.city;
+            Ratecenter = source.ratecenter;
+            State = source.province;
+            Jurisdiction = source.jurisdiction;
+            Local = source.local == "Y" ? true : false;
+            Lec = source.lec;
+            Lectype = source.lectype;
+            Spid = source.spid;
+            Lidbname = source.LIDBName;
+            LastPorted = source.LastPorted;
+            IngestedFrom = "BulkVS";
+            DateIngested = DateTime.Now;
+        }
+        public PhoneNumberLookup()
+        {
+
+        }
     }
 }
