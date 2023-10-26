@@ -19,7 +19,7 @@ namespace NumberSearch.Ingest
 
             var bulkVSPortRequests = await PortTn.GetAllAsync(configuration.BulkVSUsername, configuration.BulkVSPassword).ConfigureAwait(false);
 
-            foreach (var request in bulkVSPortRequests.Where(x => x.OrderId == "1626870").ToArray())
+            foreach (var request in bulkVSPortRequests.ToArray())
             {
                 var portedNumbers = await PortedPhoneNumber.GetByExternalIdAsync(request.OrderId, configuration.Postgresql).ConfigureAwait(false);
 

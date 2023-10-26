@@ -88,7 +88,7 @@ namespace NumberSearch.Tests
         //[Fact]
         //public async Task TestBulkVSPortStatusUpdates()
         //{
-        //    await Orders.EmailDailyAsync(ingestConfiguration);
+        //    await PortRequests.UpdateStatusesBulkVSAsync(ingestConfiguration);
         //}
 
         //[Fact]
