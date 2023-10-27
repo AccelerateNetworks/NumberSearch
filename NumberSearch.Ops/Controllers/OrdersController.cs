@@ -1351,7 +1351,7 @@ public class OrdersController : Controller
                     if (item is not null && item.ProductId is not null && item.ProductId != Guid.Empty)
                     {
                         var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == item.ProductId);
-                        if (product is not null)
+                        if (product is not null && !string.IsNullOrWhiteSpace(product.VendorPartNumber))
                         {
                             products.Add(product);
 
