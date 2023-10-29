@@ -21,18 +21,13 @@
                         console.log(data);
                         var options = '';
                         for (var i = 0; i < data.length; i++) {
-                            options += '<option value="' + data[i] + '" />';
+                            options += `<li class='list-group-item' onclick='setAddress(this.innerHTML)'>${data[i]}</li>`;
                         }
-                        var datalist = document.createElement("datalist");
-                        datalist.id = 'realaccountoptions';
+                        var datalist = document.getElementById("addressOptions");
                         datalist.innerHTML = options;
+                        datalist.hidden = false;
                         var textBox = document.getElementById("searchInput");
-                        var check = document.getElementById('realaccountoptions');
-                        if (typeof (check) != 'undefined' && check != null) {
-                            check.remove();
-                        }
-                        textBox.appendChild(datalist);
-                        textBox.setAttribute('list', 'realaccountoptions');
+                        textBox.focus();
                         console.log(datalist);
                     });
                 }
@@ -41,30 +36,26 @@
                 console.log('Fetch Error :-S', err);
             });
     }
-    function onInput(textBox) {
-        var val = document.getElementById("searchInput").value;
-        var check = document.getElementById('realaccountoptions');
-        if (typeof (check) != 'undefined' && check != null) {
-            var opts = document.getElementById('realaccountoptions').childNodes;
-            for (var i = 0; i < opts.length; i++) {
-                if (opts[i].value === val) {
-                    var form = document.getElementById("searchForm");
-                    form.submit();
-                }
-            }
-        }
-        handleSearchQuery(textBox);
+    function setAddress(address) {
+        var textBox = document.getElementById("searchInput");
+        textBox.value = address;
+        var datalist = document.getElementById("addressOptions");
+        datalist.hidden = true;
+        var form = document.getElementById("searchForm");
+        form.submit();
     }
 </script>
 <h1 class="display-4 p-3">🛒 Orders</h1>
 <div class="row">
     <div class="col-xs-12 col-lg-6">
-        <form asp-page="./Orders" method="get" id="searchForm">
-            <div class="input-group mb-3">
-                <input name="Query" id="searchInput" value="@Model?.Query" type="search" class="form-control" placeholder="Filter by Business Name or Name" onchange="handleSearchQuery(this)" autocomplete="off" oninput="onInput(this)">
+        <form class="form-floating mb-3" id="searchForm" asp-page="./Orders" method="get">
+            <div class="input-group">
+                <input name="Query" id="searchInput" value="@Model?.Query" type="search" class="form-control" placeholder="Filter by Business Name or Name" autocomplete="off" oninput="handleSearchQuery(this)" list="addressOptions" data-toggle="dropdown" required>
                 <button class="btn btn-primary" type="submit" id="button-addon2">Filter</button>
                 <a class="btn btn-outline-secondary" href="./">Reset</a>
             </div>
+            <ul class="list-group" role="menu" aria-labelledby="menu1" id="addressOptions">
+            </ul>
         </form>
     </div>
     <div class="col-xs-12 col-lg-6 d-none d-lg-block">
