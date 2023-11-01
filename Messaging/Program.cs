@@ -671,10 +671,12 @@ try
             //}
 
             // Forward failed incoming messages for this number.
-            var inboundMMS = await db.Messages.Where(x => x.To.Contains(asDialedNumber.DialedNumber) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS).ToListAsync();
-            var inboundSMS = await db.Messages.Where(x => x.To.Contains(asDialedNumber.DialedNumber) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).ToListAsync();
+            var inboundMMS = await db.Messages.Where(x => x.To.Contains(asDialedNumber.DialedNumber) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS && !x.Succeeded).ToListAsync();
+            var inboundSMS = await db.Messages.Where(x => x.To.Contains(asDialedNumber.DialedNumber) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS && !x.Succeeded).ToListAsync();
             inboundMMS.AddRange(inboundSMS);
 
+            // Cap the replaying of messages to 10 messages or messages received in the last 2 weeks.
+            inboundMMS = inboundMMS.Where(x => x.DateReceivedUTC > DateTime.UtcNow.AddDays(-14)).Take(30).ToList();
             foreach (var failedMessage in inboundMMS)
             {
                 try
