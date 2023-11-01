@@ -223,10 +223,11 @@ namespace NumberSearch.Ops.Controllers
                 result.AlertType = "alert-danger";
             }
             // Refresh the status
-            if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
-            {
-                var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration>();
-            }
+            // This won't work because SMSToEmail registered numbers are not registered clients.
+            //if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+            //{
+            //    var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration>();
+            //}
             var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
