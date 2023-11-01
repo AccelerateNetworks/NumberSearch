@@ -211,6 +211,7 @@
 
                 if (ports)
                 {
+                    // Only show the porting state if there are ports in this order.
                     itemCount++;
                     if ((ported is not null) && (ported.Length > 0) && (ported?.Where(x => x.Completed is true).ToArray().Length == ported?.Length))
                     {
@@ -226,6 +227,30 @@
                         <div class="col">
                             <h4>
                                 <span class="badge badge-secondary badge-pill">❓ Transferred</span>
+                            </h4>
+                        </div>
+                    }
+                }
+
+                if (hardware)
+                {
+                    // Only show the shipping state if we have hardware in this order.
+                    if (Model?.Shipment is not null && !string.IsNullOrWhiteSpace(Model.Shipment.ShipmentTrackingLink))
+                    {
+                        itemCount++;
+                        currentStep++;
+                        <div class="col">
+                            <h4>
+                                <span class="badge badge-success badge-pill">📦 Shipping</span>
+                            </h4>
+                        </div>
+                    }
+                    else
+                    {
+                        itemCount++;
+                        <div class="col">
+                            <h4>
+                                <span class="badge badge-secondary badge-pill">🏗️ Shipping</span>
                             </h4>
                         </div>
                     }
@@ -624,7 +649,6 @@
                             </h4>
                             <a class="btn btn-primary" href="@Model?.Shipment.ShipmentTrackingLink" target="_blank" rel="noopener noreferrer">@Model?.Shipment?.Carrier - @Model?.Shipment?.TrackingNumber</a>
                         }
-
                     }
                 </ul>
             </div>
