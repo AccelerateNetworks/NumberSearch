@@ -79,7 +79,7 @@ namespace NumberSearch.Mvc
                             new FixedWindowRateLimiterOptions
                             {
                                 AutoReplenishment = true,
-                                PermitLimit = 120,
+                                PermitLimit = 240,
                                 Window = TimeSpan.FromMinutes(1)
                             })),
                     PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
@@ -87,7 +87,7 @@ namespace NumberSearch.Mvc
                             new FixedWindowRateLimiterOptions
                             {
                                 AutoReplenishment = true,
-                                PermitLimit = 5760,
+                                PermitLimit = 10000,
                                 Window = TimeSpan.FromDays(1)
                             })));
                 options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
