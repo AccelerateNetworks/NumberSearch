@@ -167,19 +167,19 @@
 		<Content Update="wwwroot\html_code.html">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Update="wwwroot\images\carousel\grp2612_front_web.webp">
+		<Content Update="wwwroot\images\carousel\grp2612_front_web1611.webp">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Update="wwwroot\images\carousel\GRP2615-front.png">
+		<Content Update="wwwroot\images\carousel\GRP2615-front1611.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Update="wwwroot\images\carousel\gxp2135_front_web.png">
+		<Content Update="wwwroot\images\carousel\gxp2135_front_web1611.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Update="wwwroot\images\carousel\gxp2140_front.webp">
+		<Content Update="wwwroot\images\carousel\gxp2140_front1611.webp">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Update="wwwroot\images\carousel\gxp2170_front_web.webp">
+		<Content Update="wwwroot\images\carousel\gxp2170_front_web1611.webp">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\original\accelerate-white.png">
