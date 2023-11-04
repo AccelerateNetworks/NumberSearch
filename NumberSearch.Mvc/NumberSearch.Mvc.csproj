@@ -182,6 +182,12 @@
 		<Content Update="wwwroot\images\carousel\gxp2170_front_web1611.webp">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Update="wwwroot\images\carousel\gxp2170_front_web1611v2.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\carousel\T54W-front1611.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Update="wwwroot\images\original\accelerate-white.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
