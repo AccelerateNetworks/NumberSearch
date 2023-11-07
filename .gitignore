@@ -29,3 +29,4 @@
 *.pdb
 /Messaging.Tests/bin/Debug/net7.0
 /Messaging.Tests/obj
+*.csv
