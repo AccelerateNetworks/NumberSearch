@@ -1,5 +1,7 @@
 ﻿using AccelerateNetworks.Operations;
 
+using CsvHelper;
+
 using FirstCom;
 
 using Flurl.Http;
@@ -16,6 +18,9 @@ using NumberSearch.Ops.Models;
 using Serilog;
 
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -295,50 +300,155 @@ namespace NumberSearch.Ops.Controllers
 
         [Authorize]
         [Route("/Messaging/TwilioCarrier")]
-        public async Task<IActionResult> TwilioCarrierAsync(string dialedNumber)
+        public async Task<IActionResult> TwilioCarrierAsync(string dialedNumber, bool? refreshAll)
         {
             var result = new MessagingResult { AlertType = "alert-success" };
-            bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
-            if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+
+            if (refreshAll is not null && refreshAll is true)
             {
-                try
+                var numbers = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
+                var existing = await _context.OwnedPhoneNumbers.ToDictionaryAsync(x => x.DialedNumber, x => x);
+
+                foreach (var number in numbers)
                 {
-                    var response = await LineTypeIntelligenceResponse.GetByDialedNumberAsync(phoneNumber.DialedNumber, _config.TwilioUsername, _config.TwilioPassword);
-                    if (!string.IsNullOrWhiteSpace(response.line_type_intelligence?.carrier_name))
+                    bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number.AsDialed, out var phoneNumber);
+                    bool checkOwned = existing.TryGetValue(phoneNumber.DialedNumber, out var owned);
+                    if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(number.AsDialed) && checkOwned && string.IsNullOrWhiteSpace(owned?.TwilioCarrierName))
                     {
-                        // Update the owned number record
-                        var owned = await _context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == phoneNumber.DialedNumber);
-                        if (owned is not null)
+                        try
                         {
-                            owned.TwilioCarrierName = response.line_type_intelligence.carrier_name.Trim();
-                            await _context.SaveChangesAsync();
-                            result.Message = $"✔️ Refreshed Carrier Name from Twilio! {owned.TwilioCarrierName}";
+                            var response = await LineTypeIntelligenceResponse.GetByDialedNumberAsync(phoneNumber.DialedNumber, _config.TwilioUsername, _config.TwilioPassword);
+                            if (!string.IsNullOrWhiteSpace(response.line_type_intelligence?.carrier_name))
+                            {
+                                // Update the owned number record
+                                if (owned is not null)
+                                {
+                                    owned.TwilioCarrierName = response.line_type_intelligence.carrier_name.Trim();
+                                    await _context.SaveChangesAsync();
+                                    result.Message += $"✔️ Refreshed Carrier Name from Twilio! {owned.TwilioCarrierName}\n";
+                                }
+                                else
+                                {
+                                    result.Message += $"❌ Could not match {phoneNumber.DialedNumber} to an Owned Phone Number. {response.line_type_intelligence.carrier_name}\n";
+                                }
+                            }
+                            else
+                            {
+                                result.Message += $"❌ Twilio has no Carrier Name for this {phoneNumber.DialedNumber}.\n";
+                            }
+                        }
+                        catch (FlurlHttpException ex)
+                        {
+                            result.RegistrationRequest = new RegistrationRequest { DialedNumber = number.AsDialed };
+                            result.Message += $"❓Failed to query Twilio. {await ex.GetResponseStringAsync()}\n";
+                            result.AlertType = "alert-warning";
+                        }
+                        catch (Exception ex)
+                        {
+                            result.Message += $"{ex.Message} {ex.StackTrace}\n";
+                            result.AlertType = "alert-danger";
+                        }
+                    }
+                }
+            }
+            else
+            {
+                bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
+                if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+                {
+                    try
+                    {
+                        var response = await LineTypeIntelligenceResponse.GetByDialedNumberAsync(phoneNumber.DialedNumber, _config.TwilioUsername, _config.TwilioPassword);
+                        if (!string.IsNullOrWhiteSpace(response.line_type_intelligence?.carrier_name))
+                        {
+                            // Update the owned number record
+                            var owned = await _context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == phoneNumber.DialedNumber);
+                            if (owned is not null)
+                            {
+                                owned.TwilioCarrierName = response.line_type_intelligence.carrier_name.Trim();
+                                await _context.SaveChangesAsync();
+                                result.Message = $"✔️ Refreshed Carrier Name from Twilio! {owned.TwilioCarrierName}";
+                            }
+                            else
+                            {
+                                result.Message = $"❌ Could not match {phoneNumber.DialedNumber} to an Owned Phone Number. {response.line_type_intelligence.carrier_name}";
+                            }
                         }
                         else
                         {
-                            result.Message = $"❌ Could not match {phoneNumber.DialedNumber} to an Owned Phone Number. {response.line_type_intelligence.carrier_name}";
+                            result.Message = $"❌ Twilio has no Carrier Name for this {phoneNumber.DialedNumber}.";
                         }
                     }
-                    else
+                    catch (FlurlHttpException ex)
                     {
-                        result.Message = $"❌ Twilio has no Carrier Name for this {phoneNumber.DialedNumber}.";
+                        result.RegistrationRequest = new RegistrationRequest { DialedNumber = dialedNumber };
+                        result.Message = $"❓Failed to query Twilio. {await ex.GetResponseStringAsync()}";
+                        result.AlertType = "alert-warning";
                     }
-                }
-                catch (FlurlHttpException ex)
-                {
-                    result.RegistrationRequest = new RegistrationRequest { DialedNumber = dialedNumber };
-                    result.Message = $"❓Failed to query Twilio. {await ex.GetResponseStringAsync()}";
-                    result.AlertType = "alert-warning";
-                }
-                catch (Exception ex)
-                {
-                    result.Message = $"{ex.Message} {ex.StackTrace}";
-                    result.AlertType = "alert-danger";
+                    catch (Exception ex)
+                    {
+                        result.Message = $"{ex.Message} {ex.StackTrace}";
+                        result.AlertType = "alert-danger";
+                    }
                 }
             }
 
             var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
+            result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
+            result.Owned = ownedNumbers;
+            return View("Index", result);
+        }
+
+        public record CSVExport(string dialedNumber, bool registeredUpstream, string upstreamStatusDescription, string carrier);
+
+        [Authorize]
+        [Route("/Messaging/ExportToCSV")]
+        public async Task<IActionResult> ExportToCSV()
+        {
+            var result = new MessagingResult { AlertType = "alert-success" };
+            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
+            var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
+            var exportReady = new List<CSVExport>(stats.Length);
+            try
+            {
+                foreach (var number in stats)
+                {
+                    var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number.AsDialed, out var phoneNumber);
+                    var ownedPhoneNumber = ownedNumbers.FirstOrDefault(x => x.DialedNumber == phoneNumber.DialedNumber);
+                    exportReady.Add(new CSVExport(number.AsDialed, number.RegisteredUpstream, number.UpstreamStatusDescription, ownedPhoneNumber?.TwilioCarrierName ?? string.Empty));
+                }
+
+                var filePath = Path.GetFullPath(Path.Combine("wwwroot", "csv"));
+                var fileName = $"MessagingUsers{DateTime.Now:yyyyMMdd}.csv";
+                var completePath = Path.Combine(filePath, fileName);
+
+                using var writer = new StreamWriter(completePath);
+                using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+                await csv.WriteRecordsAsync(exportReady).ConfigureAwait(false);
+                var file = new FileInfo(completePath);
+
+                if (file.Exists)
+                {
+                    return Redirect($"../csv/{file.Name}");
+                }
+                else
+                {
+                    result.Message = $"❓Failed to export this CSV.";
+                    result.AlertType = "alert-warning";
+                    result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
+                    result.Owned = ownedNumbers;
+                    return View("Index", result);
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Message = $"❓Failed to export this CSV. {ex.Message} {ex.StackTrace}";
+                result.AlertType = "alert-danger";
+            }
+
+            result.Message = $"❓Failed to export this CSV.";
+            result.AlertType = "alert-warning";
             result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
             result.Owned = ownedNumbers;
             return View("Index", result);
