@@ -5,10 +5,7 @@ using FirstCom;
 
 using Flurl.Http;
 
-using MailKit.Security;
-
 using Messaging;
-using Messaging.Migrations;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -19,13 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
-using MimeKit;
-
 using Models;
-
-using NumberSearch.DataAccess;
-
-using Org.BouncyCastle.Ocsp;
 
 using Prometheus;
 
@@ -57,7 +48,8 @@ try
     var builder = WebApplication.CreateBuilder(args);
     builder.Host.UseSerilog();
     builder.Configuration.AddUserSecrets("328593cf-cbb9-48e9-8938-e38a44c8291d");
-
+    var config = builder.Configuration.Get<AppSettings>();
+    builder.Services.AddSingleton(config ?? new());
     string bulkVSUsername = builder.Configuration.GetConnectionString("BulkVSUsername") ?? string.Empty;
     string bulkVSPassword = builder.Configuration.GetConnectionString("BulkVSPassword") ?? string.Empty;
     string bulkVSInbound = string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("BulkVSInboundMessagingURL"))
@@ -275,50 +267,14 @@ try
     })
         .RequireRateLimiting("onePerSecond").WithOpenApi(x => new(x) { Summary = "Get an auth token.", Description = "JWT magic bb." });
 
-    app.MapGet("/client", async Task<Results<Ok<ClientRegistration>, BadRequest<string>, NotFound<string>>> (string asDialed, MessagingContext db) =>
-    {
-        var checkAsDialed = PhoneNumbersNA.PhoneNumber.TryParse(asDialed, out var asDialedNumber);
-        if (!checkAsDialed)
+    app.MapGet("/client", MessagingClient.GetByDialedNumberAsync)
+        .RequireAuthorization()
+        .WithOpenApi(x => new(x)
         {
-            return TypedResults.BadRequest("AsDialed number couldn't be parsed as a valid NANP (North American Number Plan) number.");
-        }
+            Summary = "Lookup a specific client registration using the dialed number.",
+            Description = "Use this to see if a dialed number is registered and find out what callback Url its registered to."
+        });
 
-        try
-        {
-            var registration = await db.ClientRegistrations.FirstOrDefaultAsync(x => x.AsDialed == asDialedNumber.DialedNumber);
-
-            if (registration is not null && !string.IsNullOrWhiteSpace(registration.AsDialed) && registration.AsDialed == asDialedNumber.DialedNumber)
-            {
-                // At Finns request NANPA numbers are now 1 prefixed to match with the POST client/register endpoint.
-                string dialedNumber = asDialedNumber.Type is not PhoneNumbersNA.NumberType.ShortCode ? $"1{asDialedNumber.DialedNumber}" : asDialedNumber.DialedNumber;
-                registration.AsDialed = dialedNumber;
-
-                // Verify that this number is routed through our upstream provider.
-                var checkRouted = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber, firstPointUsername, firstPointPassword);
-                registration.RegisteredUpstream = checkRouted.QueryResult.code is 0 && checkRouted.epid is 265;
-                registration.UpstreamStatusDescription = $"{checkRouted?.eptype} {checkRouted?.additional} {checkRouted?.QueryResult.text}".Trim();
-
-                // Don't pollute the registrations with 1 prefixed numbers.
-                registration.AsDialed = asDialedNumber.DialedNumber;
-                await db.SaveChangesAsync();
-
-                registration.AsDialed = dialedNumber;
-                return TypedResults.Ok(registration);
-            }
-            else
-            {
-                return TypedResults.NotFound($"Failed to find a client registration for {asDialed}. Parsed as {asDialed}. Please use the client/register endpoint to register a callback URL for this number and enable it for SMS service.");
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex.Message);
-            Log.Error(ex.StackTrace ?? "No stack trace found.");
-            return TypedResults.BadRequest(ex.Message);
-        }
-
-    })
-        .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Lookup a specific client registration using the dialed number.", Description = "Use this to see if a dialed number is registered and find out what callback Url its registered to." });
 
     app.MapGet("/client/all", async Task<Results<Ok<ClientRegistration[]>, BadRequest<string>, NotFound<string>>> (bool? clear, MessagingContext db) =>
     {
@@ -1734,6 +1690,52 @@ finally
 public partial class Program
 { }
 
+public static class MessagingClient
+{
+    public static async Task<Results<Ok<ClientRegistration>, BadRequest<string>, NotFound<string>>> GetByDialedNumberAsync(string asDialed, MessagingContext db, AppSettings appSettings)
+    {
+        bool checkAsDialed = PhoneNumbersNA.PhoneNumber.TryParse(asDialed, out var asDialedNumber);
+        if (!checkAsDialed)
+        {
+            return TypedResults.BadRequest("AsDialed number couldn't be parsed as a valid NANP (North American Number Plan) number.");
+        }
+
+        try
+        {
+            var registration = await db.ClientRegistrations.FirstOrDefaultAsync(x => x.AsDialed == asDialedNumber.DialedNumber);
+
+            if (registration is not null && !string.IsNullOrWhiteSpace(registration.AsDialed) && registration.AsDialed == asDialedNumber.DialedNumber)
+            {
+                // At Finns request NANPA numbers are now 1 prefixed to match with the POST client/register endpoint.
+                string dialedNumber = asDialedNumber.Type is not PhoneNumbersNA.NumberType.ShortCode ? $"1{asDialedNumber.DialedNumber}" : asDialedNumber.DialedNumber;
+                registration.AsDialed = dialedNumber;
+
+                // Verify that this number is routed through our upstream provider.
+                var checkRouted = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber, appSettings.ConnectionStrings.PComNetUsername, appSettings.ConnectionStrings.PComNetPassword);
+                registration.RegisteredUpstream = checkRouted.QueryResult.code is 0 && checkRouted.epid is 265;
+                registration.UpstreamStatusDescription = $"{checkRouted?.eptype} {checkRouted?.additional} {checkRouted?.QueryResult.text}".Trim();
+
+                // Don't pollute the registrations with 1 prefixed numbers.
+                registration.AsDialed = asDialedNumber.DialedNumber;
+                await db.SaveChangesAsync();
+
+                registration.AsDialed = dialedNumber;
+                return TypedResults.Ok(registration);
+            }
+            else
+            {
+                return TypedResults.NotFound($"Failed to find a client registration for {asDialed}. Parsed as {asDialed}. Please use the client/register endpoint to register a callback URL for this number and enable it for SMS service.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex.Message);
+            Log.Error(ex.StackTrace ?? "No stack trace found.");
+            return TypedResults.BadRequest(ex.Message);
+        }
+    }
+}
+
 namespace Models
 {
     // Example Response JSON
@@ -2014,5 +2016,30 @@ namespace Models
         //[DataType(DataType.EmailAddress)]
         //public string Email { get; set; } = string.Empty;
         //public bool EmailVerified { get; set; } = false;
+    }
+
+    public class AppSettings
+    {
+        public Connectionstrings ConnectionStrings { get; set; }
+
+        public class Connectionstrings
+        {
+            public string PostgresqlProd { get; set; }
+            public string BulkVSUsername { get; set; }
+            public string BulkVSPassword { get; set; }
+            public string TeleAPI { get; set; }
+            public string PComNetUsername { get; set; }
+            public string PComNetPassword { get; set; }
+            public string PComNetIncomingToken { get; set; }
+            public string PComNetIncomingMMSSecret { get; set; }
+            public string PComNetIncomingSMSSecret { get; set; }
+            public string MessagingAPISecret { get; set; }
+            public string DOSpacesAccessKey { get; set; }
+            public string DOSpacesSecretKey { get; set; }
+            public string BucketName { get; set; }
+            public string S3ServiceURL { get; set; }
+            public string OpsUsername { get; set; }
+            public string OpsPassword { get; set; }
+        }
     }
 }

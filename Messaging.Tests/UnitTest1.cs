@@ -1,7 +1,9 @@
 using Amazon.S3;
 using Amazon.S3.Transfer;
 
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 using Models;
@@ -20,6 +22,7 @@ namespace Messaging.Tests
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
         private readonly ITestOutputHelper _output;
+        private readonly AppSettings _appSettings;
 
 
         public Functional(WebApplicationFactory<Program> factory, ITestOutputHelper output)
@@ -31,6 +34,9 @@ namespace Messaging.Tests
                 .AddUserSecrets("328593cf-cbb9-48e9-8938-e38a44c8291d")
                 .Build();
             _output = output;
+            AppSettings config = new();
+            _configuration.Bind(config);
+            _appSettings = config;
         }
 
 
@@ -479,6 +485,32 @@ namespace Messaging.Tests
             Assert.Equal("\"The incoming message was received and forwarded to the client.\"", message);
         }
 
+        [Fact]
+        public async Task GetClientAsync()
+        {
+            await using var context = new MockDb().CreateDbContext();
+
+            var result = await MessagingClient.GetByDialedNumberAsync("12063333341", context, _appSettings);
+
+            //Assert
+            Assert.IsType<Results<Ok<ClientRegistration>, BadRequest<string>, NotFound<string>>>(result);
+
+            var okResult = (Ok<ClientRegistration>)result.Result;
+
+            Assert.True(okResult.StatusCode is 200);
+            Assert.Equal("12063333341", okResult.Value?.AsDialed);
+        }
+
+        public class MockDb : IDbContextFactory<MessagingContext>
+        {
+            public MessagingContext CreateDbContext()
+            {
+                var options = new DbContextOptionsBuilder<MessagingContext>().Options;
+
+                return new MessagingContext(options);
+            }
+        }
+
         //[Fact]
         //public async Task SaveFileToDigitalOceanSpacesAsync()
         //{
@@ -504,7 +536,7 @@ namespace Messaging.Tests
         //        Key = fileName,
         //        CannedACL = S3CannedACL.PublicRead,
         //        //DisablePayloadSigning = true,
-               
+
         //    };
         //    await fileUtil.UploadAsync(fileRequest);
         //    string mediaURL = $"{config.ServiceURL}{bucketName}/{fileRequest.Key}";
