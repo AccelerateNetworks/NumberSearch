@@ -1,5 +1,7 @@
 ﻿using AccelerateNetworks.Operations;
 
+using CsvHelper;
+
 using Flurl.Http;
 
 using Microsoft.AspNetCore.Authorization;
@@ -14,9 +16,14 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+
+using static NumberSearch.Ops.Controllers.MessagingController;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NumberSearch.Ops.Controllers;
 
@@ -403,5 +410,45 @@ public class OwnedNumbersController : Controller
                 });
             }
         }
+    }
+
+    [Authorize]
+    [Route("/OwnedNumbers/ExportToCSV")]
+    public async Task<IActionResult> ExportToCSV()
+    {
+        var result = new OwnedNumberResult
+        {
+            Message = $"❓Failed to export this CSV.",
+            AlertType = "alert-warning",
+        };
+
+        var ownedNumbers = await _context.OwnedPhoneNumbers.OrderByDescending(x => x.DialedNumber).AsNoTracking().ToListAsync();
+        try
+        {
+            var filePath = Path.GetFullPath(Path.Combine("wwwroot", "csv"));
+            var fileName = $"OwnedNumbers{DateTime.Now:yyyyMMdd}.csv";
+            var completePath = Path.Combine(filePath, fileName);
+
+            using var writer = new StreamWriter(completePath);
+            using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+            await csv.WriteRecordsAsync(ownedNumbers).ConfigureAwait(false);
+            var file = new FileInfo(completePath);
+
+            if (file.Exists)
+            {
+                return Redirect($"../csv/{file.Name}");
+            }
+            else
+            {
+                return View("OwnedNumbers", result);
+            }
+        }
+        catch (Exception ex)
+        {
+            result.Message = $"❓Failed to export this CSV. {ex.Message} {ex.StackTrace}";
+            result.AlertType = "alert-danger";
+        }
+
+        return View("OwnedNumbers", result);
     }
 }
