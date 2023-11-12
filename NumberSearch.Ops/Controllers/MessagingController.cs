@@ -277,7 +277,7 @@ namespace NumberSearch.Ops.Controllers
                 {
                     var request = await $"{_baseUrl}client/remove?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(_messagingToken).PostAsync();
                     var response = await request.GetStringAsync();
-                    result.Message = $"✔️ Reregistration removed! {response}";
+                    result.Message = $"✔️ Registration removed! {response}";
                 }
                 catch (FlurlHttpException ex)
                 {
