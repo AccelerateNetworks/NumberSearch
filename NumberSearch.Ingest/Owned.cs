@@ -186,7 +186,7 @@ namespace NumberSearch.Ingest
 
             var ownedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
 
-            foreach (var number in ownedNumbers.Where(x => x.Status == "Active"))
+            foreach (var number in ownedNumbers.Where(x => x.Status is "Active"))
             {
                 bool updated = false;
                 try

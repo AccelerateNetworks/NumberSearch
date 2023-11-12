@@ -2,13 +2,18 @@
 
 using CsvHelper;
 
+using FirstCom;
+
 using Flurl.Http;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using Models;
+
 using NumberSearch.DataAccess.BulkVS;
+using NumberSearch.DataAccess.Twilio;
 using NumberSearch.Ops.Models;
 
 using Serilog;
@@ -21,9 +26,6 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-
-using static NumberSearch.Ops.Controllers.MessagingController;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NumberSearch.Ops.Controllers;
 
@@ -447,6 +449,70 @@ public class OwnedNumbersController : Controller
         {
             result.Message = $"❓Failed to export this CSV. {ex.Message} {ex.StackTrace}";
             result.AlertType = "alert-danger";
+        }
+
+        return View("OwnedNumbers", result);
+    }
+
+    [Authorize]
+    [Route("/OwnedNumbers/RouteAndCarrier")]
+    public async Task<IActionResult> GetAllSMSRoutesAndCarrierNamesAsync()
+    {
+        var result = new OwnedNumberResult
+        {
+            Message = $"❓Failed to export this CSV.",
+            AlertType = "alert-warning",
+        };
+
+        var existing = await _context.OwnedPhoneNumbers.Where(x => x.Active).ToArrayAsync();
+
+        foreach (var number in existing.Where(x => x.Active))
+        {
+            bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number.DialedNumber, out var phoneNumber);
+            if (checkParse && phoneNumber is not null && string.IsNullOrWhiteSpace(number?.TwilioCarrierName))
+            {
+                try
+                {
+                    var response = await LineTypeIntelligenceResponse.GetByDialedNumberAsync(phoneNumber.DialedNumber, _config.TwilioUsername, _config.TwilioPassword);
+                    if (!string.IsNullOrWhiteSpace(response.line_type_intelligence?.carrier_name))
+                    {
+                        // Update the owned number record
+                        number.TwilioCarrierName = response.line_type_intelligence.carrier_name.Trim();
+                        await _context.SaveChangesAsync();
+                        result.Message += $"✔️ Refreshed Carrier Name from Twilio! {number.TwilioCarrierName}\n";
+                    }
+                    else
+                    {
+                        result.Message += $"❌ Twilio has no Carrier Name for this {phoneNumber.DialedNumber}.\n";
+                    }
+                }
+                catch (FlurlHttpException ex)
+                {
+                    result.Message += $"❓Failed to query Twilio. {await ex.GetResponseStringAsync()}\n";
+                    result.AlertType = "alert-warning";
+                }
+                catch (Exception ex)
+                {
+                    result.Message += $"{ex.Message} {ex.StackTrace}\n";
+                    result.AlertType = "alert-danger";
+                }
+
+                //try
+                //{
+                //    // At Finns request NANPA numbers are now 1 prefixed to match with the POST client/register endpoint.
+                //    string dialedNumber = phoneNumber.Type is not PhoneNumbersNA.NumberType.ShortCode ? $"1{phoneNumber.DialedNumber}" : phoneNumber.DialedNumber;
+
+                //    // Verify that this number is routed through our upstream provider.
+                //    var checkRouted = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber, _config.PComNetUsername, _config.PComNetPassword);
+                //    number.SMSRoute = checkRouted.route;
+                //    await _context.SaveChangesAsync();
+                //}
+                //catch (Exception ex)
+                //{
+                //    number.SMSRoute = "Couldn't get SMS route.";
+                //    await _context.SaveChangesAsync();
+                //}
+            }
         }
 
         return View("OwnedNumbers", result);
