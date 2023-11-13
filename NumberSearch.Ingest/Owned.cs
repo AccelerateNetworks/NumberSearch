@@ -708,7 +708,7 @@ namespace NumberSearch.Ingest
                         var updatedSPID = newSpid != number.SPID && !string.IsNullOrWhiteSpace(newSpid);
                         var updatedSPIDName = newSpidName != number.SPIDName && !string.IsNullOrWhiteSpace(newSpidName);
 
-                        if (updatedSPID || updatedSPIDName)
+                        if (updatedSPID && updatedSPIDName)
                         {
                             serviceProviderChanged.Add(new ServiceProviderChanged
                             {
@@ -718,7 +718,7 @@ namespace NumberSearch.Ingest
                                 OldSPIDName = number.SPIDName,
                                 DialedNumber = number.DialedNumber,
                                 RawQuery = JsonSerializer.Serialize(result)
-                        });
+                            });
 
                             // Update the SPID to the current value.
                             number.SPID = newSpid;
@@ -732,9 +732,11 @@ namespace NumberSearch.Ingest
                             {
                                 Log.Fatal($"[OwnedNumbers] Failed to update {newSpidName}, {newSpid} for {number.DialedNumber} from [{provider}].");
                             }
+
                         }
                         else
                         {
+                            // Do nothing because either the SPID is the same or it's invalid.
                             Log.Information($"[OwnedNumbers] Found {newSpidName}, {newSpid} for {number.DialedNumber} from [{provider}].");
                         }
                     }
