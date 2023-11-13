@@ -174,20 +174,19 @@ namespace NumberSearch.Ops.Controllers
                     // Verify that this number is routed through our upstream provider.
                     var checkRouted = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber, _config.PComNetUsername, _config.PComNetPassword);
                     Log.Information(System.Text.Json.JsonSerializer.Serialize(checkRouted));
-                    registeredUpstream = checkRouted.QueryResult.code is 0 && checkRouted.epid is 265;
+                    registeredUpstream = checkRouted.QueryResult.code is 0;
                     upstreamStatusDescription = checkRouted.QueryResult.text;
-                    if (checkRouted.QueryResult.code is not 0 || checkRouted.epid is not 265)
+                    if (checkRouted.QueryResult.code is not 0)
                     {
                         // Enabled routing and set the EPID if the number is not already routed.
                         var enableSMS = await FirstPointComSMS.EnableSMSByDialedNumberAsync(dialedNumber, _config.PComNetUsername, _config.PComNetPassword);
                         Log.Information(System.Text.Json.JsonSerializer.Serialize(enableSMS));
-                        var setRouting = await FirstPointComSMS.RouteSMSToEPIDByDialedNumberAsync(dialedNumber, 265, _config.PComNetUsername, _config.PComNetPassword);
-                        Log.Information(System.Text.Json.JsonSerializer.Serialize(setRouting));
                         var checkRoutedAgain = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber, _config.PComNetUsername, _config.PComNetPassword);
                         Log.Information(System.Text.Json.JsonSerializer.Serialize(checkRouted));
-                        registeredUpstream = checkRouted.QueryResult.code is 0 && checkRouted.epid is 265;
+                        registeredUpstream = checkRouted.QueryResult.code is 0;
                         upstreamStatusDescription = checkRouted.QueryResult.text;
-                        result.Message = $"Attempted to set and enable SMS routing for {dialedNumber}. SMS Enabled? {enableSMS.text} Routing Set? {setRouting.text} SMS Routed? {checkRoutedAgain.QueryResult.text}";
+                        result.Message = $"❓Attempted to set and enable SMS routing for {dialedNumber}. SMS Enabled? {enableSMS.text} SMS Routed? {checkRoutedAgain.QueryResult.text} Please try again in 24 hours.";
+                        result.AlertType = "alert-warning";
                     }
                     else
                     {
