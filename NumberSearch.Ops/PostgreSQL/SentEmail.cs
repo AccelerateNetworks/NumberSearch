@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace AccelerateNetworks.Operations
 {
     public partial class SentEmail
     {
+        [Key]
         public Guid EmailId { get; set; }
         public Guid OrderId { get; set; }
         public string PrimaryEmailAddress { get; set; } = null!;

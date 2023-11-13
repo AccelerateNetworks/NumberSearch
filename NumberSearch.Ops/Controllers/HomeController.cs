@@ -1,5 +1,4 @@
 ﻿using AccelerateNetworks.Operations;
-using AccelerateNetworks.Operations.Services;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -345,56 +344,85 @@ public class HomeController : Controller
     [Route("/Home/Emails/{orderId}")]
     public async Task<IActionResult> Emails(Guid? orderId)
     {
-        if (orderId != null && orderId.HasValue)
+        var response = new EmailResult();
+        try
         {
-            return View("Emails", await _context.SentEmails.OrderByDescending(x => x.DateSent).Where(x => x.OrderId == orderId).AsNoTracking().ToListAsync());
+            if (orderId is not null && orderId.HasValue)
+            {
+                response.Emails = await _context.SentEmails.OrderByDescending(x => x.DateSent).Where(x => x.OrderId == orderId).AsNoTracking().ToArrayAsync();
+            }
+            else
+            {
+                response.Emails = await _context.SentEmails.OrderByDescending(x => x.DateSent).Take(100).AsNoTracking().ToArrayAsync();
+            }
         }
-        else
+        catch (Exception ex)
         {
-            return View("Emails", await _context.SentEmails.OrderByDescending(x => x.DateSent).Take(100).AsNoTracking().ToListAsync());
+            response.Message = $"❌ Failed to find emails for {orderId}. {ex?.Message} {ex?.InnerException} {ex?.StackTrace}";
         }
+        return View("Emails", response);
     }
 
     [Authorize]
     [HttpGet("/Home/Emails/{orderId}/Resend/{emailId}")]
     public async Task<IActionResult> ResendEmails(Guid orderId, Guid emailId)
     {
-        var email = await _context.SentEmails.FirstOrDefaultAsync(x => x.EmailId == emailId);
-
-        if (email is not null)
+        var response = new EmailResult();
+        try
         {
-            email.DoNotSend = false;
-            email.Completed = false;
+            var email = await _context.SentEmails.FirstOrDefaultAsync(x => x.EmailId == emailId);
 
-            var emailToUpdate = await _context.SentEmails.FirstOrDefaultAsync(x => x.EmailId == email.EmailId);
-            _context.Entry(emailToUpdate!).CurrentValues.SetValues(email);
-            await _context.SaveChangesAsync();
+            if (email is not null)
+            {
+                email.DoNotSend = false;
+                email.Completed = false;
 
-            var order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId);
-            if (order is not null)
-            {
-                order.BackgroundWorkCompleted = false;
-                var orderToUpdate = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId);
-                _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
-                await _context.SaveChangesAsync();
-            }
-            else
-            {
-                var checkSending = await SendEmail.SendEmailAsync(email, _emailUsername, _emailPassword).ConfigureAwait(false);
+                // Directly send the email.
+                NumberSearch.DataAccess.Email toSend = new()
+                {
+                    EmailId = email.EmailId,
+                    OrderId = email.OrderId,
+                    PrimaryEmailAddress = email.PrimaryEmailAddress,
+                    SalesEmailAddress = email.SalesEmailAddress ?? string.Empty,
+                    CarbonCopy = email.CarbonCopy,
+                    Subject = email.Subject,
+                    MessageBody = email.MessageBody,
+                    DateSent = DateTime.Now,
+                    Completed = email.Completed,
+                    CalendarInvite = email.CalendarInvite ?? string.Empty,
+                    DoNotSend = email.DoNotSend
+                };
+
+                var checkSending = await toSend.SendEmailAsync(_emailUsername, _emailPassword);
 
                 if (checkSending)
                 {
                     email.Completed = true;
-                    emailToUpdate = await _context.SentEmails.FirstOrDefaultAsync(x => x.EmailId == email.EmailId);
-                    _context.Entry(emailToUpdate!).CurrentValues.SetValues(email);
+                    email.DateSent = DateTime.Now;
                     await _context.SaveChangesAsync();
+                    response.Message = $"✔️ Sent out EmailId {email.EmailId} to {email.PrimaryEmailAddress}.";
+                    response.AlertType = "alert-success";
+                }
+                else
+                {
+                    response.Message = $"❌ Failed to send out EmailId {email.EmailId}.";
                 }
             }
+            else
+            {
+                response.Message = $"❌ Couldn't find and email with an EmailId of {emailId} for OrderId {orderId}.";
+                response.AlertType = "alert-danger";
+            }
+
+            response.Emails = await _context.SentEmails.Where(x => x.OrderId == email.OrderId).ToArrayAsync();
+        }
+        catch (Exception ex)
+        {
+            response.Message = $"❌ Couldn't find and email with an EmailId of {emailId} for OrderId {orderId}. {ex?.Message} {ex?.InnerException} {ex?.StackTrace}";
+            response.AlertType = "alert-danger";
         }
 
-        var emails = await _context.SentEmails.ToListAsync();
-
-        return View("Emails", emails);
+        return View("Emails", response);
     }
 
     [Authorize]
