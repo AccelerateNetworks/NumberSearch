@@ -677,6 +677,7 @@ namespace NumberSearch.Ingest
             public string CurrentSPID { get; set; } = string.Empty;
             public string OldSPIDName { get; set; } = string.Empty;
             public string CurrentSPIDName { get; set; } = string.Empty;
+            public string RawQuery { get; set; } = string.Empty;
         }
 
         public static async Task<IEnumerable<ServiceProviderChanged>> VerifyServiceProvidersAsync(string bulkApiKey, string connectionString)
@@ -704,8 +705,8 @@ namespace NumberSearch.Ingest
                         var newSpid = result?.spid ?? string.Empty;
                         var newSpidName = result?.lec ?? string.Empty;
 
-                        var updatedSPID = newSpid != number.SPID;
-                        var updatedSPIDName = newSpidName != number.SPIDName;
+                        var updatedSPID = newSpid != number.SPID && !string.IsNullOrWhiteSpace(newSpid);
+                        var updatedSPIDName = newSpidName != number.SPIDName && !string.IsNullOrWhiteSpace(newSpidName);
 
                         if (updatedSPID || updatedSPIDName)
                         {
@@ -715,8 +716,9 @@ namespace NumberSearch.Ingest
                                 OldSPID = number.SPID,
                                 CurrentSPIDName = newSpidName,
                                 OldSPIDName = number.SPIDName,
-                                DialedNumber = number.DialedNumber
-                            });
+                                DialedNumber = number.DialedNumber,
+                                RawQuery = JsonSerializer.Serialize(result)
+                        });
 
                             // Update the SPID to the current value.
                             number.SPID = newSpid;

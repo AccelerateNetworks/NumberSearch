@@ -110,6 +110,12 @@ namespace NumberSearch.Tests
         //}
 
         //[Fact]
+        //public async Task VerifySPIDDailyAsync()
+        //{
+        //    var results = await Owned.VerifyServiceProvidersAsync(ingestConfiguration.BulkVSAPIKEY, ingestConfiguration.Postgresql);
+        //}
+
+        //[Fact]
         //public async Task UnassignedAsync()
         //{
         //    _ = await Owned.OfferUnassignedNumberForSaleAsync(ingestConfiguration.Postgresql);
