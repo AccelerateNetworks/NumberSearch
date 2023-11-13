@@ -684,7 +684,8 @@ namespace NumberSearch.Ingest
             var owned = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
             var serviceProviderChanged = new List<ServiceProviderChanged>();
 
-            foreach (var number in owned)
+            // Only query data for numbers with a status of Active.
+            foreach (var number in owned.Where(x => x.Status is "Active"))
             {
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number.DialedNumber, out var phoneNumber);
 
