@@ -24,6 +24,7 @@
                 <input asp-for="InstallTime" type="number" class="form-control" min="0" />
                 <label asp-for="InstallTime" class="control-label">Required Install Time in Hours</label>
                 <span asp-validation-for="InstallTime" class="text-danger"></span>
+                <p class="form-text">For increments smaller than 1 hour use decimal values. Ex 0.25 for 15 minutes or 0.5 for 1/2 hour.</p>
             </div>
             <div class="form-floating mb-3">
                 <textarea asp-for="Description" class="form-control" style="height: 10vh"></textarea>
