@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using NumberSearch.DataAccess;
+using System.Threading;
 
 namespace NumberSearch.Ops.Controllers
 {
@@ -26,7 +27,7 @@ namespace NumberSearch.Ops.Controllers
         // GET: CarriersController
         public async Task<IActionResult> Index()
         {
-            return View(await _context.PhoneNumberLookups.Where(x => x.CarrierId == null && !string.IsNullOrWhiteSpace(x.Ocn)).ToListAsync());
+            return View(await _context.PhoneNumberLookups.Where(x => x.CarrierId == null && !string.IsNullOrWhiteSpace(x.Ocn)).Take(100).ToListAsync());
         }
 
         [Authorize]
@@ -80,22 +81,19 @@ namespace NumberSearch.Ops.Controllers
         {
             // Match lookups to existing carriers.
             var carriers = await _context.Carriers.ToListAsync();
-            var lookups = await _context.PhoneNumberLookups.ToListAsync();
 
-            foreach (var item in lookups)
+            foreach (var item in carriers)
             {
-                var carrier = carriers.Where(x => x.Ocn == item.Ocn).FirstOrDefault();
+                var lookups = await _context.PhoneNumberLookups.Where(x => x.Ocn == item.Ocn && x.CarrierId != item.CarrierId).ToListAsync();
 
-                if (carrier is not null)
+                foreach (var look in lookups)
                 {
-                    item.CarrierId = carrier.CarrierId;
-                    _context.Update(item);
+                    look.CarrierId = item.CarrierId;
                 }
             }
-
             await _context.SaveChangesAsync();
 
-            return View("Index", await _context.PhoneNumberLookups.Where(x => x.CarrierId == null && !string.IsNullOrWhiteSpace(x.Ocn)).ToListAsync());
+            return View("Index", await _context.PhoneNumberLookups.Where(x => x.CarrierId == null && !string.IsNullOrWhiteSpace(x.Ocn)).Take(100).ToListAsync());
         }
 
         [Authorize]
@@ -106,29 +104,25 @@ namespace NumberSearch.Ops.Controllers
 
             foreach (var carrier in carriers)
             {
-                var lookups = await _context.PhoneNumberLookups.Where(x => x.CarrierId == carrier.CarrierId).ToArrayAsync();
+                // If the OCNs don't match then this is not the right Carrier for the lookup.
+                var lookups = await _context.PhoneNumberLookups.Where(x => x.CarrierId == carrier.CarrierId && x.Ocn != carrier.Ocn).ToArrayAsync();
 
                 foreach (var lookup in lookups)
                 {
-                    // If the OCNs don't match then this is not the right Carrier for the lookup.
-                    if (lookup.Ocn != carrier.Ocn)
+                    lookup.CarrierId = null;
+
+                    // Let find the right Carrier based on the OCN of the lookup, if we can.
+                    var ocnMatch = await _context.Carriers.FirstOrDefaultAsync(x => x.Ocn == lookup.Ocn);
+
+                    if (ocnMatch is not null && ocnMatch.Ocn == lookup.Ocn)
                     {
-                        lookup.CarrierId = null;
-
-                        // Let find the right Carrier based on the OCN of the lookup, if we can.
-                        var ocnMatch = await _context.Carriers.FirstOrDefaultAsync(x => x.Ocn == lookup.Ocn);
-
-                        if (ocnMatch is not null && ocnMatch.Ocn == lookup.Ocn)
-                        {
-                            lookup.CarrierId = ocnMatch.CarrierId;
-                        }
+                        lookup.CarrierId = ocnMatch.CarrierId;
                     }
                 }
             }
-
             await _context.SaveChangesAsync();
 
-            return View("Index", await _context.PhoneNumberLookups.Where(x => x.CarrierId == null && !string.IsNullOrWhiteSpace(x.Ocn)).ToListAsync());
+            return View("Index", await _context.PhoneNumberLookups.Where(x => x.CarrierId == null && !string.IsNullOrWhiteSpace(x.Ocn)).Take(100).ToListAsync());
         }
 
         [Authorize]

@@ -40,13 +40,13 @@ namespace NumberSearch.Ingest
 
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
-                .WriteTo.File(
+                .WriteTo.Async(x => x.File(
                     $"{DateTime.Now:yyyyMMdd}_NumberSearch.Ingest.txt",
                     rollingInterval: RollingInterval.Day,
                     rollOnFileSizeLimit: true,
                     shared: true,
-                    flushToDiskInterval: new TimeSpan(1800000)
-                )
+                    buffered: true
+                ))
                 .CreateLogger();
 
             Log.Information($"[Heartbeat] Ingest scheduling loop is starting. {Environment.ProcessorCount} threads detected.");
@@ -98,7 +98,7 @@ namespace NumberSearch.Ingest
                         var email = await Orders.EmailDailyAsync(appConfig);
                     }
 
-                    Log.Information($"[Heartbeat] Cycle complete. Daily Timer ElapsedMilliseconds: {dailyTimer.ElapsedMilliseconds}");
+                    Log.Information("[Heartbeat] Cycle complete. Daily Timer {Elapsed:000} ms.", dailyTimer.ElapsedMilliseconds);
 
                     // Limit this to 1 request every 10 seconds to the database.
                     await Task.Delay(10000).ConfigureAwait(false);

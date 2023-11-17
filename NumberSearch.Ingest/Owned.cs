@@ -280,7 +280,7 @@ namespace NumberSearch.Ingest
                 catch (FlurlHttpException ex)
                 {
                     var message = await ex.GetResponseStringAsync();
-                    Log.Warning($"[OwnedNumbers] Failed to find destination and domain information for owned number {ownedNumber.DialedNumber} : {message}");
+                    Log.Warning("[OwnedNumbers] Failed to find destination and domain information for owned number {@OwnedNumber} : {FailureMessage} : {StatusCode}", ownedNumber, message, ex.StatusCode);
 
                     // If we can't find the number remove the existing data.
                     if (ex.StatusCode is 404)
@@ -297,7 +297,7 @@ namespace NumberSearch.Ingest
                 {
                     ownedNumber.DateUpdated = DateTime.Now;
                     _ = await ownedNumber.PutAsync(connectionString);
-                    Log.Information($"[OwnedNumbers] Updated FusionPBX data for Owned Phone number {ownedNumber.DialedNumber}");
+                    Log.Information("[OwnedNumbers] Updated FusionPBX data for Owned Phone number {@OwnedNumber}", ownedNumber);
                 }
             }
 
