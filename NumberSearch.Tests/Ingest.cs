@@ -133,11 +133,11 @@ namespace NumberSearch.Tests
         //    await Owned.OwnedDailyAsync(ingestConfiguration);
         //}
 
-        //[Fact]
-        //public async Task TestFusionPBXDataUpdateAsync()
-        //{
-        //    await Owned.MatchOwnedNumbersToFusionPBXAsync(ingestConfiguration.Postgresql, ingestConfiguration.FusionPBXUsername, ingestConfiguration.FusionPBXPassword);
-        //}
+        [Fact]
+        public async Task TestFusionPBXDataUpdateAsync()
+        {
+            await Owned.MatchOwnedNumbersToFusionPBXAsync(ingestConfiguration.Postgresql, ingestConfiguration.FusionPBXUsername, ingestConfiguration.FusionPBXPassword);
+        }
 
         //[Fact]
         //public async Task TestSMSRoutingAsync()

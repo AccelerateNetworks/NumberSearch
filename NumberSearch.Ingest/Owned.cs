@@ -233,71 +233,77 @@ namespace NumberSearch.Ingest
 
             var ownedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
 
-            foreach (var ownedNumber in ownedNumbers)
+            var destination = await DestinationDetails.GetByDialedNumberAsync("2068588757", fusionPBXUsername, fusionPBXPassword);
+
+            // If we aren't getting good data back from FusionPBX then skip this updating process.
+            if (destination is not null && !string.IsNullOrWhiteSpace(destination.domain_uuid))
             {
-                bool updated = false;
-
-                try
+                foreach (var ownedNumber in ownedNumbers.Where(x => x.Active))
                 {
-                    var destination = await DestinationDetails.GetByDialedNumberAsync(ownedNumber.DialedNumber, fusionPBXUsername, fusionPBXPassword);
+                    bool updated = false;
 
-                    if (destination is not null && !string.IsNullOrWhiteSpace(destination.domain_uuid))
+                    try
                     {
-                        var checkDestinationuuid = Guid.TryParse(destination.destination_uuid, out var parsedDestionationId);
+                        destination = await DestinationDetails.GetByDialedNumberAsync(ownedNumber.DialedNumber, fusionPBXUsername, fusionPBXPassword);
 
-                        if (ownedNumber.FPBXDestinationId != parsedDestionationId)
+                        if (destination is not null && !string.IsNullOrWhiteSpace(destination.domain_uuid))
                         {
-                            ownedNumber.FPBXDestinationId = parsedDestionationId;
+                            var checkDestinationuuid = Guid.TryParse(destination.destination_uuid, out var parsedDestionationId);
+
+                            if (ownedNumber.FPBXDestinationId != parsedDestionationId)
+                            {
+                                ownedNumber.FPBXDestinationId = parsedDestionationId;
+                                updated = true;
+                            }
+
+                            var domain = await DomainDetails.GetByDomainIdAsync(destination.domain_uuid, fusionPBXUsername, fusionPBXPassword);
+
+                            if (domain is not null && !string.IsNullOrWhiteSpace(domain.domain_name))
+                            {
+                                if (ownedNumber.FPBXDomainName != domain.domain_name)
+                                {
+                                    ownedNumber.FPBXDomainName = domain.domain_name;
+                                    updated = true;
+                                }
+
+                                if (ownedNumber.FPBXDomainDescription != domain.domain_description)
+                                {
+                                    ownedNumber.FPBXDomainDescription = domain.domain_description;
+                                    updated = true;
+                                }
+
+                                var checkDomainuuid = Guid.TryParse(domain.domain_uuid, out var parsedDomainId);
+
+                                if (checkDomainuuid && ownedNumber.FPBXDomainId != parsedDomainId)
+                                {
+                                    ownedNumber.FPBXDomainId = parsedDomainId;
+                                    updated = true;
+                                }
+                            }
+                        }
+                    }
+                    catch (FlurlHttpException ex)
+                    {
+                        var message = await ex.GetResponseStringAsync();
+                        Log.Warning("[OwnedNumbers] Failed to find destination and domain information for owned number {@OwnedNumber} : {FailureMessage} : {StatusCode}", ownedNumber, message, ex.StatusCode);
+
+                        // If we can't find the number remove the existing data.
+                        if (ex.StatusCode is 404)
+                        {
                             updated = true;
-                        }
-
-                        var domain = await DomainDetails.GetByDomainIdAsync(destination.domain_uuid, fusionPBXUsername, fusionPBXPassword);
-
-                        if (domain is not null && !string.IsNullOrWhiteSpace(domain.domain_name))
-                        {
-                            if (ownedNumber.FPBXDomainName != domain.domain_name)
-                            {
-                                ownedNumber.FPBXDomainName = domain.domain_name;
-                                updated = true;
-                            }
-
-                            if (ownedNumber.FPBXDomainDescription != domain.domain_description)
-                            {
-                                ownedNumber.FPBXDomainDescription = domain.domain_description;
-                                updated = true;
-                            }
-
-                            var checkDomainuuid = Guid.TryParse(domain.domain_uuid, out var parsedDomainId);
-
-                            if (checkDomainuuid && ownedNumber.FPBXDomainId != parsedDomainId)
-                            {
-                                ownedNumber.FPBXDomainId = parsedDomainId;
-                                updated = true;
-                            }
+                            ownedNumber.FPBXDestinationId = null;
+                            ownedNumber.FPBXDomainName = string.Empty;
+                            ownedNumber.FPBXDomainDescription = string.Empty;
+                            ownedNumber.FPBXDomainId = null;
                         }
                     }
-                }
-                catch (FlurlHttpException ex)
-                {
-                    var message = await ex.GetResponseStringAsync();
-                    Log.Warning("[OwnedNumbers] Failed to find destination and domain information for owned number {@OwnedNumber} : {FailureMessage} : {StatusCode}", ownedNumber, message, ex.StatusCode);
 
-                    // If we can't find the number remove the existing data.
-                    if (ex.StatusCode is 404)
+                    if (updated)
                     {
-                        updated = true;
-                        ownedNumber.FPBXDestinationId = null;
-                        ownedNumber.FPBXDomainName = string.Empty;
-                        ownedNumber.FPBXDomainDescription = string.Empty;
-                        ownedNumber.FPBXDomainId = null;
+                        ownedNumber.DateUpdated = DateTime.Now;
+                        _ = await ownedNumber.PutAsync(connectionString);
+                        Log.Information("[OwnedNumbers] Updated FusionPBX data for Owned Phone number {@OwnedNumber}", ownedNumber);
                     }
-                }
-
-                if (updated)
-                {
-                    ownedNumber.DateUpdated = DateTime.Now;
-                    _ = await ownedNumber.PutAsync(connectionString);
-                    Log.Information("[OwnedNumbers] Updated FusionPBX data for Owned Phone number {@OwnedNumber}", ownedNumber);
                 }
             }
 
