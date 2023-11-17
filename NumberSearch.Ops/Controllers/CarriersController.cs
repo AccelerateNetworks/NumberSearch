@@ -66,7 +66,7 @@ namespace NumberSearch.Ops.Controllers
 
             if (lookup is not null)
             {
-                var relatedLookups = await _context.PhoneNumberLookups.Where(x => x.Ocn == lookup.Ocn).ToArrayAsync();
+                var relatedLookups = await _context.PhoneNumberLookups.Where(x => x.Ocn == lookup.Ocn).Take(100).ToArrayAsync();
                 if (string.IsNullOrWhiteSpace(lookup.Lec))
                 {
                     return View("Create", new CreateCarrier
