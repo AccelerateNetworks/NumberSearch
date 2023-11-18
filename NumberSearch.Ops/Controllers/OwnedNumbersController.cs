@@ -451,7 +451,7 @@ public class OwnedNumbersController : Controller
             result.AlertType = "alert-danger";
         }
 
-        return View("OwnedNumbers", result);
+        return Redirect("/Home/OwnedNumbers");
     }
 
     [Authorize]
@@ -515,6 +515,7 @@ public class OwnedNumbersController : Controller
             }
         }
 
-        return View("OwnedNumbers", result);
+
+        return Redirect("/Home/OwnedNumbers");
     }
 }
