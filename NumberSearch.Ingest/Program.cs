@@ -44,7 +44,6 @@ namespace NumberSearch.Ingest
                     $"{DateTime.Now:yyyyMMdd}_NumberSearch.Ingest.txt",
                     rollingInterval: RollingInterval.Day,
                     rollOnFileSizeLimit: true,
-                    shared: true,
                     buffered: true
                 ))
                 .CreateLogger();
