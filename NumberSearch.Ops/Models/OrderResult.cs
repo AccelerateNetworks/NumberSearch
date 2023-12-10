@@ -12,6 +12,8 @@ namespace NumberSearch.Ops
         public PortedPhoneNumber[] PortedPhoneNumbers { get; set; } = Array.Empty<PortedPhoneNumber>();
         public PurchasedPhoneNumber[] PurchasedPhoneNumbers { get; set; } = Array.Empty<PurchasedPhoneNumber>();
         public VerifiedPhoneNumber[] VerifiedPhoneNumbers { get; set; } = Array.Empty<VerifiedPhoneNumber>();
+        public string Message { get; set; } = string.Empty;
+        public string AlertType { get; set; } = string.Empty;
     }
 
     public class OrderProducts

@@ -1,5 +1,7 @@
 ﻿using AccelerateNetworks.Operations;
 
+using CsvHelper;
+
 using Flurl.Http;
 
 using Microsoft.AspNetCore.Authorization;
@@ -17,6 +19,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -2587,5 +2590,111 @@ public class OrdersController : Controller
         }
 
         return View("InstallDates", orders);
+    }
+
+    [Authorize]
+    [Route("/Quotes/ExportToCSV")]
+    public async Task<IActionResult> ExportToCSV()
+    {
+        // Show all orders
+        var orders = new List<Order>();
+        var portRequests = await _context.PortRequests.AsNoTracking().ToArrayAsync();
+        var productOrders = await _context.ProductOrders.AsNoTracking().ToArrayAsync();
+        var purchasedNumbers = await _context.PurchasedPhoneNumbers.AsNoTracking().ToArrayAsync();
+        var verifiedNumbers = await _context.VerifiedPhoneNumbers.AsNoTracking().ToArrayAsync();
+        var portedPhoneNumbers = await _context.PortedPhoneNumbers.AsNoTracking().ToArrayAsync();
+        var products = await _context.Products.AsNoTracking().ToArrayAsync();
+        var services = await _context.Services.AsNoTracking().ToArrayAsync();
+        var pairs = new List<OrderProducts>();
+
+        // Show only the relevant Orders to a Sales rep.
+        if (User.IsInRole("Sales") && !User.IsInRole("Support"))
+        {
+            var user = await _userManager.FindByNameAsync(User?.Identity?.Name ?? string.Empty);
+
+            if (user is not null)
+            {
+                orders = await _context.Orders
+                    .Where(x => x.Quote && (x.SalesEmail == user.Email))
+                    .OrderByDescending(x => x.DateSubmitted)
+                    .AsNoTracking()
+                    .ToListAsync();
+            }
+            else
+            {
+                orders = await _context.Orders.Where(x => x.Quote)
+                    .OrderByDescending(x => x.DateSubmitted)
+                    .AsNoTracking()
+                    .ToListAsync();
+            }
+        }
+        else
+        {
+            orders = await _context.Orders.Where(x => x.Quote)
+                    .OrderByDescending(x => x.DateSubmitted)
+                    .AsNoTracking()
+                    .ToListAsync();
+        }
+
+        foreach (var order in orders)
+        {
+            var orderProductOrders = productOrders.Where(x => x.OrderId == order.OrderId).ToArray();
+            var portRequest = portRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefault();
+
+            pairs.Add(new OrderProducts
+            {
+                Order = order,
+                PortRequest = portRequest ?? new PortRequest(),
+                ProductOrders = orderProductOrders
+            });
+        }
+
+        var result = new OrderResult
+        {
+            Orders = pairs.ToArray(),
+            Products = products,
+            Services = services,
+            PortedPhoneNumbers = portedPhoneNumbers,
+            PurchasedPhoneNumbers = purchasedNumbers,
+            VerifiedPhoneNumbers = verifiedNumbers,
+            Message = $"❓Failed to export this CSV.",
+            AlertType = "alert-warning",
+        };
+
+        try
+        {
+            var filePath = Path.GetFullPath(Path.Combine("wwwroot", "csv"));
+            var fileName = $"Quotes{DateTime.Now:yyyyMMdd}.csv";
+            var completePath = Path.Combine(filePath, fileName);
+
+            using var writer = new StreamWriter(completePath);
+            using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+            await csv.WriteRecordsAsync(pairs.Select(x => x.Order)).ConfigureAwait(false);
+            var file = new FileInfo(completePath);
+
+            if (file.Exists)
+            {
+                return Redirect($"../csv/{file.Name}");
+            }
+            else
+            {
+                return View("Quotes", result);
+            }
+        }
+        catch (Exception ex)
+        {
+            result.Message = $"❓Failed to export this CSV. {ex.Message} {ex.StackTrace}";
+            result.AlertType = "alert-danger";
+        }
+
+        return View("Quotes", new OrderResult
+        {
+            Orders = pairs.ToArray(),
+            Products = products,
+            Services = services,
+            PortedPhoneNumbers = portedPhoneNumbers,
+            PurchasedPhoneNumbers = purchasedNumbers,
+            VerifiedPhoneNumbers = verifiedNumbers
+        });
     }
 }
