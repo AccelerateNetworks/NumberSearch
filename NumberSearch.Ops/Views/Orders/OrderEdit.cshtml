@@ -357,10 +357,16 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-12 col-md-6">
             <div class="form-floating mb-3">
-                <input asp-for="Order.CustomerNotes" type="text" class="form-control" id="customernotes" placeholder="Add important information for our staff">
-                <label for="zip" class="text-muted">Notes</label>
+                <textarea asp-for="Order.CustomerNotes" type="text" class="form-control" id="customernotes" placeholder="Add important information for our staff" style="height:10rem"></textarea>
+                <label for="zip" class="text-muted">Customer Notes</label>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="form-floating mb-3">
+                <textarea asp-for="Order.InternalNotes" type="text" class="form-control" id="internalnotes" placeholder="What's with these people? 👀" style="height:10rem"></textarea>
+                <label for="zip" class="text-muted">Internal Notes</label>
             </div>
         </div>
     </div>

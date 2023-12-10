@@ -37,6 +37,6 @@ namespace AccelerateNetworks.Operations
         public DateTime? DateCompleted { get; set; }
         public string? ContactPhoneNumber { get; set; }
         public DateTime? DateUpfrontInvoicePaid { get; set; }
-
+        public string? InternalNotes { get; set; }
     }
 }

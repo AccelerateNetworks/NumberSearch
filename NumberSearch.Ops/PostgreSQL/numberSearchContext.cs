@@ -434,6 +434,10 @@ public partial class numberSearchContext : DbContext
             entity.Property(e => e.ContactPhoneNumber).HasColumnType("character varying");
 
             entity.Property(e => e.DateUpfrontInvoicePaid).HasColumnType("timestamp without time zone");
+
+            entity.Property(e => e.CustomerNotes).HasColumnType("character varying");
+
+            entity.Property(e => e.InternalNotes).HasColumnType("character varying");
         });
 
         modelBuilder.Entity<OwnedPhoneNumber>(entity =>

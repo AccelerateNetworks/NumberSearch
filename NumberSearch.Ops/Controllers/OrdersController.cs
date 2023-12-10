@@ -342,7 +342,7 @@ public class OrdersController : Controller
     [Route("/Home/Order/{orderId}")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> OrderUpdate([Bind("OrderId,FirstName,LastName,Email,Address,Address2,City,State,Zip,DateSubmitted,BusinessName,CustomerNotes,BillingClientId,BillingInvoiceId,Quote,BillingInvoiceReoccuringId,SalesEmail,BackgroundWorkCompleted,Completed,InstallDate,UpfrontInvoiceLink,ReoccuringInvoiceLink,OnsiteInstallation,AddressUnitType,AddressUnitNumber,UnparsedAddress,MergedOrderId,E911ServiceNumber,DateConvertedFromQuote,DateCompleted,ContactPhoneNumber,DateUpfrontInvoicePaid")] Order order)
+    public async Task<IActionResult> OrderUpdate([Bind("OrderId,FirstName,LastName,Email,Address,Address2,City,State,Zip,DateSubmitted,BusinessName,CustomerNotes,BillingClientId,BillingInvoiceId,Quote,BillingInvoiceReoccuringId,SalesEmail,BackgroundWorkCompleted,Completed,InstallDate,UpfrontInvoiceLink,ReoccuringInvoiceLink,OnsiteInstallation,AddressUnitType,AddressUnitNumber,UnparsedAddress,MergedOrderId,E911ServiceNumber,DateConvertedFromQuote,DateCompleted,ContactPhoneNumber,DateUpfrontInvoicePaid,InternalNotes")] Order order)
     {
         if (order is null)
         {
