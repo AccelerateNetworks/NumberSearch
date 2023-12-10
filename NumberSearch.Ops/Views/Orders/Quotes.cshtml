@@ -160,6 +160,9 @@
                                     <strong>Ported</strong>
                                     <p>
                                         @{
+                                            var portedNumbersForLookups = ported.Select(x => x.PortedDialedNumber).ToArray();
+                                            var lookupParameter = string.Join(",", portedNumbersForLookups);
+                                            <a class="btn btn-outline-primary mt-1" href="https://acceleratenetworks.com/Lookup?dialedNumber=@lookupParameter">View all in Lookups</a>
                                             foreach (var product in ported)
                                             {
                                                 var matchingPortedPhoneNumber = Model?.PortedPhoneNumbers?.Where(x => x?.OrderId == order?.Order?.OrderId && x?.PortedDialedNumber == product?.PortedDialedNumber || x?.PortedPhoneNumberId == product?.PortedPhoneNumberId).FirstOrDefault();

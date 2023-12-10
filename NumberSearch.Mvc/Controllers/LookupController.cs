@@ -40,9 +40,16 @@ namespace NumberSearch.Mvc.Controllers
         [HttpGet]
         [DisableRateLimiting]
         [ResponseCache(Duration = 30, Location = ResponseCacheLocation.Any, NoStore = false)]
-        public async Task<IActionResult> IndexAsync()
+        public async Task<IActionResult> IndexAsync(string dialedNumber)
         {
-            return View("Index");
+            if (string.IsNullOrWhiteSpace(dialedNumber))
+            {
+                return View("Index");
+            }
+            else
+            {
+                return View("Index", new LookupResults { DialedNumber = dialedNumber });
+            }
         }
 
         [HttpPost]
