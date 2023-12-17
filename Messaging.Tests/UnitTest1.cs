@@ -1,7 +1,9 @@
 using Amazon.S3;
 using Amazon.S3.Transfer;
 
+using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -64,15 +66,17 @@ namespace Messaging.Tests
         {
             if (string.IsNullOrWhiteSpace(_httpClient.DefaultRequestHeaders.Authorization?.Parameter))
             {
-                var authRequest = new AuthRequest
+                var authRequest = new LoginRequest
                 {
                     Email = _configuration.GetConnectionString("OpsUsername") ?? string.Empty,
                     Password = _configuration.GetConnectionString("OpsPassword") ?? string.Empty,
                 };
 
                 var response = await _httpClient.PostAsJsonAsync("/login", authRequest);
-                var authCredentials = await response.Content.ReadFromJsonAsync<AuthResponse>();
-                _httpClient.DefaultRequestHeaders.Authorization = new("Bearer", authCredentials?.Token ?? string.Empty);
+                var x = await response.Content.ReadAsStringAsync();
+
+                var authCredentials = await response.Content.ReadFromJsonAsync<AccessTokenResponse>();
+                _httpClient.DefaultRequestHeaders.Authorization = new("Bearer", authCredentials?.AccessToken ?? string.Empty);
             }
             return _httpClient;
         }
@@ -401,6 +405,7 @@ namespace Messaging.Tests
             var _httpClient = await GetHttpClientWithValidBearerTokenAsync();
             var registrationRequest = new RegistrationRequest() { CallbackUrl = "https://sms.callpipe.com/message/forward/test", ClientSecret = "thisisatest", DialedNumber = "12068991741" };
             var response = await _httpClient.PostAsJsonAsync("/client/register", registrationRequest);
+            var x = await response.Content.ReadAsStringAsync();
             var data = await response.Content.ReadFromJsonAsync<RegistrationResponse>();
             Assert.NotNull(data);
             Assert.True(data.Registered);

@@ -7,12 +7,16 @@ using Flurl.Http;
 
 using Messaging;
 
+using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -23,6 +27,7 @@ using Prometheus;
 using Serilog;
 using Serilog.Events;
 
+using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
@@ -75,25 +80,6 @@ try
     string emailUsername = builder.Configuration.GetConnectionString("EmailUsername") ?? string.Empty;
     string emailPassword = builder.Configuration.GetConnectionString("EmailPassword") ?? string.Empty;
     string carbonCopyEmail = builder.Configuration.GetConnectionString("CarbonCopyEmail") ?? string.Empty;
-
-    builder.Services
-        .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        .AddJwtBearer(options =>
-        {
-            options.TokenValidationParameters = new TokenValidationParameters()
-            {
-                ClockSkew = TimeSpan.Zero,
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = false,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = "sms.callpipe.com",
-                ValidAudience = "sms.callpipe.com",
-                IssuerSigningKey = new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(localSecret)
-                ),
-            };
-        });
 
     // Makes enums show up in the docs correctly.
     builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
@@ -167,9 +153,18 @@ try
 
     builder.Services.AddIdentityCore<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
         .AddRoles<IdentityRole>()
-        .AddEntityFrameworkStores<ApplicationDbContext>();
+        .AddEntityFrameworkStores<ApplicationDbContext>()
+        .AddApiEndpoints();
 
     builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+    builder.Services.AddAuthentication().AddBearerToken(IdentityConstants.BearerScheme);
+
+    builder.Services.AddAuthorizationBuilder().AddPolicy("api", p =>
+    {
+        p.RequireAuthenticatedUser();
+        p.AddAuthenticationSchemes(IdentityConstants.BearerScheme);
+    });
 
     builder.Services.Configure<ForwardedHeadersOptions>(options =>
     {
@@ -187,7 +182,6 @@ try
         }));
 
     builder.Services.AddMemoryCache();
-    builder.Services.AddScoped<TokenService, TokenService>();
     builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
     builder.Services.AddAWSService<IAmazonS3>();
 
@@ -241,34 +235,65 @@ try
     app.UseHttpMetrics();
     app.MapMetrics();
 
-    app.MapPost("/login", async Task<Results<Ok<AuthResponse>, BadRequest<string>, UnauthorizedHttpResult>> (AuthRequest request, ApplicationDbContext db, UserManager<IdentityUser> userManager, TokenService tokenService, IConfiguration configuration) =>
+    app.MapPost("/login", async Task<Results<Ok<AccessTokenResponse>, EmptyHttpResult, ProblemHttpResult>>
+        ([FromBody] LoginRequest login, [FromQuery] bool? useCookies, [FromQuery] bool? useSessionCookies, [FromServices] IServiceProvider sp) =>
     {
-        var managedUser = await userManager.FindByEmailAsync(request.Email);
-        if (managedUser is null)
+        var signInManager = sp.GetRequiredService<SignInManager<IdentityUser>>();
+
+        var useCookieScheme = (useCookies == true) || (useSessionCookies == true);
+        var isPersistent = (useCookies == true) && (useSessionCookies != true);
+        signInManager.AuthenticationScheme = useCookieScheme ? IdentityConstants.ApplicationScheme : IdentityConstants.BearerScheme;
+
+        var result = await signInManager.PasswordSignInAsync(login.Email, login.Password, isPersistent, lockoutOnFailure: true);
+
+        if (result.RequiresTwoFactor)
         {
-            return TypedResults.BadRequest("Bad credentials");
+            if (!string.IsNullOrEmpty(login.TwoFactorCode))
+            {
+                result = await signInManager.TwoFactorAuthenticatorSignInAsync(login.TwoFactorCode, isPersistent, rememberClient: isPersistent);
+            }
+            else if (!string.IsNullOrEmpty(login.TwoFactorRecoveryCode))
+            {
+                result = await signInManager.TwoFactorRecoveryCodeSignInAsync(login.TwoFactorRecoveryCode);
+            }
         }
-        var isPasswordValid = await userManager.CheckPasswordAsync(managedUser, request.Password);
-        if (!isPasswordValid)
+
+        if (!result.Succeeded)
         {
-            return TypedResults.BadRequest("Bad credentials");
+            return TypedResults.Problem(result.ToString(), statusCode: StatusCodes.Status401Unauthorized);
         }
-        var userInDb = db.Users.FirstOrDefault(u => u.Email == request.Email);
-        if (userInDb is null)
-            return TypedResults.Unauthorized();
-        var accessToken = tokenService.CreateToken(userInDb, configuration);
-        await db.SaveChangesAsync();
-        return TypedResults.Ok(new AuthResponse
+
+        // The signInManager already produced the needed response in the form of a cookie or bearer token.
+        return TypedResults.Empty;
+    });
+
+    app.MapPost("/refresh", async Task<Results<Ok<AccessTokenResponse>, UnauthorizedHttpResult, SignInHttpResult, ChallengeHttpResult>>
+        ([FromBody] RefreshRequest refreshRequest, [FromServices] IServiceProvider sp) =>
+    {
+        var bearerTokenOptions = sp.GetRequiredService<IOptionsMonitor<BearerTokenOptions>>();
+        var timeProvider = sp.GetRequiredService<TimeProvider>();
+
+        var signInManager = sp.GetRequiredService<SignInManager<IdentityUser>>();
+        var refreshTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
+        var refreshTicket = refreshTokenProtector.Unprotect(refreshRequest.RefreshToken);
+
+        // Reject the /refresh attempt with a 401 if the token expired or the security stamp validation fails
+        if (refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc ||
+            timeProvider.GetUtcNow() >= expiresUtc ||
+            await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not IdentityUser user)
+
         {
-            Username = userInDb?.UserName ?? string.Empty,
-            Email = userInDb?.Email ?? string.Empty,
-            Token = accessToken,
-        });
-    })
-        .RequireRateLimiting("onePerSecond").WithOpenApi(x => new(x) { Summary = "Get an auth token.", Description = "JWT magic bb." });
+            return TypedResults.Challenge();
+        }
+
+        var newPrincipal = await signInManager.CreateUserPrincipalAsync(user);
+        return TypedResults.SignIn(newPrincipal, authenticationScheme: IdentityConstants.BearerScheme);
+    });
+
+    // These two endpoints /login and /refresh were extracted from  app.MapGroup("/auth").MapIdentityApi<IdentityUser>(); to hide the registration endpoint.
 
     app.MapGet("/client", MessagingClient.GetByDialedNumberAsync)
-        .RequireAuthorization()
+        .RequireAuthorization("api")
         .WithOpenApi(x => new(x)
         {
             Summary = "Lookup a specific client registration using the dialed number.",
@@ -308,7 +333,7 @@ try
         }
 
     })
-        .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all registered clients.", Description = "This is intended to be used for debugging client registrations." });
+        .RequireAuthorization("api").WithOpenApi(x => new(x) { Summary = "View all registered clients.", Description = "This is intended to be used for debugging client registrations." });
 
     app.MapGet("/client/usage", async Task<Results<Ok<UsageSummary[]>, BadRequest<string>, NotFound<string>>> (MessagingContext db, string? asDialed) =>
     {
@@ -428,7 +453,7 @@ try
             }
         }
     })
-    .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all registered clients.", Description = "This is intended to be used for debugging client registrations." });
+    .RequireAuthorization("api").WithOpenApi(x => new(x) { Summary = "View all registered clients.", Description = "This is intended to be used for debugging client registrations." });
 
     app.MapPost("/client/register", async Task<Results<Ok<RegistrationResponse>, BadRequest<RegistrationResponse>>> (RegistrationRequest registration, MessagingContext db) =>
     {
@@ -676,7 +701,7 @@ try
         return TypedResults.Ok(new RegistrationResponse { DialedNumber = dialedNumber, CallbackUrl = registration.CallbackUrl, /*Email = registration.Email,*/ Registered = true, Message = message, RegisteredUpstream = registeredUpstream, UpstreamStatusDescription = upstreamStatusDescription });
 
     })
-        .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Register a client for message forwarding.", Description = "Boy I wish I had more to say about this, lmao." });
+        .RequireAuthorization("api").WithOpenApi(x => new(x) { Summary = "Register a client for message forwarding.", Description = "Boy I wish I had more to say about this, lmao." });
 
     app.MapPost("/client/remove", async Task<Results<Ok<string>, BadRequest<string>>> (string asDialed, MessagingContext db) =>
     {
@@ -709,7 +734,7 @@ try
 
         return TypedResults.Ok($"The registration for {asDialed} has been removed.");
     })
-    .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Register a client for message forwarding.", Description = "Boy I wish I had more to say about this, lmao." });
+    .RequireAuthorization("api").WithOpenApi(x => new(x) { Summary = "Register a client for message forwarding.", Description = "Boy I wish I had more to say about this, lmao." });
 
 
     app.MapGet("/message/all", async Task<Results<Ok<MessageRecord[]>, NotFound<string>, BadRequest<string>>> (MessagingContext db, string? asDialed) =>
@@ -776,7 +801,7 @@ try
             }
         }
     })
-        .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all sent and received messages.", Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems." });
+        .RequireAuthorization("api").WithOpenApi(x => new(x) { Summary = "View all sent and received messages.", Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems." });
 
     app.MapGet("/message/all/failed", async Task<Results<Ok<MessageRecord[]>, NotFound<string>, BadRequest<string>>> (MessagingContext db, DateTime start, DateTime end) =>
     {
@@ -800,7 +825,7 @@ try
             return TypedResults.BadRequest(ex.Message);
         }
     })
-    .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "View all sent and received messages that failed.", Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems." });
+    .RequireAuthorization("api").WithOpenApi(x => new(x) { Summary = "View all sent and received messages that failed.", Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems." });
 
     app.MapPost("/message/replay", async Task<Results<Ok<string>, NotFound<string>, BadRequest<string>>> (Guid id, MessagingContext db) =>
     {
@@ -887,7 +912,7 @@ try
             return TypedResults.BadRequest(ex.Message);
         }
     })
-    .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Replay an inbound message.", Description = "This is intended to help you debug problems with message delivery so you can see if it's this API or the client app that is causing problems." });
+    .RequireAuthorization("api").WithOpenApi(x => new(x) { Summary = "Replay an inbound message.", Description = "This is intended to help you debug problems with message delivery so you can see if it's this API or the client app that is causing problems." });
 
     app.MapPost("/message/send", async Task<Results<Ok<SendMessageResponse>, BadRequest<SendMessageResponse>>> ([Microsoft.AspNetCore.Mvc.FromBody] SendMessageRequest message, bool? test, MessagingContext db) =>
     {
@@ -1216,7 +1241,7 @@ try
         }
 
     })
-        .RequireAuthorization().WithOpenApi(x => new(x) { Summary = "Send an SMS or MMS Message.", Description = "Submit outbound messages to this endpoint. The 'to' field is a comma separated list of dialed numbers, or a single dialed number without commas. The 'msisdn' the dialed number of the client that is sending the message. The 'message' field is a string. No validation of the message field occurs before it is forwarded to our upstream vendors. If you include any file paths in the MediaURLs array the message will be sent as an MMS." });
+        .RequireAuthorization("api").WithOpenApi(x => new(x) { Summary = "Send an SMS or MMS Message.", Description = "Submit outbound messages to this endpoint. The 'to' field is a comma separated list of dialed numbers, or a single dialed number without commas. The 'msisdn' the dialed number of the client that is sending the message. The 'message' field is a string. No validation of the message field occurs before it is forwarded to our upstream vendors. If you include any file paths in the MediaURLs array the message will be sent as an MMS." });
 
     app.MapPost("1pcom/inbound/MMS", async Task<Results<Ok<string>, BadRequest<string>, Ok<ForwardedMessage>, UnauthorizedHttpResult>> (HttpContext context, string token, MessagingContext db) =>
     {

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net7.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 		<Nullable>enable</Nullable>
@@ -16,16 +16,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Dapper" Version="2.1.15" />
-		<PackageReference Include="Flurl.Http" Version="3.2.4" />
-		<PackageReference Include="MailKit" Version="4.2.0" />
+		<PackageReference Include="Dapper" Version="2.1.24" />
+		<PackageReference Include="Flurl.Http" Version="4.0.0" />
+		<PackageReference Include="MailKit" Version="4.3.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.17" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-		<PackageReference Include="MimeKit" Version="4.2.0" />
+		<PackageReference Include="MimeKit" Version="4.3.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="Npgsql" Version="7.0.6" />
+		<PackageReference Include="Npgsql" Version="8.0.1" />
 		<PackageReference Include="PhoneNumbersNA" Version="1.0.12" />
-		<PackageReference Include="Serilog" Version="3.1.0" />
+		<PackageReference Include="Serilog" Version="3.1.1" />
 	</ItemGroup>
 
 	<ItemGroup>

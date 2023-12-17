@@ -11,7 +11,7 @@ namespace NumberSearch.DataAccess.BulkVS
     {
         public string name { get; set; } = string.Empty;
         public string number { get; set; } = string.Empty;
-        public string time { get; set; } = string.Empty;
+        public long time { get; set; }
         public DateTime LastChecked { get; set; }
 
         /// <summary>
@@ -34,13 +34,8 @@ namespace NumberSearch.DataAccess.BulkVS
 
                 // Handle the time requested.
                 // https://stackoverflow.com/questions/2477712/convert-local-time-10-digit-number-to-a-readable-datetime-format
-                var checkParse = long.TryParse(result.time, out var portTime);
 
-                if (checkParse)
-                {
-                    result.LastChecked = new DateTime(1970, 1, 1).AddSeconds(portTime);
-                }
-
+                result.LastChecked = new DateTime(1970, 1, 1).AddSeconds(result.time);
                 return result;
             }
             catch (FlurlHttpException ex)

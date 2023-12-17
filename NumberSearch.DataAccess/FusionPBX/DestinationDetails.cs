@@ -1,6 +1,9 @@
 ﻿using Flurl.Http;
 
+using NumberSearch.DataAccess.InvoiceNinja;
+
 using System;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.FusionPBX
@@ -22,6 +25,7 @@ namespace NumberSearch.DataAccess.FusionPBX
         public object destination_accountcode { get; set; } = string.Empty;
         public string destination_app { get; set; } = string.Empty;
         public string destination_data { get; set; } = string.Empty;
+        [JsonConverter(typeof(BooleanConverter))]
         public bool destination_enabled { get; set; } = false;
         public string destination_description { get; set; } = string.Empty;
         public string destination_prefix { get; set; } = string.Empty;

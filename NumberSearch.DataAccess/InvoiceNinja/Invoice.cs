@@ -2,6 +2,8 @@
 
 using System;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.InvoiceNinja
@@ -18,6 +20,10 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             string tokenHeader = "X-Api-Token";
             string perPageParameter = "?per_page=10000";
             string url = $"{baseUrl}{endpostring}{perPageParameter}";
+
+            var x = await url
+    .WithHeader(tokenHeader, token)
+    .GetStringAsync();
 
             var result = await url
                 .WithHeader(tokenHeader, token)
@@ -111,7 +117,9 @@ namespace NumberSearch.DataAccess.InvoiceNinja
 
     public class Line_Items
     {
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public decimal quantity { get; set; }
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public decimal cost { get; set; }
         public string product_key { get; set; } = string.Empty;
         public string notes { get; set; } = string.Empty;
@@ -128,13 +136,47 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public string custom_value3 { get; set; } = string.Empty;
         public string custom_value4 { get; set; } = string.Empty;
         public string type_id { get; set; } = string.Empty;
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public decimal product_cost { get; set; }
+        [JsonConverter(typeof(BooleanConverter))]
         public bool is_amount_discount { get; set; }
         public string sort_id { get; set; } = string.Empty;
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public decimal line_total { get; set; }
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public decimal gross_line_total { get; set; }
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public decimal tax_amount { get; set; }
         public string tax_id { get; set; } = string.Empty;
+    }
+
+
+    public class BooleanConverter : JsonConverter<bool>
+    {
+        public override bool Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            switch (reader.TokenType)
+            {
+                case JsonTokenType.True:
+                    return true;
+                case JsonTokenType.False:
+                    return false;
+                case JsonTokenType.String:
+                    return reader.GetString() switch
+                    {
+                        "true" => true,
+                        "false" => false,
+                        _ => false
+                    };
+                default:
+                    return false;
+            }
+        }
+
+        public override void Write(Utf8JsonWriter writer, bool value, JsonSerializerOptions options)
+        {
+            writer.WriteBooleanValue(value);
+        }
     }
 
     public class Invitation
