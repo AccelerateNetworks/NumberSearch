@@ -30,3 +30,4 @@
 /Messaging.Tests/bin/Debug/net7.0
 /Messaging.Tests/obj
 *.csv
+/Messaging.Tests/bin/Debug/net8.0
