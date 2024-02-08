@@ -28,13 +28,13 @@
 		<PackageReference Include="Markdig" Version="0.34.0" />
 		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-		<PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.8.14">
+		<PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.9.28">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="NetEscapades.AspNetCore.SecurityHeaders" Version="0.21.0" />
-		<PackageReference Include="prometheus-net.AspNetCore" Version="8.2.0" />
-		<PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
+		<PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
+		<PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
 		<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
 		<PackageReference Include="Serilog.Sinks.Postgresql.Alternative" Version="4.0.2" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
