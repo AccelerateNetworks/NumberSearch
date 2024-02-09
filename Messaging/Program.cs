@@ -16,11 +16,14 @@ using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 using Models;
+
+using Npgsql;
 
 using Prometheus;
 
@@ -31,6 +34,7 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -1383,6 +1387,8 @@ try
             using var spacesClient = new AmazonS3Client(digitalOceanSpacesAccessKey, digitalOceanSpacesSecretKey, spacesConfig);
             using var fileUtil = new TransferUtility(spacesClient);
 
+            string location = app.Configuration.GetValue<string>(WebHostDefaults.ContentRootKey) ?? string.Empty;
+
             if (!string.IsNullOrWhiteSpace(MMSDescription?.files))
             {
                 foreach (string file in MMSDescription.files.Split(','))
@@ -1392,6 +1398,13 @@ try
                         string fileDownloadURL = $"{MMSMessagePickupRequest}&file={file}";
                         Log.Information(fileDownloadURL);
                         using var fileStream = await fileDownloadURL.GetStreamAsync();
+
+                        // Save the file to disk rather than S3?!?
+                        var filePath = Path.Combine(location, Path.Combine(toForward.Id.ToString(), file));
+                        using Stream streamToFile = File.Create(filePath);
+                        fileStream.Seek(0, SeekOrigin.Begin);
+                        fileStream.CopyTo(streamToFile);
+
                         var fileRequest = new TransferUtilityUploadRequest
                         {
                             BucketName = digitalOceanSpacesBucket,
