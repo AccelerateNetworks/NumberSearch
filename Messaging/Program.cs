@@ -1387,7 +1387,7 @@ try
             using var spacesClient = new AmazonS3Client(digitalOceanSpacesAccessKey, digitalOceanSpacesSecretKey, spacesConfig);
             using var fileUtil = new TransferUtility(spacesClient);
 
-            string location = app.Configuration.GetValue<string>(WebHostDefaults.ContentRootKey) ?? string.Empty;
+            //string location = app.Configuration.GetValue<string>(WebHostDefaults.ContentRootKey) ?? string.Empty;
 
             if (!string.IsNullOrWhiteSpace(MMSDescription?.files))
             {
