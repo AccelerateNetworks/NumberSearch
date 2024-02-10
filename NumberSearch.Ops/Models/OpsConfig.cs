@@ -27,7 +27,8 @@
         public string AzureStorageAccount { get; set; } = string.Empty;
         public string TeleDynamicsUsername { get; set; } = string.Empty;
         public string TeleDynamicsPassword { get; set; } = string.Empty;
-        public string MessagingAPIJWT { get; set; } = string.Empty;
+        public string MessagingUsername { get; set; } = string.Empty;
+        public string MessagingPassword { get; set; } = string.Empty;
         public string MessagingURL { get; set; } = string.Empty;
         public string TwilioUsername { get; set; } = string.Empty;
         public string TwilioPassword { get; set; } = string.Empty;

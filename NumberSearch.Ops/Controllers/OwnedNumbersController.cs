@@ -6,7 +6,9 @@ using FirstCom;
 
 using Flurl.Http;
 
+using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -53,6 +55,18 @@ public class OwnedNumbersController : Controller
         public DateTime DateRegistered { get; set; } = DateTime.Now;
         [DataType(DataType.Password)]
         public string ClientSecret { get; set; } = string.Empty;
+    }
+
+    private Task<AccessTokenResponse> GetTokenAsync()
+    {
+        var loginRequest = new LoginRequest()
+        {
+            Email = _config.MessagingUsername,
+            Password = _config.MessagingPassword,
+            TwoFactorCode = string.Empty,
+            TwoFactorRecoveryCode = string.Empty
+        };
+        return $"{_config.MessagingURL}login".PostJsonAsync(loginRequest).ReceiveJson<AccessTokenResponse>();
     }
 
     [Authorize]
@@ -104,8 +118,9 @@ public class OwnedNumbersController : Controller
         var portedNumbers = await _context.PortedPhoneNumbers.ToArrayAsync();
         var purchasedNumbers = await _context.PurchasedPhoneNumbers.ToArrayAsync();
         var e911s = await _context.EmergencyInformation.ToArrayAsync();
-        var registeredNumbers = await "https://sms.callpipe.com/client/all"
-            .WithOAuthBearerToken(_config.MessagingAPIJWT)
+        var token = await GetTokenAsync();
+        var registeredNumbers = await $"{_config.MessagingURL}client/all"
+            .WithOAuthBearerToken(token.AccessToken)
             .GetJsonAsync<ClientRegistration[]>();
 
         var viewOrders = new List<OwnedNumberResult>();

@@ -447,7 +447,7 @@ namespace Messaging.Tests
                 {
                     new KeyValuePair<string, string>("msisdn", "12066320575"),
                     new KeyValuePair<string, string>("to", "12066320575"),
-                    new KeyValuePair<string, string>("message", "{\r\n\"authkey\":\"2870e0d1-8dfa-4b31-91e9-6d0fc72de19d\",\r\n\"encoding\":\"native\",\r\n\"files\":\"part-001.jpg,part-002.txt,\",\r\n\"recip\":\"12066320575,\",\r\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=ffa64b9fe9824a4c98c73d016264ad92\"\r\n}"),
+                    new KeyValuePair<string, string>("message", "{\r\n\"authkey\":\"bbdd4df0-1da0-4c5d-be9e-a94b75513c91\",\r\n\"encoding\":\"native\",\r\n\"files\":\"part-002.txt,\",\r\n\"recip\":\"12068589310,\",\r\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=ce808f729db2413498ef722333badb2b\"\r\n}"),
                     new KeyValuePair<string, string>("remote", "12066320575"),
                     new KeyValuePair<string, string>("host", "12066320575"),
                 });

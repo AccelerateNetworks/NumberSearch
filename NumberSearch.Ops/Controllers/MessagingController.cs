@@ -1,12 +1,16 @@
 ﻿using AccelerateNetworks.Operations;
 
+using Azure.Core;
+
 using CsvHelper;
 
 using FirstCom;
 
 using Flurl.Http;
 
+using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,14 +35,28 @@ namespace NumberSearch.Ops.Controllers
         private readonly numberSearchContext _context;
         private readonly OpsConfig _config;
         private readonly string _baseUrl;
-        private readonly string _messagingToken;
+        private readonly string _messagingUsername;
+        private readonly string _messagingPassword;
 
         public MessagingController(numberSearchContext context, OpsConfig opsConfig)
         {
             _context = context;
             _config = opsConfig;
             _baseUrl = opsConfig.MessagingURL;
-            _messagingToken = opsConfig.MessagingAPIJWT;
+            _messagingUsername = opsConfig.MessagingUsername;
+            _messagingPassword = opsConfig.MessagingPassword;
+        }
+
+        private Task<AccessTokenResponse> GetTokenAsync()
+        {
+            var loginRequest = new LoginRequest()
+            {
+                Email = _messagingUsername,
+                Password = _messagingPassword,
+                TwoFactorCode = string.Empty,
+                TwoFactorRecoveryCode = string.Empty
+            };
+            return $"{_baseUrl}login".PostJsonAsync(loginRequest).ReceiveJson<AccessTokenResponse>();
         }
 
         [Authorize]
@@ -46,7 +64,8 @@ namespace NumberSearch.Ops.Controllers
         [Route("/Messaging/Index")]
         public async Task<IActionResult> IndexAsync()
         {
-            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
+            var token = await GetTokenAsync();
+            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             //bool refresh = false;
             //foreach (var number in stats)
@@ -74,7 +93,8 @@ namespace NumberSearch.Ops.Controllers
         [Route("/Messaging/Failed")]
         public async Task<IActionResult> FailedMessagesAsync()
         {
-            var failures = await $"{_baseUrl}message/all/failed?start={DateTime.Now.AddDays(-3).ToShortDateString()}&end={DateTime.Now.AddDays(1).ToShortDateString()}".WithOAuthBearerToken(_messagingToken).GetJsonAsync<MessageRecord[]>();
+            var token = await GetTokenAsync();
+            var failures = await $"{_baseUrl}message/all/failed?start={DateTime.Now.AddDays(-3).ToShortDateString()}&end={DateTime.Now.AddDays(1).ToShortDateString()}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<MessageRecord[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             return View("Failed", new MessagingResult { FailedMessages = failures.OrderByDescending(x => x.DateReceivedUTC).ToArray(), Owned = ownedNumbers });
         }
@@ -86,12 +106,13 @@ namespace NumberSearch.Ops.Controllers
             string message = string.Empty;
             string alertType = "alert-success";
             bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
+            var token = await GetTokenAsync();
             if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
             {
-                var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration>();
+                var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration>();
                 message = $"🔃 Upstream Status {refresh.UpstreamStatusDescription} for {refresh.AsDialed} routed to {refresh.CallbackUrl}";
             }
-            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
+            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             return View("Index", new MessagingResult { ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray(), Owned = ownedNumbers, Message = message, AlertType = alertType });
         }
@@ -102,18 +123,19 @@ namespace NumberSearch.Ops.Controllers
         {
             var result = new MessagingResult { AlertType = "alert-success" };
             bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
+            var token = await GetTokenAsync();
             if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
             {
                 try
                 {
-                    var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration>();
+                    var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration>();
                     var registrationRequest = new RegistrationRequest
                     {
                         DialedNumber = refresh.AsDialed,
                         CallbackUrl = refresh.CallbackUrl,
                         ClientSecret = refresh.ClientSecret,
                     };
-                    var request = await $"{_baseUrl}client/register".WithOAuthBearerToken(_messagingToken).PostJsonAsync(registrationRequest);
+                    var request = await $"{_baseUrl}client/register".WithOAuthBearerToken(token.AccessToken).PostJsonAsync(registrationRequest);
                     var response = await request.GetJsonAsync<RegistrationResponse>();
                     result.Message = $"✔️ Reregistration complete! {response.Message}";
                 }
@@ -133,9 +155,9 @@ namespace NumberSearch.Ops.Controllers
             // Refresh the status
             if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
             {
-                var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration>();
+                var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration>();
             }
-            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
+            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
             result.Owned = ownedNumbers;
@@ -149,13 +171,14 @@ namespace NumberSearch.Ops.Controllers
         public async Task<IActionResult> MessagingToEmailAsync([Bind("DialedNumber,Email")] ToEmailRequest toEmail)
         {
             var result = new MessagingResult { AlertType = "alert-success" };
+            var token = await GetTokenAsync();
 
             if (string.IsNullOrWhiteSpace(toEmail?.Email) || !toEmail.Email.Contains('@'))
             {
                 result.Message = $"❌ Email address is invalid. {toEmail?.Email}";
                 result.AlertType = "alert-danger";
 
-                var stats1 = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
+                var stats1 = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
                 var ownedNumbers1 = await _context.OwnedPhoneNumbers.ToArrayAsync();
                 result.ClientRegistrations = stats1.OrderByDescending(x => x.DateRegistered).ToArray();
                 result.Owned = ownedNumbers1;
@@ -214,7 +237,7 @@ namespace NumberSearch.Ops.Controllers
                     Log.Error(ex.StackTrace ?? "No stack trace found.");
                     result.Message = $"❌ Failed to enabled messaging service through EndStream for this dialed number. Please email dan@acceleratenetworks.com to report this outage. {ex.Message}";
                     result.AlertType = "alert-danger";
-                    var stats2 = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
+                    var stats2 = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
                     var ownedNumbers2 = await _context.OwnedPhoneNumbers.ToArrayAsync();
                     result.ClientRegistrations = stats2.OrderByDescending(x => x.DateRegistered).ToArray();
                     result.Owned = ownedNumbers2;
@@ -232,7 +255,7 @@ namespace NumberSearch.Ops.Controllers
             //{
             //    var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration>();
             //}
-            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
+            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
             result.Owned = ownedNumbers;
@@ -248,18 +271,19 @@ namespace NumberSearch.Ops.Controllers
             string message = string.Empty;
             string alertType = "alert-success";
             bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(registrationRequest.DialedNumber, out var phoneNumber);
+            var token = await GetTokenAsync();
             if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
             {
-                var request = await $"{_baseUrl}client/register".WithOAuthBearerToken(_messagingToken).PostJsonAsync(registrationRequest);
+                var request = await $"{_baseUrl}client/register".WithOAuthBearerToken(token.AccessToken).PostJsonAsync(registrationRequest);
                 var response = await request.GetJsonAsync<RegistrationResponse>();
                 message = $"✔️ Reregistration complete! {response.Message}";
             }
             // Refresh the status
             if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
             {
-                var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration>();
+                var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration>();
             }
-            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
+            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             return View("Index", new MessagingResult { ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray(), Owned = ownedNumbers, Message = message, AlertType = alertType });
         }
@@ -270,11 +294,12 @@ namespace NumberSearch.Ops.Controllers
         {
             var result = new MessagingResult { AlertType = "alert-success" };
             bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
+            var token = await GetTokenAsync();
             if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
             {
                 try
                 {
-                    var request = await $"{_baseUrl}client/remove?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(_messagingToken).PostAsync();
+                    var request = await $"{_baseUrl}client/remove?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(token.AccessToken).PostAsync();
                     var response = await request.GetStringAsync();
                     result.Message = $"✔️ Registration removed! {response}";
                 }
@@ -290,7 +315,7 @@ namespace NumberSearch.Ops.Controllers
                 }
             }
 
-            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
+            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
             result.Owned = ownedNumbers;
@@ -302,10 +327,11 @@ namespace NumberSearch.Ops.Controllers
         public async Task<IActionResult> TwilioCarrierAsync(string dialedNumber, bool? refreshAll)
         {
             var result = new MessagingResult { AlertType = "alert-success" };
+            var token = await GetTokenAsync();
 
             if (refreshAll is not null && refreshAll is true)
             {
-                var numbers = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
+                var numbers = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
                 var existing = await _context.OwnedPhoneNumbers.ToDictionaryAsync(x => x.DialedNumber, x => x);
 
                 foreach (var number in numbers)
@@ -392,7 +418,7 @@ namespace NumberSearch.Ops.Controllers
                 }
             }
 
-            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
+            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
             result.Owned = ownedNumbers;
@@ -406,7 +432,8 @@ namespace NumberSearch.Ops.Controllers
         public async Task<IActionResult> ExportToCSV()
         {
             var result = new MessagingResult { AlertType = "alert-success" };
-            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration[]>();
+            var token = await GetTokenAsync();
+            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             var exportReady = new List<CSVExport>(stats.Length);
             try
