@@ -1387,7 +1387,7 @@ try
             using var spacesClient = new AmazonS3Client(digitalOceanSpacesAccessKey, digitalOceanSpacesSecretKey, spacesConfig);
             using var fileUtil = new TransferUtility(spacesClient);
 
-            //string location = app.Configuration.GetValue<string>(WebHostDefaults.ContentRootKey) ?? string.Empty;
+            string location = app.Configuration.GetValue<string>(WebHostDefaults.ContentRootKey) ?? string.Empty;
 
             if (!string.IsNullOrWhiteSpace(MMSDescription?.files))
             {
@@ -1397,22 +1397,22 @@ try
                     {
                         string fileDownloadURL = $"{MMSMessagePickupRequest}&file={file}";
                         Log.Information(fileDownloadURL);
-                        using var fileStream = await fileDownloadURL.GetStreamAsync();
-
+                        //Stream fileStream = await fileDownloadURL.GetStreamAsync();
+                        var path = await fileDownloadURL.DownloadFileAsync(location, $"{toForward.Id.ToString()}{file}");
+                        Log.Information(path);
                         // Save the file to disk rather than S3?!?
-                        //var filePath = Path.Combine(location, Path.Combine(toForward.Id.ToString(), file));
-                        //using Stream streamToFile = File.Create(filePath);
-                        //fileStream.Seek(0, SeekOrigin.Begin);
-                        //fileStream.CopyTo(streamToFile);
+                        var filePath = Path.Combine(location, $"{toForward.Id.ToString()}{file}");
+                        using Stream streamToFile = new FileStream(path, FileMode.Open, FileAccess.Read);
 
                         var fileRequest = new TransferUtilityUploadRequest
                         {
                             BucketName = digitalOceanSpacesBucket,
-                            InputStream = fileStream,
+                            InputStream = streamToFile,
                             StorageClass = S3StorageClass.Standard,
                             Key = $"{toForward.Id}{file}",
                             CannedACL = S3CannedACL.Private,
                         };
+
                         await fileUtil.UploadAsync(fileRequest);
                         mediaURLs.Add($"{spacesConfig.ServiceURL}{fileRequest.BucketName}/{fileRequest.Key}");
 

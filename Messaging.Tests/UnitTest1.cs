@@ -475,7 +475,7 @@ namespace Messaging.Tests
                     new KeyValuePair<string, string>("msisdn", "12065579450"),
                     new KeyValuePair<string, string>("to", "12068589310"),
                     new KeyValuePair<string, string>("timezone", "EST"),
-                    new KeyValuePair<string, string>("message", "{\r\n\"authkey\":\"7071e405-3cb8-43ac-acae-6c06987ede02\",\r\n\"encoding\":\"native\",\r\n\"files\":\"part-001.txt,\",\r\n\"recip\":\"12068589310,\",\r\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=2ee9b7b8a1db41d590a9fcabbec08b63\"\r\n}"),
+                    new KeyValuePair<string, string>("message", "{\r\n\"authkey\":\"bbdd4df0-1da0-4c5d-be9e-a94b75513c91\",\r\n\"encoding\":\"native\",\r\n\"files\":\"part-002.txt,\",\r\n\"recip\":\"12068589310,\",\r\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=ce808f729db2413498ef722333badb2b\"\r\n}"),
                     new KeyValuePair<string, string>("api_version", "0.5"),
                     new KeyValuePair<string, string>("FullRecipientList", ", 12067696361"),
                 });
