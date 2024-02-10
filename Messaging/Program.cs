@@ -1400,10 +1400,10 @@ try
                         using var fileStream = await fileDownloadURL.GetStreamAsync();
 
                         // Save the file to disk rather than S3?!?
-                        var filePath = Path.Combine(location, Path.Combine(toForward.Id.ToString(), file));
-                        using Stream streamToFile = File.Create(filePath);
-                        fileStream.Seek(0, SeekOrigin.Begin);
-                        fileStream.CopyTo(streamToFile);
+                        //var filePath = Path.Combine(location, Path.Combine(toForward.Id.ToString(), file));
+                        //using Stream streamToFile = File.Create(filePath);
+                        //fileStream.Seek(0, SeekOrigin.Begin);
+                        //fileStream.CopyTo(streamToFile);
 
                         var fileRequest = new TransferUtilityUploadRequest
                         {
