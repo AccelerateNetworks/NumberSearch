@@ -43,7 +43,7 @@ Create a cronjob using `crontab -e` to run the ingest:
 ```
 23 1 * * *  /usr/bin/dotnet /var/www/numberSearch.Ingest/NumberSearch.Ingest.dll >> /var/log/NumberSearchIngest.log 2>&1
 ```
-## Run as a service
+# Run as a service
 Move numbersearch.service to the correct directory, enable it and start the process:
 ```
 cp numbersearch.service /etc/systemd/system/numbersearch.service
