@@ -3,6 +3,8 @@
 using Serilog;
 
 using System;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.BulkVS
@@ -21,7 +23,7 @@ namespace NumberSearch.DataAccess.BulkVS
         public string lec { get; set; } = string.Empty;
         public string lectype { get; set; } = string.Empty;
         public string spid { get; set; } = string.Empty;
-        public string activation { get; set; } = string.Empty;
+        public long activation { get; set; } = 0;
         public string LIDBName { get; set; } = string.Empty;
         public DateTime LastPorted { get; set; }
 
@@ -42,16 +44,28 @@ namespace NumberSearch.DataAccess.BulkVS
 
             try
             {
-                var result = await route.GetJsonAsync<LrnBulkCnam>().ConfigureAwait(false);
+                var resultData = await route.GetStringAsync().ConfigureAwait(false);
+
+                // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/invalid-json
+                // https://github.com/AccelerateNetworks/NumberSearch/issues/449
+                JsonSerializerOptions options = new()
+                {
+                    NumberHandling =
+                        JsonNumberHandling.AllowReadingFromString |
+                        JsonNumberHandling.WriteAsString
+                };
+
+                LrnBulkCnam result =
+                    JsonSerializer.Deserialize<LrnBulkCnam>(resultData, options)!;
 
                 // Handle the last ported date.
                 // https://stackoverflow.com/questions/2477712/convert-local-time-10-digit-number-to-a-readable-datetime-format
-                var checkParse = long.TryParse(result.activation, out var portTime);
+                //var checkParse = long.TryParse(result.activation, out var portTime);
 
-                if (checkParse)
-                {
-                    result.LastPorted = new DateTime(1970, 1, 1).AddSeconds(portTime);
-                }
+                //if (checkParse)
+                //{
+                result.LastPorted = new DateTime(1970, 1, 1).AddSeconds(result.activation);
+                //}
 
                 return result;
             }

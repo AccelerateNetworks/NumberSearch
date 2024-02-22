@@ -847,7 +847,7 @@ namespace NumberSearch.Mvc.Controllers
                             break;
                     }
 
-                    var checkLong = long.TryParse(checkNumber.activation, out var timeInSeconds);
+                    var checkLong = long.TryParse(checkNumber.activation.ToString(), out var timeInSeconds);
 
                     var verifiedPhoneNumber = new VerifiedPhoneNumber
                     {
@@ -872,7 +872,7 @@ namespace NumberSearch.Mvc.Controllers
                         LocalExchangeCarrier = checkNumber.lec,
                         LocalExchangeCarrierType = checkNumber.lectype,
                         ServiceProfileIdentifier = checkNumber.spid,
-                        Activation = checkNumber.activation,
+                        Activation = checkNumber.activation.ToString(),
                         LIDBName = checkNumber.LIDBName,
                         LastPorted = checkLong ? new DateTime(1970, 1, 1).AddSeconds(timeInSeconds) : DateTime.Now,
                         DateToExpire = DateTime.Now.AddYears(1)

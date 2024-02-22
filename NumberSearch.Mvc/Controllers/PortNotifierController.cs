@@ -67,7 +67,7 @@ namespace NumberSearch.Mvc.Controllers
                     var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSAPIKey);
                     checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName.name;
 
-                    var checkLong = long.TryParse(checkNumber.activation, out var timeInSeconds);
+                    var checkLong = long.TryParse(checkNumber.activation.ToString(), out var timeInSeconds);
 
                     var verify = new VerifiedPhoneNumber
                     {
@@ -91,7 +91,7 @@ namespace NumberSearch.Mvc.Controllers
                         LocalExchangeCarrier = checkNumber.lec,
                         LocalExchangeCarrierType = checkNumber.lectype,
                         ServiceProfileIdentifier = checkNumber.spid,
-                        Activation = checkNumber.activation,
+                        Activation = checkNumber.activation.ToString(),
                         LIDBName = checkNumber.LIDBName,
                         LastPorted = checkLong ? new DateTime(1970, 1, 1).AddSeconds(timeInSeconds) : DateTime.Now,
                         DateToExpire = DateTime.Now.AddYears(1)
