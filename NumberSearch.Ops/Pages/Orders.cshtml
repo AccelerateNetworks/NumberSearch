@@ -21,7 +21,7 @@
                         console.log(data);
                         var options = '';
                         for (var i = 0; i < data.length; i++) {
-                            options += `<li class='list-group-item' onclick='setAddress(this.innerHTML)'>${data[i]}</li>`;
+                            options += `<li class='list-group-item' onclick='setAddress(this.textContent)'>${data[i]}</li>`;
                         }
                         var datalist = document.getElementById("addressOptions");
                         datalist.innerHTML = options;
@@ -37,6 +37,7 @@
             });
     }
     function setAddress(address) {
+        console.log(address);
         var textBox = document.getElementById("searchInput");
         textBox.value = address;
         var datalist = document.getElementById("addressOptions");
