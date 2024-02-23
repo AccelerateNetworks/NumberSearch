@@ -300,6 +300,7 @@ namespace NumberSearch.Mvc.Controllers
                     existing.PartialPort = existing.PartialPort != portRequest.PartialPort ? portRequest.PartialPort : existing.PartialPort;
                     existing.PartialPortDescription = existing.PartialPortDescription != portRequest.PartialPortDescription ? portRequest.PartialPortDescription : existing.PartialPortDescription;
                     existing.LocationType = existing.LocationType != portRequest.LocationType ? portRequest.LocationType : existing.LocationType;
+                    existing.DateUpdated = DateTime.Now;
 
                     // Save the rest of the data to the DB.
                     var checkExisting = await existing.PutAsync(_postgresql).ConfigureAwait(false);
