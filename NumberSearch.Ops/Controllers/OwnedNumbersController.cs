@@ -210,7 +210,7 @@ public class OwnedNumbersController : Controller
     {
         var existing = await _context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
 
-        if (string.IsNullOrWhiteSpace(dialedNumber) && string.IsNullOrWhiteSpace(UnparsedAddress) && existing is null)
+        if (string.IsNullOrWhiteSpace(dialedNumber) && string.IsNullOrWhiteSpace(UnparsedAddress) && existing?.DialedNumber is null)
         {
             return Redirect("/Home/OwnedNumbers/");
         }
