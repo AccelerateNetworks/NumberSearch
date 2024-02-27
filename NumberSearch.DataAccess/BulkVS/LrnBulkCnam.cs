@@ -23,7 +23,7 @@ namespace NumberSearch.DataAccess.BulkVS
         public string lec { get; set; } = string.Empty;
         public string lectype { get; set; } = string.Empty;
         public string spid { get; set; } = string.Empty;
-        public long activation { get; set; } = 0;
+        public long? activation { get; set; } = 0;
         public string LIDBName { get; set; } = string.Empty;
         public DateTime LastPorted { get; set; }
 
@@ -64,7 +64,7 @@ namespace NumberSearch.DataAccess.BulkVS
 
                 //if (checkParse)
                 //{
-                result.LastPorted = new DateTime(1970, 1, 1).AddSeconds(result.activation);
+                result.LastPorted = new DateTime(1970, 1, 1).AddSeconds(result.activation ?? 0);
                 //}
 
                 return result;

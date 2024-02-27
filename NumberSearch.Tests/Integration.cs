@@ -661,7 +661,7 @@ namespace NumberSearch.Tests
             Assert.True(!string.IsNullOrWhiteSpace(result.name));
             output.WriteLine(JsonSerializer.Serialize(result));
         }
-
+        
         [Fact]
         public async Task BulkVSLrnLookupAsync()
         {
@@ -674,6 +674,21 @@ namespace NumberSearch.Tests
             // Assert
             Assert.NotNull(result);
             Assert.True(!string.IsNullOrWhiteSpace(result.spid));
+            output.WriteLine(JsonSerializer.Serialize(result));
+        }
+
+        [Fact]
+        public async Task BulkVSLrnLookupTollfreeAsync()
+        {
+            // Arrange
+            var number = "8662122226";
+
+            // Act
+            var result = await LrnBulkCnam.GetAsync(number, bulkVSKey);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(!string.IsNullOrWhiteSpace(result.jurisdiction));
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 

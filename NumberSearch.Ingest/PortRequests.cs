@@ -174,7 +174,7 @@ Accelerate Networks
 
                                 if (checkSend && checkSave)
                                 {
-                                    Log.Information($"Sucessfully sent out the port completed email for Order {originalOrder.OrderId}.");
+                                    Log.Information($"Successfully sent out the port completed email for Order {originalOrder.OrderId}.");
                                 }
                                 else
                                 {
