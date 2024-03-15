@@ -99,8 +99,10 @@ namespace NumberSearch.DataAccess.BulkVS
             public string State { get; set; } = string.Empty;
             public string Zip { get; set; } = string.Empty;
             public string[] Sms { get; set; } = Array.Empty<string>();
+            // Only exists to make parsing the JSON easier.
             [JsonPropertyName("Last Modification")]
             [JsonProperty("Last Modification")]
+            public string UnparsedLastModDate { get; set; } = string.Empty;
             public DateTime LastModification { get; set; }
         }
 
@@ -112,15 +114,22 @@ namespace NumberSearch.DataAccess.BulkVS
 
             try
             {
-                return await route.WithBasicAuth(username, password)
-                    .PostJsonAsync(new ProvisionRequest { TN = dialedNumber, CallerName = callerName, AddressID = addressId, Sms = sms })
-                    .ReceiveJson<ProvisionResponse>()
-                    .ConfigureAwait(false);
+                var response = await route.WithBasicAuth(username, password)
+                .PostJsonAsync(new ProvisionRequest { TN = dialedNumber, CallerName = callerName, AddressID = addressId, Sms = sms })
+                .ReceiveJson<ProvisionResponse>()
+                .ConfigureAwait(false);
+
+                var checkParse = DateTime.TryParse(response.UnparsedLastModDate, out var parsed);
+
+                response.LastModification = checkParse ? parsed : DateTime.Now;
+
+                return response;
             }
             catch (FlurlHttpException ex)
             {
                 Log.Warning($"[E911] [BulkVS] Unable to provision E911 service for {dialedNumber}.");
-                Log.Warning(await ex.GetResponseStringAsync());
+                var x = await ex.GetResponseStringAsync();
+                Log.Warning(x);
                 return new();
             }
         }
