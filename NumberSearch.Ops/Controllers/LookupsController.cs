@@ -82,13 +82,18 @@ namespace NumberSearch.Ops.Controllers
             // Match lookups to existing carriers.
             var carriers = await _context.Carriers.ToListAsync();
 
+            var lookupsWithoutCarriers = await _context.PhoneNumberLookups.Where(x => x.CarrierId == null || x.CarrierId == Guid.Empty).ToArrayAsync();
+
             foreach (var item in carriers)
             {
-                var lookups = await _context.PhoneNumberLookups.Where(x => x.Ocn == item.Ocn && x.CarrierId != item.CarrierId).ToListAsync();
+                var lookups = lookupsWithoutCarriers.Where(x => x.Ocn == item.Ocn && x.CarrierId != item.CarrierId);
 
                 foreach (var look in lookups)
                 {
-                    look.CarrierId = item.CarrierId;
+                    if (look.CarrierId != item.CarrierId)
+                    {
+                        look.CarrierId = item.CarrierId;
+                    }
                 }
             }
             await _context.SaveChangesAsync();
@@ -112,7 +117,7 @@ namespace NumberSearch.Ops.Controllers
                     lookup.CarrierId = null;
 
                     // Let find the right Carrier based on the OCN of the lookup, if we can.
-                    var ocnMatch = await _context.Carriers.FirstOrDefaultAsync(x => x.Ocn == lookup.Ocn);
+                    var ocnMatch = carriers.FirstOrDefault(x => x.Ocn == lookup.Ocn);
 
                     if (ocnMatch is not null && ocnMatch.Ocn == lookup.Ocn)
                     {
