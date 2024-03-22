@@ -26,6 +26,7 @@ namespace NumberSearch.DataAccess
         public string LECType { get; set; }
         public string SPID { get; set; }
         public string LIDBName { get; set; }
+        public string LosingCarrier { get; set; }
         public DateTime LastPorted { get; set; }
         public string IngestedFrom { get; set; }
         public DateTime DateIngested { get; set; }

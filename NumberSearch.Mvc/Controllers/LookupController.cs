@@ -192,19 +192,34 @@ namespace NumberSearch.Mvc.Controllers
                             lec = canada?.Company ?? string.Empty,
                             lectype = canada?.Prefix_Type ?? string.Empty,
                             city = canada?.Ratecenter ?? string.Empty,
-                            province = canada?.State ?? string.Empty
+                            province = canada?.State ?? string.Empty,
                         });
+
+                        checkNumber.LosingCarrier = portable?.LosingCarrier ?? string.Empty;
 
                         // Warning this costs $$$$
                         //var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSKey);
                         //checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName.name ?? string.Empty;
                         freshQuery = true;
                     }
+                    else if (checkNumber is null && phoneNumber.Type is NumberType.Tollfree)
+                    {
+                        checkNumber = new PhoneNumberLookup()
+                        {
+                            DialedNumber = portable?.TN ?? $"1{phoneNumber.DialedNumber}",
+                            Ratecenter = portable?.RateCenter ?? string.Empty,
+                            State = portable?.State ?? string.Empty,
+                            LosingCarrier = portable?.LosingCarrier ?? string.Empty,
+                        };
+                    }
                     else if (checkNumber is null)
                     {
                         // Warning this costs $$$$
                         var result = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSKey).ConfigureAwait(false);
-                        checkNumber = new PhoneNumberLookup(result);
+                        checkNumber = new PhoneNumberLookup(result)
+                        {
+                            LosingCarrier = portable?.LosingCarrier ?? string.Empty
+                        };
 
                         // Warning this costs $$$$
                         //var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSKey);

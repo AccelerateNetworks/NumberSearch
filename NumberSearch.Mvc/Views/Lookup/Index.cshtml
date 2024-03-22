@@ -184,10 +184,20 @@
                                     <tr style="@color">
                                         <td>
                                             <h4>@number?.PortedDialedNumber</h4>
-                                            <p class="m-0">
-                                                Local Routing #
-                                            </p>
-                                            <h6 class="m-0">@number?.LrnLookup?.LRN</h6>
+                                            @if (string.IsNullOrWhiteSpace(number?.LrnLookup?.LRN))
+                                            {
+                                                <p class="m-0">
+                                                    Rate Center and State
+                                                </p>
+                                                <h6 class="m-0">@number?.LrnLookup?.Ratecenter, @number?.LrnLookup?.State</h6>
+                                            }
+                                            else
+                                            {
+                                                <p class="m-0">
+                                                    Local Routing #
+                                                </p>
+                                                <h6 class="m-0">@number?.LrnLookup?.LRN</h6>
+                                            }
                                             <p class="m-0 d-lg-none">
                                                 Caller Name
                                             </p>
@@ -226,11 +236,11 @@
                                             @number?.LrnLookup?.LIDBName
                                         </td>
                                         <td>
-                                            @if (number?.Carrier is not null)
+                                            @if (number?.Carrier is not null && !string.IsNullOrWhiteSpace(number?.Carrier?.LogoLink))
                                             {
                                                 <img src="@number.Carrier.LogoLink" alt="@number.Carrier.Name" title="LRN @number.LrnLookup.LRN" class="img-fluid p-1" style="max-height:5rem">
                                             }
-                                            else
+                                            else if (!string.IsNullOrWhiteSpace(number?.LrnLookup?.SPID))
                                             {
                                                 <p class="m-0 d-none d-md-block">
                                                     SPID
@@ -249,34 +259,53 @@
                                                     @number?.LrnLookup?.LECType
                                                 </p>
                                             }
-                                            <p class="m-0">Type</p>
                                             @if (!string.IsNullOrWhiteSpace(number?.Carrier?.Type))
                                             {
+                                                <p class="m-0">Type</p>
                                                 <h6 class="m-0">@number?.Carrier?.Type</h6>
                                             }
                                             else
                                             {
                                                 if (number?.Wireless is not null && number.Wireless)
                                                 {
+                                                    <p class="m-0">Type</p>
                                                     <h6 class="m-0">Wireless</h6>
+                                                }
+                                                else if (number?.LrnLookup.Ratecenter is "Toll Free" || number?.LrnLookup.State is "TF")
+                                                {
+                                                    // Do nothing
                                                 }
                                                 else
                                                 {
+                                                    <p class="m-0">Type</p>
                                                     <h6 class="m-0">Non-Wireless</h6>
                                                 }
                                             }
-                                            <p class="m-0 d-md-none">
-                                                OCN
-                                            </p>
-                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.OCN</h6>
-                                            <p class="m-0 d-md-none">
-                                                SPID
-                                            </p>
-                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.SPID</h6>
-                                            <p class="m-0 d-md-none">
-                                                LEC
-                                            </p>
-                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.LEC</h6>
+
+                                            @if (!string.IsNullOrWhiteSpace(number?.LrnLookup?.OCN))
+                                            {
+                                                <p class="m-0 d-md-none">
+                                                    OCN
+                                                </p>
+                                                <h6 class="m-0 d-md-none">@number?.LrnLookup?.OCN</h6>
+                                                <p class="m-0 d-md-none">
+                                                    SPID
+                                                </p>
+                                                <h6 class="m-0 d-md-none">@number?.LrnLookup?.SPID</h6>
+                                                <p class="m-0 d-md-none">
+                                                    LEC
+                                                </p>
+                                                <h6 class="m-0 d-md-none">@number?.LrnLookup?.LEC</h6>
+                                            }
+                                            else
+                                            {
+                                                <p class="m-0">
+                                                    Losing Carrier
+                                                </p>
+                                                <h6 class="m-0">
+                                                    @number?.LrnLookup?.LosingCarrier
+                                                </h6>
+                                            }
                                         </td>
                                         <td class="d-none d-md-table-cell">
                                             <p class="m-0">
@@ -385,10 +414,20 @@
                                     <tr style="@color">
                                         <td>
                                             <h4>@number?.PortedDialedNumber</h4>
-                                            <p class="m-0">
-                                                Local Routing #
-                                            </p>
-                                            <h6 class="m-0">@number?.LrnLookup?.LRN</h6>
+                                            @if (string.IsNullOrWhiteSpace(number?.LrnLookup?.LRN))
+                                            {
+                                                <p class="m-0">
+                                                    Rate Center and State
+                                                </p>
+                                                <h6 class="m-0">@number?.LrnLookup?.Ratecenter, @number?.LrnLookup?.State</h6>
+                                            }
+                                            else
+                                            {
+                                                <p class="m-0">
+                                                    Local Routing #
+                                                </p>
+                                                <h6 class="m-0">@number?.LrnLookup?.LRN</h6>
+                                            }
                                             <p class="m-0 d-lg-none">
                                                 Caller Name
                                             </p>
