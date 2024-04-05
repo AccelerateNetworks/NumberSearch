@@ -445,8 +445,6 @@ public class PortRequestsController : Controller
     }
 
     /// <summary>
-    /// This porting method combines both the TeliMessage and BulkVS porting services.
-    /// Tollfree numbers are handled by the TeliMessage port request.
     /// Local numbers are handled by BulkVS.
     /// Local numbers are broken up into separate port requests based on 
     /// the underlying carrier so that BulkVS will accept the port request.
@@ -736,7 +734,7 @@ public class PortRequestsController : Controller
                     }
                 }
 
-                // Trigger the background processes to bring the ported numbers into Teli as offnet numbers for texting and E911 service.
+                // Trigger the background processes.
                 order.BackgroundWorkCompleted = false;
                 var orderToUpdate = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
                 _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
