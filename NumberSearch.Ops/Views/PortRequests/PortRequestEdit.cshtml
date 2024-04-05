@@ -103,22 +103,22 @@
         <div class="col-md-4">
             <div class="form-floating mb-3">
                 <input type="text" value="@Model?.PortRequest?.RequestStatus" class="form-control" id="teliId" readonly
-                       title="The status of the Port Request in Teli's system.">
+                       title="The status of the Port Request in the vendor's system.">
                 <label for="teliId">Request Status</label>
             </div>
         </div>
         <div class="col-md-4">
             <div class="form-floating mb-3">
-                <input type="text" value="@Model?.PortRequest?.DateUpdated" class="form-control" id="teliId" readonly
-                       title="The status of the Port Request in Teli's system.">
-                <label for="teliId">Status Last Updated</label>
+                <input type="text" value="@Model?.PortRequest?.DateUpdated" class="form-control" id="dateupdated" readonly
+                       title="The last time the status of the Port Request was updated in the vendor's system.">
+                <label for="dateupdated">Status Last Updated</label>
             </div>
         </div>
         <div class="col-md-4">
             <div class="form-floating mb-3">
-                <input type="text" value="@Model?.PortRequest?.DateCompleted" class="form-control" id="teliId" readonly
-                       title="The status of the Port Request in Teli's system.">
-                <label for="teliId">Completed On</label>
+                <input type="text" value="@Model?.PortRequest?.DateCompleted" class="form-control" id="datecompleted" readonly
+                       title="The date the Port Request was completed in the Vendor's system.">
+                <label for="datecompleted">Completed On</label>
             </div>
         </div>
 

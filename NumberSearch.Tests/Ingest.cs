@@ -65,7 +65,6 @@ namespace NumberSearch.Tests
 
             var appConfig = new IngestConfiguration
             {
-                TeleAPI = string.IsNullOrWhiteSpace(config.GetConnectionString("TeleAPI")) ? throw new Exception("TeliAPI config key is blank.") : Guid.Parse(config.GetConnectionString("TeleAPI") ?? string.Empty),
                 Postgresql = string.IsNullOrWhiteSpace(config.GetConnectionString("PostgresqlProd")) ? throw new Exception("PostgresqlProd config key is blank.") : config.GetConnectionString("PostgresqlProd") ?? string.Empty,
                 BulkVSAPIKEY = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSAPIKEY")) ? throw new Exception("BulkVSAPIKEY config key is blank.") : config.GetConnectionString("BulkVSAPIKEY") ?? string.Empty,
                 BulkVSAPISecret = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSAPISecret")) ? throw new Exception("BulkVSAPISecret config key is blank.") : config.GetConnectionString("BulkVSAPISecret") ?? string.Empty,
@@ -101,12 +100,6 @@ namespace NumberSearch.Tests
         //public async Task TestOwnedNumbersIngestAsync()
         //{
         //    await Owned.IngestAsync(ingestConfiguration);
-        //}
-
-        //[Fact]
-        //public async Task TestTeliPortStatusUpdates()
-        //{
-        //    await PortRequests.UpdateStatusesTeliMessageAsync(configuration);
         //}
 
         //[Fact]
@@ -240,13 +233,6 @@ namespace NumberSearch.Tests
         //{
         //    // Update the statuses of all the active port requests with BulkVS.
         //    await PortRequests.UpdateStatusesBulkVSAsync(configuration);
-        //}
-
-        //[Fact]
-        //public async Task Ingest206FromTeliAsync()
-        //{
-        //    // Update the statuses of all the active port requests with BulkVS.
-        //    _ = await Provider.TeliMessageAsync(token, new int[] { 206 }, postgresql);
         //}
 
         //[Fact]

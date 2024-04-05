@@ -22,7 +22,6 @@ namespace NumberSearch.Ingest
 
             var appConfig = new IngestConfiguration
             {
-                TeleAPI = string.IsNullOrWhiteSpace(config.GetConnectionString("TeleAPI")) ? throw new Exception("TeliAPI config key is blank.") : Guid.Parse(config.GetConnectionString("TeleAPI") ?? string.Empty),
                 Postgresql = string.IsNullOrWhiteSpace(config.GetConnectionString("PostgresqlProd")) ? throw new Exception("PostgresqlProd config key is blank.") : config.GetConnectionString("PostgresqlProd") ?? string.Empty,
                 BulkVSAPIKEY = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSAPIKEY")) ? throw new Exception("BulkVSAPIKEY config key is blank.") : config.GetConnectionString("BulkVSAPIKEY") ?? string.Empty,
                 BulkVSAPISecret = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSAPISecret")) ? throw new Exception("BulkVSAPISecret config key is blank.") : config.GetConnectionString("BulkVSAPISecret") ?? string.Empty,
@@ -137,7 +136,6 @@ namespace NumberSearch.Ingest
 
         public class IngestConfiguration
         {
-            public Guid TeleAPI { get; set; }
             public string CallFlow { get; set; } = string.Empty;
             public string ChannelGroup { get; set; } = string.Empty;
             public string PComNetUsername { get; set; } = string.Empty;
