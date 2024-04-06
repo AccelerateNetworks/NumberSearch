@@ -198,8 +198,8 @@ namespace NumberSearch.Mvc.Controllers
                         checkNumber.LosingCarrier = portable?.LosingCarrier ?? string.Empty;
 
                         // Warning this costs $$$$
-                        //var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSKey);
-                        //checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName.name ?? string.Empty;
+                        var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSKey);
+                        checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName.name ?? string.Empty;
                         freshQuery = true;
                     }
                     else if (checkNumber is null && phoneNumber.Type is NumberType.Tollfree)
@@ -222,8 +222,8 @@ namespace NumberSearch.Mvc.Controllers
                         };
 
                         // Warning this costs $$$$
-                        //var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSKey);
-                        //checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName.name ?? string.Empty;
+                        var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSKey);
+                        checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName.name ?? string.Empty;
                         freshQuery = true;
                     }
 
