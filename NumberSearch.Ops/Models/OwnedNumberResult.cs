@@ -9,10 +9,10 @@ namespace NumberSearch.Ops
     public class OwnedNumberResult
     {
         public OwnedPhoneNumber Owned { get; set; } = new();
-        public PortedPhoneNumber[] PortedPhoneNumbers { get; set; } = Array.Empty<PortedPhoneNumber>();
-        public PurchasedPhoneNumber[] PurchasedPhoneNumbers { get; set; } = Array.Empty<PurchasedPhoneNumber>();
+        public PortedPhoneNumber[] PortedPhoneNumbers { get; set; } = [];
+        public PurchasedPhoneNumber[] PurchasedPhoneNumbers { get; set; } = [];
         public EmergencyInformation EmergencyInformation { get; set; } = new();
-        public Order[] RelatedOrders { get; set; } = Array.Empty<Order>();
+        public Order[] RelatedOrders { get; set; } = [];
         public ClientRegistration ClientRegistration { get; set; } = new();
         public string Message { get; set; } = string.Empty;
         public string AlertType { get; set; } = string.Empty;
@@ -22,5 +22,10 @@ namespace NumberSearch.Ops
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string BusinessName { get; set; } = string.Empty;
+    }
+    public class OwnedNumberResultForm
+    {
+        public OwnedNumberResult[] Results { get; set; } = [];
+        public string CarrierName { get; set; } = string.Empty;
     }
 }

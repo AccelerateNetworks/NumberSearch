@@ -136,7 +136,7 @@ public class OwnedNumbersController : Controller
             });
         }
 
-        return View("OwnedNumbers", viewOrders.ToArray());
+        return View("OwnedNumbers", new OwnedNumberResultForm { Results = viewOrders.ToArray() });
     }
 
     [Authorize]
@@ -471,7 +471,9 @@ public class OwnedNumbersController : Controller
 
     [Authorize]
     [Route("/OwnedNumbers/RouteAndCarrier")]
-    public async Task<IActionResult> GetAllSMSRoutesAndCarrierNamesAsync()
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GetAllSMSRoutesAndCarrierNamesAsync(string carrierName)
     {
         var result = new OwnedNumberResult
         {
@@ -479,9 +481,14 @@ public class OwnedNumbersController : Controller
             AlertType = "alert-warning",
         };
 
-        var existing = await _context.OwnedPhoneNumbers.Where(x => x.Active).ToArrayAsync();
+        var existing = await _context.OwnedPhoneNumbers.Where(x => x.Active && x.TwilioCarrierName == carrierName).ToArrayAsync();
 
-        foreach (var number in existing.Where(x => x.Active))
+        if (carrierName is "All")
+        {
+            existing = await _context.OwnedPhoneNumbers.Where(x => x.Active).ToArrayAsync();
+        }
+
+        foreach (var number in existing)
         {
             bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number.DialedNumber, out var phoneNumber);
             if (checkParse && phoneNumber is not null && string.IsNullOrWhiteSpace(number?.TwilioCarrierName))
