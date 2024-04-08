@@ -4,22 +4,71 @@
     ViewData["Title"] = "Owned Phone Numbers";
 }
 <h1 class="display-4 p-3">🏢 Owned Numbers</h1>
-<p>
-    Total: <strong>@Model.Results.Count()</strong> |
-    Active: <strong>@Model.Results.Where(x => x.Owned.Status is "Active").Count()</strong>
-    Cancelled: <strong>@Model.Results.Where(x => x.Owned.Status is "Cancelled").Count()</strong>
-    Porting In: <strong>@Model.Results.Where(x => x.Owned.Status is "Porting In").Count()</strong>
-    Porting Out: <strong>@Model.Results.Where(x => x.Owned.Status is "Porting Out").Count()</strong>
-    |
-    @{
-        foreach (string provider in Model.Results.Select(x => x.Owned.IngestedFrom).Distinct())
-        {
-            string numbersForProider = $"{provider}: <strong>{Model.Results.Where(x => x.Owned.IngestedFrom == provider).Count()}</strong> ";
-            @Html.Raw(numbersForProider)
-            ;
-        }
-    }
-</p>
+<form method="post" action="/OwnedNumbers/RouteAndCarrier">
+    <div class="row">
+        <div class="col-6">
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Total</th>
+                            <th>Active</th>
+                            <th>Cancelled</th>
+                            <th>Porting In</th>
+                            <th>Porting Out</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@Model.Results.Count()</td>
+                            <td>@Model.Results.Where(x => x.Owned.Status is "Active").Count()</td>
+                            <td>@Model.Results.Where(x => x.Owned.Status is "Cancelled").Count()</td>
+                            <td>@Model.Results.Where(x => x.Owned.Status is "Porting In").Count()</td>
+                            <td>@Model.Results.Where(x => x.Owned.Status is "Porting Out").Count()</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Ingested From</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (string provider in Model.Results.Select(x => x.Owned.IngestedFrom).Distinct())
+                        {
+                            <tr>
+                                <td>@provider</td>
+                                <td>@Model.Results.Where(x => x.Owned.IngestedFrom == provider).Count()</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="input-group mb-3">
+                @Html.AntiForgeryToken()
+                <span class="input-group-text" id="basic-addon3">Refresh Carrier Name for Numbers with </span>
+                <input asp-for="CarrierName" type="text" class="form-control" list="datalistOptions" id="carrierName" placeholder="Type to search...">
+                <datalist id="datalistOptions">
+                    <option value="All"></option>
+                    @foreach (var carrier in Model.Results.Where(x => x.Owned.IngestedFrom != "Test" && x.Owned.Active).Select(x => x.Owned.TwilioCarrierName).Distinct())
+                    {
+                        <option value='@carrier'>@Model.Results.Where(x => x.Owned.IngestedFrom != "Test" && x.Owned.Active && x.Owned.TwilioCarrierName == carrier).Count()</option>
+                    }
+                </datalist>
+                <button class="btn btn-danger" type="submit">As the Carrier ($)</button>
+            </div>
+            <div class="input-group">
+                <a class="btn btn-primary" href="/OwnedNumbers/ExportToCSV">Export to CSV</a>
+            </div>
+        </div>
+    </div>
+</form>
 <div class="table-responsive">
     <table class="table table-striped table-borderless table-hover" id="table">
         <thead>
@@ -173,27 +222,3 @@
         </tbody>
     </table>
 </div>
-<form method="post" action="/OwnedNumbers/RouteAndCarrier">
-    <div class="row">
-        <div class="col-6">
-            <div class="input-group">
-                @Html.AntiForgeryToken()
-                <span class="input-group-text" id="basic-addon3">Refresh Carrier Name for Numbers with </span>
-                <input asp-for="CarrierName" type="text" class="form-control" list="datalistOptions" id="carrierName" placeholder="Type to search...">
-                <datalist id="datalistOptions">
-                    <option value="All"></option>
-                    @foreach (var carrier in Model.Results.Where(x => x.Owned.IngestedFrom != "Test" && x.Owned.Active).Select(x => x.Owned.TwilioCarrierName).Distinct())
-                    {
-                        <option value='@carrier'>@Model.Results.Where(x => x.Owned.IngestedFrom != "Test" && x.Owned.Active && x.Owned.TwilioCarrierName == carrier).Count()</option>
-                    }
-                </datalist>
-                <button class="btn btn-danger" type="submit">As the Carrier ($)</button>
-            </div>
-        </div>
-        <div class="col-6">
-            <div class="input-group">
-                <a class="btn btn-primary" href="/OwnedNumbers/ExportToCSV">Export to CSV</a>
-            </div>
-        </div>
-    </div>
-</form>

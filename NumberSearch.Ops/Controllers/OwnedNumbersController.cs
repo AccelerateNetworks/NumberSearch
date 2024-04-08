@@ -491,7 +491,7 @@ public class OwnedNumbersController : Controller
         foreach (var number in existing)
         {
             bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number.DialedNumber, out var phoneNumber);
-            if (checkParse && phoneNumber is not null && string.IsNullOrWhiteSpace(number?.TwilioCarrierName))
+            if (checkParse && phoneNumber is not null)
             {
                 try
                 {
