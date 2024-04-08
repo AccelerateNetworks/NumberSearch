@@ -4,6 +4,22 @@
     ViewData["Title"] = "Owned Phone Numbers";
 }
 <h1 class="display-4 p-3">🏢 Owned Numbers</h1>
+@if (!string.IsNullOrWhiteSpace(Model?.Message))
+{
+    if (string.IsNullOrWhiteSpace(Model?.AlertType))
+    {
+        <div class="alert alert-danger col-12" role="alert">
+            @Model?.Message
+        </div>
+    }
+    else
+    {
+        var alertType = Model?.AlertType ?? "alert-danger";
+        <div class="alert @alertType col-12" role="alert">
+            @Model?.Message
+        </div>
+    }
+}
 <form method="post" action="/OwnedNumbers/RouteAndCarrier">
     <div class="row">
         <div class="col-6">

@@ -6,6 +6,7 @@ using static NumberSearch.Ops.Controllers.OwnedNumbersController;
 
 namespace NumberSearch.Ops
 {
+    // For the edit single page
     public class OwnedNumberResult
     {
         public OwnedPhoneNumber Owned { get; set; } = new();
@@ -23,9 +24,12 @@ namespace NumberSearch.Ops
         public string LastName { get; set; } = string.Empty;
         public string BusinessName { get; set; } = string.Empty;
     }
+    // For the list all page
     public class OwnedNumberResultForm
     {
         public OwnedNumberResult[] Results { get; set; } = [];
         public string CarrierName { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+        public string AlertType { get; set; } = string.Empty;
     }
 }

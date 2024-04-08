@@ -475,9 +475,8 @@ public class OwnedNumbersController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> GetAllSMSRoutesAndCarrierNamesAsync(string carrierName)
     {
-        var result = new OwnedNumberResult
+        var result = new OwnedNumberResultForm
         {
-            Message = $"❓Failed to export this CSV.",
             AlertType = "alert-warning",
         };
 
@@ -499,10 +498,9 @@ public class OwnedNumbersController : Controller
                     if (!string.IsNullOrWhiteSpace(response.line_type_intelligence?.carrier_name))
                     {
                         // Update the owned number record
+                        result.Message += $"✔️ {phoneNumber.DialedNumber} - Old: {number.TwilioCarrierName} - New: {response.line_type_intelligence.carrier_name.Trim()}\n";
                         number.TwilioCarrierName = response.line_type_intelligence.carrier_name.Trim();
-                        await _context.SaveChangesAsync();
-                        result.Message += $"✔️ Refreshed Carrier Name from Twilio! {number.TwilioCarrierName}\n";
-                    }
+                        await _context.SaveChangesAsync();                    }
                     else
                     {
                         result.Message += $"❌ Twilio has no Carrier Name for this {phoneNumber.DialedNumber}.\n";
@@ -537,7 +535,31 @@ public class OwnedNumbersController : Controller
             }
         }
 
+        // Show all orders
+        var ownedNumbers = await _context.OwnedPhoneNumbers.OrderByDescending(x => x.DialedNumber).AsNoTracking().ToListAsync();
+        var portedNumbers = await _context.PortedPhoneNumbers.ToArrayAsync();
+        var purchasedNumbers = await _context.PurchasedPhoneNumbers.ToArrayAsync();
+        var e911s = await _context.EmergencyInformation.ToArrayAsync();
+        var token = await GetTokenAsync();
+        var registeredNumbers = await $"{_config.MessagingURL}client/all"
+            .WithOAuthBearerToken(token.AccessToken)
+            .GetJsonAsync<ClientRegistration[]>();
 
-        return Redirect("/Home/OwnedNumbers");
+        var viewOrders = new List<OwnedNumberResult>();
+        foreach (var ownedNumber in ownedNumbers)
+        {
+            viewOrders.Add(new OwnedNumberResult
+            {
+                EmergencyInformation = e911s.FirstOrDefault(x => x.DialedNumber == ownedNumber.DialedNumber) ?? new(),
+                Owned = ownedNumber,
+                PortedPhoneNumbers = portedNumbers.Where(x => x.PortedDialedNumber == ownedNumber.DialedNumber).ToArray(),
+                PurchasedPhoneNumbers = purchasedNumbers.Where(x => x.DialedNumber == ownedNumber.DialedNumber).ToArray(),
+                ClientRegistration = registeredNumbers.FirstOrDefault(x => x.AsDialed == ownedNumber.DialedNumber) ?? new()
+            });
+        }
+
+        result.Results = [.. viewOrders];
+        result.Message = string.IsNullOrWhiteSpace(result.Message) ? $"❓Failed to query Twilio for {carrierName}" : result.Message;
+        return View("OwnedNumbers", result);
     }
 }
