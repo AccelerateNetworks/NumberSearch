@@ -31,6 +31,7 @@ namespace NumberSearch.DataAccess
         public string FPBXDomainDescription { get; set; } = string.Empty;
         public string SMSRoute { get; set; } = string.Empty;
         public string TwilioCarrierName { get; set; } = string.Empty;
+        public string TrunkGroup { get; set; } = string.Empty;
 
         /// <summary>
         /// Get every owned phone number.
@@ -42,7 +43,7 @@ namespace NumberSearch.DataAccess
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryAsync<OwnedPhoneNumber>("""SELECT "OwnedPhoneNumberId", "DialedNumber", "IngestedFrom", "DateIngested", "Active", "BillingClientId", "OwnedBy", "Notes", "SPID", "SPIDName", "LIDBCNAM", "EmergencyInformationId", "DateUpdated", "Status", "FusionPBXClientId", "FPBXDomainId", "FPBXDestinationId", "FPBXDomainName", "FPBXDomainDescription", "SMSRoute", "TwilioCarrierName" FROM public."OwnedPhoneNumbers" """)
+                .QueryAsync<OwnedPhoneNumber>("""SELECT "OwnedPhoneNumberId", "DialedNumber", "IngestedFrom", "DateIngested", "Active", "BillingClientId", "OwnedBy", "Notes", "SPID", "SPIDName", "LIDBCNAM", "EmergencyInformationId", "DateUpdated", "Status", "FusionPBXClientId", "FPBXDomainId", "FPBXDestinationId", "FPBXDomainName", "FPBXDomainDescription", "SMSRoute", "TwilioCarrierName", "TrunkGroup" FROM public."OwnedPhoneNumbers" """)
                 .ConfigureAwait(false);
             return result;
         }
@@ -57,7 +58,7 @@ namespace NumberSearch.DataAccess
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QueryFirstOrDefaultAsync<OwnedPhoneNumber>("""SELECT "OwnedPhoneNumberId", "DialedNumber", "IngestedFrom", "DateIngested", "Active", "BillingClientId", "OwnedBy", "Notes", "SPID", "SPIDName", "LIDBCNAM", "EmergencyInformationId", "DateUpdated", "Status", "FusionPBXClientId", "FPBXDomainId", "FPBXDestinationId", "FPBXDomainName", "FPBXDomainDescription", "SMSRoute", "TwilioCarrierName" FROM public."OwnedPhoneNumbers" WHERE "DialedNumber" = @dialedNumber""", new { dialedNumber })
+                .QueryFirstOrDefaultAsync<OwnedPhoneNumber>("""SELECT "OwnedPhoneNumberId", "DialedNumber", "IngestedFrom", "DateIngested", "Active", "BillingClientId", "OwnedBy", "Notes", "SPID", "SPIDName", "LIDBCNAM", "EmergencyInformationId", "DateUpdated", "Status", "FusionPBXClientId", "FPBXDomainId", "FPBXDestinationId", "FPBXDomainName", "FPBXDomainDescription", "SMSRoute", "TwilioCarrierName", "TrunkGroup" FROM public."OwnedPhoneNumbers" WHERE "DialedNumber" = @dialedNumber""", new { dialedNumber })
                 .ConfigureAwait(false);
 
             return result;
@@ -76,8 +77,8 @@ namespace NumberSearch.DataAccess
             DateIngested = DateTime.Now;
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"OwnedPhoneNumbers\" (\"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"Active\", \"BillingClientId\", \"OwnedBy\", \"Notes\", \"SPID\", \"SPIDName\", \"LIDBCNAM\", \"EmergencyInformationId\", \"DateUpdated\", \"Status\", \"FusionPBXClientId\", \"FPBXDomainId\", \"FPBXDestinationId\", \"FPBXDomainName\", \"FPBXDomainDescription\", \"SMSRoute\", \"TwilioCarrierName\") VALUES (@DialedNumber, @IngestedFrom, @DateIngested, @Active, @BillingClientId, @OwnedBy, @Notes, @SPID, @SPIDName, @LIDBCNAM, @EmergencyInformationId, @DateUpdated, @Status, @FusionPBXClientId, @FPBXDomainId, @FPBXDestinationId, @FPBXDomainName, @FPBXDomainDescription, @SMSRoute, @TwilioCarrierName)",
-                new { DialedNumber, IngestedFrom, DateIngested, Active, BillingClientId, OwnedBy, Notes, SPID, SPIDName, LIDBCNAM, EmergencyInformationId, DateUpdated, Status, FusionPBXClientId, FPBXDomainId, FPBXDestinationId, FPBXDomainName, FPBXDomainDescription, SMSRoute, TwilioCarrierName })
+                .ExecuteAsync("INSERT INTO public.\"OwnedPhoneNumbers\" (\"DialedNumber\", \"IngestedFrom\", \"DateIngested\", \"Active\", \"BillingClientId\", \"OwnedBy\", \"Notes\", \"SPID\", \"SPIDName\", \"LIDBCNAM\", \"EmergencyInformationId\", \"DateUpdated\", \"Status\", \"FusionPBXClientId\", \"FPBXDomainId\", \"FPBXDestinationId\", \"FPBXDomainName\", \"FPBXDomainDescription\", \"SMSRoute\", \"TwilioCarrierName\", \"TrunkGroup\") VALUES (@DialedNumber, @IngestedFrom, @DateIngested, @Active, @BillingClientId, @OwnedBy, @Notes, @SPID, @SPIDName, @LIDBCNAM, @EmergencyInformationId, @DateUpdated, @Status, @FusionPBXClientId, @FPBXDomainId, @FPBXDestinationId, @FPBXDomainName, @FPBXDomainDescription, @SMSRoute, @TwilioCarrierName, @TrunkGroup)",
+                new { DialedNumber, IngestedFrom, DateIngested, Active, BillingClientId, OwnedBy, Notes, SPID, SPIDName, LIDBCNAM, EmergencyInformationId, DateUpdated, Status, FusionPBXClientId, FPBXDomainId, FPBXDestinationId, FPBXDomainName, FPBXDomainDescription, SMSRoute, TwilioCarrierName, TrunkGroup })
                 .ConfigureAwait(false);
 
             if (result == 1)
@@ -103,8 +104,8 @@ namespace NumberSearch.DataAccess
             DateUpdated = DateTime.Now;
 
             var result = await connection
-                .ExecuteAsync("UPDATE public.\"OwnedPhoneNumbers\" SET \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"Active\" = @Active, \"BillingClientId\" = @BillingClientId, \"OwnedBy\" = @OwnedBy, \"Notes\" = @Notes, \"SPID\" = @SPID, \"SPIDName\" = @SPIDName, \"LIDBCNAM\" = @LIDBCNAM, \"EmergencyInformationId\" = @EmergencyInformationId, \"DateUpdated\" = @DateUpdated, \"Status\" = @Status, \"FusionPBXClientId\" = @FusionPBXClientId, \"FPBXDomainId\" = @FPBXDomainId, \"FPBXDestinationId\" = @FPBXDestinationId, \"FPBXDomainName\" = @FPBXDomainName, \"FPBXDomainDescription\" = @FPBXDomainDescription, \"SMSRoute\" = @SMSRoute, \"TwilioCarrierName\" = @TwilioCarrierName WHERE \"OwnedPhoneNumberId\" = @OwnedPhoneNumberId",
-                new { IngestedFrom, DateIngested, Active, BillingClientId, OwnedBy, Notes, SPID, SPIDName, LIDBCNAM, EmergencyInformationId, DateUpdated, Status, FusionPBXClientId, FPBXDomainId, FPBXDestinationId, FPBXDomainName, FPBXDomainDescription, SMSRoute, TwilioCarrierName, OwnedPhoneNumberId })
+                .ExecuteAsync("UPDATE public.\"OwnedPhoneNumbers\" SET \"IngestedFrom\" = @IngestedFrom, \"DateIngested\" = @DateIngested, \"Active\" = @Active, \"BillingClientId\" = @BillingClientId, \"OwnedBy\" = @OwnedBy, \"Notes\" = @Notes, \"SPID\" = @SPID, \"SPIDName\" = @SPIDName, \"LIDBCNAM\" = @LIDBCNAM, \"EmergencyInformationId\" = @EmergencyInformationId, \"DateUpdated\" = @DateUpdated, \"Status\" = @Status, \"FusionPBXClientId\" = @FusionPBXClientId, \"FPBXDomainId\" = @FPBXDomainId, \"FPBXDestinationId\" = @FPBXDestinationId, \"FPBXDomainName\" = @FPBXDomainName, \"FPBXDomainDescription\" = @FPBXDomainDescription, \"SMSRoute\" = @SMSRoute, \"TwilioCarrierName\" = @TwilioCarrierName, \"TrunkGroup\" = @TrunkGroup WHERE \"OwnedPhoneNumberId\" = @OwnedPhoneNumberId",
+                new { IngestedFrom, DateIngested, Active, BillingClientId, OwnedBy, Notes, SPID, SPIDName, LIDBCNAM, EmergencyInformationId, DateUpdated, Status, FusionPBXClientId, FPBXDomainId, FPBXDestinationId, FPBXDomainName, FPBXDomainDescription, SMSRoute, TwilioCarrierName, TrunkGroup, OwnedPhoneNumberId })
                 .ConfigureAwait(false);
 
             if (result == 1)

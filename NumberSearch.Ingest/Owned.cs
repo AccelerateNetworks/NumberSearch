@@ -438,6 +438,7 @@ namespace NumberSearch.Ingest
                         number.Notes = string.IsNullOrWhiteSpace(number.Notes) ? item.Notes : number.Notes;
                         number.IngestedFrom = item.IngestedFrom;
                         number.DateUpdated = item.DateIngested;
+                        number.TrunkGroup = item.TrunkGroup;
                         number.Active = true;
 
                         var checkCreate = await number.PutAsync(connectionString).ConfigureAwait(false);

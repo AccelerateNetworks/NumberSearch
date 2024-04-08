@@ -455,12 +455,12 @@ public partial class numberSearchContext : DbContext
             entity.Property(e => e.OwnedPhoneNumberId).HasDefaultValueSql("uuid_generate_v4()");
 
             entity.Property(e => e.Notes)
-.HasColumnType("character varying")
-.HasColumnName("Notes");
+                .HasColumnType("character varying")
+                .HasColumnName("Notes");
 
             entity.Property(e => e.OwnedBy)
-.HasColumnType("character varying")
-.HasColumnName("OwnedBy");
+                .HasColumnType("character varying")
+                .HasColumnName("OwnedBy");
 
             entity.Property(e => e.SPID)
                 .HasColumnType("character varying")
@@ -471,20 +471,20 @@ public partial class numberSearchContext : DbContext
                 .HasColumnName("SPIDName");
 
             entity.Property(e => e.BillingClientId)
-    .HasColumnType("character varying")
-    .HasColumnName("BillingClientId");
+                .HasColumnType("character varying")
+                .HasColumnName("BillingClientId");
 
             entity.Property(e => e.LIDBCNAM)
-    .HasColumnType("character varying")
-    .HasColumnName("LIDBCNAM");
+                .HasColumnType("character varying")
+                .HasColumnName("LIDBCNAM");
 
             entity.Property(e => e.Status)
-.HasColumnType("character varying")
-.HasColumnName("Status");
+                .HasColumnType("character varying")
+                .HasColumnName("Status");
 
             entity.Property(e => e.FusionPBXClientId)
-.HasColumnType("character varying")
-.HasColumnName("FusionPBXClientId");
+                .HasColumnType("character varying")
+                .HasColumnName("FusionPBXClientId");
 
             entity.Property(e => e.DateUpdated).HasColumnType("timestamp without time zone");
 
@@ -496,20 +496,24 @@ public partial class numberSearchContext : DbContext
             entity.Property(e => e.FPBXDestinationId);
 
             entity.Property(e => e.FPBXDomainName)
-    .HasColumnType("character varying")
-    .HasColumnName("FPBXDomainName");
+                .HasColumnType("character varying")
+                .HasColumnName("FPBXDomainName");
 
             entity.Property(e => e.FPBXDomainDescription)
-    .HasColumnType("character varying")
-    .HasColumnName("FPBXDomainDescription");
+                .HasColumnType("character varying")
+                .HasColumnName("FPBXDomainDescription");
 
             entity.Property(e => e.SMSRoute)
-.HasColumnType("character varying")
-.HasColumnName("SMSRoute");
+                .HasColumnType("character varying")
+                .HasColumnName("SMSRoute");
 
             entity.Property(e => e.TwilioCarrierName)
-.HasColumnType("character varying")
-.HasColumnName("TwilioCarrierName");
+                .HasColumnType("character varying")
+                .HasColumnName("TwilioCarrierName");
+
+            entity.Property(e => e.TrunkGroup)
+                .HasColumnType("character varying")
+                .HasColumnName("TrunkGroup");
         });
 
         modelBuilder.Entity<PhoneMenuOption>(entity =>

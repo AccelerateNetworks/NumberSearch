@@ -71,7 +71,7 @@ namespace NumberSearch.DataAccess.BulkVS
             {
                 Log.Warning($"[Ingest] [OwnedNumbers] [BulkVS] No results found.");
                 Log.Warning(await ex.GetResponseStringAsync());
-                return Array.Empty<TnRecord>();
+                return [];
             }
         }
 
@@ -100,9 +100,9 @@ namespace NumberSearch.DataAccess.BulkVS
             var output = new List<PhoneNumber>();
 
             // Bail out early if something is wrong.
-            if (results is null || !results.Any())
+            if (results is null || results.Length == 0)
             {
-                return Array.Empty<PhoneNumber>();
+                return [];
             }
 
             foreach (var item in results)
@@ -129,7 +129,7 @@ namespace NumberSearch.DataAccess.BulkVS
                     Log.Fatal($"[Ingest] [BulkVS] Failed to parse {item.TN}");
                 }
             }
-            return output.ToArray();
+            return [.. output];
         }
 
         public static async Task<OwnedPhoneNumber[]> GetOwnedAsync(string username, string password)
@@ -138,9 +138,9 @@ namespace NumberSearch.DataAccess.BulkVS
             var output = new List<OwnedPhoneNumber>();
 
             // Bail out early if something is wrong.
-            if (results is null || !results.Any())
+            if (results is null || results.Length == 0)
             {
-                return Array.Empty<OwnedPhoneNumber>();
+                return [];
             }
 
             foreach (var item in results)
@@ -153,6 +153,7 @@ namespace NumberSearch.DataAccess.BulkVS
                     {
                         DialedNumber = phoneNumber?.DialedNumber ?? string.Empty,
                         IngestedFrom = "BulkVS",
+                        TrunkGroup = item.Routing.TrunkGroup ?? string.Empty,
                         Active = true,
                         DateIngested = DateTime.Now
                     });
@@ -162,7 +163,7 @@ namespace NumberSearch.DataAccess.BulkVS
                     Log.Fatal($"[Ingest] [BulkVS] Failed to parse {item.TN}");
                 }
             }
-            return output.ToArray();
+            return [.. output];
         }
     }
 }
