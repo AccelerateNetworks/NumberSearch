@@ -31,3 +31,4 @@
 /Messaging.Tests/obj
 *.csv
 /Messaging.Tests/bin/Debug/net8.0
+/Messaging.Tests/bin/Release/net8.0
