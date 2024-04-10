@@ -454,8 +454,9 @@ public class PortRequestsController : Controller
     [Authorize]
     [HttpPost("/Home/PortRequestUnified/{orderId}")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UnifiedPortRequestAsync(Guid? OrderId)
+    public async Task<IActionResult> UnifiedPortRequestAsync(Guid? OrderId, bool ForceManual)
     {
+        // ForceManual will overwrite the Zip to a value of "1". BulkVS claims this will break their automated processes and force them to review the request manually.
         var responseMessages = new List<string>();
 
         if (OrderId is null || OrderId == Guid.Empty)
@@ -530,7 +531,7 @@ public class PortRequestsController : Controller
                                     StreetName = $"{portRequest?.Address[streetNumber.Length..].Trim()} {portRequest?.Address2}",
                                     City = portRequest?.City ?? string.Empty,
                                     State = "WA",
-                                    Zip = portRequest?.Zip ?? string.Empty,
+                                    Zip = ForceManual ? "1" : portRequest?.Zip ?? string.Empty,
                                     RDD = portRequest?.TargetDate is not null && portRequest.TargetDate.HasValue ? portRequest!.TargetDate.GetValueOrDefault().ToString("yyyy-MM-dd") : DateTime.Now.AddDays(3).ToString("yyyy-MM-dd"),
                                     Time = portRequest?.TargetDate is not null && portRequest.TargetDate.HasValue ? portRequest!.TargetDate.GetValueOrDefault().ToString("HH:mm:ss") : "20:00:00",
                                     PortoutPin = portRequest?.ProviderPIN ?? string.Empty,
@@ -636,7 +637,7 @@ public class PortRequestsController : Controller
                                 StreetName = $"{portRequest.Address[streetNumber.Length..].Trim()} {portRequest?.Address2}",
                                 City = portRequest?.City ?? string.Empty,
                                 State = "WA",
-                                Zip = portRequest?.Zip ?? string.Empty,
+                                Zip = ForceManual ? "1" : portRequest?.Zip ?? string.Empty,
                                 RDD = portRequest?.TargetDate is not null && portRequest.TargetDate.HasValue ? portRequest!.TargetDate.GetValueOrDefault().ToString("yyyy-MM-dd") : DateTime.Now.AddDays(3).ToString("yyyy-MM-dd"),
                                 Time = portRequest?.TargetDate is not null && portRequest.TargetDate.HasValue ? portRequest!.TargetDate.GetValueOrDefault().ToString("HH:mm:ss") : "20:00:00",
                                 PortoutPin = portRequest?.ProviderPIN ?? string.Empty,

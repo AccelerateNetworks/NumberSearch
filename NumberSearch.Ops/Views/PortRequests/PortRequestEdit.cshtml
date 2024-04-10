@@ -396,12 +396,24 @@
             @if (unSubmitted?.Count() > 0)
             {
                 <div class="d-grid gap-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="true" name="ForceManual" id="flexCheckDefault">
+                        <label class="form-check-label" for="flexCheckDefault">
+                            Force Manual Processing
+                        </label>
+                    </div>
                     <button type="submit" class="btn btn-success btn-lg">Submit to BulkVS</button>
                 </div>
             }
             else
             {
                 <div class="d-grid gap-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="true" name="ForceManual" id="flexCheckDefault">
+                        <label class="form-check-label" for="flexCheckDefault">
+                            Force Manual Processing
+                        </label>
+                    </div>
                     <button type="submit" class="btn btn-outline-success btn-lg" disabled>Submit to BulkVS</button>
                 </div>
             }
