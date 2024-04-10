@@ -109,7 +109,7 @@
     @Html.AntiForgeryToken()
     <div class="row">
         <div class="col-md-3 mb-3">
-            <label for="firstName">Dialed Number</label>
+            <label for="DialedNumber">Dialed Number</label>
             <input asp-for="Owned.DialedNumber" type="text" class="form-control" id="DialedNumber" readonly>
         </div>
         <div class="col-md-3 mb-3">
@@ -119,50 +119,58 @@
             </div>
         </div>
         <div class="col-md-3 mb-3">
-            <label for="firstName">Ingested From</label>
+            <label for="IngestedFrom">Ingested From</label>
             <input asp-for="Owned.IngestedFrom" type="text" class="form-control" id="IngestedFrom" disabled readonly>
         </div>
         <div class="col-md-3 mb-3">
-            <label for="lastName">Ingested Date</label>
+            <label for="DateIngested">Ingested Date</label>
             <input asp-for="Owned.DateIngested" type="text" class="form-control" id="DateIngested" disabled readonly>
         </div>
     </div>
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="firstName">Notes</label>
+            <label for="Notes">Notes</label>
             <input asp-for="Owned.Notes" type="text" class="form-control" id="Notes">
         </div>
         <div class="col-md-3 mb-3">
-            <label for="lastName">Service Provider</label>
+            <label for="SPIDName">Service Provider</label>
             <input asp-for="Owned.SPIDName" type="text" class="form-control" id="SPIDName" disabled readonly>
         </div>
         <div class="col-md-3 mb-3">
-            <label for="lastName">Service Provider Id</label>
+            <label for="SPID">Service Provider Id</label>
             <input asp-for="Owned.SPID" type="text" class="form-control" id="SPID" disabled readonly>
         </div>
     </div>
     <div class="row">
         <div class="col-md-3 mb-3">
-            <label for="firstName">Billing Client Id</label>
+            <label for="BillingClientId">Billing Client Id</label>
             <input asp-for="Owned.BillingClientId" type="text" class="form-control" id="BillingClientId">
         </div>
         <div class="col-md-3 mb-3">
-            <label for="lastName">Owned By</label>
+            <label for="OwnedBy">Owned By</label>
             <input asp-for="Owned.OwnedBy" type="text" class="form-control" id="OwnedBy">
         </div>
         <div class="col-md-3 mb-3">
-            <label for="firstName">Status</label>
+            <label for="Status">Status</label>
             <input asp-for="Owned.Status" type="text" class="form-control" id="Status" disabled readonly>
         </div>
         <div class="col-md-3 mb-3">
-            <label for="lastName">SMSRoute</label>
+            <label for="SMSRoute">SMSRoute</label>
             <input asp-for="Owned.SMSRoute" type="text" class="form-control" id="SMSRoute" disabled readonly>
         </div>
     </div>
     <div class="row">
         <div class="col-md-3 mb-3">
-            <label for="firstName">Twilio Carrier Name</label>
+            <label for="TwilioCarrierName">Twilio Carrier Name</label>
             <input asp-for="Owned.TwilioCarrierName" type="text" class="form-control" id="TwilioCarrierName" disabled readonly>
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="TrunkGroup">Trunk Group</label>
+            <input asp-for="Owned.TrunkGroup" type="text" class="form-control" id="TrunkGroup" disabled readonly>
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="DateUpdated">Last Ingested</label>
+            <input asp-for="Owned.DateUpdated" type="text" class="form-control" id="DateUpdated" disabled readonly>
         </div>
     </div>
     <button type="submit" class="btn btn-danger">Update</button>

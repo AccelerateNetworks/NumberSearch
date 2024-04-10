@@ -91,6 +91,7 @@
             <tr>
                 <th scope="col">Number</th>
                 <th>E911</th>
+                <th>Trunk Group</th>
                 <th>FusionPBX</th>
                 <th>Messaging</th>
                 <th>Notes</th>
@@ -179,6 +180,7 @@
                                 <p>No address registered.</p>
                             }
                         </td>
+                        <td>@number?.Owned.TrunkGroup</td>
                         <td>
                             @if (!string.IsNullOrWhiteSpace(number?.Owned?.FPBXDomainName))
                             {
@@ -193,7 +195,8 @@
                             }
                         </td>
                         <td>
-                            @if (string.IsNullOrWhiteSpace(number?.Owned?.SMSRoute) && string.IsNullOrWhiteSpace(@number?.ClientRegistration?.CallbackUrl))
+                            @if ((string.IsNullOrWhiteSpace(number?.Owned?.SMSRoute) || number?.Owned?.SMSRoute is "Longcode not assigned to that account") 
+                            && string.IsNullOrWhiteSpace(@number?.ClientRegistration?.CallbackUrl))
                             {
                                 <p>No upstream routing found.</p>
                                 <p>No message forwarding URL registered.</p>
