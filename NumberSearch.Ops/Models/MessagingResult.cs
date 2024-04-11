@@ -15,5 +15,6 @@ namespace NumberSearch.Ops.Models
         public string AlertType { get; set; } = string.Empty;
         public RegistrationRequest RegistrationRequest { get; set; } = new();
         public ToEmailRequest ToEmail { get; set; } = new();
+        public string CarrierName { get; set; } = string.Empty;
     }
 }

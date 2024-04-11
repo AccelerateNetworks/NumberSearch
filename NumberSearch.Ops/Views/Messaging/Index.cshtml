@@ -121,8 +121,25 @@
     </table>
 </div>
 <div class="row">
-    <div class="col">
-        <a class="btn btn-danger" href="/Messaging/TwilioCarrier?refreshAll=true">Refresh Carrier Name for all Numbers without Carrier Name ($)</a>
-        <a class="btn btn-primary" href="/Messaging/ExportToCSV">Export to CSV</a>
-    </div>
+    <form method="post" action="/OwnedNumbers/RouteAndCarrier">
+        <div class="col-6">
+            <div class="input-group mb-3">
+                @Html.AntiForgeryToken()
+                <span class="input-group-text" id="basic-addon3">Refresh Carrier Name for Numbers with </span>
+                <input asp-for="CarrierName" type="text" class="form-control" list="datalistOptions" id="carrierName" placeholder="Type to search...">
+                <datalist id="datalistOptions">
+                    <option value="All"></option>
+                    @foreach (var carrier in Model.Owned.Where(x => x.IngestedFrom != "Test" && x.Active).Select(x => x.TwilioCarrierName).Distinct())
+                    {
+                        <option value='@carrier'>@Model.Owned.Where(x => x.IngestedFrom != "Test" && x.Active && x.TwilioCarrierName == carrier).Count()</option>
+                    }
+                </datalist>
+                <button class="btn btn-danger" type="submit">As the Carrier ($)</button>
+            </div>
+        </div>
+        <div class="col">
+            @*         <a class="btn btn-danger" href="/Messaging/TwilioCarrier?refreshAll=true">Refresh Carrier Name for all Numbers without Carrier Name ($)</a>
+            *@        <a class="btn btn-primary" href="/Messaging/ExportToCSV">Export to CSV</a>
+        </div>
+    </form>
 </div>
