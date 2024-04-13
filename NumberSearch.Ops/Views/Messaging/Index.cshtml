@@ -85,7 +85,7 @@
 </form>
 <h3 class="pt-3">Messaging Usage by Phone Number</h3>
 <div class="table-responsive">
-    <table class="table table-striped table-borderless table-hover" id="table">
+    <table class="table table-striped table-bordered table-hover" id="table">
         <thead>
             <tr>
                 <th>Phone Number</th>
@@ -111,9 +111,12 @@
                     <td>@Carrier</td>
                     <td>@TrunkGroup</td>
                     <td>
-                        <a class="btn btn-primary" href="/Messaging/RefreshStatus?dialedNumber=@result.AsDialed">Refresh Upstream</a>
-                        <a class="btn btn-primary" href="/Messaging/Reregister?dialedNumber=@result.AsDialed">Reregister</a>
-                        <a class="btn btn-primary" href="/Messaging/TwilioCarrier?dialedNumber=@result.AsDialed">Refresh Carrier</a>
+                        <div class="btn-group">
+                            <a class="btn btn-primary" href="/Messaging/RefreshStatus?dialedNumber=@result.AsDialed">Refresh Upstream</a>
+                            <a class="btn btn-primary" href="/Messaging/Reregister?dialedNumber=@result.AsDialed">Reregister</a>
+                            <a class="btn btn-primary" href="/Messaging/TwilioCarrier?dialedNumber=@result.AsDialed">Refresh Carrier</a>
+                        </div>
+
                     </td>
                 </tr>
             }
