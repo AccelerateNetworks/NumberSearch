@@ -45,6 +45,11 @@
                     </tbody>
                 </table>
             </div>
+            <div class="input-group">
+                <a class="btn btn-primary" href="/OwnedNumbers/ExportToCSV">Export to CSV</a>
+            </div>
+        </div>
+        <div class="col-6">
             <div class="table-responsive">
                 <table class="table table-striped table-bordered table-hover">
                     <thead>
@@ -63,24 +68,6 @@
                         }
                     </tbody>
                 </table>
-            </div>
-        </div>
-        <div class="col-6">
-            <div class="input-group mb-3">
-                @Html.AntiForgeryToken()
-                <span class="input-group-text" id="basic-addon3">Refresh Carrier Name for Numbers with </span>
-                <input asp-for="CarrierName" type="text" class="form-control" list="datalistOptions" id="carrierName" placeholder="Type to search...">
-                <datalist id="datalistOptions">
-                    <option value="All"></option>
-                    @foreach (var carrier in Model.Results.Where(x => x.Owned.IngestedFrom != "Test" && x.Owned.Active).Select(x => x.Owned.TwilioCarrierName).Distinct())
-                    {
-                        <option value='@carrier'>@Model.Results.Where(x => x.Owned.IngestedFrom != "Test" && x.Owned.Active && x.Owned.TwilioCarrierName == carrier).Count()</option>
-                    }
-                </datalist>
-                <button class="btn btn-danger" type="submit">As the Carrier ($)</button>
-            </div>
-            <div class="input-group">
-                <a class="btn btn-primary" href="/OwnedNumbers/ExportToCSV">Export to CSV</a>
             </div>
         </div>
     </div>
@@ -180,13 +167,21 @@
                                 <p>No address registered.</p>
                             }
                         </td>
-                        <td>@number?.Owned.TrunkGroup</td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(number?.Owned.TrunkGroup))
+                            {
+                                <p>@number?.Owned.TrunkGroup</p>
+                            } else
+                            {
+                                <p>No trunk group data.</p>
+                            }
+                        </td>
                         <td>
                             @if (!string.IsNullOrWhiteSpace(number?.Owned?.FPBXDomainName))
                             {
                                 <p>@number?.Owned.FPBXDomainName</p>
                                 <p>@number?.Owned.FPBXDomainDescription</p>
-                                <p>DestinationId: @number?.Owned.FPBXDestinationId</p>
+                                <p class="text-break">DestinationId: @number?.Owned.FPBXDestinationId</p>
                             }
                             else
                             {
@@ -195,8 +190,8 @@
                             }
                         </td>
                         <td>
-                            @if ((string.IsNullOrWhiteSpace(number?.Owned?.SMSRoute) || number?.Owned?.SMSRoute is "Longcode not assigned to that account") 
-                            && string.IsNullOrWhiteSpace(@number?.ClientRegistration?.CallbackUrl))
+                            @if ((string.IsNullOrWhiteSpace(number?.Owned?.SMSRoute) || number?.Owned?.SMSRoute is "Longcode not assigned to that account")
+                    && string.IsNullOrWhiteSpace(@number?.ClientRegistration?.CallbackUrl))
                             {
                                 <p>No upstream routing found.</p>
                                 <p>No message forwarding URL registered.</p>
@@ -204,7 +199,7 @@
                             else if (string.IsNullOrWhiteSpace(number?.Owned?.SMSRoute) && !string.IsNullOrWhiteSpace(@number?.ClientRegistration?.CallbackUrl))
                             {
                                 <p>❌ No upstream routing found.</p>
-                                <p>✔️ Forwarded to @number?.ClientRegistration?.CallbackUrl</p>
+                                <p class="text-break">✔️ Forwarded to @number?.ClientRegistration?.CallbackUrl</p>
                                 <div class="alert alert-warning" role="alert">
                                     Inbound messages will not be forwarded. Please register with sms.callpipe.com.
                                 </div>
@@ -220,7 +215,7 @@
                             else
                             {
                                 <p>✔️ Routed to @number?.Owned.SMSRoute</p>
-                                <p>✔️ Forwarded to @number?.ClientRegistration?.CallbackUrl</p>
+                                <p class="text-break">✔️ Forwarded to @number?.ClientRegistration?.CallbackUrl</p>
                             }
                         </td>
                         <td>
@@ -228,7 +223,7 @@
                             {
                                 <p>Owned by @number.Owned.OwnedBy</p>
                             }
-                            <p>@number?.Owned.Notes</p>
+                            <p class="text-break">@number?.Owned.Notes</p>
                         </td>
                         <td>
                             <div class="btn-group-vertical" role="group" aria-label="Vertical button group">

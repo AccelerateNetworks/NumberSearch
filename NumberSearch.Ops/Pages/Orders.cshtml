@@ -237,14 +237,14 @@
                             </td>
                             <td>
                                 <strong class="d-xl-none">Customer Name</strong>
-                                <p>
+                                <p class="m-0">
                                     @order?.Order?.FirstName
                                     @order?.Order?.LastName
-                                    <a href="mailto:@order?.Order?.Email" target="_blank">
-                                        @order?.Order?.Email
-                                    </a>
-                                    @order?.Order?.ContactPhoneNumber
                                 </p>
+                                <p class="m-0">
+                                    <a href="mailto:@order?.Order?.Email" target="_blank">@order?.Order?.Email</a>
+                                </p>
+                                <p class="m-0">@order?.Order?.ContactPhoneNumber</p>
                                 <div class="d-xl-none">
                                     <strong>Address</strong>
                                     <p>
@@ -374,7 +374,7 @@
                                     if (!string.IsNullOrWhiteSpace(order?.Order?.CustomerNotes))
                                     {
                                         <strong>Customer Notes</strong>
-                                        <p>@order.Order.CustomerNotes</p>
+                                        <p class="text-break">@order.Order.CustomerNotes</p>
                                     }
                                 }
                             </td>
@@ -544,7 +544,7 @@
                                         </span>
                                     }
                                 </p>
-                                <p>
+                                <p class="text-break">
                                     @order?.Order?.FirstName
                                     @order?.Order?.LastName
                                     <a href="mailto:@order?.Order?.Email" target="_blank" rel="noopener noreferrer">
