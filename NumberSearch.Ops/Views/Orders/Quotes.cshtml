@@ -17,6 +17,7 @@
                 <th>
                     Products Ordered
                 </th>
+                <th>Notes</th>
             </tr>
         </thead>
         <tbody>
@@ -219,11 +220,18 @@
                                     </ul>
                                 }
                             }
+                        </td>
+                        <td>
                             @{
                                 if (!string.IsNullOrWhiteSpace(order?.Order?.CustomerNotes))
                                 {
                                     <strong>Customer Notes</strong>
                                     <p class="text-break">@order.Order.CustomerNotes</p>
+                                }
+                                if (!string.IsNullOrWhiteSpace(order?.Order?.InternalNotes))
+                                {
+                                    <strong>Internal Notes</strong>
+                                    <p class="text-break">@order.Order.InternalNotes</p>
                                 }
                             }
                         </td>
