@@ -223,6 +223,9 @@
                         </td>
                         <td>
                             @{
+                                var status = string.IsNullOrWhiteSpace(order?.Order?.QuoteStatus) ? "In Progress" : order.Order.QuoteStatus;
+                                <strong>Quote Status</strong>
+                                <p>@status</p>
                                 if (!string.IsNullOrWhiteSpace(order?.Order?.CustomerNotes))
                                 {
                                     <strong>Customer Notes</strong>

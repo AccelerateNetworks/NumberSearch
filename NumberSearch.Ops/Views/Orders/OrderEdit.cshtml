@@ -110,6 +110,21 @@
         }
         <div class="col">
             <div class="mb-3">
+                @if (Model?.Order?.Quote is not null && Model.Order.Quote)
+                {
+                    <div class="form-floating mb-3">
+                        <select asp-for="Order.QuoteStatus" class="form-select" id="floatingSelect" aria-label="Quote Status">
+                            <option value="In Progress">In Progress</option>
+                            <option value="Won">Won</option>
+                            <option value="Lost">Lost</option>
+                        </select>
+                        <label for="floatingSelect">Quote Status</label>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="col">
+            <div class="mb-3">
                 <div class="form-check form-switch">
                     <input class="form-check-input" asp-for="Order.BackgroundWorkCompleted" type="checkbox" role="switch">
                     <label class="form-check-label" for="backgroundWorkSwitch">Background Work Completed</label>
