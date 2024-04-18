@@ -6,6 +6,7 @@ using FirstCom;
 using Flurl.Http;
 
 using Messaging;
+using Messaging.Migrations;
 
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -25,6 +26,10 @@ using Models;
 
 using Npgsql;
 
+using NumberSearch.DataAccess.Models;
+
+using Org.BouncyCastle.Ocsp;
+
 using Prometheus;
 
 using Serilog;
@@ -35,10 +40,13 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Reflection;
+using System.ServiceModel.Channels;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+
+using static System.Net.Mime.MediaTypeNames;
 
 Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -61,14 +69,12 @@ try
     builder.Services.AddSingleton(config ?? new());
     string bulkVSUsername = builder.Configuration.GetConnectionString("BulkVSUsername") ?? string.Empty;
     string bulkVSPassword = builder.Configuration.GetConnectionString("BulkVSPassword") ?? string.Empty;
-    string bulkVSInbound = string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("BulkVSInboundMessagingURL"))
-        ? @"https://portal.bulkvs.com/api/v1.0/messageSend" : builder.Configuration.GetConnectionString("BulkVSInboundMessagingURL") ?? string.Empty;
+
     string firstPointSMSOutbound = string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("FirstPointOutboundMessageURL"))
         ? @"https://smsapi.1pcom.net/v1/retailsendmessage" : builder.Configuration.GetConnectionString("FirstPointOutboundMessageURL") ?? string.Empty;
     string firstPointMMSOutbound = string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("FirstPointOutboundMMSMessageURL"))
         ? @"https://mmsc01.1pcom.net/MMS_Send" : builder.Configuration.GetConnectionString("FirstPointOutboundMMSMessageURL") ?? string.Empty;
-    string firstPointMMSInbound = string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("FirstPointOutboundMMSMessageURL"))
-        ? @"https://mmsc01.1pcom.net/MMS_Send" : builder.Configuration.GetConnectionString("FirstPointOutboundMMSMessageURL") ?? string.Empty;
+
     string firstPointUsername = builder.Configuration.GetConnectionString("PComNetUsername") ?? string.Empty;
     string firstPointPassword = builder.Configuration.GetConnectionString("PComNetPassword") ?? string.Empty;
     string firstPointIncomingToken = builder.Configuration.GetConnectionString("PComNetIncomingToken") ?? string.Empty;
@@ -239,8 +245,134 @@ try
     app.UseHttpMetrics();
     app.MapMetrics();
 
-    app.MapPost("/login", async Task<Results<Ok<AccessTokenResponse>, EmptyHttpResult, ProblemHttpResult>>
-        ([FromBody] LoginRequest login, [FromQuery] bool? useCookies, [FromQuery] bool? useSessionCookies, [FromServices] IServiceProvider sp) =>
+    // These two endpoints /login and /refresh were extracted from app.MapGroup("/auth").MapIdentityApi<IdentityUser>(); to hide the registration endpoint.
+    app.MapPost("/login", Endpoints.LoginAsync);
+
+    // These two endpoints /login and /refresh were extracted from app.MapGroup("/auth").MapIdentityApi<IdentityUser>(); to hide the registration endpoint.
+    app.MapPost("/refresh", Endpoints.RefreshTokenAsync);
+
+    app.MapGet("/client", Endpoints.ClientByDialedNumberAsync)
+        .RequireAuthorization("api")
+        .WithOpenApi(x => new(x)
+        {
+            Summary = "Lookup a specific client registration using the dialed number.",
+            Description = "Use this to see if a dialed number is registered and find out what callback Url its registered to."
+        });
+
+    app.MapGet("/client/all", Endpoints.AllClientsAsync)
+        .RequireAuthorization("api")
+        .WithOpenApi(x => new(x)
+        {
+            Summary = "View all registered clients.",
+            Description = "This is intended to be used for debugging client registrations."
+        });
+
+    app.MapGet("/client/usage", Endpoints.UsageByClientAsync)
+        .RequireAuthorization("api")
+        .WithOpenApi(x => new(x)
+        {
+            Summary = "View all registered clients.",
+            Description = "This is intended to be used for debugging client registrations."
+        });
+
+    app.MapPost("/client/register", Endpoints.RegisterClientAsync)
+        .RequireAuthorization("api")
+        .WithOpenApi(x => new(x)
+        {
+            Summary = "Register a client for message forwarding.",
+            Description = "Boy I wish I had more to say about this, lmao."
+        });
+
+    app.MapPost("/client/remove", Endpoints.RemoveClientRegistrationAsync)
+        .RequireAuthorization("api")
+        .WithOpenApi(x => new(x)
+        {
+            Summary = "Register a client for message forwarding.",
+            Description = "Boy I wish I had more to say about this, lmao."
+        });
+
+    app.MapGet("/client/test", Endpoints.TestClientAsync);
+
+    app.MapGet("/message/all", Endpoints.AllMessagesAsync)
+        .RequireAuthorization("api")
+        .WithOpenApi(x => new(x)
+        {
+            Summary = "View all sent and received messages.",
+            Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems."
+        });
+
+    app.MapGet("/message/all/failed", Endpoints.AllFailedMessagesAsync)
+        .RequireAuthorization("api")
+        .WithOpenApi(x => new(x)
+        {
+            Summary = "View all sent and received messages that failed.",
+            Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems."
+        });
+
+    app.MapPost("/message/replay", Endpoints.ReplayMessageAsync)
+        .RequireAuthorization("api")
+        .WithOpenApi(x => new(x)
+        {
+            Summary = "Replay an inbound message.",
+            Description = "This is intended to help you debug problems with message delivery so you can see if it's this API or the client app that is causing problems."
+        });
+
+    app.MapPost("/message/send", Endpoints.SendMessageAsync)
+        .RequireAuthorization("api")
+        .WithOpenApi(x => new(x)
+        {
+            Summary = "Send an SMS or MMS Message.",
+            Description = "Submit outbound messages to this endpoint. The 'to' field is a comma separated list of dialed numbers, or a single dialed number without commas. The 'msisdn' the dialed number of the client that is sending the message. The 'message' field is a string. No validation of the message field occurs before it is forwarded to our upstream vendors. If you include any file paths in the MediaURLs array the message will be sent as an MMS."
+        });
+
+    app.MapPost("1pcom/inbound/MMS", Endpoints.InboundMMSFirstPointComAsync)
+        .WithOpenApi(x => new(x)
+        {
+            Summary = "Receive an MMS Message.",
+            Description = "Submit inbound messages to this endpoint."
+        });
+
+    // When this issue is resolved we can simplify the way that we are receiving data in this endpoint: https://github.com/dotnet/aspnetcore/issues/39430 and https://stackoverflow.com/questions/71047077/net-6-minimal-api-and-multipart-form-data/71048827#71048827
+    app.MapPost("/api/inbound/1pcom", Endpoints.InboundSMSFirstPointComAsync)
+        .WithOpenApi(x => new(x)
+        {
+            Summary = "For use by First Point Communications only.",
+            Description = "Receives incoming messages from our upstream provider. Forwards valid SMS messages to clients registered through the /client/register endpoint. Forwarded messages are in the form described by the MessageRecord entry in the Schema's section of this page. The is no request body as the data provided by First Point Communications is UrlEncoded like POSTing form data rather than JSON formatted in body of the POST request. The Token is a secret created and maintained by First Point Communications. This endpoint is not for use by anyone other than First Point Communications. It is documented here to help developers understand how incoming messages are forwarded to the client that they have registered with this API. The Messaging.Tests project is a series of functional tests that verify the behavior of this endpoint, because this method of message passing is so chaotic."
+        });
+
+    app.MapPost("/message/forward/test", Endpoints.ForwardTestAsync)
+        .WithOpenApi(x => new(x)
+        {
+            Summary = "Endpoint that can be used as the callback URL for a registered client to support functional testing of the message forwarding endpoints.",
+            Description = "For testing purposes only."
+        });
+
+    app.MapPost("/message/send/test", Endpoints.SendTestAsync)
+        .WithOpenApi(x => new(x)
+        {
+            Summary = "Endpoint that can be used to support functional testing of the message sending endpoints without actually sending it to the vendor.",
+            Description = "For testing purposes only."
+        });
+
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
+
+// Without this the test suite won't work.
+public partial class Program
+{ }
+
+public static class Endpoints
+{
+    public static async Task<Results<Ok<AccessTokenResponse>, EmptyHttpResult, ProblemHttpResult>>
+        LoginAsync([FromBody] LoginRequest login, [FromQuery] bool? useCookies, [FromQuery] bool? useSessionCookies, [FromServices] IServiceProvider sp)
     {
         var signInManager = sp.GetRequiredService<SignInManager<IdentityUser>>();
 
@@ -269,10 +401,10 @@ try
 
         // The signInManager already produced the needed response in the form of a cookie or bearer token.
         return TypedResults.Empty;
-    });
-
-    app.MapPost("/refresh", async Task<Results<Ok<AccessTokenResponse>, UnauthorizedHttpResult, SignInHttpResult, ChallengeHttpResult>>
-        ([FromBody] RefreshRequest refreshRequest, [FromServices] IServiceProvider sp) =>
+    }
+    
+    public static async Task<Results<Ok<AccessTokenResponse>, UnauthorizedHttpResult, SignInHttpResult, ChallengeHttpResult>>
+        RefreshTokenAsync([FromBody] RefreshRequest refreshRequest, [FromServices] IServiceProvider sp)
     {
         var bearerTokenOptions = sp.GetRequiredService<IOptionsMonitor<BearerTokenOptions>>();
         var timeProvider = sp.GetRequiredService<TimeProvider>();
@@ -282,30 +414,20 @@ try
         var refreshTicket = refreshTokenProtector.Unprotect(refreshRequest.RefreshToken);
 
         // Reject the /refresh attempt with a 401 if the token expired or the security stamp validation fails
-        if (refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc ||
+        if (refreshTicket?.Properties?.ExpiresUtc is not { }
+            expiresUtc ||
             timeProvider.GetUtcNow() >= expiresUtc ||
             await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not IdentityUser user)
-
         {
             return TypedResults.Challenge();
         }
 
         var newPrincipal = await signInManager.CreateUserPrincipalAsync(user);
         return TypedResults.SignIn(newPrincipal, authenticationScheme: IdentityConstants.BearerScheme);
-    });
-
-    // These two endpoints /login and /refresh were extracted from  app.MapGroup("/auth").MapIdentityApi<IdentityUser>(); to hide the registration endpoint.
-
-    app.MapGet("/client", MessagingClient.GetByDialedNumberAsync)
-        .RequireAuthorization("api")
-        .WithOpenApi(x => new(x)
-        {
-            Summary = "Lookup a specific client registration using the dialed number.",
-            Description = "Use this to see if a dialed number is registered and find out what callback Url its registered to."
-        });
-
-
-    app.MapGet("/client/all", async Task<Results<Ok<ClientRegistration[]>, BadRequest<string>, NotFound<string>>> (bool? clear, MessagingContext db) =>
+    }
+    
+    public static async Task<Results<Ok<ClientRegistration[]>, BadRequest<string>, NotFound<string>>>
+        AllClientsAsync(bool? clear, MessagingContext db)
     {
         try
         {
@@ -336,10 +458,10 @@ try
             return TypedResults.BadRequest(ex.Message);
         }
 
-    })
-        .RequireAuthorization("api").WithOpenApi(x => new(x) { Summary = "View all registered clients.", Description = "This is intended to be used for debugging client registrations." });
-
-    app.MapGet("/client/usage", async Task<Results<Ok<UsageSummary[]>, BadRequest<string>, NotFound<string>>> (MessagingContext db, string? asDialed) =>
+    }
+    
+    public static async Task<Results<Ok<UsageSummary[]>, BadRequest<string>, NotFound<string>>>
+        UsageByClientAsync(MessagingContext db, string? asDialed)
     {
         if (string.IsNullOrWhiteSpace(asDialed))
         {
@@ -456,10 +578,10 @@ try
                 return TypedResults.BadRequest(ex.Message);
             }
         }
-    })
-    .RequireAuthorization("api").WithOpenApi(x => new(x) { Summary = "View all registered clients.", Description = "This is intended to be used for debugging client registrations." });
-
-    app.MapPost("/client/register", async Task<Results<Ok<RegistrationResponse>, BadRequest<RegistrationResponse>>> (RegistrationRequest registration, MessagingContext db) =>
+    }
+    
+    public static async Task<Results<Ok<RegistrationResponse>, BadRequest<RegistrationResponse>>>
+        RegisterClientAsync(RegistrationRequest registration, AppSettings appSettings, MessagingContext db)
     {
         var checkAsDialed = PhoneNumbersNA.PhoneNumber.TryParse(registration.DialedNumber, out var asDialedNumber);
         if (!checkAsDialed)
@@ -505,18 +627,18 @@ try
         try
         {
             // Verify that this number is routed through our upstream provider.
-            var checkRouted = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber, firstPointUsername, firstPointPassword);
+            var checkRouted = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber, appSettings.ConnectionStrings.PComNetUsername, appSettings.ConnectionStrings.PComNetPassword);
             Log.Information(System.Text.Json.JsonSerializer.Serialize(checkRouted));
             registeredUpstream = checkRouted.QueryResult.code is 0 && checkRouted.epid is 265;
             upstreamStatusDescription = checkRouted.QueryResult.text;
             if (checkRouted.QueryResult.code is not 0 || checkRouted.epid is not 265)
             {
                 // Enabled routing and set the EPID if the number is not already routed.
-                var enableSMS = await FirstPointComSMS.EnableSMSByDialedNumberAsync(dialedNumber, firstPointUsername, firstPointPassword);
+                var enableSMS = await FirstPointComSMS.EnableSMSByDialedNumberAsync(dialedNumber, appSettings.ConnectionStrings.PComNetUsername, appSettings.ConnectionStrings.PComNetPassword);
                 Log.Information(System.Text.Json.JsonSerializer.Serialize(enableSMS));
-                var setRouting = await FirstPointComSMS.RouteSMSToEPIDByDialedNumberAsync(dialedNumber, 265, firstPointUsername, firstPointPassword);
+                var setRouting = await FirstPointComSMS.RouteSMSToEPIDByDialedNumberAsync(dialedNumber, 265, appSettings.ConnectionStrings.PComNetUsername, appSettings.ConnectionStrings.PComNetPassword);
                 Log.Information(System.Text.Json.JsonSerializer.Serialize(setRouting));
-                var checkRoutedAgain = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber, firstPointUsername, firstPointPassword);
+                var checkRoutedAgain = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber, appSettings.ConnectionStrings.PComNetUsername, appSettings.ConnectionStrings.PComNetPassword);
                 Log.Information(System.Text.Json.JsonSerializer.Serialize(checkRouted));
                 registeredUpstream = checkRouted.QueryResult.code is 0 && checkRouted.epid is 265;
                 upstreamStatusDescription = checkRouted.QueryResult.text;
@@ -704,10 +826,10 @@ try
 
         return TypedResults.Ok(new RegistrationResponse { DialedNumber = dialedNumber, CallbackUrl = registration.CallbackUrl, /*Email = registration.Email,*/ Registered = true, Message = message, RegisteredUpstream = registeredUpstream, UpstreamStatusDescription = upstreamStatusDescription });
 
-    })
-        .RequireAuthorization("api").WithOpenApi(x => new(x) { Summary = "Register a client for message forwarding.", Description = "Boy I wish I had more to say about this, lmao." });
-
-    app.MapPost("/client/remove", async Task<Results<Ok<string>, BadRequest<string>>> (string asDialed, MessagingContext db) =>
+    }
+    
+    public static async Task<Results<Ok<string>, BadRequest<string>>>
+        RemoveClientRegistrationAsync(string asDialed, MessagingContext db)
     {
         var checkAsDialed = PhoneNumbersNA.PhoneNumber.TryParse(asDialed, out var asDialedNumber);
         if (!checkAsDialed)
@@ -737,11 +859,53 @@ try
         }
 
         return TypedResults.Ok($"The registration for {asDialed} has been removed.");
-    })
-    .RequireAuthorization("api").WithOpenApi(x => new(x) { Summary = "Register a client for message forwarding.", Description = "Boy I wish I had more to say about this, lmao." });
+    }
+    
+    public static async Task<Results<Ok<string>, NotFound<string>, BadRequest<string>>>
+        TestClientAsync(MessagingContext db, string? asDialed)
+    {
+        if (string.IsNullOrWhiteSpace(asDialed))
+        {
+            return TypedResults.BadRequest("Please provide a valid dialed number.");
+        }
+        else
+        {
+            try
+            {
+                bool checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(asDialed, out var asDialedNumber);
+                if (checkFrom && asDialedNumber is not null && !string.IsNullOrWhiteSpace(asDialedNumber.DialedNumber))
+                {
+                    string dialedNumber = asDialedNumber.Type is not PhoneNumbersNA.NumberType.ShortCode ? $"1{asDialedNumber.DialedNumber}" : asDialedNumber.DialedNumber;
 
+                    var existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == asDialedNumber.DialedNumber).FirstOrDefaultAsync();
 
-    app.MapGet("/message/all", async Task<Results<Ok<MessageRecord[]>, NotFound<string>, BadRequest<string>>> (MessagingContext db, string? asDialed) =>
+                    if (existingRegistration is not null && existingRegistration.AsDialed == dialedNumber)
+                    {
+                        // Send an outbound message from this number to this number, and suppress passing it foward to the client.
+
+                        return TypedResults.Ok($"Registration was found for {asDialed}");
+                    }
+                    else
+                    {
+                        return TypedResults.NotFound($"No registration was found for {asDialed}");
+                    }
+                }
+                else
+                {
+                    return TypedResults.BadRequest($"asDialed {asDialed} could not be parsed as valid NANP (North American Numbering Plan) number.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                Log.Error(ex.StackTrace ?? "No stacktrace found.");
+                return TypedResults.BadRequest(ex.Message);
+            }
+        }
+    }
+    
+    public static async Task<Results<Ok<MessageRecord[]>, NotFound<string>, BadRequest<string>>>
+        AllMessagesAsync(MessagingContext db, string? asDialed)
     {
         if (string.IsNullOrWhiteSpace(asDialed))
         {
@@ -804,16 +968,16 @@ try
                 return TypedResults.BadRequest(ex.Message);
             }
         }
-    })
-        .RequireAuthorization("api").WithOpenApi(x => new(x) { Summary = "View all sent and received messages.", Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems." });
-
-    app.MapGet("/message/all/failed", async Task<Results<Ok<MessageRecord[]>, NotFound<string>, BadRequest<string>>> (MessagingContext db, DateTime start, DateTime end) =>
+    }
+    
+    public static async Task<Results<Ok<MessageRecord[]>, NotFound<string>, BadRequest<string>>>
+        AllFailedMessagesAsync(MessagingContext db, DateTime start, DateTime end)
     {
         try
         {
             var messages = await db.Messages.Where(x => !x.Succeeded && x.DateReceivedUTC > start && x.DateReceivedUTC <= end).OrderByDescending(x => x.DateReceivedUTC).ToArrayAsync();
 
-            if (messages is not null && messages.Any())
+            if (messages is not null && messages.Length != 0)
             {
                 return TypedResults.Ok(messages);
             }
@@ -828,10 +992,10 @@ try
             Log.Error(ex.StackTrace ?? "No stack trace found.");
             return TypedResults.BadRequest(ex.Message);
         }
-    })
-    .RequireAuthorization("api").WithOpenApi(x => new(x) { Summary = "View all sent and received messages that failed.", Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems." });
-
-    app.MapPost("/message/replay", async Task<Results<Ok<string>, NotFound<string>, BadRequest<string>>> (Guid id, MessagingContext db) =>
+    }
+    
+    public static async Task<Results<Ok<string>, NotFound<string>, BadRequest<string>>>
+        ReplayMessageAsync(Guid id, AppSettings appSettings, MessagingContext db)
     {
         try
         {
@@ -915,15 +1079,15 @@ try
             Log.Error(ex.StackTrace ?? "No stack trace found.");
             return TypedResults.BadRequest(ex.Message);
         }
-    })
-    .RequireAuthorization("api").WithOpenApi(x => new(x) { Summary = "Replay an inbound message.", Description = "This is intended to help you debug problems with message delivery so you can see if it's this API or the client app that is causing problems." });
-
-    app.MapPost("/message/send", async Task<Results<Ok<SendMessageResponse>, BadRequest<SendMessageResponse>>> ([Microsoft.AspNetCore.Mvc.FromBody] SendMessageRequest message, bool? test, MessagingContext db) =>
+    }
+    
+    public static async Task<Results<Ok<SendMessageResponse>, BadRequest<SendMessageResponse>>>
+        SendMessageAsync([Microsoft.AspNetCore.Mvc.FromBody] SendMessageRequest message, bool? test, AppSettings appSettings, MessagingContext db)
     {
         var toForward = new toForwardOutbound
         {
-            username = firstPointUsername,
-            password = firstPointPassword,
+            username = appSettings.ConnectionStrings.PComNetUsername,
+            password = appSettings.ConnectionStrings.PComNetPassword,
             messagebody = message.Message
         };
 
@@ -981,7 +1145,6 @@ try
                     // If this throws an exception then there is really nothing we can do as the DB is down and there's nothing to save to.
                     Log.Fatal(ex.Message);
                 }
-
                 return TypedResults.BadRequest(new SendMessageResponse { Message = $"MSISDN {message?.MSISDN} could not be parsed as valid NANP (North American Numbering Plan) number. {System.Text.Json.JsonSerializer.Serialize(message)}" });
             }
         }
@@ -1035,7 +1198,6 @@ try
                     // If this throws an exception then there is really nothing we can do as the DB is down and there's nothing to save to.
                     Log.Fatal(ex.Message);
                 }
-
                 return TypedResults.BadRequest(new SendMessageResponse { Message = $"To {message?.To} could not be parsed as valid NANP (North American Numbering Plan) number. {System.Text.Json.JsonSerializer.Serialize(message)}" });
             }
         }
@@ -1047,8 +1209,8 @@ try
             if (message.MediaURLs.Length > 0 && !string.IsNullOrWhiteSpace(message.MediaURLs.FirstOrDefault()))
             {
                 var multipartContent = new MultipartFormDataContent {
-                        { new StringContent(firstPointUsername), "username" },
-                        { new StringContent(firstPointPassword), "password" },
+                        { new StringContent(appSettings.ConnectionStrings.PComNetUsername), "username" },
+                        { new StringContent(appSettings.ConnectionStrings.PComNetPassword), "password" },
                         { new StringContent(toForward.to), "recip" },
                         { new StringContent(toForward.msisdn), "ani" },
                 };
@@ -1068,7 +1230,7 @@ try
                 }
 
                 // pass them on to the vendor
-                var MMSResponse = await firstPointMMSOutbound.PostAsync(multipartContent).ReceiveString();
+                var MMSResponse = await appSettings.ConnectionStrings.FirstPointOutboundMMSMessageURL.PostAsync(multipartContent).ReceiveString();
 
                 // Parse the oddly formatted response.
                 var toJSON = JsonSerializer.Deserialize<FirstPointResponseMMS>(MMSResponse);
@@ -1132,7 +1294,7 @@ try
                 {
                     sendMessage = test ?? false ? await "https://sms.callpipe.com/message/send/test"
                     .PostUrlEncodedAsync(toForward)
-                    .ReceiveJson<FirstPointResponse>() : await firstPointSMSOutbound
+                    .ReceiveJson<FirstPointResponse>() : await appSettings.ConnectionStrings.FirstPointOutboundMessageURL
                     .PostUrlEncodedAsync(toForward)
                     .ReceiveJson<FirstPointResponse>();
                 }
@@ -1244,14 +1406,14 @@ try
             return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. {ex.Message}" });
         }
 
-    })
-        .RequireAuthorization("api").WithOpenApi(x => new(x) { Summary = "Send an SMS or MMS Message.", Description = "Submit outbound messages to this endpoint. The 'to' field is a comma separated list of dialed numbers, or a single dialed number without commas. The 'msisdn' the dialed number of the client that is sending the message. The 'message' field is a string. No validation of the message field occurs before it is forwarded to our upstream vendors. If you include any file paths in the MediaURLs array the message will be sent as an MMS." });
-
-    app.MapPost("1pcom/inbound/MMS", async Task<Results<Ok<string>, BadRequest<string>, Ok<ForwardedMessage>, UnauthorizedHttpResult>> (HttpContext context, string token, MessagingContext db) =>
+    }
+    
+    public static async Task<Results<Ok<string>, BadRequest<string>, Ok<ForwardedMessage>, UnauthorizedHttpResult>>
+        InboundMMSFirstPointComAsync(HttpContext context, string token, AppSettings appSettings, WebApplication app, MessagingContext db)
     {
-        if (token != firstPointIncomingToken)
+        if (token != appSettings.ConnectionStrings.PComNetIncomingToken)
         {
-            Log.Warning($"Token is not valid. Token: {token} is not {firstPointIncomingToken}");
+            Log.Warning($"Token is not valid. Token: {token} is not {appSettings.ConnectionStrings.PComNetIncomingToken}");
             return TypedResults.Unauthorized();
         }
 
@@ -1382,9 +1544,9 @@ try
             string MMSMessagePickupRequest = $"{MMSDescription?.url}&authkey={MMSDescription?.authkey}";
             var spacesConfig = new AmazonS3Config
             {
-                ServiceURL = s3ServiceURL,
+                ServiceURL = appSettings.ConnectionStrings.S3ServiceURL,
             };
-            using var spacesClient = new AmazonS3Client(digitalOceanSpacesAccessKey, digitalOceanSpacesSecretKey, spacesConfig);
+            using var spacesClient = new AmazonS3Client(appSettings.ConnectionStrings.DOSpacesAccessKey, appSettings.ConnectionStrings.DOSpacesSecretKey, spacesConfig);
             using var fileUtil = new TransferUtility(spacesClient);
 
             string location = app.Configuration.GetValue<string>(WebHostDefaults.ContentRootKey) ?? string.Empty;
@@ -1406,7 +1568,7 @@ try
 
                         var fileRequest = new TransferUtilityUploadRequest
                         {
-                            BucketName = digitalOceanSpacesBucket,
+                            BucketName = appSettings.ConnectionStrings.BucketName,
                             InputStream = streamToFile,
                             StorageClass = S3StorageClass.Standard,
                             Key = $"{toForward.Id}{file}",
@@ -1493,15 +1655,14 @@ try
 
             return TypedResults.BadRequest(ex.Message);
         }
-
-    }).WithOpenApi(x => new(x) { Summary = "Receive an MMS Message.", Description = "Submit inbound messages to this endpoint." });
-
-    // When this issue is resolved we can simplify the way that we are receiving data in this endpoint: https://github.com/dotnet/aspnetcore/issues/39430 and https://stackoverflow.com/questions/71047077/net-6-minimal-api-and-multipart-form-data/71048827#71048827
-    app.MapPost("/api/inbound/1pcom", async Task<Results<Ok<string>, BadRequest<string>, Ok<ForwardedMessage>, UnauthorizedHttpResult>> (HttpContext context, string token, MessagingContext db) =>
+    }
+    
+    public static async Task<Results<Ok<string>, BadRequest<string>, Ok<ForwardedMessage>, UnauthorizedHttpResult>>
+        InboundSMSFirstPointComAsync(HttpContext context, string token, AppSettings appSettings, MessagingContext db)
     {
-        if (token != firstPointIncomingToken)
+        if (token != appSettings.ConnectionStrings.PComNetIncomingToken)
         {
-            Log.Warning($"Token is not valid. Token: {token} is not {firstPointIncomingToken}");
+            Log.Warning($"Token is not valid. Token: {token} is not {appSettings.ConnectionStrings.PComNetIncomingToken}");
             return TypedResults.Unauthorized();
         }
 
@@ -1691,46 +1852,10 @@ try
             Log.Information("Failed to read form data by field name.");
             return TypedResults.BadRequest("Failed to read form data by field name.");
         }
-    }).WithOpenApi(x => new(x) { Summary = "For use by First Point Communications only.", Description = "Receives incoming messages from our upstream provider. Forwards valid SMS messages to clients registered through the /client/register endpoint. Forwarded messages are in the form described by the MessageRecord entry in the Schema's section of this page. The is no request body as the data provided by First Point Communications is UrlEncoded like POSTing form data rather than JSON formatted in body of the POST request. The Token is a secret created and maintained by First Point Communications. This endpoint is not for use by anyone other than First Point Communications. It is documented here to help developers understand how incoming messages are forwarded to the client that they have registered with this API. The Messaging.Tests project is a series of functional tests that verify the behavior of this endpoint, because this method of message passing is so chaotic." });
-
-    app.MapPost("/message/forward/test", async Task<Results<Ok<string>, BadRequest<string>>> (ForwardedMessage message, MessagingContext db) =>
-    {
-        return message.ClientSecret is "thisisatest" && message.From.Length == 11 && message.To.Length > 10
-        ? TypedResults.Ok("The incoming message was received and forwarded to the client.")
-        : TypedResults.BadRequest("The client secret could not be matched for this number or the numbers were incorrectly formatted.");
-    }).WithOpenApi(x => new(x) { Summary = "Endpoint that can be used as the callback URL for a registered client to support functional testing of the message forwarding endpoints.", Description = "For testing purposes only." });
-
-    app.MapPost("/message/send/test", async Task<Results<Ok<FirstPointResponse>, BadRequest<FirstPointResponse>>> (HttpContext context) =>
-    {
-        string username = context.Request.Form["username"].ToString();
-        string password = context.Request.Form["password"].ToString();
-        string to = context.Request.Form["to"].ToString();
-        string msisdn = context.Request.Form["msisdn"].ToString();
-        string messagebody = context.Request.Form["messagebody"].ToString();
-
-        return !string.IsNullOrWhiteSpace(username) && username == firstPointUsername && !string.IsNullOrWhiteSpace(password) && password == firstPointPassword && msisdn.Length == 11 && to.Length > 10
-                ? TypedResults.Ok(new FirstPointResponse { Response = new Response { Text = "OK", Code = 200, DeveloperText = "The outbound message was received and the vendor credentials matched." } })
-                : TypedResults.BadRequest(new FirstPointResponse { Response = new Response { Text = "BadRequest", Code = 500, DeveloperText = "The outbound message did not include the required credentials to authenticate with the vendor or the numbers were incorrectly formatted." } });
-    }).WithOpenApi(x => new(x) { Summary = "Endpoint that can be used to support functional testing of the message sending endpoints without actually sending it to the vendor.", Description = "For testing purposes only." });
-
-    app.Run();
-}
-catch (Exception ex)
-{
-    Log.Fatal(ex, "Application terminated unexpectedly");
-}
-finally
-{
-    Log.CloseAndFlush();
-}
-
-// Without this the test suite won't work.
-public partial class Program
-{ }
-
-public static class MessagingClient
-{
-    public static async Task<Results<Ok<ClientRegistration>, BadRequest<string>, NotFound<string>>> GetByDialedNumberAsync(string asDialed, MessagingContext db, AppSettings appSettings)
+    }
+    
+    public static async Task<Results<Ok<ClientRegistration>, BadRequest<string>, NotFound<string>>>
+        ClientByDialedNumberAsync(string asDialed, AppSettings appSettings, MessagingContext db)
     {
         bool checkAsDialed = PhoneNumbersNA.PhoneNumber.TryParse(asDialed, out var asDialedNumber);
         if (!checkAsDialed)
@@ -1771,6 +1896,28 @@ public static class MessagingClient
             Log.Error(ex.StackTrace ?? "No stack trace found.");
             return TypedResults.BadRequest(ex.Message);
         }
+    }
+    
+    public static async Task<Results<Ok<FirstPointResponse>, BadRequest<FirstPointResponse>>>
+        SendTestAsync(HttpContext context, AppSettings appSettings)
+    {
+        string username = context.Request.Form["username"].ToString();
+        string password = context.Request.Form["password"].ToString();
+        string to = context.Request.Form["to"].ToString();
+        string msisdn = context.Request.Form["msisdn"].ToString();
+        string messagebody = context.Request.Form["messagebody"].ToString();
+
+        return !string.IsNullOrWhiteSpace(username) && username == appSettings.ConnectionStrings.PComNetUsername && !string.IsNullOrWhiteSpace(password) && password == appSettings.ConnectionStrings.PComNetPassword && msisdn.Length == 11 && to.Length > 10
+                ? TypedResults.Ok(new FirstPointResponse { Response = new Response { Text = "OK", Code = 200, DeveloperText = "The outbound message was received and the vendor credentials matched." } })
+                : TypedResults.BadRequest(new FirstPointResponse { Response = new Response { Text = "BadRequest", Code = 500, DeveloperText = "The outbound message did not include the required credentials to authenticate with the vendor or the numbers were incorrectly formatted." } });
+    }
+    
+    public static async Task<Results<Ok<string>, BadRequest<string>>>
+        ForwardTestAsync(ForwardedMessage message, MessagingContext db)
+    {
+        return message.ClientSecret is "thisisatest" && message.From.Length == 11 && message.To.Length > 10
+        ? TypedResults.Ok("The incoming message was received and forwarded to the client.")
+        : TypedResults.BadRequest("The client secret could not be matched for this number or the numbers were incorrectly formatted.");
     }
 }
 
@@ -2058,26 +2205,28 @@ namespace Models
 
     public class AppSettings
     {
-        public Connectionstrings ConnectionStrings { get; set; }
+        public Connectionstrings ConnectionStrings { get; set; } = new();
 
         public class Connectionstrings
         {
-            public string PostgresqlProd { get; set; }
-            public string BulkVSUsername { get; set; }
-            public string BulkVSPassword { get; set; }
-            public string TeleAPI { get; set; }
-            public string PComNetUsername { get; set; }
-            public string PComNetPassword { get; set; }
-            public string PComNetIncomingToken { get; set; }
-            public string PComNetIncomingMMSSecret { get; set; }
-            public string PComNetIncomingSMSSecret { get; set; }
-            public string MessagingAPISecret { get; set; }
-            public string DOSpacesAccessKey { get; set; }
-            public string DOSpacesSecretKey { get; set; }
-            public string BucketName { get; set; }
-            public string S3ServiceURL { get; set; }
-            public string OpsUsername { get; set; }
-            public string OpsPassword { get; set; }
+            public string PostgresqlProd { get; set; } = string.Empty;
+            public string BulkVSUsername { get; set; } = string.Empty;
+            public string BulkVSPassword { get; set; } = string.Empty;
+            public string TeleAPI { get; set; } = string.Empty;
+            public string PComNetUsername { get; set; } = string.Empty;
+            public string PComNetPassword { get; set; } = string.Empty;
+            public string PComNetIncomingToken { get; set; } = string.Empty;
+            public string PComNetIncomingMMSSecret { get; set; } = string.Empty;
+            public string PComNetIncomingSMSSecret { get; set; } = string.Empty;
+            public string MessagingAPISecret { get; set; } = string.Empty;
+            public string DOSpacesAccessKey { get; set; } = string.Empty;
+            public string DOSpacesSecretKey { get; set; } = string.Empty;
+            public string BucketName { get; set; } = string.Empty;
+            public string S3ServiceURL { get; set; } = string.Empty;
+            public string OpsUsername { get; set; } = string.Empty;
+            public string OpsPassword { get; set; } = string.Empty;
+            public string FirstPointOutboundMessageURL { get; set; } = string.Empty;
+            public string FirstPointOutboundMMSMessageURL { get; set; } = string.Empty;
         }
     }
 }

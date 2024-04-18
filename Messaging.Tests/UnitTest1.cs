@@ -495,7 +495,7 @@ namespace Messaging.Tests
         {
             await using var context = new MockDb().CreateDbContext();
 
-            var result = await MessagingClient.GetByDialedNumberAsync("12063333341", context, _appSettings);
+            var result = await Endpoints.ClientByDialedNumberAsync("12063333341", _appSettings, context);
 
             //Assert
             Assert.IsType<Results<Ok<ClientRegistration>, BadRequest<string>, NotFound<string>>>(result);
