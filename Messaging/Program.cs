@@ -26,6 +26,7 @@ using Models;
 
 using Npgsql;
 
+using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.Models;
 
 using Org.BouncyCastle.Ocsp;
@@ -291,7 +292,13 @@ try
             Description = "Boy I wish I had more to say about this, lmao."
         });
 
-    app.MapGet("/client/test", Endpoints.TestClientAsync);
+    app.MapGet("/client/test", Endpoints.TestClientAsync)
+        .RequireAuthorization("api")
+        .WithOpenApi(x => new(x)
+        {
+            Summary = "Send a test message to a registered number to verify that it works correctly.",
+            Description = "Because this API is a middleman between the vendor and the client app we can send outbound SMS/MMS messages on behalf of a number that is registered with this app so that the vendor will reply to us with an inbound message matching the outbound message we sent. This allows us to verify that the registered number is routed and configured correctly for messaging service."
+        });
 
     app.MapGet("/message/all", Endpoints.AllMessagesAsync)
         .RequireAuthorization("api")
@@ -402,7 +409,7 @@ public static class Endpoints
         // The signInManager already produced the needed response in the form of a cookie or bearer token.
         return TypedResults.Empty;
     }
-    
+
     public static async Task<Results<Ok<AccessTokenResponse>, UnauthorizedHttpResult, SignInHttpResult, ChallengeHttpResult>>
         RefreshTokenAsync([FromBody] RefreshRequest refreshRequest, [FromServices] IServiceProvider sp)
     {
@@ -425,7 +432,7 @@ public static class Endpoints
         var newPrincipal = await signInManager.CreateUserPrincipalAsync(user);
         return TypedResults.SignIn(newPrincipal, authenticationScheme: IdentityConstants.BearerScheme);
     }
-    
+
     public static async Task<Results<Ok<ClientRegistration[]>, BadRequest<string>, NotFound<string>>>
         AllClientsAsync(bool? clear, MessagingContext db)
     {
@@ -459,7 +466,7 @@ public static class Endpoints
         }
 
     }
-    
+
     public static async Task<Results<Ok<UsageSummary[]>, BadRequest<string>, NotFound<string>>>
         UsageByClientAsync(MessagingContext db, string? asDialed)
     {
@@ -579,7 +586,7 @@ public static class Endpoints
             }
         }
     }
-    
+
     public static async Task<Results<Ok<RegistrationResponse>, BadRequest<RegistrationResponse>>>
         RegisterClientAsync(RegistrationRequest registration, AppSettings appSettings, MessagingContext db)
     {
@@ -827,7 +834,7 @@ public static class Endpoints
         return TypedResults.Ok(new RegistrationResponse { DialedNumber = dialedNumber, CallbackUrl = registration.CallbackUrl, /*Email = registration.Email,*/ Registered = true, Message = message, RegisteredUpstream = registeredUpstream, UpstreamStatusDescription = upstreamStatusDescription });
 
     }
-    
+
     public static async Task<Results<Ok<string>, BadRequest<string>>>
         RemoveClientRegistrationAsync(string asDialed, MessagingContext db)
     {
@@ -860,9 +867,9 @@ public static class Endpoints
 
         return TypedResults.Ok($"The registration for {asDialed} has been removed.");
     }
-    
+
     public static async Task<Results<Ok<string>, NotFound<string>, BadRequest<string>>>
-        TestClientAsync(MessagingContext db, string? asDialed)
+        TestClientAsync(string? asDialed, AppSettings appSettings, MessagingContext db)
     {
         if (string.IsNullOrWhiteSpace(asDialed))
         {
@@ -879,11 +886,48 @@ public static class Endpoints
 
                     var existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == asDialedNumber.DialedNumber).FirstOrDefaultAsync();
 
-                    if (existingRegistration is not null && existingRegistration.AsDialed == dialedNumber)
+                    if (existingRegistration is not null && existingRegistration.AsDialed == asDialedNumber.DialedNumber)
                     {
                         // Send an outbound message from this number to this number, and suppress passing it foward to the client.
+                        var request = new SendMessageRequest
+                        {
+                            MediaURLs = [],
+                            MSISDN = existingRegistration.AsDialed,
+                            To = existingRegistration.AsDialed,
+                            Message = $"This is a test by Accelerate Networks to verify that {existingRegistration.AsDialed} is working correctly."
+                        };
 
-                        return TypedResults.Ok($"Registration was found for {asDialed}");
+                        var dateTestSent = DateTime.Now;
+
+                        var result = await Endpoints.SendMessageAsync(request, false, appSettings, db);
+
+                        if (result.Result is Ok<SendMessageResponse> okResult && okResult.Value is not null)
+                        {
+                            // Wait for a while while the message round trips? We have 30 seconds before a time out so we'll check after 1+2+3+5+10 secounds before failing.
+                            int[] delays = [1000, 2000, 3000, 5000, 10000];
+                            foreach (var delay in delays)
+                            {
+                                await Task.Delay(delay);
+                                existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == asDialedNumber.DialedNumber).FirstOrDefaultAsync();
+                                if (existingRegistration is not null && existingRegistration.DateLastTestMessageReceived >= dateTestSent)
+                                {
+                                    return TypedResults.Ok($"Registration was found for {asDialed} and inbound and outbound SMS messaging is working correctly as of {existingRegistration.DateLastTestMessageReceived}.");
+                                }
+                            }
+
+                            return TypedResults.BadRequest($"The outbound test SMS was sent, but an inbound test SMS was not received for {asDialed}.");
+                        }
+                        else
+                        {
+                            if (result.Result is BadRequest<SendMessageResponse> badResult && badResult.Value is not null)
+                            {
+                                return TypedResults.BadRequest($"Outbound SMS could not be sent for {asDialed}. {JsonSerializer.Serialize(badResult.Value)}");
+                            }
+                            else
+                            {
+                                return TypedResults.BadRequest($"Outbound SMS could not be sent for {asDialed}. {JsonSerializer.Serialize(result.Result)}");
+                            }
+                        }
                     }
                     else
                     {
@@ -903,7 +947,7 @@ public static class Endpoints
             }
         }
     }
-    
+
     public static async Task<Results<Ok<MessageRecord[]>, NotFound<string>, BadRequest<string>>>
         AllMessagesAsync(MessagingContext db, string? asDialed)
     {
@@ -969,7 +1013,7 @@ public static class Endpoints
             }
         }
     }
-    
+
     public static async Task<Results<Ok<MessageRecord[]>, NotFound<string>, BadRequest<string>>>
         AllFailedMessagesAsync(MessagingContext db, DateTime start, DateTime end)
     {
@@ -993,7 +1037,7 @@ public static class Endpoints
             return TypedResults.BadRequest(ex.Message);
         }
     }
-    
+
     public static async Task<Results<Ok<string>, NotFound<string>, BadRequest<string>>>
         ReplayMessageAsync(Guid id, AppSettings appSettings, MessagingContext db)
     {
@@ -1080,7 +1124,7 @@ public static class Endpoints
             return TypedResults.BadRequest(ex.Message);
         }
     }
-    
+
     public static async Task<Results<Ok<SendMessageResponse>, BadRequest<SendMessageResponse>>>
         SendMessageAsync([Microsoft.AspNetCore.Mvc.FromBody] SendMessageRequest message, bool? test, AppSettings appSettings, MessagingContext db)
     {
@@ -1153,15 +1197,16 @@ public static class Endpoints
         {
             List<string> numbers = new();
 
-            foreach (var number in message.To.Split(','))
+            string[] toParse = message.To.Split(',');
+            foreach (var number in toParse)
             {
                 var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
 
                 if (checkTo && toPhoneNumber is not null)
                 {
                     var formattedNumber = toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode ? $"{toPhoneNumber.DialedNumber}" : $"1{toPhoneNumber.DialedNumber}";
-                    // Prevent the MSISDN from being included in the the recipients list.
-                    if (formattedNumber != toForward.msisdn)
+                    // Prevent the MSISDN from being included in the the recipients list. But allow circular messages where the MSISDN and To are the same to support testing.
+                    if (formattedNumber != toForward.msisdn || toParse.Length is 1)
                     {
                         numbers.Add(formattedNumber);
                     }
@@ -1407,7 +1452,7 @@ public static class Endpoints
         }
 
     }
-    
+
     public static async Task<Results<Ok<string>, BadRequest<string>, Ok<ForwardedMessage>, UnauthorizedHttpResult>>
         InboundMMSFirstPointComAsync(HttpContext context, string token, AppSettings appSettings, WebApplication app, MessagingContext db)
     {
@@ -1656,7 +1701,7 @@ public static class Endpoints
             return TypedResults.BadRequest(ex.Message);
         }
     }
-    
+
     public static async Task<Results<Ok<string>, BadRequest<string>, Ok<ForwardedMessage>, UnauthorizedHttpResult>>
         InboundSMSFirstPointComAsync(HttpContext context, string token, AppSettings appSettings, MessagingContext db)
     {
@@ -1800,12 +1845,24 @@ public static class Endpoints
 
                 try
                 {
-                    var response = await client.CallbackUrl.PostJsonAsync(toForward);
-                    string responseText = await response.GetStringAsync();
-                    Log.Information(responseText);
-                    Log.Information(System.Text.Json.JsonSerializer.Serialize(toForward));
-                    messageRecord.RawResponse = responseText;
-                    messageRecord.Succeeded = true;
+                    // Suppress test messages and update the tested timestamp.
+                    if (toForward.Content == $"This is a test by Accelerate Networks to verify that {client.AsDialed} is working correctly.")
+                    {
+                        messageRecord.RawResponse = "This message was not forwarded to the registered CallbackUrl as it is a test.";
+                        messageRecord.Succeeded = true;
+
+                        // Update the client registration's last tested date.
+                        client.DateLastTestMessageReceived = DateTime.Now;
+                    }
+                    else
+                    {
+                        var response = await client.CallbackUrl.PostJsonAsync(toForward);
+                        string responseText = await response.GetStringAsync();
+                        Log.Information(responseText);
+                        Log.Information(System.Text.Json.JsonSerializer.Serialize(toForward));
+                        messageRecord.RawResponse = responseText;
+                        messageRecord.Succeeded = true;
+                    }
                 }
                 catch (FlurlHttpException ex)
                 {
@@ -1853,7 +1910,7 @@ public static class Endpoints
             return TypedResults.BadRequest("Failed to read form data by field name.");
         }
     }
-    
+
     public static async Task<Results<Ok<ClientRegistration>, BadRequest<string>, NotFound<string>>>
         ClientByDialedNumberAsync(string asDialed, AppSettings appSettings, MessagingContext db)
     {
@@ -1897,7 +1954,7 @@ public static class Endpoints
             return TypedResults.BadRequest(ex.Message);
         }
     }
-    
+
     public static async Task<Results<Ok<FirstPointResponse>, BadRequest<FirstPointResponse>>>
         SendTestAsync(HttpContext context, AppSettings appSettings)
     {
@@ -1911,7 +1968,7 @@ public static class Endpoints
                 ? TypedResults.Ok(new FirstPointResponse { Response = new Response { Text = "OK", Code = 200, DeveloperText = "The outbound message was received and the vendor credentials matched." } })
                 : TypedResults.BadRequest(new FirstPointResponse { Response = new Response { Text = "BadRequest", Code = 500, DeveloperText = "The outbound message did not include the required credentials to authenticate with the vendor or the numbers were incorrectly formatted." } });
     }
-    
+
     public static async Task<Results<Ok<string>, BadRequest<string>>>
         ForwardTestAsync(ForwardedMessage message, MessagingContext db)
     {
@@ -2198,6 +2255,7 @@ namespace Models
         public string ClientSecret { get; set; } = string.Empty;
         public bool RegisteredUpstream { get; set; } = false;
         public string UpstreamStatusDescription { get; set; } = string.Empty;
+        public DateTime DateLastTestMessageReceived { get; set; } = DateTime.MinValue;
         //[DataType(DataType.EmailAddress)]
         //public string Email { get; set; } = string.Empty;
         //public bool EmailVerified { get; set; } = false;

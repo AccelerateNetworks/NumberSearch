@@ -104,6 +104,15 @@ namespace Messaging.Tests
             Assert.Equal("https://sms.callpipe.com/swagger/index.html", data.CallbackUrl);
         }
 
+        // TODO: A Complete functional Test includes these steps:
+        // 1. Login
+        // 2. Register a Client
+        // 3. Verify Routing
+        // 4. Send Outbound SMS
+        // 5. Recieve Inbound SMS
+        // 6. Send Outbound MMS
+        // 7. Recieve Inbound MMS
+
         [Fact]
         public async Task GetAllClientsAsync()
         {
@@ -130,12 +139,11 @@ namespace Messaging.Tests
             string route = "/api/inbound/1pcom";
             string token = "okereeduePeiquah3yaemohGhae0ie";
 
-            var stringContent = new FormUrlEncodedContent(new[]
-                {
+            var stringContent = new FormUrlEncodedContent([
                     new KeyValuePair<string, string>("msisdn", "15555551212"),
                     new KeyValuePair<string, string>("to", "14445556543"),
                     new KeyValuePair<string, string>("message", "Your Lyft code is 12345"),
-                });
+                ]);
 
             var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
 
@@ -151,7 +159,7 @@ namespace Messaging.Tests
         public async Task SendSMSMessageAsync()
         {
             var _client = await GetHttpClientWithValidBearerTokenAsync();
-            var message = new SendMessageRequest { MediaURLs = Array.Empty<string>(), Message = "This is an SMS Message test.", MSISDN = "2068589313", To = "2068589312" };
+            var message = new SendMessageRequest { MediaURLs = [], Message = "This is an SMS Message test.", MSISDN = "2068589313", To = "2068589312" };
             var response = await _client.PostAsJsonAsync("/message/send?test=true", message);
             var details = await response.Content.ReadFromJsonAsync<SendMessageResponse>();
             Assert.NotNull(details);
@@ -208,7 +216,7 @@ namespace Messaging.Tests
         public async Task SendSMSGroupMessageAsync()
         {
             var _client = await GetHttpClientWithValidBearerTokenAsync();
-            var message = new SendMessageRequest { MediaURLs = Array.Empty<string>(), Message = "This is an SMS Group Message test.", MSISDN = "12068589313", To = "12068589312,12068589313,15036622288" };
+            var message = new SendMessageRequest { MediaURLs = [], Message = "This is an SMS Group Message test.", MSISDN = "12068589313", To = "12068589312,12068589313,15036622288" };
             var response = await _client.PostAsJsonAsync("/message/send?test=true", message);
             var details = await response.Content.ReadFromJsonAsync<SendMessageResponse>();
             Assert.NotNull(details);
@@ -220,15 +228,15 @@ namespace Messaging.Tests
         [Fact]
         public async Task MessageSendingTestAsync()
         {
-            var stringContent = new FormUrlEncodedContent(new[]
-            {
+            var stringContent = new FormUrlEncodedContent(
+            [
                     new KeyValuePair<string, string>("msisdn", "15555551212"),
                     new KeyValuePair<string, string>("to", "14445556543"),
                     new KeyValuePair<string, string>("username", _configuration.GetConnectionString("PComNetUsername") ?? string.Empty),
                     new KeyValuePair<string, string>("password", _configuration.GetConnectionString("PComNetPassword") ?? string.Empty),
                     new KeyValuePair<string, string>("messagebody", "Your Lyft code is 12345"),
 
-                });
+                ]);
             var response = await _httpClient.PostAsync("/message/send/test", stringContent);
             _output.WriteLine(await response.Content.ReadAsStringAsync());
             Assert.True(response.IsSuccessStatusCode);
@@ -257,12 +265,12 @@ namespace Messaging.Tests
             string route = "/api/inbound/1pcom";
             string token = "thisIsNotAValidToken";
 
-            var stringContent = new FormUrlEncodedContent(new[]
-                {
+            var stringContent = new FormUrlEncodedContent(
+                [
                     new KeyValuePair<string, string>("msisdn", "15555551212"),
                     new KeyValuePair<string, string>("to", "14445556543"),
                     new KeyValuePair<string, string>("message", "Your Lyft code is 12345"),
-                });
+                ]);
 
             var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
             _output.WriteLine(await response.Content.ReadAsStringAsync());
