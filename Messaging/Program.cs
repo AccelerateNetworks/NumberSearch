@@ -884,7 +884,7 @@ public static class Endpoints
                 {
                     string dialedNumber = asDialedNumber.Type is not PhoneNumbersNA.NumberType.ShortCode ? $"1{asDialedNumber.DialedNumber}" : asDialedNumber.DialedNumber;
 
-                    var existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == asDialedNumber.DialedNumber).FirstOrDefaultAsync();
+                    var existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == asDialedNumber.DialedNumber).AsNoTracking().FirstOrDefaultAsync();
 
                     if (existingRegistration is not null && existingRegistration.AsDialed == asDialedNumber.DialedNumber)
                     {
@@ -904,11 +904,11 @@ public static class Endpoints
                         if (result.Result is Ok<SendMessageResponse> okResult && okResult.Value is not null)
                         {
                             // Wait for a while while the message round trips? We have 30 seconds before a time out so we'll check after 1+2+3+5+10 secounds before failing.
-                            int[] delays = [1000, 2000, 3000, 5000, 10000];
+                            int[] delays = [10000,10000,5000,3000,2000];
                             foreach (var delay in delays)
                             {
                                 await Task.Delay(delay);
-                                existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == asDialedNumber.DialedNumber).FirstOrDefaultAsync();
+                                existingRegistration = await db.ClientRegistrations.Where(x => x.AsDialed == asDialedNumber.DialedNumber).AsNoTracking().FirstOrDefaultAsync();
                                 if (existingRegistration is not null && existingRegistration.DateLastTestMessageReceived >= dateTestSent)
                                 {
                                     return TypedResults.Ok($"Registration was found for {asDialed} and inbound and outbound SMS messaging is working correctly as of {existingRegistration.DateLastTestMessageReceived}.");
