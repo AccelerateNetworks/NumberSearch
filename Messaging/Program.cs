@@ -47,6 +47,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
+using static Endpoints;
 using static System.Net.Mime.MediaTypeNames;
 
 Log.Logger = new LoggerConfiguration()
@@ -332,8 +333,254 @@ try
             Description = "Submit outbound messages to this endpoint. The 'to' field is a comma separated list of dialed numbers, or a single dialed number without commas. The 'msisdn' the dialed number of the client that is sending the message. The 'message' field is a string. No validation of the message field occurs before it is forwarded to our upstream vendors. If you include any file paths in the MediaURLs array the message will be sent as an MMS."
         });
 
-    app.MapPost("1pcom/inbound/MMS", Endpoints.InboundMMSFirstPointComAsync)
-        .WithOpenApi(x => new(x)
+    // Don't move this or it will break multipart form handling.
+    app.MapPost("/1pcom/inbound/MMS", async Task<Results<Ok<string>, BadRequest<string>, Ok<ForwardedMessage>, UnauthorizedHttpResult>> (HttpContext context, string token, AppSettings appSettings, MessagingContext db) =>
+    {
+        if (token != appSettings.ConnectionStrings.PComNetIncomingToken)
+        {
+            Log.Warning($"Token is not valid. Token: {token} is not {appSettings.ConnectionStrings.PComNetIncomingToken}");
+            return TypedResults.Unauthorized();
+        }
+
+        try
+        {
+            string msisdn = context.Request.Form["msisdn"].ToString();
+            string to = context.Request.Form["to"].ToString();
+            string message = context.Request.Form["message"].ToString();
+            //string sessionid = context.Request.Form["sessionid"].ToString();
+            //string serversecret = context.Request.Form["serversecret"].ToString();
+            //string timezone = context.Request.Form["timezone"].ToString();
+            //string origtime = context.Request.Form["origtime"].ToString();
+            string fullrecipientlist = context.Request.Form["FullRecipientList"].ToString();
+            string incomingRequest = string.Join(',', context.Request.Form.Select(x => $"{x.Key}:{x.Value}"));
+
+            // The message field is a JSON object.
+            var MMSDescription = System.Text.Json.JsonSerializer.Deserialize<FirstPointMMSMessage>(message);
+
+            // Disabled because this secret value changes whenever.
+            //if (serversecret != firstPointIncomingMMSSecret)
+            //{
+            //    Log.Warning($"Token is not valid. serversecret: {serversecret} is not {firstPointIncomingMMSSecret}");
+            //    return TypedResults.Unauthorized();
+            //}
+
+            ForwardedMessage toForward = new()
+            {
+                Content = MMSDescription?.files ?? message,
+                MessageSource = MessageSource.Incoming,
+                MessageType = MessageType.MMS,
+            };
+
+            MessageRecord messageRecord = new MessageRecord
+            {
+                RawRequest = incomingRequest,
+                Content = toForward.Content,
+                DateReceivedUTC = DateTime.UtcNow,
+                MessageSource = MessageSource.Incoming,
+                MessageType = MessageType.MMS,
+            };
+
+            if (!string.IsNullOrWhiteSpace(msisdn))
+            {
+                bool checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(msisdn, out var fromPhoneNumber);
+                if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
+                {
+                    if (fromPhoneNumber.Type is not PhoneNumbersNA.NumberType.ShortCode)
+                    {
+                        toForward.From = $"1{fromPhoneNumber.DialedNumber}";
+                    }
+                    else
+                    {
+                        toForward.From = fromPhoneNumber.DialedNumber;
+                    }
+                }
+                else
+                {
+                    Log.Error($"Failed to parse MSISDN {msisdn} from incoming request {incomingRequest} please file a ticket with the message provider.");
+                    // We want the customer to get this message event if the From address is invalid.
+                    toForward.Content = $"This message was received from an invalid phone number {msisdn}. You will not be able to respond. {toForward.Content}";
+                    toForward.From = "12068588757";
+                    msisdn = toForward.From;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(to))
+            {
+                List<string> numbers = new();
+
+                foreach (var number in to.Split(','))
+                {
+                    var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
+
+                    if (checkTo && toPhoneNumber is not null)
+                    {
+                        var formattedNumber = toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode ? $"{toPhoneNumber.DialedNumber}" : $"1{toPhoneNumber.DialedNumber}";
+                        // Prevent the duplicates from being included in the the recipients list.
+                        if (!numbers.Contains(formattedNumber))
+                        {
+                            numbers.Add(formattedNumber);
+                        }
+                    }
+                }
+
+                foreach (var number in fullrecipientlist.Split(','))
+                {
+                    var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
+
+                    if (checkTo && toPhoneNumber is not null)
+                    {
+                        var formattedNumber = toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode ? $"{toPhoneNumber.DialedNumber}" : $"1{toPhoneNumber.DialedNumber}";
+                        // Prevent the duplicates from being included in the the recipients list.
+                        if (!numbers.Contains(formattedNumber))
+                        {
+                            numbers.Add(formattedNumber);
+                        }
+                    }
+                }
+
+                // Assume that the first number in the list of To numbers is the primary To that is registered with our service. Treat all others as additional recipients.
+                // If multiple numbers in the set of To's are registered as clients the upstream vendor will submit multiple inbound messages so we don't have to handle that scenario.
+                if (numbers.Any() && numbers.Count is 1)
+                {
+                    toForward.To = numbers.FirstOrDefault() ?? string.Empty;
+                }
+                else if (numbers.Any())
+                {
+                    toForward.To = numbers.FirstOrDefault() ?? string.Empty;
+                    // Dump any extra numbers in the full rec.
+                    toForward.AdditionalRecipients = numbers.Where(x => x != toForward.To).ToArray();
+                }
+                else
+                {
+                    Log.Error($"Failed to parse To {to} from incoming request {incomingRequest} please file a ticket with the message provider.");
+
+                    messageRecord.Content = toForward.Content;
+                    messageRecord.From = toForward.From;
+                    messageRecord.RawResponse = $"Failed to parse To {to} from incoming request {incomingRequest} please file a ticket with the message provider.";
+
+                    db.Messages.Add(messageRecord);
+                    await db.SaveChangesAsync();
+
+                    return TypedResults.BadRequest($"To {to}{fullrecipientlist} could not be parsed as valid NANP (North American Numbering Plan) numbers. {incomingRequest}");
+                }
+            }
+
+            List<string> mediaURLs = new();
+            string MMSMessagePickupRequest = $"{MMSDescription?.url}&authkey={MMSDescription?.authkey}";
+            var spacesConfig = new AmazonS3Config
+            {
+                ServiceURL = appSettings.ConnectionStrings.S3ServiceURL,
+            };
+            using var spacesClient = new AmazonS3Client(appSettings.ConnectionStrings.DOSpacesAccessKey, appSettings.ConnectionStrings.DOSpacesSecretKey, spacesConfig);
+            using var fileUtil = new TransferUtility(spacesClient);
+
+            string location = app.Configuration.GetValue<string>(WebHostDefaults.ContentRootKey) ?? string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(MMSDescription?.files))
+            {
+                foreach (string file in MMSDescription.files.Split(','))
+                {
+                    if (!string.IsNullOrWhiteSpace(file))
+                    {
+                        string fileDownloadURL = $"{MMSMessagePickupRequest}&file={file}";
+                        Log.Information(fileDownloadURL);
+                        //Stream fileStream = await fileDownloadURL.GetStreamAsync();
+                        var path = await fileDownloadURL.DownloadFileAsync(location, $"{toForward.Id.ToString()}{file}");
+                        Log.Information(path);
+                        // Save the file to disk rather than S3?!?
+                        var filePath = Path.Combine(location, $"{toForward.Id.ToString()}{file}");
+                        using Stream streamToFile = new FileStream(path, FileMode.Open, FileAccess.Read);
+
+                        var fileRequest = new TransferUtilityUploadRequest
+                        {
+                            BucketName = appSettings.ConnectionStrings.BucketName,
+                            InputStream = streamToFile,
+                            StorageClass = S3StorageClass.Standard,
+                            Key = $"{toForward.Id}{file}",
+                            CannedACL = S3CannedACL.Private,
+                        };
+
+                        await fileUtil.UploadAsync(fileRequest);
+                        mediaURLs.Add($"{spacesConfig.ServiceURL}{fileRequest.BucketName}/{fileRequest.Key}");
+
+                        // For debugging in Ops
+                        if (file.Contains(".txt"))
+                        {
+                            messageRecord.Content = await fileDownloadURL.GetStringAsync();
+                        }
+                    }
+                }
+            }
+            toForward.MediaURLs = mediaURLs.ToArray();
+            messageRecord.MediaURLs = string.Join(',', toForward.MediaURLs);
+
+            // We already know that it's good.
+            _ = PhoneNumbersNA.PhoneNumber.TryParse(toForward.To, out var toRegisteredNumber);
+
+            var client = await db.ClientRegistrations.FirstOrDefaultAsync(x => x.AsDialed == toRegisteredNumber.DialedNumber);
+
+            if (client is not null && client.AsDialed == toRegisteredNumber.DialedNumber)
+            {
+                toForward.ClientSecret = client.ClientSecret;
+                messageRecord.To = toForward.To;
+                messageRecord.From = toForward.From;
+                messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
+
+                try
+                {
+                    var response = await client.CallbackUrl.PostJsonAsync(toForward);
+                    string responseText = await response.GetStringAsync();
+                    Log.Information(responseText);
+                    Log.Information(System.Text.Json.JsonSerializer.Serialize(toForward));
+                    messageRecord.RawResponse = responseText;
+                    messageRecord.Succeeded = true;
+                }
+                catch (FlurlHttpException ex)
+                {
+                    string error = await ex.GetResponseStringAsync();
+                    Log.Error(error);
+                    Log.Error(System.Text.Json.JsonSerializer.Serialize(client));
+                    Log.Error(System.Text.Json.JsonSerializer.Serialize(toForward));
+                    Log.Error($"Failed to forward message to {toForward.To}");
+                    messageRecord.RawResponse = $"Failed to forward message to {toForward.To} {error}";
+                }
+
+                try
+                {
+                    await db.Messages.AddAsync(messageRecord);
+                    await db.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    return TypedResults.BadRequest($"Failed to save incoming message to the database. {ex.Message} {System.Text.Json.JsonSerializer.Serialize(messageRecord)}");
+                }
+
+                Log.Information(System.Text.Json.JsonSerializer.Serialize(messageRecord));
+                return TypedResults.Ok("The incoming message was received and forwarded to the client.");
+            }
+            else
+            {
+                Log.Warning($"{toForward.To} is not registered as a client.");
+
+                messageRecord.To = toForward.To;
+                messageRecord.From = toForward.From;
+                messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
+                messageRecord.RawResponse = $"{toForward.To} is not registered as a client.";
+                db.Messages.Add(messageRecord);
+                await db.SaveChangesAsync();
+
+                return TypedResults.BadRequest($"{toForward.To} is not registered as a client.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex.Message);
+            Log.Error(ex.StackTrace ?? "No stack trace found.");
+            Log.Information("Failed to read form data by field name.");
+
+            return TypedResults.BadRequest(ex.Message);
+        }
+    }).WithOpenApi(x => new(x)
         {
             Summary = "Receive an MMS Message.",
             Description = "Submit inbound messages to this endpoint."
@@ -904,7 +1151,7 @@ public static class Endpoints
                         if (result.Result is Ok<SendMessageResponse> okResult && okResult.Value is not null)
                         {
                             // Wait for a while while the message round trips? We have 30 seconds before a time out so we'll check after 1+2+3+5+10 secounds before failing.
-                            int[] delays = [10000,10000,5000,3000,2000];
+                            int[] delays = [10000, 10000, 5000, 3000, 2000];
                             foreach (var delay in delays)
                             {
                                 await Task.Delay(delay);
@@ -1453,253 +1700,12 @@ public static class Endpoints
 
     }
 
-    public static async Task<Results<Ok<string>, BadRequest<string>, Ok<ForwardedMessage>, UnauthorizedHttpResult>>
-        InboundMMSFirstPointComAsync(HttpContext context, string token, AppSettings appSettings, WebApplication app, MessagingContext db)
+    public class FirstPointMMS
     {
-        if (token != appSettings.ConnectionStrings.PComNetIncomingToken)
-        {
-            Log.Warning($"Token is not valid. Token: {token} is not {appSettings.ConnectionStrings.PComNetIncomingToken}");
-            return TypedResults.Unauthorized();
-        }
-
-        try
-        {
-            string msisdn = context.Request.Form["msisdn"].ToString();
-            string to = context.Request.Form["to"].ToString();
-            string message = context.Request.Form["message"].ToString();
-            //string sessionid = context.Request.Form["sessionid"].ToString();
-            //string serversecret = context.Request.Form["serversecret"].ToString();
-            //string timezone = context.Request.Form["timezone"].ToString();
-            //string origtime = context.Request.Form["origtime"].ToString();
-            string fullrecipientlist = context.Request.Form["FullRecipientList"].ToString();
-            string incomingRequest = string.Join(',', context.Request.Form.Select(x => $"{x.Key}:{x.Value}"));
-
-            // The message field is a JSON object.
-            var MMSDescription = System.Text.Json.JsonSerializer.Deserialize<FirstPointMMSMessage>(message);
-
-            // Disabled because this secret value changes whenever.
-            //if (serversecret != firstPointIncomingMMSSecret)
-            //{
-            //    Log.Warning($"Token is not valid. serversecret: {serversecret} is not {firstPointIncomingMMSSecret}");
-            //    return TypedResults.Unauthorized();
-            //}
-
-            ForwardedMessage toForward = new()
-            {
-                Content = MMSDescription?.files ?? message,
-                MessageSource = MessageSource.Incoming,
-                MessageType = MessageType.MMS,
-            };
-
-            MessageRecord messageRecord = new MessageRecord
-            {
-                RawRequest = incomingRequest,
-                Content = toForward.Content,
-                DateReceivedUTC = DateTime.UtcNow,
-                MessageSource = MessageSource.Incoming,
-                MessageType = MessageType.MMS,
-            };
-
-            if (!string.IsNullOrWhiteSpace(msisdn))
-            {
-                bool checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(msisdn, out var fromPhoneNumber);
-                if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
-                {
-                    if (fromPhoneNumber.Type is not PhoneNumbersNA.NumberType.ShortCode)
-                    {
-                        toForward.From = $"1{fromPhoneNumber.DialedNumber}";
-                    }
-                    else
-                    {
-                        toForward.From = fromPhoneNumber.DialedNumber;
-                    }
-                }
-                else
-                {
-                    Log.Error($"Failed to parse MSISDN {msisdn} from incoming request {incomingRequest} please file a ticket with the message provider.");
-                    // We want the customer to get this message event if the From address is invalid.
-                    toForward.Content = $"This message was received from an invalid phone number {msisdn}. You will not be able to respond. {toForward.Content}";
-                    toForward.From = "12068588757";
-                    msisdn = toForward.From;
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(to))
-            {
-                List<string> numbers = new();
-
-                foreach (var number in to.Split(','))
-                {
-                    var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
-
-                    if (checkTo && toPhoneNumber is not null)
-                    {
-                        var formattedNumber = toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode ? $"{toPhoneNumber.DialedNumber}" : $"1{toPhoneNumber.DialedNumber}";
-                        // Prevent the duplicates from being included in the the recipients list.
-                        if (!numbers.Contains(formattedNumber))
-                        {
-                            numbers.Add(formattedNumber);
-                        }
-                    }
-                }
-
-                foreach (var number in fullrecipientlist.Split(','))
-                {
-                    var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
-
-                    if (checkTo && toPhoneNumber is not null)
-                    {
-                        var formattedNumber = toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode ? $"{toPhoneNumber.DialedNumber}" : $"1{toPhoneNumber.DialedNumber}";
-                        // Prevent the duplicates from being included in the the recipients list.
-                        if (!numbers.Contains(formattedNumber))
-                        {
-                            numbers.Add(formattedNumber);
-                        }
-                    }
-                }
-
-                // Assume that the first number in the list of To numbers is the primary To that is registered with our service. Treat all others as additional recipients.
-                // If multiple numbers in the set of To's are registered as clients the upstream vendor will submit multiple inbound messages so we don't have to handle that scenario.
-                if (numbers.Any() && numbers.Count is 1)
-                {
-                    toForward.To = numbers.FirstOrDefault() ?? string.Empty;
-                }
-                else if (numbers.Any())
-                {
-                    toForward.To = numbers.FirstOrDefault() ?? string.Empty;
-                    // Dump any extra numbers in the full rec.
-                    toForward.AdditionalRecipients = numbers.Where(x => x != toForward.To).ToArray();
-                }
-                else
-                {
-                    Log.Error($"Failed to parse To {to} from incoming request {incomingRequest} please file a ticket with the message provider.");
-
-                    messageRecord.Content = toForward.Content;
-                    messageRecord.From = toForward.From;
-                    messageRecord.RawResponse = $"Failed to parse To {to} from incoming request {incomingRequest} please file a ticket with the message provider.";
-
-                    db.Messages.Add(messageRecord);
-                    await db.SaveChangesAsync();
-
-                    return TypedResults.BadRequest($"To {to}{fullrecipientlist} could not be parsed as valid NANP (North American Numbering Plan) numbers. {incomingRequest}");
-                }
-            }
-
-            List<string> mediaURLs = new();
-            string MMSMessagePickupRequest = $"{MMSDescription?.url}&authkey={MMSDescription?.authkey}";
-            var spacesConfig = new AmazonS3Config
-            {
-                ServiceURL = appSettings.ConnectionStrings.S3ServiceURL,
-            };
-            using var spacesClient = new AmazonS3Client(appSettings.ConnectionStrings.DOSpacesAccessKey, appSettings.ConnectionStrings.DOSpacesSecretKey, spacesConfig);
-            using var fileUtil = new TransferUtility(spacesClient);
-
-            string location = app.Configuration.GetValue<string>(WebHostDefaults.ContentRootKey) ?? string.Empty;
-
-            if (!string.IsNullOrWhiteSpace(MMSDescription?.files))
-            {
-                foreach (string file in MMSDescription.files.Split(','))
-                {
-                    if (!string.IsNullOrWhiteSpace(file))
-                    {
-                        string fileDownloadURL = $"{MMSMessagePickupRequest}&file={file}";
-                        Log.Information(fileDownloadURL);
-                        //Stream fileStream = await fileDownloadURL.GetStreamAsync();
-                        var path = await fileDownloadURL.DownloadFileAsync(location, $"{toForward.Id.ToString()}{file}");
-                        Log.Information(path);
-                        // Save the file to disk rather than S3?!?
-                        var filePath = Path.Combine(location, $"{toForward.Id.ToString()}{file}");
-                        using Stream streamToFile = new FileStream(path, FileMode.Open, FileAccess.Read);
-
-                        var fileRequest = new TransferUtilityUploadRequest
-                        {
-                            BucketName = appSettings.ConnectionStrings.BucketName,
-                            InputStream = streamToFile,
-                            StorageClass = S3StorageClass.Standard,
-                            Key = $"{toForward.Id}{file}",
-                            CannedACL = S3CannedACL.Private,
-                        };
-
-                        await fileUtil.UploadAsync(fileRequest);
-                        mediaURLs.Add($"{spacesConfig.ServiceURL}{fileRequest.BucketName}/{fileRequest.Key}");
-
-                        // For debugging in Ops
-                        if (file.Contains(".txt"))
-                        {
-                            messageRecord.Content = await fileDownloadURL.GetStringAsync();
-                        }
-                    }
-                }
-            }
-            toForward.MediaURLs = mediaURLs.ToArray();
-            messageRecord.MediaURLs = string.Join(',', toForward.MediaURLs);
-
-            // We already know that it's good.
-            _ = PhoneNumbersNA.PhoneNumber.TryParse(toForward.To, out var toRegisteredNumber);
-
-            var client = await db.ClientRegistrations.FirstOrDefaultAsync(x => x.AsDialed == toRegisteredNumber.DialedNumber);
-
-            if (client is not null && client.AsDialed == toRegisteredNumber.DialedNumber)
-            {
-                toForward.ClientSecret = client.ClientSecret;
-                messageRecord.To = toForward.To;
-                messageRecord.From = toForward.From;
-                messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
-
-                try
-                {
-                    var response = await client.CallbackUrl.PostJsonAsync(toForward);
-                    string responseText = await response.GetStringAsync();
-                    Log.Information(responseText);
-                    Log.Information(System.Text.Json.JsonSerializer.Serialize(toForward));
-                    messageRecord.RawResponse = responseText;
-                    messageRecord.Succeeded = true;
-                }
-                catch (FlurlHttpException ex)
-                {
-                    string error = await ex.GetResponseStringAsync();
-                    Log.Error(error);
-                    Log.Error(System.Text.Json.JsonSerializer.Serialize(client));
-                    Log.Error(System.Text.Json.JsonSerializer.Serialize(toForward));
-                    Log.Error($"Failed to forward message to {toForward.To}");
-                    messageRecord.RawResponse = $"Failed to forward message to {toForward.To} {error}";
-                }
-
-                try
-                {
-                    await db.Messages.AddAsync(messageRecord);
-                    await db.SaveChangesAsync();
-                }
-                catch (Exception ex)
-                {
-                    return TypedResults.BadRequest($"Failed to save incoming message to the database. {ex.Message} {System.Text.Json.JsonSerializer.Serialize(messageRecord)}");
-                }
-
-                Log.Information(System.Text.Json.JsonSerializer.Serialize(messageRecord));
-                return TypedResults.Ok("The incoming message was received and forwarded to the client.");
-            }
-            else
-            {
-                Log.Warning($"{toForward.To} is not registered as a client.");
-
-                messageRecord.To = toForward.To;
-                messageRecord.From = toForward.From;
-                messageRecord.ToForward = System.Text.Json.JsonSerializer.Serialize(toForward);
-                messageRecord.RawResponse = $"{toForward.To} is not registered as a client.";
-                db.Messages.Add(messageRecord);
-                await db.SaveChangesAsync();
-
-                return TypedResults.BadRequest($"{toForward.To} is not registered as a client.");
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex.Message);
-            Log.Error(ex.StackTrace ?? "No stack trace found.");
-            Log.Information("Failed to read form data by field name.");
-
-            return TypedResults.BadRequest(ex.Message);
-        }
+        public string msisdn { get; set; }
+        public string to { get; set; }
+        public string message { get; set; }
+        public string FullRecipientList { get; set; }
     }
 
     public static async Task<Results<Ok<string>, BadRequest<string>, Ok<ForwardedMessage>, UnauthorizedHttpResult>>
