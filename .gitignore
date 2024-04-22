@@ -32,3 +32,7 @@
 *.csv
 /Messaging.Tests/bin/Debug/net8.0
 /Messaging.Tests/bin/Release/net8.0
+/Messaging/00758f44-574b-4c5e-aefb-a5c1133749e7part-001.SMIL
+/Messaging/00758f44-574b-4c5e-aefb-a5c1133749e7part-002.jpg
+/Messaging/6c916a72-b582-446e-94fd-84a6c8359519part-001.SMIL
+/Messaging/6c916a72-b582-446e-94fd-84a6c8359519part-002.jpg
