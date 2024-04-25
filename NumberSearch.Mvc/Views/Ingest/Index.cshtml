@@ -27,7 +27,7 @@
         }
     }
 
-        const inventory = [{
+            const inventory = [{
         label: 'Total Numbers Ingested',
         data: numbersretrievedArr,
         borderWidth: 1
@@ -112,374 +112,388 @@
     }
 </style>
 
+<section class="text-light" style="background-color: #3279B2">
+    <div class="container py-5 py-md-6 py-lg-7 mb-7 text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-md-11">
+                <h1 class="display-3 text-light d-none d-sm-block">Numbers Dashboard</h1>
+                <h4 class="display-4 text-light d-block d-sm-none">Numbers Dashboard</h4>
+                <p class="lead text-white">Stats on the daily ingests.</p>
+            </div>
+        </div>
+    </div>
+</section>
 <div class="container">
-    <br />
-    <div class="jumbotron shadow">
-        <h1 class="display-4 p-2">Ingests</h1>
-    </div>
-
-    <canvas id="myChart" width="400" height="200" class="pb-3"></canvas>
-    <div class="btn-group btn-group-toggle pb-3" data-toggle="buttons">
-        <label class="btn btn-outline-secondary active">
-            <input type="radio" name="options" id="option1" checked onclick="showInventory()"> Inventory
-        </label>
-        <label class="btn btn-outline-secondary">
-            <input type="radio" name="options" id="option2" onclick="showChurn()"> Churn
-        </label>
-    </div>
-    @{
-        if (Model is not null && Model?.Ingests is not null && Model.Ingests.Any() && Model?.AreaCodes is not null)
-        {
-            @*var total = $"{Model.Ingests.Count()} ingests have been performed!";
-    <div class="alert alert-success" role="alert">
-    @total
-    </div>*@
-            var timeAgo = DateTime.Now - Model.Ingests.FirstOrDefault()?.StartDate;
-            var last = $"Last ingest performed {timeAgo.GetValueOrDefault().ToString(@"hh\:mm\:ss")} seconds ago.";
-            var oneHour = DateTime.Now - DateTime.Now.AddHours(-6);
-            if (timeAgo > oneHour)
-            {
-                <div class="alert alert-danger" role="alert">
-                    @last
-                </div>
-            }
-            else
-            {
-                <div class="alert alert-success" role="alert">
-                    @last
-                </div>
-            }
-
-            //var statusSymbol = "✔️";
-            //foreach (var code in Model.AreaCodes)
-            //{
-            //    if (code.Count < 10)
-            //    {
-            //        statusSymbol = "⚠️";
-            //    }
-            //    else if (code.Count < 1000)
-            //    {
-            //        statusSymbol = "❌";
-            //    }
-            //}
-
-            //<h1 class="display-4 p-2">
-            //    Provider Health @statusSymbol
-            //</h1>
-            <h4>@Model?.TotalPhoneNumbers Phone Numbers in Inventory</h4>
-            <div class="table-responsive shadow-sm mt-3">
-                <table class="table table-hover table-striped table-borderless">
-                    <thead>
-                        <tr>
-                            <th>
-                                Number Type
-                            </th>
-                            <th>
-                                Count
-                            </th>
-                            <th>
-                                % of Total
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                Standard
-                            </td>
-                            <td>
-                                @Model?.TotalStandardNumbers
-                            </td>
-                            <td>
-                                @{
-                                    var standardPortion = Model?.TotalStandardNumbers * 100M / Model?.TotalPhoneNumbers;
-                                }
-                                @standardPortion!.Value.ToString("F") %
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                Premium
-                            </td>
-                            <td>
-                                @Model?.TotalPremiumNumbers
-                            </td>
-                            <td>
-                                @{
-                                    var premiumPortion = Model?.TotalPremiumNumbers * 100M / Model?.TotalPhoneNumbers;
-                                }
-                                @premiumPortion!.Value.ToString("F") %
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                Executive
-                            </td>
-                            <td>
-                                @Model?.TotalExecutiveNumbers
-                            </td>
-                            <td>
-                                @{
-                                    var executivePortion = Model?.TotalExecutiveNumbers * 100M / Model?.TotalPhoneNumbers;
-                                }
-                                @executivePortion!.Value.ToString("F") %
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                Tollfree
-                            </td>
-                            <td>
-                                @Model?.TotalTollFreeNumbers
-                            </td>
-                            <td>
-                                @{
-                                    var tollfreePortion = Model?.TotalTollFreeNumbers * 100M / Model?.TotalPhoneNumbers;
-                                }
-                                @tollfreePortion!.Value.ToString("F") %
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+    <div class="row">
+        <div class="col">
+            <canvas id="myChart" width="400" height="200" class="pb-3"></canvas>
+            <div class="btn-group btn-group-toggle pb-3" data-toggle="buttons">
+                <label class="btn btn-outline-secondary active">
+                    <input type="radio" name="options" id="option1" checked onclick="showInventory()"> Inventory
+                </label>
+                <label class="btn btn-outline-secondary">
+                    <input type="radio" name="options" id="option2" onclick="showChurn()"> Churn
+                </label>
             </div>
-            <h4 class="pb-3 pt-3">
-                Area Code Health
-            </h4>
-            <div class="table-responsive shadow-sm mt-3">
-                <table class="table table-hover table-striped table-borderless">
-                    <thead>
-                        <tr>
-                            <th>Area Code</th>
-                            @if (Model?.AreaCodes is not null)
-                            {
-                                foreach (var code in Model.AreaCodes)
-                                {
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            @{
+                if (Model is not null && Model?.Ingests is not null && Model.Ingests.Any() && Model?.AreaCodes is not null)
+                {
+                    @*var total = $"{Model.Ingests.Count()} ingests have been performed!";
+            <div class="alert alert-success" role="alert">
+            @total
+            </div>*@
+                    var timeAgo = DateTime.Now - Model.Ingests.FirstOrDefault()?.StartDate;
+                    var last = $"Last ingest performed {timeAgo.GetValueOrDefault().ToString(@"hh\:mm\:ss")} seconds ago.";
+                    var oneHour = DateTime.Now - DateTime.Now.AddHours(-6);
+                    if (timeAgo > oneHour)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @last
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-success" role="alert">
+                            @last
+                        </div>
+                    }
+
+                    //var statusSymbol = "✔️";
+                    //foreach (var code in Model.AreaCodes)
+                    //{
+                    //    if (code.Count < 10)
+                    //    {
+                    //        statusSymbol = "⚠️";
+                    //    }
+                    //    else if (code.Count < 1000)
+                    //    {
+                    //        statusSymbol = "❌";
+                    //    }
+                    //}
+
+                    //<h1 class="display-4 p-2">
+                    //    Provider Health @statusSymbol
+                    //</h1>
+                    <h4>@Model?.TotalPhoneNumbers Phone Numbers in Inventory</h4>
+                    <div class="table-responsive shadow mt-3">
+                        <table class="table table-hover table-striped table-borderless">
+                            <thead>
+                                <tr>
                                     <th>
-                                        (@code.NPA)
+                                        Number Type
                                     </th>
-                                }
-                            }
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Count</td>
-                            @if (Model?.AreaCodes is not null)
-                            {
-                                foreach (var code in Model.AreaCodes)
-                                {
-                                    <td>
-                                        @code.Count
-                                    </td>
-                                }
-                            }
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <h4 class="pb-3 pt-3">
-                Provider Health
-            </h4>
-            <div class="table-responsive shadow-sm">
-                <table class="table table-hover table-striped table-borderless">
-                    <thead>
-                        <tr>
-                            <th>
-                                Number Provider
-                            </th>
-                            <th>
-                                Current Count
-                            </th>
-                            <th>
-                                Ingest rate
-                            </th>
-                            <th>
-                                Run Time (1 Day Average)
-                            </th>
-                            <th>
-                                Longest Run (Last 7 Days)
-                            </th>
-                            <th>
-                                Churn (Average per Ingest)
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model is not null && Model?.Ingests is not null && Model?.CurrentState is not null)
-                        {
-                            var oneDayAgo = DateTime.Now.AddDays(-1);
-                            var providers = Model.Ingests.Select(x => x.IngestedFrom).Distinct();
-
-                            foreach (var provider in providers)
-                            {
-                                var ingests = Model!.Ingests.Where(x => x.IngestedFrom == provider && x.EndDate >= oneDayAgo);
-                                var ingestsSeven = Model!.Ingests.Where(x => x.IngestedFrom == provider && x.EndDate >= DateTime.Now.AddDays(-7));
-                                var currentCount = Model!.CurrentState.Where(x => x.IngestedFrom == provider).FirstOrDefault();
+                                    <th>
+                                        Count
+                                    </th>
+                                    <th>
+                                        % of Total
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
                                 <tr>
                                     <td>
-                                        @provider
+                                        Standard
+                                    </td>
+                                    <td>
+                                        @Model?.TotalStandardNumbers
                                     </td>
                                     <td>
                                         @{
-                                            decimal total = Convert.ToDecimal(Model?.TotalPhoneNumbers);
-                                            decimal portion = 0M;
-                                            if (currentCount?.Count > 0)
-                                            {
-                                                portion = (currentCount.Count / total) * 100M;
-                                            }
+                                            var standardPortion = Model?.TotalStandardNumbers * 100M / Model?.TotalPhoneNumbers;
                                         }
-                                        @currentCount?.Count
-                                        (@portion.ToString("F") %)
-                                    </td>
-                                    <td>
-                                        @{
-                                            var output = $"{ingests.Count()} per day";
-                                        }
-                                        @output
-                                    </td>
-                                    <td>
-                                        @{
-                                            var runTimes = new List<TimeSpan>();
-                                            foreach (var ingest in ingests)
-                                            {
-                                                runTimes.Add(ingest.EndDate - ingest.StartDate);
-                                            }
-                                            var formattedRunTime = string.Empty;
-                                            // https://stackoverflow.com/questions/8847679/find-average-of-collection-of-timespans
-                                            if (runTimes.Count > 0)
-                                            {
-                                                var doubleTicks = runTimes?.Average(x => x.Ticks);
-                                                var longTicks = Convert.ToInt64(doubleTicks);
-                                                var averageRunTime = new TimeSpan(longTicks);
-                                                if (averageRunTime.Hours > 0)
-                                                {
-                                                    formattedRunTime = $"{averageRunTime.Hours} Hours and {averageRunTime.Minutes} Minutes";
-
-                                                }
-                                                else
-                                                {
-                                                    formattedRunTime = $"{averageRunTime.Minutes} Minutes";
-                                                }
-                                            }
-                                            else
-                                            {
-                                                formattedRunTime = "None";
-                                            }
-                                        }
-                                        @formattedRunTime
-                                    </td>
-                                    <td>
-                                        @{
-                                            var runTimesSeven = new List<TimeSpan>();
-                                            foreach (var ingest in ingestsSeven)
-                                            {
-                                                runTimesSeven.Add(ingest.EndDate - ingest.StartDate);
-                                            }
-                                            var formattedLongest = string.Empty;
-                                            if (runTimesSeven.Count() > 0)
-                                            {
-                                                var longest = runTimesSeven.Max();
-                                                if (longest.Hours > 0)
-                                                {
-                                                    formattedLongest = $"{longest.Hours} Hours and {longest.Minutes} Minutes";
-                                                }
-                                                else
-                                                {
-                                                    formattedLongest = $"{longest.Minutes} Minutes";
-                                                }
-                                            }
-                                            else
-                                            {
-                                                formattedRunTime = "None";
-                                            }
-                                        }
-                                        @formattedLongest
-                                    </td>
-                                    <td>
-                                        @{
-                                            var churn = ingests.Count() > 0 ? ingests?.Average(x => x.Removed) : 0;
-                                            var formattedChurn = $"{churn!.Value.ToString("F0")} Numbers Removed";
-                                        }
-                                        @formattedChurn
+                                        @standardPortion!.Value.ToString("F") %
                                     </td>
                                 </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
-            </div>
-            <h4 class="pb-3 pt-3">
-                Logged Ingests
-            </h4>
-            <div class="table-responsive shadow-sm mb-4">
-                <table class="table table-hover table-striped table-borderless">
-                    <thead>
-                        <tr>
-                            <th scope="col">Ingested From</th>
-                            <th scope="col">Numbers retrieved</th>
-                            <th scope="col">Ingested New</th>
-                            <th scope="col">Failed to Ingest</th>
-                            <th scope="col">Updated Existing</th>
-                            <th scope="col">Unchanged</th>
-                            <th scope="col">Removed</th>
-                            <th scope="col">Minutes Elapsed</th>
-                            <th scope="col">Start Date</th>
-                            <th scope="col">End Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model?.Ingests is not null)
-                        {
-                            foreach (var ingest in Model.Ingests.Take(31))
-                            {
-                                var timeElapsed = ingest.StartDate - ingest.EndDate;
                                 <tr>
-                                    @{
-                                        if (ingest?.IngestedFrom == "All")
-                                        {
-                                            <td class="table-success">@ingest?.IngestedFrom</td>
-                                            <td class="table-success">@ingest!.NumbersRetrived</td>
-                                            <td class="table-success">@ingest.IngestedNew</td>
-                                            <td class="table-success">@ingest.FailedToIngest</td>
-                                            <td class="table-success">@ingest.UpdatedExisting</td>
-                                            <td class="table-success">@ingest.Unchanged</td>
-                                            <td class="table-success">@ingest.Removed</td>
-                                            <td class="table-success"><strong>@timeElapsed.ToString(@"hh\:mm")</strong></td>
-                                            <td class="table-success">@ingest?.StartDate</td>
-                                            <td class="table-success">@ingest?.EndDate</td>
+                                    <td>
+                                        Premium
+                                    </td>
+                                    <td>
+                                        @Model?.TotalPremiumNumbers
+                                    </td>
+                                    <td>
+                                        @{
+                                            var premiumPortion = Model?.TotalPremiumNumbers * 100M / Model?.TotalPhoneNumbers;
                                         }
-                                        else
+                                        @premiumPortion!.Value.ToString("F") %
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>
+                                        Executive
+                                    </td>
+                                    <td>
+                                        @Model?.TotalExecutiveNumbers
+                                    </td>
+                                    <td>
+                                        @{
+                                            var executivePortion = Model?.TotalExecutiveNumbers * 100M / Model?.TotalPhoneNumbers;
+                                        }
+                                        @executivePortion!.Value.ToString("F") %
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Tollfree
+                                    </td>
+                                    <td>
+                                        @Model?.TotalTollFreeNumbers
+                                    </td>
+                                    <td>
+                                        @{
+                                            var tollfreePortion = Model?.TotalTollFreeNumbers * 100M / Model?.TotalPhoneNumbers;
+                                        }
+                                        @tollfreePortion!.Value.ToString("F") %
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <h4 class="pb-3 pt-3">
+                        Area Code Health
+                    </h4>
+                    <div class="table-responsive shadow mt-3">
+                        <table class="table table-hover table-striped table-borderless">
+                            <thead>
+                                <tr>
+                                    <th>Area Code</th>
+                                    @if (Model?.AreaCodes is not null)
+                                    {
+                                        foreach (var code in Model.AreaCodes)
                                         {
-                                            string badge = string.Empty;
-                                            if (ingest?.Priority ?? false)
-                                            {
-                                                badge = $"<span class='badge badge-primary'>Priority</span>";
-                                            }
-                                            else
-                                            {
-                                                badge = $"<span class='badge badge-success'>Complete</span>";
-                                            }
-                                            <td><h5>@ingest?.IngestedFrom</h5> @Html.Raw(badge)</td>
-                                            <td>@ingest!.NumbersRetrived</td>
-                                            <td>@ingest.IngestedNew</td>
-                                            <td>@ingest.FailedToIngest</td>
-                                            <td>@ingest.UpdatedExisting</td>
-                                            <td>@ingest.Unchanged</td>
-                                            <td>@ingest.Removed</td>
-                                            <td>@timeElapsed.ToString(@"hh\:mm")</td>
-                                            <td>@ingest?.StartDate</td>
-                                            <td>@ingest?.EndDate</td>
+                                            <th>
+                                                (@code.NPA)
+                                            </th>
                                         }
                                     }
                                 </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-    }
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Count</td>
+                                    @if (Model?.AreaCodes is not null)
+                                    {
+                                        foreach (var code in Model.AreaCodes)
+                                        {
+                                            <td>
+                                                @code.Count
+                                            </td>
+                                        }
+                                    }
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <h4 class="pb-3 pt-3">
+                        Provider Health
+                    </h4>
+                    <div class="table-responsive shadow">
+                        <table class="table table-hover table-striped table-borderless">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Number Provider
+                                    </th>
+                                    <th>
+                                        Current Count
+                                    </th>
+                                    <th>
+                                        Ingest rate
+                                    </th>
+                                    <th>
+                                        Run Time (1 Day Average)
+                                    </th>
+                                    <th>
+                                        Longest Run (Last 7 Days)
+                                    </th>
+                                    <th>
+                                        Churn (Average per Ingest)
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model is not null && Model?.Ingests is not null && Model?.CurrentState is not null)
+                                {
+                                    var oneDayAgo = DateTime.Now.AddDays(-1);
+                                    var providers = Model.Ingests.Select(x => x.IngestedFrom).Distinct();
+
+                                    foreach (var provider in providers)
+                                    {
+                                        var ingests = Model!.Ingests.Where(x => x.IngestedFrom == provider && x.EndDate >= oneDayAgo);
+                                        var ingestsSeven = Model!.Ingests.Where(x => x.IngestedFrom == provider && x.EndDate >= DateTime.Now.AddDays(-7));
+                                        var currentCount = Model!.CurrentState.Where(x => x.IngestedFrom == provider).FirstOrDefault();
+                                        <tr>
+                                            <td>
+                                                @provider
+                                            </td>
+                                            <td>
+                                                @{
+                                                    decimal total = Convert.ToDecimal(Model?.TotalPhoneNumbers);
+                                                    decimal portion = 0M;
+                                                    if (currentCount?.Count > 0)
+                                                    {
+                                                        portion = (currentCount.Count / total) * 100M;
+                                                    }
+                                                }
+                                                @currentCount?.Count
+                                                (@portion.ToString("F") %)
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var output = $"{ingests.Count()} per day";
+                                                }
+                                                @output
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var runTimes = new List<TimeSpan>();
+                                                    foreach (var ingest in ingests)
+                                                    {
+                                                        runTimes.Add(ingest.EndDate - ingest.StartDate);
+                                                    }
+                                                    var formattedRunTime = string.Empty;
+                                                    // https://stackoverflow.com/questions/8847679/find-average-of-collection-of-timespans
+                                                    if (runTimes.Count > 0)
+                                                    {
+                                                        var doubleTicks = runTimes?.Average(x => x.Ticks);
+                                                        var longTicks = Convert.ToInt64(doubleTicks);
+                                                        var averageRunTime = new TimeSpan(longTicks);
+                                                        if (averageRunTime.Hours > 0)
+                                                        {
+                                                            formattedRunTime = $"{averageRunTime.Hours} Hours and {averageRunTime.Minutes} Minutes";
+
+                                                        }
+                                                        else
+                                                        {
+                                                            formattedRunTime = $"{averageRunTime.Minutes} Minutes";
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        formattedRunTime = "None";
+                                                    }
+                                                }
+                                                @formattedRunTime
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var runTimesSeven = new List<TimeSpan>();
+                                                    foreach (var ingest in ingestsSeven)
+                                                    {
+                                                        runTimesSeven.Add(ingest.EndDate - ingest.StartDate);
+                                                    }
+                                                    var formattedLongest = string.Empty;
+                                                    if (runTimesSeven.Count() > 0)
+                                                    {
+                                                        var longest = runTimesSeven.Max();
+                                                        if (longest.Hours > 0)
+                                                        {
+                                                            formattedLongest = $"{longest.Hours} Hours and {longest.Minutes} Minutes";
+                                                        }
+                                                        else
+                                                        {
+                                                            formattedLongest = $"{longest.Minutes} Minutes";
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        formattedRunTime = "None";
+                                                    }
+                                                }
+                                                @formattedLongest
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var churn = ingests.Count() > 0 ? ingests?.Average(x => x.Removed) : 0;
+                                                    var formattedChurn = $"{churn!.Value.ToString("F0")} Numbers Removed";
+                                                }
+                                                @formattedChurn
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <h4 class="pb-3 pt-3">
+                        Logged Ingests
+                    </h4>
+                    <div class="table-responsive shadow mb-4">
+                        <table class="table table-hover table-striped table-borderless">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Ingested From</th>
+                                    <th scope="col">Numbers retrieved</th>
+                                    <th scope="col">Ingested New</th>
+                                    <th scope="col">Failed to Ingest</th>
+                                    <th scope="col">Updated Existing</th>
+                                    <th scope="col">Unchanged</th>
+                                    <th scope="col">Removed</th>
+                                    <th scope="col">Minutes Elapsed</th>
+                                    <th scope="col">Start Date</th>
+                                    <th scope="col">End Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model?.Ingests is not null)
+                                {
+                                    foreach (var ingest in Model.Ingests.Take(31))
+                                    {
+                                        var timeElapsed = ingest.StartDate - ingest.EndDate;
+                                        <tr>
+                                            @{
+                                                if (ingest?.IngestedFrom == "All")
+                                                {
+                                                    <td class="table-success">@ingest?.IngestedFrom</td>
+                                                    <td class="table-success">@ingest!.NumbersRetrived</td>
+                                                    <td class="table-success">@ingest.IngestedNew</td>
+                                                    <td class="table-success">@ingest.FailedToIngest</td>
+                                                    <td class="table-success">@ingest.UpdatedExisting</td>
+                                                    <td class="table-success">@ingest.Unchanged</td>
+                                                    <td class="table-success">@ingest.Removed</td>
+                                                    <td class="table-success"><strong>@timeElapsed.ToString(@"hh\:mm")</strong></td>
+                                                    <td class="table-success">@ingest?.StartDate</td>
+                                                    <td class="table-success">@ingest?.EndDate</td>
+                                                }
+                                                else
+                                                {
+                                                    string badge = string.Empty;
+                                                    if (ingest?.Priority ?? false)
+                                                    {
+                                                        badge = $"<span class='badge badge-primary'>Priority</span>";
+                                                    }
+                                                    else
+                                                    {
+                                                        badge = $"<span class='badge badge-success'>Complete</span>";
+                                                    }
+                                                    <td><h5>@ingest?.IngestedFrom</h5> @Html.Raw(badge)</td>
+                                                    <td>@ingest!.NumbersRetrived</td>
+                                                    <td>@ingest.IngestedNew</td>
+                                                    <td>@ingest.FailedToIngest</td>
+                                                    <td>@ingest.UpdatedExisting</td>
+                                                    <td>@ingest.Unchanged</td>
+                                                    <td>@ingest.Removed</td>
+                                                    <td>@timeElapsed.ToString(@"hh\:mm")</td>
+                                                    <td>@ingest?.StartDate</td>
+                                                    <td>@ingest?.EndDate</td>
+                                                }
+                                            }
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            }
+        </div>
+    </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
