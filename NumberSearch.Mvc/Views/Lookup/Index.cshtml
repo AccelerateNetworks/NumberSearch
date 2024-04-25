@@ -49,462 +49,244 @@
         </div>
     </div>
 </div>
-<div class="pb-3">
-    @{
-        if (!string.IsNullOrWhiteSpace(Model?.Message))
-        {
-            <div class="container">
-                <div class="pb-3">
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <div class="alert alert-danger" role="alert">
-                                @Model?.Message
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
-        if (Model != null && Model?.NotPortable != null && Model.NotPortable.Any())
-        {
-            <div class="container">
-                <div class="row mt-3">
-                    <div class="col">
-                        <div class="btn-group">
-                            @if (Model?.Portable is not null && Model.Portable.Any())
-                            {
-                                <a class="btn btn-success text-light" href="#portable">@Model.Portable.Count() Local Numbers</a>
-                            }
-                            @if (Model?.Wireless is not null && Model.Wireless.Any())
-                            {
-                                <a class="btn btn-warning text-light" href="#wireless">@Model.Wireless.Count()  Wireless</a>
-                            }
-                            @if (Model?.NotPortable is not null && Model.NotPortable.Any())
-                            {
-                                <a class="btn btn-danger" href="#notportable">@Model.NotPortable.Count() Not Portable</a>
-                            }
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-12">
-                        <h1 class="pt-1 pb-1" id="notportable">Not Portable</h1>
-                    </div>
+@if (!string.IsNullOrWhiteSpace(Model?.Message))
+{
+    <div class="pb-3">
+        <div class="container">
+            <div class="pb-3">
+                <div class="row mt-4">
                     <div class="col-12">
                         <div class="alert alert-danger" role="alert">
-                            These phone numbers cannot be ported to our network!
+                            @Model?.Message
                         </div>
                     </div>
-                </div>
-                <div class="table-responsive shadow-sm">
-                    <table class="table table-striped table-borderless table-hover m-0">
-                        <tbody>
-                            @if (Model?.NotPortable is not null)
-                            {
-                                foreach (var number in Model.NotPortable)
-                                {
-                                    <tr class="table-danger">
-                                        <td scope="row"><h4>@number</h4></td>
-                                        <td class="d-none d-sm-table-cell"></td>
-                                        <td class="d-none d-sm-table-cell"></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-                    </table>
                 </div>
             </div>
-        }
-        if (Model != null && Model?.Portable != null && Model.Portable.Any())
-        {
-            <div class="container">
-                <div class="row mt-3">
-                    <div class="col">
-                        <div class="btn-group">
-                            @if (Model?.Portable is not null && Model.Portable.Any())
-                            {
-                                <a class="btn btn-success text-light" href="#portable">@Model.Portable.Count() Local Numbers</a>
-                            }
-                            @if (Model?.Wireless is not null && Model.Wireless.Any())
-                            {
-                                <a class="btn btn-warning text-light" href="#wireless">@Model.Wireless.Count()  Wireless</a>
-                            }
-                            @if (Model?.NotPortable is not null && Model.NotPortable.Any())
-                            {
-                                <a class="btn btn-danger" href="#notportable">@Model.NotPortable.Count() Not Portable</a>
-                            }
-                        </div>
+        </div>
+    </div>
+}
+@if (Model != null && Model?.NotPortable != null && Model.NotPortable.Any())
+{
+    <div class="pb-3">
+        <div class="container">
+            <div class="row mt-3">
+                <div class="col">
+                    <div class="btn-group">
+                        @if (Model?.Portable is not null && Model.Portable.Any())
+                        {
+                            <a class="btn btn-success text-light" href="#portable">@Model.Portable.Count() Local Numbers</a>
+                        }
+                        @if (Model?.Wireless is not null && Model.Wireless.Any())
+                        {
+                            <a class="btn btn-warning text-light" href="#wireless">@Model.Wireless.Count()  Wireless</a>
+                        }
+                        @if (Model?.NotPortable is not null && Model.NotPortable.Any())
+                        {
+                            <a class="btn btn-danger" href="#notportable">@Model.NotPortable.Count() Not Portable</a>
+                        }
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-12">
-                        <h1 class="pt-1 pb-1" id="portable">Local Numbers</h1>
-                    </div>
-                    <div class="col-12">
-                        <div class="alert alert-success" role="alert">
-                            These phone numbers can be ported to our network!
-                        </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="pt-1 pb-1" id="notportable">Not Portable</h1>
+                </div>
+                <div class="col-12">
+                    <div class="alert alert-danger" role="alert">
+                        These phone numbers cannot be ported to our network!
                     </div>
                 </div>
-                <div class="table-responsive shadow-sm">
-                    <table class="table table-striped table-borderless table-hover m-0">
-                        <tbody>
-                            <tr>
-                                <th>
-                                    Phone Number
-                                </th>
-                                <th class="d-none d-md-table-cell">
-                                    Last Ported
-                                </th>
-                                <th class="d-none d-lg-table-cell">
-                                    Caller Name
-                                </th>
-                                <th>
-                                    Carrier
-                                </th>
-                                <th class="d-none d-md-table-cell">OCN, SPID, and LEC</th>
-                                <th class="d-none d-md-table-cell">
-                                    Action
-                                </th>
-                            </tr>
-                            @if (Model?.Portable is not null)
+            </div>
+            <div class="table-responsive shadow-sm">
+                <table class="table table-striped table-borderless table-hover m-0">
+                    <tbody>
+                        @if (Model?.NotPortable is not null)
+                        {
+                            foreach (var number in Model.NotPortable)
                             {
-                                foreach (var number in Model.Portable)
+                                <tr class="table-danger">
+                                    <td scope="row"><h4>@number</h4></td>
+                                    <td class="d-none d-sm-table-cell"></td>
+                                    <td class="d-none d-sm-table-cell"></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+@if (Model != null && Model?.Portable != null && Model.Portable.Any())
+{
+    <div class="pb-3">
+        <div class="container">
+            <div class="row mt-3">
+                <div class="col">
+                    <div class="btn-group">
+                        @if (Model?.Portable is not null && Model.Portable.Any())
+                        {
+                            <a class="btn btn-success text-light" href="#portable">@Model.Portable.Count() Local Numbers</a>
+                        }
+                        @if (Model?.Wireless is not null && Model.Wireless.Any())
+                        {
+                            <a class="btn btn-warning text-light" href="#wireless">@Model.Wireless.Count()  Wireless</a>
+                        }
+                        @if (Model?.NotPortable is not null && Model.NotPortable.Any())
+                        {
+                            <a class="btn btn-danger" href="#notportable">@Model.NotPortable.Count() Not Portable</a>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="pt-1 pb-1" id="portable">Local Numbers</h1>
+                </div>
+                <div class="col-12">
+                    <div class="alert alert-success" role="alert">
+                        These phone numbers can be ported to our network!
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive shadow-sm">
+                <table class="table table-striped table-borderless table-hover m-0">
+                    <tbody>
+                        <tr>
+                            <th>
+                                Phone Number
+                            </th>
+                            <th class="d-none d-md-table-cell">
+                                Last Ported
+                            </th>
+                            <th class="d-none d-lg-table-cell">
+                                Caller Name
+                            </th>
+                            <th>
+                                Carrier
+                            </th>
+                            <th class="d-none d-md-table-cell">OCN, SPID, and LEC</th>
+                            <th class="d-none d-md-table-cell">
+                                Action
+                            </th>
+                        </tr>
+                        @if (Model?.Portable is not null)
+                        {
+                            foreach (var number in Model.Portable)
+                            {
+                                var alreadyInCart = Model?.Cart?.PortedPhoneNumbers?.ToDictionary(x => x.PortedDialedNumber, x => x);
+                                var color = string.Empty;
+                                if (!string.IsNullOrWhiteSpace(number?.Carrier?.Color))
                                 {
-                                    var alreadyInCart = Model?.Cart?.PortedPhoneNumbers?.ToDictionary(x => x.PortedDialedNumber, x => x);
-                                    var color = string.Empty;
-                                    if (!string.IsNullOrWhiteSpace(number?.Carrier?.Color))
-                                    {
-                                        color = $"background-color: {number.Carrier.Color};";
-                                    }
+                                    color = $"background-color: {number.Carrier.Color};";
+                                }
 
-                                    <tr style="@color">
-                                        <td>
-                                            <h4>@number?.PortedDialedNumber</h4>
-                                            @if (string.IsNullOrWhiteSpace(number?.LrnLookup?.LRN))
-                                            {
-                                                <p class="m-0">
-                                                    Rate Center and State
-                                                </p>
-                                                <h6 class="m-0">@number?.LrnLookup?.Ratecenter, @number?.LrnLookup?.State</h6>
-                                            }
-                                            else
-                                            {
-                                                <p class="m-0">
-                                                    Local Routing #
-                                                </p>
-                                                <h6 class="m-0">@number?.LrnLookup?.LRN</h6>
-                                            }
-                                            <p class="m-0 d-lg-none">
-                                                Caller Name
+                                <tr style="@color">
+                                    <td>
+                                        <h4>@number?.PortedDialedNumber</h4>
+                                        @if (string.IsNullOrWhiteSpace(number?.LrnLookup?.LRN))
+                                        {
+                                            <p class="m-0">
+                                                Rate Center and State
                                             </p>
-                                            <h6 class="m-0 d-lg-none">
-                                                @number?.LrnLookup?.LIDBName
-                                            </h6>
-                                            <p class="m-0 d-md-none">
-                                                Last Ported
+                                            <h6 class="m-0">@number?.LrnLookup?.Ratecenter, @number?.LrnLookup?.State</h6>
+                                        }
+                                        else
+                                        {
+                                            <p class="m-0">
+                                                Local Routing #
                                             </p>
-                                            <h6 class="m-0 d-md-none">
-                                                @number?.LrnLookup?.LastPorted.ToShortDateString()
-                                            </h6>
-                                            <p class="pt-3 m-0">
-                                                @{
-                                                    if (alreadyInCart is not null && number is not null && alreadyInCart.TryGetValue(number.PortedDialedNumber, out var _))
-                                                    {
-                                                        <button onclick="RemoveFromCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-danger bg-light d-md-none">
-                                                            <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                            Remove
-                                                        </button>
-                                                    }
-                                                    else
-                                                    {
-                                                        <button onclick="AddToCart('PortedPhoneNumber', '@number?.PortedDialedNumber', 1, this)" class="btn btn-outline-primary bg-light d-md-none">
-                                                            <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                            Add to Cart
-                                                        </button>
-                                                    }
-                                                }
-                                            </p>
-                                        </td>
-                                        <td class="d-none d-md-table-cell">
-                                            @number?.LrnLookup?.LastPorted.ToShortDateString()
-                                        </td>
-                                        <td class="d-none d-lg-table-cell">
+                                            <h6 class="m-0">@number?.LrnLookup?.LRN</h6>
+                                        }
+                                        <p class="m-0 d-lg-none">
+                                            Caller Name
+                                        </p>
+                                        <h6 class="m-0 d-lg-none">
                                             @number?.LrnLookup?.LIDBName
-                                        </td>
-                                        <td>
-                                            @if (number?.Carrier is not null && !string.IsNullOrWhiteSpace(number?.Carrier?.LogoLink))
-                                            {
-                                                <img src="@number.Carrier.LogoLink" alt="@number.Carrier.Name" title="LRN @number.LrnLookup.LRN" class="img-fluid p-1" style="max-height:5rem">
-                                            }
-                                            else if (!string.IsNullOrWhiteSpace(number?.LrnLookup?.SPID))
-                                            {
-                                                <p class="m-0 d-none d-md-block">
-                                                    SPID
-                                                </p>
-                                                <p class="m-0 d-none d-md-block">
-                                                    @number?.LrnLookup?.SPID
-                                                </p>
-                                                <p class="m-0 d-none d-md-block">
-                                                    LEC
-                                                </p>
-                                                <p class="m-0 d-none d-md-block">
-                                                    @number?.LrnLookup?.LEC
-                                                </p>
-                                                <p class="m-0 d-none d-md-block">LEC Type</p>
-                                                <p class="m-0 d-none d-md-block">
-                                                    @number?.LrnLookup?.LECType
-                                                </p>
-                                            }
-                                            @if (!string.IsNullOrWhiteSpace(number?.Carrier?.Type))
-                                            {
-                                                <p class="m-0">Type</p>
-                                                <h6 class="m-0">@number?.Carrier?.Type</h6>
-                                            }
-                                            else
-                                            {
-                                                if (number?.Wireless is not null && number.Wireless)
-                                                {
-                                                    <p class="m-0">Type</p>
-                                                    <h6 class="m-0">Wireless</h6>
-                                                }
-                                                else if (number?.LrnLookup.Ratecenter is "Toll Free" || number?.LrnLookup.State is "TF")
-                                                {
-                                                    // Do nothing
-                                                }
-                                                else
-                                                {
-                                                    <p class="m-0">Type</p>
-                                                    <h6 class="m-0">Non-Wireless</h6>
-                                                }
-                                            }
-
-                                            @if (!string.IsNullOrWhiteSpace(number?.LrnLookup?.OCN))
-                                            {
-                                                <p class="m-0 d-md-none">
-                                                    OCN
-                                                </p>
-                                                <h6 class="m-0 d-md-none">@number?.LrnLookup?.OCN</h6>
-                                                <p class="m-0 d-md-none">
-                                                    SPID
-                                                </p>
-                                                <h6 class="m-0 d-md-none">@number?.LrnLookup?.SPID</h6>
-                                                <p class="m-0 d-md-none">
-                                                    LEC
-                                                </p>
-                                                <h6 class="m-0 d-md-none">@number?.LrnLookup?.LEC</h6>
-                                            }
-                                            else
-                                            {
-                                                <p class="m-0">
-                                                    Losing Carrier
-                                                </p>
-                                                <h6 class="m-0">
-                                                    @number?.LrnLookup?.LosingCarrier
-                                                </h6>
-                                            }
-                                        </td>
-                                        <td class="d-none d-md-table-cell">
-                                            <p class="m-0">
-                                                @number?.LrnLookup?.OCN
-                                            </p>
-                                            <p class="m-0">
-                                                @number?.LrnLookup?.SPID
-                                            </p>
-                                            <p class="m-0">
-                                                @number?.LrnLookup?.LEC
-                                            </p>
-                                        </td>
-                                        <td class="d-none d-md-table-cell">
+                                        </h6>
+                                        <p class="m-0 d-md-none">
+                                            Last Ported
+                                        </p>
+                                        <h6 class="m-0 d-md-none">
+                                            @number?.LrnLookup?.LastPorted.ToShortDateString()
+                                        </h6>
+                                        <p class="pt-3 m-0">
                                             @{
                                                 if (alreadyInCart is not null && number is not null && alreadyInCart.TryGetValue(number.PortedDialedNumber, out var _))
                                                 {
-                                                    <button onclick="RemoveFromCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-danger bg-light">
+                                                    <button onclick="RemoveFromCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-danger bg-light d-md-none">
                                                         <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                         Remove
                                                     </button>
                                                 }
                                                 else
                                                 {
-                                                    <button onclick="AddToCart('PortedPhoneNumber', '@number?.PortedDialedNumber', 1, this)" class="btn btn-outline-primary bg-light">
+                                                    <button onclick="AddToCart('PortedPhoneNumber', '@number?.PortedDialedNumber', 1, this)" class="btn btn-outline-primary bg-light d-md-none">
                                                         <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                         Add to Cart
                                                     </button>
                                                 }
                                             }
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-                    </table>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <a class="btn btn-outline-primary mt-3" href="/Lookup/BulkPort?dialedNumber=@Model?.DialedNumber&csv=true">Export to CSV</a>
-                    </div>
-                </div>
-            </div>
-        }
-        if (Model != null && Model?.Wireless != null && Model.Wireless.Any())
-        {
-            <div class="container">
-                <div class="row mt-3">
-                    <div class="col">
-                        <div class="btn-group">
-                            @if (Model?.Portable is not null && Model.Portable.Any())
-                            {
-                                <a class="btn btn-success text-light" href="#portable">@Model.Portable.Count() Local Numbers</a>
-                            }
-                            @if (Model?.Wireless is not null && Model.Wireless.Any())
-                            {
-                                <a class="btn btn-warning text-light" href="#wireless">@Model.Wireless.Count()  Wireless</a>
-                            }
-                            @if (Model?.NotPortable is not null && Model.NotPortable.Any())
-                            {
-                                <a class="btn btn-danger" href="#notportable">@Model.NotPortable.Count() Not Portable</a>
-                            }
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-12">
-                        <h1 class="pt-1 pb-1" id="wireless">Wireless Numbers</h1>
-                    </div>
-                    <div class="col-12">
-                        <div class="alert alert-warning col-12" role="alert">
-                            These <strong>wireless</strong> phone numbers can be ported to our network!
-                        </div>
-                    </div>
-                </div>
-                <div class="table-responsive shadow-sm">
-                    <table class="table table-striped table-borderless table-hover m-0">
-                        <tbody>
-                            <tr>
-                                <th>
-                                    Phone Number
-                                </th>
-                                <th class="d-none d-md-table-cell">
-                                    Last Ported
-                                </th>
-                                <th class="d-none d-lg-table-cell">
-                                    Caller Name
-                                </th>
-                                <th>
-                                    Carrier
-                                </th>
-                                <th class="d-none d-md-table-cell">OCN, SPID, and LEC</th>
-                                <th class="d-none d-md-table-cell">
-                                    Action
-                                </th>
-                            </tr>
-                            @if (Model?.Wireless is not null)
-                            {
-                                foreach (var number in Model.Wireless)
-                                {
-                                    var alreadyInCart = Model?.Cart?.PortedPhoneNumbers?.ToDictionary(x => x.PortedDialedNumber, x => x);
-                                    var color = string.Empty;
-                                    if (!string.IsNullOrWhiteSpace(number?.Carrier?.Color))
-                                    {
-                                        color = $"background-color: {number.Carrier.Color};";
-                                    }
-                                    <tr style="@color">
-                                        <td>
-                                            <h4>@number?.PortedDialedNumber</h4>
-                                            @if (string.IsNullOrWhiteSpace(number?.LrnLookup?.LRN))
-                                            {
-                                                <p class="m-0">
-                                                    Rate Center and State
-                                                </p>
-                                                <h6 class="m-0">@number?.LrnLookup?.Ratecenter, @number?.LrnLookup?.State</h6>
-                                            }
-                                            else
-                                            {
-                                                <p class="m-0">
-                                                    Local Routing #
-                                                </p>
-                                                <h6 class="m-0">@number?.LrnLookup?.LRN</h6>
-                                            }
-                                            <p class="m-0 d-lg-none">
-                                                Caller Name
+                                        </p>
+                                    </td>
+                                    <td class="d-none d-md-table-cell">
+                                        @number?.LrnLookup?.LastPorted.ToShortDateString()
+                                    </td>
+                                    <td class="d-none d-lg-table-cell">
+                                        @number?.LrnLookup?.LIDBName
+                                    </td>
+                                    <td>
+                                        @if (number?.Carrier is not null && !string.IsNullOrWhiteSpace(number?.Carrier?.LogoLink))
+                                        {
+                                            <img src="@number.Carrier.LogoLink" alt="@number.Carrier.Name" title="LRN @number.LrnLookup.LRN" class="img-fluid p-1" style="max-height:5rem">
+                                        }
+                                        else if (!string.IsNullOrWhiteSpace(number?.LrnLookup?.SPID))
+                                        {
+                                            <p class="m-0 d-none d-md-block">
+                                                SPID
                                             </p>
-                                            <h6 class="m-0 d-lg-none">
-                                                @number?.LrnLookup?.LIDBName
-                                            </h6>
-                                            <p class="m-0 d-md-none">
-                                                Last Ported
+                                            <p class="m-0 d-none d-md-block">
+                                                @number?.LrnLookup?.SPID
                                             </p>
-                                            <h6 class="m-0 d-md-none">
-                                                @number?.LrnLookup?.LastPorted.ToShortDateString()
-                                            </h6>
-                                            <p class="pt-3 m-0">
-                                                @{
-                                                    if (alreadyInCart is not null && number is not null && alreadyInCart.TryGetValue(number.PortedDialedNumber, out var _))
-                                                    {
-                                                        <button onclick="RemoveFromCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-danger bg-light d-md-none">
-                                                            <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                            Remove
-                                                        </button>
-                                                    }
-                                                    else
-                                                    {
-                                                        <button onclick="AddToCart('PortedPhoneNumber', '@number?.PortedDialedNumber', 1, this)" class="btn btn-outline-primary bg-light d-md-none">
-                                                            <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                            Add to Cart
-                                                        </button>
-                                                    }
-                                                }
+                                            <p class="m-0 d-none d-md-block">
+                                                LEC
                                             </p>
-                                        </td>
-                                        <td class="d-none d-md-table-cell">
-                                            @number?.LrnLookup?.LastPorted.ToShortDateString()
-                                        </td>
-                                        <td class="d-none d-lg-table-cell">
-                                            @number?.LrnLookup?.LIDBName
-                                        </td>
-                                        <td>
-                                            @if (number?.Carrier is not null)
-                                            {
-                                                <img src="@number.Carrier.LogoLink" alt="@number.Carrier.Name" title="LRN @number.LrnLookup.LRN" class="img-fluid p-1" style="max-height:5rem">
-                                            }
-                                            else
-                                            {
-                                                <p class="m-0 d-none d-md-block">
-                                                    SPID
-                                                </p>
-                                                <p class="m-0 d-none d-md-block">
-                                                    @number?.LrnLookup?.SPID
-                                                </p>
-                                                <p class="m-0 d-none d-md-block">
-                                                    LEC
-                                                </p>
-                                                <p class="m-0 d-none d-md-block">
-                                                    @number?.LrnLookup?.LEC
-                                                </p>
-                                                <p class="m-0 d-none d-md-block">LEC Type</p>
-                                                <p class="m-0 d-none d-md-block">
-                                                    @number?.LrnLookup?.LECType
-                                                </p>
-                                            }
+                                            <p class="m-0 d-none d-md-block">
+                                                @number?.LrnLookup?.LEC
+                                            </p>
+                                            <p class="m-0 d-none d-md-block">LEC Type</p>
+                                            <p class="m-0 d-none d-md-block">
+                                                @number?.LrnLookup?.LECType
+                                            </p>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(number?.Carrier?.Type))
+                                        {
                                             <p class="m-0">Type</p>
-                                            @if (!string.IsNullOrWhiteSpace(number?.Carrier?.Type))
+                                            <h6 class="m-0">@number?.Carrier?.Type</h6>
+                                        }
+                                        else
+                                        {
+                                            if (number?.Wireless is not null && number.Wireless)
                                             {
-                                                <h6 class="m-0">@number?.Carrier?.Type</h6>
+                                                <p class="m-0">Type</p>
+                                                <h6 class="m-0">Wireless</h6>
+                                            }
+                                            else if (number?.LrnLookup.Ratecenter is "Toll Free" || number?.LrnLookup.State is "TF")
+                                            {
+                                                // Do nothing
                                             }
                                             else
                                             {
-                                                if (number?.Wireless is not null && number.Wireless)
-                                                {
-                                                    <h6 class="m-0">Wireless</h6>
-                                                }
-                                                else
-                                                {
-                                                    <h6 class="m-0">Non-Wireless</h6>
-                                                }
+                                                <p class="m-0">Type</p>
+                                                <h6 class="m-0">Non-Wireless</h6>
                                             }
+                                        }
+
+                                        @if (!string.IsNullOrWhiteSpace(number?.LrnLookup?.OCN))
+                                        {
                                             <p class="m-0 d-md-none">
                                                 OCN
                                             </p>
@@ -517,56 +299,277 @@
                                                 LEC
                                             </p>
                                             <h6 class="m-0 d-md-none">@number?.LrnLookup?.LEC</h6>
-                                        </td>
-                                        <td class="d-none d-md-table-cell">
+                                        }
+                                        else
+                                        {
                                             <p class="m-0">
-                                                @number?.LrnLookup?.OCN
+                                                Losing Carrier
                                             </p>
+                                            <h6 class="m-0">
+                                                @number?.LrnLookup?.LosingCarrier
+                                            </h6>
+                                        }
+                                    </td>
+                                    <td class="d-none d-md-table-cell">
+                                        <p class="m-0">
+                                            @number?.LrnLookup?.OCN
+                                        </p>
+                                        <p class="m-0">
+                                            @number?.LrnLookup?.SPID
+                                        </p>
+                                        <p class="m-0">
+                                            @number?.LrnLookup?.LEC
+                                        </p>
+                                    </td>
+                                    <td class="d-none d-md-table-cell">
+                                        @{
+                                            if (alreadyInCart is not null && number is not null && alreadyInCart.TryGetValue(number.PortedDialedNumber, out var _))
+                                            {
+                                                <button onclick="RemoveFromCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-danger bg-light">
+                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                    Remove
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button onclick="AddToCart('PortedPhoneNumber', '@number?.PortedDialedNumber', 1, this)" class="btn btn-outline-primary bg-light">
+                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                    Add to Cart
+                                                </button>
+                                            }
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <a class="btn btn-outline-primary mt-3" href="/Lookup/BulkPort?dialedNumber=@Model?.DialedNumber&csv=true">Export to CSV</a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@if (Model != null && Model?.Wireless != null && Model.Wireless.Any())
+{
+    <div class="pb-3">
+        <div class="container">
+            <div class="row mt-3">
+                <div class="col">
+                    <div class="btn-group">
+                        @if (Model?.Portable is not null && Model.Portable.Any())
+                        {
+                            <a class="btn btn-success text-light" href="#portable">@Model.Portable.Count() Local Numbers</a>
+                        }
+                        @if (Model?.Wireless is not null && Model.Wireless.Any())
+                        {
+                            <a class="btn btn-warning text-light" href="#wireless">@Model.Wireless.Count()  Wireless</a>
+                        }
+                        @if (Model?.NotPortable is not null && Model.NotPortable.Any())
+                        {
+                            <a class="btn btn-danger" href="#notportable">@Model.NotPortable.Count() Not Portable</a>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="pt-1 pb-1" id="wireless">Wireless Numbers</h1>
+                </div>
+                <div class="col-12">
+                    <div class="alert alert-warning col-12" role="alert">
+                        These <strong>wireless</strong> phone numbers can be ported to our network!
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive shadow-sm">
+                <table class="table table-striped table-borderless table-hover m-0">
+                    <tbody>
+                        <tr>
+                            <th>
+                                Phone Number
+                            </th>
+                            <th class="d-none d-md-table-cell">
+                                Last Ported
+                            </th>
+                            <th class="d-none d-lg-table-cell">
+                                Caller Name
+                            </th>
+                            <th>
+                                Carrier
+                            </th>
+                            <th class="d-none d-md-table-cell">OCN, SPID, and LEC</th>
+                            <th class="d-none d-md-table-cell">
+                                Action
+                            </th>
+                        </tr>
+                        @if (Model?.Wireless is not null)
+                        {
+                            foreach (var number in Model.Wireless)
+                            {
+                                var alreadyInCart = Model?.Cart?.PortedPhoneNumbers?.ToDictionary(x => x.PortedDialedNumber, x => x);
+                                var color = string.Empty;
+                                if (!string.IsNullOrWhiteSpace(number?.Carrier?.Color))
+                                {
+                                    color = $"background-color: {number.Carrier.Color};";
+                                }
+                                <tr style="@color">
+                                    <td>
+                                        <h4>@number?.PortedDialedNumber</h4>
+                                        @if (string.IsNullOrWhiteSpace(number?.LrnLookup?.LRN))
+                                        {
                                             <p class="m-0">
-                                                @number?.LrnLookup?.SPID
+                                                Rate Center and State
                                             </p>
+                                            <h6 class="m-0">@number?.LrnLookup?.Ratecenter, @number?.LrnLookup?.State</h6>
+                                        }
+                                        else
+                                        {
                                             <p class="m-0">
-                                                @number?.LrnLookup?.LEC
+                                                Local Routing #
                                             </p>
-                                        </td>
-                                        <td class="d-none d-md-table-cell">
+                                            <h6 class="m-0">@number?.LrnLookup?.LRN</h6>
+                                        }
+                                        <p class="m-0 d-lg-none">
+                                            Caller Name
+                                        </p>
+                                        <h6 class="m-0 d-lg-none">
+                                            @number?.LrnLookup?.LIDBName
+                                        </h6>
+                                        <p class="m-0 d-md-none">
+                                            Last Ported
+                                        </p>
+                                        <h6 class="m-0 d-md-none">
+                                            @number?.LrnLookup?.LastPorted.ToShortDateString()
+                                        </h6>
+                                        <p class="pt-3 m-0">
                                             @{
                                                 if (alreadyInCart is not null && number is not null && alreadyInCart.TryGetValue(number.PortedDialedNumber, out var _))
                                                 {
-                                                    <button onclick="RemoveFromCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-danger bg-light">
+                                                    <button onclick="RemoveFromCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-danger bg-light d-md-none">
                                                         <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                         Remove
                                                     </button>
                                                 }
                                                 else
                                                 {
-                                                    <button onclick="AddToCart('PortedPhoneNumber', '@number?.PortedDialedNumber', 1, this)" class="btn btn-outline-primary bg-light">
+                                                    <button onclick="AddToCart('PortedPhoneNumber', '@number?.PortedDialedNumber', 1, this)" class="btn btn-outline-primary bg-light d-md-none">
                                                         <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                         Add to Cart
                                                     </button>
                                                 }
                                             }
-                                        </td>
-                                    </tr>
-                                }
+                                        </p>
+                                    </td>
+                                    <td class="d-none d-md-table-cell">
+                                        @number?.LrnLookup?.LastPorted.ToShortDateString()
+                                    </td>
+                                    <td class="d-none d-lg-table-cell">
+                                        @number?.LrnLookup?.LIDBName
+                                    </td>
+                                    <td>
+                                        @if (number?.Carrier is not null)
+                                        {
+                                            <img src="@number.Carrier.LogoLink" alt="@number.Carrier.Name" title="LRN @number.LrnLookup.LRN" class="img-fluid p-1" style="max-height:5rem">
+                                        }
+                                        else
+                                        {
+                                            <p class="m-0 d-none d-md-block">
+                                                SPID
+                                            </p>
+                                            <p class="m-0 d-none d-md-block">
+                                                @number?.LrnLookup?.SPID
+                                            </p>
+                                            <p class="m-0 d-none d-md-block">
+                                                LEC
+                                            </p>
+                                            <p class="m-0 d-none d-md-block">
+                                                @number?.LrnLookup?.LEC
+                                            </p>
+                                            <p class="m-0 d-none d-md-block">LEC Type</p>
+                                            <p class="m-0 d-none d-md-block">
+                                                @number?.LrnLookup?.LECType
+                                            </p>
+                                        }
+                                        <p class="m-0">Type</p>
+                                        @if (!string.IsNullOrWhiteSpace(number?.Carrier?.Type))
+                                        {
+                                            <h6 class="m-0">@number?.Carrier?.Type</h6>
+                                        }
+                                        else
+                                        {
+                                            if (number?.Wireless is not null && number.Wireless)
+                                            {
+                                                <h6 class="m-0">Wireless</h6>
+                                            }
+                                            else
+                                            {
+                                                <h6 class="m-0">Non-Wireless</h6>
+                                            }
+                                        }
+                                        <p class="m-0 d-md-none">
+                                            OCN
+                                        </p>
+                                        <h6 class="m-0 d-md-none">@number?.LrnLookup?.OCN</h6>
+                                        <p class="m-0 d-md-none">
+                                            SPID
+                                        </p>
+                                        <h6 class="m-0 d-md-none">@number?.LrnLookup?.SPID</h6>
+                                        <p class="m-0 d-md-none">
+                                            LEC
+                                        </p>
+                                        <h6 class="m-0 d-md-none">@number?.LrnLookup?.LEC</h6>
+                                    </td>
+                                    <td class="d-none d-md-table-cell">
+                                        <p class="m-0">
+                                            @number?.LrnLookup?.OCN
+                                        </p>
+                                        <p class="m-0">
+                                            @number?.LrnLookup?.SPID
+                                        </p>
+                                        <p class="m-0">
+                                            @number?.LrnLookup?.LEC
+                                        </p>
+                                    </td>
+                                    <td class="d-none d-md-table-cell">
+                                        @{
+                                            if (alreadyInCart is not null && number is not null && alreadyInCart.TryGetValue(number.PortedDialedNumber, out var _))
+                                            {
+                                                <button onclick="RemoveFromCart('PortedPhoneNumber', '@number.PortedDialedNumber', 1, this)" class="btn btn-outline-danger bg-light">
+                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                    Remove
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button onclick="AddToCart('PortedPhoneNumber', '@number?.PortedDialedNumber', 1, this)" class="btn btn-outline-primary bg-light">
+                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                    Add to Cart
+                                                </button>
+                                            }
+                                        }
+                                    </td>
+                                </tr>
                             }
-                        </tbody>
-                    </table>
-                </div>
-                <form method="post" class="justify-content-center" asp-controller="Lookup" asp-action="BulkPort">
-                    @Html.AntiForgeryToken()
-                    <div class="form-group" hidden>
-                        <textarea hidden class="form-control" aria-label="With textarea" type="text" name="dialedNumber" placeholder="Up to 200 Numbers per Search" style="height:8rem;">@Model?.DialedNumber</textarea>
-                        <input hidden type="text" name="csv" value="true" />
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <button type="submit" class="btn btn-outline-primary mt-3">Export to CSV</button>
-                        </div>
-                    </div>
-                </form>
+                        }
+                    </tbody>
+                </table>
             </div>
-        }
-    }
-
-</div>
+            <form method="post" class="justify-content-center" asp-controller="Lookup" asp-action="BulkPort">
+                @Html.AntiForgeryToken()
+                <div class="form-group" hidden>
+                    <textarea hidden class="form-control" aria-label="With textarea" type="text" name="dialedNumber" placeholder="Up to 200 Numbers per Search" style="height:8rem;">@Model?.DialedNumber</textarea>
+                    <input hidden type="text" name="csv" value="true" />
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <button type="submit" class="btn btn-outline-primary mt-3">Export to CSV</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+}

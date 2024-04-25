@@ -421,9 +421,6 @@
 		<Content Update="wwwroot\images\scaled\GXP2200EXT-400.webp">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Update="wwwroot\images\scaled\hannahheadshot.webp">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
 		<Content Update="wwwroot\images\scaled\headthumb.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
@@ -465,12 +462,6 @@
 		</Content>
 		<Content Update="wwwroot\images\scaled\scoc-logo.webp">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\images\scaled\Scott Strong-3.jpg">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\images\scaled\Scott-headshot.webp">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\seattlesouthsidecoc.jpg">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -605,9 +596,6 @@
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\scoc-logo.jpg">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\Scott Strong-3.jpg">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\site.webmanifest">
