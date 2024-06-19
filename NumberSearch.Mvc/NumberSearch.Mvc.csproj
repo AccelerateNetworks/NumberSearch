@@ -601,7 +601,7 @@
 		<Content Update="wwwroot\site.webmanifest">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Update="wwwroot\videos\acceleratenetworks2024.mp4">
+		<Content Update="wwwroot\videos\AccelerateNetworks2024.mp4">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\videos\DP_base_station.webp">
