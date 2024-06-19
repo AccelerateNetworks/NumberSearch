@@ -601,10 +601,7 @@
 		<Content Update="wwwroot\site.webmanifest">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Update="wwwroot\videos\acceleratenetworks.m4v">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\videos\acceleratenetworks2023.mp4">
+		<Content Update="wwwroot\videos\acceleratenetworks2024.mp4">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\videos\DP_base_station.webp">
@@ -720,12 +717,6 @@
 		</Content>
 		<Content Update="wwwroot\videos\GRP_wifi_setup_GIF.webp">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\videos\intro.mp4">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\videos\introLoop.m4v">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
 	<ItemGroup>
