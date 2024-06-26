@@ -1,4 +1,6 @@
-﻿using Flurl.Http;
+﻿using DnsClient;
+
+using Flurl.Http;
 
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
@@ -16,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net.Mail;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -337,6 +340,31 @@ namespace NumberSearch.Mvc.Controllers
 
                 // This is purely so that we can isolate the state of this call when it fails out.
                 Log.Information(JsonSerializer.Serialize(cart));
+
+                var emailDomain = new MailAddress(order.Email);
+
+                try
+                {
+                    var lookup = new LookupClient();
+                    var result = lookup.Query(emailDomain.Host, QueryType.MX);
+                    var record = result.Answers.MxRecords().FirstOrDefault();
+                    if (record is not null)
+                    {
+                        Log.Information($"[Checkout] Email address {order.Email} has a valid domain: {emailDomain.Host}.");
+                    }
+                    else
+                    {
+                        Log.Error($"[Checkout] Email address {order.Email} has an invalid domain: {emailDomain.Host}.");
+                        var message = $"💀 The email server at {emailDomain.Host} didn't have an MX record. Please supply a valid email address.";
+                        return View("Index", new CartResult { Message = message, Cart = cart });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"[Checkout] Email address {order.Email} has an invalid domain: {emailDomain.Host}.");
+                    var message = $"💀 The email server at {emailDomain.Host} didn't have an MX record. Please supply a valid email address.";
+                    return View("Index", new CartResult { Message = message, Cart = cart });
+                }
 
                 if (cart.ProductOrders is null || !cart.ProductOrders.Any())
                 {

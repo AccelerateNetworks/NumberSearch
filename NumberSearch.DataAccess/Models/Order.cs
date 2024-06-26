@@ -4,6 +4,7 @@ using Npgsql;
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,7 +15,9 @@ namespace NumberSearch.DataAccess
         public Guid OrderId { get; set; }
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
+        [DataType(DataType.EmailAddress)]
         public string Email { get; set; } = string.Empty;
+        [DataType(DataType.PhoneNumber)]
         public string ContactPhoneNumber { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
         public string Address2 { get; set; } = string.Empty;
