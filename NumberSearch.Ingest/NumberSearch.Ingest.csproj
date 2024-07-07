@@ -22,7 +22,7 @@
 		<PackageReference Include="Serilog.Sinks.Async" Version="2.0.0" />
 		<PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
 		<PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
-		<PackageReference Include="Serilog.Sinks.Postgresql.Alternative" Version="4.0.4" />
+		<PackageReference Include="Serilog.Sinks.Postgresql.Alternative" Version="4.1.1" />
 	</ItemGroup>
 
 	<ItemGroup>
