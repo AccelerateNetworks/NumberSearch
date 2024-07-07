@@ -681,22 +681,21 @@ public static class Endpoints
     }
 
     public static async Task<Results<Ok<ClientRegistration[]>, BadRequest<string>, NotFound<string>>>
-        AllClientsAsync(bool? clear, MessagingContext db)
+        AllClientsAsync(bool? clear, int page, MessagingContext db)
     {
+        int pageSize = 100;
         try
         {
-
-            var registrations = await db.ClientRegistrations.ToArrayAsync();
+            var registrations = await db.ClientRegistrations.Skip((page - 1) * pageSize).Take(pageSize).ToArrayAsync();
 
             if (clear is not null && clear is true)
             {
                 db.ClientRegistrations.RemoveRange(registrations);
                 await db.SaveChangesAsync();
+                registrations = await db.ClientRegistrations.ToArrayAsync();
             }
 
-            registrations = await db.ClientRegistrations.ToArrayAsync();
-
-            if (registrations is not null && registrations.Any())
+            if (registrations is not null && registrations.Length > 0)
             {
                 return TypedResults.Ok(registrations);
             }
@@ -715,15 +714,16 @@ public static class Endpoints
     }
 
     public static async Task<Results<Ok<UsageSummary[]>, BadRequest<string>, NotFound<string>>>
-        UsageByClientAsync(MessagingContext db, string? asDialed)
+        UsageByClientAsync(MessagingContext db, int page, string? asDialed)
     {
+        int pageSize = 100;
         if (string.IsNullOrWhiteSpace(asDialed))
         {
             try
             {
-                var registrations = await db.ClientRegistrations.ToArrayAsync();
-                List<UsageSummary> summary = new()
-                {
+                var registrations = await db.ClientRegistrations.Skip((page - 1) * pageSize).Take(pageSize).ToArrayAsync();
+                List<UsageSummary> summary =
+                [
                     new UsageSummary
                     {
                         AsDialed = "Total",
@@ -732,7 +732,7 @@ public static class Endpoints
                         InboundSMSCount = await db.Messages.Where(x => x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.SMS).CountAsync(),
                         OutboundSMSCount = await db.Messages.Where(x => x.MessageSource == MessageSource.Outgoing && x.MessageType == MessageType.SMS).CountAsync()
                     }
-                };
+                ];
 
                 foreach (var reg in registrations)
                 {
