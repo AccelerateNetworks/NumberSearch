@@ -74,6 +74,8 @@ public class OwnedNumbersController : Controller
     [Route("/Home/OwnedNumbers/{dialedNumber}")]
     public async Task<IActionResult> OwnedNumbers(string dialedNumber)
     {
+        string message = string.Empty;
+
         if (!string.IsNullOrWhiteSpace(dialedNumber))
         {
             var owned = await _context.OwnedPhoneNumbers.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
@@ -119,9 +121,28 @@ public class OwnedNumbersController : Controller
         var purchasedNumbers = await _context.PurchasedPhoneNumbers.ToArrayAsync();
         var e911s = await _context.EmergencyInformation.ToArrayAsync();
         var token = await GetTokenAsync();
-        var registeredNumbers = await $"{_config.MessagingURL}client/all"
-            .WithOAuthBearerToken(token.AccessToken)
-            .GetJsonAsync<ClientRegistration[]>();
+
+        var registeredNumbers = new List<ClientRegistration>();
+        int page = 1;
+        try
+        {
+            var pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                .WithOAuthBearerToken(token.AccessToken)
+                .GetJsonAsync<ClientRegistration[]>();
+
+            while (pageResult.Length is 100)
+            {
+                registeredNumbers.AddRange(pageResult);
+                page++;
+                pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                    .WithOAuthBearerToken(token.AccessToken)
+                    .GetJsonAsync<ClientRegistration[]>();
+            }
+        }
+        catch (FlurlHttpException ex)
+        {
+            message = "❌ Failed to get client registration data from sms.callpipe.com.";
+        }
 
         var viewOrders = new List<OwnedNumberResult>();
         foreach (var ownedNumber in ownedNumbers)
@@ -136,7 +157,7 @@ public class OwnedNumbersController : Controller
             });
         }
 
-        return View("OwnedNumbers", new OwnedNumberResultForm { Results = viewOrders.ToArray() });
+        return View("OwnedNumbers", new OwnedNumberResultForm { Results = viewOrders.ToArray(), Message = message });
     }
 
     [Authorize]
