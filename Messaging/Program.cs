@@ -197,6 +197,9 @@ try
     builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
     builder.Services.AddAWSService<IAmazonS3>();
 
+    // Add Application Insights
+    builder.Services.AddApplicationInsightsTelemetry();
+
     //builder.Services.AddHttpLogging(httpLogging =>
     // {
     //     httpLogging.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;

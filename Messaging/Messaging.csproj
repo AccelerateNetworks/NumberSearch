@@ -7,12 +7,14 @@
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 		<UserSecretsId>1828a61a-a56d-4b8c-b4dd-ae4309d19d44</UserSecretsId>
 		<GenerateDocumentationFile>false</GenerateDocumentationFile>
+		<ApplicationInsightsResourceId>/subscriptions/dd4e7397-befc-4010-84b2-7a6deffd4709/resourceGroups/NumberSearch.Mvc-1/providers/microsoft.insights/components/Messaging</ApplicationInsightsResourceId>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.7" />
 		<PackageReference Include="AWSSDK.S3" Version="3.7.104.25" />
 		<PackageReference Include="Flurl.Http" Version="4.0.2" />
+		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
 		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.6" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.6" />

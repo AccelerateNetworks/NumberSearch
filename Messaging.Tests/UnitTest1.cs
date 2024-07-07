@@ -117,7 +117,7 @@ namespace Messaging.Tests
         public async Task GetAllClientsAsync()
         {
             var _client = await GetHttpClientWithValidBearerTokenAsync();
-            var response = await _client.GetAsync("/client/all");
+            var response = await _client.GetAsync("/client/all?page=1");
             var clients = await response.Content.ReadFromJsonAsync<ClientRegistration[]>();
             Assert.NotNull(clients);
             Assert.NotEmpty(clients);
