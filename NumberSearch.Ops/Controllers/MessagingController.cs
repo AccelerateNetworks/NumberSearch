@@ -66,10 +66,31 @@ namespace NumberSearch.Ops.Controllers
         [Route("/Messaging/Index")]
         public async Task<IActionResult> IndexAsync()
         {
+            string message = string.Empty;
             var token = await GetTokenAsync();
-            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
+            var stats = new List<ClientRegistration>();
+            int page = 1;
+            try
+            {
+                var pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                    .WithOAuthBearerToken(token.AccessToken)
+                    .GetJsonAsync<ClientRegistration[]>();
+
+                while (pageResult.Length is 100)
+                {
+                    stats.AddRange(pageResult);
+                    page++;
+                    pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                        .WithOAuthBearerToken(token.AccessToken)
+                        .GetJsonAsync<ClientRegistration[]>();
+                }
+            }
+            catch (FlurlHttpException ex)
+            {
+                message = "❌ Failed to get client registration data from sms.callpipe.com.";
+            }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            return View(new MessagingResult { ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)], Owned = ownedNumbers });
+            return View(new MessagingResult { ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)], Owned = ownedNumbers, Message = message });
         }
 
         [Authorize]
@@ -95,7 +116,28 @@ namespace NumberSearch.Ops.Controllers
                 var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration>();
                 message = $"🔃 Upstream Status {refresh.UpstreamStatusDescription} for {refresh.AsDialed} routed to {refresh.CallbackUrl}";
             }
-            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
+            var stats = new List<ClientRegistration>();
+            int page = 1;
+            try
+            {
+                var pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                    .WithOAuthBearerToken(token.AccessToken)
+                    .GetJsonAsync<ClientRegistration[]>();
+
+                while (pageResult.Length is 100)
+                {
+                    stats.AddRange(pageResult);
+                    page++;
+                    pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                        .WithOAuthBearerToken(token.AccessToken)
+                        .GetJsonAsync<ClientRegistration[]>();
+                }
+            }
+            catch (FlurlHttpException ex)
+            {
+                message = "❌ Failed to get client registration data from sms.callpipe.com.";
+            }
+
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             return View("Index", new MessagingResult { ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray(), Owned = ownedNumbers, Message = message, AlertType = alertType });
         }
@@ -104,6 +146,7 @@ namespace NumberSearch.Ops.Controllers
         [Route("/Messaging/Reregister")]
         public async Task<IActionResult> RegisterAsync(string dialedNumber)
         {
+            string message = string.Empty;
             var result = new MessagingResult { AlertType = "alert-success" };
             bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
             var token = await GetTokenAsync();
@@ -140,7 +183,27 @@ namespace NumberSearch.Ops.Controllers
             {
                 var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration>();
             }
-            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
+            var stats = new List<ClientRegistration>();
+            int page = 1;
+            try
+            {
+                var pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                    .WithOAuthBearerToken(token.AccessToken)
+                    .GetJsonAsync<ClientRegistration[]>();
+
+                while (pageResult.Length is 100)
+                {
+                    stats.AddRange(pageResult);
+                    page++;
+                    pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                        .WithOAuthBearerToken(token.AccessToken)
+                        .GetJsonAsync<ClientRegistration[]>();
+                }
+            }
+            catch (FlurlHttpException ex)
+            {
+                result.Message = "❌ Failed to get client registration data from sms.callpipe.com.";
+            }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
             result.Owned = ownedNumbers;
@@ -220,7 +283,27 @@ namespace NumberSearch.Ops.Controllers
                     Log.Error(ex.StackTrace ?? "No stack trace found.");
                     result.Message = $"❌ Failed to enabled messaging service through EndStream for this dialed number. Please email dan@acceleratenetworks.com to report this outage. {ex.Message}";
                     result.AlertType = "alert-danger";
-                    var stats2 = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
+                    var stats2 = new List<ClientRegistration>();
+                    var page2 = 1;
+                    try
+                    {
+                        var pageResult = await $"{_config.MessagingURL}client/all?page={page2}"
+                            .WithOAuthBearerToken(token.AccessToken)
+                            .GetJsonAsync<ClientRegistration[]>();
+
+                        while (pageResult.Length is 100)
+                        {
+                            stats2.AddRange(pageResult);
+                            page2++;
+                            pageResult = await $"{_config.MessagingURL}client/all?page={page2}"
+                                .WithOAuthBearerToken(token.AccessToken)
+                                .GetJsonAsync<ClientRegistration[]>();
+                        }
+                    }
+                    catch
+                    {
+                        result.Message = "❌ Failed to get client registration data from sms.callpipe.com.";
+                    }
                     var ownedNumbers2 = await _context.OwnedPhoneNumbers.ToArrayAsync();
                     result.ClientRegistrations = stats2.OrderByDescending(x => x.DateRegistered).ToArray();
                     result.Owned = ownedNumbers2;
@@ -238,7 +321,27 @@ namespace NumberSearch.Ops.Controllers
             //{
             //    var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(_messagingToken).GetJsonAsync<ClientRegistration>();
             //}
-            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
+            var stats = new List<ClientRegistration>();
+            int page = 1;
+            try
+            {
+                var pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                    .WithOAuthBearerToken(token.AccessToken)
+                    .GetJsonAsync<ClientRegistration[]>();
+
+                while (pageResult.Length is 100)
+                {
+                    stats.AddRange(pageResult);
+                    page++;
+                    pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                        .WithOAuthBearerToken(token.AccessToken)
+                        .GetJsonAsync<ClientRegistration[]>();
+                }
+            }
+            catch (FlurlHttpException ex)
+            {
+                result.Message = "❌ Failed to get client registration data from sms.callpipe.com.";
+            }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
             result.Owned = ownedNumbers;
@@ -266,7 +369,27 @@ namespace NumberSearch.Ops.Controllers
             {
                 var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration>();
             }
-            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
+            var stats = new List<ClientRegistration>();
+            int page = 1;
+            try
+            {
+                var pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                    .WithOAuthBearerToken(token.AccessToken)
+                    .GetJsonAsync<ClientRegistration[]>();
+
+                while (pageResult.Length is 100)
+                {
+                    stats.AddRange(pageResult);
+                    page++;
+                    pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                        .WithOAuthBearerToken(token.AccessToken)
+                        .GetJsonAsync<ClientRegistration[]>();
+                }
+            }
+            catch (FlurlHttpException ex)
+            {
+                message = "❌ Failed to get client registration data from sms.callpipe.com.";
+            }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             return View("Index", new MessagingResult { ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray(), Owned = ownedNumbers, Message = message, AlertType = alertType });
         }
@@ -297,8 +420,27 @@ namespace NumberSearch.Ops.Controllers
                     result.AlertType = "alert-danger";
                 }
             }
+            var stats = new List<ClientRegistration>();
+            int page = 1;
+            try
+            {
+                var pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                    .WithOAuthBearerToken(token.AccessToken)
+                    .GetJsonAsync<ClientRegistration[]>();
 
-            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
+                while (pageResult.Length is 100)
+                {
+                    stats.AddRange(pageResult);
+                    page++;
+                    pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                        .WithOAuthBearerToken(token.AccessToken)
+                        .GetJsonAsync<ClientRegistration[]>();
+                }
+            }
+            catch (FlurlHttpException ex)
+            {
+                result.Message = "❌ Failed to get client registration data from sms.callpipe.com.";
+            }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
             result.Owned = ownedNumbers;
@@ -401,7 +543,27 @@ namespace NumberSearch.Ops.Controllers
                 }
             }
 
-            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
+            var stats = new List<ClientRegistration>();
+            int page = 1;
+            try
+            {
+                var pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                    .WithOAuthBearerToken(token.AccessToken)
+                    .GetJsonAsync<ClientRegistration[]>();
+
+                while (pageResult.Length is 100)
+                {
+                    stats.AddRange(pageResult);
+                    page++;
+                    pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                        .WithOAuthBearerToken(token.AccessToken)
+                        .GetJsonAsync<ClientRegistration[]>();
+                }
+            }
+            catch (FlurlHttpException ex)
+            {
+                result.Message = "❌ Failed to get client registration data from sms.callpipe.com.";
+            }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             result.ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)];
             result.Owned = ownedNumbers;
@@ -416,9 +578,29 @@ namespace NumberSearch.Ops.Controllers
         {
             var result = new MessagingResult { AlertType = "alert-success" };
             var token = await GetTokenAsync();
-            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
+            var stats = new List<ClientRegistration>();
+            int page = 1;
+            try
+            {
+                var pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                    .WithOAuthBearerToken(token.AccessToken)
+                    .GetJsonAsync<ClientRegistration[]>();
+
+                while (pageResult.Length is 100)
+                {
+                    stats.AddRange(pageResult);
+                    page++;
+                    pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                        .WithOAuthBearerToken(token.AccessToken)
+                        .GetJsonAsync<ClientRegistration[]>();
+                }
+            }
+            catch (FlurlHttpException ex)
+            {
+                result.Message = "❌ Failed to get client registration data from sms.callpipe.com.";
+            }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            var exportReady = new List<CSVExport>(stats.Length);
+            var exportReady = new List<CSVExport>(stats.Count);
             try
             {
                 foreach (var number in stats)
@@ -512,7 +694,27 @@ namespace NumberSearch.Ops.Controllers
             }
 
             var token = await GetTokenAsync();
-            var stats = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
+            var stats = new List<ClientRegistration>();
+            int page = 1;
+            try
+            {
+                var pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                    .WithOAuthBearerToken(token.AccessToken)
+                    .GetJsonAsync<ClientRegistration[]>();
+
+                while (pageResult.Length is 100)
+                {
+                    stats.AddRange(pageResult);
+                    page++;
+                    pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                        .WithOAuthBearerToken(token.AccessToken)
+                        .GetJsonAsync<ClientRegistration[]>();
+                }
+            }
+            catch (FlurlHttpException ex)
+            {
+                result.Message = "❌ Failed to get client registration data from sms.callpipe.com.";
+            }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             result.ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)];
             result.Owned = ownedNumbers;
