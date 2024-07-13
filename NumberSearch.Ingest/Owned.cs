@@ -24,7 +24,7 @@ namespace NumberSearch.Ingest
     public class Owned
     {
 
-        public static async Task OwnedDailyAsync(IngestConfiguration appConfig)
+        public static async Task<SMSRouteChange[]> OwnedDailyAsync(IngestConfiguration appConfig)
         {
 
             // Prevent another run from starting while this is still going.
@@ -42,14 +42,16 @@ namespace NumberSearch.Ingest
                 Lock = true
             };
 
-            var checkLock = await lockingStats.PostAsync(appConfig.Postgresql).ConfigureAwait(false);
-            await Owned.IngestAsync(appConfig);
+            await lockingStats.PostAsync(appConfig.Postgresql).ConfigureAwait(false);
+            var smsRouteChanges = await Owned.IngestAsync(appConfig);
 
             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
-            var checkRemoveLock = await lockingStats.DeleteAsync(appConfig.Postgresql).ConfigureAwait(false);
+            await lockingStats.DeleteAsync(appConfig.Postgresql).ConfigureAwait(false);
+
+            return smsRouteChanges;
         }
 
-        public async static Task IngestAsync(IngestConfiguration configuration)
+        public async static Task<SMSRouteChange[]> IngestAsync(IngestConfiguration configuration)
         {
             Log.Information("[OwnedNumbers] Ingesting data for OwnedNumbers.");
             var allNumbers = new List<OwnedPhoneNumber>();
@@ -143,7 +145,7 @@ namespace NumberSearch.Ingest
             await MatchOwnedNumbersToFusionPBXAsync(configuration.Postgresql, configuration.FusionPBXUsername, configuration.FusionPBXPassword);
 
             // Verify SMS routing with Endstream.
-            await VerifySMSRoutingAsync(configuration.Postgresql, configuration.PComNetUsername, configuration.PComNetPassword);
+            var smsRouteChanges = await VerifySMSRoutingAsync(configuration.Postgresql, configuration.PComNetUsername, configuration.PComNetPassword);
 
             // Update the statuses on old or orphaned port requests and ported numbers.
             await PortRequests.UpdatePortRequestsAndNumbersByExternalIdAsync(configuration);
@@ -178,11 +180,17 @@ namespace NumberSearch.Ingest
             {
                 Log.Fatal("[OwnedNumbers] Failed to completed the ingest process.");
             }
+
+            return smsRouteChanges;
         }
 
-        public static async Task VerifySMSRoutingAsync(string connectionString, string pComNetUsername, string pComNetPassword)
+        public record SMSRouteChange(string DialedNumber, string OldRoute, string NewRoute, string Message);
+
+        public static async Task<SMSRouteChange[]> VerifySMSRoutingAsync(string connectionString, string pComNetUsername, string pComNetPassword)
         {
             Log.Information($"[OwnedNumbers] Verifying SMS Routing for Owned Phone numbers.");
+
+            var changes = new List<SMSRouteChange>();
 
             var ownedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
 
@@ -197,6 +205,7 @@ namespace NumberSearch.Ingest
                         // Update the owned number with the route.
                         if (number.SMSRoute != checkSMSRouting.route)
                         {
+                            changes.Add(new SMSRouteChange(number.DialedNumber, number.SMSRoute, checkSMSRouting.route, checkSMSRouting.QueryResult.text));
                             number.SMSRoute = checkSMSRouting.route;
                             updated = true;
                         }
@@ -207,6 +216,7 @@ namespace NumberSearch.Ingest
                         // Update the owned number with the route.
                         if (number.SMSRoute != checkSMSRouting.QueryResult.text)
                         {
+                            changes.Add(new SMSRouteChange(number.DialedNumber, number.SMSRoute, checkSMSRouting.route, checkSMSRouting.QueryResult.text));
                             number.SMSRoute = checkSMSRouting.QueryResult.text;
                             updated = true;
                         }
@@ -225,6 +235,8 @@ namespace NumberSearch.Ingest
             }
 
             Log.Information($"[OwnedNumbers] Verified SMS Routing for {ownedNumbers.Count()} Owned Phone numbers.");
+
+            return [.. changes];
         }
 
         public static async Task MatchOwnedNumbersToFusionPBXAsync(string connectionString, string fusionPBXUsername, string fusionPBXPassword)
@@ -547,7 +559,7 @@ namespace NumberSearch.Ingest
                                 NXX = phoneNumber.NXX,
                                 XXXX = phoneNumber.XXXX,
                                 DialedNumber = phoneNumber.DialedNumber ?? string.Empty,
-                                DateIngested = item.DateIngested,
+                                DateIngested = item?.DateIngested ?? DateTime.Now,
                                 IngestedFrom = "OwnedNumber",
                                 Purchased = false
                             };
@@ -555,11 +567,11 @@ namespace NumberSearch.Ingest
                             newUnassigned.Add(number);
                             ingestedNew++;
 
-                            Log.Information($"[Ingest] [OwnedNumber] Put unassigned number {item.DialedNumber} up for sale.");
+                            Log.Information($"[Ingest] [OwnedNumber] Put unassigned number {item?.DialedNumber} up for sale.");
                         }
                         else
                         {
-                            Log.Fatal($"[Ingest] [OwnedNumber] Failed to put unassigned number {item.DialedNumber} up for sale. Number could not be parsed.");
+                            Log.Fatal($"[Ingest] [OwnedNumber] Failed to put unassigned number {item?.DialedNumber} up for sale. Number could not be parsed.");
                         }
                     }
                     else
@@ -784,7 +796,7 @@ namespace NumberSearch.Ingest
                 var ownedNumber = ownedNumbers.FirstOrDefault(x => x.DialedNumber == number.DialedNumber);
                 if (checkParse && ownedNumber is not null && ownedNumber.EmergencyInformationId is not null && ownedNumber.EmergencyInformationId.HasValue)
                 {
-                    var existing = emergencyInformation.FirstOrDefault(x => x.EmergencyInformationId == ownedNumber.EmergencyInformationId.GetValueOrDefault());
+                    var existing = emergencyInformation?.FirstOrDefault(x => x.EmergencyInformationId == ownedNumber.EmergencyInformationId.GetValueOrDefault());
 
                     if (existing is not null && existing.DialedNumber == number.DialedNumber)
                     {

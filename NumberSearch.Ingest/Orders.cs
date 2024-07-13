@@ -18,11 +18,11 @@ namespace NumberSearch.Ingest
 {
     public class Orders
     {
-        public static async Task<IngestStatistics> EmailDailyAsync(IngestConfiguration appConfig)
+        public static async Task<IngestStatistics> EmailDailyAsync(Owned.SMSRouteChange[] smsRouteChanges, IngestConfiguration appConfig)
         {
             DateTime start = DateTime.Now;
 
-            var checkBriefing = await Orders.DailyBriefingEmailAsync(appConfig);
+            var checkBriefing = await Orders.DailyBriefingEmailAsync(smsRouteChanges, appConfig);
 
             var combined = new IngestStatistics
             {
@@ -51,7 +51,7 @@ namespace NumberSearch.Ingest
 
             return combined;
         }
-        public static async Task<bool> DailyBriefingEmailAsync(IngestConfiguration appConfig)
+        public static async Task<bool> DailyBriefingEmailAsync(Owned.SMSRouteChange[] smsRouteChanges, IngestConfiguration appConfig)
         {
             // Gather all of the info to put into the daily email.
             var orders = await Order.GetAllAsync(appConfig.Postgresql);
@@ -88,7 +88,7 @@ namespace NumberSearch.Ingest
                 else if (order.Quote is false && order.Completed is false)
                 {
                     var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, appConfig.Postgresql);
-                    if (portRequest is not null && portRequest?.State is not "COMPLETE" && portRequest.DateSubmitted > order.DateSubmitted)
+                    if (portRequest is not null && portRequest?.State is not "COMPLETE" && portRequest?.DateSubmitted > order.DateSubmitted)
                     {
                         ordersWithUnfinishedPortRequests.Add(order);
                     }
@@ -97,7 +97,7 @@ namespace NumberSearch.Ingest
                 else if (order.Quote is false && order.Completed is false)
                 {
                     var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, appConfig.Postgresql);
-                    if (portRequest is not null && portRequest?.State is not "COMPLETE" && portRequest.DateSubmitted < order.DateSubmitted)
+                    if (portRequest is not null && portRequest?.State is not "COMPLETE" && portRequest?.DateSubmitted < order.DateSubmitted)
                     {
                         ordersWithUnsubmittedPortRequests.Add(order);
                     }
@@ -146,7 +146,7 @@ namespace NumberSearch.Ingest
                     var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
                     var installDate = item?.InstallDate is not null ? item?.InstallDate.GetValueOrDefault().ToShortDateString() : "No install date set";
                     var paid = item?.DateUpfrontInvoicePaid is not null && item.DateUpfrontInvoicePaid.Value > item.DateSubmitted ? $"Paid {item.DateUpfrontInvoicePaid.Value.ToShortDateString()}" : "Unpaid"; 
-                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName} - Install Date {installDate} - <strong>{paid}</strong></li>");
+                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item?.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName} - Install Date {installDate} - <strong>{paid}</strong></li>");
                 }
                 output.Append("</ul>");
             }
@@ -163,7 +163,7 @@ namespace NumberSearch.Ingest
                     var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
                     var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "support@acceleratenetworks.com" : item.SalesEmail;
                     var completedDate = item?.DateCompleted is not null ? item?.DateCompleted.GetValueOrDefault().ToShortDateString() : "No completed date set";
-                    output.Append($"<li><a href='https://acceleratenetworks.com/cart/order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> submitted on {item.DateSubmitted.ToShortDateString()} - Completed on {completedDate}</li>");
+                    output.Append($"<li><a href='https://acceleratenetworks.com/cart/order/{item?.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> submitted on {item?.DateSubmitted.ToShortDateString()} - Completed on {completedDate}</li>");
                 }
                 output.Append("</ul>");
             }
@@ -180,7 +180,7 @@ namespace NumberSearch.Ingest
                     var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
                     var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
                     var installDate = item?.InstallDate is not null ? item?.InstallDate.GetValueOrDefault().ToShortDateString() : "No install date set";
-                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a></li>");
+                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item?.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item?.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item?.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a></li>");
                 }
                 output.Append("</ul>");
             }
@@ -255,6 +255,21 @@ namespace NumberSearch.Ingest
             //    output.Append("<li>None</li></ul>");
             //}
 
+            output.Append("<p>Owned Numbers who's SMS Routing changed from yesterday:</p><ul>");
+            if (smsRouteChanges.Length > 0)
+            {
+                foreach (var item in smsRouteChanges)
+                {
+                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/OwnedNumbers/{item.DialedNumber}' target='_blank' rel='noopener noreferrer'>{item.DialedNumber} - Old Route: {item.OldRoute} - New Route: <strong>{item.NewRoute}</strong> - FirstCom Message: {item.Message}</li>");
+                }
+                output.Append("</ul>");
+                output.Append("<p>You can investigate these numbers and refresh their Upstream Status, attempt to Reregister them, and look at their current Carrier in <a href='https://ops.acceleratenetworks.com/Messaging' target='_blank' rel='noopener noreferrer'>Ops => Messaging Users</a></p>");
+            }
+            else
+            {
+                output.Append("<li>None</li></ul>");
+            }
+
             output.Append("<p>Incomplete orders where the install date has passed in the last quarter:</p><ul>");
             if (ordersToMarkCompleted.Count > 0)
             {
@@ -263,7 +278,7 @@ namespace NumberSearch.Ingest
                     var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
                     var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
                     var installDate = item?.InstallDate is not null ? item?.InstallDate.GetValueOrDefault().ToShortDateString() : "No install date set";
-                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a> - {installDate}</li>");
+                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item?.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item?.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item?.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a> - {installDate}</li>");
                 }
                 output.Append("</ul>");
             }
@@ -281,7 +296,7 @@ namespace NumberSearch.Ingest
                     var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
                     var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
                     var installDate = item?.InstallDate is not null ? item?.InstallDate.GetValueOrDefault().ToShortDateString() : "No install date set";
-                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a> - {installDate}</li>");
+                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item?.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item?.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item?.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a> - {installDate}</li>");
                 }
                 output.Append("</ul>");
             }
@@ -298,7 +313,7 @@ namespace NumberSearch.Ingest
                     var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
                     var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
                     var installDate = item?.InstallDate is not null ? item?.InstallDate.GetValueOrDefault().ToShortDateString() : "No install date set";
-                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a> - {installDate}</li>");
+                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item?.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item?.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item?.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a> - {installDate}</li>");
                 }
                 output.Append("</ul>");
             }
@@ -315,7 +330,7 @@ namespace NumberSearch.Ingest
                     var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
                     var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
                     var installDate = item?.InstallDate is not null ? item?.InstallDate.GetValueOrDefault().ToShortDateString() : "No install date set";
-                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a> - {installDate}</li>");
+                    output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item?.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item?.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item?.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a> - {installDate}</li>");
                 }
                 output.Append("</ul>");
             }

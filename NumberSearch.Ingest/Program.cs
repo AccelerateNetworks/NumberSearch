@@ -92,8 +92,8 @@ namespace NumberSearch.Ingest
 
                         var bulkVS = await Provider.BulkVSDailyAsync(appConfig);
                         var firstPointCom = await Provider.FirstPointComDailyAsync(appConfig);
-                        await Owned.OwnedDailyAsync(appConfig);
-                        var email = await Orders.EmailDailyAsync(appConfig);
+                        var smsRouteChanges = await Owned.OwnedDailyAsync(appConfig);
+                        var email = await Orders.EmailDailyAsync(smsRouteChanges, appConfig);
                     }
 
                     Log.Information("[Heartbeat] Cycle complete. Daily Timer {Elapsed:000} ms.", dailyTimer.ElapsedMilliseconds);

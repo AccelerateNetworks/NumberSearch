@@ -1297,7 +1297,7 @@ public static class Endpoints
             if (messageRecord is not null && messageRecord.Id == id && !string.IsNullOrWhiteSpace(messageRecord.ToForward))
             {
                 var toForward = JsonSerializer.Deserialize<ForwardedMessage>(messageRecord.ToForward);
-                var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(toForward.To, out var toRegisteredNumber);
+                var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(toForward?.To ?? string.Empty, out var toRegisteredNumber);
 
                 if (toForward is not null && checkTo)
                 {
@@ -1399,7 +1399,7 @@ public static class Endpoints
             RawResponse = $"MSISDN {message?.MSISDN} could not be parsed as valid NANP (North American Numbering Plan) number.",
         };
 
-        if (!string.IsNullOrWhiteSpace(message.MSISDN))
+        if (message is not null && !string.IsNullOrWhiteSpace(message.MSISDN))
         {
             bool checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(message.MSISDN, out var fromPhoneNumber);
             if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
@@ -1443,9 +1443,9 @@ public static class Endpoints
             }
         }
 
-        if (!string.IsNullOrWhiteSpace(message.To))
+        if (message is not null && !string.IsNullOrWhiteSpace(message.To))
         {
-            List<string> numbers = new();
+            List<string> numbers = [];
 
             string[] toParse = message.To.Split(',');
             foreach (var number in toParse)
@@ -1501,7 +1501,7 @@ public static class Endpoints
         {
             FirstPointResponse sendMessage = new();
             //Handle MMSes
-            if (message.MediaURLs.Length > 0 && !string.IsNullOrWhiteSpace(message.MediaURLs.FirstOrDefault()))
+            if (message is not null && message.MediaURLs.Length > 0 && !string.IsNullOrWhiteSpace(message.MediaURLs.FirstOrDefault()))
             {
                 var multipartContent = new MultipartFormDataContent {
                         { new StringContent(appSettings.ConnectionStrings.PComNetUsername), "username" },
@@ -1705,10 +1705,10 @@ public static class Endpoints
 
     public class FirstPointMMS
     {
-        public string msisdn { get; set; }
-        public string to { get; set; }
-        public string message { get; set; }
-        public string FullRecipientList { get; set; }
+        public string msisdn { get; set; } = string.Empty;
+        public string to { get; set; } = string.Empty;
+        public string message { get; set; } = string.Empty;
+        public string FullRecipientList { get; set; } = string.Empty;
     }
 
     public static async Task<Results<Ok<string>, BadRequest<string>, Ok<ForwardedMessage>, UnauthorizedHttpResult>>
