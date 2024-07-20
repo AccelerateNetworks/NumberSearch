@@ -1,19 +1,19 @@
 ﻿@using PhoneNumbersNA
 @using System
-@model NumberSearch.Mvc.Cart;
+@model NumberSearch.Mvc.CartResult;
 
 @{
     ViewData["Title"] = "Order";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
-    var numbers = Model?.PhoneNumbers?.OrderByDescending(x => x.DialedNumber).ToArray();
-    var purchased = Model?.PurchasedPhoneNumbers?.OrderByDescending(x => x.DialedNumber).ToArray();
-    var ported = Model?.PortedPhoneNumbers?.OrderByDescending(x => x.PortedDialedNumber).ToArray();
-    var products = Model?.Products?.ToArray();
-    var services = Model?.Services?.ToArray();
-    var verified = Model?.VerifiedPhoneNumbers?.OrderByDescending(x => x.VerifiedDialedNumber).ToArray();
-    var coupons = Model?.Coupons?.ToArray();
-    var productOrders = Model?.ProductOrdersToDictionary();
+    var numbers = Model?.Cart?.PhoneNumbers?.OrderByDescending(x => x.DialedNumber).ToArray();
+    var purchased = Model?.Cart?.PurchasedPhoneNumbers?.OrderByDescending(x => x.DialedNumber).ToArray();
+    var ported = Model?.Cart?.PortedPhoneNumbers?.OrderByDescending(x => x.PortedDialedNumber).ToArray();
+    var products = Model?.Cart?.Products?.ToArray();
+    var services = Model?.Cart?.Services?.ToArray();
+    var verified = Model?.Cart?.VerifiedPhoneNumbers?.OrderByDescending(x => x.VerifiedDialedNumber).ToArray();
+    var coupons = Model?.Cart?.Coupons?.ToArray();
+    var productOrders = Model?.Cart?.ProductOrdersToDictionary();
 }
 
 <script type="text/javascript">
@@ -101,21 +101,21 @@
         <div class="row justify-content-center">
             <div class="col-lg-10 col-md-11">
                 @{
-                    string name = string.IsNullOrWhiteSpace(Model?.Order?.BusinessName) ? $"{Model?.Order?.FirstName} {Model?.Order?.LastName}" : Model.Order.BusinessName;
-                    if (Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted == DateTime.MinValue)
+                    string name = string.IsNullOrWhiteSpace(Model?.Cart?.Order?.BusinessName) ? $"{Model?.Cart?.Order?.FirstName} {Model?.Cart?.Order?.LastName}" : Model.Cart.Order.BusinessName;
+                    if (Model?.Cart?.Order?.OrderId != Guid.Empty && Model?.Cart?.Order?.DateSubmitted == DateTime.MinValue)
                     {
                         <h1 class="display-3 text-light d-none d-sm-block">Complete Your Order</h1>
                         <h4 class="display-4 text-light d-block d-sm-none">Complete Your Order</h4>
                         <p class="lead text-white">Welcome to our network!</p>
                     }
-                    else if (Model?.Order?.Completed is true)
+                    else if (Model?.Cart?.Order?.Completed is true)
                     {
                         <h1 class="display-3 text-light d-none d-sm-block">Your Completed Order</h1>
                         <h4 class="display-4 text-light d-block d-sm-none">Your Completed Order</h4>
                         <p class="lead text-white">Welcome to our network <strong>@name</strong>!</p>
 
                     }
-                    else if (Model?.Order?.DateSubmitted > DateTime.MinValue && Model?.Order?.Quote is false)
+                    else if (Model?.Cart?.Order?.DateSubmitted > DateTime.MinValue && Model?.Cart?.Order?.Quote is false)
                     {
                         <h1 class="display-3 text-light d-none d-sm-block">Your Submitted Order</h1>
                         <h4 class="display-4 text-light d-block d-sm-none">Your Submitted Order</h4>
@@ -136,13 +136,13 @@
     <div class="container">
         <div class="row">
             @{
-                var submitted = Model?.Order.DateSubmitted > DateTime.MinValue;
-                var background = Model?.Order.BackgroundWorkCompleted;
-                var payment = Model?.Order?.DateUpfrontInvoicePaid is not null && Model.Order.DateUpfrontInvoicePaid > Model.Order.DateSubmitted;
+                var submitted = Model?.Cart?.Order.DateSubmitted > DateTime.MinValue;
+                var background = Model?.Cart?.Order.BackgroundWorkCompleted;
+                var payment = Model?.Cart?.Order?.DateUpfrontInvoicePaid is not null && Model.Cart.Order.DateUpfrontInvoicePaid > Model.Cart.Order.DateSubmitted;
                 var newNumbers = purchased is not null && purchased.Length > 0;
                 var hardware = products is not null && products.Length > 0;
                 var ports = ported is not null && ported.Length > 0;
-                var complete = Model?.Order.DateCompleted is not null || (Model?.Order.Completed ?? false);
+                var complete = Model?.Cart?.Order.DateCompleted is not null || (Model?.Cart?.Order.Completed ?? false);
 
                 int itemCount = 0;
                 int currentStep = 0;
@@ -235,7 +235,7 @@
                 if (hardware)
                 {
                     // Only show the shipping state if we have hardware in this order.
-                    if (Model?.Shipment is not null && !string.IsNullOrWhiteSpace(Model.Shipment.ShipmentTrackingLink))
+                    if (Model?.Cart?.Shipment is not null && !string.IsNullOrWhiteSpace(Model.Cart.Shipment.ShipmentTrackingLink))
                     {
                         itemCount++;
                         currentStep++;
@@ -294,7 +294,7 @@
         <div class="row">
             <div class="col-md-4 order-md-2">
                 <h4 class="d-flex justify-content-between align-items-center mb-3">
-                    @if (Model?.Order?.Quote ?? false)
+                    @if (Model?.Cart?.Order?.Quote ?? false)
                     {
                         <span class="text-muted">Your Quote</span>
                     }
@@ -304,9 +304,9 @@
                     }
                     @{
                         int sumOfItems = 0;
-                        if (Model?.ProductOrders is not null && Model.ProductOrders.Any())
+                        if (Model?.Cart?.ProductOrders is not null && Model.Cart.ProductOrders.Any())
                         {
-                            foreach (NumberSearch.DataAccess.ProductOrder item in Model.ProductOrders)
+                            foreach (NumberSearch.DataAccess.ProductOrder item in Model.Cart.ProductOrders)
                             {
                                 sumOfItems += item.Quantity * 1;
                             }
@@ -608,66 +608,75 @@
                         }
                     </li>
                     @{
-                        if (Model?.Order is not null && Model.Order.DateSubmitted > DateTime.Now.AddYears(-99))
+                        if (Model?.Cart?.Order is not null && Model.Cart.Order.DateSubmitted > DateTime.Now.AddYears(-99))
                         {
                             <h4 class="d-flex justify-content-between align-items-center mt-3">
                                 <span class="text-muted">Submitted On</span>
                             </h4>
                             <h4 class="d-flex justify-content-between align-items-center">
-                                <span class="badge badge-info badge-pill">@Model.Order.DateSubmitted</span>
+                                <span class="badge badge-info badge-pill">@Model.Cart.Order.DateSubmitted</span>
                             </h4>
                         }
-                        if (!string.IsNullOrWhiteSpace(Model?.Order?.UpfrontInvoiceLink) && !string.IsNullOrWhiteSpace(Model?.Order?.ReoccuringInvoiceLink))
+                        if (!string.IsNullOrWhiteSpace(Model?.Cart?.Order?.UpfrontInvoiceLink) && !string.IsNullOrWhiteSpace(Model?.Cart?.Order?.ReoccuringInvoiceLink))
                         {
                             <h4 class="d-flex justify-content-between align-items-center">
                                 <span class="text-muted">Pay Now</span>
                             </h4>
                             <div class="btn-group" role="group" aria-label="billing links">
-                                <a class="btn btn-primary" href="@Model?.Order?.UpfrontInvoiceLink" target="_blank" rel="noopener noreferrer">Upfront</a>
-                                <a class="btn btn-primary" href="@Model?.Order?.ReoccuringInvoiceLink" target="_blank" rel="noopener noreferrer">Monthly</a>
+                                <a class="btn btn-primary" href="@Model?.Cart?.Order?.UpfrontInvoiceLink" target="_blank" rel="noopener noreferrer">Upfront</a>
+                                <a class="btn btn-primary" href="@Model?.Cart?.Order?.ReoccuringInvoiceLink" target="_blank" rel="noopener noreferrer">Monthly</a>
                             </div>
                         }
-                        else if (!string.IsNullOrWhiteSpace(Model?.Order?.UpfrontInvoiceLink))
+                        else if (!string.IsNullOrWhiteSpace(Model?.Cart?.Order?.UpfrontInvoiceLink))
                         {
                             <h4 class="d-flex justify-content-between align-items-center">
                                 <span class="text-muted">Pay Now</span>
                             </h4>
-                            <a class="btn btn-primary mb-2" href="@Model?.Order?.UpfrontInvoiceLink" target="_blank" rel="noopener noreferrer">Upfront</a>
-
+                            <a class="btn btn-primary mb-2" href="@Model?.Cart?.Order?.UpfrontInvoiceLink" target="_blank" rel="noopener noreferrer">Upfront</a>
                         }
-                        else if (!string.IsNullOrWhiteSpace(Model?.Order?.ReoccuringInvoiceLink))
+                        else if (!string.IsNullOrWhiteSpace(Model?.Cart?.Order?.ReoccuringInvoiceLink))
                         {
                             <h4 class="d-flex justify-content-between align-items-center">
                                 <span class="text-muted">Pay Now</span>
                             </h4>
-                            <a class="btn btn-primary mb-2" href="@Model?.Order?.ReoccuringInvoiceLink" target="_blank" rel="noopener noreferrer">Monthly</a>
+                            <a class="btn btn-primary mb-2" href="@Model?.Cart?.Order?.ReoccuringInvoiceLink" target="_blank" rel="noopener noreferrer">Monthly</a>
                         }
-                        if (Model?.Shipment is not null && !string.IsNullOrWhiteSpace(Model.Shipment.ShipmentTrackingLink))
+                        if (Model?.Cart?.Shipment is not null && !string.IsNullOrWhiteSpace(Model.Cart.Shipment.ShipmentTrackingLink))
                         {
                             <h4 class="d-flex justify-content-between align-items-center">
                                 <span class="text-muted">Track Your Shipment</span>
                             </h4>
-                            <a class="btn btn-primary" href="@Model?.Shipment.ShipmentTrackingLink" target="_blank" rel="noopener noreferrer">@Model?.Shipment?.Carrier - @Model?.Shipment?.TrackingNumber</a>
+                            <a class="btn btn-primary" href="@Model?.Cart?.Shipment.ShipmentTrackingLink" target="_blank" rel="noopener noreferrer">@Model?.Cart?.Shipment?.Carrier - @Model?.Cart?.Shipment?.TrackingNumber</a>
                         }
                     }
                 </ul>
             </div>
             <div class="col-md-8 order-md-1">
                 <h4 class="mb-3">Billing Information</h4>
+                @if (!string.IsNullOrWhiteSpace(Model?.Message))
+                {
+                    <div class="row">
+                        <div class="col">
+                            <div class="alert alert-danger col" role="alert">
+                                @Model?.Message
+                            </div>
+                        </div>
+                    </div>
+                }
                 <form asp-controller="Cart" asp-action="Submit" method="post">
                     @Html.AntiForgeryToken()
-                    <input asp-for="Order!.OrderId" type="text" value="@Model?.Order?.OrderId" hidden />
+                    <input asp-for="Cart.Order!.OrderId" type="text" value="@Model?.Cart?.Order?.OrderId" hidden />
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="firstName">First name</label>
-                            <input asp-for="Order!.FirstName" type="text" class="form-control" id="firstName" placeholder="Alexander" required>
+                            <input asp-for="Cart.Order!.FirstName" type="text" class="form-control" id="firstName" placeholder="Alexander" required>
                             <small class="text-muted">
                                 Enter your first name
                             </small>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="lastName">Last name</label>
-                            <input asp-for="Order!.LastName" type="text" class="form-control" id="lastName" placeholder="Bell" required>
+                            <input asp-for="Cart.Order!.LastName" type="text" class="form-control" id="lastName" placeholder="Bell" required>
                             <small class="text-muted">
                                 Enter your last name
                             </small>
@@ -676,7 +685,7 @@
 
                     <div class="mb-3">
                         <label for="business">Business Name <span class="text-muted">(Optional)</span></label>
-                        <input asp-for="Order!.BusinessName" type="text" class="form-control" id="businessName" placeholder="ACME Corporation">
+                        <input asp-for="Cart.Order!.BusinessName" type="text" class="form-control" id="businessName" placeholder="ACME Corporation">
                         <small class="text-muted">
                             Enter the name of your business or the organization that you represent
                         </small>
@@ -686,7 +695,7 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="email">Email </label>
-                                <input asp-for="Order!.Email" type="email" class="form-control" id="email" placeholder="tom@myspace.com" required>
+                                <input asp-for="Cart.Order!.Email" type="email" class="form-control" id="email" placeholder="tom@myspace.com" required>
                                 <small class="text-muted">
                                     Enter an email address for shipping updates and order information
                                 </small>
@@ -695,7 +704,7 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="contact">Direct Phone Number</label>
-                                <input asp-for="Order!.ContactPhoneNumber" type="tel" class="form-control" id="phone" placeholder="2068588757" required>
+                                <input asp-for="Cart.Order!.ContactPhoneNumber" type="tel" class="form-control" id="phone" placeholder="2068588757" required>
                                 <small class="text-muted">
                                     What number can we call to talk to you?
                                 </small>
@@ -703,14 +712,11 @@
                         </div>
                     </div>
 
-
-
-
-                    @if (Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted > DateTime.MinValue)
+                    @if (Model?.Cart?.Order?.OrderId != Guid.Empty && Model?.Cart?.Order?.DateSubmitted > DateTime.MinValue)
                     {
                         <div class="mb-3" id="searchForm">
                             <label for="address">Address</label>
-                            <input asp-for="Order!.UnparsedAddress" type="text" class="form-control" id="address" readonly>
+                            <input asp-for="Cart.Order!.UnparsedAddress" type="text" class="form-control" id="address" readonly>
                             <small class="text-muted">
                                 @*If it doesn't have a placeholder value give it a example*@
                                 Enter the shipping address for this order, or the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
@@ -721,7 +727,7 @@
                     {
                         <div class="mb-3" id="searchForm">
                             <label for="address">Address</label>
-                            <input asp-for="Order!.UnparsedAddress" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" data-toggle="dropdown" required>
+                            <input asp-for="Cart.Order!.UnparsedAddress" type="text" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" data-toggle="dropdown" required>
                             <ul class="list-group" role="menu" aria-labelledby="menu1" id="addressOptions">
                             </ul>
                             <small class="text-muted">
@@ -734,9 +740,10 @@
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label for="unitType">Unit Type <span class="text-muted">(Optional)</span></label>
-                            <select asp-for="Order!.AddressUnitType" class="custom-select d-block w-100" id="unitType">
+                            <select asp-for="Cart.Order!.AddressUnitType" class="custom-select d-block w-100" id="unitType">
                                 @{
                                     var unitTypes = new string[] {
+                                        "",
                                 "Apartment",
                                 "Basement",
                                 "Building",
@@ -772,7 +779,7 @@
                         </div>
                         <div class="col-md-8 mb-3">
                             <label for="address2">Unit Number <span class="text-muted">(Optional)</span></label>
-                            <input asp-for="Order!.AddressUnitNumber" type="text" class="form-control" id="address2" placeholder="307">
+                            <input asp-for="Cart.Order!.AddressUnitNumber" type="text" class="form-control" id="address2" placeholder="307">
                             <small class="text-muted">
                                 Optionally enter a unit number
                             </small>
@@ -780,7 +787,7 @@
                     </div>
                     <h4 class="mb-3">Installation Information</h4>
                     @{
-                        if (Model?.Order?.DateSubmitted > DateTime.MinValue && (Model?.Products?.Any() ?? false))
+                        if (Model?.Cart?.Order?.DateSubmitted > DateTime.MinValue && (Model?.Cart?.Products?.Any() ?? false))
                         {
                             <div class="row">
                                 <div class="col-md-4 mb-3">
@@ -788,10 +795,10 @@
                                     <div class="form-group">
                                         <div class="btn-group btn-group-toggle" data-toggle="buttons">
                                             <label class="btn btn-outline-secondary">
-                                                <input asp-for="Order!.OnsiteInstallation" type="radio" id="ltoption1" value="false" disabled> Remote
+                                                <input asp-for="Cart.Order!.OnsiteInstallation" type="radio" id="ltoption1" value="false" disabled> Remote
                                             </label>
                                             <label class="btn btn-outline-secondary">
-                                                <input asp-for="Order!.OnsiteInstallation" type="radio" id="ltoption2" value="true" disabled> Onsite
+                                                <input asp-for="Cart.Order!.OnsiteInstallation" type="radio" id="ltoption2" value="true" disabled> Onsite
                                             </label>
                                         </div>
                                     </div>
@@ -802,7 +809,7 @@
                                 </div>
                             </div>
                         }
-                        else if (Model?.Products?.Any() ?? false)
+                        else if (Model?.Cart?.Products?.Any() ?? false)
                         {
                             <div class="row">
                                 <div class="col-md-4 mb-3">
@@ -810,10 +817,10 @@
                                     <div class="form-group">
                                         <div class="btn-group btn-group-toggle" data-toggle="buttons">
                                             <label class="btn btn-outline-secondary">
-                                                <input asp-for="Order!.OnsiteInstallation" type="radio" id="ltoption1" value="false" onclick="installItems(true)"> Remote
+                                                <input asp-for="Cart.Order!.OnsiteInstallation" type="radio" id="ltoption1" value="false" onclick="installItems(true)"> Remote
                                             </label>
                                             <label class="btn btn-outline-secondary">
-                                                <input asp-for="Order!.OnsiteInstallation" type="radio" id="ltoption2" value="true" onclick="installItems(false)"> Onsite
+                                                <input asp-for="Cart.Order!.OnsiteInstallation" type="radio" id="ltoption2" value="true" onclick="installItems(false)"> Onsite
                                             </label>
                                         </div>
                                     </div>
@@ -829,22 +836,22 @@
                         <div class="col-md-6 mb-3" id="installDateContainer">
                             <label for="installdate">Preferred Install Date <span class="text-muted">(Optional)</span></label>
                             @{
-                                if (Model?.Order?.InstallDate is null && (Model?.Products?.Any() ?? false))
+                                if (Model?.Cart?.Order?.InstallDate is null && (Model?.Cart?.Products?.Any() ?? false))
                                 {
-                                    <input asp-for="Order!.InstallDate" type="datetime-local" class="form-control" id="installdate" min="@DateTime.Now.AddDays(3).ToString(" yyyy-MM-ddThh:mm")" max="@DateTime.Now.AddDays(31).ToString(" yyyy-MM-ddThh:mm")" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}">
+                                    <input asp-for="Cart.Order!.InstallDate" type="datetime-local" class="form-control" id="installdate" min="@DateTime.Now.AddDays(3).ToString(" yyyy-MM-ddThh:mm")" max="@DateTime.Now.AddDays(31).ToString(" yyyy-MM-ddThh:mm")" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}">
                                     <small class="text-muted">
                                         Optionally chose an install date
                                     </small>
                                 }
                                 else
                                 {
-                                    <input asp-for="Order!.InstallDate" type="datetime-local" class="form-control" id="installdate" readonly>
+                                    <input asp-for="Cart.Order!.InstallDate" type="datetime-local" class="form-control" id="installdate" readonly>
                                 }
                             }
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6 mb-3 hidden">
                             <label for="sales">Sales Representative <span class="text-muted">(Optional)</span></label>
-                            <select asp-for="Order!.SalesEmail" class="custom-select mr-sm-2" id="sales">
+                            <select asp-for="Cart.Order!.SalesEmail" class="custom-select mr-sm-2" id="sales">
                                 <option value="support@acceleratenetworks.com">Support</option>
                                 <option value="dan@acceleratenetworks.com">Dan</option>
                             </select>
@@ -856,11 +863,11 @@
                     <div class="row">
                         <div class="col-md-12 mb-3">
                             <label for="customernotes">Notes <span class="text-muted">(Optional)</span></label>
-                            <input asp-for="Order!.CustomerNotes" type="text" class="form-control" id="customernotes" placeholder="Add important information for our staff">
+                            <input asp-for="Cart.Order!.CustomerNotes" type="text" class="form-control" id="customernotes" placeholder="Add important information for our staff">
                         </div>
                         <div class="col-md-12">
                             <div class="form-check">
-                                <input asp-for="Order!.NoEmail" type="checkbox" class="form-check-input" id="defaultCheck1">
+                                <input asp-for="Cart.Order!.NoEmail" type="checkbox" class="form-check-input" id="defaultCheck1">
                                 <label class="form-check-label" for="defaultCheck1">
                                     Do not send a confirmation email
                                 </label>
@@ -868,7 +875,7 @@
                         </div>
                         <div class="col-md-12">
                             <div class="form-check">
-                                <input asp-for="Order!.Quote" type="checkbox" class="form-check-input" id="defaultCheck1">
+                                <input asp-for="Cart.Order!.Quote" type="checkbox" class="form-check-input" id="defaultCheck1">
                                 <label class="form-check-label" for="defaultCheck1">
                                     Please send a quote
                                 </label>
@@ -876,15 +883,15 @@
                         </div>
                     </div>
                     @{
-                        if (ported is not null && ported.Any() && Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted > DateTime.MinValue)
+                        if (ported is not null && ported.Any() && Model?.Cart?.Order?.OrderId != Guid.Empty && Model?.Cart?.Order?.DateSubmitted > DateTime.MinValue)
                         {
                             <hr class="mb-3">
                             <h4 class="mb-3">Next Steps</h4>
                             <p>Now that you've complete your order, please fillout these two pages so we can bring your existing phone numbers onto our network and configure your phones with the correct extentions. If you have any questions please contact your sales representative or our support staff at (206) 858-8757.</p>
-                            <a asp-controller="Cart" asp-action="PortingInformation" asp-route-id="@Model?.Order?.OrderId" class="btn btn-primary btn-lg btn-block shadow">Add Porting Information</a>
-                            <a href="/Cart/Order/@Model?.Order?.OrderId/NewClient" class="btn btn-primary btn-lg btn-block shadow">Add New Client Setup Information</a>
+                            <a asp-controller="Cart" asp-action="PortingInformation" asp-route-id="@Model?.Cart?.Order?.OrderId" class="btn btn-primary btn-lg btn-block shadow">Add Porting Information</a>
+                            <a href="/Cart/Order/@Model?.Cart?.Order?.OrderId/NewClient" class="btn btn-primary btn-lg btn-block shadow">Add New Client Setup Information</a>
                         }
-                        else if (Model?.Order?.OrderId != Guid.Empty && Model?.Order?.DateSubmitted == DateTime.MinValue)
+                        else if (Model?.Cart?.Order?.OrderId != Guid.Empty && Model?.Cart?.Order?.DateSubmitted == DateTime.MinValue)
                         {
 
                             <hr class="mb-4">

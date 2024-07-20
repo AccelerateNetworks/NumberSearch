@@ -1,4 +1,6 @@
-﻿namespace NumberSearch.Mvc
+﻿using NumberSearch.DataAccess;
+
+namespace NumberSearch.Mvc
 {
     public class CartResult
     {

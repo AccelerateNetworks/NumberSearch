@@ -9,8 +9,11 @@ using Ical.Net.Serialization;
 using Microsoft.AspNetCore.Mvc;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.Mvc.Models;
+
+using Org.BouncyCastle.Bcpg.Sig;
 
 using Serilog;
 
@@ -201,7 +204,7 @@ namespace NumberSearch.Mvc.Controllers
                 _ = cart.SetToSession(HttpContext.Session);
             }
 
-            return View("Order", cart);
+            return View("Order", new CartResult { Cart = cart });
         }
 
         // Show orders that have already been submitted.
@@ -285,7 +288,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
                 else
                 {
-                    return View("Order", cart);
+                    return View("Order", new CartResult { Cart = cart });
 
                 }
             }
@@ -329,14 +332,16 @@ namespace NumberSearch.Mvc.Controllers
         [HttpPost("Cart/Submit")]
         [ValidateAntiForgeryToken]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public async Task<IActionResult> SubmitAsync(Order order)
+        public async Task<IActionResult> SubmitAsync(CartResult input)
         {
+            var order = input.Cart.Order;
+
             if (order is not null && !string.IsNullOrWhiteSpace(order.Email))
             {
-                order.DateSubmitted = DateTime.Now;
-
                 await HttpContext.Session.LoadAsync().ConfigureAwait(false);
                 var cart = Cart.GetFromSession(HttpContext.Session);
+
+                cart.Order = order;
 
                 // This is purely so that we can isolate the state of this call when it fails out.
                 Log.Information(JsonSerializer.Serialize(cart));
@@ -354,16 +359,91 @@ namespace NumberSearch.Mvc.Controllers
                     }
                     else
                     {
+                        _ = cart.SetToSession(HttpContext.Session);
                         Log.Error($"[Checkout] Email address {order.Email} has an invalid domain: {emailDomain.Host}.");
                         var message = $"💀 The email server at {emailDomain.Host} didn't have an MX record. Please supply a valid email address.";
-                        return View("Index", new CartResult { Message = message, Cart = cart });
+                        return View("Order", new CartResult { Message = message, Cart = cart });
                     }
                 }
                 catch (Exception ex)
                 {
+                    _ = cart.SetToSession(HttpContext.Session);
                     Log.Error($"[Checkout] Email address {order.Email} has an invalid domain: {emailDomain.Host}.");
                     var message = $"💀 The email server at {emailDomain.Host} didn't have an MX record. Please supply a valid email address.";
-                    return View("Index", new CartResult { Message = message, Cart = cart });
+                    return View("Order", new CartResult { Message = message, Cart = cart });
+                }
+
+                // Validate the install date.
+                if (order.InstallDate is not null && order.InstallDate < DateTime.Now.AddDays(1))
+                {
+                    order.InstallDate = null;
+                    _ = cart.SetToSession(HttpContext.Session);
+                    Log.Error($"[Checkout] The install date needs to be at least one day in the future.");
+                    var message = $"💀 The install date needs to be at least one day in the future.";
+                    return View("Order", new CartResult { Message = message, Cart = cart });
+                }
+
+                if (order.FirstName == order.BusinessName || order.LastName == order.BusinessName)
+                {
+                    order.FirstName = string.Empty;
+                    order.LastName = string.Empty;
+                    _ = cart.SetToSession(HttpContext.Session);
+                    Log.Error($"[Checkout] Your business name cannot be the same as your last name or first name.");
+                    var message = $"💀 Your business name cannot be the same as your last name or first name.";
+                    return View("Order", new CartResult { Message = message, Cart = cart });
+                }
+
+                if (!string.IsNullOrWhiteSpace(order.AddressUnitNumber) && string.IsNullOrWhiteSpace(order.AddressUnitType))
+                {
+                    order.AddressUnitNumber = string.Empty;
+                    order.AddressUnitType = string.Empty;
+                    _ = cart.SetToSession(HttpContext.Session);
+                    Log.Error($"[Checkout] Please set the Unit Type for the Unit Number you provided.");
+                    var message = $"💀 Please set the Unit Type for the Unit Number you provided.";
+                    return View("Order", new CartResult { Message = message, Cart = cart });
+                }
+
+                if (order.Address == order.AddressUnitNumber)
+                {
+                    order.AddressUnitNumber = string.Empty;
+                    _ = cart.SetToSession(HttpContext.Session);
+                    Log.Error($"[Checkout] The billing address and unit number cannot be the same.");
+                    var message = $"💀 The billing address and unit number cannot be the same.";
+                    return View("Order", new CartResult { Message = message, Cart = cart });
+                }
+
+                var checkParsed = PhoneNumbersNA.PhoneNumber.TryParse(order.ContactPhoneNumber, out var contact);
+
+                if (checkParsed is false)
+                {
+                    order.ContactPhoneNumber = string.Empty;
+                    _ = cart.SetToSession(HttpContext.Session);
+                    Log.Error($"[Checkout] The Direct phone number is not a dialable North American phone number.");
+                    var message = $"💀 The Direct phone number is not a dialable North American phone number.";
+                    return View("Order", new CartResult { Message = message, Cart = cart });
+                }
+                else
+                {
+                    try
+                    {
+                        var checkPortable = await ValidatePortability.GetAsync(contact.DialedNumber, _configuration.BulkVSUsername, _configuration.BulkVSPassword);
+                        if (checkPortable is null || checkPortable?.Portable is false)
+                        {
+                            order.ContactPhoneNumber = string.Empty;
+                            _ = cart.SetToSession(HttpContext.Session);
+                            Log.Error($"[Checkout] The contact phone number is not a dialable North American phone number.");
+                            var message = $"💀 The contact phone number is not a dialable North American phone number.";
+                            return View("Order", new CartResult { Message = message, Cart = cart });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        order.ContactPhoneNumber = string.Empty;
+                        _ = cart.SetToSession(HttpContext.Session);
+                        Log.Error($"[Checkout] The contact phone number is not a dialable North American phone number.");
+                        var message = $"💀 The contact phone number is not a dialable North American phone number.";
+                        return View("Order", new CartResult { Message = message, Cart = cart });
+                    }
                 }
 
                 if (cart.ProductOrders is null || !cart.ProductOrders.Any())
@@ -374,8 +454,10 @@ namespace NumberSearch.Mvc.Controllers
                     // Reset the session and clear the Cart.
                     HttpContext.Session.Clear();
 
-                    return View("Index", new CartResult { Message = "💀 The server disconnected and your Cart was lost. Please try it again now." });
+                    return View("Order", new CartResult { Message = "💀 The server disconnected and your Cart was lost. Please try it again now." });
                 }
+
+                order.DateSubmitted = DateTime.Now;
 
                 if (order.OrderId != Guid.Empty)
                 {
