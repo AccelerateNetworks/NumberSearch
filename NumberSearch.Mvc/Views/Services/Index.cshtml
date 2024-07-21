@@ -21,14 +21,17 @@
     <div class="container">
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Phone Service</a>
+                <a class="nav-link active" id="phone-tab" data-toggle="tab" href="#phone" role="tab" aria-controls="phone" aria-selected="true">Phone Service</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="internet-tab" data-toggle="tab" href="#internet" role="tab" aria-controls="internet" aria-selected="false">Internet</a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Additional Services</a>
             </li>
         </ul>
         <div class="tab-content" id="myTabContent">
-            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+            <div class="tab-pane fade show active" id="phone" role="tabpanel" aria-labelledby="phone-tab">
                 <br />
                 <div class="card-deck text-center">
                     <div class="card mb-4 shadow rounded-3">
@@ -125,47 +128,9 @@
                     </div>
                 </div>
             </div>
-            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+            <div class="tab-pane fade" id="internet" role="tabpanel" aria-labelledby="internet-tab">
                 <br />
-                <div class="card-deck mb-3 text-center">
-                    <div class="card mb-4 shadow rounded-3">
-                        <div class="card-header">
-                            <h4 class="my-0 font-weight-normal">Web Texting</h4>
-                        </div>
-                        <div class="card-body">
-                            <h1 class="card-title pricing-card-title">$20 <small class="text-muted">/ mo</small></h1>
-                            <ul class="list-unstyled mt-3 mb-4">
-                                <li>Text from any browser</li>
-                                <li>SMS and MMS Supported</li>
-                                <li>Never miss a customer</li>
-                                <li>Communicate seamlessly</li>
-                            </ul>
-                            <div class="btn-group">
-                                <div class="input-group input-group-lg">
-                                    @{
-                                        var webtexting = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("86a8576f-15e4-4547-8705-7c98dbe5e58d")).FirstOrDefault();
-                                        if (webtexting is not null && webtexting.Quantity > 0)
-                                        {
-                                            <input id="webtexting" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@webtexting?.Quantity">
-                                            <div class="input-group-append">
-                                                <button onclick="RemoveFromCart('Service','86a8576f-15e4-4547-8705-7c98dbe5e58d', $('#webtexting').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            <input id="webtexting" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
-                                            <div class="input-group-append">
-                                                <button onclick="AddToCart('Service','86a8576f-15e4-4547-8705-7c98dbe5e58d', $('#webtexting').val(), this)" class="btn btn-outline-primary">
-                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                    Add to Cart
-                                                </button>
-                                            </div>
-                                        }
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="card-deck text-center">
                     <div class="card mb-4 shadow rounded-3">
                         <div class="card-header">
                             <h4 class="my-0 font-weight-normal">5G Internet</h4>
@@ -205,7 +170,138 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-deck mb-3 text-center">
+                <div class="card-deck text-center">
+                    <div class="card mb-4 shadow rounded-3">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal">5G Internet - Static IP</h4>
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title pricing-card-title">$90 <small class="text-muted">/ mo</small></h1>
+                            <ul class="list-unstyled mt-3 mb-4">
+                                <li>Static IPv4 address</li>
+                                <li>Port Forwarding</li>
+                                <li>Fast WiFi 6</li>
+                                <li>Unlimited Data</li>
+                            </ul>
+                            <div class="btn-group">
+                                <div class="input-group input-group-lg">
+                                    @{
+                                        var lteinternet = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("c236d9af-eee9-4145-9724-44a9ea5e2952")).FirstOrDefault();
+                                        if (lteinternet is not null && lteinternet.Quantity > 0)
+                                        {
+                                            <input id="lteinternet" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@lteinternet?.Quantity">
+                                            <div class="input-group-append">
+                                                <button onclick="RemoveFromCart('Service','c236d9af-eee9-4145-9724-44a9ea5e2952', $('#lteinternet').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <input id="lteinternet" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                            <div class="input-group-append">
+                                                <button onclick="AddToCart('Service','c236d9af-eee9-4145-9724-44a9ea5e2952', $('#lteinternet').val(), this)" class="btn btn-outline-primary">
+                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                    Add to Cart
+                                                </button>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card mb-4 shadow rounded-3">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal">LTE Backup</h4>
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title pricing-card-title">$30 <small class="text-muted">/ mo</small></h1>
+                            <ul class="list-unstyled mt-3 mb-4">
+                                <li>Always stay online!</li>
+                                <li>No Overages</li>
+                                <li>No Worries</li>
+                                <li>Unlimited Use</li>
+                            </ul>
+                            <div class="btn-group">
+                                <div class="input-group input-group-lg">
+                                    @{
+                                        var ltebackup = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c")).FirstOrDefault();
+                                        if (ltebackup is not null && ltebackup.Quantity > 0)
+                                        {
+                                            <input id="ltebackup" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@ltebackup?.Quantity">
+                                            <div class="input-group-append">
+                                                <button onclick="RemoveFromCart('Service','c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c', $('#ltebackup').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <input id="ltebackup" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                            <div class="input-group-append">
+                                                <button onclick="AddToCart('Service','c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c', $('#ltebackup').val(), this)" class="btn btn-outline-primary">
+                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                    Add to Cart
+                                                </button>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row pb-3">
+                    <div class="input-group mx-auto input-group-lg">
+                        <div class="col">
+                            <a class="btn btn-success btn-block shadow-lg" href="/Search">Get a new Phone Number</a>
+                        </div>
+                        <div class="col">
+                            <a class="btn btn-info btn-block shadow-lg" href="/Search">Transfer an existing Phone Number</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                <br />
+                <div class="card-deck text-center">
+                    <div class="card mb-4 shadow rounded-3">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal">Web Texting</h4>
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title pricing-card-title">$20 <small class="text-muted">/ mo</small></h1>
+                            <ul class="list-unstyled mt-3 mb-4">
+                                <li>Text from any browser</li>
+                                <li>SMS and MMS Supported</li>
+                                <li>Never miss a customer</li>
+                                <li>Communicate seamlessly</li>
+                            </ul>
+                            <div class="btn-group">
+                                <div class="input-group input-group-lg">
+                                    @{
+                                        var webtexting = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("86a8576f-15e4-4547-8705-7c98dbe5e58d")).FirstOrDefault();
+                                        if (webtexting is not null && webtexting.Quantity > 0)
+                                        {
+                                            <input id="webtexting" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@webtexting?.Quantity">
+                                            <div class="input-group-append">
+                                                <button onclick="RemoveFromCart('Service','86a8576f-15e4-4547-8705-7c98dbe5e58d', $('#webtexting').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <input id="webtexting" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                            <div class="input-group-append">
+                                                <button onclick="AddToCart('Service','86a8576f-15e4-4547-8705-7c98dbe5e58d', $('#webtexting').val(), this)" class="btn btn-outline-primary">
+                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                    Add to Cart
+                                                </button>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-deck text-center">
                     <div class="card mb-4 shadow rounded-3">
                         <div class="card-header">
                             <h4 class="my-0 font-weight-normal">Toll Free Number</h4>
@@ -283,81 +379,13 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-deck mb-3 text-center">
-                    <div class="card mb-4 shadow rounded-3">
-                        <div class="card-header">
-                            <h4 class="my-0 font-weight-normal">5G Internet - Static IP</h4>
+                <div class="row pb-3">
+                    <div class="input-group mx-auto input-group-lg">
+                        <div class="col">
+                            <a class="btn btn-success btn-block shadow-lg" href="/Search">Get a new Phone Number</a>
                         </div>
-                        <div class="card-body">
-                            <h1 class="card-title pricing-card-title">$90 <small class="text-muted">/ mo</small></h1>
-                            <ul class="list-unstyled mt-3 mb-4">
-                                <li>Static IPv4 address</li>
-                                <li>Port Forwarding</li>
-                                <li>Fast WiFi 6</li>
-                                <li>Unlimited Data</li>
-                            </ul>
-                            <div class="btn-group">
-                                <div class="input-group input-group-lg">
-                                    @{
-                                        var lteinternet = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("c236d9af-eee9-4145-9724-44a9ea5e2952")).FirstOrDefault();
-                                        if (lteinternet is not null && lteinternet.Quantity > 0)
-                                        {
-                                            <input id="lteinternet" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@lteinternet?.Quantity">
-                                            <div class="input-group-append">
-                                                <button onclick="RemoveFromCart('Service','c236d9af-eee9-4145-9724-44a9ea5e2952', $('#lteinternet').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            <input id="lteinternet" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
-                                            <div class="input-group-append">
-                                                <button onclick="AddToCart('Service','c236d9af-eee9-4145-9724-44a9ea5e2952', $('#lteinternet').val(), this)" class="btn btn-outline-primary">
-                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                    Add to Cart
-                                                </button>
-                                            </div>
-                                        }
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card mb-4 shadow rounded-3">
-                        <div class="card-header">
-                            <h4 class="my-0 font-weight-normal">LTE Backup</h4>
-                        </div>
-                        <div class="card-body">
-                            <h1 class="card-title pricing-card-title">$30 <small class="text-muted">/ mo</small></h1>
-                            <ul class="list-unstyled mt-3 mb-4">
-                                <li>Always stay online!</li>
-                                <li>No Overages</li>
-                                <li>No Worries</li>
-                                <li>Unlimited Use</li>
-                            </ul>
-                            <div class="btn-group">
-                                <div class="input-group input-group-lg">
-                                    @{
-                                        var ltebackup = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c")).FirstOrDefault();
-                                        if (ltebackup is not null && ltebackup.Quantity > 0)
-                                        {
-                                            <input id="ltebackup" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@ltebackup?.Quantity">
-                                            <div class="input-group-append">
-                                                <button onclick="RemoveFromCart('Service','c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c', $('#ltebackup').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            <input id="ltebackup" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
-                                            <div class="input-group-append">
-                                                <button onclick="AddToCart('Service','c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c', $('#ltebackup').val(), this)" class="btn btn-outline-primary">
-                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                    Add to Cart
-                                                </button>
-                                            </div>
-                                        }
-                                    }
-                                </div>
-                            </div>
+                        <div class="col">
+                            <a class="btn btn-info btn-block shadow-lg" href="/Search">Transfer an existing Phone Number</a>
                         </div>
                     </div>
                 </div>
