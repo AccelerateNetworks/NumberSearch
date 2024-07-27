@@ -66,7 +66,54 @@
         </div>
     </div>
 </div>
-
+@if (string.IsNullOrWhiteSpace(Model?.Query))
+{
+    <div class="p-5">
+        <div class="container">
+            <div class="row">
+                <div class="col text-center">
+                    <h1 class="display-4">Or if you love your current phone numbers... 😍 </h1>
+                </div>
+            </div>
+        </div>
+    </div>
+    <section class="text-light" style="background-color: #E97E43">
+        <div class="container py-5 py-md-6 py-lg-7 mb-7 text-center">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 col-md-11">
+                    <h1 class="display-3 text-light d-none d-sm-block">Keep your Numbers</h1>
+                    <h4 class="display-4 text-light d-block d-sm-none">Keep your Numbers</h4>
+                    <p class="lead text-white">Phone numbers are part of your brand. Bring all of your current numbers with you.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div class="bg-light pt-3 pb-3">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p>🚀 Enter multiple phone numbers, we will hunt down any information we can find for each phone number and check if we can port the phone number to our network.</p>
+                    <p>🔮 We check to see who the underlying telecom provider is and when the phone number was last transferred between telecom providers.</p>
+                    <p class="m-md-0">🔬 Find out how your caller ID displays on other people's phones!</p>
+                </div>
+                <div class="offset-xl-2 offset-lg-1"></div>
+                <div class="col">
+                    <form method="post" class="justify-content-center" asp-controller="Lookup" asp-action="BulkPort">
+                        @Html.AntiForgeryToken()
+                        <div class="form-group">
+                            <div class="input-group input-group-lg">
+                                <textarea class="form-control" aria-label="With textarea" type="text" name="dialedNumber" placeholder="Up to 200 Numbers per Search" style="height:8rem;"></textarea>
+                            </div>
+                            <div class="input-group mx-auto input-group-lg pt-2">
+                                <button type="submit" class="btn btn-lg btn-success btn-block" onclick="displayBusyIndicator(this)">Search</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 @{
     if (!string.IsNullOrWhiteSpace(Model?.Message))
     {
