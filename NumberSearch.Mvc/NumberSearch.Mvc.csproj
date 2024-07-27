@@ -164,25 +164,19 @@
 		<Content Update="wwwroot\html_code.html">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Update="wwwroot\images\carousel\grp2612_front_web1611.webp">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\images\carousel\GRP2615-front1611.png">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\images\carousel\gxp2135_front_web1611.png">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\images\carousel\gxp2140_front1611.webp">
+		<Content Update="wwwroot\images\carousel\GRP2670-10x5.webp">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\carousel\gxp2170_front_web1611.webp">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Update="wwwroot\images\carousel\gxp2170_front_web1611v2.webp">
+		<Content Update="wwwroot\images\carousel\WP816_4-10x5.webp">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Update="wwwroot\images\carousel\T54W-front1611.webp">
+		<Content Update="wwwroot\images\carousel\Yealink-T54W-10x5.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\carousel\Yealink-T57W-10x5.webp">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\original\accelerate-white.png">
