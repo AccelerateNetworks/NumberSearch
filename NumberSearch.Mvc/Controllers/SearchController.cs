@@ -29,7 +29,7 @@ namespace NumberSearch.Mvc.Controllers
         /// <returns> A view of nothing, or the result of the query. </returns>
         [HttpGet("Search")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        [OutputCache(Duration = 3600, VaryByQueryKeys = new string[] { "query","city","failed","view","page" })]
+        [OutputCache(Duration = 3600, VaryByQueryKeys = new string[] { "query","city","failed","view","page","dialedNumber", "csv" })]
         public async Task<IActionResult> SearchAsync(string query, string city, string failed, string view, int page = 1)
         {
             // Fail fast
