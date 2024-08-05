@@ -377,9 +377,9 @@ public class PortRequestsController : Controller
                     if (portRequest.Address != fromDb.Address)
                     {
                         // Format the address information
-                        Log.Information($"[Checkout] Parsing address data from {portRequest.Address}");
-                        var addressParts = portRequest.Address?.Split(", ") ?? Array.Empty<string>();
-                        if (addressParts.Length > 4)
+                        Log.Information($"[Checkout] Parsing address data from {portRequest.UnparsedAddress}");
+                        var addressParts = portRequest.UnparsedAddress?.Split(", ") ?? [];
+                        if (addressParts is not null && addressParts.Length > 4)
                         {
                             fromDb.Address = addressParts[0];
                             fromDb.City = addressParts[1];

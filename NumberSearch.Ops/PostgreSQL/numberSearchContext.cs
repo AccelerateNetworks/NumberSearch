@@ -655,6 +655,7 @@ public partial class numberSearchContext : DbContext
             entity.Property(e => e.VendorSubmittedTo).HasColumnType("character varying");
 
             entity.Property(e => e.Zip).HasColumnType("character varying");
+            entity.Property(e => e.UnparsedAddress).HasColumnType("character varying");
         });
 
         modelBuilder.Entity<PortedPhoneNumber>(entity =>
