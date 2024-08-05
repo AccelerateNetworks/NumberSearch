@@ -385,6 +385,7 @@ public class PortRequestsController : Controller
                             fromDb.City = addressParts[1];
                             fromDb.State = addressParts[2];
                             fromDb.Zip = addressParts[3];
+                            fromDb.UnparsedAddress = portRequest.UnparsedAddress;
                             Log.Information($"[Checkout] Address: {fromDb.Address} City: {fromDb.City} State: {fromDb.State} Zip: {fromDb.Zip}");
                         }
                         else
