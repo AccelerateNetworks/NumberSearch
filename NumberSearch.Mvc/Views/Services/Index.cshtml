@@ -1,4 +1,4 @@
-﻿@model Cart
+﻿@model ServicesResult
 
 @{
     ViewData["Title"] = "Services";
@@ -19,19 +19,43 @@
 </section>
 <div class="pt-3">
     <div class="container">
+        @{
+            string tabClasses1 = "tab-pane fade ";
+            string tabClasses2 = "tab-pane fade ";
+            string tabClasses3 = "tab-pane fade ";
+            string tabLinkClasses1 = "nav-link ";
+            string tabLinkClasses2 = "nav-link ";
+            string tabLinkClasses3 = "nav-link ";
+
+            if (Model?.Type == "Internet")
+            {
+                tabClasses2 += "show active";
+                tabLinkClasses2 += "active";
+            }
+            else if (Model?.Type == "Additional")
+            {
+                tabClasses3 += "show active";
+                tabLinkClasses3 += "active";
+            }
+            else
+            {
+                tabClasses1 += "show active";
+                tabLinkClasses1 += "active";
+            }
+        }
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="phone-tab" data-toggle="tab" href="#phone" role="tab" aria-controls="phone" aria-selected="true">Phone Service</a>
+                <a class="@tabLinkClasses1" id="phone-tab" data-toggle="tab" href="#phone" role="tab" aria-controls="phone" aria-selected="true">Phone Service</a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" id="internet-tab" data-toggle="tab" href="#internet" role="tab" aria-controls="internet" aria-selected="false">Internet</a>
+                <a class="@tabLinkClasses2" id="internet-tab" data-toggle="tab" href="#internet" role="tab" aria-controls="internet" aria-selected="false">Internet</a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Additional Services</a>
+                <a class="@tabLinkClasses3" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Additional Services</a>
             </li>
         </ul>
         <div class="tab-content" id="myTabContent">
-            <div class="tab-pane fade show active" id="phone" role="tabpanel" aria-labelledby="phone-tab">
+            <div class="@tabClasses1" id="phone" role="tabpanel" aria-labelledby="phone-tab">
                 <br />
                 <div class="card-deck text-center">
                     <div class="card mb-4 shadow rounded-3">
@@ -52,7 +76,7 @@
                             <div class="btn-group">
                                 <div class="input-group input-group-lg">
                                     @{
-                                        var lines = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("16e2c639-445b-4ae6-9925-07300318206b")).FirstOrDefault();
+                                        var lines = Model?.Cart?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("16e2c639-445b-4ae6-9925-07300318206b")).FirstOrDefault();
                                         if (lines is not null && lines.Quantity > 0)
                                         {
                                             <input id="lines" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@lines?.Quantity">
@@ -93,7 +117,7 @@
                             <div class="btn-group">
                                 <div class="input-group input-group-lg">
                                     @{
-                                        var seats = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("48eb4627-8692-4a3b-8be1-be64bbeea534")).FirstOrDefault();
+                                        var seats = Model?.Cart?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("48eb4627-8692-4a3b-8be1-be64bbeea534")).FirstOrDefault();
                                         if (seats is not null && seats.Quantity > 0)
                                         {
                                             <input id="seats" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@seats?.Quantity">
@@ -128,7 +152,7 @@
                     </div>
                 </div>
             </div>
-            <div class="tab-pane fade" id="internet" role="tabpanel" aria-labelledby="internet-tab">
+            <div class="@tabClasses2" id="internet" role="tabpanel" aria-labelledby="internet-tab">
                 <br />
                 <div class="card-deck text-center">
                     <div class="card mb-4 shadow rounded-3">
@@ -146,7 +170,7 @@
                             <div class="btn-group">
                                 <div class="input-group input-group-lg">
                                     @{
-                                        var fiveginternet = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("aa8f21df-6562-4c9c-a75b-ca747ade1f2d")).FirstOrDefault();
+                                        var fiveginternet = Model?.Cart?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("aa8f21df-6562-4c9c-a75b-ca747ade1f2d")).FirstOrDefault();
                                         if (fiveginternet is not null && fiveginternet.Quantity > 0)
                                         {
                                             <input id="fiveginternet" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@fiveginternet?.Quantity">
@@ -186,7 +210,7 @@
                             <div class="btn-group">
                                 <div class="input-group input-group-lg">
                                     @{
-                                        var lteinternet = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("c236d9af-eee9-4145-9724-44a9ea5e2952")).FirstOrDefault();
+                                        var lteinternet = Model?.Cart?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("c236d9af-eee9-4145-9724-44a9ea5e2952")).FirstOrDefault();
                                         if (lteinternet is not null && lteinternet.Quantity > 0)
                                         {
                                             <input id="lteinternet" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@lteinternet?.Quantity">
@@ -224,7 +248,7 @@
                             <div class="btn-group">
                                 <div class="input-group input-group-lg">
                                     @{
-                                        var ltebackup = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c")).FirstOrDefault();
+                                        var ltebackup = Model?.Cart?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c")).FirstOrDefault();
                                         if (ltebackup is not null && ltebackup.Quantity > 0)
                                         {
                                             <input id="ltebackup" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@ltebackup?.Quantity">
@@ -259,7 +283,7 @@
                     </div>
                 </div>
             </div>
-            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+            <div class="@tabClasses3" id="profile" role="tabpanel" aria-labelledby="profile-tab">
                 <br />
                 <div class="card-deck text-center">
                     <div class="card mb-4 shadow rounded-3">
@@ -277,7 +301,7 @@
                             <div class="btn-group">
                                 <div class="input-group input-group-lg">
                                     @{
-                                        var webtexting = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("86a8576f-15e4-4547-8705-7c98dbe5e58d")).FirstOrDefault();
+                                        var webtexting = Model?.Cart?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("86a8576f-15e4-4547-8705-7c98dbe5e58d")).FirstOrDefault();
                                         if (webtexting is not null && webtexting.Quantity > 0)
                                         {
                                             <input id="webtexting" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@webtexting?.Quantity">
@@ -317,7 +341,7 @@
                             <div class="btn-group">
                                 <div class="input-group input-group-lg">
                                     @{
-                                        var tollfree = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("07a7ef6b-eb30-4a81-bc86-be193ef03aa0")).FirstOrDefault();
+                                        var tollfree = Model?.Cart?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("07a7ef6b-eb30-4a81-bc86-be193ef03aa0")).FirstOrDefault();
                                         if (tollfree is not null && tollfree.Quantity > 0)
                                         {
                                             <input id="tollfree" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@tollfree?.Quantity">
@@ -355,7 +379,7 @@
                             <div class="btn-group">
                                 <div class="input-group input-group-lg">
                                     @{
-                                        var faxserver = Model?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("1133e9ab-50f1-4eb6-a756-6b705dcbd6e5")).FirstOrDefault();
+                                        var faxserver = Model?.Cart?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("1133e9ab-50f1-4eb6-a756-6b705dcbd6e5")).FirstOrDefault();
                                         if (faxserver is not null && faxserver.Quantity > 0)
                                         {
                                             <input id="faxserver" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@faxserver?.Quantity">

@@ -46,6 +46,10 @@
 		<ProjectReference Include="..\NumberSearch.DataAccess\NumberSearch.DataAccess.csproj" />
 	</ItemGroup>
 	<ItemGroup>
+		<Content Update="Views\Phones\WebTexting.cshtml">
+		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+		  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
 		<Content Update="Views\Phones\Linphone.cshtml">
 		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -238,6 +242,9 @@
 		</Content>
 		<Content Update="wwwroot\images\original\ht802_right_angle.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\images\original\WebTexting.jpg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\images\scaled\11315553-a8da-4a45-b632-b8ced825957dscaled.jpg">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
