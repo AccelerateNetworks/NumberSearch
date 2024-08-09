@@ -29,7 +29,7 @@ namespace NumberSearch.Mvc.Controllers
         /// <returns> A view of nothing, or the result of the query. </returns>
         [HttpGet("Search")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        [OutputCache(Duration = 1, VaryByQueryKeys = [ "query","page","view" ])]
+        [OutputCache(Duration = 1, VaryByQueryKeys = ["query", "page", "view"])]
         public async Task<IActionResult> SearchAsync(string query, string city, string failed, string view, int page = 1)
         {
             // Fail fast
@@ -147,7 +147,7 @@ namespace NumberSearch.Mvc.Controllers
                         Cart = cart,
                         Query = query,
                         Message = port.Wireless ? "❌ This wireless phone number cannot be ported to our network!" : "❌ This phone number cannot be ported to our network!",
-                        AlertType = "alert-danger"            
+                        AlertType = "alert-danger"
                     });
                 }
             }
