@@ -347,7 +347,11 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <a class="btn btn-outline-primary mt-3" href="/Lookup/BulkPort?dialedNumber=@Model?.DialedNumber&csv=true">Export to CSV</a>
+                    <form method="post" action="/Lookup/ToCSV">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="dialedNumber" value="@Model?.DialedNumber">
+                        <button type="submit" class="btn btn-outline-primary mt-3">Export to CSV</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -558,18 +562,15 @@
                     </tbody>
                 </table>
             </div>
-            <form method="post" class="justify-content-center" asp-controller="Lookup" asp-action="BulkPort">
-                @Html.AntiForgeryToken()
-                <div class="form-group" hidden>
-                    <textarea hidden class="form-control" aria-label="With textarea" type="text" name="dialedNumber" placeholder="Up to 200 Numbers per Search" style="height:8rem;">@Model?.DialedNumber</textarea>
-                    <input hidden type="text" name="csv" value="true" />
-                </div>
-                <div class="row">
-                    <div class="col">
+            <div class="row">
+                <div class="col">
+                    <form method="post" action="/Lookup/ToCSV">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="dialedNumber" value="@Model?.DialedNumber">
                         <button type="submit" class="btn btn-outline-primary mt-3">Export to CSV</button>
-                    </div>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 }

@@ -55,8 +55,8 @@ namespace NumberSearch.Mvc.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        [OutputCache(Duration = 3600, VaryByQueryKeys = new string[] { "dialedNumber", "csv" })]
-        public async Task<IActionResult> BulkPortAsync([Bind("dialedNumber,csv")] string dialedNumber, bool csv)
+        [OutputCache(Duration = 3600, VaryByQueryKeys = ["dialedNumber"])]
+        public async Task<IActionResult> BulkPortAsync([Bind("dialedNumber")] string dialedNumber)
         {
             // Add portable numbers to cart in bulk
             if (!string.IsNullOrWhiteSpace(dialedNumber))
@@ -91,20 +91,6 @@ namespace NumberSearch.Mvc.Controllers
 
                 // Separate wireless numbers out from the rest.
                 var wirelessPortable = results.Where(x => x.Wireless && x.Portable).ToArray();
-
-                if (csv)
-                {
-                    var builder = new StringBuilder();
-                    builder.AppendLine("PortedDialedNumber,City,State,DateIngested,Wireless,Portable,LastPorted,SPID,LATA,LEC,LECType,LIDBName,LRN,OCN,Activation");
-                    foreach (var number in results)
-                    {
-                        builder.AppendLine($"{number.PortedDialedNumber},{number.City},{number.State},{number.DateIngested},{number.Wireless},{number.Portable}," +
-                            $"{number.LrnLookup.LastPorted},{number.LrnLookup.SPID},{number.LrnLookup.LATA},{number.LrnLookup.LEC},{number.LrnLookup.LECType}," +
-                            $"{number.LrnLookup.LIDBName},{number.LrnLookup.LRN},{number.LrnLookup.OCN},{number.LrnLookup.LastPorted}");
-                    }
-
-                    return File(Encoding.UTF8.GetBytes(builder.ToString()), "text/csv", $"AccelerateNetworksPhoneNumbers{DateTime.Now.ToString("yyyyMMddTHHmmss")}.csv");
-                }
 
                 // Add all the numbers to the cart.
                 foreach (var portableNumber in portableNumbers)
@@ -141,6 +127,63 @@ namespace NumberSearch.Mvc.Controllers
                     NotPortable = notPortable,
                     Cart = cart
                 });
+            }
+            else
+            {
+                return View("Index");
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        [OutputCache(Duration = 3600, VaryByQueryKeys = ["dialedNumber"])]
+        public async Task<IActionResult> ToCSVAsync([Bind("dialedNumber")] string dialedNumber)
+        {
+            // Add portable numbers to cart in bulk
+            if (!string.IsNullOrWhiteSpace(dialedNumber))
+            {
+                var parsedNumbers = dialedNumber.ExtractDialedNumbers();
+
+                if (!parsedNumbers.Any())
+                {
+                    return View("Index", new LookupResults
+                    {
+                        Message = "No dialed phone numbers found. Please try a different query. 🥺👉👈"
+                    });
+                }
+
+                var cart = Cart.GetFromSession(HttpContext.Session);
+
+                // If they have an invalid Session we don't want to waste any time running queries for them.
+                if (string.IsNullOrWhiteSpace(HttpContext.Session.Id) || !HttpContext.Session.IsAvailable || cart is null)
+                {
+                    return View("Index");
+                }
+
+                var results = new List<PortedPhoneNumber>();
+                await Parallel.ForEachAsync(parsedNumbers, async (number, token) =>
+                {
+                    var result = await VerifyPortabilityAsync(number);
+                    results.Add(result);
+                });
+
+                var portableNumbers = results.Where(x => x.Portable && x.Wireless is false).ToArray();
+                var notPortable = results.Where(x => x.Portable is false).Select(x => x.PortedDialedNumber).ToArray();
+
+                // Separate wireless numbers out from the rest.
+                var wirelessPortable = results.Where(x => x.Wireless && x.Portable).ToArray();
+
+                var builder = new StringBuilder();
+                builder.AppendLine("DialedNumber,City,State,DateIngested,Wireless,Portable,LastPorted,SPID,LATA,LEC,LECType,LIDBName,LRN,OCN,Activation");
+                foreach (var number in results)
+                {
+                    builder.AppendLine($"{number.PortedDialedNumber},{number.City},{number.State},{number.DateIngested},{number.Wireless},{number.Portable}," +
+                        $"{number.LrnLookup.LastPorted},{number.LrnLookup.SPID},{number.LrnLookup.LATA},{number.LrnLookup.LEC},{number.LrnLookup.LECType}," +
+                        $"{number.LrnLookup.LIDBName},{number.LrnLookup.LRN},{number.LrnLookup.OCN},{number.LrnLookup.LastPorted}");
+                }
+
+                return File(Encoding.UTF8.GetBytes(builder.ToString()), "text/csv", $"AccelerateNetworksPhoneNumbers{DateTime.Now.ToString("yyyyMMddTHHmmss")}.csv");
             }
             else
             {
