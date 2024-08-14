@@ -34,7 +34,7 @@ namespace NumberSearch.Mvc.Controllers
             _configuration = mvcConfiguration;
         }
 
-        public record BulkLookupResult(string DialedNumber, string City, string State, DateTime DateIngested, bool Wireless, bool Portable, DateTime LastPorted, string SPID, string LATA, string LEC, string LECType, string LIDBName, string LRN, string OCN);
+        public record BulkLookupResult(string DialedNumber, string City, string State, DateTime DateIngested, bool Wireless, bool Portable, DateTime LastPorted, string SPID, string LATA, string LEC, string LECType, string LIDBName, string LRN, string OCN, string CarrierName, string CarrierLogoLink);
 
         [HttpGet("Number/Search/Bulk")]
         public async Task<IActionResult> NumberSearchBulkAsync(string token, string dialedNumber)
@@ -63,7 +63,7 @@ namespace NumberSearch.Mvc.Controllers
                     var lookups = new List<BulkLookupResult>();
                     foreach (var number in results)
                     {
-                        lookups.Add(new BulkLookupResult(number.PortedDialedNumber, number.City,number.State, number.DateIngested, number.Wireless, number.Portable,number.LrnLookup.LastPorted,number.LrnLookup.SPID,number.LrnLookup.LATA,number.LrnLookup.LEC,number.LrnLookup.LECType,number.LrnLookup.LIDBName,number.LrnLookup.LRN,number.LrnLookup.OCN));
+                        lookups.Add(new BulkLookupResult(number.PortedDialedNumber, number.City,number.State, number.DateIngested, number.Wireless, number.Portable,number.LrnLookup.LastPorted,number.LrnLookup.SPID,number.LrnLookup.LATA,number.LrnLookup.LEC,number.LrnLookup.LECType,number.LrnLookup.LIDBName,number.LrnLookup.LRN,number.LrnLookup.OCN, number.Carrier.Name, number.Carrier.LogoLink));
                     }
 
                     return Ok(lookups);
