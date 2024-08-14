@@ -175,15 +175,17 @@ namespace NumberSearch.Mvc.Controllers
                 var wirelessPortable = results.Where(x => x.Wireless && x.Portable).ToArray();
 
                 var builder = new StringBuilder();
-                builder.AppendLine("DialedNumber,City,State,DateIngested,Wireless,Portable,LastPorted,SPID,LATA,LEC,LECType,LIDBName,LRN,OCN,Activation");
+                builder.AppendLine("DialedNumber,City,State,DateIngested,Wireless,Portable," +
+                    "LastPorted,SPID,LATA,LEC,LECType," +
+                    "LIDBName,LRN,OCN");
                 foreach (var number in results)
                 {
                     builder.AppendLine($"{number.PortedDialedNumber},{number.City},{number.State},{number.DateIngested},{number.Wireless},{number.Portable}," +
-                        $"{number.LrnLookup.LastPorted},{number.LrnLookup.SPID},{number.LrnLookup.LATA},{number.LrnLookup.LEC},{number.LrnLookup.LECType}," +
-                        $"{number.LrnLookup.LIDBName},{number.LrnLookup.LRN},{number.LrnLookup.OCN},{number.LrnLookup.LastPorted}");
+                        $"{number.LrnLookup.LastPorted},{number.LrnLookup.SPID},{number.LrnLookup.LATA},{number.LrnLookup.LEC.Replace(","," ")},{number.LrnLookup.LECType}," +
+                        $"{number.LrnLookup.LIDBName},{number.LrnLookup.LRN},{number.LrnLookup.OCN}");
                 }
 
-                return File(Encoding.UTF8.GetBytes(builder.ToString()), "text/csv", $"AccelerateNetworksPhoneNumbers{DateTime.Now.ToString("yyyyMMddTHHmmss")}.csv");
+                return File(Encoding.UTF8.GetBytes(builder.ToString()), "text/csv", $"AccelerateNetworksPhoneNumbers{DateTime.Now:yyyyMMddTHHmmss}.csv");
             }
             else
             {

@@ -2,14 +2,20 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.Mvc.Models;
 
+using Org.BouncyCastle.Bcpg.Sig;
+
+using PhoneNumbersNA;
+
 using Serilog;
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,6 +33,52 @@ namespace NumberSearch.Mvc.Controllers
             _postgresql = mvcConfiguration.PostgresqlProd;
             _configuration = mvcConfiguration;
         }
+
+        public record BulkLookupResult(string DialedNumber, string City, string State, DateTime DateIngested, bool Wireless, bool Portable, DateTime LastPorted, string SPID, string LATA, string LEC, string LECType, string LIDBName, string LRN, string OCN);
+
+        [HttpGet("Number/Search/Bulk")]
+        public async Task<IActionResult> NumberSearchBulkAsync(string token, string dialedNumber)
+        {
+            if (!string.IsNullOrWhiteSpace(token) && token == "Memorable8142024")
+            {
+                // Add portable numbers to cart in bulk
+                if (!string.IsNullOrWhiteSpace(dialedNumber))
+                {
+                    var parsedNumbers = dialedNumber.ExtractDialedNumbers();
+
+                    if (!parsedNumbers.Any())
+                    {
+                        return BadRequest("No dialed phone numbers found. Please try a different query. 🥺👉👈");
+                    }
+
+                    var lookup = new LookupController(_configuration);
+
+                    var results = new List<PortedPhoneNumber>();
+                    await Parallel.ForEachAsync(parsedNumbers, async (number, token) =>
+                    {
+                        var result = await lookup.VerifyPortabilityAsync(number);
+                        results.Add(result);
+                    });
+
+                    var lookups = new List<BulkLookupResult>();
+                    foreach (var number in results)
+                    {
+                        lookups.Add(new BulkLookupResult(number.PortedDialedNumber, number.City,number.State, number.DateIngested, number.Wireless, number.Portable,number.LrnLookup.LastPorted,number.LrnLookup.SPID,number.LrnLookup.LATA,number.LrnLookup.LEC,number.LrnLookup.LECType,number.LrnLookup.LIDBName,number.LrnLookup.LRN,number.LrnLookup.OCN));
+                    }
+
+                    return Ok(lookups);
+                }
+                else
+                {
+                    return BadRequest("No dialed phone numbers found. Please try a different query. 🥺👉👈");
+                }
+            }
+            else
+            {
+                return BadRequest("Token is invalid. Please supply the correct token in your request or contact support@acceleratenetworks.com for help.");
+            }
+        }
+
 
         [HttpPost("Add/NewClient/{id}/ExtensionRegistration")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -609,7 +661,7 @@ namespace NumberSearch.Mvc.Controllers
                 return BadRequest(ModelState);
             }
 
-            var phoneNumber = await PhoneNumber.GetAsync(dialedPhoneNumber, _postgresql).ConfigureAwait(false);
+            var phoneNumber = await DataAccess.PhoneNumber.GetAsync(dialedPhoneNumber, _postgresql).ConfigureAwait(false);
             var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), DialedNumber = phoneNumber.DialedNumber, Quantity = 1 };
 
             var purchasable = false;
@@ -1088,7 +1140,7 @@ namespace NumberSearch.Mvc.Controllers
                 return BadRequest(ModelState);
             }
 
-            var phoneNumber = new PhoneNumber { DialedNumber = dialedPhoneNumber };
+            var phoneNumber = new DataAccess.PhoneNumber { DialedNumber = dialedPhoneNumber };
             var productOrder = new ProductOrder { DialedNumber = dialedPhoneNumber };
 
             await _httpContext.Session.LoadAsync().ConfigureAwait(false);
