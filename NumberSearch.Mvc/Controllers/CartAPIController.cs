@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.OutputCaching;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
@@ -37,6 +38,8 @@ namespace NumberSearch.Mvc.Controllers
         public record BulkLookupResult(string DialedNumber, string City, string State, DateTime DateIngested, bool Wireless, bool Portable, DateTime LastPorted, string SPID, string LATA, string LEC, string LECType, string LIDBName, string LRN, string OCN, string CarrierName, string CarrierLogoLink);
 
         [HttpGet("Number/Search/Bulk")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        [OutputCache(Duration = 0)]
         public async Task<IActionResult> NumberSearchBulkAsync(string token, string dialedNumber)
         {
             if (!string.IsNullOrWhiteSpace(token) && token == "Memorable8142024")
@@ -51,11 +54,10 @@ namespace NumberSearch.Mvc.Controllers
                         return BadRequest("No dialed phone numbers found. Please try a different query. 🥺👉👈");
                     }
 
-                    var lookup = new LookupController(_configuration);
-
                     var results = new List<PortedPhoneNumber>();
                     await Parallel.ForEachAsync(parsedNumbers, async (number, token) =>
                     {
+                        var lookup = new LookupController(_configuration);
                         var result = await lookup.VerifyPortabilityAsync(number);
                         results.Add(result);
                     });
