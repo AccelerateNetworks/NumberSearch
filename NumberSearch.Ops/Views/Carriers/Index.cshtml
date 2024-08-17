@@ -5,8 +5,146 @@
 
 <div class="d-flex justify-content-between align-items-center">
     <h1 class="display-4 p-3">📯 Carriers</h1>
-@*     <a asp-action="Create" class="btn btn-lg btn-success">Create New</a>
- *@</div>
+</div>
+<div class="row">
+    <div class="col-6">
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Total Carriers</th>
+                        <th>Unique Carriers</th>
+                        <th>Unique OCNs</th>
+                        <th>Unique SPIDs</th>
+                        <th>Unique LEC Types</th>
+                        <th>Unique LECs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>@Model?.Count()</td>
+                        <td>@Model?.Select(x => x.Name).Distinct().Count()</td>
+                        <td>@Model?.Select(x => x.Ocn).Distinct().Count()</td>
+                        <td>@Model?.Select(x => x.Spid).Distinct().Count()</td>
+                        <td>@Model?.Select(x => x.Lectype).Distinct().Count()</td>
+                        <td>@Model?.Select(x => x.Lec).Distinct().Count()</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-6">
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>LECTYPE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        @foreach (var lectype in Model?.Select(x => x.Lectype).Distinct())
+                        {
+                            <td>@Model?.Where(x => x.Lectype == lectype).Count() - @lectype</td>
+                        }
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<h4>Aggregated Carriers</h4>
+<div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover">
+        <thead>
+            <tr>
+                <th scope="col">
+                    Name
+                </th>
+                <th>
+                    Logo
+                </th>
+                <th scope="col">
+                    Type
+                </th>
+                <th>
+                    LEC
+                </th>
+                <th>
+                    LEC Type
+                </th>
+                <th scope="col">
+                    SPID
+                </th>
+                <th scope="col">
+                    OCN
+                </th>
+                <th>Unique OCNs</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                var topLevelCarriers = Model.DistinctBy(y => y.Name).OrderByDescending(x => x?.Name);
+                foreach (var product in topLevelCarriers)
+                {
+                    var types = Model.Where(x => x.Name == product.Name && !string.IsNullOrWhiteSpace(x.Type)).Select(x => x.Type).Distinct();
+                    var lecs = Model.Where(x => x.Name == product.Name && !string.IsNullOrWhiteSpace(x.Lec)).Select(x => x.Lec).Distinct();
+                    var lectypes = Model.Where(x => x.Name == product.Name && !string.IsNullOrWhiteSpace(x.Lectype)).Select(x => x.Lectype).Distinct();
+                    var ocns = Model.Where(x => x.Name == product.Name && !string.IsNullOrWhiteSpace(x.Ocn)).Select(x => x.Ocn).Distinct();
+                    var spids = Model.Where(x => x.Name == product.Name && !string.IsNullOrWhiteSpace(x.Spid)).Select(x => x.Spid).Distinct();
+                    var logos = Model.Where(x => x.Name == product.Name && !string.IsNullOrWhiteSpace(x.LogoLink)).Select(x => x.LogoLink).Distinct();
+                    var countRecords = Model.Where(x => x.Name == product.Name).Count();
+
+                    <tr style="background-color: @product.Color;">
+                        <td>
+                            @product?.Name
+                        </td>
+                        <td>
+                            @foreach (var logo in logos)
+                            {
+                                <img src="@logo" alt="@product?.Name" height="30">
+                            }
+                        </td>
+                        <td>
+                            @foreach (var type in types)
+                            {
+                                <p class="p-0 m-0">@type</p>
+                            }
+                        </td>
+                        <td>
+                            @foreach (var lec in lecs)
+                            {
+                                <p class="p-0 m-0">@lec</p>
+                            }
+                        </td>
+                        <td>
+                            @foreach (var lectype in lectypes)
+                            {
+                                <p class="p-0 m-0">@lectype</p>
+                            }
+                        </td>
+                        <td>
+                            @foreach (var spid in spids)
+                            {
+                                <p class="p-0 m-0">@spid</p>
+                            }
+                        </td>
+                        <td>
+                            @foreach (var ocn in ocns)
+                            {
+                                <p class="p-0 m-0">@ocn</p>
+                            }
+                        </td>
+                        <td>
+                            @countRecords
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+<h4>Recorded Carriers</h4>
 <div class="table-responsive">
     <table class="table table-striped table-bordered table-hover" id="table">
         <thead>
