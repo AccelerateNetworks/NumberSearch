@@ -44,7 +44,7 @@
                     string newLine = HttpUtility.UrlEncode(System.Environment.NewLine);
                     string email = "support@acceleratenetworks.com";
                     string subject = $"{failed.Count()} Messages received for {number}";
-                    string body = $"Hi there,{newLine}{newLine}We have received the follow messages for {number}. This number is not currently enrolled in our Web Texting service.{newLine}";
+                    string body = $"Hi there,{newLine}{newLine}We have received the following messages for {number}. This number is not currently enrolled in our Web Texting service.{newLine}";
                     foreach (var message in failed)
                     {
                         // 2000 char limit
@@ -53,7 +53,7 @@
                             body = $@"{body.Trim()}{newLine}From {message.From} on {message.DateReceivedUTC.ToShortDateString()} at {message.DateReceivedUTC.ToShortTimeString()}:{newLine}{message.Content.Replace(@"\", @"\\").Replace("&", "and").Replace("?", "").Replace("=", "")}{newLine}";
                         }
                     }
-                    body = $"{body}{newLine}To enroll in web texting for this phone number please respond to this email.{newLine}{newLine}Thanks!{newLine}Accelerate Networks{newLine}206-858-8747";
+                    body = $"{body}{newLine}To enroll in web texting for this phone number please respond to this email.{newLine}{newLine}";
                     @if (usage is not null)
                     {
                         <li>
