@@ -1,9 +1,13 @@
-using Amazon.S3;
+﻿using Amazon.S3;
 using Amazon.S3.Transfer;
+
+using DnsClient;
 
 using FirstCom;
 
 using Flurl.Http;
+
+using MailKit.Security;
 
 using Messaging;
 using Messaging.Migrations;
@@ -22,10 +26,13 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
+using MimeKit;
+
 using Models;
 
 using Npgsql;
 
+using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.Models;
 
@@ -40,6 +47,7 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Net.Mail;
 using System.Reflection;
 using System.ServiceModel.Channels;
 using System.Text;
@@ -48,6 +56,7 @@ using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
 using static Endpoints;
+using static NumberSearch.DataAccess.TeleDynamics.HardwareOrder;
 using static System.Net.Mime.MediaTypeNames;
 
 Log.Logger = new LoggerConfiguration()
@@ -584,10 +593,10 @@ try
             return TypedResults.BadRequest(ex.Message);
         }
     }).WithOpenApi(x => new(x)
-        {
-            Summary = "Receive an MMS Message.",
-            Description = "Submit inbound messages to this endpoint."
-        });
+    {
+        Summary = "Receive an MMS Message.",
+        Description = "Submit inbound messages to this endpoint."
+    });
 
     // When this issue is resolved we can simplify the way that we are receiving data in this endpoint: https://github.com/dotnet/aspnetcore/issues/39430 and https://stackoverflow.com/questions/71047077/net-6-minimal-api-and-multipart-form-data/71048827#71048827
     app.MapPost("/api/inbound/1pcom", Endpoints.InboundSMSFirstPointComAsync)
@@ -608,6 +617,13 @@ try
         .WithOpenApi(x => new(x)
         {
             Summary = "Endpoint that can be used to support functional testing of the message sending endpoints without actually sending it to the vendor.",
+            Description = "For testing purposes only."
+        });
+
+    app.MapPost("/message/forward/test/email", Endpoints.ForwardEmailTestAsync)
+        .WithOpenApi(x => new(x)
+        {
+            Summary = "Endpoint that can be used as the callback URL for a registered client to support functional testing of the message forwarding endpoints.",
             Description = "For testing purposes only."
         });
 
@@ -1985,6 +2001,53 @@ public static class Endpoints
         ? TypedResults.Ok("The incoming message was received and forwarded to the client.")
         : TypedResults.BadRequest("The client secret could not be matched for this number or the numbers were incorrectly formatted.");
     }
+
+    public static async Task<Results<Ok<string>, BadRequest<string>>>
+        ForwardEmailTestAsync(string ToEmailAddress, string Subject, string Message, AppSettings appSettings)
+    {
+
+        // Validate the email address as we do on the order form
+        if (!string.IsNullOrWhiteSpace(ToEmailAddress))
+        {
+            var emailDomain = new MailAddress(ToEmailAddress);
+
+            try
+            {
+                var lookup = new LookupClient();
+                var result = lookup.Query(emailDomain.Host, QueryType.MX);
+                var record = result.Answers.MxRecords().FirstOrDefault();
+                if (record is not null)
+                {
+                    Log.Information($"[Checkout] Email address {ToEmailAddress} has a valid domain: {emailDomain.Host}.");
+                }
+                else
+                {
+                    Log.Error($"[Checkout] Email address {ToEmailAddress} has an invalid domain: {emailDomain.Host}.");
+                    var message = $"💀 The email server at {emailDomain.Host} didn't have an MX record. Please supply a valid email address.";
+                    return TypedResults.BadRequest(message);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"[Checkout] Email address {ToEmailAddress} has an invalid domain: {emailDomain.Host}.");
+                var message = $"💀 The email server at {emailDomain.Host} didn't have an MX record. Please supply a valid email address.";
+                return TypedResults.BadRequest(message);
+            }
+        }
+
+        var email = new EmailMessage
+        {
+            PrimaryEmailAddress = ToEmailAddress,
+            Subject = Subject,
+            MessageBody = $"This is a test message sent at {DateTime.Now.ToShortDateString()} {DateTime.Now.ToShortTimeString()}. {Message}"
+        };
+
+        var checkSend = await email.SendEmailAsync(appSettings.ConnectionStrings.EmailUsername, appSettings.ConnectionStrings.EmailPassword);
+
+        return checkSend
+        ? TypedResults.Ok("The incoming message was received and forwarded to the client via email.")
+        : TypedResults.BadRequest("The client secret could not be matched for this number or the numbers were incorrectly formatted.");
+    }
 }
 
 namespace Models
@@ -1999,6 +2062,86 @@ namespace Models
     //        "text": "OK"
     //      }
     //    }
+
+    public class EmailMessage
+    {
+        public Guid EmailId { get; set; } = Guid.NewGuid();
+        public string PrimaryEmailAddress { get; set; } = string.Empty;
+        public string Subject { get; set; } = string.Empty;
+        public string MessageBody { get; set; } = string.Empty;
+        public DateTime DateSent { get; set; }
+        public bool Completed { get; set; }
+        public bool DoNotSend { get; set; }
+
+        /// <summary>
+        /// Submit an email to the mail server to be send out.
+        /// </summary>
+        /// <param name="username"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        public async Task<bool> SendEmailAsync(string username, string password)
+        {
+            // If any of the parameters are bad fail fast.
+            if (string.IsNullOrWhiteSpace(PrimaryEmailAddress)
+                || string.IsNullOrWhiteSpace(Subject)
+                || string.IsNullOrWhiteSpace(MessageBody))
+            {
+                return false;
+            }
+
+            DateSent = DateTime.Now;
+
+            // We don't want this to throw exceptions because they are expensive.
+            try
+            {
+                var outboundMessage = new MimeMessage
+                {
+                    Sender = new MailboxAddress("Number Search", username),
+                    Subject = Subject
+                };
+
+                var builder = new BodyBuilder
+                {
+                    HtmlBody = @$"<!DOCTYPE html><html><head><title></title></head><body>{MessageBody}</body></html>"
+                };
+
+                var ordersInbox = MailboxAddress.Parse(username);
+                var recipient = MailboxAddress.Parse(PrimaryEmailAddress);
+
+                outboundMessage.From.Add(ordersInbox);
+                outboundMessage.To.Add(recipient);
+
+                // If there's an attachment send it, if not just send the body.
+                //if (Multipart != null && Multipart.Count > 0)
+                //{
+                //    builder.Attachments.Add(Multipart);
+                //}
+
+                outboundMessage.Body = builder.ToMessageBody();
+
+                using var smtp = new MailKit.Net.Smtp.SmtpClient();
+                smtp.MessageSent += (sender, args) => { };
+                smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
+
+                await smtp.ConnectAsync("witcher.mxrouting.net", 587, SecureSocketOptions.StartTls).ConfigureAwait(false);
+                await smtp.AuthenticateAsync(username, password).ConfigureAwait(false);
+                await smtp.SendAsync(outboundMessage).ConfigureAwait(false);
+                await smtp.DisconnectAsync(true).ConfigureAwait(false);
+
+                Completed = true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal($"[Email] Failed to send email {EmailId}.");
+                Log.Fatal(ex.Message);
+                Log.Fatal(ex.StackTrace ?? "StackTrace was null.");
+                Completed = false;
+                return false;
+            }
+        }
+    }
+
 
     public class FirstPointResponse
     {
@@ -2294,6 +2437,9 @@ namespace Models
             public string OpsPassword { get; set; } = string.Empty;
             public string FirstPointOutboundMessageURL { get; set; } = string.Empty;
             public string FirstPointOutboundMMSMessageURL { get; set; } = string.Empty;
+            public string EmailUsername { get; set; } = string.Empty;
+            public string EmailPassword { get; set; } = string.Empty;
+
         }
     }
 }

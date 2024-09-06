@@ -13,6 +13,7 @@
 	<ItemGroup>
 		<PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.7" />
 		<PackageReference Include="AWSSDK.S3" Version="3.7.104.25" />
+		<PackageReference Include="DnsClient" Version="1.8.0" />
 		<PackageReference Include="Flurl.Http" Version="4.0.2" />
 		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.7" />

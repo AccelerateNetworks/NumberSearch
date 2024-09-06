@@ -743,7 +743,7 @@
                             <select asp-for="Cart.Order!.AddressUnitType" class="custom-select d-block w-100" id="unitType">
                                 @{
                                     var unitTypes = new string[] {
-                                        "",
+                                "",
                                 "Apartment",
                                 "Basement",
                                 "Building",
@@ -849,11 +849,14 @@
                                 }
                             }
                         </div>
-                        <div class="col-md-6 mb-3 hidden">
+                        <div class="col-md-6 mb-3">
                             <label for="sales">Sales Representative <span class="text-muted">(Optional)</span></label>
                             <select asp-for="Cart.Order!.SalesEmail" class="custom-select mr-sm-2" id="sales">
                                 <option value="support@acceleratenetworks.com">Support</option>
+                                <option value="charlie@geekservseattle.com">Charlie</option>
                                 <option value="dan@acceleratenetworks.com">Dan</option>
+                                <option value="domenicd@thepersonaltech.com">Domenic</option>
+                                <option value="travis@technologyronin.com">Travis</option>
                             </select>
                             <small class="text-muted">
                                 Optionally enter the name of your sales representive
