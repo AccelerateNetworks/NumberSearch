@@ -10,10 +10,8 @@ using Flurl.Http;
 using MailKit.Security;
 
 using Messaging;
-using Messaging.Migrations;
 
 using Microsoft.AspNetCore.Authentication.BearerToken;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
@@ -21,43 +19,26 @@ using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 using MimeKit;
 
 using Models;
 
-using Npgsql;
-
-using NumberSearch.DataAccess;
-using NumberSearch.DataAccess.InvoiceNinja;
-using NumberSearch.DataAccess.Models;
-
-using Org.BouncyCastle.Ocsp;
-
 using Prometheus;
 
 using Serilog;
 using Serilog.Events;
 
-using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Net.Mail;
-using System.Reflection;
 using System.ServiceModel.Channels;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
-
-using static Endpoints;
-using static NumberSearch.DataAccess.TeleDynamics.HardwareOrder;
-using static System.Net.Mime.MediaTypeNames;
 
 Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -868,17 +849,57 @@ public static class Endpoints
             });
         }
 
-        //if (string.IsNullOrWhiteSpace(registration.CallbackUrl) && !string.IsNullOrWhiteSpace(registration.Email) && !System.Net.Mail.MailAddress.TryCreate(registration.Email, out var address))
-        //{
-        //    return TypedResults.BadRequest(new RegistrationResponse
-        //    {
-        //        DialedNumber = registration.DialedNumber,
-        //        CallbackUrl = registration.CallbackUrl,
-        //        Email = registration.Email,
-        //        Registered = false,
-        //        Message = $"The Email provided {registration.Email} is invalid or not a well formatted address. Email was parsed as {address?.Address} which is invalid."
-        //    });
-        //}
+        if (!string.IsNullOrWhiteSpace(registration.Email) && !System.Net.Mail.MailAddress.TryCreate(registration.Email, out var address))
+        {
+            return TypedResults.BadRequest(new RegistrationResponse
+            {
+                DialedNumber = registration.DialedNumber,
+                CallbackUrl = registration.CallbackUrl,
+                Email = registration.Email,
+                Registered = false,
+                Message = $"The Email provided {registration.Email} is invalid or not a well formatted address. Email was parsed as {address?.Address} which is invalid."
+            });
+        }
+
+        // Validate the email address as we do on the order form
+        if (!string.IsNullOrWhiteSpace(registration.Email))
+        {
+            var emailDomain = new MailAddress(registration.Email);
+
+            try
+            {
+                var lookup = new LookupClient();
+                var result = lookup.Query(emailDomain.Host, QueryType.MX);
+                var record = result.Answers.MxRecords().FirstOrDefault();
+                if (record is not null)
+                {
+                    Log.Information($"Email address {registration.Email} has a valid domain: {emailDomain.Host}.");
+                }
+                else
+                {
+                    Log.Error($"Email address {registration.Email} has an invalid domain: {emailDomain.Host}.");
+                    return TypedResults.BadRequest(new RegistrationResponse
+                    {
+                        DialedNumber = registration.DialedNumber,
+                        CallbackUrl = registration.CallbackUrl,
+                        Email = registration.Email,
+                        Registered = false,
+                        Message = $"The email server at {emailDomain.Host} didn't have an MX record. Please supply a valid email address not {registration.Email}."
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return TypedResults.BadRequest(new RegistrationResponse
+                {
+                    DialedNumber = registration.DialedNumber,
+                    CallbackUrl = registration.CallbackUrl,
+                    Email = registration.Email,
+                    Registered = false,
+                    Message = $"The email server at {emailDomain.Host} didn't have an MX record. Please supply a valid email address not {registration.Email}. {ex.Message}"
+                });
+            }
+        }
 
         // Validate the callback Url to prevent dumb errors.
         if (!Uri.IsWellFormedUriString(registration.CallbackUrl, UriKind.Absolute) /*&& string.IsNullOrWhiteSpace(registration.Email)*/)
@@ -968,11 +989,11 @@ public static class Endpoints
                     updated = true;
                 }
 
-                //if (existingRegistration.Email != registration.Email && !string.IsNullOrWhiteSpace(registration.Email))
-                //{
-                //    existingRegistration.Email = registration.Email;
-                //    updated = true;
-                //}
+                if (existingRegistration.Email != registration.Email && !string.IsNullOrWhiteSpace(registration.Email))
+                {
+                    existingRegistration.Email = registration.Email;
+                    updated = true;
+                }
 
                 if (updated)
                 {
@@ -989,66 +1010,13 @@ public static class Endpoints
                     ClientSecret = registration.ClientSecret,
                     RegisteredUpstream = registeredUpstream,
                     UpstreamStatusDescription = upstreamStatusDescription,
-                    //Email = registration.Email,
+                    Email = registration.Email,
+                    EmailVerified = !string.IsNullOrWhiteSpace(registration.Email)
                 });
                 await db.SaveChangesAsync();
             }
 
             existingRegistration = await db.ClientRegistrations.FirstOrDefaultAsync(x => x.AsDialed == asDialedNumber.DialedNumber);
-
-            //if (existingRegistration is not null && string.IsNullOrWhiteSpace(existingRegistration.Email) && existingRegistration.EmailVerified is false)
-            //{
-            //    try
-            //    {
-            //        var outboundMessage = new MimeMessage
-            //        {
-            //            Sender = new MailboxAddress("TextToEmail", emailUsername),
-            //            Subject = $"Email Verification"
-            //        };
-
-            //        // Set the client secret if it was not provided.
-            //        if (string.IsNullOrWhiteSpace(registration.ClientSecret))
-            //        {
-            //            Random r = new Random();
-            //            int randNum = r.Next(999999);
-            //            registration.ClientSecret = randNum.ToString("D6");
-            //        }
-
-            //        var builder = new BodyBuilder
-            //        {
-            //            HtmlBody = @$"<!DOCTYPE html><html><head><title></title></head><body>Please respond with <b>{registration.ClientSecret}<b> to verify your email address and enroll {registration.DialedNumber} in text to email service from Accelerate Networks.</body></html>"
-            //        };
-
-            //        var ordersInbox = MailboxAddress.Parse(emailUsername);
-            //        var recipient = MailboxAddress.Parse(existingRegistration.Email);
-
-            //        outboundMessage.From.Add(ordersInbox);
-            //        outboundMessage.To.Add(recipient);
-
-            //        if (!string.IsNullOrWhiteSpace(carbonCopyEmail) && carbonCopyEmail.Contains("@"))
-            //        {
-            //            var cc = MailboxAddress.Parse(carbonCopyEmail);
-            //            outboundMessage.Cc.Add(cc);
-            //        }
-
-            //        outboundMessage.Body = builder.ToMessageBody();
-
-            //        using var smtp = new MailKit.Net.Smtp.SmtpClient();
-            //        smtp.MessageSent += (sender, args) => { };
-            //        smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
-
-            //        await smtp.ConnectAsync("witcher.mxrouting.net", 587, SecureSocketOptions.StartTls).ConfigureAwait(false);
-            //        await smtp.AuthenticateAsync(emailUsername, emailPassword).ConfigureAwait(false);
-            //        await smtp.SendAsync(outboundMessage).ConfigureAwait(false);
-            //        await smtp.DisconnectAsync(true).ConfigureAwait(false);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        Log.Fatal($"[Email] Failed to send email.");
-            //        Log.Fatal(ex.Message);
-            //        Log.Fatal(ex.StackTrace ?? "StackTrace was null.");
-            //    }
-            //}
 
             // Forward failed incoming messages for this number.
             var inboundMMS = await db.Messages.Where(x => x.To.Contains(asDialedNumber.DialedNumber) && x.MessageSource == MessageSource.Incoming && x.MessageType == MessageType.MMS && !x.Succeeded).ToListAsync();
@@ -1097,7 +1065,7 @@ public static class Endpoints
             });
         }
 
-        return TypedResults.Ok(new RegistrationResponse { DialedNumber = dialedNumber, CallbackUrl = registration.CallbackUrl, /*Email = registration.Email,*/ Registered = true, Message = message, RegisteredUpstream = registeredUpstream, UpstreamStatusDescription = upstreamStatusDescription });
+        return TypedResults.Ok(new RegistrationResponse { DialedNumber = dialedNumber, CallbackUrl = registration.CallbackUrl, Email = registration.Email, Registered = true, Message = message, RegisteredUpstream = registeredUpstream, UpstreamStatusDescription = upstreamStatusDescription });
 
     }
 
@@ -1909,6 +1877,19 @@ public static class Endpoints
                     return TypedResults.BadRequest($"Failed to save incoming message to the database. {ex.Message} {System.Text.Json.JsonSerializer.Serialize(messageRecord)}");
                 }
 
+                // Forward to email if enabled
+                if (client.EmailVerified && !string.IsNullOrWhiteSpace(client.Email))
+                {
+                    var email = new EmailMessage
+                    {
+                        PrimaryEmailAddress = client.Email,
+                        Subject = $"New Message from {toForward.From}",
+                        MessageBody = $"<p>You've recieved a new message to {client.AsDialed} from {toForward.From} at {toForward.DateReceivedUTC.ToLocalTime()}.</p><p>{toForward.Content}</p><p>View this message in <a href='{client.CallbackUrl}' target='_blank'>WebTexting</a></p>",
+                    };
+
+                    var checkSend = await email.SendEmailAsync(appSettings.ConnectionStrings.EmailUsername, appSettings.ConnectionStrings.EmailPassword);
+                }
+
                 Log.Information(System.Text.Json.JsonSerializer.Serialize(messageRecord));
                 return TypedResults.Ok("The incoming message was received and forwarded to the client.");
             }
@@ -2133,7 +2114,7 @@ namespace Models
             }
             catch (Exception ex)
             {
-                Log.Fatal($"[Email] Failed to send email {EmailId}.");
+                Log.Fatal($"[Email] Failed to send email {Subject}.");
                 Log.Fatal(ex.Message);
                 Log.Fatal(ex.StackTrace ?? "StackTrace was null.");
                 Completed = false;
@@ -2373,8 +2354,8 @@ namespace Models
         public string CallbackUrl { get; set; } = string.Empty;
         [DataType(DataType.Password)]
         public string ClientSecret { get; set; } = string.Empty;
-        //[DataType(DataType.EmailAddress)]
-        //public string Email { get; set; } = string.Empty;
+        [DataType(DataType.EmailAddress)]
+        public string Email { get; set; } = string.Empty;
     }
 
     public class RegistrationResponse
@@ -2389,8 +2370,8 @@ namespace Models
         public string Message { get; set; } = string.Empty;
         public bool RegisteredUpstream { get; set; } = false;
         public string UpstreamStatusDescription { get; set; } = string.Empty;
-        //[DataType(DataType.EmailAddress)]
-        //public string Email { get; set; } = string.Empty;
+        [DataType(DataType.EmailAddress)]
+        public string Email { get; set; } = string.Empty;
     }
 
     public class ClientRegistration
@@ -2408,9 +2389,9 @@ namespace Models
         public bool RegisteredUpstream { get; set; } = false;
         public string UpstreamStatusDescription { get; set; } = string.Empty;
         public DateTime DateLastTestMessageReceived { get; set; } = DateTime.MinValue;
-        //[DataType(DataType.EmailAddress)]
-        //public string Email { get; set; } = string.Empty;
-        //public bool EmailVerified { get; set; } = false;
+        [DataType(DataType.EmailAddress)]
+        public string Email { get; set; } = string.Empty;
+        public bool EmailVerified { get; set; } = false;
     }
 
     public class AppSettings
