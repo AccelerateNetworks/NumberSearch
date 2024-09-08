@@ -992,6 +992,15 @@ public static class Endpoints
                 if (existingRegistration.Email != registration.Email && !string.IsNullOrWhiteSpace(registration.Email))
                 {
                     existingRegistration.Email = registration.Email;
+                    existingRegistration.EmailVerified = true;
+                    updated = true;
+                }
+
+                // Unregister an email
+                if (existingRegistration.Email != registration.Email && string.IsNullOrWhiteSpace(registration.Email))
+                {
+                    existingRegistration.Email = registration.Email;
+                    existingRegistration.EmailVerified = false;
                     updated = true;
                 }
 
