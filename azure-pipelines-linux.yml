@@ -34,6 +34,8 @@ variables:
   ConnectionStrings.EmailDan: $(EmailDan)
   ConnectionStrings.EmailTom: $(EmailTom)
   ConnectionStrings.EmailSupport: $(EmailSupport)
+  ConnectionStrings.EmailUsername: $(EmailUsername)
+  ConnectionStrings.EmailPassword: $(EmailPassword)
   ConnectionStrings.AzureStorageAccount: $(AzureStorageAccount)
   ConnectionStrings.TeleDynamicsUsername: $(TeleDynamicsUsername)
   ConnectionStrings.TeleDynamicsPassword: $(TeleDynamicsPassword)
