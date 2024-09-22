@@ -1892,13 +1892,13 @@ public static class Endpoints
                     string messageContent = $"<p>{toForward.Content}</p>";
                     var myUri = new Uri(client.CallbackUrl);
                     string fbxClientDomain = myUri.GetLeftPart(System.UriPartial.Authority);
-                    string messageLink = $"<hr/><p>Reply to this message in <a href='{fbxClientDomain}' target='_blank'>Web Texting</a></p>";
-                    string messageContext = $"<p>You've recieved a new message from {toForward.From} to {client.AsDialed} at {toForward.DateReceivedUTC.ToLocalTime()}.</p>";
+                    string messageLink = $"<hr/><p>Reply to this text message in <a href='{fbxClientDomain}' target='_blank'>Web Texting</a> from Accelerate Networks 🚀</p>";
+                    string messageContext = $"<p>You've received a new text message from {toForward.From} to {client.AsDialed} at {toForward.DateReceivedUTC.ToLocalTime()}.</p>";
 
                     var email = new EmailMessage
                     {
                         PrimaryEmailAddress = client.Email,
-                        Subject = $"New Message from {toForward.From} to {toForward.To}",
+                        Subject = $"New text message from {toForward.From} to {toForward.To}",
                         MessageBody = $"{messageContent}<div class='moz-signature'>{messageLink}{messageContext}</div>",
                     };
 
