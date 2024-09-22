@@ -1889,14 +1889,20 @@ public static class Endpoints
                 // Forward to email if enabled
                 if (client.EmailVerified && !string.IsNullOrWhiteSpace(client.Email))
                 {
+                    string messageContent = $"<p>{toForward.Content}</p>";
+                    var myUri = new Uri(client.CallbackUrl);
+                    string fbxClientDomain = myUri.GetLeftPart(System.UriPartial.Authority);
+                    string messageLink = $"<hr/><p>Reply to this message in <a href='{fbxClientDomain}' target='_blank'>Web Texting</a></p>";
+                    string messageContext = $"<p>You've recieved a new message from {toForward.From} to {client.AsDialed} at {toForward.DateReceivedUTC.ToLocalTime()}.</p>";
+
                     var email = new EmailMessage
                     {
                         PrimaryEmailAddress = client.Email,
-                        Subject = $"New Message from {toForward.From}",
-                        MessageBody = $"<p>You've recieved a new message to {client.AsDialed} from {toForward.From} at {toForward.DateReceivedUTC.ToLocalTime()}.</p><p>{toForward.Content}</p><p>View this message in <a href='{client.CallbackUrl}' target='_blank'>WebTexting</a></p>",
+                        Subject = $"New Message from {toForward.From} to {toForward.To}",
+                        MessageBody = $"{messageContent}<div class='moz-signature'>{messageLink}{messageContext}</div>",
                     };
 
-                    var checkSend = await email.SendEmailAsync(appSettings.ConnectionStrings.EmailUsername, appSettings.ConnectionStrings.EmailPassword);
+                    var checkSend = await email.SendEmailAsync(appSettings.ConnectionStrings.EmailUsername, appSettings.ConnectionStrings.EmailPassword, $"{toForward.From}@texts.acceleratenetworks.com");
                 }
 
                 Log.Information(System.Text.Json.JsonSerializer.Serialize(messageRecord));
@@ -2032,7 +2038,7 @@ public static class Endpoints
             MessageBody = $"This is a test message sent at {DateTime.Now.ToShortDateString()} {DateTime.Now.ToShortTimeString()}. {Message}"
         };
 
-        var checkSend = await email.SendEmailAsync(appSettings.ConnectionStrings.EmailUsername, appSettings.ConnectionStrings.EmailPassword);
+        var checkSend = await email.SendEmailAsync(appSettings.ConnectionStrings.EmailUsername, appSettings.ConnectionStrings.EmailPassword, "test@texts.acceleratenetworks.com");
 
         return checkSend
         ? TypedResults.Ok("The incoming message was received and forwarded to the client via email.")
@@ -2069,7 +2075,7 @@ namespace Models
         /// <param name="username"></param>
         /// <param name="password"></param>
         /// <returns></returns>
-        public async Task<bool> SendEmailAsync(string username, string password)
+        public async Task<bool> SendEmailAsync(string username, string password, string fromEmailAddress)
         {
             // If any of the parameters are bad fail fast.
             if (string.IsNullOrWhiteSpace(PrimaryEmailAddress)
@@ -2095,10 +2101,10 @@ namespace Models
                     HtmlBody = @$"<!DOCTYPE html><html><head><title></title></head><body>{MessageBody}</body></html>"
                 };
 
-                var ordersInbox = MailboxAddress.Parse(username);
+                var sender = MailboxAddress.Parse(fromEmailAddress);
                 var recipient = MailboxAddress.Parse(PrimaryEmailAddress);
 
-                outboundMessage.From.Add(ordersInbox);
+                outboundMessage.From.Add(sender);
                 outboundMessage.To.Add(recipient);
 
                 // If there's an attachment send it, if not just send the body.
