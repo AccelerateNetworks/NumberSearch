@@ -49,24 +49,24 @@ namespace NumberSearch.DataAccess
         public string BillImagePath { get; set; } = string.Empty;
         public string BillImageFileType { get; set; } = string.Empty;
 
-        public static async Task<NewClient> GetAsync(Guid newClientId, string connectionString)
+        public static async Task<NewClient?> GetAsync(Guid newClientId, string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QuerySingleOrDefaultAsync<NewClient>("SELECT \"NewClientId\", \"OrderId\", \"BillingClientId\", \"PhoneMenu\", \"PhonesToRingOrMenuDescription\", \"BusinessHours\", \"AfterHoursVoicemail\", \"TextingService\", \"TextingServiceName\", \"OverheadPaging\", \"OverheadPagingDescription\", \"Intercom\", \"CustomHoldMusic\", \"HoldMusicDescription\", \"PhoneOfflineInstructions\", \"DateUpdated\", \"SpeedDial\", \"IntercomDescription\", \"ContractStartDate\", \"ISP\", \"ContractCommitmentMonths\", \"UploadSpeed\", \"DownloadSpeed\", \"ContractMonthlyCost\", \"BillImagePath\", \"BillImageFileType\" FROM public.\"NewClients\" " +
+                .QuerySingleOrDefaultAsync<NewClient?>("SELECT \"NewClientId\", \"OrderId\", \"BillingClientId\", \"PhoneMenu\", \"PhonesToRingOrMenuDescription\", \"BusinessHours\", \"AfterHoursVoicemail\", \"TextingService\", \"TextingServiceName\", \"OverheadPaging\", \"OverheadPagingDescription\", \"Intercom\", \"CustomHoldMusic\", \"HoldMusicDescription\", \"PhoneOfflineInstructions\", \"DateUpdated\", \"SpeedDial\", \"IntercomDescription\", \"ContractStartDate\", \"ISP\", \"ContractCommitmentMonths\", \"UploadSpeed\", \"DownloadSpeed\", \"ContractMonthlyCost\", \"BillImagePath\", \"BillImageFileType\" FROM public.\"NewClients\" " +
                 "WHERE \"NewClientId\" = @newClientId", new { newClientId })
                 .ConfigureAwait(false);
 
             return result;
         }
 
-        public static async Task<NewClient> GetByOrderIdAsync(Guid orderId, string connectionString)
+        public static async Task<NewClient?> GetByOrderIdAsync(Guid orderId, string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .QuerySingleOrDefaultAsync<NewClient>("SELECT \"NewClientId\", \"OrderId\", \"BillingClientId\", \"PhoneMenu\", \"PhonesToRingOrMenuDescription\", \"BusinessHours\", \"AfterHoursVoicemail\", \"TextingService\", \"TextingServiceName\", \"OverheadPaging\", \"OverheadPagingDescription\", \"Intercom\", \"CustomHoldMusic\", \"HoldMusicDescription\", \"PhoneOfflineInstructions\", \"DateUpdated\", \"SpeedDial\", \"IntercomDescription\", \"ContractStartDate\", \"ISP\", \"ContractCommitmentMonths\", \"UploadSpeed\", \"DownloadSpeed\", \"ContractMonthlyCost\", \"BillImagePath\", \"BillImageFileType\" FROM public.\"NewClients\" " +
+                .QuerySingleOrDefaultAsync<NewClient?>("SELECT \"NewClientId\", \"OrderId\", \"BillingClientId\", \"PhoneMenu\", \"PhonesToRingOrMenuDescription\", \"BusinessHours\", \"AfterHoursVoicemail\", \"TextingService\", \"TextingServiceName\", \"OverheadPaging\", \"OverheadPagingDescription\", \"Intercom\", \"CustomHoldMusic\", \"HoldMusicDescription\", \"PhoneOfflineInstructions\", \"DateUpdated\", \"SpeedDial\", \"IntercomDescription\", \"ContractStartDate\", \"ISP\", \"ContractCommitmentMonths\", \"UploadSpeed\", \"DownloadSpeed\", \"ContractMonthlyCost\", \"BillImagePath\", \"BillImageFileType\" FROM public.\"NewClients\" " +
                 "WHERE \"OrderId\" = @orderId", new { orderId })
                 .ConfigureAwait(false);
 

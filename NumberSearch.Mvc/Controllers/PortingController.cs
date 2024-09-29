@@ -308,7 +308,7 @@ namespace NumberSearch.Mvc.Controllers
                     if (checkExisting && order is not null)
                     {
                         // Associate the ported numbers with their porting information.
-                        portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                        portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false) ?? new();
 
                         var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
 
@@ -324,7 +324,7 @@ namespace NumberSearch.Mvc.Controllers
 
                     return View("Success", new OrderWithPorts
                     {
-                        Order = order,
+                        Order = order ?? new(),
                         PortRequest = existing
                     });
                 }
@@ -404,7 +404,7 @@ namespace NumberSearch.Mvc.Controllers
             if (checkPortRequest && order is not null)
             {
                 // Associate the ported numbers with their porting information.
-                portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false) ?? new();
 
                 var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
 

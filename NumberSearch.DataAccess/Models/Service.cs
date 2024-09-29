@@ -21,7 +21,7 @@ namespace NumberSearch.DataAccess
         /// <param name="ProductId"></param>
         /// <param name="connectionString"></param>
         /// <returns></returns>
-        public static async Task<Service> GetAsync(Guid serviceId, string connectionString)
+        public static async Task<Service?> GetAsync(Guid serviceId, string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);
 

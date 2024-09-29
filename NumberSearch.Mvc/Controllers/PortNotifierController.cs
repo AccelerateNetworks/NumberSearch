@@ -91,7 +91,7 @@ namespace NumberSearch.Mvc.Controllers
                         LocalExchangeCarrier = checkNumber.lec,
                         LocalExchangeCarrierType = checkNumber.lectype,
                         ServiceProfileIdentifier = checkNumber.spid,
-                        Activation = checkNumber.activation.ToString(),
+                        Activation = checkNumber.activation?.ToString() ?? string.Empty,
                         LIDBName = checkNumber.LIDBName,
                         LastPorted = checkLong ? new DateTime(1970, 1, 1).AddSeconds(timeInSeconds) : DateTime.Now,
                         DateToExpire = DateTime.Now.AddYears(1)

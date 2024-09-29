@@ -51,7 +51,7 @@ namespace NumberSearch.DataAccess
         public string InternalNotes { get; set; } = string.Empty;
         public string QuoteStatus { get; set; } = string.Empty;
 
-        public static async Task<Order> GetByIdAsync(Guid orderId, string connectionString)
+        public static async Task<Order?> GetByIdAsync(Guid orderId, string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);
 

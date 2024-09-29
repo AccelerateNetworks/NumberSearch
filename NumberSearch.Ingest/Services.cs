@@ -85,7 +85,7 @@ namespace NumberSearch.Ingest
         /// <returns></returns>
         public static async Task<IngestStatistics> SubmitPhoneNumbersAsync(PhoneNumber[] numbers, string connectionString)
         {
-            var stats = new IngestStatistics();
+            IngestStatistics stats = new();
 
             var inserts = new Dictionary<string, PhoneNumber>();
             var updates = new Dictionary<string, PhoneNumber>();
@@ -139,7 +139,7 @@ namespace NumberSearch.Ingest
 
             var count = 0;
 
-            if (updates is not null && updates.Any())
+            if (updates is not null && updates.Count != 0)
             {
                 ParallelOptions options = new()
                 {
@@ -194,7 +194,7 @@ namespace NumberSearch.Ingest
                 }
             }
 
-            return stats;
+            return stats ?? new();
         }
 
         /// <summary>

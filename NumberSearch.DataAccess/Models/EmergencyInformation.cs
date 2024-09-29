@@ -35,7 +35,7 @@ namespace NumberSearch.DataAccess
                 .ConfigureAwait(false);
         }
 
-        public static async Task<EmergencyInformation> GetByIdAsync(Guid EmergencyInformationId, string connectionString)
+        public static async Task<EmergencyInformation?> GetByIdAsync(Guid EmergencyInformationId, string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);
 

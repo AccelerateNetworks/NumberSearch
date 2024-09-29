@@ -65,7 +65,7 @@ namespace NumberSearch.DataAccess
         /// <param name="orderId"></param>
         /// <param name="connectionString"></param>
         /// <returns></returns>
-        public static async Task<PortRequest> GetByOrderIdAsync(Guid orderId, string connectionString)
+        public static async Task<PortRequest?> GetByOrderIdAsync(Guid orderId, string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);
 

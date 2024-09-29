@@ -137,7 +137,7 @@
             </table>
         </div>
     </div>
-    @if (Model.Carriers.Any())
+    @if (Model is not null && Model.Carriers.Length > 0)
     {
         <div class="col-md-12">
             <h1 class="display-4 p-3">📯 Carriers with similar LECs</h1>

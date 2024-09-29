@@ -23,7 +23,7 @@ namespace NumberSearch.DataAccess
         /// <param name="couponId"></param>
         /// <param name="connectionString"></param>
         /// <returns></returns>
-        public static async Task<Coupon> GetByIdAsync(Guid couponId, string connectionString)
+        public static async Task<Coupon?> GetByIdAsync(Guid couponId, string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);
 

@@ -9,22 +9,22 @@ namespace NumberSearch.DataAccess.Twilio
 
     public class LineTypeIntelligenceResponse
     {
-        public object call_forwarding { get; set; }
-        public object caller_name { get; set; }
-        public string calling_country_code { get; set; }
-        public string country_code { get; set; }
-        public object disposable_phone_number_risk { get; set; }
-        public object identity_match { get; set; }
+        public object call_forwarding { get; set; } = new();
+        public object caller_name { get; set; } = new();
+        public string calling_country_code { get; set; } = string.Empty;
+        public string country_code { get; set; } = string.Empty;
+        public object disposable_phone_number_risk { get; set; } = new();
+        public object identity_match { get; set; } = new();
         public LineTypeIntelligence line_type_intelligence { get; set; } = new();
-        public object live_activity { get; set; }
-        public string national_format { get; set; }
-        public string phone_number { get; set; }
-        public object reassigned_number { get; set; }
-        public object sim_swap { get; set; }
-        public object sms_pumping_risk { get; set; }
-        public string url { get; set; }
+        public object live_activity { get; set; } = new();
+        public string national_format { get; set; } = string.Empty;
+        public string phone_number { get; set; } = string.Empty;
+        public object reassigned_number { get; set; } = new();
+        public object sim_swap { get; set; } = new();
+        public object sms_pumping_risk { get; set; } = new();
+        public string url { get; set; } = string.Empty;
         public bool valid { get; set; }
-        public object[] validation_errors { get; set; }
+        public object[] validation_errors { get; set; } = [];
 
         public static async Task<LineTypeIntelligenceResponse> GetByDialedNumberAsync(string dialedNumber, string username, string password)
         {
@@ -52,10 +52,10 @@ namespace NumberSearch.DataAccess.Twilio
 
     public class LineTypeIntelligence
     {
-        public string carrier_name { get; set; }
-        public object error_code { get; set; }
-        public string mobile_country_code { get; set; }
-        public string mobile_network_code { get; set; }
-        public string type { get; set; }
+        public string carrier_name { get; set; } = string.Empty;
+        public object error_code { get; set; } = new();
+        public string mobile_country_code { get; set; } = string.Empty;
+        public string mobile_network_code { get; set; } = string.Empty;
+        public string type { get; set; } = string.Empty;
     }
 }

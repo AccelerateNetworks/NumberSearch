@@ -43,7 +43,7 @@ namespace NumberSearch.DataAccess
             return result;
         }
 
-        public static async Task<IngestStatistics> GetLastIngestAsync(string ingestedFrom, string connectionString)
+        public static async Task<IngestStatistics?> GetLastIngestAsync(string ingestedFrom, string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);
 
@@ -55,7 +55,7 @@ namespace NumberSearch.DataAccess
             return result;
         }
 
-        public static async Task<IngestStatistics> GetLockAsync(string ingestedFrom, string connectionString)
+        public static async Task<IngestStatistics?> GetLockAsync(string ingestedFrom, string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);
 

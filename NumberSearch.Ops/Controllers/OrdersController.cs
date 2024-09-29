@@ -438,7 +438,7 @@ public class OrdersController : Controller
                                 }
                                 else
                                 {
-                                    throw ex;
+                                    throw;
                                 }
                             }
                         }
@@ -451,7 +451,7 @@ public class OrdersController : Controller
                         }
                         else
                         {
-                            throw ex;
+                            throw;
                         }
                     }
                 }

@@ -12,23 +12,23 @@ namespace NumberSearch.DataAccess
 {
     public class PhoneNumberLookup
     {
-        public Guid PhoneNumberLookupId { get; set; }
-        public string DialedNumber { get; set; }
-        public string LRN { get; set; }
-        public string OCN { get; set; }
-        public string LATA { get; set; }
-        public string City { get; set; }
-        public string Ratecenter { get; set; }
-        public string State { get; set; }
-        public string Jurisdiction { get; set; }
+        public Guid PhoneNumberLookupId { get; set; } = new();
+        public string DialedNumber { get; set; } = string.Empty;
+        public string LRN { get; set; } = string.Empty;
+        public string OCN { get; set; } = string.Empty;
+        public string LATA { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        public string Ratecenter { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
+        public string Jurisdiction { get; set; } = string.Empty;
         public bool Local { get; set; }
-        public string LEC { get; set; }
-        public string LECType { get; set; }
-        public string SPID { get; set; }
-        public string LIDBName { get; set; }
-        public string LosingCarrier { get; set; }
+        public string LEC { get; set; } = string.Empty;
+        public string LECType { get; set; } = string.Empty;
+        public string SPID { get; set; } = string.Empty;
+        public string LIDBName { get; set; } = string.Empty;
+        public string LosingCarrier { get; set; } = string.Empty;
         public DateTime LastPorted { get; set; }
-        public string IngestedFrom { get; set; }
+        public string IngestedFrom { get; set; } = string.Empty;
         public DateTime DateIngested { get; set; }
         public Guid? CarrierId { get; set; }
 

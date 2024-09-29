@@ -87,7 +87,7 @@ namespace NumberSearch.Ops.Controllers
             }
             catch (FlurlHttpException ex)
             {
-                message = "❌ Failed to get client registration data from sms.callpipe.com.";
+                message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
             }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             return View(new MessagingResult { ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)], Owned = ownedNumbers, Message = message });
@@ -135,7 +135,7 @@ namespace NumberSearch.Ops.Controllers
             }
             catch (FlurlHttpException ex)
             {
-                message = "❌ Failed to get client registration data from sms.callpipe.com.";
+                message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
             }
 
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
@@ -202,7 +202,7 @@ namespace NumberSearch.Ops.Controllers
             }
             catch (FlurlHttpException ex)
             {
-                result.Message = "❌ Failed to get client registration data from sms.callpipe.com.";
+                result.Message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
             }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
@@ -340,7 +340,7 @@ namespace NumberSearch.Ops.Controllers
             }
             catch (FlurlHttpException ex)
             {
-                result.Message = "❌ Failed to get client registration data from sms.callpipe.com.";
+                result.Message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
             }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
@@ -388,7 +388,7 @@ namespace NumberSearch.Ops.Controllers
             }
             catch (FlurlHttpException ex)
             {
-                message = "❌ Failed to get client registration data from sms.callpipe.com.";
+                message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
             }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             return View("Index", new MessagingResult { ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray(), Owned = ownedNumbers, Message = message, AlertType = alertType });
@@ -439,7 +439,7 @@ namespace NumberSearch.Ops.Controllers
             }
             catch (FlurlHttpException ex)
             {
-                result.Message = "❌ Failed to get client registration data from sms.callpipe.com.";
+                result.Message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
             }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
@@ -562,7 +562,7 @@ namespace NumberSearch.Ops.Controllers
             }
             catch (FlurlHttpException ex)
             {
-                result.Message = "❌ Failed to get client registration data from sms.callpipe.com.";
+                result.Message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
             }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             result.ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)];
@@ -597,7 +597,7 @@ namespace NumberSearch.Ops.Controllers
             }
             catch (FlurlHttpException ex)
             {
-                result.Message = "❌ Failed to get client registration data from sms.callpipe.com.";
+                result.Message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
             }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             var exportReady = new List<CSVExport>(stats.Count);
@@ -713,7 +713,7 @@ namespace NumberSearch.Ops.Controllers
             }
             catch (FlurlHttpException ex)
             {
-                result.Message = "❌ Failed to get client registration data from sms.callpipe.com.";
+                result.Message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
             }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             result.ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)];

@@ -258,7 +258,7 @@
                                                         <input type="text" value="@item?.Name" class="form-control" name="product" id="product" hidden>
                                                         <input type="number" value="@productOrder.Quantity" max="999" min="1" class="form-control" name="quantity" id="quantity">
                                                     </div>
-                                                    <button onclick="RemoveFromCart('Service', '@item.ServiceId', @productOrder.Quantity, this)" class="btn btn-outline-danger">
+                                                    <button onclick="RemoveFromCart('Service', '@item?.ServiceId', @productOrder.Quantity, this)" class="btn btn-outline-danger">
                                                         <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                         Remove
                                                     </button>

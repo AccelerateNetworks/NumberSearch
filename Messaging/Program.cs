@@ -2025,8 +2025,8 @@ public static class Endpoints
             }
             catch (Exception ex)
             {
-                Log.Error($"[Checkout] Email address {ToEmailAddress} has an invalid domain: {emailDomain.Host}.");
-                var message = $"💀 The email server at {emailDomain.Host} didn't have an MX record. Please supply a valid email address.";
+                Log.Error($"[Checkout] Email address {ToEmailAddress} has an invalid domain: {emailDomain.Host}. {ex.Message}");
+                var message = $"💀 The email server at {emailDomain.Host} didn't have an MX record. Please supply a valid email address. {ex.Message}";
                 return TypedResults.BadRequest(message);
             }
         }

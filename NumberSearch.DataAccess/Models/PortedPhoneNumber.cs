@@ -133,7 +133,7 @@ namespace NumberSearch.DataAccess
         /// <param name="dialedNumber"></param>
         /// <param name="connectionString"></param>
         /// <returns></returns>
-        public static async Task<PortedPhoneNumber> GetByIdAsync(Guid PortedPhoneNumberId, string connectionString)
+        public static async Task<PortedPhoneNumber?> GetByIdAsync(Guid PortedPhoneNumberId, string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);
 

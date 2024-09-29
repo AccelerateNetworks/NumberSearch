@@ -62,7 +62,7 @@ namespace NumberSearch.Mvc.Controllers
                     var lookups = new List<BulkLookupResult>();
                     foreach (var number in results)
                     {
-                        lookups.Add(new BulkLookupResult(number.PortedDialedNumber, number.City,number.State, number.DateIngested, number.Wireless, number.Portable,number.LrnLookup.LastPorted,number.LrnLookup.SPID,number.LrnLookup.LATA,number.LrnLookup.LEC,number.LrnLookup.LECType,number.LrnLookup.LIDBName,number.LrnLookup.LRN,number.LrnLookup.OCN, number.Carrier.Name, number.Carrier.LogoLink, number.Carrier.Color, number.Carrier.Type));
+                        lookups.Add(new BulkLookupResult(number.PortedDialedNumber, number.City, number.State, number.DateIngested, number.Wireless, number.Portable, number.LrnLookup.LastPorted, number.LrnLookup.SPID, number.LrnLookup.LATA, number.LrnLookup.LEC, number.LrnLookup.LECType, number.LrnLookup.LIDBName, number.LrnLookup.LRN, number.LrnLookup.OCN, number.Carrier.Name, number.Carrier.LogoLink, number.Carrier.Color, number.Carrier.Type));
                     }
 
                     return Ok(lookups);
@@ -923,7 +923,7 @@ namespace NumberSearch.Mvc.Controllers
                         LocalExchangeCarrier = checkNumber.lec,
                         LocalExchangeCarrierType = checkNumber.lectype,
                         ServiceProfileIdentifier = checkNumber.spid,
-                        Activation = checkNumber.activation.ToString(),
+                        Activation = checkNumber.activation?.ToString() ?? string.Empty,
                         LIDBName = checkNumber.LIDBName,
                         LastPorted = checkLong ? new DateTime(1970, 1, 1).AddSeconds(timeInSeconds) : DateTime.Now,
                         DateToExpire = DateTime.Now.AddYears(1)
@@ -964,26 +964,25 @@ namespace NumberSearch.Mvc.Controllers
             }
 
             var product = await Product.GetByIdAsync(productId, _postgresql).ConfigureAwait(false);
-            var productOrder = new ProductOrder
+            if (product is not null)
             {
-                ProductOrderId = Guid.NewGuid(),
-                ProductId = product.ProductId,
-                Quantity = Quantity > 0 ? Quantity : 1
-            };
+                var productOrder = new ProductOrder
+                {
+                    ProductOrderId = Guid.NewGuid(),
+                    ProductId = product.ProductId,
+                    Quantity = Quantity > 0 ? Quantity : 1
+                };
 
-            await _httpContext.Session.LoadAsync().ConfigureAwait(false);
-            var cart = Cart.GetFromSession(_httpContext.Session);
-            var checkAdd = cart.AddProduct(product, productOrder);
-            var checkSet = cart.SetToSession(_httpContext.Session);
-
-            if (checkAdd && checkSet)
-            {
-                return Ok(productId.ToString());
+                await _httpContext.Session.LoadAsync().ConfigureAwait(false);
+                var cart = Cart.GetFromSession(_httpContext.Session);
+                var checkAdd = cart.AddProduct(product, productOrder);
+                var checkSet = cart.SetToSession(_httpContext.Session);
+                if (checkAdd && checkSet)
+                {
+                    return Ok(productId.ToString());
+                }
             }
-            else
-            {
-                return BadRequest($"Failed to purchase product {productId}.");
-            }
+            return BadRequest($"Failed to purchase product {productId}.");
         }
 
         public async Task<IActionResult> BuyServiceAsync(Guid serviceId, int Quantity)
@@ -994,72 +993,78 @@ namespace NumberSearch.Mvc.Controllers
             }
 
             var service = await Service.GetAsync(serviceId, _postgresql).ConfigureAwait(false);
-            var productOrder = new ProductOrder
+            if (service is not null)
             {
-                ProductOrderId = Guid.NewGuid(),
-                ServiceId = service.ServiceId,
-                Quantity = Quantity > 0 ? Quantity : 1
-            };
-
-            await _httpContext.Session.LoadAsync().ConfigureAwait(false);
-            var cart = Cart.GetFromSession(_httpContext.Session);
-            var checkAdd = cart.AddService(service, productOrder);
-
-            var stdSeat = new Guid("16e2c639-445b-4ae6-9925-07300318206b");
-            var concurrentSeat = new Guid("48eb4627-8692-4a3b-8be1-be64bbeea534");
-
-            // Add required E911 fees to the order for seats and lines.
-            if (service.ServiceId == concurrentSeat || service.ServiceId == stdSeat)
-            {
-                var e911Id = new Guid("1b3ae0e0-e308-4f99-88e1-b9c220bc02d5");
-                var e911fee = await Service.GetAsync(e911Id, _postgresql).ConfigureAwait(false);
-                var e911ProductOrder = cart.ProductOrders?.Where(x => x.ServiceId == e911Id).FirstOrDefault();
-                // If there are already E911 fees in the cart.
-                if (e911ProductOrder is not null)
+                var productOrder = new ProductOrder
                 {
-                    // See how many total lines and seats there are.
-                    if (productOrder.Quantity != e911ProductOrder.Quantity)
+                    ProductOrderId = Guid.NewGuid(),
+                    ServiceId = service.ServiceId,
+                    Quantity = Quantity > 0 ? Quantity : 1
+                };
+
+                await _httpContext.Session.LoadAsync().ConfigureAwait(false);
+                var cart = Cart.GetFromSession(_httpContext.Session);
+                var checkAdd = cart.AddService(service, productOrder);
+
+                var stdSeat = new Guid("16e2c639-445b-4ae6-9925-07300318206b");
+                var concurrentSeat = new Guid("48eb4627-8692-4a3b-8be1-be64bbeea534");
+
+                // Add required E911 fees to the order for seats and lines.
+                if (service.ServiceId == concurrentSeat || service.ServiceId == stdSeat)
+                {
+                    var e911Id = new Guid("1b3ae0e0-e308-4f99-88e1-b9c220bc02d5");
+                    var e911fee = await Service.GetAsync(e911Id, _postgresql).ConfigureAwait(false);
+                    if (e911fee is not null)
                     {
-                        var totalE911FeeItems = 0;
-
-                        var lines = cart.Services?.Where(x => x.ServiceId == stdSeat).FirstOrDefault();
-
-                        if (lines is not null)
+                        var e911ProductOrder = cart.ProductOrders?.Where(x => x.ServiceId == e911Id).FirstOrDefault();
+                        // If there are already E911 fees in the cart.
+                        if (e911ProductOrder is not null)
                         {
-                            var lineQuantity = cart.ProductOrders?.Where(x => x.ServiceId == lines.ServiceId).FirstOrDefault();
-                            totalE911FeeItems += lineQuantity?.Quantity ?? 0;
+                            // See how many total lines and seats there are.
+                            if (productOrder.Quantity != e911ProductOrder.Quantity)
+                            {
+                                var totalE911FeeItems = 0;
+
+                                var lines = cart.Services?.Where(x => x.ServiceId == stdSeat).FirstOrDefault();
+
+                                if (lines is not null)
+                                {
+                                    var lineQuantity = cart.ProductOrders?.Where(x => x.ServiceId == lines.ServiceId).FirstOrDefault();
+                                    totalE911FeeItems += lineQuantity?.Quantity ?? 0;
+                                }
+
+                                var seats = cart.Services?.Where(x => x.ServiceId == concurrentSeat).FirstOrDefault();
+
+                                if (seats is not null)
+                                {
+                                    var seatsQuantity = cart.ProductOrders?.Where(x => x.ServiceId == seats.ServiceId).FirstOrDefault();
+                                    totalE911FeeItems += seatsQuantity?.Quantity ?? 0;
+                                }
+
+                                e911ProductOrder = new ProductOrder
+                                {
+                                    ProductOrderId = Guid.NewGuid(),
+                                    ServiceId = e911Id,
+                                    Quantity = totalE911FeeItems > 0 ? totalE911FeeItems : 1
+                                };
+                                checkAdd = cart.AddService(e911fee, e911ProductOrder);
+                            }
                         }
-
-                        var seats = cart.Services?.Where(x => x.ServiceId == concurrentSeat).FirstOrDefault();
-
-                        if (seats is not null)
+                        else
                         {
-                            var seatsQuantity = cart.ProductOrders?.Where(x => x.ServiceId == seats.ServiceId).FirstOrDefault();
-                            totalE911FeeItems += seatsQuantity?.Quantity ?? 0;
+                            e911ProductOrder = new ProductOrder
+                            {
+                                ProductOrderId = Guid.NewGuid(),
+                                ServiceId = e911Id,
+                                Quantity = Quantity > 0 ? Quantity : 1
+                            };
+                            checkAdd = cart.AddService(e911fee, e911ProductOrder);
                         }
-
-                        e911ProductOrder = new ProductOrder
-                        {
-                            ProductOrderId = Guid.NewGuid(),
-                            ServiceId = e911Id,
-                            Quantity = totalE911FeeItems > 0 ? totalE911FeeItems : 1
-                        };
-                        checkAdd = cart.AddService(e911fee, e911ProductOrder);
                     }
-                }
-                else
-                {
-                    e911ProductOrder = new ProductOrder
-                    {
-                        ProductOrderId = Guid.NewGuid(),
-                        ServiceId = e911Id,
-                        Quantity = Quantity > 0 ? Quantity : 1
-                    };
-                    checkAdd = cart.AddService(e911fee, e911ProductOrder);
-                }
-            }
 
-            var checkSet = cart.SetToSession(_httpContext.Session);
+                }
+                var checkSet = cart.SetToSession(_httpContext.Session);
+            }
 
             return Ok(serviceId.ToString());
         }

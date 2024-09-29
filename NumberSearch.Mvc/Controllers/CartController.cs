@@ -93,7 +93,7 @@ namespace NumberSearch.Mvc.Controllers
             int basestations = 0;
             foreach (var item in cordless)
             {
-                var productOrder = cart.ProductOrders.FirstOrDefault(x => x.ProductId == item.ProductId);
+                var productOrder = cart?.ProductOrders?.FirstOrDefault(x => x.ProductId == item.ProductId);
                 if (productOrder is not null)
                 {
                     if (item.Name.Contains("DP750"))
@@ -124,7 +124,7 @@ namespace NumberSearch.Mvc.Controllers
                 return View("Index", new CartResult
                 {
                     Message = "❌ The hardware in your cart does not make sense. Only 5 cordless handsets can be paired to 1 base station, please add more base stations. Call us at 206-858-8757 for help!",
-                    Cart = cart
+                    Cart = cart ?? new()
                 });
             }
             else if (handsets > 0 && basestations > 0 && basestations > handsets)
@@ -132,14 +132,14 @@ namespace NumberSearch.Mvc.Controllers
                 return View("Index", new CartResult
                 {
                     Message = "❌ The hardware in your cart does not make sense. 5 cordless handsets can be paired to 1 base station, please order fewer base stations. Call us at 206-858-8757 for help!",
-                    Cart = cart
+                    Cart = cart ?? new()
                 });
             }
             else
             {
                 return View("Index", new CartResult
                 {
-                    Cart = cart
+                    Cart = cart ?? new()
                 });
             }
 
@@ -201,10 +201,10 @@ namespace NumberSearch.Mvc.Controllers
                     _ = cart.AddProduct(estimate, productOrderEstimate);
                 }
 
-                _ = cart.SetToSession(HttpContext.Session);
+                _ = cart?.SetToSession(HttpContext.Session);
             }
 
-            return View("Order", new CartResult { Cart = cart });
+            return View("Order", new CartResult { Cart = cart ?? new() });
         }
 
         // Show orders that have already been submitted.
@@ -368,7 +368,7 @@ namespace NumberSearch.Mvc.Controllers
                 catch (Exception ex)
                 {
                     _ = cart.SetToSession(HttpContext.Session);
-                    Log.Error($"[Checkout] Email address {order.Email} has an invalid domain: {emailDomain.Host}.");
+                    Log.Error($"[Checkout] Email address {order.Email} has an invalid domain: {emailDomain.Host}. {ex.Message}");
                     var message = $"💀 The email server at {emailDomain.Host} didn't have an MX record. Please supply a valid email address.";
                     return View("Order", new CartResult { Message = message, Cart = cart });
                 }
@@ -440,7 +440,7 @@ namespace NumberSearch.Mvc.Controllers
                     {
                         order.ContactPhoneNumber = string.Empty;
                         _ = cart.SetToSession(HttpContext.Session);
-                        Log.Error($"[Checkout] The contact phone number is not a dialable North American phone number.");
+                        Log.Error($"[Checkout] The contact phone number is not a dialable North American phone number. {ex.Message}");
                         var message = $"💀 The contact phone number is not a dialable North American phone number.";
                         return View("Order", new CartResult { Message = message, Cart = cart });
                     }
@@ -570,7 +570,7 @@ namespace NumberSearch.Mvc.Controllers
                             var totalPortingCost = 0;
                             var emailSubject = string.Empty;
 
-                            if (cart is not null && cart.ProductOrders is not null)
+                            if (cart is not null && cart?.ProductOrders is not null)
                             {
                                 if (cart.Products is not null && cart.Products.Count > 0)
                                 {
@@ -624,7 +624,7 @@ namespace NumberSearch.Mvc.Controllers
                                     }
                                 }
 
-                                foreach (var productOrder in cart.ProductOrders)
+                                foreach (var productOrder in cart.ProductOrders!)
                                 {
                                     productOrder.OrderId = order.OrderId;
 

@@ -73,7 +73,7 @@ namespace NumberSearch.DataAccess
         /// <param name="EmailId"></param>
         /// <param name="connectionString"></param>
         /// <returns></returns>
-        public static async Task<Email> GetAsync(Guid EmailId, string connectionString)
+        public static async Task<Email?> GetAsync(Guid EmailId, string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);
 

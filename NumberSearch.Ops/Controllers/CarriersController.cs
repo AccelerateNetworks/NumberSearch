@@ -180,10 +180,9 @@ namespace NumberSearch.Ops.Controllers
         [Authorize]
         [ValidateAntiForgeryToken]
         [HttpPost("/Carriers/Edit/")]
-        public async Task<IActionResult> Edit([Bind("CarrierId,Ocn,Lec,Lectype,Spid,Name,Type,Ratecenter,Color,LogoLink,LastUpdated")] Carrier carrier)
+        public Task<IActionResult> Edit([Bind("CarrierId,Ocn,Lec,Lectype,Spid,Name,Type,Ratecenter,Color,LogoLink,LastUpdated")] Carrier carrier)
         {
-            return await Edit(carrier.CarrierId, carrier);
-
+            return Edit(carrier.CarrierId, carrier);
         }
 
 
