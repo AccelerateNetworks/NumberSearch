@@ -36,7 +36,7 @@
             {
                 var number = failed.FirstOrDefault()?.To;
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number ?? string.Empty, out var phoneNumber);
-                if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(number))
+                if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(number) && Model is not null)
                 {
                     var ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == phoneNumber.DialedNumber);
                     string AsDialedLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{number}</a>" : number;
@@ -96,7 +96,7 @@
             {
                 var number = failed.FirstOrDefault()?.To;
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number ?? string.Empty, out var phoneNumber);
-                if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(number))
+                if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(number) && Model is not null)
                 {
                     var ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == phoneNumber.DialedNumber);
                     string AsDialedLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{number}</a>" : number;
@@ -152,28 +152,31 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var result in Model.FailedMessages)
+            @if (Model?.FailedMessages is not null && Model.FailedMessages.Length > 0)
             {
-                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(result.From, out var fromPhoneNumber);
-                var ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == fromPhoneNumber.DialedNumber);
-                string FromLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{result.From}</a>" : result.From;
-                checkParse = PhoneNumbersNA.PhoneNumber.TryParse(result.To, out var toPhoneNumber);
-                ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == toPhoneNumber.DialedNumber);
-                string ToLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{result.To}</a>" : result.To;
+                foreach (var result in Model.FailedMessages)
+                {
+                    var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(result.From, out var fromPhoneNumber);
+                    var ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == fromPhoneNumber.DialedNumber);
+                    string FromLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{result.From}</a>" : result.From;
+                    checkParse = PhoneNumbersNA.PhoneNumber.TryParse(result.To, out var toPhoneNumber);
+                    ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == toPhoneNumber.DialedNumber);
+                    string ToLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{result.To}</a>" : result.To;
 
-                <tr>
-                    @*<td>@result.Succeeded</td>*@
-                    <td data-order="@result.DateReceivedUTC.Ticks">@result.DateReceivedUTC.ToLocalTime().ToShortDateString() @result.DateReceivedUTC.ToLocalTime().ToShortTimeString()</td>
-                    <td>@result.MessageSource</td>
-                    <td>@result.MessageType</td>
-                    <td>@Html.Raw(FromLink)</td>
-                    <td>@Html.Raw(ToLink)</td>
-                    <td>@result.RawResponse</td>
-                    <td>@result.Content</td>
-                    @* <td>@result.MediaURLs</td> *@
-                    @*<td>@result.RawRequest</td>
+                    <tr>
+                        @*<td>@result.Succeeded</td>*@
+                        <td data-order="@result.DateReceivedUTC.Ticks">@result.DateReceivedUTC.ToLocalTime().ToShortDateString() @result.DateReceivedUTC.ToLocalTime().ToShortTimeString()</td>
+                        <td>@result.MessageSource</td>
+                        <td>@result.MessageType</td>
+                        <td>@Html.Raw(FromLink)</td>
+                        <td>@Html.Raw(ToLink)</td>
+                        <td>@result.RawResponse</td>
+                        <td>@result.Content</td>
+                        @* <td>@result.MediaURLs</td> *@
+                        @*<td>@result.RawRequest</td>
                 <td>@result.ToForward</td> *@
-                </tr>
+                    </tr>
+                }
             }
         </tbody>
     </table>

@@ -20,27 +20,18 @@ namespace NumberSearch.Mvc.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
     [EnableRateLimiting("lookup")]
-    public class LookupController : Controller
+    public class LookupController(MvcConfiguration mvcConfiguration) : Controller
     {
-        private readonly string _postgresql;
-        private readonly string _bulkVSKey;
-        private readonly string _bulkVSUsername;
-        private readonly string _bulkVSPassword;
-        private readonly string _callWithUsAPIkey;
-
-        public LookupController(MvcConfiguration mvcConfiguration)
-        {
-            _postgresql = mvcConfiguration.PostgresqlProd;
-            _bulkVSKey = mvcConfiguration.BulkVSAPIKEY;
-            _bulkVSUsername = mvcConfiguration.BulkVSUsername;
-            _bulkVSPassword = mvcConfiguration.BulkVSPassword;
-            _callWithUsAPIkey = mvcConfiguration.CallWithUsAPIKEY;
-        }
+        private readonly string _postgresql = mvcConfiguration.PostgresqlProd;
+        private readonly string _bulkVSKey = mvcConfiguration.BulkVSAPIKEY;
+        private readonly string _bulkVSUsername = mvcConfiguration.BulkVSUsername;
+        private readonly string _bulkVSPassword = mvcConfiguration.BulkVSPassword;
+        private readonly string _callWithUsAPIkey = mvcConfiguration.CallWithUsAPIKEY;
 
         [HttpGet]
         [DisableRateLimiting]
         [ResponseCache(Duration = 30, Location = ResponseCacheLocation.Any, NoStore = false)]
-        public async Task<IActionResult> IndexAsync(string dialedNumber)
+        public IActionResult Index(string dialedNumber)
         {
             if (string.IsNullOrWhiteSpace(dialedNumber))
             {
@@ -238,9 +229,10 @@ namespace NumberSearch.Mvc.Controllers
                             lectype = canada?.Prefix_Type ?? string.Empty,
                             city = canada?.Ratecenter ?? string.Empty,
                             province = canada?.State ?? string.Empty,
-                        });
-
-                        checkNumber.LosingCarrier = portable?.LosingCarrier ?? string.Empty;
+                        })
+                        {
+                            LosingCarrier = portable?.LosingCarrier ?? string.Empty
+                        };
 
                         // Warning this costs $$$$
                         var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSKey);

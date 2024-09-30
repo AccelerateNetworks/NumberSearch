@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
-using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 
 using Serilog;
@@ -178,6 +177,8 @@ public class PortRequestsController : Controller
     [Route("/Home/BillImage/{orderId}/")]
     public async Task<ActionResult> DownloadAsync(string orderId, string fileName)
     {
+        var OrderId = new Guid(orderId);
+
         // Create a BlobServiceClient object which will be used to create a container client
         BlobServiceClient blobServiceClient = new(_azureStorage);
 
@@ -200,9 +201,9 @@ public class PortRequestsController : Controller
         {
             return View("PortRequestEdit", new PortRequestResult
             {
-                Order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == new Guid(orderId)),
-                PortRequest = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == new Guid(orderId)),
-                PhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == new Guid(orderId)).ToArrayAsync(),
+                Order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == OrderId) ?? new(),
+                PortRequest = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == OrderId) ?? new(),
+                PhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == OrderId).ToArrayAsync(),
                 Message = $"❌ Couldn't find the bill image {fileName} for Order {orderId}."
             });
         }
@@ -458,7 +459,7 @@ public class PortRequestsController : Controller
     public async Task<IActionResult> UnifiedPortRequestAsync(Guid? OrderId, bool ForceManual)
     {
         // ForceManual will overwrite the Zip to a value of "1". BulkVS claims this will break their automated processes and force them to review the request manually.
-        var responseMessages = new List<string>();
+        List<string> responseMessages = [];
 
         if (OrderId is null || OrderId == Guid.Empty)
         {
@@ -477,7 +478,7 @@ public class PortRequestsController : Controller
                 var numbers = await _context.PortedPhoneNumbers
                     .Where(x => x.OrderId == order.OrderId && string.IsNullOrWhiteSpace(x.ExternalPortRequestId)).ToArrayAsync();
 
-                if (numbers is null || !numbers.Any())
+                if (numbers is null || numbers.Length == 0)
                 {
                     numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
 
@@ -491,7 +492,7 @@ public class PortRequestsController : Controller
                 }
 
                 // Submit the local numbers to BulkVS in a port request.
-                if (numbers.Any())
+                if (numbers.Length != 0)
                 {
                     try
                     {
@@ -577,7 +578,7 @@ public class PortRequestsController : Controller
                                             Note = "If the port completion date requested is unavailable please pick the next available date and set the port to complete at 8pm that day."
                                         };
 
-                                        await note.PostAsync(bulkResponse.OrderId, _bulkVSusername, _bulkVSpassword);
+                                        await note.PostAsync(bulkResponse?.OrderId ?? string.Empty, _bulkVSusername, _bulkVSpassword);
 
                                         if (bulkResponse is not null && !string.IsNullOrWhiteSpace(bulkResponse.Description))
                                         {
@@ -680,7 +681,7 @@ public class PortRequestsController : Controller
                                         Note = "If the port completion date requested is unavailable please pick the next available date and set the port to complete at 8pm that day."
                                     };
 
-                                    await note.PostAsync(bulkResponse.OrderId, _bulkVSusername, _bulkVSpassword);
+                                    await note.PostAsync(bulkResponse?.OrderId ?? string.Empty, _bulkVSusername, _bulkVSpassword);
 
                                     if (bulkResponse is not null && !string.IsNullOrWhiteSpace(bulkResponse.Description))
                                     {
@@ -750,7 +751,7 @@ public class PortRequestsController : Controller
                     PortRequest = portRequest ?? new(),
                     PhoneNumbers = numbers,
                     AlertType = "alert-success",
-                    Message = responseMessages.Any() ? string.Join(", ", responseMessages.ToArray()) : "🥰 Port Request was submitted to our vendors!"
+                    Message = responseMessages.Count != 0 ? string.Join(", ", [.. responseMessages]) : "🥰 Port Request was submitted to our vendors!"
                 });
             }
         }

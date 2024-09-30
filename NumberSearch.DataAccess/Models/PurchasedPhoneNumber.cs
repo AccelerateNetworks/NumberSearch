@@ -72,7 +72,7 @@ namespace NumberSearch.DataAccess
         /// </summary>
         /// <param name="connectionString"></param>
         /// <returns></returns>
-        public static async Task<PurchasedPhoneNumber> GetByDialedNumberAsync(string dialedNumber, string connectionString)
+        public static async Task<PurchasedPhoneNumber?> GetByDialedNumberAsync(string dialedNumber, string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);
 

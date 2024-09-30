@@ -43,9 +43,12 @@
                 </thead>
                 <tbody>
                     <tr>
-                        @foreach (var lectype in Model?.Select(x => x.Lectype).Distinct())
+                        @if (Model is not null && Model.Count() != 0)
                         {
-                            <td>@Model?.Where(x => x.Lectype == lectype).Count() - @lectype</td>
+                            foreach (var lectype in Model.Select(x => x.Lectype).Distinct())
+                            {
+                                <td>@Model?.Where(x => x.Lectype == lectype).Count() - @lectype</td>
+                            }
                         }
                     </tr>
                 </tbody>
@@ -83,7 +86,8 @@
             </tr>
         </thead>
         <tbody>
-            @{
+            @if (Model is not null && Model.Count() != 0)
+            {
                 var topLevelCarriers = Model.DistinctBy(y => y.Name).OrderByDescending(x => x?.Name);
                 foreach (var product in topLevelCarriers)
                 {
@@ -176,38 +180,41 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var product in Model.OrderByDescending(x => x?.Name))
+            @if (Model is not null && Model.Count() != 0)
             {
-                <tr style="background-color: @product.Color;">
-                    <td>
-                        @product?.Name
-                    </td>
-                    <td>
-                        @product?.Type
-                    </td>
-                    <td>
-                        @product?.Lec
-                    </td>
-                    <td>
-                        @product?.Lectype
-                    </td>
-                    <td>
-                        <img src="@product?.LogoLink" alt="@product?.Name" height="30">
-                    </td>
-                    <td>
-                        @product?.Ocn
-                    </td>
-                    <td>
-                        @product?.Spid
-                    </td>
-                    <td>
-                        <div class="btn-group" role="group" aria-label="Basic example">
-                            <a asp-action="Edit" asp-route-id="@product?.CarrierId" class="btn btn-warning">Edit</a>
-                            <a asp-action="Details" asp-route-id="@product?.CarrierId" class="btn btn-primary">Details</a>
-                            <a asp-action="Delete" asp-route-id="@product?.CarrierId" class="btn btn-danger">Delete</a>
-                        </div>
-                    </td>
-                </tr>
+                foreach (var product in Model.OrderByDescending(x => x?.Name))
+                {
+                    <tr style="background-color: @product.Color;">
+                        <td>
+                            @product?.Name
+                        </td>
+                        <td>
+                            @product?.Type
+                        </td>
+                        <td>
+                            @product?.Lec
+                        </td>
+                        <td>
+                            @product?.Lectype
+                        </td>
+                        <td>
+                            <img src="@product?.LogoLink" alt="@product?.Name" height="30">
+                        </td>
+                        <td>
+                            @product?.Ocn
+                        </td>
+                        <td>
+                            @product?.Spid
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group" aria-label="Basic example">
+                                <a asp-action="Edit" asp-route-id="@product?.CarrierId" class="btn btn-warning">Edit</a>
+                                <a asp-action="Details" asp-route-id="@product?.CarrierId" class="btn btn-primary">Details</a>
+                                <a asp-action="Delete" asp-route-id="@product?.CarrierId" class="btn btn-danger">Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
             }
         </tbody>
     </table>

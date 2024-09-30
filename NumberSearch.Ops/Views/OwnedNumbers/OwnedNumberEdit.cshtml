@@ -369,7 +369,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var product in Model?.PortedPhoneNumbers.OrderByDescending(x => x?.DateIngested))
+                @foreach (var product in Model.PortedPhoneNumbers.OrderByDescending(x => x?.DateIngested))
                 {
                     <tr>
                         <td>
@@ -441,7 +441,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var product in Model?.PurchasedPhoneNumbers.OrderByDescending(x => x?.DateIngested))
+                @foreach (var product in Model.PurchasedPhoneNumbers.OrderByDescending(x => x?.DateIngested))
                 {
                     <tr>
                         <td>

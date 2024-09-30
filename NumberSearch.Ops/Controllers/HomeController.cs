@@ -56,7 +56,7 @@ public class HomeController : Controller
         {
             var orders = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == orderId).AsNoTracking().ToListAsync();
 
-            if (orders is not null && orders.Any())
+            if (orders is not null && orders.Count != 0)
             {
                 foreach (var order in orders)
                 {
@@ -112,7 +112,7 @@ public class HomeController : Controller
 
             if (checkExists is not null)
             {
-                return View("Shipments", new InventoryResult { Products = products, ProductShipments = new ProductShipment[] { checkExists }, Shipment = checkExists });
+                return View("Shipments", new InventoryResult { Products = products, ProductShipments = [checkExists], Shipment = checkExists });
             }
             else
             {
@@ -212,7 +212,7 @@ public class HomeController : Controller
         {
             var products = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == ProductId);
 
-            return View("Products", new InventoryResult { Products = new Product[] { products ?? new() }, Product = products ?? new() });
+            return View("Products", new InventoryResult { Products = [products ?? new()], Product = products ?? new() });
         }
     }
 
@@ -280,7 +280,7 @@ public class HomeController : Controller
             // Show all orders
             var result = await _context.Coupons.Where(x => x.CouponId == couponId).FirstOrDefaultAsync();
 
-            return View("Coupons", new CouponResult { Coupon = result ?? new(), Coupons = new Coupon[] { result ?? new Coupon() } });
+            return View("Coupons", new CouponResult { Coupon = result ?? new(), Coupons = [result ?? new Coupon()] });
         }
     }
 
@@ -414,7 +414,10 @@ public class HomeController : Controller
                 response.AlertType = "alert-danger";
             }
 
-            response.Emails = await _context.SentEmails.Where(x => x.OrderId == email.OrderId).ToArrayAsync();
+            if (email?.OrderId is not null)
+            {
+                response.Emails = await _context.SentEmails.Where(x => x.OrderId == email.OrderId).ToArrayAsync();
+            }
         }
         catch (Exception ex)
         {

@@ -152,7 +152,10 @@ namespace NumberSearch.Ingest
 
             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
             var lockEntry = await IngestStatistics.GetLockAsync("OwnedNumbers", configuration.Postgresql).ConfigureAwait(false);
-            _ = await lockEntry.DeleteAsync(configuration.Postgresql).ConfigureAwait(false);
+            if (lockEntry is not null)
+            {
+                _ = await lockEntry.DeleteAsync(configuration.Postgresql).ConfigureAwait(false);
+            }
 
             // Remove all of the old numbers from the database.
             Log.Information("[OwnedNumbers] Marking numbers that failed to reingest as inactive in the database.");

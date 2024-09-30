@@ -129,7 +129,7 @@ namespace NumberSearch.Tests
         public async Task GetBillingTaxRatesAsync()
         {
             // Act
-            var result = await TaxRate.GetAllAsync(invoiceNinjaToken).ConfigureAwait(false);
+            var result = await TaxRate.GetAllAsync(invoiceNinjaToken);
 
             // Assert        
             Assert.NotNull(result);
@@ -149,7 +149,7 @@ namespace NumberSearch.Tests
         //    };
 
         //    // Act
-        //    var result = await taxRate.PostAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    var result = await taxRate.PostAsync(invoiceNinjaToken);
 
         //    // Assert        
         //    Assert.NotNull(result);
@@ -210,14 +210,14 @@ namespace NumberSearch.Tests
         //    };
 
         //    // Act
-        //    var result = await testCreate.PostAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    var result = await testCreate.PostAsync(invoiceNinjaToken);
 
         //    // Assert        
         //    Assert.NotNull(result);
         //    Assert.Equal(result.invoice_items.FirstOrDefault().notes, testCreate.invoice_items.FirstOrDefault().notes);
         //    output.WriteLine(JsonSerializer.Serialize(result));
 
-        //    var checkSend = await result.SendInvoiceAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    var checkSend = await result.SendInvoiceAsync(invoiceNinjaToken);
 
         //    Assert.True(checkSend);
         //}
@@ -258,7 +258,7 @@ namespace NumberSearch.Tests
         //    Assert.Equal(testCreate.contacts.FirstOrDefault().email, result.contacts.FirstOrDefault().email);
         //    output.WriteLine(JsonSerializer.Serialize(result));
 
-        //    var checkDelete = await result.DeleteAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    var checkDelete = await result.DeleteAsync(invoiceNinjaToken);
 
         //    Assert.NotNull(checkDelete);
         //    Assert.True(checkDelete.is_deleted);
@@ -307,7 +307,7 @@ namespace NumberSearch.Tests
         //    };
 
         //    // Act
-        //    var result = await testCreate.PostAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    var result = await testCreate.PostAsync(invoiceNinjaToken);
 
         //    // Assert        
         //    Assert.NotNull(result);
@@ -316,19 +316,19 @@ namespace NumberSearch.Tests
 
         //    result.invoice_items.FirstOrDefault().notes = "Updated";
 
-        //    var updateTest = await result.PutAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    var updateTest = await result.PutAsync(invoiceNinjaToken);
 
         //    // Assert        
         //    Assert.NotNull(updateTest);
         //    Assert.Equal(result.invoice_items.FirstOrDefault().notes, updateTest.invoice_items.FirstOrDefault().notes);
         //    output.WriteLine(JsonSerializer.Serialize(updateTest));
 
-        //    var deleteTest = await updateTest.DeleteAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    var deleteTest = await updateTest.DeleteAsync(invoiceNinjaToken);
 
         //    Assert.NotNull(deleteTest);
         //    Assert.True(deleteTest.is_deleted);
 
-        //    var checkDelete = await testClient.DeleteAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    var checkDelete = await testClient.DeleteAsync(invoiceNinjaToken);
 
         //    Assert.NotNull(checkDelete);
         //    Assert.True(checkDelete.is_deleted);
@@ -349,7 +349,7 @@ namespace NumberSearch.Tests
         //    };
 
         //    // Act
-        //    var result = await testCreate.PostAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    var result = await testCreate.PostAsync(invoiceNinjaToken);
 
         //    // Assert        
         //    Assert.NotNull(result);
@@ -359,7 +359,7 @@ namespace NumberSearch.Tests
 
         //    result.contacts.FirstOrDefault().first_name = "IntegrationTest";
 
-        //    var updateResult = await result.PutAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    var updateResult = await result.PutAsync(invoiceNinjaToken);
 
         //    Assert.NotNull(result);
         //    Assert.Equal(updateResult.name, result.name);
@@ -367,7 +367,7 @@ namespace NumberSearch.Tests
         //    Assert.Equal(updateResult.contacts.FirstOrDefault().email, result.contacts.FirstOrDefault().email);
         //    output.WriteLine(JsonSerializer.Serialize(result));
 
-        //    var checkDelete = await updateResult.DeleteAsync(invoiceNinjaToken).ConfigureAwait(false);
+        //    var checkDelete = await updateResult.DeleteAsync(invoiceNinjaToken);
 
         //    Assert.NotNull(checkDelete);
         //    Assert.True(checkDelete.is_deleted);
@@ -447,7 +447,7 @@ namespace NumberSearch.Tests
         //    string phoneNumber = "14257808879";
 
         //    // Act
-        //    var result = await LIDBLookup.GetAsync(phoneNumber, _data247username, _data247password).ConfigureAwait(false);
+        //    var result = await LIDBLookup.GetAsync(phoneNumber, _data247username, _data247password);
 
         //    // Assert        
         //    Assert.NotNull(result);
@@ -462,7 +462,7 @@ namespace NumberSearch.Tests
             string nxx = "780";
 
             // Act
-            var result = await RateCenterLookup.GetAsync(npa, nxx).ConfigureAwait(false);
+            var result = await RateCenterLookup.GetAsync(npa, nxx);
 
             // Assert        
             Assert.NotNull(result);
@@ -477,7 +477,7 @@ namespace NumberSearch.Tests
             string nxx = "646";
 
             // Act
-            var result = await RateCenterLookup.GetAsync(npa, nxx).ConfigureAwait(false);
+            var result = await RateCenterLookup.GetAsync(npa, nxx);
 
             // Assert        
             Assert.True(string.IsNullOrWhiteSpace(result.RateCenter));
@@ -489,7 +489,7 @@ namespace NumberSearch.Tests
             // Arrange
 
             // Act
-            var result = await DestinationDetails.GetByDialedNumberAsync("4254541206", _configuration.FusionPBXUsername, _configuration.FusionPBXPassword).ConfigureAwait(false);
+            var result = await DestinationDetails.GetByDialedNumberAsync("4254541206", _configuration.FusionPBXUsername, _configuration.FusionPBXPassword);
 
             // Assert        
             Assert.True(result.destination_enabled);
@@ -503,10 +503,10 @@ namespace NumberSearch.Tests
             // Arrange
 
             // Act
-            var result = await DomainDetails.GetByDomainIdAsync("f86cace8-9d5c-47df-b084-48e6cb58a95d", _configuration.FusionPBXUsername, _configuration.FusionPBXPassword).ConfigureAwait(false);
+            var result = await DomainDetails.GetByDomainIdAsync("f86cace8-9d5c-47df-b084-48e6cb58a95d", _configuration.FusionPBXUsername, _configuration.FusionPBXPassword);
 
             // Assert        
-            Assert.True(!string.IsNullOrWhiteSpace(result.domain_name));
+            Assert.False(string.IsNullOrWhiteSpace(result.domain_name));
             output.WriteLine(JsonSerializer.Serialize(result));
 
         }
@@ -518,7 +518,7 @@ namespace NumberSearch.Tests
         //    string canadaNumber = "6042400507";
 
         //    // Act
-        //    var result = await DataAccess.CallWithUs.LRNLookup.GetAsync(canadaNumber, _callWithUsAPIkey).ConfigureAwait(false);
+        //    var result = await DataAccess.CallWithUs.LRNLookup.GetAsync(canadaNumber, _callWithUsAPIkey);
 
         //    // Assert        
         //    Assert.NotNull(result);
@@ -639,7 +639,7 @@ namespace NumberSearch.Tests
         //    };
 
         //    // Act
-        //    var results = await order.PostAsync(bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+        //    var results = await order.PostAsync(bulkVSUsername, bulkVSPassword);
 
         //    // Assert
         //    Assert.NotNull(results);
@@ -654,11 +654,11 @@ namespace NumberSearch.Tests
             var number = "2064083008";
 
             // Act
-            var result = await CnamBulkVs.GetAsync(number, bulkVSKey).ConfigureAwait(false);
+            var result = await CnamBulkVs.GetAsync(number, bulkVSKey);
 
             // Assert
             Assert.NotNull(result);
-            Assert.True(!string.IsNullOrWhiteSpace(result.name));
+            Assert.False(string.IsNullOrWhiteSpace(result.name));
             output.WriteLine(JsonSerializer.Serialize(result));
         }
         
@@ -669,11 +669,11 @@ namespace NumberSearch.Tests
             var number = "4252008183";
 
             // Act
-            var result = await LrnBulkCnam.GetAsync(number, bulkVSKey).ConfigureAwait(false);
+            var result = await LrnBulkCnam.GetAsync(number, bulkVSKey);
 
             // Assert
             Assert.NotNull(result);
-            Assert.True(!string.IsNullOrWhiteSpace(result.spid));
+            Assert.False(string.IsNullOrWhiteSpace(result.spid));
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
@@ -688,7 +688,7 @@ namespace NumberSearch.Tests
 
             // Assert
             Assert.NotNull(result);
-            Assert.True(!string.IsNullOrWhiteSpace(result.jurisdiction));
+            Assert.False(string.IsNullOrWhiteSpace(result.jurisdiction));
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
@@ -699,11 +699,11 @@ namespace NumberSearch.Tests
             var number = "2064083008";
 
             // Act
-            var result = await LrnBulkCnam.GetAsync(number, bulkVSKey).ConfigureAwait(false);
+            var result = await LrnBulkCnam.GetAsync(number, bulkVSKey);
 
             // Assert
             Assert.NotNull(result);
-            Assert.True(!string.IsNullOrWhiteSpace(result.spid));
+            Assert.False(string.IsNullOrWhiteSpace(result.spid));
             output.WriteLine(JsonSerializer.Serialize(result));
 
             result.LIDBName = "IntegrationTest";
@@ -725,7 +725,7 @@ namespace NumberSearch.Tests
 
             // Assert
             Assert.NotNull(result);
-            Assert.True(!string.IsNullOrWhiteSpace(result.SPID));
+            Assert.False(string.IsNullOrWhiteSpace(result.SPID));
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
@@ -735,7 +735,7 @@ namespace NumberSearch.Tests
             // Arrange
 
             // Act
-            var results = await TnRecord.GetAsync(bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+            var results = await TnRecord.GetAsync(bulkVSUsername, bulkVSPassword);
 
             // Assert
             Assert.NotNull(results);
@@ -748,7 +748,7 @@ namespace NumberSearch.Tests
             // Arrange
             var portedNumber = "8605530426";
             // Act
-            var results = await ValidatePortability.GetAsync(portedNumber, bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+            var results = await ValidatePortability.GetAsync(portedNumber, bulkVSUsername, bulkVSPassword);
 
             // Assert
             Assert.NotNull(results);
@@ -761,7 +761,7 @@ namespace NumberSearch.Tests
             // Arrange
             var partNumber = "yea-sip-t54w";
             // Act
-            var results = await VendorProduct.GetAsync(partNumber, _teleDynamicsUsername, _teleDynamicsPassword).ConfigureAwait(false);
+            var results = await VendorProduct.GetAsync(partNumber, _teleDynamicsUsername, _teleDynamicsPassword);
 
             // Assert
             Assert.NotNull(results);
@@ -774,13 +774,13 @@ namespace NumberSearch.Tests
             // Arrange
 
             // Act
-            var results = await TnRecord.GetOwnedAsync(bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+            var results = await TnRecord.GetOwnedAsync(bulkVSUsername, bulkVSPassword);
 
             // Assert
             Assert.NotNull(results);
             Assert.NotEmpty(results);
             output.WriteLine(JsonSerializer.Serialize(results.FirstOrDefault()));
-            output.WriteLine($"{results.Count()} Owned Numbers from BulkVS");
+            output.WriteLine($"{results.Length} Owned Numbers from BulkVS");
         }
 
         [Fact]
@@ -789,7 +789,7 @@ namespace NumberSearch.Tests
             // Arrange
 
             // Act
-            var results = await PortTn.GetAllAsync(bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+            var results = await PortTn.GetAllAsync(bulkVSUsername, bulkVSPassword);
 
             // Assert
             Assert.NotNull(results);
@@ -801,7 +801,7 @@ namespace NumberSearch.Tests
         {
             // Arrange
             // Act
-            var results = await E911Record.ValidateAddressAsync("", "", "", "", "", "", bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+            var results = await E911Record.ValidateAddressAsync("", "", "", "", "", "", bulkVSUsername, bulkVSPassword);
 
             // Assert
             Assert.NotNull(results);
@@ -813,7 +813,7 @@ namespace NumberSearch.Tests
         {
             // Arrange
             // Act
-            var results = await E911Record.GetAsync("12062574158", bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+            var results = await E911Record.GetAsync("12062574158", bulkVSUsername, bulkVSPassword);
 
             // Assert
             Assert.NotNull(results);
@@ -825,7 +825,7 @@ namespace NumberSearch.Tests
         {
             // Arrange
             // Act
-            var results = await E911Record.PostAsync("", "", "", Array.Empty<string>(), bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+            var results = await E911Record.PostAsync("", "", "", [], bulkVSUsername, bulkVSPassword);
 
             // Assert
             Assert.NotNull(results);
@@ -852,13 +852,13 @@ namespace NumberSearch.Tests
             // Arrange
 
             // Act
-            var results = await PortTn.GetAllAsync(bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+            var results = await PortTn.GetAllAsync(bulkVSUsername, bulkVSPassword);
 
             // Assert
             Assert.NotNull(results);
             Assert.NotEmpty(results);
 
-            var result = await PortTn.GetAsync("1642300", bulkVSUsername, bulkVSPassword).ConfigureAwait(false);
+            var result = await PortTn.GetAsync("1642300", bulkVSUsername, bulkVSPassword);
 
             Assert.NotNull(result);
             output.WriteLine(JsonSerializer.Serialize(result));
@@ -880,13 +880,13 @@ namespace NumberSearch.Tests
         //public async Task Call48LocalNumberLookupTestAsync()
         //{
         //    // Act
-        //    var result = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
+        //    var result = await Login.LoginAsync(_call48Username, _call48Password);
 
-        //    var results = await Search.GetLocalNumbersAsync("WA", string.Empty, "206", string.Empty, result.data.token).ConfigureAwait(false);
+        //    var results = await Search.GetLocalNumbersAsync("WA", string.Empty, "206", string.Empty, result.data.token);
 
         //    if (results is null || !results.data.result.Any())
         //    {
-        //        results = await Search.GetLocalNumbersAsync("WA", string.Empty, "425", string.Empty, result.data.token).ConfigureAwait(false);
+        //        results = await Search.GetLocalNumbersAsync("WA", string.Empty, "425", string.Empty, result.data.token);
         //    }
 
         //    Assert.NotEmpty(results.data.result);
@@ -905,13 +905,13 @@ namespace NumberSearch.Tests
         //public async Task Call48GetNumbersTestAsync()
         //{
         //    // Act
-        //    var cred = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
+        //    var cred = await Login.LoginAsync(_call48Username, _call48Password);
 
-        //    var results = await Search.GetAsync("OR", 541, cred.data.token).ConfigureAwait(false);
+        //    var results = await Search.GetAsync("OR", 541, cred.data.token);
 
         //    if (results is null || !results.Any())
         //    {
-        //        results = await Search.GetAsync("WA", 425, cred.data.token).ConfigureAwait(false);
+        //        results = await Search.GetAsync("WA", 425, cred.data.token);
         //    }
 
         //    Assert.NotEmpty(results);
@@ -935,9 +935,9 @@ namespace NumberSearch.Tests
         //public async Task Call48GetRatecentersTestAsync()
         //{
         //    // Act
-        //    var cred = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
+        //    var cred = await Login.LoginAsync(_call48Username, _call48Password);
 
-        //    var results = await Ratecenter.GetAllRatecentersAsync(PhoneNumbersNA.AreaCode.States.ToArray(), cred.data.token).ConfigureAwait(false);
+        //    var results = await Ratecenter.GetAllRatecentersAsync(PhoneNumbersNA.AreaCode.States.ToArray(), cred.data.token);
 
         //    Assert.NotEmpty(results);
         //    output.WriteLine(results.Length.ToString());
@@ -954,20 +954,20 @@ namespace NumberSearch.Tests
         //public async Task Call48PurchaseLocalNumberTestAsync()
         //{
         //    // Act
-        //    var cred = await Login.LoginAsync(_call48Username, _call48Password).ConfigureAwait(false);
+        //    var cred = await Login.LoginAsync(_call48Username, _call48Password);
 
-        //    var results = await Search.GetAsync("WA", 206, cred.data.token).ConfigureAwait(false);
+        //    var results = await Search.GetAsync("WA", 206, cred.data.token);
 
         //    Assert.NotEmpty(results);
         //    output.WriteLine(results.Count().ToString());
         //    var number = results.FirstOrDefault();
 
-        //    var checkExist = await Search.GetLocalNumbersAsync(string.Empty, number.State, number.NPA.ToString(), number.NXX.ToString(), cred.data.token).ConfigureAwait(false);
+        //    var checkExist = await Search.GetLocalNumbersAsync(string.Empty, number.State, number.NPA.ToString(), number.NXX.ToString(), cred.data.token);
 
         //    var numberToPurchase = checkExist.data.result.Where(x => x.did.Replace("-", string.Empty) == number.DialedNumber).FirstOrDefault();
         //    output.WriteLine(JsonSerializer.Serialize(numberToPurchase));
 
-        //    var purchaseOrder = await Purchase.PurchasePhoneNumberAsync(checkExist.data.loc, numberToPurchase, cred.data.token).ConfigureAwait(false);
+        //    var purchaseOrder = await Purchase.PurchasePhoneNumberAsync(checkExist.data.loc, numberToPurchase, cred.data.token);
         //    output.WriteLine(JsonSerializer.Serialize(purchaseOrder));
 
         //    Assert.NotNull(purchaseOrder);
@@ -1093,7 +1093,7 @@ namespace NumberSearch.Tests
         public async Task DeleteOldPhoneNumberAsync()
         {
             var conn = postgresql;
-            var results = await PhoneNumber.DeleteOld(DateTime.Now.AddDays(-3), conn).ConfigureAwait(false);
+            var results = await PhoneNumber.DeleteOld(DateTime.Now.AddDays(-3), conn);
             Assert.NotNull(results);
             output.WriteLine($"{results.Removed} Numbers Removed.");
         }
@@ -1102,7 +1102,7 @@ namespace NumberSearch.Tests
         public async Task DeleteLogsAsync()
         {
             var conn = postgresql;
-            var results = await Logs.DeleteOld(DateTime.Now, conn).ConfigureAwait(false);
+            var results = await Logs.DeleteOld(DateTime.Now, conn);
             Assert.NotNull(results);
             output.WriteLine($"{results.Removed} log entries removed.");
         }
@@ -1113,7 +1113,7 @@ namespace NumberSearch.Tests
             var conn = postgresql;
             var cycle = DateTime.Now.AddHours(1) - DateTime.Now;
             var provider = "Test";
-            var results = await PhoneNumber.DeleteOldByProvider(DateTime.Now, cycle, provider, conn).ConfigureAwait(false);
+            var results = await PhoneNumber.DeleteOldByProvider(DateTime.Now, cycle, provider, conn);
             Assert.NotNull(results);
             output.WriteLine($"{results.Removed} Numbers Removed.");
         }
@@ -1136,11 +1136,11 @@ namespace NumberSearch.Tests
                 State = "WA"
             };
 
-            var existing = await PhoneNumber.GetAsync(number.DialedNumber, postgresql).ConfigureAwait(false);
+            var existing = await PhoneNumber.GetAsync(number.DialedNumber, postgresql);
 
             if (existing is not null && existing?.DialedNumber?.Length == 10)
             {
-                _ = existing.DeleteAsync(postgresql).ConfigureAwait(false);
+                _ = existing.DeleteAsync(postgresql);
             }
 
             var response = await number.PostAsync(conn);
@@ -1148,7 +1148,7 @@ namespace NumberSearch.Tests
 
             // Clean up.
             // We need the Guid so we have to get a copy of the new record from the DB before we can delete it.
-            var fromDb = await PhoneNumber.GetAsync(number.DialedNumber, conn).ConfigureAwait(false);
+            var fromDb = await PhoneNumber.GetAsync(number.DialedNumber, conn);
 
             var checkDelete = await fromDb.DeleteAsync(conn);
             Assert.True(checkDelete);
@@ -1183,10 +1183,10 @@ namespace NumberSearch.Tests
                 RunNow = true
             };
 
-            var result = await cycle.PostAsync(postgresql).ConfigureAwait(false);
+            var result = await cycle.PostAsync(postgresql);
             Assert.True(result);
 
-            var results = await IngestCycle.GetAllAsync(postgresql).ConfigureAwait(false);
+            var results = await IngestCycle.GetAllAsync(postgresql);
             Assert.NotNull(results);
             Assert.NotEmpty(results);
 
@@ -1194,10 +1194,10 @@ namespace NumberSearch.Tests
             Assert.NotNull(test);
 
             test.CycleTime = DateTime.Now.AddHours(1) - DateTime.Now;
-            var checkUpdate = await test.PutAsync(postgresql).ConfigureAwait(false);
+            var checkUpdate = await test.PutAsync(postgresql);
             Assert.True(checkUpdate);
 
-            results = await IngestCycle.GetAllAsync(postgresql).ConfigureAwait(false);
+            results = await IngestCycle.GetAllAsync(postgresql);
             Assert.NotNull(results);
             Assert.NotEmpty(results);
 
@@ -1205,7 +1205,7 @@ namespace NumberSearch.Tests
             Assert.NotNull(update);
             //Assert.Equal(test.CycleTime, update.CycleTime);
 
-            var checkDelete = await update.DeleteAsync(postgresql).ConfigureAwait(false);
+            var checkDelete = await update.DeleteAsync(postgresql);
             Assert.True(checkDelete);
         }
 
@@ -1231,9 +1231,9 @@ namespace NumberSearch.Tests
             Assert.True(check);
 
             // Clean up.
-            var fromDb = await IngestStatistics.GetLastIngestAsync(stats.IngestedFrom, conn).ConfigureAwait(false);
+            var fromDb = await IngestStatistics.GetLastIngestAsync(stats.IngestedFrom, conn);
 
-            var checkDelete = await fromDb.DeleteAsync(conn).ConfigureAwait(false);
+            var checkDelete = await fromDb.DeleteAsync(conn);
             Assert.True(checkDelete);
         }
 
@@ -1282,12 +1282,12 @@ namespace NumberSearch.Tests
         [Fact]
         public async Task GetVerifiedNumbersAsync()
         {
-            var results = await VerifiedPhoneNumber.GetAllAsync(postgresql).ConfigureAwait(false);
+            var results = await VerifiedPhoneNumber.GetAllAsync(postgresql);
             Assert.NotNull(results);
             Assert.NotEmpty(results);
             output.WriteLine(JsonSerializer.Serialize(results));
 
-            results = await VerifiedPhoneNumber.GetByOrderIdAsync(results.FirstOrDefault().OrderId ?? Guid.Empty, postgresql).ConfigureAwait(false);
+            results = await VerifiedPhoneNumber.GetByOrderIdAsync(results.FirstOrDefault().OrderId ?? Guid.Empty, postgresql);
             Assert.NotNull(results);
             Assert.NotEmpty(results);
         }
@@ -1324,53 +1324,53 @@ namespace NumberSearch.Tests
                 Wireless = true
             };
 
-            var checkPost = await testNumber.PostAsync(postgresql).ConfigureAwait(false);
+            var checkPost = await testNumber.PostAsync(postgresql);
             Assert.True(checkPost);
 
-            var checkSave = await VerifiedPhoneNumber.GetByOrderIdAsync(testNumber.OrderId ?? Guid.Empty, postgresql).ConfigureAwait(false);
+            var checkSave = await VerifiedPhoneNumber.GetByOrderIdAsync(testNumber.OrderId ?? Guid.Empty, postgresql);
             Assert.True(checkSave.FirstOrDefault().VerifiedDialedNumber == testNumber.VerifiedDialedNumber);
 
             testNumber.LocalAccessTransportArea = "testtest";
-            var checkPut = await testNumber.PutAsync(postgresql).ConfigureAwait(false);
+            var checkPut = await testNumber.PutAsync(postgresql);
             Assert.True(checkPut);
 
-            checkSave = await VerifiedPhoneNumber.GetByOrderIdAsync(testNumber.OrderId ?? Guid.Empty, postgresql).ConfigureAwait(false);
+            checkSave = await VerifiedPhoneNumber.GetByOrderIdAsync(testNumber.OrderId ?? Guid.Empty, postgresql);
             Assert.True(checkSave.FirstOrDefault().LocalAccessTransportArea == testNumber.LocalAccessTransportArea);
 
-            var checkDelete = await testNumber.DeleteAsync(postgresql).ConfigureAwait(false);
+            var checkDelete = await testNumber.DeleteAsync(postgresql);
             Assert.True(checkDelete);
         }
 
         [Fact]
         public async Task GetAllPortedPhoneNumbersAsync()
         {
-            var results = await PortedPhoneNumber.GetAllAsync(postgresql).ConfigureAwait(false);
+            var results = await PortedPhoneNumber.GetAllAsync(postgresql);
             Assert.NotNull(results);
             Assert.NotEmpty(results);
             output.WriteLine(JsonSerializer.Serialize(results.LastOrDefault()));
 
             var order = results.LastOrDefault();
-            results = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId ?? Guid.Empty, postgresql).ConfigureAwait(false);
+            results = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId ?? Guid.Empty, postgresql);
             Assert.NotNull(results);
             Assert.NotEmpty(results);
             output.WriteLine(JsonSerializer.Serialize(results));
 
-            //results = await PortedPhoneNumber.GetByPortRequestIdAsync(order.PortRequestId ?? Guid.Empty, postgresql).ConfigureAwait(false);
+            //results = await PortedPhoneNumber.GetByPortRequestIdAsync(order.PortRequestId ?? Guid.Empty, postgresql);
             //Assert.NotNull(results);
             //Assert.NotEmpty(results);
             //output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(results));
 
-            results = await PortedPhoneNumber.GetByDialedNumberAsync(order.PortedDialedNumber, postgresql).ConfigureAwait(false);
+            results = await PortedPhoneNumber.GetByDialedNumberAsync(order.PortedDialedNumber, postgresql);
             Assert.NotNull(results);
             Assert.NotEmpty(results);
             output.WriteLine(JsonSerializer.Serialize(results));
 
-            results = await PortedPhoneNumber.GetByExternalIdAsync(order.ExternalPortRequestId, postgresql).ConfigureAwait(false);
+            results = await PortedPhoneNumber.GetByExternalIdAsync(order.ExternalPortRequestId, postgresql);
             Assert.NotNull(results);
             //Assert.NotEmpty(results);
             output.WriteLine(JsonSerializer.Serialize(results));
 
-            var result = await PortedPhoneNumber.GetByIdAsync(order.PortedPhoneNumberId, postgresql).ConfigureAwait(false);
+            var result = await PortedPhoneNumber.GetByIdAsync(order.PortedPhoneNumberId, postgresql);
             Assert.NotNull(result);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
@@ -1397,31 +1397,31 @@ namespace NumberSearch.Tests
                 Wireless = false
             };
 
-            var checkPost = await ported.PostAsync(postgresql).ConfigureAwait(false);
+            var checkPost = await ported.PostAsync(postgresql);
             Assert.True(checkPost);
 
-            var verifyPost = await PortedPhoneNumber.GetByOrderIdAsync(ported.OrderId ?? Guid.Empty, postgresql).ConfigureAwait(false);
+            var verifyPost = await PortedPhoneNumber.GetByOrderIdAsync(ported.OrderId ?? Guid.Empty, postgresql);
             Assert.NotNull(verifyPost);
             Assert.NotEmpty(verifyPost);
             var verified = verifyPost.FirstOrDefault();
             Assert.True(ported.OrderId == verified.OrderId);
 
             verified.ExternalPortRequestId = "testtest";
-            var checkPut = await verified.PutAsync(postgresql).ConfigureAwait(false);
+            var checkPut = await verified.PutAsync(postgresql);
             Assert.True(checkPut);
 
-            var verifyPut = await PortedPhoneNumber.GetByIdAsync(verified.PortedPhoneNumberId, postgresql).ConfigureAwait(false);
+            var verifyPut = await PortedPhoneNumber.GetByIdAsync(verified.PortedPhoneNumberId, postgresql);
             Assert.NotNull(verifyPut);
             Assert.True(verifyPut.ExternalPortRequestId == verified.ExternalPortRequestId);
 
-            var checkDelete = await verifyPut.DeleteAsync(postgresql).ConfigureAwait(false);
+            var checkDelete = await verifyPut.DeleteAsync(postgresql);
             Assert.True(checkDelete);
         }
 
         [Fact]
         public async Task GetAllPortRequestsAsync()
         {
-            var results = await PortRequest.GetAllAsync(postgresql).ConfigureAwait(false);
+            var results = await PortRequest.GetAllAsync(postgresql);
             Assert.NotNull(results);
             Assert.NotEmpty(results);
             output.WriteLine(JsonSerializer.Serialize(results));
@@ -1430,59 +1430,59 @@ namespace NumberSearch.Tests
         [Fact]
         public async Task GetPortRequestByOrderIdAsync()
         {
-            var results = await PortRequest.GetAllAsync(postgresql).ConfigureAwait(false);
+            var results = await PortRequest.GetAllAsync(postgresql);
             Assert.NotNull(results);
             Assert.NotEmpty(results);
-            var order = await PortRequest.GetByOrderIdAsync(results.FirstOrDefault().OrderId, postgresql).ConfigureAwait(false);
+            var order = await PortRequest.GetByOrderIdAsync(results.FirstOrDefault().OrderId, postgresql);
             output.WriteLine(JsonSerializer.Serialize(order));
         }
 
         [Fact]
         public async Task GetPostPutDeletePortRequestByOrderIdAsync()
         {
-            var results = await PortRequest.GetAllAsync(postgresql).ConfigureAwait(false);
+            var results = await PortRequest.GetAllAsync(postgresql);
             Assert.NotNull(results);
             Assert.NotEmpty(results);
-            var portRequest = await PortRequest.GetByOrderIdAsync(results.FirstOrDefault().OrderId, postgresql).ConfigureAwait(false);
+            var portRequest = await PortRequest.GetByOrderIdAsync(results.FirstOrDefault().OrderId, postgresql);
             output.WriteLine(JsonSerializer.Serialize(portRequest));
             portRequest.PortRequestId = Guid.NewGuid();
-            var checkCreate = await portRequest.PostAsync(postgresql).ConfigureAwait(false);
+            var checkCreate = await portRequest.PostAsync(postgresql);
             Assert.True(checkCreate);
             portRequest.ProviderPIN = "1234";
-            var checkUpdate = await portRequest.PutAsync(postgresql).ConfigureAwait(false);
+            var checkUpdate = await portRequest.PutAsync(postgresql);
             Assert.True(checkUpdate);
-            var checkDelete = await portRequest.DeleteByIdAsync(postgresql).ConfigureAwait(false);
+            var checkDelete = await portRequest.DeleteByIdAsync(postgresql);
             Assert.True(checkDelete);
         }
 
         [Fact]
         public async Task GetPostPutDeleteCouponsAsync()
         {
-            var results = await Coupon.GetAllAsync(postgresql).ConfigureAwait(false);
+            var results = await Coupon.GetAllAsync(postgresql);
             Assert.NotNull(results);
             Assert.NotEmpty(results);
-            var result = await Coupon.GetByIdAsync(results.FirstOrDefault().CouponId, postgresql).ConfigureAwait(false);
+            var result = await Coupon.GetByIdAsync(results.FirstOrDefault().CouponId, postgresql);
             Assert.NotNull(result);
             Assert.True(results?.FirstOrDefault()?.CouponId == result?.CouponId);
             result.CouponId = Guid.NewGuid();
             result.Name = "Test";
             result.Description = "Test";
             result.Public = false;
-            var checkCreate = await result.PostAsync(postgresql).ConfigureAwait(false);
+            var checkCreate = await result.PostAsync(postgresql);
             Assert.True(checkCreate);
-            result = await Coupon.GetByIdAsync(result.CouponId, postgresql).ConfigureAwait(false);
+            result = await Coupon.GetByIdAsync(result.CouponId, postgresql);
             Assert.NotNull(result);
             result.Name = "Test2";
-            var checkUpdate = await result.PutAsync(postgresql).ConfigureAwait(false);
+            var checkUpdate = await result.PutAsync(postgresql);
             Assert.True(checkUpdate);
-            var checkDelete = await result.DeleteAsync(postgresql).ConfigureAwait(false);
+            var checkDelete = await result.DeleteAsync(postgresql);
             Assert.True(checkDelete);
         }
 
         [Fact]
         public async Task GetAllSentEmailsAsync()
         {
-            var results = await Email.GetAllAsync(postgresql).ConfigureAwait(false);
+            var results = await Email.GetAllAsync(postgresql);
             Assert.NotNull(results);
             Assert.NotEmpty(results);
         }
@@ -1490,13 +1490,13 @@ namespace NumberSearch.Tests
         [Fact]
         public async Task GetSentEmailByIdAsync()
         {
-            var results = await Email.GetAllAsync(postgresql).ConfigureAwait(false);
+            var results = await Email.GetAllAsync(postgresql);
             Assert.NotNull(results);
             Assert.NotEmpty(results);
 
             var email = results.FirstOrDefault();
 
-            var result = await Email.GetAsync(email.EmailId, postgresql).ConfigureAwait(false);
+            var result = await Email.GetAsync(email.EmailId, postgresql);
             Assert.NotNull(result);
             Assert.Equal(email.EmailId, result.EmailId);
         }
@@ -1536,11 +1536,11 @@ namespace NumberSearch.Tests
 
             };
 
-            var checkSubmit = await email.PostAsync(postgresql).ConfigureAwait(false);
+            var checkSubmit = await email.PostAsync(postgresql);
             Assert.True(checkSubmit);
 
             // Clean up
-            var fromDb = await Email.GetByOrderAsync(email.OrderId, postgresql).ConfigureAwait(false);
+            var fromDb = await Email.GetByOrderAsync(email.OrderId, postgresql);
             Assert.NotNull(fromDb);
             Assert.NotEmpty(fromDb);
             foreach (var item in fromDb)
@@ -1553,10 +1553,10 @@ namespace NumberSearch.Tests
                 item.DateSent = DateTime.Now;
                 item.Completed = true;
 
-                var checkUpdate = await item.PutAsync(postgresql).ConfigureAwait(false);
+                var checkUpdate = await item.PutAsync(postgresql);
                 Assert.True(checkUpdate);
 
-                var updatedDb = await Email.GetAsync(item.EmailId, postgresql).ConfigureAwait(false);
+                var updatedDb = await Email.GetAsync(item.EmailId, postgresql);
                 Assert.NotNull(updatedDb);
                 Assert.Equal(updatedDb.PrimaryEmailAddress, item.PrimaryEmailAddress);
                 Assert.Equal(updatedDb.Subject, item.Subject);
@@ -1565,7 +1565,7 @@ namespace NumberSearch.Tests
                 Assert.Equal(updatedDb.Completed, item.Completed);
                 Assert.True(updatedDb.Completed);
 
-                var checkDelete = await updatedDb.DeleteAsync(postgresql).ConfigureAwait(false);
+                var checkDelete = await updatedDb.DeleteAsync(postgresql);
                 Assert.True(checkDelete);
             }
         }
@@ -1575,7 +1575,7 @@ namespace NumberSearch.Tests
         {
             var conn = postgresql;
 
-            var results = await Order.GetAllAsync(conn).ConfigureAwait(false);
+            var results = await Order.GetAllAsync(conn);
 
             Assert.NotNull(results);
             Assert.NotEmpty(results);
@@ -1593,7 +1593,7 @@ namespace NumberSearch.Tests
                 Assert.True(result.DateSubmitted > new DateTime(2019, 1, 1));
             }
 
-            var quotes = await Order.GetAllQuotesAsync(conn).ConfigureAwait(false);
+            var quotes = await Order.GetAllQuotesAsync(conn);
 
             Assert.NotNull(quotes);
             Assert.NotEmpty(quotes);
@@ -1605,7 +1605,7 @@ namespace NumberSearch.Tests
         {
             var conn = postgresql;
 
-            var results = await Order.GetByBackGroundworkNotCompletedAsync(conn).ConfigureAwait(false);
+            var results = await Order.GetByBackGroundworkNotCompletedAsync(conn);
 
             Assert.NotNull(results);
         }
@@ -1615,14 +1615,14 @@ namespace NumberSearch.Tests
         //{
         //    var conn = postgresql;
 
-        //    var results = await Order.GetAllAsync(conn).ConfigureAwait(false);
+        //    var results = await Order.GetAllAsync(conn);
 
         //    Assert.NotNull(results);
         //    Assert.NotEmpty(results);
 
         //    var order = results.FirstOrDefault();
 
-        //    var taxrate = await SalesTax.GetTaxRateAsync(order.Address, order.City, order.Zip).ConfigureAwait(false);
+        //    var taxrate = await SalesTax.GetTaxRateAsync(order.Address, order.City, order.Zip);
 
         //    Assert.True(taxrate > 0.0M);
         //    output.WriteLine($"Taxrate: {taxrate}");
@@ -1635,7 +1635,7 @@ namespace NumberSearch.Tests
             string city = string.Empty;
             string zip = "98501";
 
-            var result = await SalesTax.GetLocalAPIAsync(address, city, zip).ConfigureAwait(false);
+            var result = await SalesTax.GetLocalAPIAsync(address, city, zip);
 
             Assert.NotNull(result);
             Assert.True(result.rate1 > 0.0M);
@@ -1647,7 +1647,7 @@ namespace NumberSearch.Tests
         {
             var conn = postgresql;
 
-            var orders = await Order.GetAllAsync(conn).ConfigureAwait(false);
+            var orders = await Order.GetAllAsync(conn);
 
             var selectedOrders = orders.Where(x => x.OrderId != Guid.Empty).FirstOrDefault();
             Assert.False(selectedOrders is null);
@@ -1666,7 +1666,7 @@ namespace NumberSearch.Tests
 
             Assert.False(fromDb is null);
 
-            var checkDelete = await fromDb.DeleteAsync(conn).ConfigureAwait(false);
+            var checkDelete = await fromDb.DeleteAsync(conn);
             Assert.True(checkDelete);
         }
 
@@ -1687,11 +1687,11 @@ namespace NumberSearch.Tests
             Assert.True(result);
 
             // Clean up.
-            var fromDb = await ProductOrder.GetAsync(itemToOrder.OrderId, conn).ConfigureAwait(false);
+            var fromDb = await ProductOrder.GetAsync(itemToOrder.OrderId, conn);
             Assert.NotNull(fromDb);
             Assert.NotEmpty(fromDb);
 
-            var checkDelete = await fromDb.FirstOrDefault().DeleteByOrderAsync(conn).ConfigureAwait(false);
+            var checkDelete = await fromDb.FirstOrDefault().DeleteByOrderAsync(conn);
             Assert.True(checkDelete);
         }
 
@@ -1713,11 +1713,11 @@ namespace NumberSearch.Tests
             Assert.True(result);
 
             // Clean up.
-            var fromDb = await ProductOrder.GetAsync(itemToOrder.OrderId, conn).ConfigureAwait(false);
+            var fromDb = await ProductOrder.GetAsync(itemToOrder.OrderId, conn);
             Assert.NotNull(fromDb);
             Assert.NotEmpty(fromDb);
 
-            var checkDelete = await fromDb.FirstOrDefault().DeleteByOrderAsync(conn).ConfigureAwait(false);
+            var checkDelete = await fromDb.FirstOrDefault().DeleteByOrderAsync(conn);
             Assert.True(checkDelete);
         }
 
@@ -1741,10 +1741,10 @@ namespace NumberSearch.Tests
             Assert.True(result);
 
             // Clean up.
-            var fromDb = await PurchasedPhoneNumber.GetByDialedNumberAndOrderIdAsync(itemToOrder.DialedNumber, itemToOrder.OrderId, conn).ConfigureAwait(false);
+            var fromDb = await PurchasedPhoneNumber.GetByDialedNumberAndOrderIdAsync(itemToOrder.DialedNumber, itemToOrder.OrderId, conn);
             Assert.NotNull(fromDb);
 
-            var checkDelete = await fromDb.DeleteAsync(conn).ConfigureAwait(false);
+            var checkDelete = await fromDb.DeleteAsync(conn);
             Assert.True(checkDelete);
         }
 
@@ -1753,11 +1753,11 @@ namespace NumberSearch.Tests
         {
             var conn = postgresql;
 
-            var results = await EmergencyInformation.GetAllAsync(conn).ConfigureAwait(false);
+            var results = await EmergencyInformation.GetAllAsync(conn);
             Assert.NotNull(results);
             Assert.NotEmpty(results);
 
-            var result = await EmergencyInformation.GetByDialedNumberAsync(results.FirstOrDefault().DialedNumber, conn).ConfigureAwait(false);
+            var result = await EmergencyInformation.GetByDialedNumberAsync(results.FirstOrDefault().DialedNumber, conn);
             Assert.NotNull(result);
             Assert.NotEmpty(results);
             Assert.Equal(results.FirstOrDefault().DialedNumber, result.FirstOrDefault().DialedNumber);
@@ -1790,13 +1790,13 @@ namespace NumberSearch.Tests
             Assert.True(result);
 
             // Clean up.
-            var fromDbResult = await EmergencyInformation.GetByIdAsync(info.EmergencyInformationId, conn).ConfigureAwait(false);
+            var fromDbResult = await EmergencyInformation.GetByIdAsync(info.EmergencyInformationId, conn);
             Assert.NotNull(fromDbResult);
             Assert.True(info.IngestedFrom == fromDbResult.IngestedFrom);
             fromDbResult.CallerName = "Test2";
-            var checkUpdate = await fromDbResult.PutAsync(conn).ConfigureAwait(false);
+            var checkUpdate = await fromDbResult.PutAsync(conn);
             Assert.True(checkUpdate);
-            var checkDelete = await fromDbResult.DeleteAsync(conn).ConfigureAwait(false);
+            var checkDelete = await fromDbResult.DeleteAsync(conn);
             Assert.True(checkDelete);
         }
 
@@ -1816,11 +1816,11 @@ namespace NumberSearch.Tests
             };
 
 
-            var result = await itemToOrder.PostAsync(conn).ConfigureAwait(false);
+            var result = await itemToOrder.PostAsync(conn);
             Assert.True(result);
 
             // Act
-            var results = await ProductOrder.GetAsync(itemToOrder.OrderId, conn).ConfigureAwait(false);
+            var results = await ProductOrder.GetAsync(itemToOrder.OrderId, conn);
 
             // Assert
             Assert.NotNull(results);
@@ -1831,7 +1831,7 @@ namespace NumberSearch.Tests
             }
 
             // Clean up.
-            var checkDelete = await results.FirstOrDefault().DeleteByOrderAsync(conn).ConfigureAwait(false);
+            var checkDelete = await results.FirstOrDefault().DeleteByOrderAsync(conn);
             Assert.True(checkDelete);
         }
 
@@ -1855,7 +1855,7 @@ namespace NumberSearch.Tests
             };
 
             // Act
-            var checkCreate = await ownedPhoneNumber.PostAsync(postgresql).ConfigureAwait(false);
+            var checkCreate = await ownedPhoneNumber.PostAsync(postgresql);
 
             Assert.True(checkCreate);
 
@@ -1863,7 +1863,7 @@ namespace NumberSearch.Tests
             Assert.NotNull(fromDb);
             fromDb.Notes = "IntegrationTest";
 
-            var checkUpdate = await fromDb.PutAsync(postgresql).ConfigureAwait(false);
+            var checkUpdate = await fromDb.PutAsync(postgresql);
             Assert.True(checkUpdate);
 
             var fromDbAgain = await OwnedPhoneNumber.GetByDialedNumberAsync(ownedPhoneNumber.DialedNumber, conn);
@@ -1875,7 +1875,7 @@ namespace NumberSearch.Tests
             Assert.Equal(fromDb.OwnedPhoneNumberId, fromDbAgain.OwnedPhoneNumberId);
 
             // Clean up
-            var checkDelete = await fromDbAgain.DeleteAsync(postgresql).ConfigureAwait(false);
+            var checkDelete = await fromDbAgain.DeleteAsync(postgresql);
 
             Assert.True(checkDelete);
         }
@@ -1930,15 +1930,15 @@ namespace NumberSearch.Tests
                 Lock = true
             };
 
-            var checkLock = await lockingStats.PostAsync(conn).ConfigureAwait(false);
+            var checkLock = await lockingStats.PostAsync(conn);
 
             Assert.True(checkLock);
 
-            var results = await IngestStatistics.GetLockAsync("Test", conn).ConfigureAwait(false);
+            var results = await IngestStatistics.GetLockAsync("Test", conn);
 
             Assert.NotNull(results);
 
-            var checkRemoveLock = await results.DeleteAsync(conn).ConfigureAwait(false);
+            var checkRemoveLock = await results.DeleteAsync(conn);
 
             Assert.True(checkRemoveLock);
         }

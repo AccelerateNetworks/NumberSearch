@@ -13,8 +13,6 @@ using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.Mvc.Models;
 
-using Org.BouncyCastle.Bcpg.Sig;
-
 using Serilog;
 
 using System;
@@ -28,22 +26,12 @@ using System.Threading.Tasks;
 namespace NumberSearch.Mvc.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
-    public class CartController : Controller
+    public class CartController(MvcConfiguration mvcConfiguration) : Controller
     {
-        private readonly string _postgresql;
-        private readonly string _invoiceNinjaToken;
-        private readonly string _emailOrders;
-        private readonly string _emailSupport;
-        private readonly MvcConfiguration _configuration;
-
-        public CartController(MvcConfiguration mvcConfiguration)
-        {
-            _postgresql = mvcConfiguration.PostgresqlProd;
-            _invoiceNinjaToken = mvcConfiguration.InvoiceNinjaToken;
-            _emailOrders = mvcConfiguration.EmailOrders;
-            _emailSupport = mvcConfiguration.EmailSupport;
-            _configuration = mvcConfiguration;
-        }
+        private readonly string _postgresql = mvcConfiguration.PostgresqlProd;
+        private readonly string _invoiceNinjaToken = mvcConfiguration.InvoiceNinjaToken;
+        private readonly string _emailOrders = mvcConfiguration.EmailOrders;
+        private readonly MvcConfiguration _configuration = mvcConfiguration;
 
         [HttpGet]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -153,7 +141,7 @@ namespace NumberSearch.Mvc.Controllers
             await HttpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            if (cart is not null && cart.ProductOrders is not null && !cart.ProductOrders.Any())
+            if (cart is not null && cart.ProductOrders is not null && cart.ProductOrders.Count == 0)
             {
                 return View("Index", new CartResult { Cart = cart });
             }
@@ -168,8 +156,8 @@ namespace NumberSearch.Mvc.Controllers
                     cart.Order.OnsiteInstallation = true;
 
                     // Add the call out charge and install estimate to the Cart
-                    Product onsite = await Product.GetByIdAsync(Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"), _postgresql);
-                    Product estimate = await Product.GetByIdAsync(Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"), _postgresql);
+                    Product onsite = await Product.GetByIdAsync(Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"), _postgresql) ?? new();
+                    Product estimate = await Product.GetByIdAsync(Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"), _postgresql) ?? new();
 
                     // Sum all of the install time estimates.
                     decimal totalInstallTime = 0m;
@@ -243,17 +231,26 @@ namespace NumberSearch.Mvc.Controllers
                     if (item.ProductId != Guid.Empty)
                     {
                         var product = await Product.GetByIdAsync(item.ProductId, _postgresql).ConfigureAwait(false);
-                        products.Add(product);
+                        if (product is not null)
+                        {
+                            products.Add(product);
+                        }
                     }
                     else if (item.ServiceId != Guid.Empty)
                     {
                         var service = await Service.GetAsync(item.ServiceId, _postgresql).ConfigureAwait(false);
-                        services.Add(service);
+                        if (service is not null)
+                        {
+                            services.Add(service);
+                        }
                     }
                     else if (item.CouponId is not null)
                     {
                         var coupon = await Coupon.GetByIdAsync(item.CouponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
-                        coupons.Add(coupon);
+                        if (coupon is not null)
+                        {
+                            coupons.Add(coupon);
+                        }
                     }
                 }
 
@@ -262,7 +259,7 @@ namespace NumberSearch.Mvc.Controllers
                 var cart = new Cart
                 {
                     Order = order,
-                    PhoneNumbers = new List<PhoneNumber>(),
+                    PhoneNumbers = [],
                     ProductOrders = productOrders.ToList(),
                     Products = products,
                     Services = services,
@@ -282,8 +279,8 @@ namespace NumberSearch.Mvc.Controllers
                     return View("Success", new OrderWithPorts
                     {
                         Order = order,
-                        PortRequest = portRequest,
-                        PhoneNumbers = cart.PortedPhoneNumbers.ToArray()
+                        PortRequest = portRequest ?? new(),
+                        PhoneNumbers = [.. cart.PortedPhoneNumbers]
                     });
                 }
                 else
@@ -306,22 +303,22 @@ namespace NumberSearch.Mvc.Controllers
             if (Id != Guid.Empty)
             {
                 var order = await Order.GetByIdAsync(Id, _postgresql).ConfigureAwait(false);
-                var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
-                var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                if (order is not null)
+                {
+                    var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                    var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
 
-                if (portedPhoneNumbers.Any())
-                {
-                    return View("Success", new OrderWithPorts
+                    if (portedPhoneNumbers.Any())
                     {
-                        Order = order,
-                        PortRequest = portRequest,
-                        PhoneNumbers = portedPhoneNumbers.ToArray()
-                    });
+                        return View("Success", new OrderWithPorts
+                        {
+                            Order = order,
+                            PortRequest = portRequest ?? new(),
+                            PhoneNumbers = portedPhoneNumbers.ToArray()
+                        });
+                    }
                 }
-                else
-                {
-                    return Redirect($"/Cart/Order/{order.OrderId}");
-                }
+                return Redirect($"/Cart/Order/{order?.OrderId}");
             }
             else
             {
@@ -446,7 +443,7 @@ namespace NumberSearch.Mvc.Controllers
                     }
                 }
 
-                if (cart.ProductOrders is null || !cart.ProductOrders.Any())
+                if (cart.ProductOrders is null || cart.ProductOrders.Count == 0)
                 {
                     // Give the user a better error message and tell them to try again
                     // Maybe save the cart to the database when the go to the cart page or when they hit the checkout button?
@@ -507,7 +504,7 @@ namespace NumberSearch.Mvc.Controllers
                         if (submittedOrder)
                         {
                             bool NoEmail = order.NoEmail;
-                            order = await Order.GetByIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                            order = await Order.GetByIdAsync(order.OrderId, _postgresql).ConfigureAwait(false) ?? new();
                             order.NoEmail = NoEmail;
 
                             // Submit the number orders and track the total cost.
@@ -575,8 +572,8 @@ namespace NumberSearch.Mvc.Controllers
                                 if (cart.Products is not null && cart.Products.Count > 0)
                                 {
                                     // Add the call out charge and install estimate to the Cart
-                                    Product onsite = await Product.GetByIdAsync(Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"), _postgresql);
-                                    Product estimate = await Product.GetByIdAsync(Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"), _postgresql);
+                                    Product onsite = await Product.GetByIdAsync(Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"), _postgresql) ?? new();
+                                    Product estimate = await Product.GetByIdAsync(Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"), _postgresql) ?? new();
 
                                     // Sum all of the install time estimates.
                                     decimal totalInstallTime = 0m;
@@ -767,8 +764,8 @@ namespace NumberSearch.Mvc.Controllers
                                             {
                                                 if (coupon.Name.Contains("20"))
                                                 {
-                                                    var discountTo20 = cart?.PhoneNumbers is not null && cart.PhoneNumbers.Any() ? cart.PhoneNumbers.Count * 20 :
-                                                    cart?.PurchasedPhoneNumbers is not null && cart.PurchasedPhoneNumbers.Any() ? cart.PurchasedPhoneNumbers.Count * 20 : 0;
+                                                    var discountTo20 = cart?.PhoneNumbers is not null && cart.PhoneNumbers.Count != 0 ? cart.PhoneNumbers.Count * 20 :
+                                                    cart?.PurchasedPhoneNumbers is not null && cart.PurchasedPhoneNumbers.Count != 0 ? cart.PurchasedPhoneNumbers.Count * 20 : 0;
                                                     totalCost -= totalNumberPurchasingCost - discountTo20;
                                                     onetimeItems.Add(new Line_Items
                                                     {
@@ -792,7 +789,7 @@ namespace NumberSearch.Mvc.Controllers
                                             }
                                             else if (coupon.Type == "Service")
                                             {
-                                                var servicesToDiscount = cart?.Services is not null && cart.Services.Any() ? cart?.Services?.Where(x => x.Name.Contains("5G")).ToArray() : null;
+                                                var servicesToDiscount = cart?.Services is not null && cart.Services.Count != 0 ? cart?.Services?.Where(x => x.Name.Contains("5G")).ToArray() : null;
                                                 if (servicesToDiscount is not null)
                                                 {
                                                     var partnerDiscount = 0;
@@ -832,7 +829,7 @@ namespace NumberSearch.Mvc.Controllers
                             }
 
                             // Handle hardware installation scenarios, if hardware is in the order.
-                            if (cart?.Products is not null && cart.Products.Any())
+                            if (cart?.Products is not null && cart.Products.Count != 0)
                             {
                                 if (!order.OnsiteInstallation)
                                 {
@@ -975,13 +972,13 @@ Accelerate Networks
                                 var newBillingClient = new ClientDatum
                                 {
                                     name = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName,
-                                    contacts = new ClientContact[] {
-                                        new ClientContact {
+                                    contacts = [
+                                        new() {
                                             email = order.Email,
                                             first_name = order.FirstName,
                                             last_name = order.LastName
                                         }
-                                    },
+                                    ],
                                     address1 = order.Address,
                                     address2 = order.Address2,
                                     city = order.City,
@@ -1010,7 +1007,7 @@ Accelerate Networks
                             var upfrontInvoice = new InvoiceDatum
                             {
                                 client_id = billingClient.id,
-                                line_items = onetimeItems.ToArray(),
+                                line_items = [.. onetimeItems],
                                 tax_name1 = billingTaxRate.name,
                                 tax_rate1 = billingTaxRate.rate
                             };
@@ -1023,7 +1020,7 @@ Accelerate Networks
                                 var reoccurringInvoice = new InvoiceDatum
                                 {
                                     client_id = billingClient.id,
-                                    line_items = reoccuringItems.ToArray(),
+                                    line_items = [.. reoccuringItems],
                                     tax_name1 = billingTaxRate.name,
                                     tax_rate1 = billingTaxRate.rate,
                                     entity_type = "quote",
@@ -1032,7 +1029,7 @@ Accelerate Networks
                                 var hiddenReoccurringInvoice = new ReccurringInvoiceDatum
                                 {
                                     client_id = billingClient.id,
-                                    line_items = reoccuringItems.ToArray(),
+                                    line_items = [.. reoccuringItems],
                                     tax_name1 = billingTaxRate.name,
                                     tax_rate1 = billingTaxRate.rate,
                                     entity_type = "recurringInvoice",
@@ -1043,7 +1040,7 @@ Accelerate Networks
                                 };
 
                                 // Submit them to the billing system if they have items.
-                                if (upfrontInvoice.line_items.Any() && reoccurringInvoice.line_items.Any())
+                                if (upfrontInvoice.line_items.Length != 0 && reoccurringInvoice.line_items.Length != 0)
                                 {
                                     // Retry once on invoice creation failures.
                                     try
@@ -1108,7 +1105,7 @@ Accelerate Networks
                                         Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
                                     }
                                 }
-                                else if (reoccurringInvoice.line_items.Any())
+                                else if (reoccurringInvoice.line_items.Length != 0)
                                 {
                                     try
                                     {
@@ -1163,7 +1160,7 @@ Accelerate Networks
                                         Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
                                     }
                                 }
-                                else if (upfrontInvoice.line_items.Any())
+                                else if (upfrontInvoice.line_items.Length != 0)
                                 {
                                     try
                                     {
@@ -1224,7 +1221,7 @@ Accelerate Networks
                                 var reoccurringInvoice = new ReccurringInvoiceDatum
                                 {
                                     client_id = billingClient.id,
-                                    line_items = reoccuringItems.ToArray(),
+                                    line_items = [.. reoccuringItems],
                                     tax_name1 = billingTaxRate.name,
                                     tax_rate1 = billingTaxRate.rate,
                                     entity_type = "recurringInvoice",
@@ -1237,7 +1234,7 @@ Accelerate Networks
 
 
                                 // Submit them to the billing system if they have items.
-                                if (upfrontInvoice.line_items.Any() && reoccurringInvoice.line_items.Any())
+                                if (upfrontInvoice.line_items.Length != 0 && reoccurringInvoice.line_items.Length != 0)
                                 {
                                     try
                                     {
@@ -1302,7 +1299,7 @@ Accelerate Networks
 
 
                                 }
-                                else if (reoccurringInvoice.line_items.Any())
+                                else if (reoccurringInvoice.line_items.Length != 0)
                                 {
                                     // Bill upfront for the first month of reoccurring service so that we can get their payment information on file.
                                     upfrontInvoice.line_items = reoccurringInvoice.line_items;
@@ -1367,7 +1364,7 @@ Accelerate Networks
                                         Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
                                     }
                                 }
-                                else if (upfrontInvoice.line_items.Any())
+                                else if (upfrontInvoice.line_items.Length != 0)
                                 {
                                     try
                                     {
@@ -1531,7 +1528,7 @@ Accelerate Networks
                                     Start = new CalDateTime(order.InstallDate.GetValueOrDefault()),
                                     End = new CalDateTime(end),
                                     Summary = "Accelerate Networks Phone Install",
-                                    Attendees = new List<Attendee> { attendee, new Attendee { CommonName = "Accelerate Networks", Rsvp = true, Value = ourRep } },
+                                    Attendees = [attendee, new() { CommonName = "Accelerate Networks", Rsvp = true, Value = ourRep }],
                                     Organizer = new Organizer { CommonName = "Accelerate Networks", Value = new Uri($"mailto:{_emailOrders}") },
                                 };
 
@@ -1564,14 +1561,14 @@ Accelerate Networks
                             order.BackgroundWorkCompleted = false;
                             var checkOrderUpdate = order.PutAsync(_postgresql).ConfigureAwait(false);
 
-                            if (cart is not null && cart.PortedPhoneNumbers is not null && cart.PortedPhoneNumbers.Any())
+                            if (cart is not null && cart.PortedPhoneNumbers is not null && cart.PortedPhoneNumbers.Count != 0)
                             {
                                 HttpContext.Session.Clear();
 
                                 return View("Success", new OrderWithPorts
                                 {
                                     Order = order,
-                                    PhoneNumbers = cart.PortedPhoneNumbers.ToArray()
+                                    PhoneNumbers = [.. cart.PortedPhoneNumbers]
                                 });
                             }
                             else
@@ -1596,12 +1593,12 @@ Accelerate Networks
                     }
                 }
 
-                if (cart is not null && cart.Order is not null && cart.PortedPhoneNumbers is not null && cart.PortedPhoneNumbers.Any())
+                if (cart is not null && cart.Order is not null && cart.PortedPhoneNumbers is not null && cart.PortedPhoneNumbers.Count != 0)
                 {
                     return View("Success", new OrderWithPorts
                     {
                         Order = cart.Order,
-                        PhoneNumbers = cart.PortedPhoneNumbers.ToArray()
+                        PhoneNumbers = [.. cart.PortedPhoneNumbers]
                     });
                 }
                 else

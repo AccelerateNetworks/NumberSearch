@@ -97,28 +97,31 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var result in Model.ClientRegistrations)
+            @if (Model?.ClientRegistrations is not null && Model.ClientRegistrations.Length != 0)
             {
-                var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(result.AsDialed, out var phoneNumber);
-                var ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == phoneNumber.DialedNumber);
-                string AsDialedLink = checkParse && ownedPhoneNumber is not null && ownedPhoneNumber.Active ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{result.AsDialed}</a>" : $"<a class='btn btn-danger' href='/Messaging/Remove?dialedNumber={result.AsDialed}' target='_blank'> Remove {result.AsDialed}</a>";
-                string Carrier = checkParse && ownedPhoneNumber is not null ? ownedPhoneNumber?.TwilioCarrierName ?? "No Data" : "No Data";
-                string TrunkGroup = checkParse && ownedPhoneNumber is not null ? ownedPhoneNumber?.TrunkGroup ?? "No Data" : "No Data";
-                <tr>
-                    <td>@Html.Raw(AsDialedLink)</td>
-                    <td>@result.RegisteredUpstream</td>
-                    <td>@result.UpstreamStatusDescription</td>
-                    <td>@Carrier</td>
-                    <td>@TrunkGroup</td>
-                    <td>
-                        <div class="btn-group">
-                            <a class="btn btn-primary" href="/Messaging/RefreshStatus?dialedNumber=@result.AsDialed">Refresh Upstream</a>
-                            <a class="btn btn-primary" href="/Messaging/Reregister?dialedNumber=@result.AsDialed">Reregister</a>
-                            <a class="btn btn-primary" href="/Messaging/TwilioCarrier?dialedNumber=@result.AsDialed">Refresh Carrier</a>
-                        </div>
+                foreach (var result in Model.ClientRegistrations)
+                {
+                    var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(result.AsDialed, out var phoneNumber);
+                    var ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == phoneNumber.DialedNumber);
+                    string AsDialedLink = checkParse && ownedPhoneNumber is not null && ownedPhoneNumber.Active ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{result.AsDialed}</a>" : $"<a class='btn btn-danger' href='/Messaging/Remove?dialedNumber={result.AsDialed}' target='_blank'> Remove {result.AsDialed}</a>";
+                    string Carrier = checkParse && ownedPhoneNumber is not null ? ownedPhoneNumber?.TwilioCarrierName ?? "No Data" : "No Data";
+                    string TrunkGroup = checkParse && ownedPhoneNumber is not null ? ownedPhoneNumber?.TrunkGroup ?? "No Data" : "No Data";
+                    <tr>
+                        <td>@Html.Raw(AsDialedLink)</td>
+                        <td>@result.RegisteredUpstream</td>
+                        <td>@result.UpstreamStatusDescription</td>
+                        <td>@Carrier</td>
+                        <td>@TrunkGroup</td>
+                        <td>
+                            <div class="btn-group">
+                                <a class="btn btn-primary" href="/Messaging/RefreshStatus?dialedNumber=@result.AsDialed">Refresh Upstream</a>
+                                <a class="btn btn-primary" href="/Messaging/Reregister?dialedNumber=@result.AsDialed">Reregister</a>
+                                <a class="btn btn-primary" href="/Messaging/TwilioCarrier?dialedNumber=@result.AsDialed">Refresh Carrier</a>
+                            </div>
 
-                    </td>
-                </tr>
+                        </td>
+                    </tr>
+                }
             }
         </tbody>
     </table>
@@ -132,9 +135,12 @@
                 <input asp-for="CarrierName" type="text" class="form-control" list="datalistOptions" id="carrierName" placeholder="Type to search...">
                 <datalist id="datalistOptions">
                     <option value="All"></option>
-                    @foreach (var carrier in Model.Owned.Where(x => x.IngestedFrom != "Test" && x.Active).Select(x => x.TwilioCarrierName).Distinct())
+                    @if (Model?.Owned is not null && Model.Owned.Length != 0)
                     {
-                        <option value='@carrier'>@Model.Owned.Where(x => x.IngestedFrom != "Test" && x.Active && x.TwilioCarrierName == carrier).Count()</option>
+                        foreach (var carrier in Model.Owned.Where(x => x.IngestedFrom != "Test" && x.Active).Select(x => x.TwilioCarrierName).Distinct())
+                        {
+                            <option value='@carrier'>@Model.Owned.Where(x => x.IngestedFrom != "Test" && x.Active && x.TwilioCarrierName == carrier).Count()</option>
+                        }
                     }
                 </datalist>
                 <button class="btn btn-danger" type="submit">As the Carrier ($)</button>

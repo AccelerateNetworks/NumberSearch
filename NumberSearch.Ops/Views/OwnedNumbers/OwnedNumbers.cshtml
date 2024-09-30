@@ -36,11 +36,11 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>@Model.Results.Count()</td>
-                            <td>@Model.Results.Where(x => x.Owned.Status is "Active").Count()</td>
-                            <td>@Model.Results.Where(x => x.Owned.Status is "Cancelled").Count()</td>
-                            <td>@Model.Results.Where(x => x.Owned.Status is "Porting In").Count()</td>
-                            <td>@Model.Results.Where(x => x.Owned.Status is "Porting Out").Count()</td>
+                            <td>@Model?.Results.Length</td>
+                            <td>@Model?.Results.Where(x => x.Owned.Status is "Active").Count()</td>
+                            <td>@Model?.Results.Where(x => x.Owned.Status is "Cancelled").Count()</td>
+                            <td>@Model?.Results.Where(x => x.Owned.Status is "Porting In").Count()</td>
+                            <td>@Model?.Results.Where(x => x.Owned.Status is "Porting Out").Count()</td>
                         </tr>
                     </tbody>
                 </table>
@@ -59,12 +59,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (string provider in Model.Results.Select(x => x.Owned.IngestedFrom).Distinct())
+                        @if (Model?.Results is not null && Model.Results.Length != 0)
                         {
-                            <tr>
-                                <td>@provider</td>
-                                <td>@Model.Results.Where(x => x.Owned.IngestedFrom == provider).Count()</td>
-                            </tr>
+                            foreach (string provider in Model.Results.Select(x => x.Owned.IngestedFrom).Distinct())
+                            {
+                                <tr>
+                                    <td>@provider</td>
+                                    <td>@Model.Results.Where(x => x.Owned.IngestedFrom == provider).Count()</td>
+                                </tr>
+                            }
                         }
                     </tbody>
                 </table>
@@ -86,7 +89,8 @@
             </tr>
         </thead>
         <tbody>
-            @{
+            @if (Model?.Results is not null && Model.Results.Length != 0)
+            {
                 foreach (var number in Model.Results.Where(x => x.Owned.IngestedFrom != "Test"))
                 {
                     var ingestedBadge = number.Owned.IngestedFrom;
@@ -171,7 +175,8 @@
                             @if (!string.IsNullOrWhiteSpace(number?.Owned.TrunkGroup))
                             {
                                 <p>@number?.Owned.TrunkGroup</p>
-                            } else
+                            }
+                            else
                             {
                                 <p>No trunk group data.</p>
                             }
@@ -191,7 +196,7 @@
                         </td>
                         <td>
                             @if ((string.IsNullOrWhiteSpace(number?.Owned?.SMSRoute) || number?.Owned?.SMSRoute is "Longcode not assigned to that account")
-                    && string.IsNullOrWhiteSpace(@number?.ClientRegistration?.CallbackUrl))
+                           && string.IsNullOrWhiteSpace(@number?.ClientRegistration?.CallbackUrl))
                             {
                                 <p>No upstream routing found.</p>
                                 <p>No message forwarding URL registered.</p>

@@ -26,22 +26,14 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Ops.Controllers;
 [ApiExplorerSettings(IgnoreApi = true)]
-public class OrdersController : Controller
+public class OrdersController(OpsConfig opsConfig,
+    numberSearchContext context,
+    UserManager<IdentityUser> userManager) : Controller
 {
-    private readonly string _invoiceNinjaToken;
-    private readonly numberSearchContext _context;
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly OpsConfig _config;
-
-    public OrdersController(OpsConfig opsConfig,
-        numberSearchContext context,
-        UserManager<IdentityUser> userManager)
-    {
-        _config = opsConfig;
-        _invoiceNinjaToken = opsConfig.InvoiceNinjaToken;
-        _context = context;
-        _userManager = userManager;
-    }
+    private readonly string _invoiceNinjaToken = opsConfig.InvoiceNinjaToken;
+    private readonly numberSearchContext _context = context;
+    private readonly UserManager<IdentityUser> _userManager = userManager;
+    private readonly OpsConfig _config = opsConfig;
 
     [HttpGet("/Orders/Search")]
     public async Task<JsonResult> SearchOrdersAsync(string query)
@@ -91,12 +83,12 @@ public class OrdersController : Controller
             if (orders.Count > 1)
             {
                 var searchResults = orders.Where(x => x.BusinessName != null
-                && x.BusinessName.ToLowerInvariant().Contains(query.ToLowerInvariant())).ToList();
+                && x.BusinessName.Contains(query, StringComparison.InvariantCultureIgnoreCase)).ToList();
 
                 // First and Last Name
               searchResults.AddRange(orders.Where(x => !string.IsNullOrWhiteSpace(x.FirstName)
                                 && !string.IsNullOrWhiteSpace(x.LastName)
-                                && $"{x.FirstName} {x.LastName}".ToLowerInvariant().Contains(query.ToLowerInvariant())));
+                                && $"{x.FirstName} {x.LastName}".Contains(query, StringComparison.InvariantCultureIgnoreCase)));
 
                 // Phone Number
                 searchResults.AddRange(orders.Where(x => !string.IsNullOrWhiteSpace(x?.ContactPhoneNumber)
@@ -173,7 +165,7 @@ public class OrdersController : Controller
 
             return View("Orders", new OrderResult
             {
-                Orders = pairs.ToArray(),
+                Orders = [.. pairs],
                 Products = products,
                 Services = services,
                 PortedPhoneNumbers = portedPhoneNumbers,
@@ -255,7 +247,7 @@ public class OrdersController : Controller
                 var cart = new Cart
                 {
                     Order = order,
-                    PhoneNumbers = new List<PhoneNumber>(),
+                    PhoneNumbers = [],
                     ProductOrders = productOrders,
                     Products = products,
                     Services = services,
@@ -265,7 +257,7 @@ public class OrdersController : Controller
                     PurchasedPhoneNumbers = purchasedPhoneNumbers
                 };
 
-                return View("OrderEdit", new EditOrderResult { Order = order, PortRequest = portRequest ?? new(), ProductItems = productItems, EmergencyInformation = e911Registrations.ToArray(), Cart = cart });
+                return View("OrderEdit", new EditOrderResult { Order = order, PortRequest = portRequest ?? new(), ProductItems = productItems, EmergencyInformation = [.. e911Registrations], Cart = cart });
             }
         }
     }
@@ -329,7 +321,7 @@ public class OrdersController : Controller
 
         return View("Quotes", new OrderResult
         {
-            Orders = pairs.ToArray(),
+            Orders = [.. pairs],
             Products = products,
             Services = services,
             PortedPhoneNumbers = portedPhoneNumbers,
@@ -355,7 +347,7 @@ public class OrdersController : Controller
         {
             // Format the address information
             Log.Information($"[Checkout] Parsing address data from {order.Address}");
-            var addressParts = order?.UnparsedAddress?.Split(", ") ?? Array.Empty<string>();
+            var addressParts = order?.UnparsedAddress?.Split(", ") ?? [];
             if (order is not null && addressParts is not null && addressParts.Length > 4)
             {
                 order.Address = addressParts[0] ?? string.Empty;
@@ -458,7 +450,7 @@ public class OrdersController : Controller
 
                 if (order.OnsiteInstallation != existingOrder.OnsiteInstallation)
                 {
-                    var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).ToListAsync();
+                    List<ProductOrder> productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).ToListAsync();
                     var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
                     var products = new List<Product>();
                     foreach (var productId in productsToGet)
@@ -503,8 +495,8 @@ public class OrdersController : Controller
                     };
 
                     // Add the install charges if they're not already in the Cart.
-                    var checkOnsiteExists = productOrders.FirstOrDefault(x => x.ProductId == Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"));
-                    var checkEstimateExists = productOrders.FirstOrDefault(x => x.ProductId == Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"));
+                    var checkOnsiteExists = productOrders?.FirstOrDefault(x => x.ProductId == Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"));
+                    var checkEstimateExists = productOrders?.FirstOrDefault(x => x.ProductId == Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"));
 
                     if (order.OnsiteInstallation)
                     {
@@ -586,7 +578,7 @@ public class OrdersController : Controller
         return new Cart
         {
             Order = order,
-            PhoneNumbers = new List<PhoneNumber>(),
+            PhoneNumbers = [],
             ProductOrders = productOrders,
             Products = products,
             Services = services,
@@ -644,7 +636,7 @@ public class OrdersController : Controller
                     {
                         try
                         {
-                            string[] addressChunks = order.Address?.Split(" ") ?? Array.Empty<string>();
+                            string[] addressChunks = order.Address?.Split(" ") ?? [];
                             string withoutUnitNumber = string.Join(" ", addressChunks[1..]);
                             var checkAddress = await E911Record.ValidateAddressAsync(addressChunks[0], withoutUnitNumber, order.Address2 ?? string.Empty,
                                 order.City ?? string.Empty, order.State ?? string.Empty, order.Zip ?? string.Empty, _config.BulkVSUsername,
@@ -658,7 +650,7 @@ public class OrdersController : Controller
                                 {
                                     var response = await E911Record.PostAsync($"1{phoneNumber.DialedNumber}",
                                         string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName,
-                                        checkAddress.AddressID, Array.Empty<string>(), _config.BulkVSUsername, _config.BulkVSPassword);
+                                        checkAddress.AddressID, [], _config.BulkVSUsername, _config.BulkVSPassword);
 
                                     if (response.Status is "Success")
                                     {
@@ -674,7 +666,7 @@ public class OrdersController : Controller
                                             City = response.City,
                                             DateIngested = DateTime.Now,
                                             DialedNumber = phoneNumber.DialedNumber,
-                                            Sms = response.Sms.Any() ? string.Join(',', response.Sms) : string.Empty,
+                                            Sms = response.Sms.Length != 0 ? string.Join(',', response.Sms) : string.Empty,
                                             State = response.State,
                                             EmergencyInformationId = Guid.NewGuid(),
                                             IngestedFrom = "BulkVS",
@@ -735,7 +727,7 @@ public class OrdersController : Controller
                                         var cart = new Cart
                                         {
                                             Order = order,
-                                            PhoneNumbers = new List<PhoneNumber>(),
+                                            PhoneNumbers = [],
                                             ProductOrders = productOrders,
                                             Products = products,
                                             Services = services,
@@ -790,7 +782,7 @@ public class OrdersController : Controller
                                         var cart = new Cart
                                         {
                                             Order = order,
-                                            PhoneNumbers = new List<PhoneNumber>(),
+                                            PhoneNumbers = [],
                                             ProductOrders = productOrders,
                                             Products = products,
                                             Services = services,
@@ -846,7 +838,7 @@ public class OrdersController : Controller
                                     var cart = new Cart
                                     {
                                         Order = order,
-                                        PhoneNumbers = new List<PhoneNumber>(),
+                                        PhoneNumbers = [],
                                         ProductOrders = productOrders,
                                         Products = products,
                                         Services = services,
@@ -902,7 +894,7 @@ public class OrdersController : Controller
                                 var cart = new Cart
                                 {
                                     Order = order,
-                                    PhoneNumbers = new List<PhoneNumber>(),
+                                    PhoneNumbers = [],
                                     ProductOrders = productOrders,
                                     Products = products,
                                     Services = services,
@@ -958,7 +950,7 @@ public class OrdersController : Controller
                             var cart = new Cart
                             {
                                 Order = order,
-                                PhoneNumbers = new List<PhoneNumber>(),
+                                PhoneNumbers = [],
                                 ProductOrders = productOrders,
                                 Products = products,
                                 Services = services,
@@ -1014,7 +1006,7 @@ public class OrdersController : Controller
                         var cart = new Cart
                         {
                             Order = order,
-                            PhoneNumbers = new List<PhoneNumber>(),
+                            PhoneNumbers = [],
                             ProductOrders = productOrders,
                             Products = products,
                             Services = services,
@@ -1062,7 +1054,7 @@ public class OrdersController : Controller
                     var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == child.OrderId).ToListAsync();
                     var portRequests = await _context.PortRequests.Where(x => x.OrderId == child.OrderId).ToListAsync();
 
-                    List<Guid> duplicateIds = new();
+                    List<Guid> duplicateIds = [];
 
                     foreach (var item in purchasedPhoneNumbers)
                     {
@@ -1167,7 +1159,7 @@ public class OrdersController : Controller
                     var cart = new Cart
                     {
                         Order = parent,
-                        PhoneNumbers = new List<PhoneNumber>(),
+                        PhoneNumbers = [],
                         ProductOrders = productOrders,
                         Products = products,
                         Services = services,
@@ -1222,7 +1214,7 @@ public class OrdersController : Controller
                     var cart = new Cart
                     {
                         Order = parent,
-                        PhoneNumbers = new List<PhoneNumber>(),
+                        PhoneNumbers = [],
                         ProductOrders = productOrders,
                         Products = products,
                         Services = services,
@@ -1278,7 +1270,7 @@ public class OrdersController : Controller
                 var cart = new Cart
                 {
                     Order = parent,
-                    PhoneNumbers = new List<PhoneNumber>(),
+                    PhoneNumbers = [],
                     ProductOrders = productOrders,
                     Products = products,
                     Services = services,
@@ -1319,7 +1311,7 @@ public class OrdersController : Controller
 
                 string carrier = string.Empty;
                 string trackingNumber = string.Empty;
-                HardwareOrder.Orderline[] orderLines = Array.Empty<HardwareOrder.Orderline>();
+                HardwareOrder.Orderline[] orderLines = [];
 
                 if (!string.IsNullOrWhiteSpace(teleDynamicsOrderNumber))
                 {
@@ -1359,7 +1351,7 @@ public class OrdersController : Controller
                             products.Add(product);
 
                             // If items already exist, do not create them twice.
-                            if (!productItems.Any() && item?.Quantity is not null && item.Quantity > 0)
+                            if (productItems.Length == 0 && item?.Quantity is not null && item.Quantity > 0)
                             {
                                 var matches = orderLines.FirstOrDefault(x => x.PartNumber.Contains(product.VendorPartNumber))?.SerializationInformation;
 
@@ -1411,10 +1403,10 @@ public class OrdersController : Controller
                                     }
                                 }
                             }
-                            else if (productItems.Any() && item?.Quantity is not null && item.Quantity > 0)
+                            else if (productItems.Length != 0 && item?.Quantity is not null && item.Quantity > 0)
                             {
                                 // Update them with the current tracking info
-                                List<DataAccess.TeleDynamics.HardwareOrder.Serializationinformation> devices = new();
+                                List<DataAccess.TeleDynamics.HardwareOrder.Serializationinformation> devices = [];
                                 foreach (var line in orderLines)
                                 {
                                     foreach (var device in line.SerializationInformation)
@@ -1482,7 +1474,7 @@ public class OrdersController : Controller
                 var cart = new Cart
                 {
                     Order = order,
-                    PhoneNumbers = new List<PhoneNumber>(),
+                    PhoneNumbers = [],
                     ProductOrders = productOrders,
                     Products = products,
                     Services = services,
@@ -1563,7 +1555,7 @@ public class OrdersController : Controller
                 var cart = new Cart
                 {
                     Order = order,
-                    PhoneNumbers = new List<PhoneNumber>(),
+                    PhoneNumbers = [],
                     ProductOrders = productOrders,
                     Products = products,
                     Services = services,
@@ -1573,7 +1565,7 @@ public class OrdersController : Controller
                     PurchasedPhoneNumbers = purchasedPhoneNumbers
                 };
 
-                if (cart is not null && cart.ProductOrders.Any())
+                if (cart is not null && cart.ProductOrders.Count != 0)
                 {
                     try
                     {
@@ -1735,7 +1727,7 @@ public class OrdersController : Controller
                         }
 
                         // Handle hardware installation scenarios, if hardware is in the order.
-                        if (cart.Products.Any())
+                        if (cart.Products.Count != 0)
                         {
                             if (order.OnsiteInstallation)
                             {
@@ -1795,7 +1787,7 @@ public class OrdersController : Controller
 
                         if (specificTaxRate is not null && specificTaxRate.loccode > 0 && specificTaxRate.loccode < 15 && string.IsNullOrWhiteSpace(specificTaxRate.rate?.name) && (order.State is "WA" || order.State is "Washington"))
                         {
-                            var rateName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(specificTaxRate.rate.name.ToLowerInvariant());
+                            var rateName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(specificTaxRate.rate?.name.ToLowerInvariant() ?? string.Empty);
                             var taxRateName = $"{rateName}, WA - {specificTaxRate.loccode}";
                             var taxRateValue = specificTaxRate.rate1 * 100M;
 
@@ -1835,13 +1827,13 @@ public class OrdersController : Controller
                             var newBillingClient = new ClientDatum
                             {
                                 name = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName,
-                                contacts = new ClientContact[] {
+                                contacts = [
                                         new ClientContact {
                                             email = order.Email ?? string.Empty,
                                             first_name = order?.FirstName ?? string.Empty,
                                             last_name = order?.LastName ?? string.Empty
                                         }
-                                    },
+                                    ],
                                 address1 = order?.Address ?? string.Empty,
                                 address2 = order?.Address2 ?? string.Empty,
                                 city = order?.City ?? string.Empty,
@@ -1869,7 +1861,7 @@ public class OrdersController : Controller
                         var upfrontInvoice = new InvoiceDatum
                         {
                             id = billingClient.id,
-                            line_items = onetimeItems.ToArray(),
+                            line_items = [.. onetimeItems],
                             tax_name1 = billingTaxRate.name,
                             tax_rate1 = billingTaxRate.rate,
                             client_id = billingClient.id
@@ -1883,7 +1875,7 @@ public class OrdersController : Controller
                             var reoccurringInvoice = new InvoiceDatum
                             {
                                 client_id = billingClient.id,
-                                line_items = reoccurringItems.ToArray(),
+                                line_items = [.. reoccurringItems],
                                 tax_name1 = billingTaxRate.name,
                                 tax_rate1 = billingTaxRate.rate,
                                 entity_type = "quote",
@@ -1892,7 +1884,7 @@ public class OrdersController : Controller
                             var hiddenReoccurringInvoice = new ReccurringInvoiceDatum
                             {
                                 client_id = billingClient.id,
-                                line_items = reoccurringItems.ToArray(),
+                                line_items = [.. reoccurringItems],
                                 tax_name1 = billingTaxRate.name,
                                 tax_rate1 = billingTaxRate.rate,
                                 entity_type = "recurringInvoice",
@@ -1904,7 +1896,7 @@ public class OrdersController : Controller
                             string partialMessage = string.Empty;
 
                             // Submit them to the billing system if they have items.
-                            if (upfrontInvoice.line_items.Any() && reoccurringInvoice.line_items.Any())
+                            if (upfrontInvoice.line_items.Length != 0 && reoccurringInvoice.line_items.Length != 0)
                             {
                                 var BillingClientId = string.Empty;
                                 var BillingInvoiceId = string.Empty;
@@ -2064,7 +2056,7 @@ public class OrdersController : Controller
                                 }
 
                             }
-                            else if (reoccurringInvoice.line_items.Any())
+                            else if (reoccurringInvoice.line_items.Length != 0)
                             {
                                 var createNewReoccurringInvoice = new InvoiceDatum();
                                 try
@@ -2141,7 +2133,7 @@ public class OrdersController : Controller
                                     return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update order with the new invoices. 😡 {ex.Message}", AlertType = "alert-danger" });
                                 }
                             }
-                            else if (upfrontInvoice.line_items.Any())
+                            else if (upfrontInvoice.line_items.Length != 0)
                             {
                                 var createNewOneTimeInvoice = new InvoiceDatum();
 
@@ -2234,7 +2226,7 @@ public class OrdersController : Controller
                             var reoccurringInvoice = new ReccurringInvoiceDatum
                             {
                                 client_id = billingClient.id,
-                                line_items = reoccurringItems.ToArray(),
+                                line_items = [.. reoccurringItems],
                                 tax_name1 = billingTaxRate.name,
                                 tax_rate1 = billingTaxRate.rate,
                                 entity_type = "recurringInvoice",
@@ -2246,7 +2238,7 @@ public class OrdersController : Controller
                             string partialMessage = string.Empty;
 
                             // Submit them to the billing system if they have items.
-                            if (upfrontInvoice.line_items.Any() && reoccurringInvoice.line_items.Any() && order is not null)
+                            if (upfrontInvoice.line_items.Length != 0 && reoccurringInvoice.line_items.Length != 0 && order is not null)
                             {
 
                                 var createNewOneTimeInvoice = new InvoiceDatum();
@@ -2377,7 +2369,7 @@ public class OrdersController : Controller
                                     return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update the order with the new invoices. 😡 {ex.Message}", AlertType = "alert-danger" });
                                 }
                             }
-                            else if (reoccurringInvoice.line_items.Any() && order is not null)
+                            else if (reoccurringInvoice.line_items.Length != 0 && order is not null)
                             {
                                 var createNewReoccurringInvoice = new ReccurringInvoiceDatum();
 
@@ -2454,7 +2446,7 @@ public class OrdersController : Controller
                                 }
 
                             }
-                            else if (upfrontInvoice.line_items.Any() && order is not null)
+                            else if (upfrontInvoice.line_items.Length != 0 && order is not null)
                             {
 
                                 var createNewOneTimeInvoice = new InvoiceDatum();
@@ -2651,7 +2643,7 @@ public class OrdersController : Controller
 
         var result = new OrderResult
         {
-            Orders = pairs.ToArray(),
+            Orders = [.. pairs],
             Products = products,
             Services = services,
             PortedPhoneNumbers = portedPhoneNumbers,
@@ -2689,7 +2681,7 @@ public class OrdersController : Controller
 
         return View("Quotes", new OrderResult
         {
-            Orders = pairs.ToArray(),
+            Orders = [.. pairs],
             Products = products,
             Services = services,
             PortedPhoneNumbers = portedPhoneNumbers,

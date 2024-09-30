@@ -103,8 +103,7 @@ namespace NumberSearch.Ingest
                 UpdatedExisting = 0,
                 Lock = true
             };
-
-            var checkLock = await lockingStats.PostAsync(appConfig.Postgresql).ConfigureAwait(false);
+            _ = await lockingStats.PostAsync(appConfig.Postgresql).ConfigureAwait(false);
 
             // Ingest all available phones numbers from the BulkVs API.
             Log.Information("Ingesting data from BulkVS");
@@ -112,7 +111,10 @@ namespace NumberSearch.Ingest
 
             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
             var lockEntry = await IngestStatistics.GetLockAsync("BulkVS", appConfig.Postgresql).ConfigureAwait(false);
-            var checkRemoveLock = await lockEntry.DeleteAsync(appConfig.Postgresql).ConfigureAwait(false);
+            if (lockEntry is not null)
+            {
+                _ = await lockEntry.DeleteAsync(appConfig.Postgresql).ConfigureAwait(false);
+            }
 
             // Remove all of the old numbers from the database.
             Log.Information("[BulkVS] Removing old numbers from the database.");
@@ -254,7 +256,7 @@ namespace NumberSearch.Ingest
                 Lock = true
             };
 
-            var checkLock = await lockingStats.PostAsync(appConfig.Postgresql).ConfigureAwait(false);
+            _ = await lockingStats.PostAsync(appConfig.Postgresql).ConfigureAwait(false);
 
             // Ingest all available numbers in the FirsPointCom API.
             Log.Information("[FirstPointCom] Ingesting data from FirstPointCom");
@@ -262,7 +264,10 @@ namespace NumberSearch.Ingest
 
             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
             var lockEntry = await IngestStatistics.GetLockAsync("FirstPointCom", appConfig.Postgresql).ConfigureAwait(false);
-            var checkRemoveLock = await lockEntry.DeleteAsync(appConfig.Postgresql).ConfigureAwait(false);
+            if (lockEntry is not null)
+            {
+                _ = await lockEntry.DeleteAsync(appConfig.Postgresql).ConfigureAwait(false);
+            }
 
             // Remove all of the old numbers from the database.
             Log.Information("[FirstPointCom] Removing old FirstPointCom numbers from the database.");

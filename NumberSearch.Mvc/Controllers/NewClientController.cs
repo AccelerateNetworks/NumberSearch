@@ -15,16 +15,10 @@ using System.Threading.Tasks;
 namespace NumberSearch.Mvc.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
-    public class NewClientController : Controller
+    public class NewClientController(MvcConfiguration mvcConfiguration) : Controller
     {
-        private readonly string _postgresql;
-        private readonly MvcConfiguration _mvcConfiguration;
-
-        public NewClientController(MvcConfiguration mvcConfiguration)
-        {
-            _postgresql = mvcConfiguration.PostgresqlProd;
-            _mvcConfiguration = mvcConfiguration;
-        }
+        private readonly string _postgresql = mvcConfiguration.PostgresqlProd;
+        private readonly MvcConfiguration _mvcConfiguration = mvcConfiguration;
 
         [HttpGet("Cart/Order/{orderId}/NewClient")]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
@@ -33,69 +27,72 @@ namespace NumberSearch.Mvc.Controllers
             var order = await Order.GetByIdAsync(orderId, _postgresql);
             var productOrders = await ProductOrder.GetAsync(orderId, _postgresql).ConfigureAwait(false);
             var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
-            var newClient = await NewClient.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+            NewClient newClient = await NewClient.GetByOrderIdAsync(order?.OrderId ?? new(), _postgresql).ConfigureAwait(false) ?? new();
             var phoneNumbers = productOrders.Where(x => !string.IsNullOrWhiteSpace(x.DialedNumber))?.Select(x => x.DialedNumber)?.ToArray();
             var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(orderId, _postgresql).ConfigureAwait(false);
             var portedStrippedNumbers = portedNumbers?.Select(x => x.PortedDialedNumber).ToArray();
-            var allNumbers = phoneNumbers?.Concat(portedStrippedNumbers ?? Array.Empty<string>())?.ToArray();
+            var allNumbers = phoneNumbers?.Concat(portedStrippedNumbers ?? [])?.ToArray();
 
-            if (newClient is null)
+            if (newClient is null && order?.OrderId is not null)
             {
                 newClient = new NewClient { NewClientId = Guid.NewGuid(), OrderId = order.OrderId };
                 var checkCreate = await newClient.PostAsync(_postgresql).ConfigureAwait(false);
 
                 if (checkCreate)
                 {
-                    newClient = await NewClient.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                    newClient = await NewClient.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false) ?? new();
                 }
             }
 
-            // Gather up all the childern
-            newClient.ExtensionRegistrations = await ExtensionRegistration.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
-            newClient.NumberDescriptions = await NumberDescription.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
-            newClient.IntercomRegistrations = await IntercomRegistration.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
-            newClient.SpeedDialKeys = await SpeedDialKey.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
-            newClient.FollowMeRegistrations = await FollowMeRegistration.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
-            newClient.PhoneMenuOptions = await PhoneMenuOption.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
-
-            // There is info entered make sure the users sees it.
-            if (newClient.IntercomRegistrations.Any())
+            if (newClient is not null)
             {
-                newClient.Intercom = true;
-            }
+                // Gather up all the childern
+                newClient.ExtensionRegistrations = await ExtensionRegistration.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
+                newClient.NumberDescriptions = await NumberDescription.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
+                newClient.IntercomRegistrations = await IntercomRegistration.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
+                newClient.SpeedDialKeys = await SpeedDialKey.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
+                newClient.FollowMeRegistrations = await FollowMeRegistration.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
+                newClient.PhoneMenuOptions = await PhoneMenuOption.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
 
-            if (!string.IsNullOrWhiteSpace(newClient.IntercomDescription))
-            {
-                newClient.Intercom = true;
-            }
+                // There is info entered make sure the users sees it.
+                if (newClient.IntercomRegistrations.Length != 0)
+                {
+                    newClient.Intercom = true;
+                }
 
-            if (newClient.SpeedDialKeys.Any())
-            {
-                newClient.SpeedDial = true;
-            }
+                if (!string.IsNullOrWhiteSpace(newClient.IntercomDescription))
+                {
+                    newClient.Intercom = true;
+                }
 
-            if (newClient.PhoneMenuOptions.Any())
-            {
-                newClient.PhoneMenu = true;
-            }
+                if (newClient.SpeedDialKeys.Length != 0)
+                {
+                    newClient.SpeedDial = true;
+                }
 
-            if (!string.IsNullOrWhiteSpace(newClient.TextingServiceName))
-            {
-                newClient.TextingService = true;
-            }
+                if (newClient.PhoneMenuOptions.Length != 0)
+                {
+                    newClient.PhoneMenu = true;
+                }
 
-            if (!string.IsNullOrWhiteSpace(newClient.OverheadPagingDescription))
-            {
-                newClient.OverheadPaging = true;
+                if (!string.IsNullOrWhiteSpace(newClient.TextingServiceName))
+                {
+                    newClient.TextingService = true;
+                }
+
+                if (!string.IsNullOrWhiteSpace(newClient.OverheadPagingDescription))
+                {
+                    newClient.OverheadPaging = true;
+                }
             }
 
             var form = new NewClientResult
             {
-                Order = order,
-                NewClient = newClient,
-                ProductOrders = productOrders.ToArray(),
-                Products = products.ToArray(),
-                PhoneNumbers = allNumbers ?? Array.Empty<string>(),
+                Order = order ?? new(),
+                NewClient = newClient ?? new(),
+                ProductOrders = [.. productOrders],
+                Products = [.. products],
+                PhoneNumbers = allNumbers ?? [],
             };
 
             return View("Index", form);
@@ -161,7 +158,7 @@ namespace NumberSearch.Mvc.Controllers
 
                     if (checkUpdate)
                     {
-                        newClient = await NewClient.GetAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
+                        newClient = await NewClient.GetAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false) ?? new();
                     }
                 }
                 else
@@ -170,7 +167,7 @@ namespace NumberSearch.Mvc.Controllers
 
                     if (checkCreate)
                     {
-                        newClient = await NewClient.GetAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
+                        newClient = await NewClient.GetAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false) ?? new();
                     }
                 }
 
@@ -183,7 +180,7 @@ namespace NumberSearch.Mvc.Controllers
                 newClient.PhoneMenuOptions = await PhoneMenuOption.GetByNewClientAsync(newClient.NewClientId, _postgresql).ConfigureAwait(false);
 
                 // There is info entered make sure the users sees it.
-                if (newClient.IntercomRegistrations.Any())
+                if (newClient.IntercomRegistrations.Length != 0)
                 {
                     newClient.Intercom = true;
                 }
@@ -193,12 +190,12 @@ namespace NumberSearch.Mvc.Controllers
                     newClient.Intercom = true;
                 }
 
-                if (newClient.SpeedDialKeys.Any())
+                if (newClient.SpeedDialKeys.Length != 0)
                 {
                     newClient.SpeedDial = true;
                 }
 
-                if (newClient.PhoneMenuOptions.Any())
+                if (newClient.PhoneMenuOptions.Length != 0)
                 {
                     newClient.PhoneMenu = true;
                 }
@@ -218,9 +215,9 @@ namespace NumberSearch.Mvc.Controllers
                 var phoneNumbers = productOrders.Where(x => !string.IsNullOrWhiteSpace(x.DialedNumber))?.Select(x => x.DialedNumber)?.ToArray();
                 var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(newClient.OrderId, _postgresql).ConfigureAwait(false);
                 var portedStrippedNumbers = portedNumbers?.Select(x => x.PortedDialedNumber).ToArray();
-                var allNumbers = phoneNumbers?.Concat(portedStrippedNumbers ?? Array.Empty<string>())?.ToArray();
+                var allNumbers = phoneNumbers?.Concat(portedStrippedNumbers ?? [])?.ToArray();
 
-                return View("Index", new NewClientResult { NewClient = newClient, Order = order, Products = products.ToArray(), ProductOrders = productOrders.ToArray(), PhoneNumbers = allNumbers ?? Array.Empty<string>() });
+                return View("Index", new NewClientResult { NewClient = newClient, Order = order, Products = [..products], ProductOrders = [..productOrders], PhoneNumbers = allNumbers ?? [] });
             }
 
             return View("Index");
