@@ -375,7 +375,7 @@ public class PortRequestsController : Controller
                 if (fromDb is not null)
                 {
                     // If the address has changed update it.
-                    if (portRequest.Address != fromDb.Address)
+                    if (!string.IsNullOrWhiteSpace(portRequest.UnparsedAddress) && portRequest.UnparsedAddress != fromDb.UnparsedAddress)
                     {
                         // Format the address information
                         Log.Information($"[Checkout] Parsing address data from {portRequest.UnparsedAddress}");
