@@ -498,10 +498,15 @@ try
                         mediaURLs.Add($"{spacesConfig.ServiceURL}{fileRequest.BucketName}/{fileRequest.Key}");
 
                         // For debugging in Ops
-                        if (file.Contains(".txt"))
+                        if (file.EndsWith(".txt"))
                         {
-                            var contextText = await fileDownloadURL.GetStringAsync();
-                            contents.Add(contextText);
+                            // Open the text file using a stream reader.
+                            using StreamReader reader = new(streamToFile);
+
+                            // Read the stream as a string.
+                            string text = await reader.ReadToEndAsync();
+
+                            contents.Add(text);
                         }
                     }
                 }
@@ -509,7 +514,7 @@ try
                 // Put all of the text into the Content field.
                 foreach (var content in contents)
                 {
-                    messageRecord.Content += $"<p>{toForward.Content}</p>";
+                    messageRecord.Content += $"<p>{content}</p>";
                 }
             }
 
