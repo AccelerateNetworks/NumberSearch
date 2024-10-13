@@ -35,7 +35,6 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Net.Mail;
-using System.ServiceModel.Channels;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
@@ -364,7 +363,7 @@ try
                 MessageType = MessageType.MMS,
             };
 
-            MessageRecord messageRecord = new MessageRecord
+            MessageRecord messageRecord = new()
             {
                 RawRequest = incomingRequest,
                 Content = toForward.Content,
@@ -399,7 +398,7 @@ try
 
             if (!string.IsNullOrWhiteSpace(to))
             {
-                List<string> numbers = new();
+                List<string> numbers = [];
 
                 foreach (var number in to.Split(','))
                 {
@@ -433,11 +432,11 @@ try
 
                 // Assume that the first number in the list of To numbers is the primary To that is registered with our service. Treat all others as additional recipients.
                 // If multiple numbers in the set of To's are registered as clients the upstream vendor will submit multiple inbound messages so we don't have to handle that scenario.
-                if (numbers.Any() && numbers.Count is 1)
+                if (numbers.Count != 0 && numbers.Count is 1)
                 {
                     toForward.To = numbers.FirstOrDefault() ?? string.Empty;
                 }
-                else if (numbers.Any())
+                else if (numbers.Count != 0)
                 {
                     toForward.To = numbers.FirstOrDefault() ?? string.Empty;
                     // Dump any extra numbers in the full rec.
@@ -458,7 +457,7 @@ try
                 }
             }
 
-            List<string> mediaURLs = new();
+            List<string> mediaURLs = [];
             string MMSMessagePickupRequest = $"{MMSDescription?.url}&authkey={MMSDescription?.authkey}";
             var spacesConfig = new AmazonS3Config
             {
@@ -471,6 +470,8 @@ try
 
             if (!string.IsNullOrWhiteSpace(MMSDescription?.files))
             {
+                var contents = new List<string>();
+
                 foreach (string file in MMSDescription.files.Split(','))
                 {
                     if (!string.IsNullOrWhiteSpace(file))
@@ -478,10 +479,10 @@ try
                         string fileDownloadURL = $"{MMSMessagePickupRequest}&file={file}";
                         Log.Information(fileDownloadURL);
                         //Stream fileStream = await fileDownloadURL.GetStreamAsync();
-                        var path = await fileDownloadURL.DownloadFileAsync(location, $"{toForward.Id.ToString()}{file}");
+                        var path = await fileDownloadURL.DownloadFileAsync(location, $"{toForward.Id}{file}");
                         Log.Information(path);
                         // Save the file to disk rather than S3?!?
-                        var filePath = Path.Combine(location, $"{toForward.Id.ToString()}{file}");
+                        var filePath = Path.Combine(location, $"{toForward.Id}{file}");
                         using Stream streamToFile = new FileStream(path, FileMode.Open, FileAccess.Read);
 
                         var fileRequest = new TransferUtilityUploadRequest
@@ -499,12 +500,20 @@ try
                         // For debugging in Ops
                         if (file.Contains(".txt"))
                         {
-                            messageRecord.Content = await fileDownloadURL.GetStringAsync();
+                            var contextText = await fileDownloadURL.GetStringAsync();
+                            contents.Add(contextText);
                         }
                     }
                 }
+
+                // Put all of the text into the Content field.
+                foreach (var content in contents)
+                {
+                    messageRecord.Content += $"<p>{toForward.Content}</p>";
+                }
             }
-            toForward.MediaURLs = mediaURLs.ToArray();
+
+            toForward.MediaURLs = [..mediaURLs];
             messageRecord.MediaURLs = string.Join(',', toForward.MediaURLs);
 
             // We already know that it's good.
@@ -546,6 +555,45 @@ try
                 catch (Exception ex)
                 {
                     return TypedResults.BadRequest($"Failed to save incoming message to the database. {ex.Message} {System.Text.Json.JsonSerializer.Serialize(messageRecord)}");
+                }
+
+                // Forward to email if enabled
+                if (client.EmailVerified && !string.IsNullOrWhiteSpace(client.Email) && MMSDescription is not null)
+                {
+                    List<string> attachmentPaths = [];
+                    foreach (string file in MMSDescription.files.Split(','))
+                    {
+                        if (!string.IsNullOrWhiteSpace(file))
+                        {
+                            // It's non-text content send it as attachments.
+                            if (!file.Contains(".txt"))
+                            {
+                                string fileDownloadURL = $"{MMSMessagePickupRequest}&file={file}";
+                                Log.Information(fileDownloadURL);
+                                //Stream fileStream = await fileDownloadURL.GetStreamAsync();
+                                var path = await fileDownloadURL.DownloadFileAsync(location, $"{toForward.Id}{file}");
+                                Log.Information(path);
+                                // Save the file to disk rather than S3?!?
+                                var filePath = Path.Combine(location, $"{toForward.Id}{file}");
+                                attachmentPaths.Add(filePath);
+                            }
+                        }
+                    }
+
+                    var messageContent = messageRecord.Content;
+                    var myUri = new Uri(client.CallbackUrl);
+                    string fbxClientDomain = myUri.GetLeftPart(System.UriPartial.Authority);
+                    string messageLink = $"<hr/><p>Reply in <a href='{fbxClientDomain}' target='_blank'>Web Texting</a> from <a href='https://acceleratenetworks.com/Phones/WebTexting' target='_blank'>Accelerate Networks</a> 🚀</p>";
+                    string messageContext = $"<p>You've received a new text message from {toForward.From} to {client.AsDialed} at {toForward.DateReceivedUTC.ToLocalTime()}.</p>";
+
+                    var email = new EmailMessage
+                    {
+                        PrimaryEmailAddress = client.Email,
+                        Subject = $"New text message from {toForward.From} to {toForward.To}",
+                        MessageBody = $"{messageContent}<div class='moz-signature'>{messageLink}{messageContext}</div>",
+                    };
+
+                    var checkSend = await email.SendEmailAsync(appSettings.ConnectionStrings.EmailUsername, appSettings.ConnectionStrings.EmailPassword, $"{toForward.From}@texts.acceleratenetworks.com", [.. attachmentPaths]);
                 }
 
                 Log.Information(System.Text.Json.JsonSerializer.Serialize(messageRecord));
@@ -1200,7 +1248,7 @@ public static class Endpoints
             {
                 var messages = await db.Messages.OrderByDescending(x => x.DateReceivedUTC).Take(100).ToArrayAsync();
 
-                if (messages is not null && messages.Any())
+                if (messages is not null && messages.Length != 0)
                 {
                     return TypedResults.Ok(messages);
                 }
@@ -1234,7 +1282,7 @@ public static class Endpoints
 
                     var messages = await db.Messages.Where(x => x.From == asDialed || x.To.Contains(asDialed)).OrderByDescending(x => x.DateReceivedUTC).ToArrayAsync();
 
-                    if (messages is not null && messages.Any())
+                    if (messages is not null && messages.Length != 0)
                     {
                         return TypedResults.Ok(messages);
                     }
@@ -1282,7 +1330,7 @@ public static class Endpoints
     }
 
     public static async Task<Results<Ok<string>, NotFound<string>, BadRequest<string>>>
-        ReplayMessageAsync(Guid id, AppSettings appSettings, MessagingContext db)
+        ReplayMessageAsync(Guid id, MessagingContext db)
     {
         try
         {
@@ -1456,7 +1504,7 @@ public static class Endpoints
                 }
             }
 
-            if (numbers.Any())
+            if (numbers.Count != 0)
             {
                 toForward.to = string.Join(',', numbers);
             }
@@ -1739,7 +1787,7 @@ public static class Endpoints
                 MessageType = MessageType.SMS,
             };
 
-            MessageRecord messageRecord = new MessageRecord
+            MessageRecord messageRecord = new ()
             {
                 RawRequest = incomingRequest,
                 Content = toForward.Content,
@@ -1774,7 +1822,7 @@ public static class Endpoints
 
             if (!string.IsNullOrWhiteSpace(to))
             {
-                List<string> numbers = new();
+                List<string> numbers = [];
 
                 foreach (var number in to.Split(','))
                 {
@@ -1808,11 +1856,11 @@ public static class Endpoints
 
                 // Assume that the first number in the list of To numbers is the primary To that is registered with our service. Treat all others as additional recipients.
                 // If multiple numbers in the set of To's are registered as clients the upstream vendor will submit multiple inbound messages so we don't have to handle that scenario.
-                if (numbers.Any() && numbers.Count is 1)
+                if (numbers.Count != 0 && numbers.Count is 1)
                 {
                     toForward.To = numbers.FirstOrDefault() ?? string.Empty;
                 }
-                else if (numbers.Any())
+                else if (numbers.Count != 0)
                 {
                     toForward.To = numbers.FirstOrDefault() ?? string.Empty;
                     // Dump any extra numbers in the full rec.
@@ -1902,7 +1950,7 @@ public static class Endpoints
                         MessageBody = $"{messageContent}<div class='moz-signature'>{messageLink}{messageContext}</div>",
                     };
 
-                    var checkSend = await email.SendEmailAsync(appSettings.ConnectionStrings.EmailUsername, appSettings.ConnectionStrings.EmailPassword, $"{toForward.From}@texts.acceleratenetworks.com");
+                    var checkSend = await email.SendEmailAsync(appSettings.ConnectionStrings.EmailUsername, appSettings.ConnectionStrings.EmailPassword, $"{toForward.From}@texts.acceleratenetworks.com", null);
                 }
 
                 Log.Information(System.Text.Json.JsonSerializer.Serialize(messageRecord));
@@ -1983,7 +2031,7 @@ public static class Endpoints
         string password = context.Request.Form["password"].ToString();
         string to = context.Request.Form["to"].ToString();
         string msisdn = context.Request.Form["msisdn"].ToString();
-        string messagebody = context.Request.Form["messagebody"].ToString();
+        //string messagebody = context.Request.Form["messagebody"].ToString();
 
         return !string.IsNullOrWhiteSpace(username) && username == appSettings.ConnectionStrings.PComNetUsername && !string.IsNullOrWhiteSpace(password) && password == appSettings.ConnectionStrings.PComNetPassword && msisdn.Length == 11 && to.Length > 10
                 ? TypedResults.Ok(new FirstPointResponse { Response = new Response { Text = "OK", Code = 200, DeveloperText = "The outbound message was received and the vendor credentials matched." } })
@@ -1991,7 +2039,7 @@ public static class Endpoints
     }
 
     public static async Task<Results<Ok<string>, BadRequest<string>>>
-        ForwardTestAsync(ForwardedMessage message, MessagingContext db)
+        ForwardTestAsync(ForwardedMessage message)
     {
         return message.ClientSecret is "thisisatest" && message.From.Length == 11 && message.To.Length > 10
         ? TypedResults.Ok("The incoming message was received and forwarded to the client.")
@@ -2038,7 +2086,7 @@ public static class Endpoints
             MessageBody = $"This is a test message sent at {DateTime.Now.ToShortDateString()} {DateTime.Now.ToShortTimeString()}. {Message}"
         };
 
-        var checkSend = await email.SendEmailAsync(appSettings.ConnectionStrings.EmailUsername, appSettings.ConnectionStrings.EmailPassword, "test@texts.acceleratenetworks.com");
+        var checkSend = await email.SendEmailAsync(appSettings.ConnectionStrings.EmailUsername, appSettings.ConnectionStrings.EmailPassword, "test@texts.acceleratenetworks.com", null);
 
         return checkSend
         ? TypedResults.Ok("The incoming message was received and forwarded to the client via email.")
@@ -2075,7 +2123,7 @@ namespace Models
         /// <param name="username"></param>
         /// <param name="password"></param>
         /// <returns></returns>
-        public async Task<bool> SendEmailAsync(string username, string password, string fromEmailAddress)
+        public async Task<bool> SendEmailAsync(string username, string password, string fromEmailAddress, string[]? attachmentPaths)
         {
             // If any of the parameters are bad fail fast.
             if (string.IsNullOrWhiteSpace(PrimaryEmailAddress)
@@ -2108,10 +2156,13 @@ namespace Models
                 outboundMessage.To.Add(recipient);
 
                 // If there's an attachment send it, if not just send the body.
-                //if (Multipart != null && Multipart.Count > 0)
-                //{
-                //    builder.Attachments.Add(Multipart);
-                //}
+                if (attachmentPaths is not null && attachmentPaths.Length > 0)
+                {
+                    foreach (var path in attachmentPaths)
+                    {
+                        builder.Attachments.Add(path);
+                    }
+                }
 
                 outboundMessage.Body = builder.ToMessageBody();
 
@@ -2176,7 +2227,7 @@ namespace Models
         [JsonIgnore]
         public PhoneNumbersNA.PhoneNumber FromPhoneNumber { get; set; } = new();
         [JsonIgnore]
-        public List<PhoneNumbersNA.PhoneNumber> ToPhoneNumbers { get; set; } = new();
+        public List<PhoneNumbersNA.PhoneNumber> ToPhoneNumbers { get; set; } = [];
 
         public bool RegularizeAndValidate()
         {
@@ -2194,10 +2245,10 @@ namespace Models
                 }
             }
 
-            if (recip is not null && recip.Any())
+            if (recip is not null && recip.Length != 0)
             {
                 // This may not be necessary if this list is always created by the BulkVSMessage constructor.
-                ToPhoneNumbers ??= new List<PhoneNumbersNA.PhoneNumber>();
+                ToPhoneNumbers ??= [];
 
                 foreach (var number in recip.Split(','))
                 {
@@ -2210,7 +2261,7 @@ namespace Models
                 }
 
                 // This will drop the numbers that couldn't be parsed.
-                recip = ToPhoneNumbers is not null && ToPhoneNumbers.Any() ? ToPhoneNumbers.Count > 1 ? string.Join(",", ToPhoneNumbers.Select(x => $"1{x.DialedNumber!}")) : $"1{ToPhoneNumbers?.FirstOrDefault()?.DialedNumber}" ?? string.Empty : string.Empty;
+                recip = ToPhoneNumbers is not null && ToPhoneNumbers.Count != 0 ? ToPhoneNumbers.Count > 1 ? string.Join(",", ToPhoneNumbers.Select(x => $"1{x.DialedNumber!}")) : $"1{ToPhoneNumbers?.FirstOrDefault()?.DialedNumber}" ?? string.Empty : string.Empty;
                 ToParsed = true;
             }
 
@@ -2224,7 +2275,7 @@ namespace Models
         public string To { get; set; } = string.Empty;
         public string MSISDN { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
-        public string[] MediaURLs { get; set; } = Array.Empty<string>();
+        public string[] MediaURLs { get; set; } = [];
     }
 
     public class FirstPointMMSMessage
@@ -2272,9 +2323,9 @@ namespace Models
         public Guid Id { get; set; } = Guid.NewGuid();
         public string From { get; set; } = string.Empty;
         public string To { get; set; } = string.Empty;
-        public string[] AdditionalRecipients { get; set; } = Array.Empty<string>();
+        public string[] AdditionalRecipients { get; set; } = [];
         public string Content { get; set; } = string.Empty;
-        public string[] MediaURLs { get; set; } = Array.Empty<string>();
+        public string[] MediaURLs { get; set; } = [];
         public MessageType MessageType { get; set; }
         public MessageSource MessageSource { get; set; }
         [DataType(DataType.DateTime)]
