@@ -589,7 +589,7 @@ try
                     var myUri = new Uri(client.CallbackUrl);
                     string fbxClientDomain = myUri.GetLeftPart(System.UriPartial.Authority);
                     string messageLink = $"<hr/><p>Reply in <a href='{fbxClientDomain}' target='_blank'>Web Texting</a> from <a href='https://acceleratenetworks.com/Phones/WebTexting' target='_blank'>Accelerate Networks</a> 🚀</p>";
-                    string messageContext = $"<p>You've received a new text message from {toForward.From} to {client.AsDialed} at {toForward.DateReceivedUTC.ToLocalTime()}.</p>";
+                    string messageContext = $"<p>You've received a new text message from {toForward.From} to {client.AsDialed} at {toForward.DateReceivedUTC} UTC.</p>";
 
                     var email = new EmailMessage
                     {
