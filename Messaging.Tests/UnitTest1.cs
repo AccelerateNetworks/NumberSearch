@@ -478,15 +478,15 @@ namespace Messaging.Tests
             string route = "/1pcom/inbound/MMS";
             string token = "okereeduePeiquah3yaemohGhae0ie";
 
-            var stringContent = new FormUrlEncodedContent(new[]
-                {
-                    new KeyValuePair<string, string>("msisdn", "14402277002"),
-                    new KeyValuePair<string, string>("to", "14253696177"),
+            var stringContent = new FormUrlEncodedContent(
+                [
+                    new KeyValuePair<string, string>("msisdn", "15613026450"),
+                    new KeyValuePair<string, string>("to", "12068588757"),
                     new KeyValuePair<string, string>("timezone", "EST"),
-                    new KeyValuePair<string, string>("message", "{\r\n\"authkey\":\"30c72157-6ade-46c0-b048-c120d07a0030\",\r\n\"encoding\":\"native\",\r\n\"files\":\"part-003.txt,part-001.SMIL,part-002.jpg,\",\r\n\"recip\":\"14253696177,\",\r\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=a4358ae3a15c4123b86eedbc3d57a7e4\"\r\n}"),
-                    new KeyValuePair<string, string>("api_version", "0.5"),
+                    new KeyValuePair<string, string>("message", "{\n\"authkey\":\"55f51b13-89a4-4a15-a8d3-01637fb88493\",\n\"encoding\":\"native\",\n\"files\":\"part-003.txt,part-001.SMIL,part-002.jpg,\",\n\"recip\":\"12068588757,\",\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=7ee172f3330e452499ce98f8a228c524\"\n}"),
+                    new KeyValuePair<string, string>("api_version", "0.6"),
                     new KeyValuePair<string, string>("FullRecipientList", ","),
-                });
+                ]);
 
             var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
 

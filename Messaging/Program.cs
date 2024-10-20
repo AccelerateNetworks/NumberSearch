@@ -366,7 +366,6 @@ try
             MessageRecord messageRecord = new()
             {
                 RawRequest = incomingRequest,
-                Content = toForward.Content,
                 DateReceivedUTC = DateTime.UtcNow,
                 MessageSource = MessageSource.Incoming,
                 MessageType = MessageType.MMS,
@@ -500,8 +499,9 @@ try
                         // For debugging in Ops
                         if (file.EndsWith(".txt"))
                         {
+                            using Stream streamToText = new FileStream(path, FileMode.Open, FileAccess.Read);
                             // Open the text file using a stream reader.
-                            using StreamReader reader = new(streamToFile);
+                            using StreamReader reader = new(streamToText);
 
                             // Read the stream as a string.
                             string text = await reader.ReadToEndAsync();
