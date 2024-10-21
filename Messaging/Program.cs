@@ -1693,7 +1693,7 @@ public static class Endpoints
         catch (FlurlHttpException ex)
         {
             var error = await ex.GetResponseStringAsync();
-            Log.Error(error);
+            Log.Error($"{ex?.StatusCode} - {ex?.Message} - {ex?.Call?.Request?.Url} - {error}");
 
             record = new MessageRecord
             {
