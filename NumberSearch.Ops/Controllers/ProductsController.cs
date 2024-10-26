@@ -11,21 +11,14 @@ using System.Threading.Tasks;
 namespace NumberSearch.Ops.Controllers;
 
 [ApiExplorerSettings(IgnoreApi = true)]
-public class ProductsController : Controller
+public class ProductsController(numberSearchContext context) : Controller
 {
-    private readonly numberSearchContext _context;
-
-    public ProductsController(numberSearchContext context)
-    {
-        _context = context;
-    }
-
     [Authorize]
     [HttpGet("/Products")]
     // GET: Products
     public async Task<IActionResult> Index()
     {
-        return View(await _context.Products.ToListAsync());
+        return View(await context.Products.ToListAsync());
     }
 
     [Authorize]
@@ -38,7 +31,7 @@ public class ProductsController : Controller
             return NotFound();
         }
 
-        var product = await _context.Products
+        var product = await context.Products
             .FirstOrDefaultAsync(m => m.ProductId == id);
         if (product == null)
         {
@@ -67,8 +60,8 @@ public class ProductsController : Controller
         if (ModelState.IsValid)
         {
             product.ProductId = Guid.NewGuid();
-            _context.Add(product);
-            await _context.SaveChangesAsync();
+            context.Add(product);
+            await context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
         return View(product);
@@ -84,7 +77,7 @@ public class ProductsController : Controller
             return NotFound();
         }
 
-        var product = await _context.Products.FindAsync(id);
+        var product = await context.Products.FindAsync(id);
         if (product == null)
         {
             return NotFound();
@@ -109,8 +102,8 @@ public class ProductsController : Controller
         {
             try
             {
-                _context.Update(product);
-                await _context.SaveChangesAsync();
+                context.Update(product);
+                await context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -138,7 +131,7 @@ public class ProductsController : Controller
             return NotFound();
         }
 
-        var product = await _context.Products
+        var product = await context.Products
             .FirstOrDefaultAsync(m => m.ProductId == id);
         if (product == null)
         {
@@ -154,17 +147,17 @@ public class ProductsController : Controller
     [HttpPost("/Products/Delete/{id}")]
     public async Task<IActionResult> DeleteConfirmed(Guid id)
     {
-        var product = await _context.Products.FindAsync(id);
+        var product = await context.Products.FindAsync(id);
         if (product is not null)
         {
-            _context.Products.Remove(product);
-            await _context.SaveChangesAsync();
+            context.Products.Remove(product);
+            await context.SaveChangesAsync();
         }
         return RedirectToAction(nameof(Index));
     }
 
     private bool ProductExists(Guid id)
     {
-        return _context.Products.Any(e => e.ProductId == id);
+        return context.Products.Any(e => e.ProductId == id);
     }
 }

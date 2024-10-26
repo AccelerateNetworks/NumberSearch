@@ -2,8 +2,6 @@
 
 using CsvHelper;
 
-using FirstCom;
-
 using Flurl.Http;
 
 using Microsoft.AspNetCore.Authentication.BearerToken;
@@ -12,10 +10,7 @@ using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-using Models;
-
 using NumberSearch.DataAccess.BulkVS;
-using NumberSearch.DataAccess.Twilio;
 using NumberSearch.Ops.Models;
 
 using Serilog;
@@ -32,17 +27,8 @@ using System.Threading.Tasks;
 namespace NumberSearch.Ops.Controllers;
 
 [ApiExplorerSettings(IgnoreApi = true)]
-public class OwnedNumbersController : Controller
+public class OwnedNumbersController(numberSearchContext context, OpsConfig opsConfig) : Controller
 {
-    private readonly numberSearchContext _context;
-    private readonly OpsConfig _config;
-
-    public OwnedNumbersController(numberSearchContext context, OpsConfig opsConfig)
-    {
-        _context = context;
-        _config = opsConfig;
-    }
-
     public class ClientRegistration
     {
         [Key]
@@ -61,12 +47,12 @@ public class OwnedNumbersController : Controller
     {
         var loginRequest = new LoginRequest()
         {
-            Email = _config.MessagingUsername,
-            Password = _config.MessagingPassword,
+            Email = opsConfig.MessagingUsername,
+            Password = opsConfig.MessagingPassword,
             TwoFactorCode = string.Empty,
             TwoFactorRecoveryCode = string.Empty
         };
-        return $"{_config.MessagingURL}login".PostJsonAsync(loginRequest).ReceiveJson<AccessTokenResponse>();
+        return $"{opsConfig.MessagingURL}login".PostJsonAsync(loginRequest).ReceiveJson<AccessTokenResponse>();
     }
 
     [Authorize]
@@ -78,13 +64,13 @@ public class OwnedNumbersController : Controller
 
         if (!string.IsNullOrWhiteSpace(dialedNumber))
         {
-            var owned = await _context.OwnedPhoneNumbers.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
+            var owned = await context.OwnedPhoneNumbers.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
             if (owned is not null && owned.DialedNumber == dialedNumber)
             {
                 var orderIds = new List<Guid>();
-                var localPortedNumbers = await _context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == dialedNumber).ToArrayAsync();
-                var localPurchasedNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == dialedNumber).ToArrayAsync();
-                var e911 = await _context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
+                var localPortedNumbers = await context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == dialedNumber).ToArrayAsync();
+                var localPurchasedNumbers = await context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == dialedNumber).ToArrayAsync();
+                var e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
 
                 // Get the orderIds for all the related orders.
                 var portedOrders = localPortedNumbers.Where(x => x.OrderId.HasValue && x.OrderId != Guid.Empty).Select(x => x.OrderId.GetValueOrDefault()).ToList();
@@ -96,7 +82,7 @@ public class OwnedNumbersController : Controller
 
                 foreach (var id in orderIds.Distinct())
                 {
-                    var order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == id);
+                    var order = await context.Orders.FirstOrDefaultAsync(x => x.OrderId == id);
                     if (order is not null && order.OrderId == id)
                     {
                         relatedOrders.Add(order);
@@ -116,17 +102,17 @@ public class OwnedNumbersController : Controller
         }
 
         // Show all orders
-        var ownedNumbers = await _context.OwnedPhoneNumbers.OrderByDescending(x => x.DialedNumber).AsNoTracking().ToListAsync();
-        var portedNumbers = await _context.PortedPhoneNumbers.ToArrayAsync();
-        var purchasedNumbers = await _context.PurchasedPhoneNumbers.ToArrayAsync();
-        var e911s = await _context.EmergencyInformation.ToArrayAsync();
+        var ownedNumbers = await context.OwnedPhoneNumbers.OrderByDescending(x => x.DialedNumber).AsNoTracking().ToListAsync();
+        var portedNumbers = await context.PortedPhoneNumbers.ToArrayAsync();
+        var purchasedNumbers = await context.PurchasedPhoneNumbers.ToArrayAsync();
+        var e911s = await context.EmergencyInformation.ToArrayAsync();
         var token = await GetTokenAsync();
 
         var registeredNumbers = new List<ClientRegistration>();
         int page = 1;
         try
         {
-            var pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+            var pageResult = await $"{opsConfig.MessagingURL}client/all?page={page}"
                 .WithOAuthBearerToken(token.AccessToken)
                 .GetJsonAsync<ClientRegistration[]>();
 
@@ -134,7 +120,7 @@ public class OwnedNumbersController : Controller
             {
                 registeredNumbers.AddRange(pageResult);
                 page++;
-                pageResult = await $"{_config.MessagingURL}client/all?page={page}"
+                pageResult = await $"{opsConfig.MessagingURL}client/all?page={page}"
                     .WithOAuthBearerToken(token.AccessToken)
                     .GetJsonAsync<ClientRegistration[]>();
             }
@@ -157,7 +143,7 @@ public class OwnedNumbersController : Controller
             });
         }
 
-        return View("OwnedNumbers", new OwnedNumberResultForm { Results = viewOrders.ToArray(), Message = message });
+        return View("OwnedNumbers", new OwnedNumberResultForm { Results = [.. viewOrders], Message = message });
     }
 
     [Authorize]
@@ -172,19 +158,19 @@ public class OwnedNumbersController : Controller
         }
         else
         {
-            var existing = await _context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == number.Owned.DialedNumber);
+            var existing = await context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == number.Owned.DialedNumber);
             if (existing is not null)
             {
                 existing.Notes = number.Owned.Notes;
                 existing.OwnedBy = number.Owned.OwnedBy;
                 existing.BillingClientId = number.Owned.BillingClientId;
                 existing.Active = number.Owned.Active;
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
 
                 var orderIds = new List<Guid>();
-                var localPortedNumbers = await _context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == existing.DialedNumber).ToArrayAsync();
-                var localPurchasedNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == existing.DialedNumber).ToArrayAsync();
-                var e911 = await _context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
+                var localPortedNumbers = await context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == existing.DialedNumber).ToArrayAsync();
+                var localPurchasedNumbers = await context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == existing.DialedNumber).ToArrayAsync();
+                var e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
 
                 // Get the orderIds for all the related orders.
                 var portedOrders = localPortedNumbers.Where(x => x.OrderId.HasValue && x.OrderId != Guid.Empty).Select(x => x.OrderId.GetValueOrDefault()).ToList();
@@ -196,7 +182,7 @@ public class OwnedNumbersController : Controller
 
                 foreach (var id in orderIds.Distinct())
                 {
-                    var order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == id);
+                    var order = await context.Orders.FirstOrDefaultAsync(x => x.OrderId == id);
                     if (order is not null && order.OrderId == id)
                     {
                         relatedOrders.Add(order);
@@ -210,14 +196,14 @@ public class OwnedNumbersController : Controller
                     PurchasedPhoneNumbers = localPurchasedNumbers,
                     PortedPhoneNumbers = localPortedNumbers,
                     Owned = existing,
-                    RelatedOrders = relatedOrders.ToArray(),
+                    RelatedOrders = [.. relatedOrders],
                     EmergencyInformation = e911 ?? new()
                 });
             }
             else
             {
-                var portedNumbers = await _context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == number.Owned.DialedNumber).ToArrayAsync();
-                var purchasedNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == number.Owned.DialedNumber).ToArrayAsync();
+                var portedNumbers = await context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == number.Owned.DialedNumber).ToArrayAsync();
+                var purchasedNumbers = await context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == number.Owned.DialedNumber).ToArrayAsync();
                 return View("OwnedNumberEdit", new OwnedNumberResult { Message = $"❌ Failed to update {number.Owned.DialedNumber}!", AlertType = "alert-danger", PurchasedPhoneNumbers = purchasedNumbers, PortedPhoneNumbers = portedNumbers, Owned = existing ?? new() });
             }
         }
@@ -229,7 +215,7 @@ public class OwnedNumbersController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> RegisterE911Async(string dialedNumber, string UnparsedAddress, string AddressUnitType, string AddressUnitNumber, string FirstName, string LastName, string BusinessName)
     {
-        var existing = await _context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
+        var existing = await context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
 
         if (string.IsNullOrWhiteSpace(dialedNumber) && string.IsNullOrWhiteSpace(UnparsedAddress) && string.IsNullOrWhiteSpace(existing?.DialedNumber))
         {
@@ -244,8 +230,8 @@ public class OwnedNumbersController : Controller
             PurchasedPhoneNumber[] localPurchasedNumbers = [];
             if (existing is not null)
             {
-                localPortedNumbers = await _context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == existing.DialedNumber).ToArrayAsync();
-                localPurchasedNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == existing.DialedNumber).ToArrayAsync();
+                localPortedNumbers = await context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == existing.DialedNumber).ToArrayAsync();
+                localPurchasedNumbers = await context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == existing.DialedNumber).ToArrayAsync();
 
                 // Get the orderIds for all the related orders.
                 var portedOrders = localPortedNumbers.Where(x => x.OrderId.HasValue && x.OrderId != Guid.Empty).Select(x => x.OrderId.GetValueOrDefault()).ToList();
@@ -258,7 +244,7 @@ public class OwnedNumbersController : Controller
 
             foreach (var id in orderIds.Distinct())
             {
-                var order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == id);
+                var order = await context.Orders.FirstOrDefaultAsync(x => x.OrderId == id);
                 if (order is not null && order.OrderId == id)
                 {
                     relatedOrders.Add(order);
@@ -313,8 +299,8 @@ public class OwnedNumbersController : Controller
                     string[] addressChunks = order.Address?.Split(" ") ?? [];
                     string withoutUnitNumber = string.Join(" ", addressChunks[1..]);
                     var checkAddress = await E911Record.ValidateAddressAsync(addressChunks[0], withoutUnitNumber, order.Address2 ?? string.Empty,
-                        order.City ?? string.Empty, order.State ?? string.Empty, order.Zip ?? string.Empty, _config.BulkVSUsername,
-                        _config.BulkVSPassword);
+                        order.City ?? string.Empty, order.State ?? string.Empty, order.Zip ?? string.Empty, opsConfig.BulkVSUsername,
+                        opsConfig.BulkVSPassword);
 
                     if (checkAddress.Status is "GEOCODED" && !string.IsNullOrWhiteSpace(checkAddress.AddressID))
                     {
@@ -324,7 +310,7 @@ public class OwnedNumbersController : Controller
                         {
                             var response = await E911Record.PostAsync($"1{phoneNumber.DialedNumber}",
                                 string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName,
-                                checkAddress.AddressID, [], _config.BulkVSUsername, _config.BulkVSPassword);
+                                checkAddress.AddressID, [], opsConfig.BulkVSUsername, opsConfig.BulkVSPassword);
 
                             if (response.Status is "Success" && existing is not null)
                             {
@@ -340,7 +326,7 @@ public class OwnedNumbersController : Controller
                                     City = response.City,
                                     DateIngested = DateTime.Now,
                                     DialedNumber = phoneNumber.DialedNumber,
-                                    Sms = response.Sms.Any() ? string.Join(',', response.Sms) : string.Empty,
+                                    Sms = response.Sms.Length != 0 ? string.Join(',', response.Sms) : string.Empty,
                                     State = response.State,
                                     EmergencyInformationId = Guid.NewGuid(),
                                     IngestedFrom = "BulkVS",
@@ -348,19 +334,19 @@ public class OwnedNumbersController : Controller
                                     Zip = response.Zip
                                 };
                                 // Save the record to our database
-                                _context.EmergencyInformation.Add(emergencyRecord);
+                                context.EmergencyInformation.Add(emergencyRecord);
 
                                 // Updated the owned number that we registered for E911 service if it exists.
-                                var owned = await _context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == phoneNumber.DialedNumber);
+                                var owned = await context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == phoneNumber.DialedNumber);
 
                                 if (owned is not null && owned.DialedNumber == phoneNumber.DialedNumber)
                                 {
                                     owned.EmergencyInformationId = emergencyRecord.EmergencyInformationId;
                                 }
 
-                                await _context.SaveChangesAsync();
+                                await context.SaveChangesAsync();
 
-                                var e911 = await _context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
+                                var e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
 
                                 return View("OwnedNumberEdit", new OwnedNumberResult
                                 {
@@ -375,7 +361,7 @@ public class OwnedNumbersController : Controller
                             }
                             else
                             {
-                                var e911 = existing is not null ? await _context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber) : new();
+                                var e911 = existing is not null ? await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber) : new();
 
                                 return View("OwnedNumberEdit", new OwnedNumberResult
                                 {
@@ -391,7 +377,7 @@ public class OwnedNumbersController : Controller
                         }
                         catch (FlurlHttpException ex)
                         {
-                            var e911 = await _context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
+                            var e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
 
                             return View("OwnedNumberEdit", new OwnedNumberResult
                             {
@@ -407,7 +393,7 @@ public class OwnedNumbersController : Controller
                     }
                     else
                     {
-                        var e911 = await _context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
+                        var e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
 
                         return View("OwnedNumberEdit", new OwnedNumberResult
                         {
@@ -423,7 +409,7 @@ public class OwnedNumbersController : Controller
                 }
                 catch (FlurlHttpException ex)
                 {
-                    var e911 = await _context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
+                    var e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
 
                     return View("OwnedNumberEdit", new OwnedNumberResult
                     {
@@ -441,7 +427,7 @@ public class OwnedNumbersController : Controller
             {
                 string existingDialedNumber = existing?.DialedNumber ?? string.Empty;
 
-                var e911 = await _context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existingDialedNumber);
+                var e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existingDialedNumber);
 
                 return View("OwnedNumberEdit", new OwnedNumberResult
                 {
@@ -467,7 +453,7 @@ public class OwnedNumbersController : Controller
             AlertType = "alert-warning",
         };
 
-        var ownedNumbers = await _context.OwnedPhoneNumbers.OrderByDescending(x => x.DialedNumber).AsNoTracking().ToListAsync();
+        var ownedNumbers = await context.OwnedPhoneNumbers.OrderByDescending(x => x.DialedNumber).AsNoTracking().ToListAsync();
         try
         {
             var filePath = Path.GetFullPath(Path.Combine("wwwroot", "csv"));

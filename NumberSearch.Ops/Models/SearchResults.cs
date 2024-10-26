@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NumberSearch.Ops
+namespace NumberSearch.Ops.Models
 {
     public class SearchResults
     {
@@ -8,6 +8,6 @@ namespace NumberSearch.Ops
         public string CleanQuery { get; set; } = string.Empty;
         public int NumberOfResults { get; set; }
         public int Page { get; set; }
-        public DataAccess.PhoneNumber[] PhoneNumbers { get; set; } = Array.Empty<DataAccess.PhoneNumber>();
+        public DataAccess.PhoneNumber[] PhoneNumbers { get; set; } = [];
     }
 }

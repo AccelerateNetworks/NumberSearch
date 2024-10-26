@@ -73,7 +73,8 @@ namespace Messaging.Tests
                 };
 
                 var response = await _httpClient.PostAsJsonAsync("/login", authRequest);
-                var x = await response.Content.ReadAsStringAsync();
+                // For debugging.
+                //var x = await response.Content.ReadAsStringAsync();
 
                 var authCredentials = await response.Content.ReadFromJsonAsync<AccessTokenResponse>();
                 _httpClient.DefaultRequestHeaders.Authorization = new("Bearer", authCredentials?.AccessToken ?? string.Empty);
@@ -93,7 +94,7 @@ namespace Messaging.Tests
             Assert.True(data.Registered);
             Assert.Equal("12063333341", data.DialedNumber);
             Assert.Equal("https://sms.callpipe.com/swagger/index.html", data.CallbackUrl);
-            Assert.True(!string.IsNullOrWhiteSpace(data.Message));
+            Assert.False(string.IsNullOrWhiteSpace(data.Message));
 
             // Verify that the newly registered client exists.
             response = await _httpClient.GetAsync("/client?asDialed=12063333341");
@@ -284,10 +285,10 @@ namespace Messaging.Tests
         {
             string route = "/api/inbound/1pcom";
 
-            var stringContent = new FormUrlEncodedContent(new[]
-                {
+            var stringContent = new FormUrlEncodedContent(
+                [
                     new KeyValuePair<string, string>(string.Empty, string.Empty),
-                });
+                ]);
 
             var response = await _httpClient.PostAsync($"{route}", stringContent);
             _output.WriteLine(await response.Content.ReadAsStringAsync());
@@ -309,12 +310,12 @@ namespace Messaging.Tests
             string route = "/api/inbound/1pcom";
             string token = "okereeduePeiquah3yaemohGhae0ie";
 
-            var stringContent = new FormUrlEncodedContent(new[]
-                {
+            var stringContent = new FormUrlEncodedContent(
+                [
                     new KeyValuePair<string, string>("msisdn", "12068589312"),
                     new KeyValuePair<string, string>("to", "12068589313,12068589313,15036622288,97167"),
                     new KeyValuePair<string, string>("message", "screams in javascript"),
-                });
+                ]);
 
             response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
             _output.WriteLine(await response.Content.ReadAsStringAsync());
@@ -329,13 +330,13 @@ namespace Messaging.Tests
             string route = "/api/inbound/1pcom";
             string token = "okereeduePeiquah3yaemohGhae0ie";
 
-            var stringContent = new FormUrlEncodedContent(new[]
-                {
+            var stringContent = new FormUrlEncodedContent(
+                [
                     new KeyValuePair<string, string>("msisdn", "12065579450"),
                     new KeyValuePair<string, string>("to", "12068589311"),
                     new KeyValuePair<string, string>("message", "Hello, this is 1stPoint SMS :D"),
 
-                });
+                ]);
 
             var response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
 
@@ -360,12 +361,12 @@ namespace Messaging.Tests
             string route = "/api/inbound/1pcom";
             string token = "okereeduePeiquah3yaemohGhae0ie";
 
-            var stringContent = new FormUrlEncodedContent(new[]
-                {
+            var stringContent = new FormUrlEncodedContent(
+                [
                     new KeyValuePair<string, string>("msisdn", "12065579450"),
                     new KeyValuePair<string, string>("to", "12068589312,12068589310"),
                     new KeyValuePair<string, string>("message", "Hello, this is 1stPoint SMS :D"),
-                });
+                ]);
 
             response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
 
@@ -390,12 +391,12 @@ namespace Messaging.Tests
             string route = "/api/inbound/1pcom";
             string token = "okereeduePeiquah3yaemohGhae0ie";
 
-            var stringContent = new FormUrlEncodedContent(new[]
-                {
+            var stringContent = new FormUrlEncodedContent(
+                [
                     new KeyValuePair<string, string>("msisdn", "67378"),
                     new KeyValuePair<string, string>("to", "12068589310"),
                     new KeyValuePair<string, string>("message", "CenturyLink: Payment to be applied on 05/05/2023. Text HELP for help, NOREMINDER to stop pay alerts, STOP to stop all alerts. Msg&data rates may apply."),
-                });
+                ]);
 
             response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
 
@@ -413,7 +414,7 @@ namespace Messaging.Tests
             var _httpClient = await GetHttpClientWithValidBearerTokenAsync();
             var registrationRequest = new RegistrationRequest() { CallbackUrl = "https://sms.callpipe.com/message/forward/test", ClientSecret = "thisisatest", DialedNumber = "12068991741" };
             var response = await _httpClient.PostAsJsonAsync("/client/register", registrationRequest);
-            var x = await response.Content.ReadAsStringAsync();
+            //var x = await response.Content.ReadAsStringAsync();
             var data = await response.Content.ReadFromJsonAsync<RegistrationResponse>();
             Assert.NotNull(data);
             Assert.True(data.Registered);
@@ -421,13 +422,13 @@ namespace Messaging.Tests
             string route = "/api/inbound/1pcom";
             string token = "okereeduePeiquah3yaemohGhae0ie";
 
-            var stringContent = new FormUrlEncodedContent(new[]
-                {
+            var stringContent = new FormUrlEncodedContent(
+                [
                     new KeyValuePair<string, string>("msisdn", "110000011909"),
                     new KeyValuePair<string, string>("to", "12068991741"),
                     new KeyValuePair<string, string>("timezone", "EST"),
                     new KeyValuePair<string, string>("message", "Verizon:+DO+NOT+Share+this+Forgot+Password+code.+A+Verizon+representative+will+NEVER+call+you+or+text+you+for+this+code.+Code+059089."),
-                });
+                ]);
 
             response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
 
@@ -451,14 +452,14 @@ namespace Messaging.Tests
             string route = "/1pcom/inbound/MMS";
             string token = "okereeduePeiquah3yaemohGhae0ie";
 
-            var stringContent = new FormUrlEncodedContent(new[]
-                {
+            var stringContent = new FormUrlEncodedContent(
+                [
                     new KeyValuePair<string, string>("msisdn", "12066320575"),
                     new KeyValuePair<string, string>("to", "12066320575"),
                     new KeyValuePair<string, string>("message", "{\r\n\"authkey\":\"bbdd4df0-1da0-4c5d-be9e-a94b75513c91\",\r\n\"encoding\":\"native\",\r\n\"files\":\"part-002.txt,\",\r\n\"recip\":\"12068589310,\",\r\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=ce808f729db2413498ef722333badb2b\"\r\n}"),
                     new KeyValuePair<string, string>("remote", "12066320575"),
                     new KeyValuePair<string, string>("host", "12066320575"),
-                });
+                ]);
 
             response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);
 

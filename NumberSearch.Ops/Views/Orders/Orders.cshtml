@@ -1,5 +1,5 @@
 ﻿@using AccelerateNetworks.Operations
-@model NumberSearch.Ops.OrderResult
+@model OrderResult
 @{
     ViewData["Title"] = "Orders";
 }
@@ -121,7 +121,8 @@
                                     <span class="badge bg-danger">
                                         ❌ Unpaid
                                     </span>
-                                } else
+                                }
+                                else
                                 {
                                     <span class="badge bg-success">
                                         💵 Paid @order?.Order?.DateUpfrontInvoicePaid.Value.ToShortDateString()

@@ -12,14 +12,9 @@ using System.Threading.Tasks;
 namespace NumberSearch.Ops.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
-    public class CarriersController : Controller
+    public class CarriersController(numberSearchContext context) : Controller
     {
-        private readonly numberSearchContext _context;
-
-        public CarriersController(numberSearchContext context)
-        {
-            _context = context;
-        }
+        private readonly numberSearchContext _context = context;
 
         [Authorize]
         [HttpGet("/Carriers")]
@@ -84,8 +79,8 @@ namespace NumberSearch.Ops.Controllers
                 else
                 {
                     string[] carrierQuery = lookup.Lec.Split(' ');
-                    var relatedCarriers = await _context.Carriers.Where(x => x.Lec != null && x.Lec.ToLower().Contains(carrierQuery[0].ToLower())).ToArrayAsync();
-                    if (relatedCarriers.Any())
+                    var relatedCarriers = await _context.Carriers.Where(x => x.Lec != null && x.Lec.Contains(carrierQuery[0], StringComparison.CurrentCultureIgnoreCase)).ToArrayAsync();
+                    if (relatedCarriers.Length != 0)
                     {
                         return View("Create", new CreateCarrier
                         {
@@ -149,7 +144,7 @@ namespace NumberSearch.Ops.Controllers
                 }
                 _context.UpdateRange(relatedLookups);
                 await _context.SaveChangesAsync();
-                return View("Edit", new EditCarrier { Carrier = carrier, Lookups = relatedLookups.ToArray(), Message = $"Created a new Carrier for OCN {carrier.Ocn}!" });
+                return View("Edit", new EditCarrier { Carrier = carrier, Lookups = [.. relatedLookups], Message = $"Created a new Carrier for OCN {carrier.Ocn}!" });
             }
             return View(carrier);
         }
@@ -208,7 +203,7 @@ namespace NumberSearch.Ops.Controllers
                     _context.UpdateRange(relatedLookups);
                     await _context.SaveChangesAsync();
 
-                    return View("Edit", new EditCarrier { Carrier = carrier, Lookups = relatedLookups.ToArray(), Message = $"Saved your changes to OCN {carrier.Ocn}!" });
+                    return View("Edit", new EditCarrier { Carrier = carrier, Lookups = [.. relatedLookups], Message = $"Saved your changes to OCN {carrier.Ocn}!" });
 
                 }
                 catch (DbUpdateConcurrencyException)

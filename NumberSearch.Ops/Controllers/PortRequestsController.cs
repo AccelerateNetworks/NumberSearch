@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess.BulkVS;
+using NumberSearch.Ops.Models;
 
 using Serilog;
 
@@ -25,24 +26,13 @@ using System.Threading.Tasks;
 namespace NumberSearch.Ops.Controllers;
 
 [ApiExplorerSettings(IgnoreApi = true)]
-public class PortRequestsController : Controller
+public partial class PortRequestsController(IConfiguration config, numberSearchContext context) : Controller
 {
-    private readonly string _azureStorage;
-    private readonly string _bulkVSAPIKey;
-    private readonly string _bulkVSusername;
-    private readonly string _bulkVSpassword;
-    private readonly string _emailOrders;
-    private readonly numberSearchContext _context;
-
-    public PortRequestsController(IConfiguration config, numberSearchContext context)
-    {
-        _azureStorage = config.GetConnectionString("AzureStorageAccount") ?? string.Empty;
-        _emailOrders = config.GetConnectionString("EmailOrders") ?? string.Empty;
-        _bulkVSAPIKey = config.GetConnectionString("BulkVSAPIKEY") ?? string.Empty;
-        _bulkVSusername = config.GetConnectionString("BulkVSUsername") ?? string.Empty;
-        _bulkVSpassword = config.GetConnectionString("BulkVSPassword") ?? string.Empty;
-        _context = context;
-    }
+    private readonly string _azureStorage = config.GetConnectionString("AzureStorageAccount") ?? string.Empty;
+    private readonly string _bulkVSAPIKey = config.GetConnectionString("BulkVSAPIKEY") ?? string.Empty;
+    private readonly string _bulkVSusername = config.GetConnectionString("BulkVSUsername") ?? string.Empty;
+    private readonly string _bulkVSpassword = config.GetConnectionString("BulkVSPassword") ?? string.Empty;
+    private readonly string _emailOrders = config.GetConnectionString("EmailOrders") ?? string.Empty;
 
     public async Task<AccelerateNetworks.Operations.PortedPhoneNumber> VerifyPortabilityAsync(string number)
     {
@@ -149,13 +139,13 @@ public class PortRequestsController : Controller
     {
         if (orderId is not null && orderId.HasValue)
         {
-            var order = await _context.Orders.Where(x => x.OrderId == orderId).AsNoTracking().FirstOrDefaultAsync(x => x.OrderId == orderId);
+            var order = await context.Orders.Where(x => x.OrderId == orderId).AsNoTracking().FirstOrDefaultAsync(x => x.OrderId == orderId);
             if (order is not null)
             {
-                var portRequest = await _context.PortRequests.Where(x => x.OrderId == order.OrderId).AsNoTracking().FirstOrDefaultAsync(x => x.OrderId == orderId);
+                var portRequest = await context.PortRequests.Where(x => x.OrderId == order.OrderId).AsNoTracking().FirstOrDefaultAsync(x => x.OrderId == orderId);
                 if (portRequest is not null)
                 {
-                    var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToArrayAsync();
+                    var numbers = await context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToArrayAsync();
 
                     return View("PortRequestEdit", new PortRequestResult
                     {
@@ -168,7 +158,7 @@ public class PortRequestsController : Controller
         }
 
         // Show all orders
-        var portRequests = await _context.PortRequests.OrderByDescending(x => x.DateSubmitted).Take(100).AsNoTracking().ToListAsync();
+        var portRequests = await context.PortRequests.OrderByDescending(x => x.DateSubmitted).Take(100).AsNoTracking().ToListAsync();
 
         return View("PortRequests", portRequests);
     }
@@ -201,9 +191,9 @@ public class PortRequestsController : Controller
         {
             return View("PortRequestEdit", new PortRequestResult
             {
-                Order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == OrderId) ?? new(),
-                PortRequest = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == OrderId) ?? new(),
-                PhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == OrderId).ToArrayAsync(),
+                Order = await context.Orders.FirstOrDefaultAsync(x => x.OrderId == OrderId) ?? new(),
+                PortRequest = await context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == OrderId) ?? new(),
+                PhoneNumbers = await context.PortedPhoneNumbers.Where(x => x.OrderId == OrderId).ToArrayAsync(),
                 Message = $"❌ Couldn't find the bill image {fileName} for Order {orderId}."
             });
         }
@@ -232,14 +222,14 @@ public class PortRequestsController : Controller
         }
         else
         {
-            var portrequest = await _context.PortRequests
+            var portrequest = await context.PortRequests
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.OrderId == Guid.Parse(orderId));
 
             if (portrequest is not null && portrequest.OrderId == Guid.Parse(orderId))
             {
-                _context.PortRequests.Remove(portrequest);
-                await _context.SaveChangesAsync();
+                context.PortRequests.Remove(portrequest);
+                await context.SaveChangesAsync();
             }
 
             return Redirect("/Home/PortRequests");
@@ -252,31 +242,31 @@ public class PortRequestsController : Controller
     {
         if (!string.IsNullOrWhiteSpace(dialedNumber))
         {
-            var order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId);
+            var order = await context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId);
             if (order is not null)
             {
-                var portRequest = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
+                var portRequest = await context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
                 if (portRequest is not null)
                 {
-                    var numberToRemove = await _context.PortedPhoneNumbers
+                    var numberToRemove = await context.PortedPhoneNumbers
                                 .FirstOrDefaultAsync(x => x.OrderId == order.OrderId && x.PortedDialedNumber == dialedNumber);
 
                     if (numberToRemove is not null)
                     {
-                        _context.PortedPhoneNumbers.Remove(numberToRemove);
-                        await _context.SaveChangesAsync();
+                        context.PortedPhoneNumbers.Remove(numberToRemove);
+                        await context.SaveChangesAsync();
 
-                        var productOrder = await _context.ProductOrders
+                        var productOrder = await context.ProductOrders
                                 .FirstOrDefaultAsync(x => x.OrderId == order.OrderId && x.PortedPhoneNumberId == numberToRemove.PortedPhoneNumberId);
 
                         if (productOrder is not null)
                         {
-                            _context.ProductOrders.Remove(productOrder);
-                            await _context.SaveChangesAsync();
+                            context.ProductOrders.Remove(productOrder);
+                            await context.SaveChangesAsync();
                         }
                     }
 
-                    var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToArrayAsync();
+                    var numbers = await context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToArrayAsync();
 
                     return View("PortRequestEdit", new PortRequestResult
                     {
@@ -300,12 +290,12 @@ public class PortRequestsController : Controller
 
         if (!string.IsNullOrWhiteSpace(dialedNumber) && orderId is not null && orderId != Guid.Empty)
         {
-            var order = await _context.Orders.Where(x => x.OrderId == orderId).FirstOrDefaultAsync();
+            var order = await context.Orders.Where(x => x.OrderId == orderId).FirstOrDefaultAsync();
 
             if (order is not null)
             {
-                portRequest = await _context.PortRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefaultAsync();
-                var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
+                portRequest = await context.PortRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefaultAsync();
+                var numbers = await context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
 
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
 
@@ -320,10 +310,10 @@ public class PortRequestsController : Controller
                         port.OrderId = order.OrderId;
                         port.PortRequestId = portRequest.PortRequestId;
 
-                        _context.PortedPhoneNumbers.Add(port);
-                        await _context.SaveChangesAsync();
+                        context.PortedPhoneNumbers.Add(port);
+                        await context.SaveChangesAsync();
 
-                        numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
+                        numbers = await context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
 
                         var productOrder = new AccelerateNetworks.Operations.ProductOrder
                         {
@@ -335,8 +325,8 @@ public class PortRequestsController : Controller
                             ProductOrderId = Guid.NewGuid()
                         };
 
-                        _context.ProductOrders.Add(productOrder);
-                        await _context.SaveChangesAsync();
+                        context.ProductOrders.Add(productOrder);
+                        await context.SaveChangesAsync();
 
                         return View("PortRequestEdit", new PortRequestResult
                         {
@@ -366,11 +356,11 @@ public class PortRequestsController : Controller
         }
         else if (orderId is not null && orderId != Guid.Empty)
         {
-            var order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId);
+            var order = await context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId);
 
             if (order is not null && portRequest is not null)
             {
-                var fromDb = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
+                var fromDb = await context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
 
                 if (fromDb is not null)
                 {
@@ -393,11 +383,11 @@ public class PortRequestsController : Controller
                         {
                             Log.Error($"[Checkout] Failed automatic address formating.");
 
-                            portRequest = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == portRequest.OrderId);
+                            portRequest = await context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == portRequest.OrderId);
 
                             if (portRequest is not null)
                             {
-                                var numbersFailed = await _context.PortedPhoneNumbers.Where(x => x.OrderId == portRequest.OrderId).ToArrayAsync();
+                                var numbersFailed = await context.PortedPhoneNumbers.Where(x => x.OrderId == portRequest.OrderId).ToArrayAsync();
 
                                 return View("PortRequestEdit", new PortRequestResult
                                 {
@@ -426,10 +416,10 @@ public class PortRequestsController : Controller
                     fromDb.PartialPortDescription = portRequest?.PartialPortDescription;
                     fromDb.DateUpdated = DateTime.Now;
 
-                    await _context.SaveChangesAsync();
+                    await context.SaveChangesAsync();
 
-                    portRequest = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == portRequest!.OrderId);
-                    var numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == portRequest!.OrderId).AsNoTracking().ToArrayAsync();
+                    portRequest = await context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == portRequest!.OrderId);
+                    var numbers = await context.PortedPhoneNumbers.Where(x => x.OrderId == portRequest!.OrderId).AsNoTracking().ToArrayAsync();
 
                     return View("PortRequestEdit", new PortRequestResult
                     {
@@ -466,21 +456,21 @@ public class PortRequestsController : Controller
             return Redirect("/Home/PortRequests");
         }
 
-        var order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == OrderId);
+        var order = await context.Orders.FirstOrDefaultAsync(x => x.OrderId == OrderId);
 
         if (order is not null)
         {
-            var portRequest = await _context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
+            var portRequest = await context.PortRequests.FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
 
             if (portRequest is not null)
             {
                 // Prevent duplicate submissions.
-                var numbers = await _context.PortedPhoneNumbers
+                var numbers = await context.PortedPhoneNumbers
                     .Where(x => x.OrderId == order.OrderId && string.IsNullOrWhiteSpace(x.ExternalPortRequestId)).ToArrayAsync();
 
                 if (numbers is null || numbers.Length == 0)
                 {
-                    numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
+                    numbers = await context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
 
                     return View("PortRequestEdit", new PortRequestResult
                     {
@@ -498,7 +488,7 @@ public class PortRequestsController : Controller
                     {
                         // Extract the street number from the address.
                         // https://stackoverflow.com/questions/26122519/how-to-extract-address-components-from-a-string
-                        Match match = Regex.Match(portRequest.Address!.Trim(), @"([^\d]*)(\d*)(.*)");
+                        Match match = PortRequstEditRegex().Match(portRequest.Address!.Trim());
                         string streetNumber = match.Groups[2].Value;
 
                         var lookups = new List<LrnBulkCnam>();
@@ -554,8 +544,8 @@ public class PortRequestsController : Controller
                                         portRequest.DateSubmitted = DateTime.Now;
                                         portRequest.VendorSubmittedTo = "BulkVS";
                                         portRequest.BulkVSId = string.IsNullOrWhiteSpace(portRequest?.BulkVSId) ? bulkResponse.OrderId : $"{portRequest.BulkVSId}, {bulkResponse.OrderId}";
-                                        _context.PortRequests.Update(portRequest ?? new());
-                                        await _context.SaveChangesAsync();
+                                        context.PortRequests.Update(portRequest ?? new());
+                                        await context.SaveChangesAsync();
 
                                         foreach (var number in localTNs)
                                         {
@@ -565,12 +555,12 @@ public class PortRequestsController : Controller
                                                 updatedNumber.ExternalPortRequestId = bulkResponse?.OrderId ?? "No Id Provided by BulkVS";
                                                 updatedNumber.IngestedFrom = "BulkVS";
                                                 updatedNumber.RawResponse = JsonSerializer.Serialize(bulkResponse);
-                                                _context.PortedPhoneNumbers.Update(updatedNumber);
-                                                await _context.SaveChangesAsync();
+                                                context.PortedPhoneNumbers.Update(updatedNumber);
+                                                await context.SaveChangesAsync();
                                             }
                                         }
 
-                                        numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
+                                        numbers = await context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
 
                                         // Add a note to handle scenarios where the requested FOC is to soon.
                                         var note = new PortTNNote
@@ -589,7 +579,7 @@ public class PortRequestsController : Controller
                                     {
                                         Log.Fatal($"[PortRequest] Failed to submit port request to BulkVS.");
 
-                                        numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToArrayAsync();
+                                        numbers = await context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToArrayAsync();
 
                                         return View("PortRequestEdit", new PortRequestResult
                                         {
@@ -662,18 +652,18 @@ public class PortRequestsController : Controller
                                     portRequest.DateSubmitted = DateTime.Now;
                                     portRequest.VendorSubmittedTo = "BulkVS";
                                     portRequest.BulkVSId = string.IsNullOrWhiteSpace(portRequest?.BulkVSId) ? bulkResponse.OrderId : $"{portRequest.BulkVSId}, {bulkResponse.OrderId}";
-                                    _context.PortRequests.Update(portRequest ?? new());
-                                    await _context.SaveChangesAsync();
+                                    context.PortRequests.Update(portRequest ?? new());
+                                    await context.SaveChangesAsync();
 
                                     foreach (var number in numbers)
                                     {
                                         number.ExternalPortRequestId = bulkResponse?.OrderId;
                                         number.RawResponse = JsonSerializer.Serialize(bulkResponse);
-                                        _context.PortedPhoneNumbers.Update(number);
-                                        await _context.SaveChangesAsync();
+                                        context.PortedPhoneNumbers.Update(number);
+                                        await context.SaveChangesAsync();
                                     }
 
-                                    numbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
+                                    numbers = await context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
 
                                     // Add a note to handle senarios where the requested FOC is to soon.
                                     var note = new PortTNNote
@@ -739,9 +729,9 @@ public class PortRequestsController : Controller
 
                 // Trigger the background processes.
                 order.BackgroundWorkCompleted = false;
-                var orderToUpdate = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
-                _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
-                await _context.SaveChangesAsync();
+                var orderToUpdate = await context.Orders.FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
+                context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
+                await context.SaveChangesAsync();
 
                 Log.Information($"[Port Request] Updated Order {order.OrderId} to kick off the background work.");
 
@@ -758,4 +748,7 @@ public class PortRequestsController : Controller
 
         return Redirect("/Home/PortRequests");
     }
+
+    [GeneratedRegex(@"([^\d]*)(\d*)(.*)")]
+    private static partial Regex PortRequstEditRegex();
 }

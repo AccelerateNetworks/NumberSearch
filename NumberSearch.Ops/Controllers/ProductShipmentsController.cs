@@ -13,21 +13,15 @@ using System.Threading.Tasks;
 namespace NumberSearch.Ops.Controllers;
 
 [ApiExplorerSettings(IgnoreApi = true)]
-public class ProductShipmentsController : Controller
+public class ProductShipmentsController(numberSearchContext context) : Controller
 {
-    private readonly numberSearchContext _context;
-
-    public ProductShipmentsController(numberSearchContext context)
-    {
-        _context = context;
-    }
 
     // GET: ProductShipments
     [Authorize]
     [HttpGet("ProductShipments")]
     public async Task<IActionResult> Index()
     {
-        return View(await _context.ProductShipments.ToListAsync());
+        return View(await context.ProductShipments.ToListAsync());
     }
 
     // GET: ProductShipments/Details/5
@@ -40,7 +34,7 @@ public class ProductShipmentsController : Controller
             return NotFound();
         }
 
-        var productShipment = await _context.ProductShipments
+        var productShipment = await context.ProductShipments
             .FirstOrDefaultAsync(m => m.ProductShipmentId == id);
         if (productShipment == null)
         {
@@ -55,11 +49,11 @@ public class ProductShipmentsController : Controller
     [HttpGet("ProductShipments/Create")]
     public async Task<IActionResult> Create(Guid? orderId)
     {
-        var products = await _context.Products.ToArrayAsync();
+        var products = await context.Products.ToArrayAsync();
 
         if (orderId is not null)
         {
-            var order = await _context.Orders.FirstOrDefaultAsync(m => m.OrderId == orderId);
+            var order = await context.Orders.FirstOrDefaultAsync(m => m.OrderId == orderId);
 
             if (order is not null)
             {
@@ -98,7 +92,7 @@ public class ProductShipmentsController : Controller
             {
                 productShipment.ProductShipmentId = Guid.NewGuid();
                 productShipment.DateCreated = DateTime.Now;
-                var products = await _context.Products.ToListAsync();
+                var products = await context.Products.ToListAsync();
 
                 if (string.IsNullOrWhiteSpace(productShipment.Name))
                 {
@@ -108,15 +102,15 @@ public class ProductShipmentsController : Controller
                 // Update all product inventory counts when a shipment is added or updated.
                 foreach (var product in products)
                 {
-                    var relatedShipments = await _context.ProductShipments.Where(x => x.ProductId == product.ProductId).ToListAsync();
+                    var relatedShipments = await context.ProductShipments.Where(x => x.ProductId == product.ProductId).ToListAsync();
                     var instockItems = relatedShipments.Where(x => x.ShipmentType == "Instock").Sum(x => x.Quantity);
                     var assignedItems = relatedShipments.Where(x => x.ShipmentType == "Assigned").Sum(x => x.Quantity);
                     product.QuantityAvailable = instockItems - assignedItems;
-                    _context.Update(product);
+                    context.Update(product);
                 }
 
-                _context.Add(productShipment);
-                await _context.SaveChangesAsync();
+                context.Add(productShipment);
+                await context.SaveChangesAsync();
             }
 
             return RedirectToAction(nameof(Index));
@@ -134,12 +128,12 @@ public class ProductShipmentsController : Controller
             return NotFound();
         }
 
-        var productShipment = await _context.ProductShipments.FindAsync(id);
+        var productShipment = await context.ProductShipments.FindAsync(id);
         if (productShipment == null)
         {
             return NotFound();
         }
-        var productItems = await _context.ProductItems.Where(x => x.ProductShipmentId == productShipment.ProductShipmentId).ToArrayAsync();
+        var productItems = await context.ProductItems.Where(x => x.ProductShipmentId == productShipment.ProductShipmentId).ToArrayAsync();
         return View(new EditProductShipment { ProductItems = productItems, Shipment = productShipment });
     }
 
@@ -162,9 +156,9 @@ public class ProductShipmentsController : Controller
         {
             try
             {
-                _context.Update(productShipment);
+                context.Update(productShipment);
 
-                var products = await _context.Products.ToListAsync();
+                var products = await context.Products.ToListAsync();
 
                 if (string.IsNullOrWhiteSpace(productShipment.Name))
                 {
@@ -174,14 +168,14 @@ public class ProductShipmentsController : Controller
                 // Update all product inventory counts when a shipment is added or updated.
                 foreach (var product in products)
                 {
-                    var relatedShipments = await _context.ProductShipments.Where(x => x.ProductId == product.ProductId).ToListAsync();
+                    var relatedShipments = await context.ProductShipments.Where(x => x.ProductId == product.ProductId).ToListAsync();
                     var instockItems = relatedShipments.Where(x => x.ShipmentType == "Instock").Sum(x => x.Quantity);
                     var assignedItems = relatedShipments.Where(x => x.ShipmentType == "Assigned").Sum(x => x.Quantity);
                     product.QuantityAvailable = instockItems - assignedItems;
-                    _context.Update(product);
+                    context.Update(product);
                 }
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -197,7 +191,7 @@ public class ProductShipmentsController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        var productItems = await _context.ProductItems.Where(x => x.ProductShipmentId == productShipment.ProductShipmentId).ToArrayAsync();
+        var productItems = await context.ProductItems.Where(x => x.ProductShipmentId == productShipment.ProductShipmentId).ToArrayAsync();
         return View(new EditProductShipment { ProductItems = productItems, Shipment = productShipment });
     }
 
@@ -211,7 +205,7 @@ public class ProductShipmentsController : Controller
             return NotFound();
         }
 
-        var productShipment = await _context.ProductShipments
+        var productShipment = await context.ProductShipments
             .FirstOrDefaultAsync(m => m.ProductShipmentId == id);
         if (productShipment == null)
         {
@@ -227,32 +221,32 @@ public class ProductShipmentsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(Guid id)
     {
-        var productShipment = await _context.ProductShipments.FindAsync(id);
+        var productShipment = await context.ProductShipments.FindAsync(id);
 
         if (productShipment is not null)
         {
-            _context.ProductShipments.Remove(productShipment);
-            await _context.SaveChangesAsync();
+            context.ProductShipments.Remove(productShipment);
+            await context.SaveChangesAsync();
         }
 
-        var products = await _context.Products.ToListAsync();
+        var products = await context.Products.ToListAsync();
 
         // Update all product inventory counts when a shipment is added or updated.
         foreach (var product in products)
         {
-            var relatedShipments = await _context.ProductShipments.Where(x => x.ProductId == product.ProductId).ToListAsync();
+            var relatedShipments = await context.ProductShipments.Where(x => x.ProductId == product.ProductId).ToListAsync();
             var instockItems = relatedShipments.Where(x => x.ShipmentType == "Instock").Sum(x => x.Quantity);
             var assignedItems = relatedShipments.Where(x => x.ShipmentType == "Assigned").Sum(x => x.Quantity);
             product.QuantityAvailable = instockItems - assignedItems;
-            _context.Update(product);
+            context.Update(product);
         }
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         return RedirectToAction(nameof(Index));
     }
 
     private bool ProductShipmentExists(Guid id)
     {
-        return _context.ProductShipments.Any(e => e.ProductShipmentId == id);
+        return context.ProductShipments.Any(e => e.ProductShipmentId == id);
     }
 }

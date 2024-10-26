@@ -10,30 +10,22 @@ using System.Threading.Tasks;
 namespace NumberSearch.Ops.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
-    public class UsersController : Controller
+    public class UsersController(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager) : Controller
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
-
-        public UsersController(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
-        {
-            _roleManager = roleManager;
-            _userManager = userManager;
-        }
 
         // GET: AspNetUsers
         [Authorize]
         [HttpGet("Users")]
         public async Task<IActionResult> Index()
         {
-            var users = await _userManager.Users.ToListAsync();
+            var users = await userManager.Users.ToListAsync();
             var userRolesViewModel = new List<UserRolesViewModel>();
             foreach (IdentityUser user in users)
             {
                 var thisViewModel = new UserRolesViewModel
                 {
                     User = user,
-                    Roles = await _userManager.GetRolesAsync(user)
+                    Roles = await userManager.GetRolesAsync(user)
                 };
                 userRolesViewModel.Add(thisViewModel);
             }
@@ -58,7 +50,7 @@ namespace NumberSearch.Ops.Controllers
         public async Task<IActionResult> Manage(string userId)
         {
             ViewBag.userId = userId;
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await userManager.FindByIdAsync(userId);
             if (user == null)
             {
                 ViewBag.ErrorMessage = $"User with Id = {userId} cannot be found";
@@ -66,7 +58,7 @@ namespace NumberSearch.Ops.Controllers
             }
             ViewBag.UserName = user.UserName;
             var model = new List<ManageUserRolesViewModel>();
-            var roles = await _roleManager.Roles.ToListAsync();
+            var roles = await roleManager.Roles.ToListAsync();
             foreach (var role in roles)
             {
                 var userRolesViewModel = new ManageUserRolesViewModel
@@ -74,7 +66,7 @@ namespace NumberSearch.Ops.Controllers
                     RoleId = role.Id,
                     RoleName = role.Name ?? string.Empty,
                 };
-                if (await _userManager.IsInRoleAsync(user, role.Name ?? string.Empty))
+                if (await userManager.IsInRoleAsync(user, role.Name ?? string.Empty))
                 {
                     userRolesViewModel.Selected = true;
                 }
@@ -92,19 +84,19 @@ namespace NumberSearch.Ops.Controllers
         [HttpPost("Users/Manage")]
         public async Task<IActionResult> Manage(List<ManageUserRolesViewModel> model, string userId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await userManager.FindByIdAsync(userId);
             if (user == null)
             {
                 return View();
             }
-            var roles = await _userManager.GetRolesAsync(user);
-            var result = await _userManager.RemoveFromRolesAsync(user, roles);
+            var roles = await userManager.GetRolesAsync(user);
+            var result = await userManager.RemoveFromRolesAsync(user, roles);
             if (!result.Succeeded)
             {
                 ModelState.AddModelError("", "Cannot remove user existing roles");
                 return View(model);
             }
-            result = await _userManager.AddToRolesAsync(user, model.Where(x => x.Selected).Select(y => y.RoleName));
+            result = await userManager.AddToRolesAsync(user, model.Where(x => x.Selected).Select(y => y.RoleName));
             if (!result.Succeeded)
             {
                 ModelState.AddModelError("", "Cannot add selected roles to user");
@@ -122,7 +114,7 @@ namespace NumberSearch.Ops.Controllers
                 return NotFound();
             }
 
-            var user = await _userManager.FindByIdAsync(id);
+            var user = await userManager.FindByIdAsync(id);
 
             if (user == null)
             {
@@ -137,8 +129,8 @@ namespace NumberSearch.Ops.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            var user = await _userManager.FindByIdAsync(id);
-            await _userManager.DeleteAsync(user ?? new());
+            var user = await userManager.FindByIdAsync(id);
+            await userManager.DeleteAsync(user ?? new());
             return RedirectToAction(nameof(Index));
         }
     }

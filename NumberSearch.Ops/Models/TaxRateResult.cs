@@ -1,6 +1,6 @@
 ﻿using NumberSearch.DataAccess.InvoiceNinja;
 
-namespace NumberSearch.Ops
+namespace NumberSearch.Ops.Models
 {
     public class TaxRateResult
     {

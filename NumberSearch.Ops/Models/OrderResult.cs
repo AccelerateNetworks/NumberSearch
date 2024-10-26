@@ -1,17 +1,15 @@
 ﻿using AccelerateNetworks.Operations;
 
-using System;
-
-namespace NumberSearch.Ops
+namespace NumberSearch.Ops.Models
 {
     public class OrderResult
     {
-        public OrderProducts[] Orders { get; set; } = Array.Empty<OrderProducts>();
-        public Product[] Products { get; set; } = Array.Empty<Product>();
-        public Service[] Services { get; set; } = Array.Empty<Service>();
-        public PortedPhoneNumber[] PortedPhoneNumbers { get; set; } = Array.Empty<PortedPhoneNumber>();
-        public PurchasedPhoneNumber[] PurchasedPhoneNumbers { get; set; } = Array.Empty<PurchasedPhoneNumber>();
-        public VerifiedPhoneNumber[] VerifiedPhoneNumbers { get; set; } = Array.Empty<VerifiedPhoneNumber>();
+        public OrderProducts[] Orders { get; set; } = [];
+        public Product[] Products { get; set; } = [];
+        public Service[] Services { get; set; } = [];
+        public PortedPhoneNumber[] PortedPhoneNumbers { get; set; } = [];
+        public PurchasedPhoneNumber[] PurchasedPhoneNumbers { get; set; } = [];
+        public VerifiedPhoneNumber[] VerifiedPhoneNumbers { get; set; } = [];
         public string Message { get; set; } = string.Empty;
         public string AlertType { get; set; } = string.Empty;
     }
@@ -20,6 +18,6 @@ namespace NumberSearch.Ops
     {
         public Order Order { get; set; } = new();
         public PortRequest PortRequest { get; set; } = new();
-        public ProductOrder[] ProductOrders { get; set; } = Array.Empty<ProductOrder>();
+        public ProductOrder[] ProductOrders { get; set; } = [];
     }
 }

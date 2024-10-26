@@ -1,10 +1,8 @@
 ﻿using AccelerateNetworks.Operations;
 
-using System;
-
 using static NumberSearch.Ops.Controllers.OwnedNumbersController;
 
-namespace NumberSearch.Ops
+namespace NumberSearch.Ops.Models
 {
     // For the edit single page
     public class OwnedNumberResult

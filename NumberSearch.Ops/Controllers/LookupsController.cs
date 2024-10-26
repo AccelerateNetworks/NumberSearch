@@ -13,21 +13,14 @@ using System.Threading;
 namespace NumberSearch.Ops.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
-    public class LookupsController : Controller
+    public class LookupsController(numberSearchContext context) : Controller
     {
-        private readonly numberSearchContext _context;
-
-        public LookupsController(numberSearchContext context)
-        {
-            _context = context;
-        }
-
         [Authorize]
         [HttpGet("/Lookups")]
         // GET: CarriersController
         public async Task<IActionResult> Index()
         {
-            return View(await _context.PhoneNumberLookups.Where(x => x.CarrierId == null && !string.IsNullOrWhiteSpace(x.Ocn)).Take(100).ToListAsync());
+            return View(await context.PhoneNumberLookups.Where(x => x.CarrierId == null && !string.IsNullOrWhiteSpace(x.Ocn)).Take(100).ToListAsync());
         }
 
         [Authorize]
@@ -40,7 +33,7 @@ namespace NumberSearch.Ops.Controllers
                 return NotFound();
             }
 
-            var product = await _context.PhoneNumberLookups
+            var product = await context.PhoneNumberLookups
                 .FirstOrDefaultAsync(m => m.PhoneNumberLookupId == id);
             if (product == null)
             {
@@ -55,7 +48,7 @@ namespace NumberSearch.Ops.Controllers
         // GET: CarriersController/Create
         public async Task<IActionResult> Create()
         {
-            return View(new CreateLookup { Carriers = await _context.Carriers.ToArrayAsync() });
+            return View(new CreateLookup { Carriers = await context.Carriers.ToArrayAsync() });
         }
 
         // POST: CarriersController/Create
@@ -68,8 +61,8 @@ namespace NumberSearch.Ops.Controllers
             {
                 lookup.PhoneNumberLookupId = Guid.NewGuid();
                 lookup.DateIngested = DateTime.Now;
-                _context.Add(lookup);
-                await _context.SaveChangesAsync();
+                context.Add(lookup);
+                await context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(lookup);
@@ -80,9 +73,9 @@ namespace NumberSearch.Ops.Controllers
         public async Task<IActionResult> OCNMatchLookups()
         {
             // Match lookups to existing carriers.
-            var carriers = await _context.Carriers.ToListAsync();
+            var carriers = await context.Carriers.ToListAsync();
 
-            var lookupsWithoutCarriers = await _context.PhoneNumberLookups.Where(x => x.CarrierId == null || x.CarrierId == Guid.Empty).ToArrayAsync();
+            var lookupsWithoutCarriers = await context.PhoneNumberLookups.Where(x => x.CarrierId == null || x.CarrierId == Guid.Empty).ToArrayAsync();
 
             foreach (var item in carriers)
             {
@@ -96,21 +89,21 @@ namespace NumberSearch.Ops.Controllers
                     }
                 }
             }
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
-            return View("Index", await _context.PhoneNumberLookups.Where(x => x.CarrierId == null && !string.IsNullOrWhiteSpace(x.Ocn)).Take(100).ToListAsync());
+            return View("Index", await context.PhoneNumberLookups.Where(x => x.CarrierId == null && !string.IsNullOrWhiteSpace(x.Ocn)).Take(100).ToListAsync());
         }
 
         [Authorize]
         [HttpGet("/Lookups/CarrierMatchesLookupOCN")]
         public async Task<IActionResult> CarrierMatchesLookupOCN()
         {
-            var carriers = await _context.Carriers.ToListAsync();
+            var carriers = await context.Carriers.ToListAsync();
 
             foreach (var carrier in carriers)
             {
                 // If the OCNs don't match then this is not the right Carrier for the lookup.
-                var lookups = await _context.PhoneNumberLookups.Where(x => x.CarrierId == carrier.CarrierId && x.Ocn != carrier.Ocn).ToArrayAsync();
+                var lookups = await context.PhoneNumberLookups.Where(x => x.CarrierId == carrier.CarrierId && x.Ocn != carrier.Ocn).ToArrayAsync();
 
                 foreach (var lookup in lookups)
                 {
@@ -125,9 +118,9 @@ namespace NumberSearch.Ops.Controllers
                     }
                 }
             }
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
-            return View("Index", await _context.PhoneNumberLookups.Where(x => x.CarrierId == null && !string.IsNullOrWhiteSpace(x.Ocn)).Take(100).ToListAsync());
+            return View("Index", await context.PhoneNumberLookups.Where(x => x.CarrierId == null && !string.IsNullOrWhiteSpace(x.Ocn)).Take(100).ToListAsync());
         }
 
         [Authorize]
@@ -140,12 +133,12 @@ namespace NumberSearch.Ops.Controllers
                 return NotFound();
             }
 
-            var product = await _context.PhoneNumberLookups.FindAsync(id);
+            var product = await context.PhoneNumberLookups.FindAsync(id);
             if (product == null)
             {
                 return NotFound();
             }
-            return View(new CreateLookup { Lookup = product, Carriers = await _context.Carriers.ToArrayAsync() });
+            return View(new CreateLookup { Lookup = product, Carriers = await context.Carriers.ToArrayAsync() });
         }
 
         // POST: CarriersController/Edit/5
@@ -164,8 +157,8 @@ namespace NumberSearch.Ops.Controllers
                 try
                 {
                     lookup.DateIngested = DateTime.Now;
-                    _context.Update(lookup);
-                    await _context.SaveChangesAsync();
+                    context.Update(lookup);
+                    await context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -180,7 +173,7 @@ namespace NumberSearch.Ops.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(new CreateLookup { Lookup = lookup, Carriers = await _context.Carriers.ToArrayAsync() });
+            return View(new CreateLookup { Lookup = lookup, Carriers = await context.Carriers.ToArrayAsync() });
         }
 
         [Authorize]
@@ -193,7 +186,7 @@ namespace NumberSearch.Ops.Controllers
                 return NotFound();
             }
 
-            var product = await _context.PhoneNumberLookups
+            var product = await context.PhoneNumberLookups
                 .FirstOrDefaultAsync(m => m.PhoneNumberLookupId == id);
             if (product == null)
             {
@@ -209,18 +202,18 @@ namespace NumberSearch.Ops.Controllers
         [HttpPost("/Lookups/Delete/{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var product = await _context.PhoneNumberLookups.FindAsync(id);
+            var product = await context.PhoneNumberLookups.FindAsync(id);
             if (product is not null)
             {
-                _context.PhoneNumberLookups.Remove(product);
-                await _context.SaveChangesAsync();
+                context.PhoneNumberLookups.Remove(product);
+                await context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
         }
 
         private bool PhoneNumberLookupExists(Guid id)
         {
-            return _context.PhoneNumberLookups.Any(e => e.PhoneNumberLookupId == id);
+            return context.PhoneNumberLookups.Any(e => e.PhoneNumberLookupId == id);
         }
     }
 }

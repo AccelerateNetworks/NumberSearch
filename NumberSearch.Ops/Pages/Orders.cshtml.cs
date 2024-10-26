@@ -15,27 +15,16 @@ using System.Threading.Tasks;
 namespace NumberSearch.Ops.Pages
 {
     [Authorize]
-    public class OrdersModel : PageModel
+    public class OrdersModel(numberSearchContext context,
+    UserManager<IdentityUser> userManager) : PageModel
     {
-        private readonly numberSearchContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly OpsConfig _config;
         public string Query { get; set; } = string.Empty;
-        public OrderProducts[] Orders { get; set; } = Array.Empty<OrderProducts>();
-        public Product[] Products { get; set; } = Array.Empty<Product>();
-        public Service[] Services { get; set; } = Array.Empty<Service>();
-        public PortedPhoneNumber[] PortedPhoneNumbers { get; set; } = Array.Empty<PortedPhoneNumber>();
-        public PurchasedPhoneNumber[] PurchasedPhoneNumbers { get; set; } = Array.Empty<PurchasedPhoneNumber>();
-        public VerifiedPhoneNumber[] VerifiedPhoneNumbers { get; set; } = Array.Empty<VerifiedPhoneNumber>();
-
-        public OrdersModel(OpsConfig opsConfig,
-        numberSearchContext context,
-        UserManager<IdentityUser> userManager)
-        {
-            _config = opsConfig;
-            _context = context;
-            _userManager = userManager;
-        }
+        public OrderProducts[] Orders { get; set; } = [];
+        public Product[] Products { get; set; } = [];
+        public Service[] Services { get; set; } = [];
+        public PortedPhoneNumber[] PortedPhoneNumbers { get; set; } = [];
+        public PurchasedPhoneNumber[] PurchasedPhoneNumbers { get; set; } = [];
+        public VerifiedPhoneNumber[] VerifiedPhoneNumbers { get; set; } = [];
 
         public async Task OnGetAsync(string query)
         {
@@ -46,11 +35,11 @@ namespace NumberSearch.Ops.Pages
             // Show only the relevant Orders to a Sales rep.
             if (User.IsInRole("Sales") && !User.IsInRole("Support"))
             {
-                var user = await _userManager.FindByNameAsync(User.Identity?.Name ?? string.Empty);
+                var user = await userManager.FindByNameAsync(User.Identity?.Name ?? string.Empty);
 
                 if (user is not null)
                 {
-                    orders = await _context.Orders
+                    orders = await context.Orders
                         .Where(x => (x.Quote != true) && (x.SalesEmail == user.Email))
                         .OrderByDescending(x => x.DateSubmitted)
                         .AsNoTracking()
@@ -58,7 +47,7 @@ namespace NumberSearch.Ops.Pages
                 }
                 else
                 {
-                    orders = await _context.Orders
+                    orders = await context.Orders
                         .Where(x => x.Quote != true)
                         .OrderByDescending(x => x.DateSubmitted)
                         .AsNoTracking()
@@ -67,7 +56,7 @@ namespace NumberSearch.Ops.Pages
             }
             else
             {
-                orders = await _context.Orders
+                orders = await context.Orders
                     .Where(x => x.Quote != true)
                     .OrderByDescending(x => x.DateSubmitted)
                     .AsNoTracking()
@@ -87,35 +76,35 @@ namespace NumberSearch.Ops.Pages
                 if (orders.Count > 1)
                 {
                     var searchResults = orders.Where(x => x.BusinessName != null
-                    && x.BusinessName.ToLowerInvariant().Contains(Query.ToLowerInvariant()))
+                    && x.BusinessName.Contains(Query, StringComparison.InvariantCultureIgnoreCase))
                         .ToList();
 
                     // First Name
                     searchResults.AddRange(orders.Where(x => !string.IsNullOrWhiteSpace(x.FirstName)
-                                    && x.FirstName.ToLowerInvariant().Contains(Query.ToLowerInvariant())));
+                                    && x.FirstName.Contains(Query, StringComparison.InvariantCultureIgnoreCase)));
                     // Last Name
                     searchResults.AddRange(orders.Where(x => !string.IsNullOrWhiteSpace(x.LastName)
-                                    && x.LastName.ToLowerInvariant().Contains(Query.ToLowerInvariant())));
+                                    && x.LastName.Contains(Query, StringComparison.InvariantCultureIgnoreCase)));
                     // First and Last Name
                     searchResults.AddRange(orders.Where(x => !string.IsNullOrWhiteSpace(x.FirstName)
                                     && !string.IsNullOrWhiteSpace(x.LastName)
-                                    && $"{x.FirstName} {x.LastName}".ToLowerInvariant().Contains(query.ToLowerInvariant())));
+                                    && $"{x.FirstName} {x.LastName}".Contains(query, StringComparison.InvariantCultureIgnoreCase)));
 
                     // Phone Number
                     searchResults.AddRange(orders.Where(x => !string.IsNullOrWhiteSpace(x.ContactPhoneNumber)
-                                    && x.ContactPhoneNumber.ToLowerInvariant().Contains(query.ToLowerInvariant())));
+                                    && x.ContactPhoneNumber.Contains(query, StringComparison.InvariantCultureIgnoreCase)));
 
                     orders = searchResults.Distinct().ToList();
                 }
             }
 
-            var portRequests = await _context.PortRequests.AsNoTracking().ToArrayAsync();
-            var productOrders = await _context.ProductOrders.AsNoTracking().ToArrayAsync();
-            var purchasedNumbers = await _context.PurchasedPhoneNumbers.AsNoTracking().ToArrayAsync();
-            var verifiedNumbers = await _context.VerifiedPhoneNumbers.AsNoTracking().ToArrayAsync();
-            var portedPhoneNumbers = await _context.PortedPhoneNumbers.AsNoTracking().ToArrayAsync();
-            var products = await _context.Products.AsNoTracking().ToArrayAsync();
-            var services = await _context.Services.AsNoTracking().ToArrayAsync();
+            var portRequests = await context.PortRequests.AsNoTracking().ToArrayAsync();
+            var productOrders = await context.ProductOrders.AsNoTracking().ToArrayAsync();
+            var purchasedNumbers = await context.PurchasedPhoneNumbers.AsNoTracking().ToArrayAsync();
+            var verifiedNumbers = await context.VerifiedPhoneNumbers.AsNoTracking().ToArrayAsync();
+            var portedPhoneNumbers = await context.PortedPhoneNumbers.AsNoTracking().ToArrayAsync();
+            var products = await context.Products.AsNoTracking().ToArrayAsync();
+            var services = await context.Services.AsNoTracking().ToArrayAsync();
             var pairs = new List<OrderProducts>();
 
             foreach (var order in orders.OrderByDescending(x => x.DateSubmitted))
@@ -131,7 +120,7 @@ namespace NumberSearch.Ops.Pages
                 });
             }
 
-            Orders = pairs.ToArray();
+            Orders = [..pairs];
             Products = products;
             Services = services;
             PortedPhoneNumbers = portedPhoneNumbers;

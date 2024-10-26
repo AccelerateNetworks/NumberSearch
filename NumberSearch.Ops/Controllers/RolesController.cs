@@ -8,20 +8,13 @@ using System.Threading.Tasks;
 namespace NumberSearch.Ops.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
-    public class RolesController : Controller
+    public class RolesController(RoleManager<IdentityRole> roleManager) : Controller
     {
-        private readonly RoleManager<IdentityRole> _roleManager;
-
-        public RolesController(RoleManager<IdentityRole> roleManager)
-        {
-            _roleManager = roleManager;
-        }
-
         [Authorize]
         [HttpGet("Roles")]
         public async Task<IActionResult> Index()
         {
-            return View(await _roleManager.Roles.ToListAsync());
+            return View(await roleManager.Roles.ToListAsync());
         }
 
         [Authorize]
@@ -38,7 +31,7 @@ namespace NumberSearch.Ops.Controllers
         {
             if (Name != null)
             {
-                await _roleManager.CreateAsync(new IdentityRole(Name.Trim()));
+                await roleManager.CreateAsync(new IdentityRole(Name.Trim()));
             }
 
             return RedirectToAction("Index");
@@ -53,7 +46,7 @@ namespace NumberSearch.Ops.Controllers
                 return NotFound();
             }
 
-            var role = await _roleManager.FindByIdAsync(id);
+            var role = await roleManager.FindByIdAsync(id);
             return View(role);
         }
 
@@ -62,8 +55,8 @@ namespace NumberSearch.Ops.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            var role = await _roleManager.FindByIdAsync(id);
-            await _roleManager.DeleteAsync(role ?? new());
+            var role = await roleManager.FindByIdAsync(id);
+            await roleManager.DeleteAsync(role ?? new());
             return RedirectToAction(nameof(Index));
         }
     }

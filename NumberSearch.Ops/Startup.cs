@@ -1,22 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
-using NumberSearch.Ops.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using NumberSearch.Ops.Services;
-using Microsoft.AspNetCore.Authorization;
-using Prometheus;
+
+using NumberSearch.Ops.Data;
 using NumberSearch.Ops.Models;
+using NumberSearch.Ops.Services;
+
+using Prometheus;
+
+using System;
 
 namespace NumberSearch.Ops
 {
@@ -101,12 +99,10 @@ namespace NumberSearch.Ops
             services.AddRazorPages()
                 .AddRazorRuntimeCompilation();
 
-            services.AddAuthorization(options =>
-            {
-                options.FallbackPolicy = new AuthorizationPolicyBuilder()
+            services.AddAuthorizationBuilder()
+                .SetFallbackPolicy(new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
-                    .Build();
-            });
+                    .Build());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

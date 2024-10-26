@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess.InvoiceNinja;
+using NumberSearch.Ops.Models;
 
 using Serilog;
 
@@ -14,14 +15,9 @@ using System.Threading.Tasks;
 namespace NumberSearch.Ops.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
-    public class TaxRatesController : Controller
+    public class TaxRatesController(IConfiguration config) : Controller
     {
-        private readonly string _invoiceNinjaToken;
-
-        public TaxRatesController(IConfiguration config)
-        {
-            _invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken") ?? string.Empty;
-        }
+        private readonly string _invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken") ?? string.Empty;
 
         [Authorize]
         [HttpGet]

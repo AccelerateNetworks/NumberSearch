@@ -1,7 +1,5 @@
 ﻿using AccelerateNetworks.Operations;
 
-using Azure.Core;
-
 using CsvHelper;
 
 using FirstCom;
@@ -15,8 +13,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 using Models;
-
-using NuGet.Common;
 
 using NumberSearch.DataAccess.Twilio;
 using NumberSearch.Ops.Models;
@@ -32,22 +28,13 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Ops.Controllers
 {
-    public class MessagingController : Controller
+    public class MessagingController(numberSearchContext context, OpsConfig opsConfig) : Controller
     {
-        private readonly numberSearchContext _context;
-        private readonly OpsConfig _config;
-        private readonly string _baseUrl;
-        private readonly string _messagingUsername;
-        private readonly string _messagingPassword;
-
-        public MessagingController(numberSearchContext context, OpsConfig opsConfig)
-        {
-            _context = context;
-            _config = opsConfig;
-            _baseUrl = opsConfig.MessagingURL;
-            _messagingUsername = opsConfig.MessagingUsername;
-            _messagingPassword = opsConfig.MessagingPassword;
-        }
+        private readonly numberSearchContext _context = context;
+        private readonly OpsConfig _config = opsConfig;
+        private readonly string _baseUrl = opsConfig.MessagingURL;
+        private readonly string _messagingUsername = opsConfig.MessagingUsername;
+        private readonly string _messagingPassword = opsConfig.MessagingPassword;
 
         private Task<AccessTokenResponse> GetTokenAsync()
         {
@@ -100,7 +87,7 @@ namespace NumberSearch.Ops.Controllers
             var token = await GetTokenAsync();
             var failures = await $"{_baseUrl}message/all/failed?start={DateTime.Now.AddDays(-3).ToShortDateString()}&end={DateTime.Now.AddDays(1).ToShortDateString()}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<MessageRecord[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            return View("Failed", new MessagingResult { FailedMessages = failures.OrderByDescending(x => x.DateReceivedUTC).ToArray(), Owned = ownedNumbers });
+            return View("Failed", new MessagingResult { FailedMessages = [.. failures.OrderByDescending(x => x.DateReceivedUTC)], Owned = ownedNumbers });
         }
 
         [Authorize]
@@ -139,7 +126,7 @@ namespace NumberSearch.Ops.Controllers
             }
 
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            return View("Index", new MessagingResult { ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray(), Owned = ownedNumbers, Message = message, AlertType = alertType });
+            return View("Index", new MessagingResult { ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)], Owned = ownedNumbers, Message = message, AlertType = alertType });
         }
 
         [Authorize]
@@ -205,7 +192,7 @@ namespace NumberSearch.Ops.Controllers
                 result.Message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
             }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
+            result.ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)];
             result.Owned = ownedNumbers;
             return View("Index", result);
         }
@@ -226,7 +213,7 @@ namespace NumberSearch.Ops.Controllers
 
                 var stats1 = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
                 var ownedNumbers1 = await _context.OwnedPhoneNumbers.ToArrayAsync();
-                result.ClientRegistrations = stats1.OrderByDescending(x => x.DateRegistered).ToArray();
+                result.ClientRegistrations = [.. stats1.OrderByDescending(x => x.DateRegistered)];
                 result.Owned = ownedNumbers1;
                 return View("Index", result);
             }
@@ -305,7 +292,7 @@ namespace NumberSearch.Ops.Controllers
                         result.Message = "❌ Failed to get client registration data from sms.callpipe.com.";
                     }
                     var ownedNumbers2 = await _context.OwnedPhoneNumbers.ToArrayAsync();
-                    result.ClientRegistrations = stats2.OrderByDescending(x => x.DateRegistered).ToArray();
+                    result.ClientRegistrations = [.. stats2.OrderByDescending(x => x.DateRegistered)];
                     result.Owned = ownedNumbers2;
                     return View("Index", result);
                 }
@@ -343,7 +330,7 @@ namespace NumberSearch.Ops.Controllers
                 result.Message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
             }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
+            result.ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)];
             result.Owned = ownedNumbers;
             return View("Index", result);
         }
@@ -391,7 +378,7 @@ namespace NumberSearch.Ops.Controllers
                 message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
             }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            return View("Index", new MessagingResult { ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray(), Owned = ownedNumbers, Message = message, AlertType = alertType });
+            return View("Index", new MessagingResult { ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)], Owned = ownedNumbers, Message = message, AlertType = alertType });
         }
 
         [Authorize]
@@ -442,7 +429,7 @@ namespace NumberSearch.Ops.Controllers
                 result.Message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
             }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
+            result.ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)];
             result.Owned = ownedNumbers;
             return View("Index", result);
         }
@@ -570,7 +557,7 @@ namespace NumberSearch.Ops.Controllers
             return View("Index", result);
         }
 
-        public record CSVExport(string dialedNumber, bool registeredUpstream, string upstreamStatusDescription, string carrier);
+        public record CSVExport(string DialedNumber, bool RegisteredUpstream, string UpstreamStatusDescription, string Carrier);
 
         [Authorize]
         [Route("/Messaging/ExportToCSV")]
@@ -627,7 +614,7 @@ namespace NumberSearch.Ops.Controllers
                 {
                     result.Message = $"❓Failed to export this CSV.";
                     result.AlertType = "alert-warning";
-                    result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
+                    result.ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)];
                     result.Owned = ownedNumbers;
                     return View("Index", result);
                 }
@@ -640,7 +627,7 @@ namespace NumberSearch.Ops.Controllers
 
             result.Message = $"❓Failed to export this CSV.";
             result.AlertType = "alert-warning";
-            result.ClientRegistrations = stats.OrderByDescending(x => x.DateRegistered).ToArray();
+            result.ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)];
             result.Owned = ownedNumbers;
             return View("Index", result);
         }

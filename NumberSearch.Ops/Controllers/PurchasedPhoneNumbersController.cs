@@ -16,15 +16,8 @@ using System.Threading.Tasks;
 namespace NumberSearch.Ops.Controllers;
 
 [ApiExplorerSettings(IgnoreApi = true)]
-public class PurchasedPhoneNumbersController : Controller
+public class PurchasedPhoneNumbersController(numberSearchContext context) : Controller
 {
-    private readonly numberSearchContext _context;
-
-    public PurchasedPhoneNumbersController(numberSearchContext context)
-    {
-        _context = context;
-    }
-
     [Authorize]
     [Route("/Home/NumberOrders")]
     [Route("/Home/NumberOrder/{orderId}")]
@@ -33,13 +26,13 @@ public class PurchasedPhoneNumbersController : Controller
     {
         if (orderId.HasValue)
         {
-            var orders = await _context.PurchasedPhoneNumbers
+            var orders = await context.PurchasedPhoneNumbers
                 .Where(x => x.OrderId == orderId)
                 .OrderByDescending(x => x.DateOrdered)
                 .AsNoTracking()
                 .ToListAsync();
 
-            if (orders is not null && orders.Any())
+            if (orders is not null && orders.Count != 0)
             {
                 foreach (var order in orders)
                 {
@@ -52,13 +45,13 @@ public class PurchasedPhoneNumbersController : Controller
         else if (string.IsNullOrWhiteSpace(dialedNumber))
         {
             // Show all orders
-            var orders = await _context.PurchasedPhoneNumbers.OrderByDescending(x => x.DateOrdered).AsNoTracking().ToListAsync();
+            var orders = await context.PurchasedPhoneNumbers.OrderByDescending(x => x.DateOrdered).AsNoTracking().ToListAsync();
 
             return View("NumberOrders", orders);
         }
         else
         {
-            var order = await _context.PurchasedPhoneNumbers.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
+            var order = await context.PurchasedPhoneNumbers.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
 
             return View("NumberOrders", new List<PurchasedPhoneNumber> { order ?? new() });
         }
@@ -67,7 +60,7 @@ public class PurchasedPhoneNumbersController : Controller
     [Authorize]
     public async Task<IActionResult> ExportNumberOrders()
     {
-        var orders = await _context.PurchasedPhoneNumbers.OrderByDescending(x => x.DateOrdered).AsNoTracking().ToListAsync();
+        var orders = await context.PurchasedPhoneNumbers.OrderByDescending(x => x.DateOrdered).AsNoTracking().ToListAsync();
 
         var filePath = Path.GetFullPath(Path.Combine("wwwroot", "csv"));
         var fileName = $"PurchasedNumbers{DateTime.Now:yyyyMMdd}.csv";
