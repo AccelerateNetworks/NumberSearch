@@ -8,7 +8,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
 {
     public class TaxRate
     {
-        public TaxRateDatum[] data { get; set; } = Array.Empty<TaxRateDatum>();
+        public TaxRateDatum[] data { get; set; } = [];
 
         public static async Task<TaxRate> GetAllAsync(string token)
         {

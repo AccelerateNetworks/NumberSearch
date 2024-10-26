@@ -35,7 +35,7 @@ namespace FirstCom
                 }
             }
 
-            return numbers.ToArray();
+            return [.. numbers];
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using NumberSearch.DataAccess;
+using NumberSearch.Mvc.Models;
 
 namespace NumberSearch.Mvc
 {

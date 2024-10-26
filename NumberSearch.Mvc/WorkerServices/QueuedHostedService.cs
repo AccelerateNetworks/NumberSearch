@@ -5,24 +5,16 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NumberSearch.Mvc
+namespace NumberSearch.Mvc.WorkerServices
 {
-    public class QueuedHostedService : BackgroundService
+    public class QueuedHostedService(IBackgroundTaskQueue taskQueue,
+        ILogger<QueuedHostedService> logger) : BackgroundService
     {
-        private readonly ILogger<QueuedHostedService> _logger;
-
-        public QueuedHostedService(IBackgroundTaskQueue taskQueue,
-            ILogger<QueuedHostedService> logger)
-        {
-            TaskQueue = taskQueue;
-            _logger = logger;
-        }
-
-        public IBackgroundTaskQueue TaskQueue { get; }
+        public IBackgroundTaskQueue TaskQueue { get; } = taskQueue;
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation(
+            logger.LogInformation(
                 $"Queued Hosted Service is running.{Environment.NewLine}" +
                 $"{Environment.NewLine}Tap W to add a work item to the " +
                 $"background queue.{Environment.NewLine}");
@@ -43,7 +35,7 @@ namespace NumberSearch.Mvc
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex,
+                    logger.LogError(ex,
                         "Error occurred executing {WorkItem}.", nameof(workItem));
                 }
             }
@@ -51,7 +43,7 @@ namespace NumberSearch.Mvc
 
         public override Task StopAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Queued Hosted Service is stopping.");
+            logger.LogInformation("Queued Hosted Service is stopping.");
 
             return base.StopAsync(stoppingToken);
         }

@@ -17,26 +17,13 @@ using System.Threading.Tasks;
 namespace NumberSearch.Mvc.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
-    public class PortingController : Controller
+    public class PortingController(MvcConfiguration mvcConfiguration) : Controller
     {
-        private readonly string _postgresql;
-        private readonly string _bulkVSAPIKey;
-        private readonly string _bulkVSAPIUsername;
-        private readonly string _bulkVSAPIPassword;
-        private readonly string _azureStorage;
-        private readonly string _SmtpUsername;
-        private readonly MvcConfiguration _mvcConfiguration;
-
-        public PortingController(MvcConfiguration mvcConfiguration)
-        {
-            _postgresql = mvcConfiguration.PostgresqlProd;
-            _bulkVSAPIKey = mvcConfiguration.BulkVSAPIKEY;
-            _bulkVSAPIUsername = mvcConfiguration.BulkVSUsername;
-            _bulkVSAPIPassword = mvcConfiguration.BulkVSPassword;
-            _azureStorage = mvcConfiguration.AzureStorageAccount;
-            _SmtpUsername = mvcConfiguration.SmtpUsername;
-            _mvcConfiguration = mvcConfiguration;
-        }
+        private readonly string _postgresql = mvcConfiguration.PostgresqlProd;
+        private readonly string _bulkVSAPIUsername = mvcConfiguration.BulkVSUsername;
+        private readonly string _bulkVSAPIPassword = mvcConfiguration.BulkVSPassword;
+        private readonly string _azureStorage = mvcConfiguration.AzureStorageAccount;
+        private readonly string _SmtpUsername = mvcConfiguration.SmtpUsername;
 
         [HttpGet]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
@@ -71,7 +58,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 try
                 {
-                    var lookup = new LookupController(_mvcConfiguration);
+                    var lookup = new LookupController(mvcConfiguration);
                     var portable = await lookup.VerifyPortabilityAsync(Query);
 
                     if (portable is not null && portable.Portable)
@@ -315,7 +302,7 @@ namespace NumberSearch.Mvc.Controllers
                         foreach (var number in portedNumbers)
                         {
                             number.PortRequestId = portRequest.PortRequestId;
-                            var checkPortUpdate = await number.PutAsync(_postgresql).ConfigureAwait(false);
+                            _ = await number.PutAsync(_postgresql).ConfigureAwait(false);
                         }
                     }
 
@@ -443,12 +430,11 @@ Accelerate Networks
                     OrderId = order.OrderId,
                     Subject = $"Porting information added for {portedNumbers.FirstOrDefault()?.PortedDialedNumber}"
                 };
-
-                var checkSave = await confirmationEmail.PostAsync(_postgresql).ConfigureAwait(false);
+                _ = await confirmationEmail.PostAsync(_postgresql).ConfigureAwait(false);
 
                 // Trigger the backwork process to run again and send this email.
                 order.BackgroundWorkCompleted = false;
-                var checkOrder = await order.PutAsync(_postgresql).ConfigureAwait(false);
+                _ = await order.PutAsync(_postgresql).ConfigureAwait(false);
 
                 // Reset the session and clear the Cart.
                 HttpContext.Session.Clear();

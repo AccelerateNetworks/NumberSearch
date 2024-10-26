@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using NumberSearch.Mvc.Models;
+using NumberSearch.Mvc.WorkerServices;
 
 using Prometheus;
 

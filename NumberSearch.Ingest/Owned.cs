@@ -374,7 +374,7 @@ namespace NumberSearch.Ingest
 
             Log.Information($"[OwnedNumbers] [FirstPointCom] Ingested {numbers.Count} owned numbers.");
 
-            return numbers.Any() ? numbers.ToArray() : new List<OwnedPhoneNumber>();
+            return numbers.Count != 0 ? numbers.ToArray() : new List<OwnedPhoneNumber>();
         }
 
         public static async Task<IngestStatistics> SubmitOwnedNumbersAsync(IEnumerable<OwnedPhoneNumber> newlyIngested, string connectionString, string bulkVSUsername, string bulkVSPassword)
@@ -804,7 +804,7 @@ namespace NumberSearch.Ingest
                     if (existing is not null && existing.DialedNumber == number.DialedNumber)
                     {
                         // Update the existing record with the current data.
-                        existing.Sms = record.Sms.Any() ? string.Join(',', record.Sms) : string.Empty;
+                        existing.Sms = record.Sms.Length != 0 ? string.Join(',', record.Sms) : string.Empty;
                         existing.RawResponse = JsonSerializer.Serialize(record);
                         existing.BulkVSLastModificationDate = existing.BulkVSLastModificationDate != record.LastModification ? record.LastModification : existing.BulkVSLastModificationDate;
                         existing.ModifiedDate = DateTime.Now;
@@ -828,7 +828,7 @@ namespace NumberSearch.Ingest
                         var registration = new EmergencyInformation
                         {
                             DialedNumber = number.DialedNumber,
-                            Sms = record.Sms.Any() ? string.Join(',', record.Sms) : string.Empty,
+                            Sms = record.Sms.Length != 0 ? string.Join(',', record.Sms) : string.Empty,
                             State = record.State,
                             City = record.City,
                             Zip = record.Zip,
@@ -859,7 +859,7 @@ namespace NumberSearch.Ingest
                     var registration = new EmergencyInformation
                     {
                         DialedNumber = number.DialedNumber,
-                        Sms = record.Sms.Any() ? string.Join(',', record.Sms) : string.Empty,
+                        Sms = record.Sms.Length != 0 ? string.Join(',', record.Sms) : string.Empty,
                         State = record.State,
                         City = record.City,
                         Zip = record.Zip,

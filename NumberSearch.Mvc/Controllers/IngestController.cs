@@ -10,14 +10,9 @@ using System.Threading.Tasks;
 namespace NumberSearch.Mvc.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
-    public class IngestController : Controller
+    public class IngestController(MvcConfiguration mvcConfiguration) : Controller
     {
-        private readonly string _postgresql;
-
-        public IngestController(MvcConfiguration mvcConfiguration)
-        {
-            _postgresql = mvcConfiguration.PostgresqlProd;
-        }
+        private readonly string _postgresql = mvcConfiguration.PostgresqlProd;
 
         [HttpGet]
         [ResponseCache(Duration = 30, Location = ResponseCacheLocation.Any)]

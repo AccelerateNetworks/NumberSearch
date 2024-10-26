@@ -1,20 +1,13 @@
-using NumberSearch.Mvc.Controllers;
 using System;
 using System.Linq;
+
 using Xunit;
 using Xunit.Abstractions;
 
 namespace NumberSearch.Tests
 {
-    public class Unit
+    public class Unit(ITestOutputHelper output)
     {
-        private readonly ITestOutputHelper output;
-
-        public Unit(ITestOutputHelper output)
-        {
-            this.output = output;
-        }
-
         [Fact]
         public void LetterToKeypadDigitTest()
         {

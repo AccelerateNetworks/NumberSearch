@@ -2,8 +2,6 @@
 
 using Npgsql;
 
-using NumberSearch.DataAccess.BulkVS;
-
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

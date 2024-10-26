@@ -3,7 +3,6 @@
 using MailKit.Security;
 
 using MimeKit;
-using MimeKit.Text;
 
 using Npgsql;
 
@@ -125,13 +124,13 @@ namespace NumberSearch.DataAccess
                 outboundMessage.From.Add(ordersInbox);
                 outboundMessage.To.Add(recipient);
 
-                if (!string.IsNullOrWhiteSpace(SalesEmailAddress) && SalesEmailAddress.Contains("@"))
+                if (!string.IsNullOrWhiteSpace(SalesEmailAddress) && SalesEmailAddress.Contains('@'))
                 {
                     var sales = MailboxAddress.Parse(SalesEmailAddress);
                     outboundMessage.Cc.Add(sales);
                 }
 
-                if (!string.IsNullOrWhiteSpace(CarbonCopy) && CarbonCopy.Contains("@"))
+                if (!string.IsNullOrWhiteSpace(CarbonCopy) && CarbonCopy.Contains('@'))
                 {
                     var cc = MailboxAddress.Parse(CarbonCopy);
                     outboundMessage.Cc.Add(cc);

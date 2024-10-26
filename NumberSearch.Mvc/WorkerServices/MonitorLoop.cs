@@ -16,43 +16,19 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NumberSearch.Mvc
+namespace NumberSearch.Mvc.WorkerServices
 {
-    public class MonitorLoop
+    public class MonitorLoop(IBackgroundTaskQueue taskQueue,
+        IHostApplicationLifetime applicationLifetime, MvcConfiguration mvcConfiguration)
     {
-        private readonly IBackgroundTaskQueue _taskQueue;
-        private readonly CancellationToken _cancellationToken;
-        private readonly string _postgresql;
-        private readonly int _CallFlow;
-        private readonly int _ChannelGroup;
-        private readonly string _fpcusername;
-        private readonly string _fpcpassword;
-        private readonly string _bulkVSusername;
-        private readonly string _bulkVSpassword;
-        private readonly string _emailUsername;
-        private readonly string _emailPassword;
-        private readonly string _call48Username;
-        private readonly string _call48Password;
-        private readonly string _peerlessApiKey;
-
-        public MonitorLoop(IBackgroundTaskQueue taskQueue,
-            IHostApplicationLifetime applicationLifetime, MvcConfiguration mvcConfiguration)
-        {
-            _taskQueue = taskQueue;
-            _cancellationToken = applicationLifetime.ApplicationStopping;
-            _postgresql = mvcConfiguration.PostgresqlProd;
-            _ = int.TryParse(mvcConfiguration.CallFlow, out _CallFlow);
-            _ = int.TryParse(mvcConfiguration.ChannelGroup, out _ChannelGroup);
-            _fpcusername = mvcConfiguration.PComNetUsername;
-            _fpcpassword = mvcConfiguration.PComNetPassword;
-            _bulkVSusername = mvcConfiguration.BulkVSUsername;
-            _bulkVSpassword = mvcConfiguration.BulkVSPassword;
-            _call48Username = mvcConfiguration.Call48Username;
-            _call48Password = mvcConfiguration.Call48Password;
-            _emailUsername = mvcConfiguration.SmtpUsername;
-            _emailPassword = mvcConfiguration.SmtpPassword;
-            _peerlessApiKey = mvcConfiguration.PeerlessAPIKey;
-        }
+        private readonly CancellationToken _cancellationToken = applicationLifetime.ApplicationStopping;
+        private readonly string _postgresql = mvcConfiguration.PostgresqlProd;
+        private readonly string _fpcusername = mvcConfiguration.PComNetUsername;
+        private readonly string _fpcpassword = mvcConfiguration.PComNetPassword;
+        private readonly string _bulkVSusername = mvcConfiguration.BulkVSUsername;
+        private readonly string _bulkVSpassword = mvcConfiguration.BulkVSPassword;
+        private readonly string _emailUsername = mvcConfiguration.SmtpUsername;
+        private readonly string _emailPassword = mvcConfiguration.SmtpPassword;
 
         public void StartMonitorLoop()
         {
@@ -74,7 +50,7 @@ namespace NumberSearch.Mvc
                     foreach (var order in orders)
                     {
                         // Enqueue a background work item to purchase all the numbers in this order.
-                        _taskQueue.QueueBackgroundWorkItem(async token =>
+                        taskQueue.QueueBackgroundWorkItem(async token =>
                         {
                             Log.Information(
                                 $"[Background Worker] Queued Background Task {order.OrderId} is starting.");
@@ -143,21 +119,29 @@ namespace NumberSearch.Mvc
                                                     else if (nto.IngestedFrom == "OwnedNumber")
                                                     {
                                                         var ownedNumber = await OwnedPhoneNumber.GetByDialedNumberAsync(nto.DialedNumber, _postgresql).ConfigureAwait(false);
-                                                        // We already own it.
-                                                        nto.Purchased = true;
-                                                        productOrder.DateOrdered = DateTime.Now;
-                                                        productOrder.OrderResponse = JsonSerializer.Serialize(ownedNumber);
-                                                        productOrder.OrderResponse = "We already own this number.";
-                                                        productOrder.Completed = true;
-                                                        ownedNumber.BillingClientId = order?.BillingClientId ?? string.Empty;
-                                                        ownedNumber.Notes = $"Purchased in Order {order?.OrderId}";
-                                                        ownedNumber.OwnedBy = string.IsNullOrWhiteSpace(order?.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order?.BusinessName ?? string.Empty;
 
-                                                        var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
-                                                        var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
-                                                        var checkOwnedNumber = await ownedNumber.PutAsync(_postgresql).ConfigureAwait(false);
+                                                        if (ownedNumber is not null)
+                                                        {
+                                                            // We already own it.
+                                                            nto.Purchased = true;
+                                                            productOrder.DateOrdered = DateTime.Now;
+                                                            productOrder.OrderResponse = JsonSerializer.Serialize(ownedNumber);
+                                                            productOrder.OrderResponse = "We already own this number.";
+                                                            productOrder.Completed = true;
+                                                            ownedNumber.BillingClientId = order?.BillingClientId ?? string.Empty;
+                                                            ownedNumber.Notes = $"Purchased in Order {order?.OrderId}";
+                                                            ownedNumber.OwnedBy = string.IsNullOrWhiteSpace(order?.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order?.BusinessName ?? string.Empty;
 
-                                                        Log.Information($"[Background Worker] Purchased number {nto?.DialedNumber} from OwnedNumbers.");
+                                                            var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
+                                                            var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
+                                                            var checkOwnedNumber = await ownedNumber.PutAsync(_postgresql).ConfigureAwait(false);
+
+                                                            Log.Information($"[Background Worker] Purchased number {nto?.DialedNumber} from OwnedNumbers.");
+                                                        }
+                                                        else
+                                                        {
+                                                            Log.Information($"[Background Worker] Failed to purchase number {nto?.DialedNumber} from OwnedNumbers as could not be found in the database.");
+                                                        }
                                                     }
                                                 }
                                                 catch (FlurlHttpException ex)
@@ -181,7 +165,7 @@ namespace NumberSearch.Mvc
                                 }
 
                                 // Send out the confirmation emails.
-                                var emails = await Email.GetByOrderAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                var emails = await Email.GetByOrderAsync(order?.OrderId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
                                 Log.Information($"[Background Worker] {emails.Count()} emails to send.");
 
                                 foreach (var message in emails)
@@ -191,7 +175,7 @@ namespace NumberSearch.Mvc
                                         continue;
                                     }
 
-                                    if (!string.IsNullOrWhiteSpace(order.SalesEmail))
+                                    if (!string.IsNullOrWhiteSpace(order?.SalesEmail))
                                     {
                                         message.SalesEmailAddress = order.SalesEmail;
                                     }
@@ -216,16 +200,16 @@ namespace NumberSearch.Mvc
                                     // Log the success or failure of the operation.
                                     if (checkSend && checkSave)
                                     {
-                                        Log.Information($"[Background Worker] Successfully sent out email {message.EmailId} for order {order.OrderId}.");
+                                        Log.Information($"[Background Worker] Successfully sent out email {message.EmailId} for order {order?.OrderId}.");
                                     }
                                     else
                                     {
-                                        Log.Fatal($"[Background Worker] Failed to sent out the email {message.EmailId} for order {order.OrderId}.");
+                                        Log.Fatal($"[Background Worker] Failed to sent out the email {message.EmailId} for order {order?.OrderId}.");
                                     }
                                 }
 
                                 Log.Information(
-                                    $"[Background Worker] Queued Background Task {order.OrderId} is Completed.");
+                                    $"[Background Worker] Queued Background Task {order?.OrderId} is Completed.");
 
                                 break;
                             }

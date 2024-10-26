@@ -1,7 +1,5 @@
 ﻿using Flurl.Http;
 
-using Newtonsoft.Json;
-
 using Serilog;
 
 using System;
@@ -24,11 +22,11 @@ namespace NumberSearch.DataAccess.TeleDynamics
             public string ServiceProvider { get; set; } = string.Empty;
             public string ShippingType { get; set; } = string.Empty;
             public Shipping Shipping { get; set; } = new();
-            public Trackinginformation[] TrackingInformation { get; set; } = Array.Empty<Trackinginformation>();
+            public Trackinginformation[] TrackingInformation { get; set; } = [];
             public ShippingAddress ShippingAddress { get; set; } = new();
             public EnduserAddresses EndUserAddrses { get; set; } = new();
             public int ShipmentTypeAddressKey { get; set; }
-            public Orderline[] OrderLines { get; set; } = Array.Empty<Orderline>();
+            public Orderline[] OrderLines { get; set; } = [];
             public DateTime CreateDate { get; set; }
             public DateTime LastChangeDate { get; set; }
             public bool SignatureRequired { get; set; }
@@ -78,7 +76,7 @@ namespace NumberSearch.DataAccess.TeleDynamics
             public string TrackingNumber { get; set; } = string.Empty;
             public string Status { get; set; } = string.Empty;
             public DateTime ShipDate { get; set; }
-            public Productnumber[] ProductNumbers { get; set; } = Array.Empty<Productnumber>();
+            public Productnumber[] ProductNumbers { get; set; } = [];
         }
 
         public class Productnumber
@@ -95,7 +93,7 @@ namespace NumberSearch.DataAccess.TeleDynamics
             public decimal UnitPrice { get; set; }
             public decimal ExtPrice { get; set; }
             public string Firmware { get; set; } = string.Empty;
-            public Serializationinformation[] SerializationInformation { get; set; } = Array.Empty<Serializationinformation>();
+            public Serializationinformation[] SerializationInformation { get; set; } = [];
             public bool IsBackorder { get; set; }
             public int QtyBackOrdered { get; set; }
             public bool ShouldProvision { get; set; }
@@ -121,7 +119,7 @@ namespace NumberSearch.DataAccess.TeleDynamics
             {
                 var error = await ex.GetResponseStringAsync();
                 Log.Error(error);
-                return Array.Empty<Order>();
+                return [];
             }
         }
 
@@ -138,7 +136,7 @@ namespace NumberSearch.DataAccess.TeleDynamics
             {
                 var error = await ex.GetResponseStringAsync();
                 Log.Error(error);
-                return Array.Empty<Order>();
+                return [];
             }
         }
 

@@ -15,26 +15,26 @@ namespace NumberSearch.DataAccess
         public Guid NewClientId { get; set; }
         public Guid OrderId { get; set; }
         public string BillingClientId { get; set; } = string.Empty;
-        public ExtensionRegistration[] ExtensionRegistrations { get; set; } = Array.Empty<ExtensionRegistration>();
+        public ExtensionRegistration[] ExtensionRegistrations { get; set; } = [];
         public bool PhoneMenu { get; set; }
         public string PhonesToRingOrMenuDescription { get; set; } = string.Empty;
-        public PhoneMenuOption[] PhoneMenuOptions { get; set; } = Array.Empty<PhoneMenuOption>();
+        public PhoneMenuOption[] PhoneMenuOptions { get; set; } = [];
         public string BusinessHours { get; set; } = string.Empty;
         public string AfterHoursVoicemail { get; set; } = string.Empty;
-        public NumberDescription[] NumberDescriptions { get; set; } = Array.Empty<NumberDescription>();
+        public NumberDescription[] NumberDescriptions { get; set; } = [];
         public bool TextingService { get; set; }
         public string TextingServiceName { get; set; } = string.Empty;
         public bool OverheadPaging { get; set; }
         public string OverheadPagingDescription { get; set; } = string.Empty;
         public bool Intercom { get; set; }
         public string IntercomDescription { get; set; } = string.Empty;
-        public IntercomRegistration[] IntercomRegistrations { get; set; } = Array.Empty<IntercomRegistration>();
+        public IntercomRegistration[] IntercomRegistrations { get; set; } = [];
         public bool SpeedDial { get; set; }
-        public SpeedDialKey[] SpeedDialKeys { get; set; } = Array.Empty<SpeedDialKey>();
+        public SpeedDialKey[] SpeedDialKeys { get; set; } = [];
         public bool CustomHoldMusic { get; set; }
         public string HoldMusicDescription { get; set; } = string.Empty;
         public string PhoneOfflineInstructions { get; set; } = string.Empty;
-        public FollowMeRegistration[] FollowMeRegistrations { get; set; } = Array.Empty<FollowMeRegistration>();
+        public FollowMeRegistration[] FollowMeRegistrations { get; set; } = [];
         public DateTime DateUpdated { get; set; }
         public string ISP { get; set; } = string.Empty;
         public DateTime ContractStartDate { get; set; }

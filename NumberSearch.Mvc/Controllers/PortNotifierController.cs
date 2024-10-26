@@ -12,14 +12,9 @@ using System.Threading.Tasks;
 namespace NumberSearch.Mvc.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
-    public class PortNotifierController : Controller
+    public class PortNotifierController(MvcConfiguration mvcConfiguration) : Controller
     {
-        private readonly string _bulkVSAPIKey;
-
-        public PortNotifierController(MvcConfiguration mvcConfiguration)
-        {
-            _bulkVSAPIKey = mvcConfiguration.BulkVSAPIKEY;
-        }
+        private readonly string _bulkVSAPIKey = mvcConfiguration.BulkVSAPIKEY;
 
         [HttpGet]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

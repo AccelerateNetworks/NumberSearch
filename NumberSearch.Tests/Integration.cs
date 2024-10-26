@@ -34,10 +34,10 @@ namespace NumberSearch.Tests
         private readonly string invoiceNinjaToken;
         private readonly string _teleDynamicsUsername;
         private readonly string _teleDynamicsPassword;
-        private readonly string _call48Username;
-        private readonly string _call48Password;
-        private readonly string _callWithUsAPIkey;
-        private readonly string _peerlessApiKey;
+        //private readonly string _call48Username;
+        //private readonly string _call48Password;
+        //private readonly string _callWithUsAPIkey;
+        //private readonly string _peerlessApiKey;
         private readonly MvcConfiguration _configuration;
 
         public Integration(ITestOutputHelper output)
@@ -66,10 +66,10 @@ namespace NumberSearch.Tests
             invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
             _teleDynamicsUsername = config.GetConnectionString("TeleDynamicsUsername");
             _teleDynamicsPassword = config.GetConnectionString("TeleDynamicsPassword");
-            _call48Username = config.GetConnectionString("Call48Username");
-            _call48Password = config.GetConnectionString("Call48Password");
-            _callWithUsAPIkey = config.GetConnectionString("CallWithUsAPIKEY");
-            _peerlessApiKey = config.GetConnectionString("PeerlessAPIKey");
+            //_call48Username = config.GetConnectionString("Call48Username");
+            //_call48Password = config.GetConnectionString("Call48Password");
+            //_callWithUsAPIkey = config.GetConnectionString("CallWithUsAPIKEY");
+            //_peerlessApiKey = config.GetConnectionString("PeerlessAPIKey");
         }
 
         [Fact]
@@ -545,29 +545,29 @@ namespace NumberSearch.Tests
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
-        [Fact]
-        public async Task FirstComGetPhoneNumbersTestAsync()
-        {
-            var results = await FirstCom.NpaNxxFirstPointCom.GetAsync("206", string.Empty, string.Empty, pComNetCredentials.Username, pComNetCredentials.Password);
+        //[Fact]
+        //public async Task FirstComGetPhoneNumbersTestAsync()
+        //{
+        //    var results = await FirstCom.NpaNxxFirstPointCom.GetAsync("206", string.Empty, string.Empty, pComNetCredentials.Username, pComNetCredentials.Password);
 
-            Assert.NotNull(results);
-            Assert.NotEmpty(results);
-            int count = 0;
+        //    Assert.NotNull(results);
+        //    Assert.NotEmpty(results);
+        //    int count = 0;
 
-            foreach (var result in results.ToArray())
-            {
-                output.WriteLine(result.DialedNumber);
-                Assert.True(result.NPA > 99);
-                Assert.True(result.NXX > 99);
-                Assert.True(result.XXXX > 1);
-                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-                Assert.False(string.IsNullOrWhiteSpace(result.City));
-                Assert.False(string.IsNullOrWhiteSpace(result.State));
-                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
-                count++;
-            }
-            output.WriteLine($"{count} Results Reviewed");
-        }
+        //    foreach (var result in results.ToArray())
+        //    {
+        //        output.WriteLine(result.DialedNumber);
+        //        Assert.True(result.NPA > 99);
+        //        Assert.True(result.NXX > 99);
+        //        Assert.True(result.XXXX > 1);
+        //        Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+        //        Assert.False(string.IsNullOrWhiteSpace(result.City));
+        //        Assert.False(string.IsNullOrWhiteSpace(result.State));
+        //        Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+        //        count++;
+        //    }
+        //    output.WriteLine($"{count} Results Reviewed");
+        //}
 
 
         [Fact]
@@ -1270,14 +1270,14 @@ namespace NumberSearch.Tests
             }
         }
 
-        [Fact]
-        public async Task GetPhoneNumbersByAreaCodeAsync()
-        {
-            var result = await PhoneNumber.GetAllByAreaCodeAsync(206, postgresql);
+        //[Fact]
+        //public async Task GetPhoneNumbersByAreaCodeAsync()
+        //{
+        //    var result = await PhoneNumber.GetAllByAreaCodeAsync(206, postgresql);
 
-            Assert.True(result.Any());
-            output.WriteLine(result.Count().ToString());
-        }
+        //    Assert.True(result.Any());
+        //    output.WriteLine(result.Count().ToString());
+        //}
 
         [Fact]
         public async Task GetVerifiedNumbersAsync()

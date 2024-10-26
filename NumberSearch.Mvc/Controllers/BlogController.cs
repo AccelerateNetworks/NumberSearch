@@ -15,14 +15,9 @@ using WriteAs.NET;
 namespace NumberSearch.Mvc.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
-    public class BlogController : Controller
+    public class BlogController(MvcConfiguration mvcConfiguration) : Controller
     {
-        private readonly string _postgresql;
-
-        public BlogController(MvcConfiguration mvcConfiguration)
-        {
-            _postgresql = mvcConfiguration.PostgresqlProd;
-        }
+        private readonly string _postgresql = mvcConfiguration.PostgresqlProd;
 
         [HttpGet]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
@@ -68,7 +63,7 @@ namespace NumberSearch.Mvc.Controllers
             }
             else
             {
-                var post = posts.Where(x => x.Title.ToLowerInvariant().Contains(query.ToLowerInvariant())).ToList();
+                var post = posts.Where(x => x.Title.Contains(query, System.StringComparison.InvariantCultureIgnoreCase)).ToList();
                 return post is not null ? View(post) : View(posts);
             }
         }

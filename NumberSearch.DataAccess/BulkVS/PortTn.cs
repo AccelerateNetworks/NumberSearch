@@ -20,9 +20,9 @@ namespace NumberSearch.DataAccess.BulkVS
         public EndUserInfo EndUserInfo { get; set; } = new();
         [JsonPropertyName("TN List")]
         [JsonProperty("TN List")]
-        public TNList[] TNList { get; set; } = Array.Empty<TNList>();
-        public PortTnAttachment[] Attachments { get; set; } = Array.Empty<PortTnAttachment>();
-        public PortTnNote[] Notes { get; set; } = Array.Empty<PortTnNote>();
+        public TNList[] TNList { get; set; } = [];
+        public PortTnAttachment[] Attachments { get; set; } = [];
+        public PortTnNote[] Notes { get; set; } = [];
 
 
         public static async Task<PortTn> GetAsync(string orderId, string username, string password)
@@ -57,7 +57,7 @@ namespace NumberSearch.DataAccess.BulkVS
             {
                 Log.Warning($"[Porting] [BulkVS] {ex.Message} for BulkVS port requests.");
                 Log.Error(await ex.GetResponseStringAsync());
-                return Array.Empty<TNList>();
+                return [];
             }
         }
 
@@ -120,7 +120,7 @@ namespace NumberSearch.DataAccess.BulkVS
 
     public class PortTNNote
     {
-        public string[] Attachments { get; set; } = Array.Empty<string>();
+        public string[] Attachments { get; set; } = [];
         public string Note { get; set; } = string.Empty;
 
         public async Task PostAsync(string vendorOrderId, string username, string password)
@@ -139,7 +139,7 @@ namespace NumberSearch.DataAccess.BulkVS
         public string ReferenceId { get; set; } = string.Empty;
         [JsonPropertyName("TN List")]
         [JsonProperty("TN List")]
-        public string[] TNList { get; set; } = Array.Empty<string>();
+        public string[] TNList { get; set; } = [];
         public string BTN { get; set; } = string.Empty;
         [JsonPropertyName("Subscriber Type")]
         [JsonProperty("Subscriber Type")]
@@ -193,7 +193,7 @@ namespace NumberSearch.DataAccess.BulkVS
             public string Code { get; set; } = string.Empty;
             [JsonPropertyName("TN Groups")]
             [JsonProperty("TN Groups")]
-            public string[] TnGroups { get; set; } = Array.Empty<string>();
+            public string[] TnGroups { get; set; } = [];
         }
     }
 }

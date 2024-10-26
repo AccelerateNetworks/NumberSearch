@@ -43,7 +43,7 @@ namespace NumberSearch.DataAccess
             Ratecenter = source.ratecenter;
             State = source.province;
             Jurisdiction = source.jurisdiction;
-            Local = source.local == "Y" ? true : false;
+            Local = source.local == "Y";
             LEC = source.lec;
             LECType = source.lectype;
             SPID = source.spid;

@@ -11,16 +11,10 @@ using System.Threading.Tasks;
 namespace NumberSearch.Mvc.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
-    public class SearchController : Controller
+    public class SearchController(MvcConfiguration mvcConfiguration) : Controller
     {
-        private readonly string _postgresql;
-        private readonly MvcConfiguration _configuration;
-
-        public SearchController(MvcConfiguration mvcConfiguration)
-        {
-            _configuration = mvcConfiguration;
-            _postgresql = mvcConfiguration.PostgresqlProd;
-        }
+        private readonly string _postgresql = mvcConfiguration.PostgresqlProd;
+        private readonly MvcConfiguration _configuration = mvcConfiguration;
 
         /// <summary>
         /// This is the default route in this app. It's a search page that allows you to query the TeleAPI for phone numbers.

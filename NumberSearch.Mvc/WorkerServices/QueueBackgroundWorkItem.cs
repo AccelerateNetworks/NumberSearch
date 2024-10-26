@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NumberSearch.Mvc
+namespace NumberSearch.Mvc.WorkerServices
 {
     public interface IBackgroundTaskQueue
     {
@@ -21,10 +21,7 @@ namespace NumberSearch.Mvc
         public void QueueBackgroundWorkItem(
             Func<CancellationToken, Task> workItem)
         {
-            if (workItem == null)
-            {
-                throw new ArgumentNullException(nameof(workItem));
-            }
+            ArgumentNullException.ThrowIfNull(workItem);
 
             _workItems?.Enqueue(workItem);
             _signal?.Release();

@@ -155,23 +155,23 @@ namespace NumberSearch.Tests
         public void CategorizeNumbers()
         {
             // Arrange
-            var numbers = new List<PhoneNumber> {
-                new PhoneNumber { DialedNumber = "6666666666" },
-                new PhoneNumber { DialedNumber = "2666666666" },
-                new PhoneNumber { DialedNumber = "2166666666" },
-                new PhoneNumber { DialedNumber = "3216666666" },
-                new PhoneNumber { DialedNumber = "4321666666" },
-                new PhoneNumber { DialedNumber = "5432166666" },
-                new PhoneNumber { DialedNumber = "7543216666" },
-                new PhoneNumber { DialedNumber = "8754321666" },
-                new PhoneNumber { DialedNumber = "9875432166" },
-            };
+            List<PhoneNumber> numbers = [
+                new() { DialedNumber = "6666666666" },
+                new() { DialedNumber = "2666666666" },
+                new() { DialedNumber = "2166666666" },
+                new() { DialedNumber = "3216666666" },
+                new() { DialedNumber = "4321666666" },
+                new() { DialedNumber = "5432166666" },
+                new() { DialedNumber = "7543216666" },
+                new() { DialedNumber = "8754321666" },
+                new() { DialedNumber = "9875432166" },
+            ];
             // Act
             var results = Services.AssignNumberTypes(numbers);
 
             // Assert
             Assert.NotNull(results);
-            Assert.True(results.Any());
+            Assert.NotEmpty(results);
             foreach (var result in results)
             {
                 Assert.False(string.IsNullOrWhiteSpace(result.NumberType));
@@ -198,7 +198,7 @@ namespace NumberSearch.Tests
             Assert.True(results.Any());
             output.WriteLine(list.Count.ToString());
             output.WriteLine(results.Count().ToString());
-            Assert.True(list.Count % results.Count() == 0);
+            Assert.Equal(0, list.Count % results.Count());
         }
 
         //This takes 3 minutes to run.

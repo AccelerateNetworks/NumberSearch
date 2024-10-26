@@ -11,18 +11,11 @@ using System.Threading.Tasks;
 namespace NumberSearch.Mvc.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
-    public class HardwareController : Controller
+    public class HardwareController(MvcConfiguration mvcConfiguration) : Controller
     {
-        private readonly string _teleDynamicsUsername;
-        private readonly string _teleDynamicsPassword;
-        private readonly string _postgresql;
-
-        public HardwareController(MvcConfiguration mvcConfiguration)
-        {
-            _teleDynamicsUsername = mvcConfiguration.TeleDynamicsUsername;
-            _teleDynamicsPassword = mvcConfiguration.TeleDynamicsPassword;
-            _postgresql = mvcConfiguration.PostgresqlProd;
-        }
+        private readonly string _teleDynamicsUsername = mvcConfiguration.TeleDynamicsUsername;
+        private readonly string _teleDynamicsPassword = mvcConfiguration.TeleDynamicsPassword;
+        private readonly string _postgresql = mvcConfiguration.PostgresqlProd;
 
         [HttpGet("Hardware")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -90,7 +83,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
             }
 
-            return View("PartnerPriceList", new HardwareResult { Phones = products.Where(x => !string.IsNullOrWhiteSpace(x.VendorPartNumber)).OrderBy(x => x.VendorPartNumber).ToArray() });
+            return View("PartnerPriceList", new HardwareResult { Phones = [.. products.Where(x => !string.IsNullOrWhiteSpace(x.VendorPartNumber)).OrderBy(x => x.VendorPartNumber)] });
         }
     }
 }

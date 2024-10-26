@@ -25,7 +25,7 @@ namespace NumberSearch.DataAccess.BulkVS
         public string City { get; set; } = string.Empty;
         public string State { get; set; } = string.Empty;
         public string Zip { get; set; } = string.Empty;
-        public string[] Sms { get; set; } = Array.Empty<string>();
+        public string[] Sms { get; set; } = [];
         [JsonPropertyName("Last Modification")]
         [JsonProperty("Last Modification")]
         public DateTime LastModification { get; set; }
@@ -46,9 +46,9 @@ namespace NumberSearch.DataAccess.BulkVS
             catch (FlurlHttpException ex)
             {
                 Log.Warning($"[E911] [BulkVS] No results found for number {dialedNumber}.");
-                var response = await ex.GetResponseStringAsync();
+                //var response = await ex.GetResponseStringAsync();
                 Log.Warning(await ex.GetResponseStringAsync());
-                return Array.Empty<E911Record>();
+                return [];
             }
         }
 
@@ -68,7 +68,7 @@ namespace NumberSearch.DataAccess.BulkVS
             {
                 Log.Warning($"[E911] [BulkVS] No results found.");
                 Log.Warning(await ex.GetResponseStringAsync());
-                return Array.Empty<E911Record>();
+                return [];
             }
         }
 
@@ -79,7 +79,7 @@ namespace NumberSearch.DataAccess.BulkVS
             [JsonProperty("Caller Name")]
             public string CallerName { get; set; } = string.Empty;
             public string AddressID { get; set; } = string.Empty;
-            public string[] Sms { get; set; } = Array.Empty<string>();
+            public string[] Sms { get; set; } = [];
         }
 
         public class ProvisionResponse
@@ -98,7 +98,7 @@ namespace NumberSearch.DataAccess.BulkVS
             public string City { get; set; } = string.Empty;
             public string State { get; set; } = string.Empty;
             public string Zip { get; set; } = string.Empty;
-            public string[] Sms { get; set; } = Array.Empty<string>();
+            public string[] Sms { get; set; } = [];
             // Only exists to make parsing the JSON easier.
             [JsonPropertyName("Last Modification")]
             [JsonProperty("Last Modification")]

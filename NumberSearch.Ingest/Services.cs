@@ -26,7 +26,7 @@ namespace NumberSearch.Ingest
             var Tollfree = "Tollfree";
 
             // Bail early if there's no data.
-            if (numbers is null || !numbers.Any()) { return numbers ?? new List<PhoneNumber>(); }
+            if (numbers is null || !numbers.Any()) { return numbers ?? []; }
 
             // Assign a Type based on number of repeating digits.
             foreach (var number in numbers)
@@ -170,7 +170,7 @@ namespace NumberSearch.Ingest
 
             var listInserts = inserts?.Values.ToList();
 
-            var groups = SplitList(listInserts ?? new List<PhoneNumber>());
+            var groups = SplitList(listInserts ?? []);
 
             foreach (var group in groups.ToArray())
             {

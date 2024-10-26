@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 using static NumberSearch.Ingest.Program;
@@ -22,7 +21,7 @@ namespace NumberSearch.Ingest
         {
             DateTime start = DateTime.Now;
 
-            var checkBriefing = await Orders.DailyBriefingEmailAsync(smsRouteChanges, appConfig);
+            _ = await Orders.DailyBriefingEmailAsync(smsRouteChanges, appConfig);
 
             var combined = new IngestStatistics
             {
@@ -143,7 +142,6 @@ namespace NumberSearch.Ingest
                 foreach (var item in ordersSubmittedToday)
                 {
                     var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
-                    var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
                     var installDate = item?.InstallDate is not null ? item?.InstallDate.GetValueOrDefault().ToShortDateString() : "No install date set";
                     var paid = item?.DateUpfrontInvoicePaid is not null && item.DateUpfrontInvoicePaid.Value > item.DateSubmitted ? $"Paid {item.DateUpfrontInvoicePaid.Value.ToShortDateString()}" : "Unpaid"; 
                     output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item?.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName} - Install Date {installDate} - <strong>{paid}</strong></li>");
@@ -161,7 +159,6 @@ namespace NumberSearch.Ingest
                 foreach (var item in ordersCompletedToday)
                 {
                     var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
-                    var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "support@acceleratenetworks.com" : item.SalesEmail;
                     var completedDate = item?.DateCompleted is not null ? item?.DateCompleted.GetValueOrDefault().ToShortDateString() : "No completed date set";
                     output.Append($"<li><a href='https://acceleratenetworks.com/cart/order/{item?.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> submitted on {item?.DateSubmitted.ToShortDateString()} - Completed on {completedDate}</li>");
                 }
@@ -179,7 +176,6 @@ namespace NumberSearch.Ingest
                 {
                     var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
                     var salesEmail = string.IsNullOrWhiteSpace(item.SalesEmail) ? "No sales rep assigned" : item.SalesEmail;
-                    var installDate = item?.InstallDate is not null ? item?.InstallDate.GetValueOrDefault().ToShortDateString() : "No install date set";
                     output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item?.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a> - <a href=\"mailto:{item?.SalesEmail}?subject={orderName}&body=<a href='https://ops.acceleratenetworks.com/Home/Order/{item?.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName}</a>\">{salesEmail}</a></li>");
                 }
                 output.Append("</ul>");

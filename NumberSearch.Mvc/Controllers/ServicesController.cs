@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
+using NumberSearch.Mvc.Models;
+
 using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers

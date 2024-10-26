@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using NumberSearch.Mvc.WorkerServices;
+
 using Serilog;
 using Serilog.Events;
 

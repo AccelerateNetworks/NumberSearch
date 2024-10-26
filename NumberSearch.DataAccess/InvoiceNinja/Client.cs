@@ -7,7 +7,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
 {
     public class Client
     {
-        public ClientDatum[] data { get; set; } = Array.Empty<ClientDatum>();
+        public ClientDatum[] data { get; set; } = [];
 
         // Disabled because the Array versus object formatting for the ClientLinks is inconsistent and breaks the JSON serialization.
         // And we don't need this data because we're not a JavaScript front-end client.
@@ -113,10 +113,10 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public int created_at { get; set; }
         public string display_name { get; set; } = string.Empty;
         public string number { get; set; } = string.Empty;
-        public ClientContact[] contacts { get; set; } = Array.Empty<ClientContact>();
-        public object[] documents { get; set; } = Array.Empty<object>();
-        public ClientGateway_Tokens[] gateway_tokens { get; set; } = Array.Empty<ClientGateway_Tokens>();
-        public InvoiceDatum[] invoices { get; set; } = Array.Empty<InvoiceDatum>();
+        public ClientContact[] contacts { get; set; } = [];
+        public object[] documents { get; set; } = [];
+        public ClientGateway_Tokens[] gateway_tokens { get; set; } = [];
+        public InvoiceDatum[] invoices { get; set; } = [];
 
         public async Task<ClientDatum> PostAsync(string token)
         {

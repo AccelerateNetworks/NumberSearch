@@ -1,7 +1,6 @@
 ﻿using Flurl.Http;
 
 using System;
-using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -10,7 +9,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
 {
     public class Invoice
     {
-        public InvoiceDatum[] data { get; set; } = Array.Empty<InvoiceDatum>();
+        public InvoiceDatum[] data { get; set; } = [];
         //public InvoiceMeta meta { get; set; }
 
         public static async Task<InvoiceDatum[]> GetAllAsync(string token)
@@ -22,15 +21,15 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             string url = $"{baseUrl}{endpostring}{perPageParameter}";
 
             var x = await url
-    .WithHeader(tokenHeader, token)
-    .GetStringAsync();
+                .WithHeader(tokenHeader, token)
+                .GetStringAsync();
 
             var result = await url
                 .WithHeader(tokenHeader, token)
                 .GetJsonAsync<Invoice>()
                 .ConfigureAwait(false);
 
-            return result?.data ?? Array.Empty<InvoiceDatum>();
+            return result?.data ?? [];
         }
 
         public static async Task<InvoiceDatum[]> GetByClientIdWithInoviceLinksAsync(string clientId, string token, bool quote)
@@ -52,7 +51,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
                 .ConfigureAwait(false);
 
             // Unwrap the data we want from the single-field parent object.
-            return result?.data ?? Array.Empty<InvoiceDatum>();
+            return result?.data ?? [];
         }
 
         public static async Task<InvoiceDatum> GetByIdAsync(string invoiceId, string token)
@@ -250,7 +249,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public bool custom_surcharge_tax2 { get; set; }
         public bool custom_surcharge_tax3 { get; set; }
         public bool custom_surcharge_tax4 { get; set; }
-        public Line_Items[] line_items { get; set; } = Array.Empty<Line_Items>();
+        public Line_Items[] line_items { get; set; } = [];
         public string entity_type { get; set; } = string.Empty;
         public string reminder1_sent { get; set; } = string.Empty;
         public string reminder2_sent { get; set; } = string.Empty;
@@ -259,8 +258,8 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public float paid_to_date { get; set; }
         public string subscription_id { get; set; } = string.Empty;
         public bool auto_bill_enabled { get; set; }
-        public Invitation[] invitations { get; set; } = Array.Empty<Invitation>();
-        public object[] documents { get; set; } = Array.Empty<object>();
+        public Invitation[] invitations { get; set; } = [];
+        public object[] documents { get; set; } = [];
 
         public async Task<InvoiceDatum> PostAsync(string token)
         {
@@ -342,7 +341,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
 
     public class ReccurringInvoice
     {
-        public ReccurringInvoiceDatum[] data { get; set; } = Array.Empty<ReccurringInvoiceDatum>();
+        public ReccurringInvoiceDatum[] data { get; set; } = [];
 
         public static async Task<ReccurringInvoiceDatum[]> GetByClientIdWithLinksAsync(string clientId, string token)
         {
@@ -358,7 +357,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
                 .GetJsonAsync<ReccurringInvoice>()
                 .ConfigureAwait(false);
 
-            return result?.data ?? Array.Empty<ReccurringInvoiceDatum>();
+            return result?.data ?? [];
         }
 
         public static async Task<ReccurringInvoiceDatum> GetByIdAsync(string id, string token)
@@ -436,18 +435,18 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         public bool custom_surcharge_tax2 { get; set; }
         public bool custom_surcharge_tax3 { get; set; }
         public bool custom_surcharge_tax4 { get; set; }
-        public Line_Items[] line_items { get; set; } = Array.Empty<Line_Items>();
+        public Line_Items[] line_items { get; set; } = [];
         public string entity_type { get; set; } = string.Empty;
         public string frequency_id { get; set; } = string.Empty;
         public int remaining_cycles { get; set; }
-        public object[] recurring_dates { get; set; } = Array.Empty<object>();
+        public object[] recurring_dates { get; set; } = [];
         public string auto_bill { get; set; } = string.Empty;
         public bool auto_bill_enabled { get; set; }
         public string due_date_days { get; set; } = string.Empty;
         public decimal paid_to_date { get; set; }
         public string subscription_id { get; set; } = string.Empty;
-        public Invitation[] invitations { get; set; } = Array.Empty<Invitation>();
-        public object[] documents { get; set; } = Array.Empty<object>();
+        public Invitation[] invitations { get; set; } = [];
+        public object[] documents { get; set; } = [];
 
         public async Task<ReccurringInvoiceDatum> PostAsync(string token)
         {

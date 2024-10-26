@@ -1,4 +1,6 @@
-﻿namespace NumberSearch.Mvc
+﻿using NumberSearch.Mvc.Models;
+
+namespace NumberSearch.Mvc
 {
     public class ServicesResult
     {

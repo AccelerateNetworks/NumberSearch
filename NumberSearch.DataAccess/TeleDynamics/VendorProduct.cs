@@ -31,16 +31,16 @@ namespace NumberSearch.DataAccess.TeleDynamics
 
         public static async Task<Dictionary<string, VendorProduct>> GetAllAsync(string username, string password)
         {
-            string[] manufacturers = { "Yealink", "Snom", "Grandstream" };
+            string[] manufacturers = ["Yealink", "Snom", "Grandstream"];
 
-            List<VendorProduct> products = new();
+            List<VendorProduct> products = [];
 
             await Parallel.ForEachAsync(manufacturers, async (manufacturer, token) =>
                 {
                     string baseUrl = "https://tdapi.teledynamics.com/api/v1/product/manufacturer/";
                     string checkQuantityParameter = $"/CheckQuantity";
                     string route = $"{baseUrl}{manufacturer}{checkQuantityParameter}";
-                    var results = await route.WithBasicAuth(username, password).GetJsonAsync<List<VendorProduct>>().ConfigureAwait(false);
+                    var results = await route.WithBasicAuth(username, password).GetJsonAsync<List<VendorProduct>>(cancellationToken: token).ConfigureAwait(false);
                     products.AddRange(results);
                 });
 
