@@ -27,7 +27,7 @@
         }
     }
 
-            const inventory = [{
+                const inventory = [{
         label: 'Total Numbers Ingested',
         data: numbersretrievedArr,
         borderWidth: 1
@@ -282,8 +282,52 @@
                                         foreach (var code in Model.AreaCodes)
                                         {
                                             <td>
-                                                @code.Count
+                                                <a href="https://ops.acceleratenetworks.com/Numbers?Query=@code.NPA*******">@code.Count</a>
                                             </td>
+                                        }
+                                    }
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <h4 class="pb-3 pt-3">
+                        Priority Area Code Health
+                    </h4>
+                    <div class="table-responsive shadow mt-3">
+                        <table class="table table-hover table-striped table-borderless">
+                            <thead>
+                                <tr>
+                                    <th>Area Code</th>
+                                    @if (Model?.PriorityAreaCodes is not null)
+                                    {
+                                        foreach (var code in Model.PriorityAreaCodes)
+                                        {
+                                            <th>
+                                                (@code.NPA)
+                                            </th>
+                                        }
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Count</td>
+                                    @if (Model?.PriorityAreaCodes is not null)
+                                    {
+                                        foreach (var code in Model.PriorityAreaCodes)
+                                        {
+                                            if (code.Count is 0)
+                                            {
+                                                <td>
+                                                    <a href="https://ops.acceleratenetworks.com/Numbers?Query=@code.NPA*******">@code.Count</a> ❌
+                                                </td>
+                                            }
+                                            else
+                                            {
+                                                <td>
+                                                    <a href="https://ops.acceleratenetworks.com/Numbers?Query=@code.NPA*******">@code.Count</a>
+                                                </td>
+                                            }
                                         }
                                     }
                                 </tr>

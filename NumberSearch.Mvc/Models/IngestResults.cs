@@ -6,9 +6,10 @@ namespace NumberSearch.Mvc
 {
     public class IngestResults
     {
-        public IngestStatistics[] Ingests { get; set; } = Array.Empty<IngestStatistics>();
-        public PhoneNumber.CountByProvider[] CurrentState { get; set; } = Array.Empty<PhoneNumber.CountByProvider>();
-        public PhoneNumber.CountNPA[] AreaCodes { get; set; } = Array.Empty<PhoneNumber.CountNPA>();
+        public IngestStatistics[] Ingests { get; set; } = [];
+        public PhoneNumber.CountByProvider[] CurrentState { get; set; } = [];
+        public PhoneNumber.CountNPA[] AreaCodes { get; set; } = [];
+        public PhoneNumber.CountNPA[] PriorityAreaCodes { get; set; } = [];
         public int TotalPhoneNumbers { get; set; }
         public int TotalExecutiveNumbers { get; set; }
         public int TotalPremiumNumbers { get; set; }

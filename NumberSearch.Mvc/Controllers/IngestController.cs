@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.OutputCaching;
 
 using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.Models;
 using NumberSearch.Mvc.Models;
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -23,6 +25,13 @@ namespace NumberSearch.Mvc.Controllers
             var currentState = await PhoneNumber.GetCountAllProvider(_postgresql).ConfigureAwait(false);
             var numberTypeCounts = await PhoneNumber.GetCountAllNumberType(_postgresql).ConfigureAwait(false);
             var numbersByAreaCode = await PhoneNumber.GetCountAllAreaCode(_postgresql).ConfigureAwait(false);
+            List<PhoneNumber.CountNPA> priority = [];
+            foreach (var code in AreaCode.Priority)
+            {
+                var match = numbersByAreaCode.FirstOrDefault(x => x.NPA == $"{code}");
+                priority.Add(new PhoneNumber.CountNPA { NPA = $"{code}", Count = match?.Count ?? 0 });
+            }
+
             var total = 0;
             foreach (var item in numberTypeCounts)
             {
@@ -34,6 +43,7 @@ namespace NumberSearch.Mvc.Controllers
                 Ingests = ingests.ToArray(),
                 CurrentState = currentState,
                 AreaCodes = numbersByAreaCode,
+                PriorityAreaCodes = [.. priority],
                 TotalPhoneNumbers = total,
                 TotalExecutiveNumbers = numberTypeCounts.Where(x => x.NumberType == "Executive").Select(x => x.Count).FirstOrDefault(),
                 TotalPremiumNumbers = numberTypeCounts.Where(x => x.NumberType == "Premium").Select(x => x.Count).FirstOrDefault(),
@@ -51,7 +61,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return View("Sales", new SalesDashboard
             {
-               Orders = orders.ToArray(),
+                Orders = orders.ToArray(),
             });
         }
     }

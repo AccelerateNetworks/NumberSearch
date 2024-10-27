@@ -1,4 +1,4 @@
-﻿@model             SearchResults;
+﻿@model SearchResults;
 
 @{
     ViewData["Title"] = "Home Page";
@@ -37,21 +37,12 @@
             <table class="table table-striped table-bordered table-hover">
                 <thead>
                     <tr>
-                        <th>
-                            Number
-                        </th>
-                        <th>
-                            Dialed
-                        </th>
-                        <th>
-                            Location
-                        </th>
-                        <th>
-                            Ingested
-                        </th>
-                        <th>
-                            Actions
-                        </th>
+                        <th>Provider</th>
+                        <th>Date Ingested</th>
+                        <th>Type</th>
+                        <th>Number</th>
+                        <th>As Dialed</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -70,30 +61,18 @@
                                 var beginning = item.DialedNumber.Substring(0, start);
                                 var middle = item.DialedNumber.Substring(start, stop);
                                 var end = item.DialedNumber.Substring(start + stop);
-                                number = $"{beginning}<b class='text-success'>{middle}</b>{end}";
-                            }
-                            var ingestedBadge = item.IngestedFrom;
-                            switch (item.IngestedFrom)
-                            {
-                                case "FirstPointCom":
-                                    ingestedBadge = "<span class='badge badge-info'>FirstPointCom</span>";
-                                    break;
-                                case "BulkVS":
-                                    ingestedBadge = "<span class='badge badge-primary'>BulkVS</span>";
-                                    break;
-                                case "TeleMessage":
-                                    ingestedBadge = "<span class='badge badge-warning'>TeleMessage</span>";
-                                    break;
+                                number = $"1{beginning}<b class='text-success'>{middle}</b>{end}";
                             }
                             var elapsed = DateTime.Now - item.DateIngested;
                             <tr>
-                                <td scope="row"><h4>@formattedNumber</h4></td>
+                                <td>@item.IngestedFrom</td>
+                                <td>@elapsed.Hours Hours ago (@item.DateIngested)</td>
+                                <td>@item.NumberType</td>
+                                <td scope="row"><b>@formattedNumber</b></td>
                                 <td>@Html.Raw(number)</td>
-                                <td>@location</td>
-                                <td>From @Html.Raw(ingestedBadge) on @item.DateIngested (@elapsed.Hours Hours ago)</td>
                                 <td>
                                     <a href="https://acceleratenetworks.com/Search?Query=@item.DialedNumber" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                                        Public
+                                        View Public
                                     </a>
                                 </td>
                             </tr>

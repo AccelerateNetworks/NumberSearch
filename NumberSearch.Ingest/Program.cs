@@ -52,7 +52,7 @@ namespace NumberSearch.Ingest
             Stopwatch dailyTimer = new();
             Stopwatch bulkVSTimer = new();
             TimeSpan dailyCycle = TimeSpan.FromDays(1);
-            TimeSpan priorityCycle = TimeSpan.FromMinutes(30);
+            TimeSpan priorityCycle = TimeSpan.FromMinutes(10);
             TimeSpan bulkVSCycle = TimeSpan.FromHours(1);
 
             try
@@ -82,7 +82,7 @@ namespace NumberSearch.Ingest
                     {
                         priorityTimer.Restart();
 
-                        var bulkVS = await Provider.BulkVSPriorityAsync(appConfig);
+                        var bulkVS = await Provider.BulkVSDailyAsync(appConfig);
                         var firstPointCom = await Provider.FirstPointComPriorityAsync(appConfig);
                         // Verify that all the Executive numbers are still purchasable for the priority area codes.
                         await Provider.VerifyAddToCartAsync(AreaCode.Priority, "Executive", appConfig.Postgresql, appConfig.BulkVSUsername, appConfig.BulkVSPassword,
@@ -110,7 +110,9 @@ namespace NumberSearch.Ingest
                         var email = await Orders.EmailDailyAsync(smsRouteChanges, appConfig);
                     }
 
-                    Log.Information("[Heartbeat] Cycle complete. Daily Timer {Elapsed:000} ms.", dailyTimer.ElapsedMilliseconds);
+                    Log.Information("[Heartbeat] Priorty Timer {Elapsed:000} ms of {Limit:000} ms. ({percentP:P2})", priorityTimer.ElapsedMilliseconds, priorityCycle.TotalMilliseconds, (priorityTimer.ElapsedMilliseconds/priorityCycle.TotalMilliseconds));
+                    Log.Information("[Heartbeat] BulkVS Timer {Elapsed:000} ms of {Limit:000} ms. ({percentP:P2})", bulkVSTimer.ElapsedMilliseconds, bulkVSCycle.TotalMilliseconds, (bulkVSTimer.ElapsedMilliseconds / bulkVSCycle.TotalMilliseconds));
+                    Log.Information("[Heartbeat] Cycle complete. Daily Timer {Elapsed:000} ms of {Limit:000} ms. ({percentP:P2})", dailyTimer.ElapsedMilliseconds, dailyCycle.TotalMilliseconds, (dailyTimer.ElapsedMilliseconds / dailyCycle.TotalMilliseconds));
 
                     // Limit this to 1 request every 10 seconds to the database.
                     await Task.Delay(10000).ConfigureAwait(false);
