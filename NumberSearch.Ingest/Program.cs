@@ -53,7 +53,7 @@ namespace NumberSearch.Ingest
             Stopwatch bulkVSTimer = new();
             TimeSpan dailyCycle = TimeSpan.FromDays(1);
             TimeSpan priorityCycle = TimeSpan.FromMinutes(30);
-            TimeSpan bulkVSCycle = TimeSpan.FromHours(3);
+            TimeSpan bulkVSCycle = TimeSpan.FromHours(1);
 
             try
             {
@@ -93,7 +93,7 @@ namespace NumberSearch.Ingest
                     }
 
                     // Daily Ingest
-                    if (bulkVSTimer.Elapsed >= bulkVSCycle || DateTime.Now == DateTime.Today.AddDays(1).AddSeconds(-1))
+                    if (bulkVSTimer.Elapsed >= bulkVSCycle)
                     {
                         bulkVSTimer.Restart();
 
