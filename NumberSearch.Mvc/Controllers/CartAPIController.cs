@@ -653,8 +653,25 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     Log.Warning($"[BulkVS] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Length} results returned for {npanxx}.");
 
+                    var purchaseOrder = new PurchasedPhoneNumber { 
+                        Completed = false, 
+                        DateIngested = phoneNumber.DateIngested, 
+                        DateOrdered = DateTime.Now, 
+                        DialedNumber = phoneNumber.DialedNumber, 
+                        IngestedFrom = phoneNumber.IngestedFrom, 
+                        NPA = phoneNumber.NPA, 
+                        NumberType = phoneNumber.NumberType, 
+                        NXX = phoneNumber.NXX, 
+                        PIN = "", 
+                        OrderId = Guid.NewGuid(), 
+                        OrderResponse = "Failed to add to Cart.", 
+                        PurchasedPhoneNumberId = Guid.NewGuid(), 
+                        XXXX = phoneNumber.XXXX };
+
+                    _ = purchaseOrder.PostAsync(_postgresql);
+
                     // Remove numbers that are unpurchasable.
-                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql);
 
                     // Sadly its gone. And the user needs to pick a different number.
                     return BadRequest($"{dialedPhoneNumber} is no longer available.");
@@ -674,6 +691,25 @@ namespace NumberSearch.Mvc.Controllers
                 else
                 {
                     Log.Warning($"[FirstPointCom] Failed to find {phoneNumber.DialedNumber} in {results.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
+
+                    var purchaseOrder = new PurchasedPhoneNumber
+                    {
+                        Completed = false,
+                        DateIngested = phoneNumber.DateIngested,
+                        DateOrdered = DateTime.Now,
+                        DialedNumber = phoneNumber.DialedNumber,
+                        IngestedFrom = phoneNumber.IngestedFrom,
+                        NPA = phoneNumber.NPA,
+                        NumberType = phoneNumber.NumberType,
+                        NXX = phoneNumber.NXX,
+                        PIN = "",
+                        OrderId = Guid.NewGuid(),
+                        OrderResponse = "Failed to add to Cart.",
+                        PurchasedPhoneNumberId = Guid.NewGuid(),
+                        XXXX = phoneNumber.XXXX
+                    };
+
+                    _ = purchaseOrder.PostAsync(_postgresql);
 
                     // Remove numbers that are unpurchasable.
                     var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
@@ -695,6 +731,25 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     Log.Warning($"[OwnedNumber] Failed to find {phoneNumber.DialedNumber}.");
 
+                    var purchaseOrder = new PurchasedPhoneNumber
+                    {
+                        Completed = false,
+                        DateIngested = phoneNumber.DateIngested,
+                        DateOrdered = DateTime.Now,
+                        DialedNumber = phoneNumber.DialedNumber,
+                        IngestedFrom = phoneNumber.IngestedFrom,
+                        NPA = phoneNumber.NPA,
+                        NumberType = phoneNumber.NumberType,
+                        NXX = phoneNumber.NXX,
+                        PIN = "",
+                        OrderId = Guid.NewGuid(),
+                        OrderResponse = "Failed to add to Cart.",
+                        PurchasedPhoneNumberId = Guid.NewGuid(),
+                        XXXX = phoneNumber.XXXX
+                    };
+
+                    _ = purchaseOrder.PostAsync(_postgresql);
+
                     // Remove numbers that are unpurchasable.
                     var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
 
@@ -704,6 +759,25 @@ namespace NumberSearch.Mvc.Controllers
             }
             else
             {
+                var purchaseOrder = new PurchasedPhoneNumber
+                {
+                    Completed = false,
+                    DateIngested = phoneNumber.DateIngested,
+                    DateOrdered = DateTime.Now,
+                    DialedNumber = phoneNumber.DialedNumber,
+                    IngestedFrom = phoneNumber.IngestedFrom,
+                    NPA = phoneNumber.NPA,
+                    NumberType = phoneNumber.NumberType,
+                    NXX = phoneNumber.NXX,
+                    PIN = "",
+                    OrderId = Guid.NewGuid(),
+                    OrderResponse = "Failed to add to Cart.",
+                    PurchasedPhoneNumberId = Guid.NewGuid(),
+                    XXXX = phoneNumber.XXXX
+                };
+
+                _ = purchaseOrder.PostAsync(_postgresql);
+
                 // Remove numbers that are unpurchasable.
                 var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
 
@@ -715,10 +789,7 @@ namespace NumberSearch.Mvc.Controllers
             if (phoneNumber.Purchased)
             {
                 purchasable = false;
-            }
 
-            if (!purchasable)
-            {
                 // Remove numbers that are unpurchasable.
                 var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
 
