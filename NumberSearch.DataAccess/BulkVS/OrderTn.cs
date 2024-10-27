@@ -138,6 +138,38 @@ namespace NumberSearch.DataAccess.BulkVS
         /// <param name="username"></param>
         /// <param name="password"></param>
         /// <returns></returns>
+        /// example JSON responses:
+//        We already own the number:
+//{
+//    "TN": "12062752462",
+//    "Status": "Failed",
+//    "Code": "7511",
+//    "Description": "Telephone Number already provisioned to your account"
+//}
+//Successful purchase:
+//{
+//    "TN": "14255475185",
+//    "Status": "Active",
+//    "Lidb": "Accelerate Networks",
+//    "Portout Pin": "3591344",
+//    "ReferenceID": "",
+//    "Routing": {
+//        "Trunk Group": "",
+//        "Custom URI": null,
+//        "Call Forward": null
+//    },
+//    "Messaging": {
+//        "Sms": true,
+//        "Mms": false
+//    },
+//    "TN Details": {
+//    "Rate Center": "RENTON",
+//        "State": "WA",
+//        "Tier": "0",
+//        "Cnam": true,
+//        "Activation Date": "2024-10-26 22:06:28"
+//    }
+//}
         public async Task<OrderTnResponseBody> PostAsync(string username, string password)
         {
             string baseUrl = "https://portal.bulkvs.com/api/v1.0/";
@@ -145,12 +177,16 @@ namespace NumberSearch.DataAccess.BulkVS
             string route = $"{baseUrl}{endpoint}";
             try
             {
-                return await route.WithBasicAuth(username, password).PostJsonAsync(this).ReceiveJson<OrderTnResponseBody>().ConfigureAwait(false);
+                var response = await route.WithBasicAuth(username, password).PostJsonAsync(this).ReceiveString().ConfigureAwait(false);
+                OrderTnResponseBody? weatherForecast =
+                System.Text.Json.JsonSerializer.Deserialize<OrderTnResponseBody>(response);
+                return weatherForecast ?? new();
             }
             catch (FlurlHttpException ex)
             {
                 Log.Error($"[Ingest] [BulkVS] Failed to order {TN}.");
                 Log.Error(await ex.GetResponseStringAsync());
+                var x = await ex.GetResponseStringAsync();
                 var error = await ex.GetResponseJsonAsync<OrderTnFailed>();
 
                 return new OrderTnResponseBody
@@ -167,6 +203,7 @@ namespace NumberSearch.DataAccess.BulkVS
         public string TN { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public string Lidb { get; set; } = string.Empty;
+        [JsonPropertyName("Portout Pin")]
         public string PortoutPin { get; set; } = string.Empty;
         public OrderTnRouting Routing { get; set; } = new();
         public OrderTnMessaging Messaging { get; set; } = new();
@@ -201,7 +238,7 @@ namespace NumberSearch.DataAccess.BulkVS
         [JsonProperty("Rate Center")]
         public string RateCenter { get; set; } = string.Empty;
         public string State { get; set; } = string.Empty;
-        public int Tier { get; set; }
+        public string Tier { get; set; } = string.Empty;
         public bool Cnam { get; set; }
         [JsonPropertyName("Activation Date")]
         [JsonProperty("Activation Date")]

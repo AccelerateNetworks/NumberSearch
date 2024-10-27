@@ -89,7 +89,7 @@ namespace NumberSearch.Mvc.WorkerServices
 
                                                         var orderResponse = await executeOrder.PostAsync(_bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
 
-                                                        nto.Purchased = string.IsNullOrWhiteSpace(orderResponse?.Failed?.Description);
+                                                        nto.Purchased = string.IsNullOrWhiteSpace(orderResponse?.Failed?.Description) && orderResponse?.Status is "Active";
                                                         productOrder.DateOrdered = DateTime.Now;
                                                         // Keep the raw response as a receipt.
                                                         productOrder.OrderResponse = JsonSerializer.Serialize(orderResponse);
