@@ -50,8 +50,10 @@ namespace NumberSearch.Ingest
             Log.Information($"[Heartbeat] Ingest scheduling loop is starting. {Environment.ProcessorCount} threads detected.");
             Stopwatch priorityTimer = new();
             Stopwatch dailyTimer = new();
+            Stopwatch bulkVSTimer = new();
             TimeSpan dailyCycle = TimeSpan.FromDays(1);
             TimeSpan priorityCycle = TimeSpan.FromMinutes(30);
+            TimeSpan bulkVSCycle = TimeSpan.FromHours(3);
 
             try
             {
@@ -63,6 +65,11 @@ namespace NumberSearch.Ingest
                 if (!priorityTimer.IsRunning)
                 {
                     priorityTimer.Start();
+                }
+
+                if (!bulkVSTimer.IsRunning)
+                {
+                    bulkVSTimer.Start();
                 }
 
                 // To infinity and beyond.
@@ -86,11 +93,18 @@ namespace NumberSearch.Ingest
                     }
 
                     // Daily Ingest
+                    if (bulkVSTimer.Elapsed >= bulkVSCycle || DateTime.Now == DateTime.Today.AddDays(1).AddSeconds(-1))
+                    {
+                        bulkVSTimer.Restart();
+
+                        var bulkVS = await Provider.BulkVSDailyAsync(appConfig);
+                    }
+
+                    // Daily Ingest
                     if (dailyTimer.Elapsed >= dailyCycle || DateTime.Now == DateTime.Today.AddDays(1).AddSeconds(-1))
                     {
                         dailyTimer.Restart();
 
-                        var bulkVS = await Provider.BulkVSDailyAsync(appConfig);
                         var firstPointCom = await Provider.FirstPointComDailyAsync(appConfig);
                         var smsRouteChanges = await Owned.OwnedDailyAsync(appConfig);
                         var email = await Orders.EmailDailyAsync(smsRouteChanges, appConfig);
