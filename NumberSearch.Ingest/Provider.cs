@@ -107,7 +107,13 @@ namespace NumberSearch.Ingest
 
             // Ingest all available phones numbers from the BulkVs API.
             Log.Information("Ingesting data from BulkVS");
-            var BulkVSStats = await Provider.BulkVSAsync(appConfig.BulkVSUsername, appConfig.BulkVSPassword, PhoneNumbersNA.AreaCode.All, appConfig.Postgresql).ConfigureAwait(false);
+            // Breaking this into chunks to limit peak memory consumption.
+            List<IngestStatistics> allStats = [];
+            var groups = PhoneNumbersNA.AreaCode.All.Chunk(50);
+            foreach (var group in groups) {
+                var BulkVSStats = await Provider.BulkVSAsync(appConfig.BulkVSUsername, appConfig.BulkVSPassword, group, appConfig.Postgresql).ConfigureAwait(false);
+                allStats.Add(BulkVSStats);
+            }
 
             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
             var lockEntry = await IngestStatistics.GetLockAsync("BulkVS", appConfig.Postgresql).ConfigureAwait(false);
@@ -118,20 +124,20 @@ namespace NumberSearch.Ingest
 
             // Remove all of the old numbers from the database.
             Log.Information("[BulkVS] Removing old numbers from the database.");
-            var bulkVSCleanUp = await PhoneNumber.DeleteOldByProvider(lockingStats.StartDate, TimeSpan.FromDays(1), "BulkVS", appConfig.Postgresql).ConfigureAwait(false);
+            var bulkVSCleanUp = await PhoneNumber.DeleteOldByProvider(lockingStats.StartDate, TimeSpan.FromHours(3), "BulkVS", appConfig.Postgresql).ConfigureAwait(false);
 
             var combined = new IngestStatistics
             {
-                StartDate = BulkVSStats.StartDate,
+                StartDate = allStats.MinBy(x => x.StartDate)?.StartDate ?? DateTime.Now,
                 EndDate = bulkVSCleanUp.EndDate,
-                FailedToIngest = BulkVSStats.FailedToIngest,
-                IngestedFrom = BulkVSStats.IngestedFrom,
-                IngestedNew = BulkVSStats.IngestedNew,
+                FailedToIngest = allStats.Sum(x => x.FailedToIngest),
+                IngestedFrom = allStats.FirstOrDefault()?.IngestedFrom ?? "BulkVS",
+                IngestedNew = allStats.Sum(x => x.IngestedNew),
                 Lock = false,
-                NumbersRetrived = BulkVSStats.NumbersRetrived,
+                NumbersRetrived = allStats.Sum(x => x.NumbersRetrived),
                 Removed = bulkVSCleanUp.Removed,
-                Unchanged = BulkVSStats.Unchanged,
-                UpdatedExisting = BulkVSStats.UpdatedExisting,
+                Unchanged = allStats.Sum(x => x.Unchanged),
+                UpdatedExisting = allStats.Sum(x => x.UpdatedExisting),
                 Priority = false
             };
 
