@@ -6,8 +6,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using NumberSearch.Ops.Models;
+
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -24,40 +25,36 @@ public class PurchasedPhoneNumbersController(numberSearchContext context) : Cont
     [Route("/Home/NumberOrders/{dialedNumber}")]
     public async Task<IActionResult> NumberOrders(Guid? orderId, string dialedNumber)
     {
+        var owned = await context.OwnedPhoneNumbers.AsNoTracking().ToArrayAsync();
+
         if (orderId.HasValue)
         {
             var orders = await context.PurchasedPhoneNumbers
                 .Where(x => x.OrderId == orderId)
                 .OrderByDescending(x => x.DateOrdered)
                 .AsNoTracking()
-                .ToListAsync();
+                .ToArrayAsync();
 
-            if (orders is not null && orders.Count != 0)
-            {
-                foreach (var order in orders)
-                {
-                    // Update the product orders here.
-                }
-            }
-
-            return View("NumberOrders", orders);
+            return View("NumberOrders", new PurchasedResult { PurchasedPhoneNumbers = orders, Owned = owned });
         }
         else if (string.IsNullOrWhiteSpace(dialedNumber))
         {
             // Show all orders
-            var orders = await context.PurchasedPhoneNumbers.OrderByDescending(x => x.DateOrdered).AsNoTracking().ToListAsync();
+            var orders = await context.PurchasedPhoneNumbers.OrderByDescending(x => x.DateOrdered).AsNoTracking().ToArrayAsync();
 
-            return View("NumberOrders", orders);
+            return View("NumberOrders", new PurchasedResult { PurchasedPhoneNumbers = orders, Owned = owned });
         }
         else
         {
             var order = await context.PurchasedPhoneNumbers.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
 
-            return View("NumberOrders", new List<PurchasedPhoneNumber> { order ?? new() });
+            return View("NumberOrders", new PurchasedResult { PurchasedPhoneNumber = order, Owned = owned });
         }
     }
 
     [Authorize]
+    [Route("/Home/ExportNumberOrders")]
+
     public async Task<IActionResult> ExportNumberOrders()
     {
         var orders = await context.PurchasedPhoneNumbers.OrderByDescending(x => x.DateOrdered).AsNoTracking().ToListAsync();

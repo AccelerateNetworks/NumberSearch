@@ -92,7 +92,7 @@ namespace NumberSearch.Mvc.WorkerServices
                                                         nto.Purchased = string.IsNullOrWhiteSpace(orderResponse?.Failed?.Description) && orderResponse?.Status is "Active";
                                                         productOrder.DateOrdered = DateTime.Now;
                                                         // Keep the raw response as a receipt.
-                                                        productOrder.OrderResponse = JsonSerializer.Serialize(orderResponse);
+                                                        productOrder.OrderResponse = orderResponse?.RawResponse ?? JsonSerializer.Serialize(orderResponse);
                                                         // If the status code of the order comes back as 200 then it was successful.
                                                         productOrder.Completed = string.IsNullOrWhiteSpace(orderResponse?.Failed?.Description);
 

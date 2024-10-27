@@ -1,5 +1,5 @@
 ﻿@using AccelerateNetworks.Operations
-@model IEnumerable<PurchasedPhoneNumber>
+@model PurchasedResult
 @{
     ViewData["Title"] = "Purchased Numbers";
 }
@@ -8,31 +8,19 @@
     <table class="table table-striped table-bordered table-hover" id="table">
         <thead>
             <tr>
-                <th>
-                    Number
-                </th>
-                <th scope="col">
-                    Date Ordered
-                </th>
-                <th scope="col">
-                    Order Information
-                </th>
-                <th scope="col">
-                    Raw Response
-                </th>
+                <th>Status</th>
+                <th>Date Ordered</th>
+                <th>Provider</th>
+                <th>Number</th>
+                <th>Raw Response</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             @{
-                if (Model?.FirstOrDefault() is null)
+                if (Model is not null && Model?.PurchasedPhoneNumbers?.Length != 0)
                 {
-                    <tr>
-                        <td colspan="4" class="alert-danger">There is no record of this number being purchased. ❓</td>
-                    </tr>
-                }
-                else
-                {
-                    foreach (var order in Model.Where(x => x?.IngestedFrom != "Test"))
+                    foreach (var order in Model.PurchasedPhoneNumbers.Where(x => x?.IngestedFrom != "Test"))
                     {
                         var ingestedBadge = order?.IngestedFrom;
                         switch (order?.IngestedFrom)
@@ -47,19 +35,11 @@
                                 ingestedBadge = "<h4><span class='badge bg-warning'>TeleMessage</span></h4>";
                                 break;
                         }
+                        var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(order.DialedNumber, out var phoneNumber);
+                        var ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == phoneNumber.DialedNumber);
+                        string AsDialedLink = checkParse && ownedPhoneNumber is not null && ownedPhoneNumber.Active ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{order.DialedNumber}</a>" : $"{order.DialedNumber}";
                         <tr>
                             <td data-order="@order?.DateOrdered.Ticks">
-                                <h4>@order?.DialedNumber</h4>
-                            </td>
-                            <td scope="row">
-                                <a href="https://acceleratenetworks.com/cart/order/@order?.OrderId" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                                    Order
-                                </a>
-                                <h4 class="d-flex justify-content-between align-items-center mt-3">
-                                    <span class="badge bg-info rounded-pill">
-                                        @order?.DateOrdered
-                                    </span>
-                                </h4>
                                 @{
                                     if (order?.Completed is not null && order.Completed)
                                     {
@@ -72,16 +52,26 @@
                                 }
                             </td>
                             <td>
-                                @Html.Raw(ingestedBadge)
-                                <strong>Date Ingested</strong>
-                                <p>@order?.DateIngested</p>
+                                @order?.DateOrdered
                             </td>
-                            <td class="text-break">
+                            <td>@order?.IngestedFrom</td>
+                            <td>@Html.Raw(AsDialedLink)</td>
+                            <td class="text-break text-wrap">
                                 @order?.OrderResponse
+                            </td>
+                            <td>
+                                <a href="https://acceleratenetworks.com/cart/order/@order?.OrderId" class="btn btn-primary">
+                                    View Order
+                                </a>
                             </td>
                         </tr>
                     }
-
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="alert-danger">No purchased phone numbers found. ❓</td>
+                    </tr>
                 }
             }
         </tbody>

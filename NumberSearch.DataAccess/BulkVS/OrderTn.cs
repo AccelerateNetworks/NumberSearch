@@ -178,21 +178,23 @@ namespace NumberSearch.DataAccess.BulkVS
             try
             {
                 var response = await route.WithBasicAuth(username, password).PostJsonAsync(this).ReceiveString().ConfigureAwait(false);
-                OrderTnResponseBody? weatherForecast =
-                System.Text.Json.JsonSerializer.Deserialize<OrderTnResponseBody>(response);
+                OrderTnResponseBody weatherForecast =
+                System.Text.Json.JsonSerializer.Deserialize<OrderTnResponseBody>(response) ?? new();
+                weatherForecast.RawResponse = response;
                 return weatherForecast ?? new();
             }
             catch (FlurlHttpException ex)
             {
                 Log.Error($"[Ingest] [BulkVS] Failed to order {TN}.");
-                Log.Error(await ex.GetResponseStringAsync());
                 var x = await ex.GetResponseStringAsync();
+                Log.Error(x);
                 var error = await ex.GetResponseJsonAsync<OrderTnFailed>();
 
                 return new OrderTnResponseBody
                 {
                     TN = TN,
-                    Failed = error
+                    Failed = error,
+                    RawResponse = x
                 };
             }
         }
@@ -211,6 +213,7 @@ namespace NumberSearch.DataAccess.BulkVS
         [JsonProperty("TN Details")]
         public OrderTnTNDetails TNDetails { get; set; } = new();
         public OrderTnFailed Failed { get; set; } = new();
+        public string RawResponse { get; set; } = string.Empty;
     }
 
     public class OrderTnRouting
