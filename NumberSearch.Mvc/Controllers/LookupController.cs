@@ -172,7 +172,7 @@ namespace NumberSearch.Mvc.Controllers
                 foreach (var number in results)
                 {
                     builder.AppendLine($"{number.PortedDialedNumber},{number.City},{number.State},{number.DateIngested},{number.Wireless},{number.Portable}," +
-                        $"{number.LrnLookup.LastPorted},{number.LrnLookup.SPID},{number.LrnLookup.LATA},{number.LrnLookup.LEC.Replace(","," ")},{number.LrnLookup.LECType}," +
+                        $"{number.LrnLookup.LastPorted},{number.LrnLookup.SPID},{number.LrnLookup.LATA},{number.LrnLookup.LEC.Replace(",", " ")},{number.LrnLookup.LECType}," +
                         $"{number.LrnLookup.LIDBName},{number.LrnLookup.LRN},{number.LrnLookup.OCN}");
                 }
 

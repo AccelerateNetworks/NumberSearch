@@ -110,7 +110,8 @@ namespace NumberSearch.Ingest
             // Breaking this into chunks to limit peak memory consumption.
             List<IngestStatistics> allStats = [];
             var groups = PhoneNumbersNA.AreaCode.All.Chunk(50);
-            foreach (var group in groups) {
+            foreach (var group in groups)
+            {
                 var BulkVSStats = await Provider.BulkVSAsync(appConfig.BulkVSUsername, appConfig.BulkVSPassword, group, appConfig.Postgresql).ConfigureAwait(false);
                 allStats.Add(BulkVSStats);
             }

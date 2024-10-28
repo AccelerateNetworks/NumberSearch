@@ -26,11 +26,11 @@ namespace NumberSearch.DataAccess.Models
                 new { DateIngested = ingestStart.AddDays(-3) })
                 .ConfigureAwait(false);
 
-             var mvc = await connection
-                .ExecuteAsync("DELETE FROM \"Logs\".\"Mvc\" " +
-                "WHERE raise_date < @DateIngested",
-                new { DateIngested = ingestStart.AddDays(-3) })
-                .ConfigureAwait(false);
+            var mvc = await connection
+               .ExecuteAsync("DELETE FROM \"Logs\".\"Mvc\" " +
+               "WHERE raise_date < @DateIngested",
+               new { DateIngested = ingestStart.AddDays(-3) })
+               .ConfigureAwait(false);
 
             return new IngestStatistics
             {

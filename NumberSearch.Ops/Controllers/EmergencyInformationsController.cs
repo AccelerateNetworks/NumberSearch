@@ -15,9 +15,9 @@ namespace NumberSearch.Ops.Controllers
         // GET: EmergencyInformations
         public async Task<IActionResult> Index()
         {
-              return context.EmergencyInformation.OrderBy(x => x.DateIngested) != null ? 
-                          View(await context.EmergencyInformation.ToListAsync()) :
-                          Problem("Entity set 'numberSearchContext.EmergencyInformations'  is null.");
+            return context.EmergencyInformation.OrderBy(x => x.DateIngested) != null ?
+                        View(await context.EmergencyInformation.ToListAsync()) :
+                        Problem("Entity set 'numberSearchContext.EmergencyInformations'  is null.");
         }
 
         // GET: EmergencyInformations/Details/5
@@ -144,14 +144,14 @@ namespace NumberSearch.Ops.Controllers
             {
                 context.EmergencyInformation.Remove(emergencyInformation);
             }
-            
+
             await context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool EmergencyInformationExists(Guid id)
         {
-          return (context.EmergencyInformation?.Any(e => e.EmergencyInformationId == id)).GetValueOrDefault();
+            return (context.EmergencyInformation?.Any(e => e.EmergencyInformationId == id)).GetValueOrDefault();
         }
     }
 }

@@ -8,7 +8,6 @@ using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.LCGuide;
 using NumberSearch.DataAccess.Models;
 using NumberSearch.DataAccess.TeleDynamics;
-using NumberSearch.DataAccess.Twilio;
 using NumberSearch.Mvc.Models;
 
 using ServiceReference1;
@@ -542,6 +541,7 @@ namespace NumberSearch.Tests
             var result = await client.DIDInventorySearchAsync(pComNetCredentials, DIDSearch, ReturnAmount);
 
             Assert.NotNull(result);
+            Assert.NotEmpty(result.DIDOrder);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
@@ -661,7 +661,7 @@ namespace NumberSearch.Tests
             Assert.False(string.IsNullOrWhiteSpace(result.name));
             output.WriteLine(JsonSerializer.Serialize(result));
         }
-        
+
         [Fact]
         public async Task BulkVSLrnLookupAsync()
         {

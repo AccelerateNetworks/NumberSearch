@@ -6,7 +6,6 @@ using Serilog;
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
@@ -139,37 +138,37 @@ namespace NumberSearch.DataAccess.BulkVS
         /// <param name="password"></param>
         /// <returns></returns>
         /// example JSON responses:
-//        We already own the number:
-//{
-//    "TN": "12062752462",
-//    "Status": "Failed",
-//    "Code": "7511",
-//    "Description": "Telephone Number already provisioned to your account"
-//}
-//Successful purchase:
-//{
-//    "TN": "14255475185",
-//    "Status": "Active",
-//    "Lidb": "Accelerate Networks",
-//    "Portout Pin": "3591344",
-//    "ReferenceID": "",
-//    "Routing": {
-//        "Trunk Group": "",
-//        "Custom URI": null,
-//        "Call Forward": null
-//    },
-//    "Messaging": {
-//        "Sms": true,
-//        "Mms": false
-//    },
-//    "TN Details": {
-//    "Rate Center": "RENTON",
-//        "State": "WA",
-//        "Tier": "0",
-//        "Cnam": true,
-//        "Activation Date": "2024-10-26 22:06:28"
-//    }
-//}
+        //        We already own the number:
+        //{
+        //    "TN": "12062752462",
+        //    "Status": "Failed",
+        //    "Code": "7511",
+        //    "Description": "Telephone Number already provisioned to your account"
+        //}
+        //Successful purchase:
+        //{
+        //    "TN": "14255475185",
+        //    "Status": "Active",
+        //    "Lidb": "Accelerate Networks",
+        //    "Portout Pin": "3591344",
+        //    "ReferenceID": "",
+        //    "Routing": {
+        //        "Trunk Group": "",
+        //        "Custom URI": null,
+        //        "Call Forward": null
+        //    },
+        //    "Messaging": {
+        //        "Sms": true,
+        //        "Mms": false
+        //    },
+        //    "TN Details": {
+        //    "Rate Center": "RENTON",
+        //        "State": "WA",
+        //        "Tier": "0",
+        //        "Cnam": true,
+        //        "Activation Date": "2024-10-26 22:06:28"
+        //    }
+        //}
         public async Task<OrderTnResponseBody> PostAsync(string username, string password)
         {
             string baseUrl = "https://portal.bulkvs.com/api/v1.0/";

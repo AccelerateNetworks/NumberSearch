@@ -110,7 +110,7 @@ namespace NumberSearch.Ingest
                         var email = await Orders.EmailDailyAsync(smsRouteChanges, appConfig);
                     }
 
-                    Log.Information("[Heartbeat] Priorty Timer {Elapsed:000} ms of {Limit:000} ms. ({percentP:P2})", priorityTimer.ElapsedMilliseconds, priorityCycle.TotalMilliseconds, (priorityTimer.ElapsedMilliseconds/priorityCycle.TotalMilliseconds));
+                    Log.Information("[Heartbeat] Priorty Timer {Elapsed:000} ms of {Limit:000} ms. ({percentP:P2})", priorityTimer.ElapsedMilliseconds, priorityCycle.TotalMilliseconds, (priorityTimer.ElapsedMilliseconds / priorityCycle.TotalMilliseconds));
                     Log.Information("[Heartbeat] BulkVS Timer {Elapsed:000} ms of {Limit:000} ms. ({percentP:P2})", bulkVSTimer.ElapsedMilliseconds, bulkVSCycle.TotalMilliseconds, (bulkVSTimer.ElapsedMilliseconds / bulkVSCycle.TotalMilliseconds));
                     Log.Information("[Heartbeat] Cycle complete. Daily Timer {Elapsed:000} ms of {Limit:000} ms. ({percentP:P2})", dailyTimer.ElapsedMilliseconds, dailyCycle.TotalMilliseconds, (dailyTimer.ElapsedMilliseconds / dailyCycle.TotalMilliseconds));
 

@@ -340,8 +340,8 @@ namespace NumberSearch.Ops.Models
 
                 if (checkRemoveProduct && checkRemoveProductorder)
                 {
-                    Products = [..products.Values];
-                    ProductOrders = [..productOrders.Values];
+                    Products = [.. products.Values];
+                    ProductOrders = [.. productOrders.Values];
 
                     return true;
                 }

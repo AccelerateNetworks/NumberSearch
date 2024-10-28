@@ -120,7 +120,7 @@ namespace NumberSearch.Ops.Pages
                 });
             }
 
-            Orders = [..pairs];
+            Orders = [.. pairs];
             Products = products;
             Services = services;
             PortedPhoneNumbers = portedPhoneNumbers;

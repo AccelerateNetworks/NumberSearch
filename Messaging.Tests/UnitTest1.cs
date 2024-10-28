@@ -1,6 +1,3 @@
-using Amazon.S3;
-using Amazon.S3.Transfer;
-
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity.Data;
@@ -11,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Models;
 
 using System.Net.Http.Json;
-using System.Net.Mime;
 
 using Xunit.Abstractions;
 using Xunit.Priority;

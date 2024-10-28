@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NumberSearch.Ops.Models
+﻿namespace NumberSearch.Ops.Models
 {
     public class SearchResults
     {

@@ -21,7 +21,7 @@
         }
     }
 
-                const inventory = [{
+    const inventory = [{
         label: 'Total Numbers Ingested',
         data: numbersretrievedArr,
         borderWidth: 1
@@ -141,15 +141,15 @@
                     var oneHour = DateTime.Now - DateTime.Now.AddHours(-6);
                     if (timeAgo > oneHour)
                     {
-                                                            <div class="alert alert-danger" role="alert">
+                        <div class="alert alert-danger" role="alert">
                             @last
-                                                            </div>
+                         </div>
                     }
                     else
                     {
-                                                            <div class="alert alert-success" role="alert">
+                        <div class="alert alert-success" role="alert">
                             @last
-                                                            </div>
+                         </div>
                     }
                                             <h4>@Model?.TotalPhoneNumbers Phone Numbers in Inventory</h4>
                                             <div class="table-responsive shadow mt-3">
@@ -264,7 +264,7 @@
                                                 </table>
                                             </div>
                                             <h4 class="pb-3 pt-3">
-                                                Priority Area Code Health (@Model.PriorityAreaCodes.Count(x => x.Count > 30) of @Model.PriorityAreaCodes.Length Healthy)
+                                                Priority Area Code Health (@Model?.PriorityAreaCodes.Count(x => x.Count > 30) of @Model.PriorityAreaCodes.Length Healthy)
                                             </h4>
                                             <div class="table-responsive shadow mt-3">
                                                 <table class="table table-hover table-striped table-borderless">
@@ -432,7 +432,7 @@
                                                 }
                                                 @formattedChurn
                                                                                             </td>
-                                                                                        </tr>
+                                        </tr>
                                     }
                                 }
                                                     </tbody>

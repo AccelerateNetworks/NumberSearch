@@ -28,7 +28,7 @@ namespace NumberSearch.DataAccess.Twilio
 
         public static async Task<LineTypeIntelligenceResponse> GetByDialedNumberAsync(string dialedNumber, string username, string password)
         {
-            if(dialedNumber.Length is 10)
+            if (dialedNumber.Length is 10)
             {
                 dialedNumber = $"1{dialedNumber}";
             }

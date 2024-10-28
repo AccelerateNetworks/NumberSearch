@@ -143,7 +143,7 @@ namespace NumberSearch.Ingest
                 {
                     var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
                     var installDate = item?.InstallDate is not null ? item?.InstallDate.GetValueOrDefault().ToShortDateString() : "No install date set";
-                    var paid = item?.DateUpfrontInvoicePaid is not null && item.DateUpfrontInvoicePaid.Value > item.DateSubmitted ? $"Paid {item.DateUpfrontInvoicePaid.Value.ToShortDateString()}" : "Unpaid"; 
+                    var paid = item?.DateUpfrontInvoicePaid is not null && item.DateUpfrontInvoicePaid.Value > item.DateSubmitted ? $"Paid {item.DateUpfrontInvoicePaid.Value.ToShortDateString()}" : "Unpaid";
                     output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item?.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName} - Install Date {installDate} - <strong>{paid}</strong></li>");
                 }
                 output.Append("</ul>");

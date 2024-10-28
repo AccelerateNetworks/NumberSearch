@@ -1,14 +1,14 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AccelerateNetworks.Operations;
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using AccelerateNetworks.Operations;
+
 using NumberSearch.Ops.Models;
 
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using NumberSearch.DataAccess;
-using System.Threading;
 
 namespace NumberSearch.Ops.Controllers
 {

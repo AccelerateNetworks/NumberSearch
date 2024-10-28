@@ -1,14 +1,10 @@
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Configuration;
 
 using NumberSearch.Mvc;
 
-using System;
 using System.Net.Http;
-using System.Threading.Tasks;
 
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NumberSearch.Tests
 {

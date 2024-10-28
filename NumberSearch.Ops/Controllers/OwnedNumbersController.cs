@@ -95,7 +95,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
                     PortedPhoneNumbers = localPortedNumbers,
                     Owned = owned,
                     EmergencyInformation = e911 ?? new(),
-                    RelatedOrders = [..relatedOrders],
+                    RelatedOrders = [.. relatedOrders],
                 });
             }
 
@@ -370,7 +370,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
                                     PurchasedPhoneNumbers = localPurchasedNumbers,
                                     PortedPhoneNumbers = localPortedNumbers,
                                     Owned = existing ?? new(),
-                                    RelatedOrders = [..relatedOrders],
+                                    RelatedOrders = [.. relatedOrders],
                                     EmergencyInformation = e911 ?? new()
                                 });
                             }
@@ -386,7 +386,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
                                 PurchasedPhoneNumbers = localPurchasedNumbers,
                                 PortedPhoneNumbers = localPortedNumbers,
                                 Owned = existing ?? new(),
-                                RelatedOrders = [..relatedOrders],
+                                RelatedOrders = [.. relatedOrders],
                                 EmergencyInformation = e911 ?? new()
                             });
                         }
@@ -402,7 +402,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
                             PurchasedPhoneNumbers = localPurchasedNumbers,
                             PortedPhoneNumbers = localPortedNumbers,
                             Owned = existing,
-                            RelatedOrders = [..relatedOrders],
+                            RelatedOrders = [.. relatedOrders],
                             EmergencyInformation = e911 ?? new()
                         });
                     }
@@ -418,7 +418,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
                         PurchasedPhoneNumbers = localPurchasedNumbers,
                         PortedPhoneNumbers = localPortedNumbers,
                         Owned = existing,
-                        RelatedOrders = [..relatedOrders],
+                        RelatedOrders = [.. relatedOrders],
                         EmergencyInformation = e911 ?? new()
                     });
                 }
@@ -436,7 +436,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
                     PurchasedPhoneNumbers = localPurchasedNumbers,
                     PortedPhoneNumbers = localPortedNumbers,
                     Owned = existing ?? new(),
-                    RelatedOrders = [..relatedOrders],
+                    RelatedOrders = [.. relatedOrders],
                     EmergencyInformation = e911 ?? new()
                 });
             }

@@ -86,9 +86,9 @@ public class OrdersController(OpsConfig opsConfig,
                 && x.BusinessName.Contains(query, StringComparison.InvariantCultureIgnoreCase)).ToList();
 
                 // First and Last Name
-              searchResults.AddRange(orders.Where(x => !string.IsNullOrWhiteSpace(x.FirstName)
-                                && !string.IsNullOrWhiteSpace(x.LastName)
-                                && $"{x.FirstName} {x.LastName}".Contains(query, StringComparison.InvariantCultureIgnoreCase)));
+                searchResults.AddRange(orders.Where(x => !string.IsNullOrWhiteSpace(x.FirstName)
+                                  && !string.IsNullOrWhiteSpace(x.LastName)
+                                  && $"{x.FirstName} {x.LastName}".Contains(query, StringComparison.InvariantCultureIgnoreCase)));
 
                 // Phone Number
                 searchResults.AddRange(orders.Where(x => !string.IsNullOrWhiteSpace(x?.ContactPhoneNumber)
@@ -98,7 +98,7 @@ public class OrdersController(OpsConfig opsConfig,
             }
         }
 
-      return new JsonResult(orders.Select(x => x?.BusinessName ?? $"{x?.FirstName} {x?.LastName}").Distinct().Take(5).ToArray());
+        return new JsonResult(orders.Select(x => x?.BusinessName ?? $"{x?.FirstName} {x?.LastName}").Distinct().Take(5).ToArray());
     }
 
     [Authorize]

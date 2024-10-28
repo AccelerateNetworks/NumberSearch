@@ -1,6 +1,5 @@
 ﻿
 using NumberSearch.DataAccess;
-using NumberSearch.DataAccess.Models;
 
 using Serilog;
 

@@ -1,7 +1,5 @@
 ﻿using NumberSearch.DataAccess;
 
-using System;
-
 namespace NumberSearch.Mvc
 {
     public class IngestResults

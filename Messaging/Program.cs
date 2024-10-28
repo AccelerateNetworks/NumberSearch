@@ -518,7 +518,7 @@ try
                 }
             }
 
-            toForward.MediaURLs = [..mediaURLs];
+            toForward.MediaURLs = [.. mediaURLs];
             messageRecord.MediaURLs = string.Join(',', toForward.MediaURLs);
 
             // We already know that it's good.
@@ -1792,7 +1792,7 @@ public static class Endpoints
                 MessageType = MessageType.SMS,
             };
 
-            MessageRecord messageRecord = new ()
+            MessageRecord messageRecord = new()
             {
                 RawRequest = incomingRequest,
                 Content = toForward.Content,

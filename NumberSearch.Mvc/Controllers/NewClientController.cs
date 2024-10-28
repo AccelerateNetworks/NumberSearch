@@ -217,7 +217,7 @@ namespace NumberSearch.Mvc.Controllers
                 var portedStrippedNumbers = portedNumbers?.Select(x => x.PortedDialedNumber).ToArray();
                 var allNumbers = phoneNumbers?.Concat(portedStrippedNumbers ?? [])?.ToArray();
 
-                return View("Index", new NewClientResult { NewClient = newClient, Order = order, Products = [..products], ProductOrders = [..productOrders], PhoneNumbers = allNumbers ?? [] });
+                return View("Index", new NewClientResult { NewClient = newClient, Order = order, Products = [.. products], ProductOrders = [.. productOrders], PhoneNumbers = allNumbers ?? [] });
             }
 
             return View("Index");

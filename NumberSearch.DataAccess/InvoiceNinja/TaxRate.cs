@@ -1,7 +1,5 @@
 ﻿using Flurl.Http;
 
-using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.InvoiceNinja

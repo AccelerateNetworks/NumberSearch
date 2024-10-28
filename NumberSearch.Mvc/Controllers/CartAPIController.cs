@@ -653,20 +653,22 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     Log.Warning($"[BulkVS] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Length} results returned for {npanxx}.");
 
-                    var purchaseOrder = new PurchasedPhoneNumber { 
-                        Completed = false, 
-                        DateIngested = phoneNumber.DateIngested, 
-                        DateOrdered = DateTime.Now, 
-                        DialedNumber = phoneNumber.DialedNumber, 
-                        IngestedFrom = phoneNumber.IngestedFrom, 
-                        NPA = phoneNumber.NPA, 
-                        NumberType = phoneNumber.NumberType, 
-                        NXX = phoneNumber.NXX, 
-                        PIN = "", 
-                        OrderId = Guid.NewGuid(), 
-                        OrderResponse = "Failed to add to Cart.", 
-                        PurchasedPhoneNumberId = Guid.NewGuid(), 
-                        XXXX = phoneNumber.XXXX };
+                    var purchaseOrder = new PurchasedPhoneNumber
+                    {
+                        Completed = false,
+                        DateIngested = phoneNumber.DateIngested,
+                        DateOrdered = DateTime.Now,
+                        DialedNumber = phoneNumber.DialedNumber,
+                        IngestedFrom = phoneNumber.IngestedFrom,
+                        NPA = phoneNumber.NPA,
+                        NumberType = phoneNumber.NumberType,
+                        NXX = phoneNumber.NXX,
+                        PIN = "",
+                        OrderId = Guid.NewGuid(),
+                        OrderResponse = "Failed to add to Cart.",
+                        PurchasedPhoneNumberId = Guid.NewGuid(),
+                        XXXX = phoneNumber.XXXX
+                    };
 
                     _ = purchaseOrder.PostAsync(_postgresql);
 
