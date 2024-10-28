@@ -9,6 +9,7 @@ using ServiceReference;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Xunit;
 using Xunit.Abstractions;
@@ -90,11 +91,11 @@ namespace NumberSearch.Tests
         //}
 
 
-        //[Fact]
-        //public async Task TestFirstPointComIngest()
-        //{
-        //    await Provider.FirstPointComPriorityAsync(ingestConfiguration);
-        //}
+        [Fact]
+        public async Task TestFirstPointComIngest()
+        {
+            await Provider.FirstPointComPriorityAsync(ingestConfiguration);
+        }
 
         //[Fact]
         //public async Task TestCheckForQuoteConversionsAsync()

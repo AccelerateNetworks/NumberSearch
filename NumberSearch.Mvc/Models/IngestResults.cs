@@ -5,6 +5,10 @@ namespace NumberSearch.Mvc
     public class IngestResults
     {
         public IngestStatistics[] Ingests { get; set; } = [];
+        public IngestStatistics[] FirstPointComIngest { get; set; } = [];
+        public IngestStatistics[] FirstPointComPriorityIngest { get; set; } = [];
+        public IngestStatistics[] BulkVSIngest { get; set; } = [];
+        public IngestStatistics[] BulkVSPriorityIngest { get; set; } = [];
         public PhoneNumber.CountByProvider[] CurrentState { get; set; } = [];
         public PhoneNumber.CountNPA[] AreaCodes { get; set; } = [];
         public PhoneNumber.CountNPA[] PriorityAreaCodes { get; set; } = [];

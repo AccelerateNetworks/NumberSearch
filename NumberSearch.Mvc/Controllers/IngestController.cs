@@ -5,6 +5,7 @@ using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.Models;
 using NumberSearch.Mvc.Models;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,10 +22,14 @@ namespace NumberSearch.Mvc.Controllers
         //[OutputCache(Duration = 30)]
         public async Task<IActionResult> IndexAsync()
         {
-            var ingests = await IngestStatistics.GetAllAsync(_postgresql).ConfigureAwait(false);
-            var currentState = await PhoneNumber.GetCountAllProvider(_postgresql).ConfigureAwait(false);
-            var numberTypeCounts = await PhoneNumber.GetCountAllNumberType(_postgresql).ConfigureAwait(false);
-            var numbersByAreaCode = await PhoneNumber.GetCountAllAreaCode(_postgresql).ConfigureAwait(false);
+            var ingests = await IngestStatistics.GetAllAsync(_postgresql);
+            var fpc = await IngestStatistics.GetAllFirstComAsync(_postgresql);
+            var fpcPriority = await IngestStatistics.GetAllFirstComPriorityAsync(_postgresql);
+            var bulkVS = await IngestStatistics.GetAllBulkVSAsync(_postgresql);
+            var bulkVSPriority = await IngestStatistics.GetAllBulkVSPriorityAsync(_postgresql);
+            var currentState = await PhoneNumber.GetCountAllProvider(_postgresql);
+            var numberTypeCounts = await PhoneNumber.GetCountAllNumberType(_postgresql);
+            var numbersByAreaCode = await PhoneNumber.GetCountAllAreaCode(_postgresql);
             List<PhoneNumber.CountNPA> priority = [];
             foreach (var code in AreaCode.Priority)
             {
@@ -40,7 +45,11 @@ namespace NumberSearch.Mvc.Controllers
 
             return View("Index", new IngestResults
             {
-                Ingests = ingests.ToArray(),
+                Ingests = [..ingests],
+                FirstPointComIngest = [..fpc],
+                FirstPointComPriorityIngest = [..fpcPriority],
+                BulkVSIngest = [..bulkVS],
+                BulkVSPriorityIngest = [..bulkVSPriority],
                 CurrentState = currentState,
                 AreaCodes = numbersByAreaCode,
                 PriorityAreaCodes = [.. priority],

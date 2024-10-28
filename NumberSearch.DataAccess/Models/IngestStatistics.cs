@@ -43,6 +43,51 @@ namespace NumberSearch.DataAccess
             return result;
         }
 
+        public static async Task<IEnumerable<IngestStatistics>> GetAllFirstComAsync(string connectionString)
+        {
+            await using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<IngestStatistics>("SELECT \"Id\", \"NumbersRetrived\", \"IngestedNew\", \"FailedToIngest\", \"UpdatedExisting\", \"Unchanged\", \"Removed\", \"IngestedFrom\", \"StartDate\", \"EndDate\", \"Lock\", \"Priority\" FROM public.\"Ingests\" WHERE \"IngestedFrom\" = 'FirstPointCom' AND \"Priority\" = 'false' ORDER BY \"StartDate\" DESC LIMIT 100")
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        public static async Task<IEnumerable<IngestStatistics>> GetAllFirstComPriorityAsync(string connectionString)
+        {
+            await using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<IngestStatistics>("SELECT \"Id\", \"NumbersRetrived\", \"IngestedNew\", \"FailedToIngest\", \"UpdatedExisting\", \"Unchanged\", \"Removed\", \"IngestedFrom\", \"StartDate\", \"EndDate\", \"Lock\", \"Priority\" FROM public.\"Ingests\" WHERE \"IngestedFrom\" = 'FirstPointCom' AND \"Priority\" = 'true' ORDER BY \"StartDate\" DESC LIMIT 100")
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        public static async Task<IEnumerable<IngestStatistics>> GetAllBulkVSAsync(string connectionString)
+        {
+            await using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<IngestStatistics>("SELECT \"Id\", \"NumbersRetrived\", \"IngestedNew\", \"FailedToIngest\", \"UpdatedExisting\", \"Unchanged\", \"Removed\", \"IngestedFrom\", \"StartDate\", \"EndDate\", \"Lock\", \"Priority\" FROM public.\"Ingests\" WHERE \"IngestedFrom\" = 'BulkVS' AND \"Priority\" = 'false' ORDER BY \"StartDate\" DESC LIMIT 100")
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        public static async Task<IEnumerable<IngestStatistics>> GetAllBulkVSPriorityAsync(string connectionString)
+        {
+            await using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<IngestStatistics>("SELECT \"Id\", \"NumbersRetrived\", \"IngestedNew\", \"FailedToIngest\", \"UpdatedExisting\", \"Unchanged\", \"Removed\", \"IngestedFrom\", \"StartDate\", \"EndDate\", \"Lock\", \"Priority\" FROM public.\"Ingests\" WHERE \"IngestedFrom\" = 'BulkVS' AND \"Priority\" = 'true' ORDER BY \"StartDate\" DESC LIMIT 100")
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+
         public static async Task<IngestStatistics?> GetLastIngestAsync(string ingestedFrom, string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);

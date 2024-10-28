@@ -8,74 +8,206 @@
 }
 
 <script type="text/javascript">
-    @{
-        if (Model?.Ingests is not null)
-        {
-            var graphData = Model.Ingests.Where(x => x.StartDate > DateTime.Now.AddHours(-24) && x.Priority).OrderBy(x => x.StartDate).ToArray();
-            @Html.Raw($"const numbersretrievedArr = {JsonSerializer.Serialize(graphData.Select(x => x.NumbersRetrived))};\n")     
-            @Html.Raw($"const ingestedNewArr = {JsonSerializer.Serialize(graphData.Select(x => x.IngestedNew))};\n")        
-            @Html.Raw($"const failedToIngestArr = {JsonSerializer.Serialize(graphData.Select(x => x.FailedToIngest))};\n")       
-            @Html.Raw($"const updatedExisting = {JsonSerializer.Serialize(graphData.Select(x => x.UpdatedExisting))};\n")     
-            @Html.Raw($"const removedArr = {JsonSerializer.Serialize(graphData.Select(x => x.Removed))};\n") 
-            @Html.Raw($"const dateArr = {JsonSerializer.Serialize(graphData.Select(x => x.StartDate.ToString("h:mm tt")))};\n")        
-        }
-    }
 
-    const inventory = [{
-        label: 'Total Numbers Ingested',
-        data: numbersretrievedArr,
-        borderWidth: 1
-    },
-    {
-        label: 'New',
-        data: ingestedNewArr,
-        backgroundColor: [
-            'rgba(75, 192, 192, 1)',
-        ],
-        borderColor: [
-            'rgba(75, 192, 192, 1)',
-        ],
-        borderWidth: 1
-    },
-    {
-        label: 'Updated',
-        data: updatedExisting,
-        backgroundColor: [
-            'rgba(54, 162, 235, 0.3)',
-        ],
-        borderColor: [
-            'rgba(54, 162, 235, 1)',
-        ],
-        borderWidth: 1
-    }];
+@if (Model?.FirstPointComIngest is not null)
+{
+    var graphData = Model.FirstPointComIngest.OrderBy(x => x.StartDate);
+    @Html.Raw($"const numbersretrievedArrFPC = {JsonSerializer.Serialize(graphData.Select(x => x.NumbersRetrived))};\n")     
+    @Html.Raw($"const ingestedNewArrFPC = {JsonSerializer.Serialize(graphData.Select(x => x.IngestedNew))};\n")        
+    @Html.Raw($"const failedToIngestArrFPC = {JsonSerializer.Serialize(graphData.Select(x => x.FailedToIngest))};\n")       
+    @Html.Raw($"const updatedExistingFPC = {JsonSerializer.Serialize(graphData.Select(x => x.UpdatedExisting))};\n")     
+    @Html.Raw($"const removedArrFPC = {JsonSerializer.Serialize(graphData.Select(x => x.Removed))};\n") 
+    @Html.Raw($"const dateArrFPC = {JsonSerializer.Serialize(graphData.Select(x => x.StartDate.ToString("MM/dd h:mm tt")))};\n")
+}
+const inventoryFPC = [{
+    label: 'Total Ingested',
+    data: numbersretrievedArrFPC,
+    borderWidth: 1
+},
+{
+    label: 'New',
+    data: ingestedNewArrFPC,
+    backgroundColor: ['rgba(75, 192, 192, 1)', ],
+    borderColor: ['rgba(75, 192, 192, 1)',],
+    borderWidth: 1
+},
+{
+    label: 'Updated',
+    data: updatedExistingFPC,
+    backgroundColor: ['rgba(54, 162, 235, 0.3)', ],
+    borderColor: [ 'rgba(54, 162, 235, 1)', ],
+    borderWidth: 1
+}];
 
-    const churn = [{
-        label: 'Newly Ingested Numbers',
-        data: ingestedNewArr,
-        borderWidth: 1
-    },
-    {
-        label: 'Failed To Ingest',
-        data: failedToIngestArr,
-        backgroundColor: [
-            'rgba(255, 99, 132, 1)',
-        ],
-        borderColor: [
-            'rgba(255, 99, 132, 1)',
-        ],
-        borderWidth: 1
-    },
-    {
-        label: 'Removed After Failing to be Reingested',
-        data: removedArr,
-        backgroundColor: [
-            'rgba(255, 159, 64, 0.3)',
-        ],
-        borderColor: [
-            'rgba(255, 159, 64, 1)',
-        ],
-        borderWidth: 1
-    }];
+const churnFPC = [{
+    label: 'Newly Ingested Numbers',
+    data: ingestedNewArrFPC,
+    borderWidth: 1
+},
+{
+    label: 'Failed To Ingest',
+    data: failedToIngestArrFPC,
+    backgroundColor: ['rgba(255, 99, 132, 1)', ],
+    borderColor: ['rgba(255, 99, 132, 1)', ],
+    borderWidth: 1
+},
+{
+    label: 'Removed After Failing to be Reingested',
+    data: removedArrFPC,
+    backgroundColor: ['rgba(255, 159, 64, 0.3)', ],
+    borderColor: [ 'rgba(255, 159, 64, 1)', ],
+    borderWidth: 1
+}];
+
+@if (Model?.FirstPointComPriorityIngest is not null)
+{
+    var graphData = Model.FirstPointComPriorityIngest.OrderBy(x => x.StartDate);
+    @Html.Raw($"const numbersretrievedArrFPCP = {JsonSerializer.Serialize(graphData.Select(x => x.NumbersRetrived))};\n")     
+    @Html.Raw($"const ingestedNewArrFPCP = {JsonSerializer.Serialize(graphData.Select(x => x.IngestedNew))};\n")        
+    @Html.Raw($"const failedToIngestArrFPCP = {JsonSerializer.Serialize(graphData.Select(x => x.FailedToIngest))};\n")       
+    @Html.Raw($"const updatedExistingFPCP = {JsonSerializer.Serialize(graphData.Select(x => x.UpdatedExisting))};\n")     
+    @Html.Raw($"const removedArrFPCP = {JsonSerializer.Serialize(graphData.Select(x => x.Removed))};\n") 
+    @Html.Raw($"const dateArrFPCP = {JsonSerializer.Serialize(graphData.Select(x => x.StartDate.ToString("MM/dd h:mm tt")))};\n")
+}
+const inventoryFPCP = [{
+    label: 'Total Ingested',
+    data: numbersretrievedArrFPCP,
+    borderWidth: 1
+},
+{
+    label: 'New',
+    data: ingestedNewArrFPCP,
+    backgroundColor: ['rgba(75, 192, 192, 1)', ],
+    borderColor: ['rgba(75, 192, 192, 1)',],
+    borderWidth: 1
+},
+{
+    label: 'Updated',
+    data: updatedExistingFPCP,
+    backgroundColor: ['rgba(54, 162, 235, 0.3)', ],
+    borderColor: [ 'rgba(54, 162, 235, 1)', ],
+    borderWidth: 1
+}];
+
+const churnFPCP = [{
+    label: 'Newly Ingested Numbers',
+    data: ingestedNewArrFPCP,
+    borderWidth: 1
+},
+{
+    label: 'Failed To Ingest',
+    data: failedToIngestArrFPCP,
+    backgroundColor: ['rgba(255, 99, 132, 1)', ],
+    borderColor: ['rgba(255, 99, 132, 1)', ],
+    borderWidth: 1
+},
+{
+    label: 'Removed After Failing to be Reingested',
+    data: removedArrFPCP,
+    backgroundColor: ['rgba(255, 159, 64, 0.3)', ],
+    borderColor: [ 'rgba(255, 159, 64, 1)', ],
+    borderWidth: 1
+}];
+
+@if (Model?.BulkVSIngest is not null)
+{
+    var graphData = Model.BulkVSIngest.OrderBy(x => x.StartDate);
+    @Html.Raw($"const numbersretrievedArrBVS = {JsonSerializer.Serialize(graphData.Select(x => x.NumbersRetrived))};\n")     
+    @Html.Raw($"const ingestedNewArrBVS = {JsonSerializer.Serialize(graphData.Select(x => x.IngestedNew))};\n")        
+    @Html.Raw($"const failedToIngestArrBVS = {JsonSerializer.Serialize(graphData.Select(x => x.FailedToIngest))};\n")       
+    @Html.Raw($"const updatedExistingBVS = {JsonSerializer.Serialize(graphData.Select(x => x.UpdatedExisting))};\n")     
+    @Html.Raw($"const removedArrBVS = {JsonSerializer.Serialize(graphData.Select(x => x.Removed))};\n") 
+    @Html.Raw($"const dateArrBVS = {JsonSerializer.Serialize(graphData.Select(x => x.StartDate.ToString("MM/dd h:mm tt")))};\n")
+}
+const inventoryBVS = [{
+    label: 'Total Ingested',
+    data: numbersretrievedArrBVS,
+    borderWidth: 1
+},
+{
+    label: 'New',
+    data: ingestedNewArrBVS,
+    backgroundColor: ['rgba(75, 192, 192, 1)', ],
+    borderColor: ['rgba(75, 192, 192, 1)',],
+    borderWidth: 1
+},
+{
+    label: 'Updated',
+    data: updatedExistingBVS,
+    backgroundColor: ['rgba(54, 162, 235, 0.3)', ],
+    borderColor: [ 'rgba(54, 162, 235, 1)', ],
+    borderWidth: 1
+}];
+
+const churnBVS = [{
+    label: 'Newly Ingested Numbers',
+    data: ingestedNewArrBVS,
+    borderWidth: 1
+},
+{
+    label: 'Failed To Ingest',
+    data: failedToIngestArrBVS,
+    backgroundColor: ['rgba(255, 99, 132, 1)', ],
+    borderColor: ['rgba(255, 99, 132, 1)', ],
+    borderWidth: 1
+},
+{
+    label: 'Removed After Failing to be Reingested',
+    data: removedArrBVS,
+    backgroundColor: ['rgba(255, 159, 64, 0.3)', ],
+    borderColor: [ 'rgba(255, 159, 64, 1)', ],
+    borderWidth: 1
+}];
+
+@if (Model?.BulkVSPriorityIngest is not null)
+{
+    var graphData = Model.BulkVSPriorityIngest.OrderBy(x => x.StartDate);
+    @Html.Raw($"const numbersretrievedArrBVSP = {JsonSerializer.Serialize(graphData.Select(x => x.NumbersRetrived))};\n")     
+    @Html.Raw($"const ingestedNewArrBVSP = {JsonSerializer.Serialize(graphData.Select(x => x.IngestedNew))};\n")        
+    @Html.Raw($"const failedToIngestArrBVSP = {JsonSerializer.Serialize(graphData.Select(x => x.FailedToIngest))};\n")       
+    @Html.Raw($"const updatedExistingBVSP = {JsonSerializer.Serialize(graphData.Select(x => x.UpdatedExisting))};\n")     
+    @Html.Raw($"const removedArrBVSP = {JsonSerializer.Serialize(graphData.Select(x => x.Removed))};\n") 
+    @Html.Raw($"const dateArrBVSP = {JsonSerializer.Serialize(graphData.Select(x => x.StartDate.ToString("MM/dd h:mm tt")))};\n")
+}
+const inventoryBVSP = [{
+    label: 'Total Ingested',
+    data: numbersretrievedArrBVSP,
+    borderWidth: 1
+},
+{
+    label: 'New',
+    data: ingestedNewArrBVSP,
+    backgroundColor: ['rgba(75, 192, 192, 1)', ],
+    borderColor: ['rgba(75, 192, 192, 1)',],
+    borderWidth: 1
+},
+{
+    label: 'Updated',
+    data: updatedExistingBVSP,
+    backgroundColor: ['rgba(54, 162, 235, 0.3)', ],
+    borderColor: [ 'rgba(54, 162, 235, 1)', ],
+    borderWidth: 1
+}];
+
+const churnBVSP = [{
+    label: 'Newly Ingested Numbers',
+    data: ingestedNewArrBVSP,
+    borderWidth: 1
+},
+{
+    label: 'Failed To Ingest',
+    data: failedToIngestArrBVSP,
+    backgroundColor: ['rgba(255, 99, 132, 1)', ],
+    borderColor: ['rgba(255, 99, 132, 1)', ],
+    borderWidth: 1
+},
+{
+    label: 'Removed After Failing to be Reingested',
+    data: removedArrBVSP,
+    backgroundColor: ['rgba(255, 159, 64, 0.3)', ],
+    borderColor: [ 'rgba(255, 159, 64, 1)', ],
+    borderWidth: 1
+}];
 
 </script>
 
@@ -117,224 +249,263 @@
         </div>
     </div>
 </section>
-<div class="container">
-    <div class="row">
-        <div class="col">
-            <canvas id="myChart" width="400" height="200" class="pb-3"></canvas>
-            <div class="btn-group btn-group-toggle pb-3" data-toggle="buttons">
-                <label class="btn btn-outline-secondary active">
-                    <input type="radio" name="options" id="option1" checked onclick="showInventory()"> Inventory
-                </label>
-                <label class="btn btn-outline-secondary">
-                    <input type="radio" name="options" id="option2" onclick="showChurn()"> Churn
-                </label>
-            </div>
-        </div>
-    </div>
+<div class="container pt-3">
     <div class="row">
         <div class="col">
             @{
-                if (Model is not null && Model?.Ingests is not null && Model.Ingests.Any() && Model?.AreaCodes is not null)
+                var timeAgo = DateTime.Now - Model.Ingests.FirstOrDefault()?.StartDate;
+                var last = $"Last ingest performed {timeAgo.GetValueOrDefault().ToString(@"hh\:mm\:ss")} seconds ago.";
+                var oneHour = DateTime.Now - DateTime.Now.AddHours(-6);
+                if (timeAgo > oneHour)
                 {
-                    var timeAgo = DateTime.Now - Model.Ingests.FirstOrDefault()?.StartDate;
-                    var last = $"Last ingest performed {timeAgo.GetValueOrDefault().ToString(@"hh\:mm\:ss")} seconds ago.";
-                    var oneHour = DateTime.Now - DateTime.Now.AddHours(-6);
-                    if (timeAgo > oneHour)
-                    {
-                        <div class="alert alert-danger" role="alert">
-                            @last
-                         </div>
-                    }
-                    else
-                    {
-                        <div class="alert alert-success" role="alert">
-                            @last
-                         </div>
-                    }
-                                            <h4>@Model?.TotalPhoneNumbers Phone Numbers in Inventory</h4>
-                                            <div class="table-responsive shadow mt-3">
-                                                <table class="table table-hover table-striped table-borderless">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>
-                                                                Number Type
-                                                            </th>
-                                                            <th>
-                                                                Count
-                                                            </th>
-                                                            <th>
-                                                                % of Total
-                                                            </th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>
-                                                                Standard
-                                                            </td>
-                                                            <td>
-                                        @Model?.TotalStandardNumbers
-                                                            </td>
-                                                            <td>
-                                        @{
-                                            var standardPortion = Model?.TotalStandardNumbers * 100M / Model?.TotalPhoneNumbers;
-                                        }
-                                        @standardPortion!.Value.ToString("F") %
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>
-                                                                Premium
-                                                            </td>
-                                                            <td>
-                                        @Model?.TotalPremiumNumbers
-                                                            </td>
-                                                            <td>
-                                        @{
-                                            var premiumPortion = Model?.TotalPremiumNumbers * 100M / Model?.TotalPhoneNumbers;
-                                        }
-                                        @premiumPortion!.Value.ToString("F") %
-                                                            </td>
-                                                        </tr>
-
-                                                        <tr>
-                                                            <td>
-                                                                Executive
-                                                            </td>
-                                                            <td>
-                                        @Model?.TotalExecutiveNumbers
-                                                            </td>
-                                                            <td>
-                                        @{
-                                            var executivePortion = Model?.TotalExecutiveNumbers * 100M / Model?.TotalPhoneNumbers;
-                                        }
-                                        @executivePortion!.Value.ToString("F") %
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>
-                                                                Tollfree
-                                                            </td>
-                                                            <td>
-                                        @Model?.TotalTollFreeNumbers
-                                                            </td>
-                                                            <td>
-                                        @{
-                                            var tollfreePortion = Model?.TotalTollFreeNumbers * 100M / Model?.TotalPhoneNumbers;
-                                        }
-                                        @tollfreePortion!.Value.ToString("F") %
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                            <h4 class="pb-3 pt-3">
-                                                        Area Code Health (@Model.AreaCodes.Count(x => x.Count > 30) of @Model.AreaCodes.Length Healthy)
-                                            </h4>
-                                            <div class="table-responsive shadow mt-3">
-                                                <table class="table table-hover table-striped table-borderless">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Area Code</th>
-                                    @if (Model?.AreaCodes is not null)
-                                    {
-                                        foreach (var code in Model.AreaCodes)
+                    <div class="alert alert-danger" role="alert">
+                        ❌ @last
+                        </div>
+                }
+                else
+                {
+                    <div class="alert alert-success" role="alert">
+                        @last
+                        </div>
+                }
+             }
+                    <h4 class="">
+                        Priority Area Code Health (@Model?.PriorityAreaCodes.Count(x => x.Count > 30) of @Model?.PriorityAreaCodes.Length Healthy)
+                    </h4>
+                    <div class="table-responsive shadow mt-3">
+                        <table class="table table-hover table-striped table-borderless">
+                            <thead>
+                                <tr>
+                                    <th>Area Code</th>
+                                        @if (Model?.PriorityAreaCodes is not null)
                                         {
-                                                                                            <th>
-                                                                                                (@code.NPA)
-                                                                                            </th>
-                                        }
-                                    }
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>Count</td>
-                                    @if (Model?.AreaCodes is not null)
-                                    {
-                                        foreach (var code in Model.AreaCodes)
-                                        {
-                                                                                            <td>
-                                                                                                <a href="https://ops.acceleratenetworks.com/Numbers?Query=@code.NPA*******">@code.Count</a>
-                                                                                            </td>
-                                        }
-                                    }
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                            <h4 class="pb-3 pt-3">
-                                                Priority Area Code Health (@Model?.PriorityAreaCodes.Count(x => x.Count > 30) of @Model.PriorityAreaCodes.Length Healthy)
-                                            </h4>
-                                            <div class="table-responsive shadow mt-3">
-                                                <table class="table table-hover table-striped table-borderless">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Area Code</th>
-                                    @if (Model?.PriorityAreaCodes is not null)
-                                    {
-                                        foreach (var code in Model.PriorityAreaCodes)
-                                        {
-                                                                                            <th>
-                                                                                                (@code.NPA)
-                                                                                            </th>
-                                        }
-                                    }
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>Count</td>
-                                    @if (Model?.PriorityAreaCodes is not null)
-                                    {
-                                        foreach (var code in Model.PriorityAreaCodes)
-                                        {
-                                            if (code.Count is 0)
+                                            foreach (var code in Model.PriorityAreaCodes)
                                             {
-                                                                                                            <td>
-                                                                                                                <a href="https://ops.acceleratenetworks.com/Numbers?Query=@code.NPA*******">@code.Count</a> ❌
-                                                                                                            </td>
+                                                <th>
+                                                    (@code.NPA)
+                                                </th>
+                                            }
+                                        }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Count</td>
+                                        @if (Model?.PriorityAreaCodes is not null)
+                                        {
+                                            foreach (var code in Model.PriorityAreaCodes)
+                                            {
+                                                if (code.Count is 0)
+                                                {
+                                                    <td>
+                                                        <a href="https://ops.acceleratenetworks.com/Numbers?Query=@code.NPA*******">@code.Count</a> ❌
+                                                    </td>
+                                                }
+                                                else
+                                                {
+                                                    <td>
+                                                        <a href="https://ops.acceleratenetworks.com/Numbers?Query=@code.NPA*******">@code.Count</a>
+                                                    </td>
+                                                }
+                                            }
+                                        }
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                                        <h4 class="pt-4">
+                        Area Code Health (@Model?.AreaCodes.Count(x => x.Count > 30) of @Model?.AreaCodes.Length Healthy)
+                    </h4>
+                    <div class="table-responsive shadow mt-3">
+                        <table class="table table-hover table-striped table-borderless">
+                            <thead>
+                                <tr>
+                                    <th>Area Code</th>
+                                        @if (Model?.AreaCodes is not null)
+                                        {
+                                            foreach (var code in Model.AreaCodes)
+                                            {
+                                                <th>
+                                                    (@code.NPA)
+                                                </th>
+                                            }
+                                        }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Count</td>
+                                        @if (Model?.AreaCodes is not null)
+                                        {
+                                            foreach (var code in Model.AreaCodes)
+                                            {
+                                                <td>
+                                                    <a href="https://ops.acceleratenetworks.com/Numbers?Query=@code.NPA*******">@code.Count</a>
+                                                </td>
+                                            }
+                                        }
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row">
+                        <div class="col pt-4">
+                            <h4>FirstPointCom Ingests</h4>
+                            <div class="btn-group btn-group-toggle pb-3" data-toggle="buttons">
+                                <label class="btn btn-outline-secondary active">
+                                    <input type="radio" name="options" id="option1" checked onclick="showInventoryFPC()"> Inventory
+                                </label>
+                                <label class="btn btn-outline-secondary">
+                                    <input type="radio" name="options" id="option2" onclick="showChurnFPC()"> Churn
+                                </label>
+                            </div>
+                            <canvas id="firstPointComIngests" width="400" height="200" class="pb-3"></canvas>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <h4>FirstPointCom Priority Ingests</h4>                             
+                            <div class="btn-group btn-group-toggle pb-3" data-toggle="buttons">
+                                <label class="btn btn-outline-secondary active">
+                                    <input type="radio" name="options" id="option1" checked onclick="showInventoryFPCP()"> Inventory
+                                </label>
+                                <label class="btn btn-outline-secondary">
+                                    <input type="radio" name="options" id="option2" onclick="showChurnFPCP()"> Churn
+                                </label>
+                            </div>
+                            <canvas id="firstPointComPriorityIngests" width="400" height="200" class="pb-3"></canvas>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <h4>BulkVS Ingests</h4>
+                            <div class="btn-group btn-group-toggle pb-3" data-toggle="buttons">
+                                <label class="btn btn-outline-secondary active">
+                                    <input type="radio" name="options" id="option1" checked onclick="showInventoryBVS()"> Inventory
+                                </label>
+                                <label class="btn btn-outline-secondary">
+                                    <input type="radio" name="options" id="option2" onclick="showChurnBVS()"> Churn
+                                </label>
+                            </div>
+                            <canvas id="bulkVSIngests" width="400" height="200" class="pb-3"></canvas>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <h4>BulkVS Priority Ingests</h4>
+                            <div class="btn-group btn-group-toggle pb-3" data-toggle="buttons">
+                                <label class="btn btn-outline-secondary active">
+                                    <input type="radio" name="options" id="option1" checked onclick="showInventoryBVSP()"> Inventory
+                                </label>
+                                <label class="btn btn-outline-secondary">
+                                    <input type="radio" name="options" id="option2" onclick="showChurnBVSP()"> Churn
+                                </label>
+                            </div>
+                            <canvas id="bulkVSPriorityIngests" width="400" height="200" class="pb-3"></canvas>
+                        </div>
+                    </div>
+                    <h4 class="pb-3 pt-3">
+                        Logged Ingests
+                    </h4>
+                    <div class="table-responsive shadow">
+                        <table class="table table-hover table-striped table-borderless">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Ingested From</th>
+                                    <th scope="col">Numbers retrieved</th>
+                                    <th scope="col">Ingested New</th>
+                                    <th scope="col">Failed to Ingest</th>
+                                    <th scope="col">Updated Existing</th>
+                                    <th scope="col">Unchanged</th>
+                                    <th scope="col">Removed</th>
+                                    <th scope="col">Minutes Elapsed</th>
+                                    <th scope="col">Start Date</th>
+                                    <th scope="col">End Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @if (Model?.Ingests is not null)
+                            {
+                                foreach (var ingest in Model.Ingests.Take(31))
+                                {
+                                    var timeElapsed = ingest.StartDate - ingest.EndDate;
+                                    <tr>
+                                    @{
+                                        if (ingest?.IngestedFrom == "All")
+                                        {
+                                            <td class="table-success">@ingest?.IngestedFrom</td>
+                                            <td class="table-success">@ingest!.NumbersRetrived</td>
+                                            <td class="table-success">@ingest.IngestedNew</td>
+                                            <td class="table-success">@ingest.FailedToIngest</td>
+                                            <td class="table-success">@ingest.UpdatedExisting</td>
+                                            <td class="table-success">@ingest.Unchanged</td>
+                                            <td class="table-success">@ingest.Removed</td>
+                                            <td class="table-success"><strong>@timeElapsed.ToString(@"hh\:mm")</strong></td>
+                                            <td class="table-success">@ingest?.StartDate</td>
+                                            <td class="table-success">@ingest?.EndDate</td>
+                                        }
+                                        else
+                                        {
+                                            string badge = string.Empty;
+                                            if (ingest?.Priority ?? false)
+                                            {
+                                                badge = $"<span class='badge badge-primary'>Priority</span>";
                                             }
                                             else
                                             {
-                                                                                                            <td>
-                                                                                                                <a href="https://ops.acceleratenetworks.com/Numbers?Query=@code.NPA*******">@code.Count</a>
-                                                                                                            </td>
+                                                badge = $"<span class='badge badge-success'>Complete</span>";
                                             }
+                                            <td><h5>@ingest?.IngestedFrom</h5> @Html.Raw(badge)</td>
+                                            if(ingest?.NumbersRetrived > 0){
+                                                <td>@ingest!.NumbersRetrived</td>
+                                            } else
+                                            {
+                                                <td>❌ @ingest!.NumbersRetrived</td>
+                                            }
+                                            <td>@ingest.IngestedNew</td>
+                                            <td>@ingest.FailedToIngest</td>
+                                            <td>@ingest.UpdatedExisting</td>
+                                            <td>@ingest.Unchanged</td>
+                                            <td>@ingest.Removed</td>
+                                            <td>@timeElapsed.ToString(@"hh\:mm")</td>
+                                            <td>@ingest?.StartDate</td>
+                                            <td>@ingest?.EndDate</td>
                                         }
                                     }
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                            <h4 class="pb-3 pt-3">
-                                                Provider Health
-                                            </h4>
-                                            <div class="table-responsive shadow">
-                                                <table class="table table-hover table-striped table-borderless">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>
-                                                                Number Provider
-                                                            </th>
-                                                            <th>
-                                                                Current Count
-                                                            </th>
-                                                            <th>
-                                                                Ingest rate
-                                                            </th>
-                                                            <th>
-                                                                Run Time (1 Day Average)
-                                                            </th>
-                                                            <th>
-                                                                Longest Run (Last 7 Days)
-                                                            </th>
-                                                            <th>
-                                                                Churn (Average per Ingest)
-                                                            </th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <h4 class="pb-3 pt-3">Provider Health</h4>
+                    <div class="table-responsive shadow">
+                        <table class="table table-hover table-striped table-borderless">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Number Provider
+                                    </th>
+                                    <th>
+                                        Current Count
+                                    </th>
+                                    <th>
+                                        Ingest rate
+                                    </th>
+                                    <th>
+                                        Run Time (1 Day Average)
+                                    </th>
+                                    <th>
+                                        Longest Run (Last 7 Days)
+                                    </th>
+                                    <th>
+                                        Churn (Average per Ingest)
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
                                 @if (Model is not null && Model?.Ingests is not null && Model?.CurrentState is not null)
                                 {
                                     var oneDayAgo = DateTime.Now.AddDays(-1);
@@ -345,182 +516,191 @@
                                         var ingests = Model!.Ingests.Where(x => x.IngestedFrom == provider && x.EndDate >= oneDayAgo && !x.Priority);
                                         var ingestsSeven = Model!.Ingests.Where(x => x.IngestedFrom == provider && x.EndDate >= DateTime.Now.AddDays(-7));
                                         var currentCount = Model!.CurrentState.Where(x => x.IngestedFrom == provider).FirstOrDefault();
-                                                                                        <tr>
-                                                                                            <td>
-                                                @provider
-                                                                                            </td>
-                                                                                            <td>
-                                                @{
-                                                    decimal total = Convert.ToDecimal(Model?.TotalPhoneNumbers);
-                                                    decimal portion = 0M;
-                                                    if (currentCount?.Count > 0)
-                                                    {
-                                                        portion = (currentCount.Count / total) * 100M;
-                                                    }
-                                                }
-                                                @currentCount?.Count
-                                                                                                (@portion.ToString("F") %)
-                                                                                            </td>
-                                                                                            <td>
-                                                @{
-                                                    var output = $"{ingests.Count()} per day";
-                                                }
-                                                @output
-                                                                                            </td>
-                                                                                            <td>
-                                                @{
-                                                    var runTimes = new List<TimeSpan>();
-                                                    foreach (var ingest in ingests)
-                                                    {
-                                                        runTimes.Add(ingest.EndDate - ingest.StartDate);
-                                                    }
-                                                    var formattedRunTime = string.Empty;
-                                                    // https://stackoverflow.com/questions/8847679/find-average-of-collection-of-timespans
-                                                    if (runTimes.Count > 0)
-                                                    {
-                                                        var doubleTicks = runTimes?.Average(x => x.Ticks);
-                                                        var longTicks = Convert.ToInt64(doubleTicks);
-                                                        var averageRunTime = new TimeSpan(longTicks);
-                                                        if (averageRunTime.Hours > 0)
-                                                        {
-                                                            formattedRunTime = $"{averageRunTime}";
-
-                                                        }
-                                                        else
-                                                        {
-                                                            formattedRunTime = $"{averageRunTime}";
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        formattedRunTime = "None";
-                                                    }
-                                                }
-                                                @formattedRunTime
-                                                                                            </td>
-                                                                                            <td>
-                                                @{
-                                                    var runTimesSeven = new List<TimeSpan>();
-                                                    foreach (var ingest in ingestsSeven)
-                                                    {
-                                                        runTimesSeven.Add(ingest.EndDate - ingest.StartDate);
-                                                    }
-                                                    var formattedLongest = string.Empty;
-                                                    if (runTimesSeven.Count() > 0)
-                                                    {
-                                                        var longest = runTimesSeven.Max();
-                                                        if (longest.Hours > 0)
-                                                        {
-                                                            formattedLongest = $"{longest}";
-                                                        }
-                                                        else
-                                                        {
-                                                            formattedLongest = $"{longest}";
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        formattedRunTime = "None";
-                                                    }
-                                                }
-                                                @formattedLongest
-                                                                                            </td>
-                                                                                            <td>
-                                                @{
-                                                    var churn = ingests.Count() > 0 ? ingests?.Average(x => x.Removed) : 0;
-                                                    var formattedChurn = $"{churn!.Value.ToString("F0")} Numbers Removed";
-                                                }
-                                                @formattedChurn
-                                                                                            </td>
-                                        </tr>
-                                    }
-                                }
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                            <h4 class="pb-3 pt-3">
-                                                Logged Ingests
-                                            </h4>
-                                            <div class="table-responsive shadow mb-4">
-                                                <table class="table table-hover table-striped table-borderless">
-                                                    <thead>
-                                                        <tr>
-                                                            <th scope="col">Ingested From</th>
-                                                            <th scope="col">Numbers retrieved</th>
-                                                            <th scope="col">Ingested New</th>
-                                                            <th scope="col">Failed to Ingest</th>
-                                                            <th scope="col">Updated Existing</th>
-                                                            <th scope="col">Unchanged</th>
-                                                            <th scope="col">Removed</th>
-                                                            <th scope="col">Minutes Elapsed</th>
-                                                            <th scope="col">Start Date</th>
-                                                            <th scope="col">End Date</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                @if (Model?.Ingests is not null)
-                                {
-                                    foreach (var ingest in Model.Ingests.Take(31))
-                                    {
-                                        var timeElapsed = ingest.StartDate - ingest.EndDate;
-                                                                                        <tr>
+                                        <tr>
+                                            <td>@provider</td>
+                                            <td>
                                             @{
-                                                if (ingest?.IngestedFrom == "All")
+                                                decimal total = Convert.ToDecimal(Model?.TotalPhoneNumbers);
+                                                decimal portion = 0M;
+                                                if (currentCount?.Count > 0)
                                                 {
-                                                                                                                            <td class="table-success">@ingest?.IngestedFrom</td>
-                                                                                                                            <td class="table-success">@ingest!.NumbersRetrived</td>
-                                                                                                                            <td class="table-success">@ingest.IngestedNew</td>
-                                                                                                                            <td class="table-success">@ingest.FailedToIngest</td>
-                                                                                                                            <td class="table-success">@ingest.UpdatedExisting</td>
-                                                                                                                            <td class="table-success">@ingest.Unchanged</td>
-                                                                                                                            <td class="table-success">@ingest.Removed</td>
-                                                                                                                            <td class="table-success"><strong>@timeElapsed.ToString(@"hh\:mm")</strong></td>
-                                                                                                                            <td class="table-success">@ingest?.StartDate</td>
-                                                                                                                            <td class="table-success">@ingest?.EndDate</td>
+                                                    portion = (currentCount.Count / total) * 100M;
+                                                }
+                                            }
+                                            @currentCount?.Count (@portion.ToString("F") %)
+                                            </td>
+                                            <td>
+                                            @{
+                                                var output = $"{ingests.Count()} per day";
+                                            }
+                                            @output
+                                            </td>
+                                            <td>
+                                            @{
+                                                var runTimes = new List<TimeSpan>();
+                                                foreach (var ingest in ingests)
+                                                {
+                                                    runTimes.Add(ingest.EndDate - ingest.StartDate);
+                                                }
+                                                var formattedRunTime = string.Empty;
+                                                // https://stackoverflow.com/questions/8847679/find-average-of-collection-of-timespans
+                                                if (runTimes.Count > 0)
+                                                {
+                                                    var doubleTicks = runTimes?.Average(x => x.Ticks);
+                                                    var longTicks = Convert.ToInt64(doubleTicks);
+                                                    var averageRunTime = new TimeSpan(longTicks);
+                                                    if (averageRunTime.Hours > 0)
+                                                    {
+                                                        formattedRunTime = $"{averageRunTime.ToString(@"hh\:mm\:ss")}";
+
+                                                    }
+                                                    else
+                                                    {
+                                                        formattedRunTime = $"{averageRunTime.ToString(@"hh\:mm\:ss")}";
+                                                    }
                                                 }
                                                 else
                                                 {
-                                                    string badge = string.Empty;
-                                                    if (ingest?.Priority ?? false)
+                                                    formattedRunTime = "None";
+                                                }
+                                            }
+                                            @formattedRunTime
+                                            </td>
+                                            <td>
+                                            @{
+                                                var runTimesSeven = new List<TimeSpan>();
+                                                foreach (var ingest in ingestsSeven)
+                                                {
+                                                    runTimesSeven.Add(ingest.EndDate - ingest.StartDate);
+                                                }
+                                                var formattedLongest = string.Empty;
+                                                if (runTimesSeven.Count() > 0)
+                                                {
+                                                    var longest = runTimesSeven.Max();
+                                                    if (longest.Hours > 0)
                                                     {
-                                                        badge = $"<span class='badge badge-primary'>Priority</span>";
+                                                        formattedLongest = $"{longest.ToString(@"hh\:mm\:ss")}";
                                                     }
                                                     else
                                                     {
-                                                        badge = $"<span class='badge badge-success'>Complete</span>";
+                                                        formattedLongest = $"{longest.ToString(@"hh\:mm\:ss")}";
                                                     }
-                                                                                                                            <td><h5>@ingest?.IngestedFrom</h5> @Html.Raw(badge)</td>
-                                                                                                                            <td>@ingest!.NumbersRetrived</td>
-                                                                                                                            <td>@ingest.IngestedNew</td>
-                                                                                                                            <td>@ingest.FailedToIngest</td>
-                                                                                                                            <td>@ingest.UpdatedExisting</td>
-                                                                                                                            <td>@ingest.Unchanged</td>
-                                                                                                                            <td>@ingest.Removed</td>
-                                                                                                                            <td>@timeElapsed.ToString(@"hh\:mm")</td>
-                                                                                                                            <td>@ingest?.StartDate</td>
-                                                                                                                            <td>@ingest?.EndDate</td>
+                                                }
+                                                else
+                                                {
+                                                    formattedRunTime = "None";
                                                 }
                                             }
-                                                                                        </tr>
+                                            @formattedLongest
+                                            </td>
+                                            <td>
+                                            @{
+                                                var churn = ingests.Count() > 0 ? ingests?.Average(x => x.Removed) : 0;
+                                                var formattedChurn = $"{churn!.Value.ToString("F0")} Numbers Removed";
+                                            }
+                                            @formattedChurn
+                                            </td>
+                                        </tr>
                                     }
                                 }
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                }
-            }
+                            </tbody>
+                        </table>
+                    </div>
+                    </div>
+                </div>
+                <div class="row pt-4 pb-4">
+                    <div class="col">
+                                            <h4>@Model?.TotalPhoneNumbers Phone Numbers in Inventory</h4>
+                    <div class="table-responsive shadow mt-3">
+                        <table class="table table-hover table-striped table-borderless">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Number Type
+                                    </th>
+                                    <th>
+                                        Count
+                                    </th>
+                                    <th>
+                                        % of Total
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        Standard
+                                    </td>
+                                    <td>
+                                        @Model?.TotalStandardNumbers
+                                    </td>
+                                    <td>
+                                        @{
+                                            var standardPortion = Model?.TotalStandardNumbers * 100M / Model?.TotalPhoneNumbers;
+                                        }
+                                        @standardPortion!.Value.ToString("F") %
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Premium
+                                    </td>
+                                    <td>
+                                        @Model?.TotalPremiumNumbers
+                                    </td>
+                                    <td>
+                                        @{
+                                            var premiumPortion = Model?.TotalPremiumNumbers * 100M / Model?.TotalPhoneNumbers;
+                                        }
+                                        @premiumPortion!.Value.ToString("F") %
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>
+                                        Executive
+                                    </td>
+                                    <td>
+                                        @Model?.TotalExecutiveNumbers
+                                    </td>
+                                    <td>
+                                        @{
+                                            var executivePortion = Model?.TotalExecutiveNumbers * 100M / Model?.TotalPhoneNumbers;
+                                        }
+                                        @executivePortion!.Value.ToString("F") %
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Tollfree
+                                    </td>
+                                    <td>
+                                        @Model?.TotalTollFreeNumbers
+                                    </td>
+                                    <td>
+                                        @{
+                                            var tollfreePortion = Model?.TotalTollFreeNumbers * 100M / Model?.TotalPhoneNumbers;
+                                        }
+                                        @tollfreePortion!.Value.ToString("F") %
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    </div>
+                </div>
         </div>
     </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
 <script>
-    var ctx = document.getElementById('myChart');
-    const chart = new Chart(ctx, {
+    var fpc = document.getElementById('firstPointComIngests');
+    const chartFPC = new Chart(fpc, {
         type: 'line',
         data: {
-            labels: dateArr,
-            datasets: inventory
+            labels: dateArrFPC,
+            datasets: inventoryFPC
         },
         options: {
             scales: {
@@ -533,13 +713,97 @@
         }
     });
 
-    function showInventory() {
-        chart.data.datasets = inventory;
-        chart.update();
+    function showInventoryFPC() {
+        chartFPC.data.datasets = inventoryFPC;
+        chartFPC.update();
     }
 
-    function showChurn() {
-        chart.data.datasets = churn;
-        chart.update();
+    function showChurnFPC() {
+        chartFPC.data.datasets = churnFPC;
+        chartFPC.update();
+    }
+
+        var fpcp = document.getElementById('firstPointComPriorityIngests');
+    const chartFPCP = new Chart(fpcp, {
+        type: 'line',
+        data: {
+            labels: dateArrFPCP,
+            datasets: inventoryFPCP
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: false
+                    }
+                }]
+            }
+        }
+    });
+
+    function showInventoryFPCP() {
+        chartFPCP.data.datasets = inventoryFPCP;
+        chartFPCP.update();
+    }
+
+    function showChurnFPCP() {
+        chartFPCP.data.datasets = churnFPCP;
+        chartFPCP.update();
+    }
+
+            var bvs = document.getElementById('bulkVSIngests');
+    const chartBVS = new Chart(bvs, {
+        type: 'line',
+        data: {
+            labels: dateArrBVS,
+            datasets: inventoryBVS
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: false
+                    }
+                }]
+            }
+        }
+    });
+
+    function showInventoryBVS() {
+        chartBVS.data.datasets = inventoryBVS;
+        chartBVS.update();
+    }
+
+    function showChurnBVS() {
+        chartBVS.data.datasets = churnBVS;
+        chartBVS.update();
+    }
+
+                var bvsp = document.getElementById('bulkVSPriorityIngests');
+    const chartBVSP = new Chart(bvsp, {
+        type: 'line',
+        data: {
+            labels: dateArrBVSP,
+            datasets: inventoryBVSP
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: false
+                    }
+                }]
+            }
+        }
+    });
+
+    function showInventoryBVSP() {
+        chartBVSP.data.datasets = inventoryBVSP;
+        chartBVSP.update();
+    }
+
+    function showChurnBVSP() {
+        chartBVSP.data.datasets = churnBVSP;
+        chartBVSP.update();
     }
 </script>
