@@ -82,7 +82,7 @@ namespace NumberSearch.Ingest
                     {
                         priorityTimer.Restart();
 
-                        var bulkVS = await Provider.BulkVSDailyAsync(appConfig);
+                        var bulkVS = await Provider.BulkVSPriorityAsync(appConfig);
                         var firstPointCom = await Provider.FirstPointComPriorityAsync(appConfig);
                         // Verify that all the Executive numbers are still purchasable for the priority area codes.
                         await Provider.VerifyAddToCartAsync(AreaCode.Priority, "Executive", appConfig.Postgresql, appConfig.BulkVSUsername, appConfig.BulkVSPassword,
