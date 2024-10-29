@@ -51,9 +51,11 @@ namespace NumberSearch.Ingest
             Stopwatch priorityTimer = new();
             Stopwatch dailyTimer = new();
             Stopwatch bulkVSTimer = new();
+            Stopwatch fpcTimer = new();
             TimeSpan dailyCycle = TimeSpan.FromDays(1);
             TimeSpan priorityCycle = TimeSpan.FromMinutes(10);
             TimeSpan bulkVSCycle = TimeSpan.FromHours(1);
+            TimeSpan fpcCycle = TimeSpan.FromHours(3);
 
             try
             {
@@ -70,6 +72,11 @@ namespace NumberSearch.Ingest
                 if (!bulkVSTimer.IsRunning)
                 {
                     bulkVSTimer.Start();
+                }
+
+                if (!fpcTimer.IsRunning)
+                {
+                    fpcTimer.Start();
                 }
 
                 // To infinity and beyond.
@@ -92,7 +99,6 @@ namespace NumberSearch.Ingest
                         await Orders.CheckForInvoicePaymentAsync(appConfig.Postgresql, appConfig.InvoiceNinjaToken, appConfig.SmtpUsername, appConfig.SmtpPassword);
                     }
 
-                    // Daily Ingest
                     if (bulkVSTimer.Elapsed >= bulkVSCycle)
                     {
                         bulkVSTimer.Restart();
@@ -100,12 +106,17 @@ namespace NumberSearch.Ingest
                         var bulkVS = await Provider.BulkVSDailyAsync(appConfig);
                     }
 
-                    // Daily Ingest
+                    if (fpcTimer.Elapsed >= fpcCycle)
+                    {
+                        fpcTimer.Restart();
+
+                        var firstPointCom = await Provider.FirstPointComDailyAsync(appConfig);
+                    }
+
                     if (dailyTimer.Elapsed >= dailyCycle || DateTime.Now == DateTime.Today.AddDays(1).AddSeconds(-1))
                     {
                         dailyTimer.Restart();
 
-                        var firstPointCom = await Provider.FirstPointComDailyAsync(appConfig);
                         var smsRouteChanges = await Owned.OwnedDailyAsync(appConfig);
                         var email = await Orders.EmailDailyAsync(smsRouteChanges, appConfig);
                     }

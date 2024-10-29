@@ -325,6 +325,42 @@ namespace NumberSearch.DataAccess
             return result.ToArray();
         }
 
+        public static async Task<CountNPA[]> GetCountAllAreaCodeOwnedNumber(string connectionString)
+        {
+            await using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<CountNPA>("SELECT \"NPA\", COUNT(*) AS Count FROM public.\"PhoneNumbers\" WHERE \"IngestedFrom\" = 'OwnedNumber' GROUP BY \"NPA\"",
+                new { })
+                .ConfigureAwait(false);
+
+            return result.ToArray();
+        }
+
+        public static async Task<CountNPA[]> GetCountAllAreaCodeBulkVS(string connectionString)
+        {
+            await using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<CountNPA>("SELECT \"NPA\", COUNT(*) AS Count FROM public.\"PhoneNumbers\" WHERE \"IngestedFrom\" = 'BulkVS' GROUP BY \"NPA\"",
+                new { })
+                .ConfigureAwait(false);
+
+            return result.ToArray();
+        }
+
+        public static async Task<CountNPA[]> GetCountAllAreaCodeFPC(string connectionString)
+        {
+            await using var connection = new NpgsqlConnection(connectionString);
+
+            var result = await connection
+                .QueryAsync<CountNPA>("SELECT \"NPA\", COUNT(*) AS Count FROM public.\"PhoneNumbers\" WHERE \"IngestedFrom\" = 'FirstPointCom' GROUP BY \"NPA\"",
+                new { })
+                .ConfigureAwait(false);
+
+            return result.ToArray();
+        }
+
         public static async Task<int> GetTotal(string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);

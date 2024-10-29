@@ -9,205 +9,205 @@
 
 <script type="text/javascript">
 
-@if (Model?.FirstPointComIngest is not null)
-{
-    var graphData = Model.FirstPointComIngest.OrderBy(x => x.StartDate);
-    @Html.Raw($"const numbersretrievedArrFPC = {JsonSerializer.Serialize(graphData.Select(x => x.NumbersRetrived))};\n")     
-    @Html.Raw($"const ingestedNewArrFPC = {JsonSerializer.Serialize(graphData.Select(x => x.IngestedNew))};\n")        
-    @Html.Raw($"const failedToIngestArrFPC = {JsonSerializer.Serialize(graphData.Select(x => x.FailedToIngest))};\n")       
-    @Html.Raw($"const updatedExistingFPC = {JsonSerializer.Serialize(graphData.Select(x => x.UpdatedExisting))};\n")     
-    @Html.Raw($"const removedArrFPC = {JsonSerializer.Serialize(graphData.Select(x => x.Removed))};\n") 
-    @Html.Raw($"const dateArrFPC = {JsonSerializer.Serialize(graphData.Select(x => x.StartDate.ToString("MM/dd h:mm tt")))};\n")
-}
-const inventoryFPC = [{
-    label: 'Total Ingested',
-    data: numbersretrievedArrFPC,
-    borderWidth: 1
-},
-{
-    label: 'New',
-    data: ingestedNewArrFPC,
-    backgroundColor: ['rgba(75, 192, 192, 1)', ],
-    borderColor: ['rgba(75, 192, 192, 1)',],
-    borderWidth: 1
-},
-{
-    label: 'Updated',
-    data: updatedExistingFPC,
-    backgroundColor: ['rgba(54, 162, 235, 0.3)', ],
-    borderColor: [ 'rgba(54, 162, 235, 1)', ],
-    borderWidth: 1
-}];
+    @if (Model?.FirstPointComIngest is not null)
+    {
+        var graphData = Model.FirstPointComIngest.OrderBy(x => x.StartDate);
+        @Html.Raw($"const numbersretrievedArrFPC = {JsonSerializer.Serialize(graphData.Select(x => x.NumbersRetrived))};\n")
+        @Html.Raw($"const ingestedNewArrFPC = {JsonSerializer.Serialize(graphData.Select(x => x.IngestedNew))};\n")
+        @Html.Raw($"const failedToIngestArrFPC = {JsonSerializer.Serialize(graphData.Select(x => x.FailedToIngest))};\n")
+        @Html.Raw($"const updatedExistingFPC = {JsonSerializer.Serialize(graphData.Select(x => x.UpdatedExisting))};\n")
+        @Html.Raw($"const removedArrFPC = {JsonSerializer.Serialize(graphData.Select(x => x.Removed))};\n")
+        @Html.Raw($"const dateArrFPC = {JsonSerializer.Serialize(graphData.Select(x => x.StartDate.ToString("MM/dd h:mm tt")))};\n")
+    }
+    const inventoryFPC = [{
+        label: 'Total Ingested',
+        data: numbersretrievedArrFPC,
+        borderWidth: 1
+    },
+    {
+        label: 'New',
+        data: ingestedNewArrFPC,
+        backgroundColor: ['rgba(75, 192, 192, 1)',],
+        borderColor: ['rgba(75, 192, 192, 1)',],
+        borderWidth: 1
+    },
+    {
+        label: 'Updated',
+        data: updatedExistingFPC,
+        backgroundColor: ['rgba(54, 162, 235, 0.3)',],
+        borderColor: ['rgba(54, 162, 235, 1)',],
+        borderWidth: 1
+    }];
 
-const churnFPC = [{
-    label: 'Newly Ingested Numbers',
-    data: ingestedNewArrFPC,
-    borderWidth: 1
-},
-{
-    label: 'Failed To Ingest',
-    data: failedToIngestArrFPC,
-    backgroundColor: ['rgba(255, 99, 132, 1)', ],
-    borderColor: ['rgba(255, 99, 132, 1)', ],
-    borderWidth: 1
-},
-{
-    label: 'Removed After Failing to be Reingested',
-    data: removedArrFPC,
-    backgroundColor: ['rgba(255, 159, 64, 0.3)', ],
-    borderColor: [ 'rgba(255, 159, 64, 1)', ],
-    borderWidth: 1
-}];
+    const churnFPC = [{
+        label: 'Newly Ingested Numbers',
+        data: ingestedNewArrFPC,
+        borderWidth: 1
+    },
+    {
+        label: 'Failed To Ingest',
+        data: failedToIngestArrFPC,
+        backgroundColor: ['rgba(255, 99, 132, 1)',],
+        borderColor: ['rgba(255, 99, 132, 1)',],
+        borderWidth: 1
+    },
+    {
+        label: 'Removed After Failing to be Reingested',
+        data: removedArrFPC,
+        backgroundColor: ['rgba(255, 159, 64, 0.3)',],
+        borderColor: ['rgba(255, 159, 64, 1)',],
+        borderWidth: 1
+    }];
 
-@if (Model?.FirstPointComPriorityIngest is not null)
-{
-    var graphData = Model.FirstPointComPriorityIngest.OrderBy(x => x.StartDate);
-    @Html.Raw($"const numbersretrievedArrFPCP = {JsonSerializer.Serialize(graphData.Select(x => x.NumbersRetrived))};\n")     
-    @Html.Raw($"const ingestedNewArrFPCP = {JsonSerializer.Serialize(graphData.Select(x => x.IngestedNew))};\n")        
-    @Html.Raw($"const failedToIngestArrFPCP = {JsonSerializer.Serialize(graphData.Select(x => x.FailedToIngest))};\n")       
-    @Html.Raw($"const updatedExistingFPCP = {JsonSerializer.Serialize(graphData.Select(x => x.UpdatedExisting))};\n")     
-    @Html.Raw($"const removedArrFPCP = {JsonSerializer.Serialize(graphData.Select(x => x.Removed))};\n") 
-    @Html.Raw($"const dateArrFPCP = {JsonSerializer.Serialize(graphData.Select(x => x.StartDate.ToString("MM/dd h:mm tt")))};\n")
-}
-const inventoryFPCP = [{
-    label: 'Total Ingested',
-    data: numbersretrievedArrFPCP,
-    borderWidth: 1
-},
-{
-    label: 'New',
-    data: ingestedNewArrFPCP,
-    backgroundColor: ['rgba(75, 192, 192, 1)', ],
-    borderColor: ['rgba(75, 192, 192, 1)',],
-    borderWidth: 1
-},
-{
-    label: 'Updated',
-    data: updatedExistingFPCP,
-    backgroundColor: ['rgba(54, 162, 235, 0.3)', ],
-    borderColor: [ 'rgba(54, 162, 235, 1)', ],
-    borderWidth: 1
-}];
+    @if (Model?.FirstPointComPriorityIngest is not null)
+    {
+        var graphData = Model.FirstPointComPriorityIngest.OrderBy(x => x.StartDate);
+        @Html.Raw($"const numbersretrievedArrFPCP = {JsonSerializer.Serialize(graphData.Select(x => x.NumbersRetrived))};\n")
+        @Html.Raw($"const ingestedNewArrFPCP = {JsonSerializer.Serialize(graphData.Select(x => x.IngestedNew))};\n")
+        @Html.Raw($"const failedToIngestArrFPCP = {JsonSerializer.Serialize(graphData.Select(x => x.FailedToIngest))};\n")
+        @Html.Raw($"const updatedExistingFPCP = {JsonSerializer.Serialize(graphData.Select(x => x.UpdatedExisting))};\n")
+        @Html.Raw($"const removedArrFPCP = {JsonSerializer.Serialize(graphData.Select(x => x.Removed))};\n")
+        @Html.Raw($"const dateArrFPCP = {JsonSerializer.Serialize(graphData.Select(x => x.StartDate.ToString("MM/dd h:mm tt")))};\n")
+    }
+    const inventoryFPCP = [{
+        label: 'Total Ingested',
+        data: numbersretrievedArrFPCP,
+        borderWidth: 1
+    },
+    {
+        label: 'New',
+        data: ingestedNewArrFPCP,
+        backgroundColor: ['rgba(75, 192, 192, 1)',],
+        borderColor: ['rgba(75, 192, 192, 1)',],
+        borderWidth: 1
+    },
+    {
+        label: 'Updated',
+        data: updatedExistingFPCP,
+        backgroundColor: ['rgba(54, 162, 235, 0.3)',],
+        borderColor: ['rgba(54, 162, 235, 1)',],
+        borderWidth: 1
+    }];
 
-const churnFPCP = [{
-    label: 'Newly Ingested Numbers',
-    data: ingestedNewArrFPCP,
-    borderWidth: 1
-},
-{
-    label: 'Failed To Ingest',
-    data: failedToIngestArrFPCP,
-    backgroundColor: ['rgba(255, 99, 132, 1)', ],
-    borderColor: ['rgba(255, 99, 132, 1)', ],
-    borderWidth: 1
-},
-{
-    label: 'Removed After Failing to be Reingested',
-    data: removedArrFPCP,
-    backgroundColor: ['rgba(255, 159, 64, 0.3)', ],
-    borderColor: [ 'rgba(255, 159, 64, 1)', ],
-    borderWidth: 1
-}];
+    const churnFPCP = [{
+        label: 'Newly Ingested Numbers',
+        data: ingestedNewArrFPCP,
+        borderWidth: 1
+    },
+    {
+        label: 'Failed To Ingest',
+        data: failedToIngestArrFPCP,
+        backgroundColor: ['rgba(255, 99, 132, 1)',],
+        borderColor: ['rgba(255, 99, 132, 1)',],
+        borderWidth: 1
+    },
+    {
+        label: 'Removed After Failing to be Reingested',
+        data: removedArrFPCP,
+        backgroundColor: ['rgba(255, 159, 64, 0.3)',],
+        borderColor: ['rgba(255, 159, 64, 1)',],
+        borderWidth: 1
+    }];
 
-@if (Model?.BulkVSIngest is not null)
-{
-    var graphData = Model.BulkVSIngest.OrderBy(x => x.StartDate);
-    @Html.Raw($"const numbersretrievedArrBVS = {JsonSerializer.Serialize(graphData.Select(x => x.NumbersRetrived))};\n")     
-    @Html.Raw($"const ingestedNewArrBVS = {JsonSerializer.Serialize(graphData.Select(x => x.IngestedNew))};\n")        
-    @Html.Raw($"const failedToIngestArrBVS = {JsonSerializer.Serialize(graphData.Select(x => x.FailedToIngest))};\n")       
-    @Html.Raw($"const updatedExistingBVS = {JsonSerializer.Serialize(graphData.Select(x => x.UpdatedExisting))};\n")     
-    @Html.Raw($"const removedArrBVS = {JsonSerializer.Serialize(graphData.Select(x => x.Removed))};\n") 
-    @Html.Raw($"const dateArrBVS = {JsonSerializer.Serialize(graphData.Select(x => x.StartDate.ToString("MM/dd h:mm tt")))};\n")
-}
-const inventoryBVS = [{
-    label: 'Total Ingested',
-    data: numbersretrievedArrBVS,
-    borderWidth: 1
-},
-{
-    label: 'New',
-    data: ingestedNewArrBVS,
-    backgroundColor: ['rgba(75, 192, 192, 1)', ],
-    borderColor: ['rgba(75, 192, 192, 1)',],
-    borderWidth: 1
-},
-{
-    label: 'Updated',
-    data: updatedExistingBVS,
-    backgroundColor: ['rgba(54, 162, 235, 0.3)', ],
-    borderColor: [ 'rgba(54, 162, 235, 1)', ],
-    borderWidth: 1
-}];
+    @if (Model?.BulkVSIngest is not null)
+    {
+        var graphData = Model.BulkVSIngest.OrderBy(x => x.StartDate);
+        @Html.Raw($"const numbersretrievedArrBVS = {JsonSerializer.Serialize(graphData.Select(x => x.NumbersRetrived))};\n")
+        @Html.Raw($"const ingestedNewArrBVS = {JsonSerializer.Serialize(graphData.Select(x => x.IngestedNew))};\n")
+        @Html.Raw($"const failedToIngestArrBVS = {JsonSerializer.Serialize(graphData.Select(x => x.FailedToIngest))};\n")
+        @Html.Raw($"const updatedExistingBVS = {JsonSerializer.Serialize(graphData.Select(x => x.UpdatedExisting))};\n")
+        @Html.Raw($"const removedArrBVS = {JsonSerializer.Serialize(graphData.Select(x => x.Removed))};\n")
+        @Html.Raw($"const dateArrBVS = {JsonSerializer.Serialize(graphData.Select(x => x.StartDate.ToString("MM/dd h:mm tt")))};\n")
+    }
+    const inventoryBVS = [{
+        label: 'Total Ingested',
+        data: numbersretrievedArrBVS,
+        borderWidth: 1
+    },
+    {
+        label: 'New',
+        data: ingestedNewArrBVS,
+        backgroundColor: ['rgba(75, 192, 192, 1)',],
+        borderColor: ['rgba(75, 192, 192, 1)',],
+        borderWidth: 1
+    },
+    {
+        label: 'Updated',
+        data: updatedExistingBVS,
+        backgroundColor: ['rgba(54, 162, 235, 0.3)',],
+        borderColor: ['rgba(54, 162, 235, 1)',],
+        borderWidth: 1
+    }];
 
-const churnBVS = [{
-    label: 'Newly Ingested Numbers',
-    data: ingestedNewArrBVS,
-    borderWidth: 1
-},
-{
-    label: 'Failed To Ingest',
-    data: failedToIngestArrBVS,
-    backgroundColor: ['rgba(255, 99, 132, 1)', ],
-    borderColor: ['rgba(255, 99, 132, 1)', ],
-    borderWidth: 1
-},
-{
-    label: 'Removed After Failing to be Reingested',
-    data: removedArrBVS,
-    backgroundColor: ['rgba(255, 159, 64, 0.3)', ],
-    borderColor: [ 'rgba(255, 159, 64, 1)', ],
-    borderWidth: 1
-}];
+    const churnBVS = [{
+        label: 'Newly Ingested Numbers',
+        data: ingestedNewArrBVS,
+        borderWidth: 1
+    },
+    {
+        label: 'Failed To Ingest',
+        data: failedToIngestArrBVS,
+        backgroundColor: ['rgba(255, 99, 132, 1)',],
+        borderColor: ['rgba(255, 99, 132, 1)',],
+        borderWidth: 1
+    },
+    {
+        label: 'Removed After Failing to be Reingested',
+        data: removedArrBVS,
+        backgroundColor: ['rgba(255, 159, 64, 0.3)',],
+        borderColor: ['rgba(255, 159, 64, 1)',],
+        borderWidth: 1
+    }];
 
-@if (Model?.BulkVSPriorityIngest is not null)
-{
-    var graphData = Model.BulkVSPriorityIngest.OrderBy(x => x.StartDate);
-    @Html.Raw($"const numbersretrievedArrBVSP = {JsonSerializer.Serialize(graphData.Select(x => x.NumbersRetrived))};\n")     
-    @Html.Raw($"const ingestedNewArrBVSP = {JsonSerializer.Serialize(graphData.Select(x => x.IngestedNew))};\n")        
-    @Html.Raw($"const failedToIngestArrBVSP = {JsonSerializer.Serialize(graphData.Select(x => x.FailedToIngest))};\n")       
-    @Html.Raw($"const updatedExistingBVSP = {JsonSerializer.Serialize(graphData.Select(x => x.UpdatedExisting))};\n")     
-    @Html.Raw($"const removedArrBVSP = {JsonSerializer.Serialize(graphData.Select(x => x.Removed))};\n") 
-    @Html.Raw($"const dateArrBVSP = {JsonSerializer.Serialize(graphData.Select(x => x.StartDate.ToString("MM/dd h:mm tt")))};\n")
-}
-const inventoryBVSP = [{
-    label: 'Total Ingested',
-    data: numbersretrievedArrBVSP,
-    borderWidth: 1
-},
-{
-    label: 'New',
-    data: ingestedNewArrBVSP,
-    backgroundColor: ['rgba(75, 192, 192, 1)', ],
-    borderColor: ['rgba(75, 192, 192, 1)',],
-    borderWidth: 1
-},
-{
-    label: 'Updated',
-    data: updatedExistingBVSP,
-    backgroundColor: ['rgba(54, 162, 235, 0.3)', ],
-    borderColor: [ 'rgba(54, 162, 235, 1)', ],
-    borderWidth: 1
-}];
+    @if (Model?.BulkVSPriorityIngest is not null)
+    {
+        var graphData = Model.BulkVSPriorityIngest.OrderBy(x => x.StartDate);
+        @Html.Raw($"const numbersretrievedArrBVSP = {JsonSerializer.Serialize(graphData.Select(x => x.NumbersRetrived))};\n")
+        @Html.Raw($"const ingestedNewArrBVSP = {JsonSerializer.Serialize(graphData.Select(x => x.IngestedNew))};\n")
+        @Html.Raw($"const failedToIngestArrBVSP = {JsonSerializer.Serialize(graphData.Select(x => x.FailedToIngest))};\n")
+        @Html.Raw($"const updatedExistingBVSP = {JsonSerializer.Serialize(graphData.Select(x => x.UpdatedExisting))};\n")
+        @Html.Raw($"const removedArrBVSP = {JsonSerializer.Serialize(graphData.Select(x => x.Removed))};\n")
+        @Html.Raw($"const dateArrBVSP = {JsonSerializer.Serialize(graphData.Select(x => x.StartDate.ToString("MM/dd h:mm tt")))};\n")
+    }
+    const inventoryBVSP = [{
+        label: 'Total Ingested',
+        data: numbersretrievedArrBVSP,
+        borderWidth: 1
+    },
+    {
+        label: 'New',
+        data: ingestedNewArrBVSP,
+        backgroundColor: ['rgba(75, 192, 192, 1)',],
+        borderColor: ['rgba(75, 192, 192, 1)',],
+        borderWidth: 1
+    },
+    {
+        label: 'Updated',
+        data: updatedExistingBVSP,
+        backgroundColor: ['rgba(54, 162, 235, 0.3)',],
+        borderColor: ['rgba(54, 162, 235, 1)',],
+        borderWidth: 1
+    }];
 
-const churnBVSP = [{
-    label: 'Newly Ingested Numbers',
-    data: ingestedNewArrBVSP,
-    borderWidth: 1
-},
-{
-    label: 'Failed To Ingest',
-    data: failedToIngestArrBVSP,
-    backgroundColor: ['rgba(255, 99, 132, 1)', ],
-    borderColor: ['rgba(255, 99, 132, 1)', ],
-    borderWidth: 1
-},
-{
-    label: 'Removed After Failing to be Reingested',
-    data: removedArrBVSP,
-    backgroundColor: ['rgba(255, 159, 64, 0.3)', ],
-    borderColor: [ 'rgba(255, 159, 64, 1)', ],
-    borderWidth: 1
-}];
+    const churnBVSP = [{
+        label: 'Newly Ingested Numbers',
+        data: ingestedNewArrBVSP,
+        borderWidth: 1
+    },
+    {
+        label: 'Failed To Ingest',
+        data: failedToIngestArrBVSP,
+        backgroundColor: ['rgba(255, 99, 132, 1)',],
+        borderColor: ['rgba(255, 99, 132, 1)',],
+        borderWidth: 1
+    },
+    {
+        label: 'Removed After Failing to be Reingested',
+        data: removedArrBVSP,
+        backgroundColor: ['rgba(255, 159, 64, 0.3)',],
+        borderColor: ['rgba(255, 159, 64, 1)',],
+        borderWidth: 1
+    }];
 
 </script>
 
@@ -260,176 +260,176 @@ const churnBVSP = [{
                 {
                     <div class="alert alert-danger" role="alert">
                         ❌ @last
-                        </div>
+                    </div>
                 }
                 else
                 {
                     <div class="alert alert-success" role="alert">
                         @last
-                        </div>
+                    </div>
                 }
-             }
-                    <h4 class="">
-                        Priority Area Code Health (@Model?.PriorityAreaCodes.Count(x => x.Count > 30) of @Model?.PriorityAreaCodes.Length Healthy)
-                    </h4>
-                    <div class="table-responsive shadow mt-3">
-                        <table class="table table-hover table-striped table-borderless">
-                            <thead>
-                                <tr>
-                                    <th>Area Code</th>
-                                        @if (Model?.PriorityAreaCodes is not null)
-                                        {
-                                            foreach (var code in Model.PriorityAreaCodes)
-                                            {
-                                                <th>
-                                                    (@code.NPA)
-                                                </th>
-                                            }
-                                        }
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Count</td>
-                                        @if (Model?.PriorityAreaCodes is not null)
-                                        {
-                                            foreach (var code in Model.PriorityAreaCodes)
-                                            {
-                                                if (code.Count is 0)
-                                                {
-                                                    <td>
-                                                        <a href="https://ops.acceleratenetworks.com/Numbers?Query=@code.NPA*******">@code.Count</a> ❌
-                                                    </td>
-                                                }
-                                                else
-                                                {
-                                                    <td>
-                                                        <a href="https://ops.acceleratenetworks.com/Numbers?Query=@code.NPA*******">@code.Count</a>
-                                                    </td>
-                                                }
-                                            }
-                                        }
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                                        <h4 class="pt-4">
-                        Area Code Health (@Model?.AreaCodes.Count(x => x.Count > 30) of @Model?.AreaCodes.Length Healthy)
-                    </h4>
-                    <div class="table-responsive shadow mt-3">
-                        <table class="table table-hover table-striped table-borderless">
-                            <thead>
-                                <tr>
-                                    <th>Area Code</th>
-                                        @if (Model?.AreaCodes is not null)
-                                        {
-                                            foreach (var code in Model.AreaCodes)
-                                            {
-                                                <th>
-                                                    (@code.NPA)
-                                                </th>
-                                            }
-                                        }
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Count</td>
-                                        @if (Model?.AreaCodes is not null)
-                                        {
-                                            foreach (var code in Model.AreaCodes)
-                                            {
-                                                <td>
-                                                    <a href="https://ops.acceleratenetworks.com/Numbers?Query=@code.NPA*******">@code.Count</a>
-                                                </td>
-                                            }
-                                        }
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="row">
-                        <div class="col pt-4">
-                            <h4>FirstPointCom Ingests</h4>
-                            <div class="btn-group btn-group-toggle pb-3" data-toggle="buttons">
-                                <label class="btn btn-outline-secondary active">
-                                    <input type="radio" name="options" id="option1" checked onclick="showInventoryFPC()"> Inventory
-                                </label>
-                                <label class="btn btn-outline-secondary">
-                                    <input type="radio" name="options" id="option2" onclick="showChurnFPC()"> Churn
-                                </label>
-                            </div>
-                            <canvas id="firstPointComIngests" width="400" height="200" class="pb-3"></canvas>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <h4>FirstPointCom Priority Ingests</h4>                             
-                            <div class="btn-group btn-group-toggle pb-3" data-toggle="buttons">
-                                <label class="btn btn-outline-secondary active">
-                                    <input type="radio" name="options" id="option1" checked onclick="showInventoryFPCP()"> Inventory
-                                </label>
-                                <label class="btn btn-outline-secondary">
-                                    <input type="radio" name="options" id="option2" onclick="showChurnFPCP()"> Churn
-                                </label>
-                            </div>
-                            <canvas id="firstPointComPriorityIngests" width="400" height="200" class="pb-3"></canvas>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <h4>BulkVS Ingests</h4>
-                            <div class="btn-group btn-group-toggle pb-3" data-toggle="buttons">
-                                <label class="btn btn-outline-secondary active">
-                                    <input type="radio" name="options" id="option1" checked onclick="showInventoryBVS()"> Inventory
-                                </label>
-                                <label class="btn btn-outline-secondary">
-                                    <input type="radio" name="options" id="option2" onclick="showChurnBVS()"> Churn
-                                </label>
-                            </div>
-                            <canvas id="bulkVSIngests" width="400" height="200" class="pb-3"></canvas>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <h4>BulkVS Priority Ingests</h4>
-                            <div class="btn-group btn-group-toggle pb-3" data-toggle="buttons">
-                                <label class="btn btn-outline-secondary active">
-                                    <input type="radio" name="options" id="option1" checked onclick="showInventoryBVSP()"> Inventory
-                                </label>
-                                <label class="btn btn-outline-secondary">
-                                    <input type="radio" name="options" id="option2" onclick="showChurnBVSP()"> Churn
-                                </label>
-                            </div>
-                            <canvas id="bulkVSPriorityIngests" width="400" height="200" class="pb-3"></canvas>
-                        </div>
-                    </div>
-                    <h4 class="pb-3 pt-3">
-                        Logged Ingests
-                    </h4>
-                    <div class="table-responsive shadow">
-                        <table class="table table-hover table-striped table-borderless">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Ingested From</th>
-                                    <th scope="col">Numbers retrieved</th>
-                                    <th scope="col">Ingested New</th>
-                                    <th scope="col">Failed to Ingest</th>
-                                    <th scope="col">Updated Existing</th>
-                                    <th scope="col">Unchanged</th>
-                                    <th scope="col">Removed</th>
-                                    <th scope="col">Minutes Elapsed</th>
-                                    <th scope="col">Start Date</th>
-                                    <th scope="col">End Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            @if (Model?.Ingests is not null)
+            }
+            <h4 class="">
+                Priority Area Code Health (@Model?.PriorityAreaCodes.Count(x => x.Count > 30) of @Model?.PriorityAreaCodes.Length Healthy)
+            </h4>
+            <div class="table-responsive shadow mt-3">
+                <table class="table table-hover table-striped table-borderless">
+                    <thead>
+                        <tr>
+                            <th>Area Code</th>
+                            @if (Model?.PriorityAreaCodes is not null)
                             {
-                                foreach (var ingest in Model.Ingests.Take(31))
+                                foreach (var code in Model.PriorityAreaCodes)
                                 {
-                                    var timeElapsed = ingest.StartDate - ingest.EndDate;
-                                    <tr>
+                                    <th>
+                                        (@code.NPA)
+                                    </th>
+                                }
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Count</td>
+                            @if (Model?.PriorityAreaCodes is not null)
+                            {
+                                foreach (var code in Model.PriorityAreaCodes)
+                                {
+                                    if (code.Count is 0)
+                                    {
+                                        <td>
+                                            <a href="https://ops.acceleratenetworks.com/Numbers?Query=@code.NPA*******">@code.Count</a> ❌
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td>
+                                            <a href="https://ops.acceleratenetworks.com/Numbers?Query=@code.NPA*******">@code.Count</a>
+                                        </td>
+                                    }
+                                }
+                            }
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <h4 class="pt-4">
+                Area Code Health (@Model?.AreaCodes.Count(x => x.Count > 30) of @Model?.AreaCodes.Length Healthy)
+            </h4>
+            <div class="table-responsive shadow mt-3">
+                <table class="table table-hover table-striped table-borderless">
+                    <thead>
+                        <tr>
+                            <th>Area Code</th>
+                            @if (Model?.AreaCodes is not null)
+                            {
+                                foreach (var code in Model.AreaCodes)
+                                {
+                                    <th>
+                                        (@code.NPA)
+                                    </th>
+                                }
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Count</td>
+                            @if (Model?.AreaCodes is not null)
+                            {
+                                foreach (var code in Model.AreaCodes)
+                                {
+                                    <td>
+                                        <a href="https://ops.acceleratenetworks.com/Numbers?Query=@code.NPA*******">@code.Count</a>
+                                    </td>
+                                }
+                            }
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="row">
+                <div class="col pt-4">
+                    <h4>FirstPointCom Ingests</h4>
+                    <div class="btn-group btn-group-toggle pb-3" data-toggle="buttons">
+                        <label class="btn btn-outline-secondary active">
+                            <input type="radio" name="options" id="option1" checked onclick="showInventoryFPC()"> Inventory
+                        </label>
+                        <label class="btn btn-outline-secondary">
+                            <input type="radio" name="options" id="option2" onclick="showChurnFPC()"> Churn
+                        </label>
+                    </div>
+                    <canvas id="firstPointComIngests" width="400" height="200" class="pb-3"></canvas>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <h4>FirstPointCom Priority Ingests</h4>
+                    <div class="btn-group btn-group-toggle pb-3" data-toggle="buttons">
+                        <label class="btn btn-outline-secondary active">
+                            <input type="radio" name="options" id="option1" checked onclick="showInventoryFPCP()"> Inventory
+                        </label>
+                        <label class="btn btn-outline-secondary">
+                            <input type="radio" name="options" id="option2" onclick="showChurnFPCP()"> Churn
+                        </label>
+                    </div>
+                    <canvas id="firstPointComPriorityIngests" width="400" height="200" class="pb-3"></canvas>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <h4>BulkVS Ingests</h4>
+                    <div class="btn-group btn-group-toggle pb-3" data-toggle="buttons">
+                        <label class="btn btn-outline-secondary active">
+                            <input type="radio" name="options" id="option1" checked onclick="showInventoryBVS()"> Inventory
+                        </label>
+                        <label class="btn btn-outline-secondary">
+                            <input type="radio" name="options" id="option2" onclick="showChurnBVS()"> Churn
+                        </label>
+                    </div>
+                    <canvas id="bulkVSIngests" width="400" height="200" class="pb-3"></canvas>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <h4>BulkVS Priority Ingests</h4>
+                    <div class="btn-group btn-group-toggle pb-3" data-toggle="buttons">
+                        <label class="btn btn-outline-secondary active">
+                            <input type="radio" name="options" id="option1" checked onclick="showInventoryBVSP()"> Inventory
+                        </label>
+                        <label class="btn btn-outline-secondary">
+                            <input type="radio" name="options" id="option2" onclick="showChurnBVSP()"> Churn
+                        </label>
+                    </div>
+                    <canvas id="bulkVSPriorityIngests" width="400" height="200" class="pb-3"></canvas>
+                </div>
+            </div>
+            <h4 class="pb-3 pt-3">
+                Logged Ingests
+            </h4>
+            <div class="table-responsive shadow">
+                <table class="table table-hover table-striped table-borderless">
+                    <thead>
+                        <tr>
+                            <th scope="col">Ingested From</th>
+                            <th scope="col">Numbers retrieved</th>
+                            <th scope="col">Ingested New</th>
+                            <th scope="col">Failed to Ingest</th>
+                            <th scope="col">Updated Existing</th>
+                            <th scope="col">Unchanged</th>
+                            <th scope="col">Removed</th>
+                            <th scope="col">Minutes Elapsed</th>
+                            <th scope="col">Start Date</th>
+                            <th scope="col">End Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model?.Ingests is not null)
+                        {
+                            foreach (var ingest in Model.Ingests.Take(31))
+                            {
+                                var timeElapsed = ingest.StartDate - ingest.EndDate;
+                                <tr>
                                     @{
                                         if (ingest?.IngestedFrom == "All")
                                         {
@@ -456,9 +456,11 @@ const churnBVSP = [{
                                                 badge = $"<span class='badge badge-success'>Complete</span>";
                                             }
                                             <td><h5>@ingest?.IngestedFrom</h5> @Html.Raw(badge)</td>
-                                            if(ingest?.NumbersRetrived > 0){
+                                            if (ingest?.NumbersRetrived > 0)
+                                            {
                                                 <td>@ingest!.NumbersRetrived</td>
-                                            } else
+                                            }
+                                            else
                                             {
                                                 <td>❌ @ingest!.NumbersRetrived</td>
                                             }
@@ -472,15 +474,15 @@ const churnBVSP = [{
                                             <td>@ingest?.EndDate</td>
                                         }
                                     }
-                                    </tr>
-                                }
+                                </tr>
                             }
-                        </tbody>
-                    </table>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <h4 class="pb-3 pt-3">Provider Health</h4>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <h4 class="pb-3 pt-3">Provider Health</h4>
                     <div class="table-responsive shadow">
                         <table class="table table-hover table-striped table-borderless">
                             <thead>
@@ -519,86 +521,86 @@ const churnBVSP = [{
                                         <tr>
                                             <td>@provider</td>
                                             <td>
-                                            @{
-                                                decimal total = Convert.ToDecimal(Model?.TotalPhoneNumbers);
-                                                decimal portion = 0M;
-                                                if (currentCount?.Count > 0)
-                                                {
-                                                    portion = (currentCount.Count / total) * 100M;
-                                                }
-                                            }
-                                            @currentCount?.Count (@portion.ToString("F") %)
-                                            </td>
-                                            <td>
-                                            @{
-                                                var output = $"{ingests.Count()} per day";
-                                            }
-                                            @output
-                                            </td>
-                                            <td>
-                                            @{
-                                                var runTimes = new List<TimeSpan>();
-                                                foreach (var ingest in ingests)
-                                                {
-                                                    runTimes.Add(ingest.EndDate - ingest.StartDate);
-                                                }
-                                                var formattedRunTime = string.Empty;
-                                                // https://stackoverflow.com/questions/8847679/find-average-of-collection-of-timespans
-                                                if (runTimes.Count > 0)
-                                                {
-                                                    var doubleTicks = runTimes?.Average(x => x.Ticks);
-                                                    var longTicks = Convert.ToInt64(doubleTicks);
-                                                    var averageRunTime = new TimeSpan(longTicks);
-                                                    if (averageRunTime.Hours > 0)
+                                                @{
+                                                    decimal total = Convert.ToDecimal(Model?.TotalPhoneNumbers);
+                                                    decimal portion = 0M;
+                                                    if (currentCount?.Count > 0)
                                                     {
-                                                        formattedRunTime = $"{averageRunTime.ToString(@"hh\:mm\:ss")}";
+                                                        portion = (currentCount.Count / total) * 100M;
+                                                    }
+                                                }
+                                                @currentCount?.Count (@portion.ToString("F") %)
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var output = $"{ingests.Count()} per day";
+                                                }
+                                                @output
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var runTimes = new List<TimeSpan>();
+                                                    foreach (var ingest in ingests)
+                                                    {
+                                                        runTimes.Add(ingest.EndDate - ingest.StartDate);
+                                                    }
+                                                    var formattedRunTime = string.Empty;
+                                                    // https://stackoverflow.com/questions/8847679/find-average-of-collection-of-timespans
+                                                    if (runTimes.Count > 0)
+                                                    {
+                                                        var doubleTicks = runTimes?.Average(x => x.Ticks);
+                                                        var longTicks = Convert.ToInt64(doubleTicks);
+                                                        var averageRunTime = new TimeSpan(longTicks);
+                                                        if (averageRunTime.Hours > 0)
+                                                        {
+                                                            formattedRunTime = $"{averageRunTime.ToString(@"hh\:mm\:ss")}";
 
+                                                        }
+                                                        else
+                                                        {
+                                                            formattedRunTime = $"{averageRunTime.ToString(@"hh\:mm\:ss")}";
+                                                        }
                                                     }
                                                     else
                                                     {
-                                                        formattedRunTime = $"{averageRunTime.ToString(@"hh\:mm\:ss")}";
+                                                        formattedRunTime = "None";
                                                     }
                                                 }
-                                                else
-                                                {
-                                                    formattedRunTime = "None";
-                                                }
-                                            }
-                                            @formattedRunTime
+                                                @formattedRunTime
                                             </td>
                                             <td>
-                                            @{
-                                                var runTimesSeven = new List<TimeSpan>();
-                                                foreach (var ingest in ingestsSeven)
-                                                {
-                                                    runTimesSeven.Add(ingest.EndDate - ingest.StartDate);
-                                                }
-                                                var formattedLongest = string.Empty;
-                                                if (runTimesSeven.Count() > 0)
-                                                {
-                                                    var longest = runTimesSeven.Max();
-                                                    if (longest.Hours > 0)
+                                                @{
+                                                    var runTimesSeven = new List<TimeSpan>();
+                                                    foreach (var ingest in ingestsSeven)
                                                     {
-                                                        formattedLongest = $"{longest.ToString(@"hh\:mm\:ss")}";
+                                                        runTimesSeven.Add(ingest.EndDate - ingest.StartDate);
+                                                    }
+                                                    var formattedLongest = string.Empty;
+                                                    if (runTimesSeven.Count() > 0)
+                                                    {
+                                                        var longest = runTimesSeven.Max();
+                                                        if (longest.Hours > 0)
+                                                        {
+                                                            formattedLongest = $"{longest.ToString(@"hh\:mm\:ss")}";
+                                                        }
+                                                        else
+                                                        {
+                                                            formattedLongest = $"{longest.ToString(@"hh\:mm\:ss")}";
+                                                        }
                                                     }
                                                     else
                                                     {
-                                                        formattedLongest = $"{longest.ToString(@"hh\:mm\:ss")}";
+                                                        formattedRunTime = "None";
                                                     }
                                                 }
-                                                else
-                                                {
-                                                    formattedRunTime = "None";
-                                                }
-                                            }
-                                            @formattedLongest
+                                                @formattedLongest
                                             </td>
                                             <td>
-                                            @{
-                                                var churn = ingests.Count() > 0 ? ingests?.Average(x => x.Removed) : 0;
-                                                var formattedChurn = $"{churn!.Value.ToString("F0")} Numbers Removed";
-                                            }
-                                            @formattedChurn
+                                                @{
+                                                    var churn = ingests.Count() > 0 ? ingests?.Average(x => x.Removed) : 0;
+                                                    var formattedChurn = $"{churn!.Value.ToString("F0")} Numbers Removed";
+                                                }
+                                                @formattedChurn
                                             </td>
                                         </tr>
                                     }
@@ -606,11 +608,116 @@ const churnBVSP = [{
                             </tbody>
                         </table>
                     </div>
-                    </div>
                 </div>
-                <div class="row pt-4 pb-4">
-                    <div class="col">
-                                            <h4>@Model?.TotalPhoneNumbers Phone Numbers in Inventory</h4>
+            </div>
+            <h4 class="pt-4">
+                Owned Numbers by Area Code (@Model?.OwnedAreaCodes.Sum(x => x.Count) Total)
+            </h4>
+            <div class="table-responsive shadow mt-3">
+                <table class="table table-hover table-striped table-borderless">
+                    <thead>
+                        <tr>
+                            <th>Area Code</th>
+                            @if (Model?.OwnedAreaCodes is not null)
+                            {
+                                foreach (var code in Model.OwnedAreaCodes)
+                                {
+                                    <th>
+                                        (@code.NPA)
+                                    </th>
+                                }
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Count</td>
+                            @if (Model?.OwnedAreaCodes is not null)
+                            {
+                                foreach (var code in Model.OwnedAreaCodes)
+                                {
+                                    <td>
+                                        <a href="https://ops.acceleratenetworks.com/Numbers?Query=@code.NPA*******">@code.Count</a>
+                                    </td>
+                                }
+                            }
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <h4 class="pt-4">
+                BulkVS Numbers by Area Code (@Model?.BulkVSAreaCodes.Sum(x => x.Count) Total)
+            </h4>
+            <div class="table-responsive shadow mt-3">
+                <table class="table table-hover table-striped table-borderless">
+                    <thead>
+                        <tr>
+                            <th>Area Code</th>
+                            @if (Model?.BulkVSAreaCodes is not null)
+                            {
+                                foreach (var code in Model.BulkVSAreaCodes)
+                                {
+                                    <th>
+                                        (@code.NPA)
+                                    </th>
+                                }
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Count</td>
+                            @if (Model?.BulkVSAreaCodes is not null)
+                            {
+                                foreach (var code in Model.BulkVSAreaCodes)
+                                {
+                                    <td>
+                                        <a href="https://ops.acceleratenetworks.com/Numbers?Query=@code.NPA*******">@code.Count</a>
+                                    </td>
+                                }
+                            }
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <h4 class="pt-4">
+                FirstPointCom Numbers by Area Code (@Model?.FirstPointComAreaCodes.Sum(x => x.Count) Total)
+            </h4>
+            <div class="table-responsive shadow mt-3">
+                <table class="table table-hover table-striped table-borderless">
+                    <thead>
+                        <tr>
+                            <th>Area Code</th>
+                            @if (Model?.FirstPointComAreaCodes is not null)
+                            {
+                                foreach (var code in Model.FirstPointComAreaCodes)
+                                {
+                                    <th>
+                                        (@code.NPA)
+                                    </th>
+                                }
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Count</td>
+                            @if (Model?.FirstPointComAreaCodes is not null)
+                            {
+                                foreach (var code in Model.FirstPointComAreaCodes)
+                                {
+                                    <td>
+                                        <a href="https://ops.acceleratenetworks.com/Numbers?Query=@code.NPA*******">@code.Count</a>
+                                    </td>
+                                }
+                            }
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="row pt-4 pb-4">
+                <div class="col">
+                    <h4>@Model?.TotalPhoneNumbers Phone Numbers in Inventory</h4>
                     <div class="table-responsive shadow mt-3">
                         <table class="table table-hover table-striped table-borderless">
                             <thead>
@@ -687,8 +794,8 @@ const churnBVSP = [{
                             </tbody>
                         </table>
                     </div>
-                    </div>
                 </div>
+            </div>
         </div>
     </div>
 </div>
@@ -723,7 +830,7 @@ const churnBVSP = [{
         chartFPC.update();
     }
 
-        var fpcp = document.getElementById('firstPointComPriorityIngests');
+    var fpcp = document.getElementById('firstPointComPriorityIngests');
     const chartFPCP = new Chart(fpcp, {
         type: 'line',
         data: {
@@ -751,7 +858,7 @@ const churnBVSP = [{
         chartFPCP.update();
     }
 
-            var bvs = document.getElementById('bulkVSIngests');
+    var bvs = document.getElementById('bulkVSIngests');
     const chartBVS = new Chart(bvs, {
         type: 'line',
         data: {
@@ -779,7 +886,7 @@ const churnBVSP = [{
         chartBVS.update();
     }
 
-                var bvsp = document.getElementById('bulkVSPriorityIngests');
+    var bvsp = document.getElementById('bulkVSPriorityIngests');
     const chartBVSP = new Chart(bvsp, {
         type: 'line',
         data: {

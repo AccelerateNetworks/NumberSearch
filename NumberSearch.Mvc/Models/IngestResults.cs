@@ -12,6 +12,9 @@ namespace NumberSearch.Mvc
         public PhoneNumber.CountByProvider[] CurrentState { get; set; } = [];
         public PhoneNumber.CountNPA[] AreaCodes { get; set; } = [];
         public PhoneNumber.CountNPA[] PriorityAreaCodes { get; set; } = [];
+        public PhoneNumber.CountNPA[] OwnedAreaCodes { get; set; } = [];
+        public PhoneNumber.CountNPA[] BulkVSAreaCodes { get; set; } = [];
+        public PhoneNumber.CountNPA[] FirstPointComAreaCodes { get; set; } = [];
         public int TotalPhoneNumbers { get; set; }
         public int TotalExecutiveNumbers { get; set; }
         public int TotalPremiumNumbers { get; set; }

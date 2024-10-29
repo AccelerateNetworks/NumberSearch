@@ -5,7 +5,6 @@ using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.Models;
 using NumberSearch.Mvc.Models;
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -30,6 +29,10 @@ namespace NumberSearch.Mvc.Controllers
             var currentState = await PhoneNumber.GetCountAllProvider(_postgresql);
             var numberTypeCounts = await PhoneNumber.GetCountAllNumberType(_postgresql);
             var numbersByAreaCode = await PhoneNumber.GetCountAllAreaCode(_postgresql);
+            var npasOwned = await PhoneNumber.GetCountAllAreaCodeOwnedNumber(_postgresql);
+            var npasBulkVS = await PhoneNumber.GetCountAllAreaCodeBulkVS(_postgresql);
+            var npasFPC = await PhoneNumber.GetCountAllAreaCodeFPC(_postgresql);
+
             List<PhoneNumber.CountNPA> priority = [];
             foreach (var code in AreaCode.Priority)
             {
@@ -53,6 +56,9 @@ namespace NumberSearch.Mvc.Controllers
                 CurrentState = currentState,
                 AreaCodes = numbersByAreaCode,
                 PriorityAreaCodes = [.. priority],
+                OwnedAreaCodes = [.. npasOwned],
+                BulkVSAreaCodes = [.. npasBulkVS],
+                FirstPointComAreaCodes = [.. npasFPC],
                 TotalPhoneNumbers = total,
                 TotalExecutiveNumbers = numberTypeCounts.Where(x => x.NumberType == "Executive").Select(x => x.Count).FirstOrDefault(),
                 TotalPremiumNumbers = numberTypeCounts.Where(x => x.NumberType == "Premium").Select(x => x.Count).FirstOrDefault(),
