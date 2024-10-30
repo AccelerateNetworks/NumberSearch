@@ -90,12 +90,11 @@ namespace NumberSearch.Tests
         //    await PortRequests.UpdateStatusesBulkVSAsync(ingestConfiguration);
         //}
 
-
-        [Fact]
-        public async Task TestFirstPointComIngest()
-        {
-            await Provider.FirstPointComPriorityAsync(ingestConfiguration);
-        }
+        //[Fact]
+        //public async Task TestFirstPointComIngest()
+        //{
+        //    await Provider.FirstPointComPriorityAsync(ingestConfiguration);
+        //}
 
         //[Fact]
         //public async Task TestCheckForQuoteConversionsAsync()

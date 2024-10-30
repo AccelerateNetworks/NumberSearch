@@ -592,16 +592,16 @@ namespace NumberSearch.Tests
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
-        //[Fact]
-        //public async Task FirstComGetRouteSMSToEPIDTestAsync()
-        //{
-        //    var result = await FirstCom.FirstPointComSMS.RouteSMSToEPIDByDialedNumberAsync("12069574634", 265, pComNetCredentials.Username, pComNetCredentials.Password);
+        [Fact]
+        public async Task FirstComGetRouteSMSToEPIDTestAsync()
+        {
+            var result = await FirstCom.FirstPointComSMS.RouteSMSToEPIDByDialedNumberAsync("12069574634", 265, pComNetCredentials.Username, pComNetCredentials.Password);
 
-        //    Assert.NotNull(result);
-        //    Assert.True(result.text is "Routed OK!");
-        //    Assert.True(result.code is 0);
-        //    output.WriteLine(JsonSerializer.Serialize(result));
-        //}
+            Assert.NotNull(result);
+            Assert.True(result.text is "Routed OK!");
+            Assert.True(result.code is 0);
+            output.WriteLine(JsonSerializer.Serialize(result));
+        }
 
         [Fact]
         public async Task BulkVSRESTNpaNxxGetAsyncTestAsync()

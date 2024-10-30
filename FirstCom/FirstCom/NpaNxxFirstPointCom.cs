@@ -26,7 +26,8 @@ namespace FirstCom
                 NXX = nxx,
                 RateCenter = string.Empty
             };
-            var ReturnAmount = 1000;
+            // Limited to 100 results at the moment.
+            var ReturnAmount = 100;
 
 
             using var client = new DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
