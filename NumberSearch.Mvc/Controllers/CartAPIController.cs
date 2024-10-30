@@ -636,8 +636,6 @@ namespace NumberSearch.Mvc.Controllers
             var phoneNumber = await DataAccess.PhoneNumber.GetAsync(dialedPhoneNumber, _postgresql).ConfigureAwait(false);
             var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), DialedNumber = phoneNumber.DialedNumber, Quantity = 1 };
 
-            var purchasable = false;
-
             // Check that the number is still avalible from the provider.
             if (phoneNumber.IngestedFrom == "BulkVS")
             {
@@ -646,7 +644,6 @@ namespace NumberSearch.Mvc.Controllers
                 var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
                 if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
                 {
-                    purchasable = true;
                     Log.Information($"[BulkVS] Found {phoneNumber.DialedNumber} in {doesItStillExist.Length} results returned for {npanxx}.");
                 }
                 else
@@ -687,7 +684,6 @@ namespace NumberSearch.Mvc.Controllers
                 var matchingNumber = results.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
                 if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
                 {
-                    purchasable = true;
                     Log.Information($"[FirstPointCom] Found {phoneNumber.DialedNumber} in {results.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
                 }
                 else
@@ -726,7 +722,6 @@ namespace NumberSearch.Mvc.Controllers
                 var matchingNumber = await OwnedPhoneNumber.GetByDialedNumberAsync(phoneNumber.DialedNumber, _postgresql).ConfigureAwait(false);
                 if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
                 {
-                    purchasable = true;
                     Log.Information($"[OwnedNumber] Found {phoneNumber.DialedNumber}.");
                 }
                 else
@@ -790,8 +785,6 @@ namespace NumberSearch.Mvc.Controllers
             // Prevent a duplicate order.
             if (phoneNumber.Purchased)
             {
-                purchasable = false;
-
                 // Remove numbers that are unpurchasable.
                 var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
 

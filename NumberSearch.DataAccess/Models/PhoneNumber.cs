@@ -386,7 +386,7 @@ namespace NumberSearch.DataAccess
             var result = await connection
                 .ExecuteAsync("DELETE FROM public.\"PhoneNumbers\" " +
                 "WHERE \"DateIngested\" < @DateIngested",
-                new { DateIngested = ingestStart.AddHours(-12) })
+                new { DateIngested = ingestStart.AddHours(-48) })
                 .ConfigureAwait(false);
 
             return new IngestStatistics

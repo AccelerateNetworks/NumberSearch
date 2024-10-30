@@ -87,7 +87,7 @@ namespace NumberSearch.Ingest
             return stats;
         }
 
-        public static async Task<IngestStatistics> BulkVSDailyAsync(IngestConfiguration appConfig)
+        public static async Task<IngestStatistics> BulkVSCompleteAsync(TimeSpan cycle, IngestConfiguration appConfig)
         {
             // Prevent another run from starting while this is still going.
             var lockingStats = new IngestStatistics
@@ -125,7 +125,7 @@ namespace NumberSearch.Ingest
 
             // Remove all of the old numbers from the database.
             Log.Information("[BulkVS] Removing old numbers from the database.");
-            var bulkVSCleanUp = await PhoneNumber.DeleteOldByProvider(lockingStats.StartDate, TimeSpan.FromHours(3), "BulkVS", appConfig.Postgresql).ConfigureAwait(false);
+            var bulkVSCleanUp = await PhoneNumber.DeleteOldByProvider(lockingStats.StartDate, cycle.Multiply(2), "BulkVS", appConfig.Postgresql).ConfigureAwait(false);
 
             var combined = new IngestStatistics
             {
@@ -154,7 +154,7 @@ namespace NumberSearch.Ingest
             return combined;
         }
 
-        public static async Task<IngestStatistics> BulkVSPriorityAsync(IngestConfiguration appConfig)
+        public static async Task<IngestStatistics> BulkVSPriorityAsync(TimeSpan cycle, IngestConfiguration appConfig)
         {
             DateTime start = DateTime.Now;
             Log.Information($"[BulkVS] Priority ingest started at {start}.");
@@ -181,7 +181,7 @@ namespace NumberSearch.Ingest
             // Remove stale priority numbers
             foreach (var code in AreaCode.Priority)
             {
-                var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, TimeSpan.FromMinutes(20), code, "BulkVS", appConfig.Postgresql).ConfigureAwait(false);
+                var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, cycle.Multiply(2), code, "BulkVS", appConfig.Postgresql).ConfigureAwait(false);
                 combined.Removed += removedNumbers.Removed;
             }
 
@@ -202,7 +202,7 @@ namespace NumberSearch.Ingest
             return combined;
         }
 
-        public static async Task<IngestStatistics> FirstPointComPriorityAsync(IngestConfiguration appConfig)
+        public static async Task<IngestStatistics> FirstPointComPriorityAsync(TimeSpan cycle, IngestConfiguration appConfig)
         {
             DateTime start = DateTime.Now;
             Log.Debug($"[FirstPointCom] Priority ingest started at {start}");
@@ -230,7 +230,7 @@ namespace NumberSearch.Ingest
             // Remove stale priority numbers
             foreach (var code in AreaCode.Priority)
             {
-                var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, TimeSpan.FromMinutes(20), code, "FirstPointCom", appConfig.Postgresql).ConfigureAwait(false);
+                var removedNumbers = await PhoneNumber.DeleteOldByProviderAndAreaCode(start, cycle.Multiply(2), code, "FirstPointCom", appConfig.Postgresql).ConfigureAwait(false);
                 combined.Removed += removedNumbers.Removed;
             }
 
@@ -246,7 +246,7 @@ namespace NumberSearch.Ingest
             return combined;
         }
 
-        public static async Task<IngestStatistics> FirstPointComDailyAsync(IngestConfiguration appConfig)
+        public static async Task<IngestStatistics> FirstPointComCompleteAsync(TimeSpan cycle, IngestConfiguration appConfig)
         {
             // Prevent another run from starting while this is still going.
             var lockingStats = new IngestStatistics
@@ -278,7 +278,7 @@ namespace NumberSearch.Ingest
 
             // Remove all of the old numbers from the database.
             Log.Information("[FirstPointCom] Removing old FirstPointCom numbers from the database.");
-            var firstPointComCleanUp = await PhoneNumber.DeleteOldByProvider(lockingStats.StartDate, TimeSpan.FromDays(1), "FirstPointCom", appConfig.Postgresql).ConfigureAwait(false);
+            var firstPointComCleanUp = await PhoneNumber.DeleteOldByProvider(lockingStats.StartDate, cycle.Multiply(2), "FirstPointCom", appConfig.Postgresql).ConfigureAwait(false);
 
             var combined = new IngestStatistics
             {

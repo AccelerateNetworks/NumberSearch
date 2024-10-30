@@ -89,8 +89,8 @@ namespace NumberSearch.Ingest
                     {
                         priorityTimer.Restart();
 
-                        var bulkVS = await Provider.BulkVSPriorityAsync(appConfig);
-                        var firstPointCom = await Provider.FirstPointComPriorityAsync(appConfig);
+                        var bulkVS = await Provider.BulkVSPriorityAsync(priorityCycle, appConfig);
+                        var firstPointCom = await Provider.FirstPointComPriorityAsync(priorityCycle, appConfig);
                         // Verify that all the Executive numbers are still purchasable for the priority area codes.
                         await Provider.VerifyAddToCartAsync(AreaCode.Priority, "Executive", appConfig.Postgresql, appConfig.BulkVSUsername, appConfig.BulkVSPassword,
                             appConfig.PComNetUsername, appConfig.PComNetPassword);
@@ -103,14 +103,14 @@ namespace NumberSearch.Ingest
                     {
                         bulkVSTimer.Restart();
 
-                        var bulkVS = await Provider.BulkVSDailyAsync(appConfig);
+                        var bulkVS = await Provider.BulkVSCompleteAsync(bulkVSCycle, appConfig);
                     }
 
                     if (fpcTimer.Elapsed >= fpcCycle)
                     {
                         fpcTimer.Restart();
 
-                        var firstPointCom = await Provider.FirstPointComDailyAsync(appConfig);
+                        var firstPointCom = await Provider.FirstPointComCompleteAsync(fpcCycle, appConfig);
                     }
 
                     if (dailyTimer.Elapsed >= dailyCycle || DateTime.Now == DateTime.Today.AddDays(1).AddSeconds(-1))

@@ -18,7 +18,7 @@
         </thead>
         <tbody>
             @{
-                if (Model is not null && Model?.PurchasedPhoneNumbers?.Length != 0)
+                if (Model is not null && Model?.PurchasedPhoneNumbers is not null && Model?.PurchasedPhoneNumbers?.Length != 0)
                 {
                     foreach (var order in Model.PurchasedPhoneNumbers.Where(x => x?.IngestedFrom != "Test"))
                     {

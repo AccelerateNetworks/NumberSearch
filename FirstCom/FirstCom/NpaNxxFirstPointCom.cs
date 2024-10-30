@@ -29,41 +29,50 @@ namespace FirstCom
             // Limited to 100 results at the moment.
             var ReturnAmount = 100;
 
-
             using var client = new DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
 
-            var result = await client.DIDInventorySearchAsync(Auth, DIDSearch, ReturnAmount).ConfigureAwait(false);
-
             var list = new List<PhoneNumber>();
+            bool moreToQuery = true;
 
-            foreach (var item in result.DIDOrder)
+            while (moreToQuery)
             {
-                if (item.DID.StartsWith('1'))
-                {
-                    var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.DID[1..], out var phoneNumber);
+                var result = await client.DIDInventorySearchAsync(Auth, DIDSearch, ReturnAmount).ConfigureAwait(false);
 
-                    if (checkParse)
+                foreach (var item in result.DIDOrder)
+                {
+                    if (item.DID.StartsWith('1'))
                     {
-                        list.Add(new PhoneNumber
+                        var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.DID[1..], out var phoneNumber);
+
+                        if (checkParse)
                         {
-                            NPA = phoneNumber.NPA,
-                            NXX = phoneNumber.NXX,
-                            XXXX = phoneNumber.XXXX,
-                            DialedNumber = phoneNumber.DialedNumber,
-                            City = "Unknown City",
-                            State = "Unknown State",
-                            DateIngested = DateTime.Now,
-                            IngestedFrom = "FirstPointCom"
-                        });
+                            list.Add(new PhoneNumber
+                            {
+                                NPA = phoneNumber.NPA,
+                                NXX = phoneNumber.NXX,
+                                XXXX = phoneNumber.XXXX,
+                                DialedNumber = phoneNumber.DialedNumber,
+                                City = "Unknown City",
+                                State = "Unknown State",
+                                DateIngested = DateTime.Now,
+                                IngestedFrom = "FirstPointCom"
+                            });
+                        }
+                        else
+                        {
+                            Log.Error($"[FirstCom] This number failed to parse {item.DID}");
+                        }
                     }
                     else
                     {
-                        Log.Error($"[FirstCom] This number failed to parse {item.DID}");
+                        Log.Error($"[FirstCom] This number did not start with a 1: {item.DID}");
                     }
                 }
-                else
+
+                // Break the loop.
+                if (result.DIDOrder.Length is not 100)
                 {
-                    Log.Error($"[FirstCom] This number did not start with a 1: {item.DID}");
+                    moreToQuery = false;
                 }
             }
 
