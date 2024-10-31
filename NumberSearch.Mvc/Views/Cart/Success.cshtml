@@ -236,9 +236,9 @@
                     <div class="mb-3" id="searchForm">
                         <label for="address">Service Address</label>
                         @{
-                            var address = string.IsNullOrWhiteSpace(Model?.PortRequest?.Address) ? Model?.Order?.UnparsedAddress : Model?.PortRequest?.Address;
+                            var address = string.IsNullOrWhiteSpace(Model?.PortRequest?.UnparsedAddress) ? Model?.Order?.UnparsedAddress : Model?.PortRequest?.UnparsedAddress;
                         }
-                        <input asp-for="PortRequest.Address" type="text" value="@address" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" data-toggle="dropdown" required>
+                        <input asp-for="PortRequest.UnparsedAddress" type="text" value="@address" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" data-toggle="dropdown" required>
                         <ul class="list-group" role="menu" aria-labelledby="menu1" id="addressOptions">
                         </ul>
                         <small class="text-muted">

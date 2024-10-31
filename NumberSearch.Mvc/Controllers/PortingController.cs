@@ -254,16 +254,16 @@ namespace NumberSearch.Mvc.Controllers
 
                     // Format the address information
                     Log.Information($"[Port Request] Parsing address data from {portRequest.Address}");
-                    if (portRequest is not null && !string.IsNullOrWhiteSpace(portRequest.Address))
+                    if (portRequest is not null && !string.IsNullOrWhiteSpace(portRequest.UnparsedAddress) && portRequest.UnparsedAddress != existing.UnparsedAddress)
                     {
-                        existing.Address = portRequest.Address;
-                        var addressParts = portRequest.Address.Split(", ");
+                        var addressParts = portRequest.UnparsedAddress.Split(", ");
                         if (addressParts.Length > 4)
                         {
                             existing.Address = addressParts[0];
                             existing.City = addressParts[1];
                             existing.State = addressParts[2];
                             existing.Zip = addressParts[3];
+                            portRequest.UnparsedAddress = portRequest.UnparsedAddress;
                             Log.Information($"[Port Request] Address: {existing.Address} City: {existing.City} State: {existing.State} Zip: {existing.Zip}");
                         }
                         else
@@ -361,10 +361,10 @@ namespace NumberSearch.Mvc.Controllers
 
 
             // Format the address information
-            Log.Information($"[Port Request] Parsing address data from {portRequest.Address}");
-            if (portRequest is not null && !string.IsNullOrWhiteSpace(portRequest.Address))
+            Log.Information($"[Port Request] Parsing address data from {portRequest.UnparsedAddress}");
+            if (portRequest is not null && !string.IsNullOrWhiteSpace(portRequest.UnparsedAddress))
             {
-                var addressParts = portRequest.Address.Split(", ");
+                var addressParts = portRequest.UnparsedAddress.Split(", ");
                 if (addressParts.Length > 4)
                 {
                     portRequest.Address = addressParts[0];
