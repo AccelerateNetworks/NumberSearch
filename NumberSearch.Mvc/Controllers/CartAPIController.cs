@@ -633,7 +633,7 @@ namespace NumberSearch.Mvc.Controllers
                 return BadRequest(ModelState);
             }
 
-            var phoneNumber = await DataAccess.PhoneNumber.GetAsync(dialedPhoneNumber, _postgresql).ConfigureAwait(false);
+            var phoneNumber = await DataAccess.Models.PhoneNumber.GetAsync(dialedPhoneNumber, _postgresql).ConfigureAwait(false);
             var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), DialedNumber = phoneNumber.DialedNumber, Quantity = 1 };
 
             // Check that the number is still avalible from the provider.
@@ -680,7 +680,7 @@ namespace NumberSearch.Mvc.Controllers
             else if (phoneNumber.IngestedFrom == "FirstPointCom")
             {
                 // Verify that tele has the number.
-                var results = await NpaNxxFirstPointCom.GetAsync(phoneNumber.NPA.ToString(new CultureInfo("en-US")), phoneNumber.NXX.ToString(new CultureInfo("en-US")), string.Empty, _fpcusername, _fpcpassword).ConfigureAwait(false);
+                var results = await NpaNxxFirstPointCom.GetAsync(phoneNumber.NPA.ToString().AsMemory(), phoneNumber.NXX.ToString().AsMemory(), string.Empty.AsMemory(), _fpcusername.AsMemory(), _fpcpassword.AsMemory()).ConfigureAwait(false);
                 var matchingNumber = results.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
                 if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
                 {
@@ -1183,7 +1183,7 @@ namespace NumberSearch.Mvc.Controllers
                 return BadRequest(ModelState);
             }
 
-            var phoneNumber = new DataAccess.PhoneNumber { DialedNumber = dialedPhoneNumber };
+            var phoneNumber = new DataAccess.Models.PhoneNumber { DialedNumber = dialedPhoneNumber };
             var productOrder = new ProductOrder { DialedNumber = dialedPhoneNumber };
 
             await httpContext.Session.LoadAsync().ConfigureAwait(false);

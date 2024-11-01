@@ -1,5 +1,4 @@
-﻿
-using NumberSearch.DataAccess;
+﻿using NumberSearch.DataAccess.Models;
 
 using Serilog;
 
@@ -25,7 +24,7 @@ namespace FirstCom
             {
                 try
                 {
-                    numbers.AddRange(await NpaNxxFirstPointCom.GetAsync(code.ToString(), string.Empty, string.Empty, username, password));
+                    numbers.AddRange(await NpaNxxFirstPointCom.GetAsync(code.ToString().AsMemory(), string.Empty.AsMemory(), string.Empty.AsMemory(), username.AsMemory(), password.AsMemory()));
                     Log.Information($"[FirstPointCom] Found {numbers.Count} Phone Numbers");
                 }
                 catch (Exception ex)

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
+using NumberSearch.DataAccess.Models;
 using NumberSearch.Mvc.Models;
 
 using Serilog;

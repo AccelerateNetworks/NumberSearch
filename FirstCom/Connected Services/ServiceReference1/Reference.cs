@@ -109,7 +109,7 @@ namespace ServiceReference1
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.1.0")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="https://api.1pcom.net/")]
-    public partial class QueryResult
+    public partial struct QueryResult
     {
         
         private int codeField;
@@ -413,7 +413,7 @@ namespace ServiceReference1
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.1.0")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="https://api.1pcom.net/")]
-    public partial class DIDOrderInfo
+    public partial struct DIDOrderInfo
     {
         
         private string dIDField;
@@ -549,7 +549,7 @@ namespace ServiceReference1
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.1.0")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="https://api.1pcom.net/")]
-    public partial class DIDOrderInfoArray
+    public partial struct DIDOrderInfoArray
     {
         
         private DIDOrderInfo[] dIDOrderField;
@@ -589,7 +589,7 @@ namespace ServiceReference1
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.1.0")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="https://api.1pcom.net/")]
-    public partial class DIDOrderQuery
+    public partial struct DIDOrderQuery
     {
         
         private string rateCenterField;
@@ -661,7 +661,7 @@ namespace ServiceReference1
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.1.0")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="https://api.1pcom.net/")]
-    public partial class Credentials
+    public partial struct Credentials
     {
         
         private string usernameField;

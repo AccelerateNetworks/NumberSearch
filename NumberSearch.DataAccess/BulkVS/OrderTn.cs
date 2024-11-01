@@ -2,6 +2,8 @@
 
 using Newtonsoft.Json;
 
+using NumberSearch.DataAccess.Models;
+
 using Serilog;
 
 using System;

@@ -1,15 +1,13 @@
 ﻿using Flurl.Http;
 
+using System;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.LCGuide
 {
-    public class RateCenterLookup
+    public readonly record struct RateCenterLookup(ReadOnlyMemory<char> RateCenter, ReadOnlyMemory<char> Region)
     {
-        public string RateCenter { get; set; } = string.Empty;
-        public string Region { get; set; } = string.Empty;
-
-        public static async Task<RateCenterLookup> GetAsync(string npa, string nxx)
+        public static async Task<RateCenterLookup> GetAsync(ReadOnlyMemory<char> npa, ReadOnlyMemory<char> nxx)
         {
             string baseUrl = "https://localcallingguide.com/xmlprefix.php?";
             string npaParameter = $"npa={npa}";
@@ -28,7 +26,7 @@ namespace NumberSearch.DataAccess.LCGuide
                 var regionEnd = result.IndexOf("</region>");
                 var regionText = result[regionStart..regionEnd];
 
-                return new RateCenterLookup { RateCenter = rateCenterText, Region = regionText };
+                return new RateCenterLookup(rateCenterText.AsMemory(), regionText.AsMemory());
             }
             else
             {

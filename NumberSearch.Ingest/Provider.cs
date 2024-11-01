@@ -27,18 +27,17 @@ namespace NumberSearch.Ingest
         /// <returns></returns>
         public static async Task<IngestStatistics> FirstPointComAsync(string username, string password, int[] areaCodes, string connectionString)
         {
-            var start = DateTime.Now;
+            DateTime start = DateTime.Now;
 
-            var numbers = await FirstPointCom.GetValidNumbersByNPAAsync(username, password, areaCodes).ConfigureAwait(false);
+            PhoneNumber[] numbers = await FirstPointCom.GetValidNumbersByNPAAsync(username, password, areaCodes);
 
-            var locations = await Services.AssignRatecenterAndRegionAsync(numbers).ConfigureAwait(false);
-            numbers = locations.ToArray();
+            PhoneNumber[] locations = await Services.AssignRatecenterAndRegionAsync(numbers);
 
-            var typedNumbers = Services.AssignNumberTypes(numbers).ToArray();
+            PhoneNumber[] typedNumbers = Services.AssignNumberTypes(locations);
 
-            var stats = await Services.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
+            IngestStatistics stats = await Services.SubmitPhoneNumbersAsync(typedNumbers, connectionString.AsMemory()).ConfigureAwait(false);
 
-            var end = DateTime.Now;
+            DateTime end = DateTime.Now;
             stats.StartDate = start;
             stats.EndDate = end;
             stats.IngestedFrom = "FirstPointCom";
@@ -57,13 +56,13 @@ namespace NumberSearch.Ingest
         {
             var start = DateTime.Now;
 
-            var numbers = new List<PhoneNumber>();
+            List<PhoneNumber> numbers = [];
 
             foreach (var code in areaCodes)
             {
                 try
                 {
-                    numbers.AddRange(await OrderTn.GetAsync(code, username, password).ConfigureAwait(false));
+                    numbers.AddRange(await OrderTn.GetAsync(code, username, password));
                     Log.Information($"[BulkVS] Found {numbers.Count} Phone Numbers");
                 }
                 catch (Exception ex)
@@ -72,14 +71,13 @@ namespace NumberSearch.Ingest
                 }
             }
 
-            var locations = await Services.AssignRatecenterAndRegionAsync(numbers).ConfigureAwait(false);
-            numbers = locations.ToList();
+            PhoneNumber[] locations = await Services.AssignRatecenterAndRegionAsync([..numbers]);
 
-            var typedNumbers = Services.AssignNumberTypes(numbers).ToArray();
+            PhoneNumber[] typedNumbers = Services.AssignNumberTypes(locations);
 
-            var stats = await Services.SubmitPhoneNumbersAsync(typedNumbers, connectionString).ConfigureAwait(false);
+            IngestStatistics stats = await Services.SubmitPhoneNumbersAsync(typedNumbers, connectionString.AsMemory());
 
-            var end = DateTime.Now;
+            DateTime end = DateTime.Now;
             stats.StartDate = start;
             stats.EndDate = end;
             stats.IngestedFrom = "BulkVS";
@@ -351,7 +349,7 @@ namespace NumberSearch.Ingest
                             // Verify that tele has the number.
                             try
                             {
-                                var results = await NpaNxxFirstPointCom.GetAsync(phoneNumber.NPA.ToString(new CultureInfo("en-US")), phoneNumber.NXX.ToString(new CultureInfo("en-US")), string.Empty, _fpcusername, _fpcpassword).ConfigureAwait(false);
+                                var results = await NpaNxxFirstPointCom.GetAsync(phoneNumber.NPA.ToString(new CultureInfo("en-US")).AsMemory(), phoneNumber.NXX.ToString(new CultureInfo("en-US")).AsMemory(), string.Empty.AsMemory(), _fpcusername.AsMemory(), _fpcpassword.AsMemory()).ConfigureAwait(false);
                                 var matchingNumber = results?.Where(x => x?.DialedNumber == phoneNumber?.DialedNumber)?.FirstOrDefault();
                                 if (matchingNumber is not null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
                                 {

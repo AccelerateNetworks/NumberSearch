@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 
-using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.Models;
 using NumberSearch.Mvc.Models;
 
 using System.Collections.Generic;

@@ -1,4 +1,4 @@
-﻿using NumberSearch.DataAccess;
+﻿using NumberSearch.DataAccess.Models;
 using NumberSearch.Mvc.Models;
 
 using System;

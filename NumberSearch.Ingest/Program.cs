@@ -55,7 +55,7 @@ namespace NumberSearch.Ingest
             TimeSpan dailyCycle = TimeSpan.FromDays(1);
             TimeSpan priorityCycle = TimeSpan.FromMinutes(10);
             TimeSpan bulkVSCycle = TimeSpan.FromHours(1);
-            TimeSpan fpcCycle = TimeSpan.FromHours(12);
+            TimeSpan fpcCycle = TimeSpan.FromHours(3);
 
             try
             {

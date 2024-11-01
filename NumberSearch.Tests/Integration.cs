@@ -461,10 +461,11 @@ namespace NumberSearch.Tests
             string nxx = "780";
 
             // Act
-            var result = await RateCenterLookup.GetAsync(npa, nxx);
+            var result = await RateCenterLookup.GetAsync(npa.AsMemory(), nxx.AsMemory());
 
             // Assert        
-            Assert.NotNull(result);
+            Assert.False(string.IsNullOrWhiteSpace(result.Region.ToString()));
+            Assert.False(string.IsNullOrWhiteSpace(result.RateCenter.ToString()));
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
@@ -476,10 +477,13 @@ namespace NumberSearch.Tests
             string nxx = "646";
 
             // Act
-            var result = await RateCenterLookup.GetAsync(npa, nxx);
+            var result = await RateCenterLookup.GetAsync(npa.AsMemory(), nxx.AsMemory());
 
             // Assert        
-            Assert.True(string.IsNullOrWhiteSpace(result.RateCenter));
+            Assert.True(string.IsNullOrWhiteSpace(result.Region.ToString()));
+            Assert.True(string.IsNullOrWhiteSpace(result.RateCenter.ToString()));
+            output.WriteLine(JsonSerializer.Serialize(result));
+
         }
 
         [Fact]

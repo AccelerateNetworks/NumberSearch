@@ -1,11 +1,13 @@
 ﻿using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.LCGuide;
+using NumberSearch.DataAccess.Models;
 
 using Serilog;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Ingest
@@ -17,7 +19,7 @@ namespace NumberSearch.Ingest
         /// </summary>
         /// <param name="numbers"></param>
         /// <returns></returns>
-        public static IEnumerable<PhoneNumber> AssignNumberTypes(IEnumerable<PhoneNumber> numbers)
+        public static PhoneNumber[] AssignNumberTypes(in PhoneNumber[] numbers)
         {
             // NumberTypes
             var Executive = "Executive";
@@ -26,19 +28,13 @@ namespace NumberSearch.Ingest
             var Tollfree = "Tollfree";
 
             // Bail early if there's no data.
-            if (numbers is null || !numbers.Any()) { return numbers ?? []; }
+            if (numbers.Length is 0) { return numbers ?? []; }
 
             // Assign a Type based on number of repeating digits.
             foreach (var number in numbers)
             {
                 // https://stackoverflow.com/questions/39472429/count-all-character-occurrences-in-a-string-c-sharp
-                var counts = number.DialedNumber.GroupBy(c => c).Select(c => new { Char = c.Key, Count = c.Count() });
-
-                var count = 0;
-                foreach (var c in counts)
-                {
-                    count = c.Count > count ? c.Count : count;
-                }
+                int count = number.DialedNumber.GroupBy(static c => c).Select(c => c.Count()).Max();
 
                 number.NumberType = count switch
                 {
@@ -83,7 +79,7 @@ namespace NumberSearch.Ingest
         /// <param name="numbers"> A list of phone numbers. </param>
         /// <param name="connectionString"> The connection string for the database. </param>
         /// <returns></returns>
-        public static async Task<IngestStatistics> SubmitPhoneNumbersAsync(PhoneNumber[] numbers, string connectionString)
+        public static async Task<IngestStatistics> SubmitPhoneNumbersAsync(PhoneNumber[] numbers, ReadOnlyMemory<char> connectionString)
         {
             IngestStatistics stats = new();
 
@@ -92,7 +88,7 @@ namespace NumberSearch.Ingest
 
             if (numbers.Length > 0)
             {
-                var existingNumbers = await PhoneNumber.GetAllNumbersAsync(connectionString).ConfigureAwait(false);
+                var existingNumbers = await PhoneNumber.GetAllNumbersAsync(connectionString.ToString());
                 var dict = existingNumbers.ToDictionary(x => x, x => x);
                 // Submit the batch to the remote database.
                 foreach (var number in numbers)
@@ -147,7 +143,7 @@ namespace NumberSearch.Ingest
                 };
 
                 // Execute these API requests in parallel.
-                await Parallel.ForEachAsync(updates.Values.ToArray(), options, async (update, token) =>
+                await Parallel.ForEachAsync([..updates.Values], options, async (update, token) =>
                 {
                     if (count % 100 == 0 && count != 0)
                     {
@@ -155,7 +151,7 @@ namespace NumberSearch.Ingest
                     }
                     try
                     {
-                        var result = await update.PutAsync(connectionString).ConfigureAwait(false);
+                        var result = await update.PutAsync(connectionString.ToString()).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -176,7 +172,7 @@ namespace NumberSearch.Ingest
             {
                 try
                 {
-                    var check = await PhoneNumber.BulkPostAsync(group, connectionString).ConfigureAwait(false);
+                    var check = await PhoneNumber.BulkPostAsync(group, connectionString.ToString()).ConfigureAwait(false);
 
                     if (check) { stats!.IngestedNew += group.Count; };
 
@@ -202,9 +198,9 @@ namespace NumberSearch.Ingest
         /// </summary>
         /// <param name="numbers"> A list of phone numbers. </param>
         /// <returns> A list of phone numbers. </returns>
-        public static async Task<IEnumerable<PhoneNumber>> AssignRatecenterAndRegionAsync(IEnumerable<PhoneNumber> numbers)
+        public static async Task<PhoneNumber[]> AssignRatecenterAndRegionAsync(PhoneNumber[] numbers)
         {
-            Log.Information($"Ingesting the Ratecenters and Regions on {numbers.Count()} phone numbers.");
+            Log.Information($"Ingesting the Ratecenters and Regions on {numbers.Length} phone numbers.");
 
             // Cache the lookups because API requests are expensive and phone numbers tend to be ingested in groups.
             var npaNxxLookup = new Dictionary<string, RateCenterLookup>();
@@ -221,23 +217,23 @@ namespace NumberSearch.Ingest
 
                 var checkMatch = npaNxxLookup.TryGetValue($"{number.NPA}{number.NXX}", out var match);
 
-                if (checkMatch && match is not null)
+                if (checkMatch)
                 {
-                    number.City = match.RateCenter;
-                    number.State = match.Region;
+                    number.City = match.RateCenter.ToString();
+                    number.State = match.Region.ToString();
                 }
                 else
                 {
                     try
                     {
-                        match = await RateCenterLookup.GetAsync(number.NPA.ToString(), number.NXX.ToString()).ConfigureAwait(false);
+                        match = await RateCenterLookup.GetAsync(number.NPA.ToString().AsMemory(), number.NXX.ToString().AsMemory()).ConfigureAwait(false);
 
-                        if (!string.IsNullOrWhiteSpace(match.RateCenter))
+                        if (!string.IsNullOrWhiteSpace(match.RateCenter.ToString()))
                         {
                             npaNxxLookup.Add($"{number.NPA}{number.NXX}", match);
 
-                            number.City = match.RateCenter;
-                            number.State = match.Region;
+                            number.City = match.RateCenter.ToString();
+                            number.State = match.Region.ToString();
                         }
                     }
                     catch (Exception ex)
@@ -249,7 +245,7 @@ namespace NumberSearch.Ingest
                 }
             }
 
-            Log.Information($"Ingesting the Ratecenters and Regions on {numbers.Count()} phone numbers.");
+            Log.Information($"Ingesting the Ratecenters and Regions on {numbers.Length} phone numbers.");
 
             return numbers;
         }

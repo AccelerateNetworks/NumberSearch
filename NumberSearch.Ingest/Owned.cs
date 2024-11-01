@@ -542,13 +542,13 @@ namespace NumberSearch.Ingest
 
             var numbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
 
-            var newUnassigned = new List<DataAccess.PhoneNumber>();
+            List<DataAccess.Models.PhoneNumber> newUnassigned = [];
 
             foreach (var item in numbers)
             {
                 if (item?.Notes is not null && item?.Notes.Trim() == "Unassigned")
                 {
-                    var number = await DataAccess.PhoneNumber.GetAsync(item.DialedNumber, connectionString).ConfigureAwait(false);
+                    var number = await DataAccess.Models.PhoneNumber.GetAsync(item.DialedNumber, connectionString).ConfigureAwait(false);
 
                     if (number is null || item.DialedNumber != number.DialedNumber)
                     {
@@ -556,7 +556,7 @@ namespace NumberSearch.Ingest
 
                         if (checkParse && phoneNumber is not null)
                         {
-                            number = new DataAccess.PhoneNumber
+                            number = new DataAccess.Models.PhoneNumber
                             {
                                 NPA = phoneNumber.NPA,
                                 NXX = phoneNumber.NXX,
@@ -583,7 +583,7 @@ namespace NumberSearch.Ingest
                         number.IngestedFrom = "OwnedNumber";
                         number.Purchased = false;
 
-                        var checkCreate = await number.PutAsync(connectionString).ConfigureAwait(false);
+                        _ = await number.PutAsync(connectionString);
                         updatedExisting++;
 
                         Log.Information($"[Ingest] [OwnedNumber] Continued offering unassigned number {item.DialedNumber} up for sale.");
@@ -591,13 +591,13 @@ namespace NumberSearch.Ingest
                 }
             }
 
-            var typedNumbers = Services.AssignNumberTypes(newUnassigned).ToArray();
-            var locations = await Services.AssignRatecenterAndRegionAsync(typedNumbers).ConfigureAwait(false);
-            _ = await Services.SubmitPhoneNumbersAsync(locations.ToArray(), connectionString).ConfigureAwait(false);
+            DataAccess.Models.PhoneNumber[] typedNumbers = Services.AssignNumberTypes([..newUnassigned]);
+            DataAccess.Models.PhoneNumber[] locations = await Services.AssignRatecenterAndRegionAsync(typedNumbers);
+            _ = await Services.SubmitPhoneNumbersAsync(locations, connectionString.AsMemory());
 
-            var end = DateTime.Now;
+            DateTime end = DateTime.Now;
 
-            var stats = new IngestStatistics
+            IngestStatistics stats = new()
             {
                 StartDate = start,
                 EndDate = end,

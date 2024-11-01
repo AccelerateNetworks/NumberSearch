@@ -516,9 +516,9 @@ public class HomeController : Controller
             converted.Remove('1');
         }
 
-        var count = await DataAccess.PhoneNumber.NumberOfResultsInQuery(new string(converted.ToArray()), _postgresql).ConfigureAwait(false);
+        var count = await DataAccess.Models.PhoneNumber.NumberOfResultsInQuery(new string(converted.ToArray()), _postgresql).ConfigureAwait(false);
 
-        var results = await DataAccess.PhoneNumber.RecommendedPaginatedSearchAsync(new string(converted.ToArray()), page, _postgresql).ConfigureAwait(false);
+        var results = await DataAccess.Models.PhoneNumber.RecommendedPaginatedSearchAsync(new string(converted.ToArray()), page, _postgresql).ConfigureAwait(false);
 
         return View("Numbers", new SearchResults
         {

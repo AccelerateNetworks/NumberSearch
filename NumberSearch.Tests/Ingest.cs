@@ -1,7 +1,7 @@
 
 using Microsoft.Extensions.Configuration;
 
-using NumberSearch.DataAccess;
+using NumberSearch.DataAccess.Models;
 using NumberSearch.Ingest;
 
 using ServiceReference;
@@ -174,7 +174,7 @@ namespace NumberSearch.Tests
                 new() { DialedNumber = "9875432166" },
             ];
             // Act
-            var results = Services.AssignNumberTypes(numbers);
+            var results = Services.AssignNumberTypes([..numbers]);
 
             // Assert
             Assert.NotNull(results);
