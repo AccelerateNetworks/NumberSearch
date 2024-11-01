@@ -10,6 +10,8 @@ using PhoneNumbersNA;
 
 using Serilog;
 
+using ServiceReference;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,11 +44,11 @@ namespace NumberSearch.Ingest
                 Lock = true
             };
 
-            await lockingStats.PostAsync(appConfig.Postgresql.ToString()).ConfigureAwait(false);
+            await lockingStats.PostAsync(appConfig.Postgresql.ToString());
             SMSRouteChange[] smsRouteChanges = await Owned.IngestAsync(appConfig);
 
             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
-            await lockingStats.DeleteAsync(appConfig.Postgresql.ToString()).ConfigureAwait(false);
+            await lockingStats.DeleteAsync(appConfig.Postgresql.ToString());
 
             return smsRouteChanges;
         }
@@ -54,8 +56,8 @@ namespace NumberSearch.Ingest
         public async static Task<SMSRouteChange[]> IngestAsync(IngestConfiguration configuration)
         {
             Log.Information("[OwnedNumbers] Ingesting data for OwnedNumbers.");
-            var allNumbers = new List<OwnedPhoneNumber>();
-            var start = DateTime.Now;
+            List<OwnedPhoneNumber> allNumbers = [];
+            DateTime start = DateTime.Now;
 
             // Ingest all owned numbers from the providers.
             try
@@ -75,8 +77,8 @@ namespace NumberSearch.Ingest
 
             try
             {
-                var bulkVSNumbers = await TnRecord.GetOwnedAsync(configuration.BulkVSUsername, configuration.BulkVSPassword).ConfigureAwait(false);
-                if (bulkVSNumbers != null)
+                OwnedPhoneNumber[] bulkVSNumbers = await TnRecord.GetOwnedAsync(configuration.BulkVSUsername, configuration.BulkVSPassword);
+                if (bulkVSNumbers.Length != 0)
                 {
                     allNumbers.AddRange(bulkVSNumbers);
                 };
@@ -93,7 +95,7 @@ namespace NumberSearch.Ingest
             if (allNumbers.Count > 0)
             {
                 Log.Information($"[OwnedNumbers] Submitting {allNumbers.Count} numbers to the database.");
-                ownedNumberStats = await SubmitOwnedNumbersAsync(allNumbers.DistinctBy(x => x.DialedNumber), configuration.Postgresql, configuration.BulkVSUsername, configuration.BulkVSPassword).ConfigureAwait(false);
+                ownedNumberStats = await SubmitOwnedNumbersAsync([.. allNumbers.DistinctBy(x => x.DialedNumber)], configuration.Postgresql, configuration.BulkVSUsername, configuration.BulkVSPassword);
             }
             else
             {
@@ -118,12 +120,12 @@ namespace NumberSearch.Ingest
             try
             {
                 Log.Information("[OwnedNumbers] Looking for LRN changes on owned numbers.");
-                var changedNumbers = await VerifyServiceProvidersAsync(configuration.BulkVSAPIKEY, configuration.Postgresql);
+                ServiceProviderChanged[] changedNumbers = await VerifyServiceProvidersAsync(configuration.BulkVSAPIKEY, configuration.Postgresql);
 
-                if (changedNumbers != null && changedNumbers.Any())
+                if (changedNumbers.Length != 0)
                 {
-                    Log.Information($"[OwnedNumbers] Emailing out a notification that {changedNumbers.Count()} numbers LRN updates.");
-                    var checkSend = await SendPortingNotificationEmailAsync(changedNumbers, configuration.SmtpUsername, configuration.SmtpPassword, configuration.EmailDan, configuration.EmailOrders, configuration.Postgresql);
+                    Log.Information($"[OwnedNumbers] Emailing out a notification that {changedNumbers.Length} numbers LRN updates.");
+                    _ = await SendPortingNotificationEmailAsync(changedNumbers, configuration.SmtpUsername, configuration.SmtpPassword, configuration.EmailDan, configuration.EmailOrders, configuration.Postgresql);
                 }
             }
             catch (Exception ex)
@@ -187,13 +189,13 @@ namespace NumberSearch.Ingest
             return smsRouteChanges;
         }
 
-        public record SMSRouteChange(string DialedNumber, string OldRoute, string NewRoute, string Message);
+        public readonly record struct SMSRouteChange(string DialedNumber, string OldRoute, string NewRoute, string Message);
 
         public static async Task<SMSRouteChange[]> VerifySMSRoutingAsync(ReadOnlyMemory<char> connectionString, ReadOnlyMemory<char> pComNetUsername, ReadOnlyMemory<char> pComNetPassword)
         {
             Log.Information($"[OwnedNumbers] Verifying SMS Routing for Owned Phone numbers.");
 
-            var changes = new List<SMSRouteChange>();
+            List<SMSRouteChange> changes = [];
 
             var ownedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString.ToString());
 
@@ -250,10 +252,10 @@ namespace NumberSearch.Ingest
 
             try
             {
-                var destination = await DestinationDetails.GetByDialedNumberAsync("2068588757".AsMemory(), fusionPBXUsername, fusionPBXPassword);
+                DestinationDetails destination = await DestinationDetails.GetByDialedNumberAsync("2068588757".AsMemory(), fusionPBXUsername, fusionPBXPassword);
 
                 // If we aren't getting good data back from FusionPBX then skip this updating process.
-                if (destination is not null && !string.IsNullOrWhiteSpace(destination.domain_uuid))
+                if (!string.IsNullOrWhiteSpace(destination.domain_uuid))
                 {
                     foreach (var ownedNumber in ownedNumbers.Where(x => x.Active))
                     {
@@ -263,7 +265,7 @@ namespace NumberSearch.Ingest
                         {
                             destination = await DestinationDetails.GetByDialedNumberAsync(ownedNumber.DialedNumber.AsMemory(), fusionPBXUsername, fusionPBXPassword);
 
-                            if (destination is not null && !string.IsNullOrWhiteSpace(destination.domain_uuid))
+                            if (!string.IsNullOrWhiteSpace(destination.domain_uuid))
                             {
                                 var checkDestinationuuid = Guid.TryParse(destination.destination_uuid, out var parsedDestionationId);
 
@@ -335,9 +337,9 @@ namespace NumberSearch.Ingest
 
         public static async Task<IEnumerable<OwnedPhoneNumber>> FirstPointComAsync(ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
-            var numbers = new List<OwnedPhoneNumber>();
+            List<OwnedPhoneNumber> numbers = [];
 
-            foreach (var npa in PhoneNumbersNA.AreaCode.All)
+            foreach (int npa in AreaCode.All)
             {
                 try
                 {
@@ -374,14 +376,14 @@ namespace NumberSearch.Ingest
 
             Log.Information($"[OwnedNumbers] [FirstPointCom] Ingested {numbers.Count} owned numbers.");
 
-            return numbers.Count != 0 ? numbers.ToArray() : new List<OwnedPhoneNumber>();
+            return numbers.Count != 0 ? [.. numbers] : [];
         }
 
-        public static async Task<IngestStatistics> SubmitOwnedNumbersAsync(IEnumerable<OwnedPhoneNumber> newlyIngested, ReadOnlyMemory<char> connectionString, ReadOnlyMemory<char> bulkVSUsername, ReadOnlyMemory<char> bulkVSPassword)
+        public static async Task<IngestStatistics> SubmitOwnedNumbersAsync(OwnedPhoneNumber[] newlyIngested, ReadOnlyMemory<char> connectionString, ReadOnlyMemory<char> bulkVSUsername, ReadOnlyMemory<char> bulkVSPassword)
         {
-            var start = DateTime.Now;
-            var ingestedNew = 0;
-            var updatedExisting = 0;
+            DateTime start = DateTime.Now;
+            int ingestedNew = 0;
+            int updatedExisting = 0;
 
             try
             {
@@ -390,7 +392,7 @@ namespace NumberSearch.Ingest
                 var newAsDict = newlyIngested.ToDictionary(x => x.DialedNumber, x => x);
                 var portedPhoneNumbers = await PortedPhoneNumber.GetAllAsync(connectionString.ToString());
 
-                foreach (var item in newlyIngested)
+                foreach (OwnedPhoneNumber item in newlyIngested)
                 {
                     var checkExisting = existingAsDict.TryGetValue(item.DialedNumber, out var number);
 
@@ -399,7 +401,7 @@ namespace NumberSearch.Ingest
                         var matchingPort = portedPhoneNumbers.Where(x => x.PortedDialedNumber == item.DialedNumber).FirstOrDefault();
                         if (matchingPort is not null && !string.IsNullOrWhiteSpace(matchingPort.RequestStatus) && matchingPort.RequestStatus is not "COMPLETE")
                         {
-                            var externalStatus = await TnRecord.GetByDialedNumberAsync(item.DialedNumber.AsMemory(), bulkVSUsername, bulkVSPassword);
+                            TnRecord externalStatus = await TnRecord.GetByDialedNumberAsync(item.DialedNumber.AsMemory(), bulkVSUsername, bulkVSPassword);
                             if (externalStatus.Status is not "Active")
                             {
                                 // If it is a ported number and the port has not complete mark it as ported in.
@@ -469,7 +471,7 @@ namespace NumberSearch.Ingest
                     }
                 }
 
-                var unmatchedExistingNumbers = existingOwnedNumbers.Where(x => !newAsDict.ContainsKey(x.DialedNumber)).ToArray();
+                OwnedPhoneNumber[] unmatchedExistingNumbers = existingOwnedNumbers.Where(x => !newAsDict.ContainsKey(x.DialedNumber)).ToArray();
 
                 foreach (var item in unmatchedExistingNumbers)
                 {
@@ -491,9 +493,9 @@ namespace NumberSearch.Ingest
                     }
                 }
 
-                var end = DateTime.Now;
+                DateTime end = DateTime.Now;
 
-                var stats = new IngestStatistics
+                IngestStatistics stats = new()
                 {
                     StartDate = start,
                     EndDate = end,
@@ -522,7 +524,7 @@ namespace NumberSearch.Ingest
                     StartDate = start,
                     EndDate = DateTime.Now,
                     IngestedFrom = "OwnedNumbers",
-                    NumbersRetrived = newlyIngested.Count(),
+                    NumbersRetrived = newlyIngested.Length,
                     Priority = false,
                     Lock = false,
                     IngestedNew = ingestedNew,
@@ -536,9 +538,9 @@ namespace NumberSearch.Ingest
 
         public static async Task<IngestStatistics> OfferUnassignedNumberForSaleAsync(ReadOnlyMemory<char> connectionString)
         {
-            var start = DateTime.Now;
-            var ingestedNew = 0;
-            var updatedExisting = 0;
+            DateTime start = DateTime.Now;
+            int ingestedNew = 0;
+            int updatedExisting = 0;
 
             var numbers = await OwnedPhoneNumber.GetAllAsync(connectionString.ToString());
 
@@ -546,7 +548,7 @@ namespace NumberSearch.Ingest
 
             foreach (var item in numbers)
             {
-                if (item?.Notes is not null && item?.Notes.Trim() == "Unassigned")
+                if (!string.IsNullOrWhiteSpace(item?.Notes) && item?.Notes.Trim() == "Unassigned")
                 {
                     var number = await DataAccess.Models.PhoneNumber.GetAsync(item.DialedNumber, connectionString.ToString());
 
@@ -591,7 +593,7 @@ namespace NumberSearch.Ingest
                 }
             }
 
-            DataAccess.Models.PhoneNumber[] typedNumbers = Services.AssignNumberTypes([..newUnassigned]);
+            DataAccess.Models.PhoneNumber[] typedNumbers = Services.AssignNumberTypes([.. newUnassigned]);
             DataAccess.Models.PhoneNumber[] locations = await Services.AssignRatecenterAndRegionAsync(typedNumbers);
             _ = await Services.SubmitPhoneNumbersAsync(locations, connectionString);
 
@@ -617,8 +619,8 @@ namespace NumberSearch.Ingest
 
         public static async Task<IngestStatistics> MatchOwnedNumbersToBillingClientsAsync(ReadOnlyMemory<char> connectionString)
         {
-            var start = DateTime.Now;
-            var updatedExisting = 0;
+            DateTime start = DateTime.Now;
+            int updatedExisting = 0;
 
             var numbers = await OwnedPhoneNumber.GetAllAsync(connectionString.ToString());
             var purchased = await PurchasedPhoneNumber.GetAllAsync(connectionString.ToString());
@@ -713,7 +715,7 @@ namespace NumberSearch.Ingest
         public static async Task<ServiceProviderChanged[]> VerifyServiceProvidersAsync(ReadOnlyMemory<char> bulkApiKey, ReadOnlyMemory<char> connectionString)
         {
             var owned = await OwnedPhoneNumber.GetAllAsync(connectionString.ToString());
-            var serviceProviderChanged = new List<ServiceProviderChanged>();
+            List<ServiceProviderChanged> serviceProviderChanged = new();
 
             // Only query data for numbers with a status of Active.
             foreach (var number in owned.Where(x => x.Status is "Active"))
@@ -779,7 +781,7 @@ namespace NumberSearch.Ingest
 
             Log.Information($"[OwnedNumbers] Found {serviceProviderChanged.Count} numbers whose Service Provider has changed since the last ingest.");
 
-            return [..serviceProviderChanged];
+            return [.. serviceProviderChanged];
         }
 
         public static async Task VerifyEmergencyInformationAsync(ReadOnlyMemory<char> connectionString, ReadOnlyMemory<char> bulkVSUsername, ReadOnlyMemory<char> bulkVSPassword)
@@ -905,7 +907,7 @@ namespace NumberSearch.Ingest
 
             output.Append(JsonSerializer.Serialize(changes, options));
 
-            var notificationEmail = new Email
+            var notificationEmail = new DataAccess.Models.Email
             {
                 PrimaryEmailAddress = emailPrimary.ToString(),
                 CarbonCopy = emailCC.ToString(),

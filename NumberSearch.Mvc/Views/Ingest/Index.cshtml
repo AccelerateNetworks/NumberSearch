@@ -253,7 +253,7 @@
     <div class="row">
         <div class="col">
             @{
-                var timeAgo = DateTime.Now - Model.Ingests.FirstOrDefault()?.StartDate;
+                var timeAgo = DateTime.Now - Model?.Ingests.FirstOrDefault()?.StartDate;
                 var last = $"Last ingest performed {timeAgo.GetValueOrDefault().ToString(@"hh\:mm\:ss")} seconds ago.";
                 var oneHour = DateTime.Now - DateTime.Now.AddHours(-6);
                 if (timeAgo > oneHour)

@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace NumberSearch.DataAccess
+namespace NumberSearch.DataAccess.Models
 {
     public class Email
     {
@@ -146,7 +146,7 @@ namespace NumberSearch.DataAccess
                 {
                     var icsFile = Path.Combine(AppContext.BaseDirectory, "acceleratenetworks.ics");
 
-                    System.IO.File.WriteAllText(icsFile, CalendarInvite);
+                    File.WriteAllText(icsFile, CalendarInvite);
 
                     builder.Attachments.Add(icsFile);
                 }

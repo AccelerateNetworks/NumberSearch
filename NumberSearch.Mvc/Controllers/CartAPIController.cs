@@ -680,15 +680,15 @@ namespace NumberSearch.Mvc.Controllers
             else if (phoneNumber.IngestedFrom == "FirstPointCom")
             {
                 // Verify that tele has the number.
-                var results = await NpaNxxFirstPointCom.GetAsync(phoneNumber.NPA.ToString().AsMemory(), phoneNumber.NXX.ToString().AsMemory(), string.Empty.AsMemory(), _fpcusername.AsMemory(), _fpcpassword.AsMemory()).ConfigureAwait(false);
+                var results = await NpaNxxFirstPointCom.GetAsync(phoneNumber.NPA.ToString().AsMemory(), phoneNumber.NXX.ToString().AsMemory(), string.Empty.AsMemory(), _fpcusername.AsMemory(), _fpcpassword.AsMemory());
                 var matchingNumber = results.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
                 if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
                 {
-                    Log.Information($"[FirstPointCom] Found {phoneNumber.DialedNumber} in {results.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
+                    Log.Information($"[FirstPointCom] Found {phoneNumber.DialedNumber} in {results.Length} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
                 }
                 else
                 {
-                    Log.Warning($"[FirstPointCom] Failed to find {phoneNumber.DialedNumber} in {results.Count()} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
+                    Log.Warning($"[FirstPointCom] Failed to find {phoneNumber.DialedNumber} in {results.Length} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
 
                     var purchaseOrder = new PurchasedPhoneNumber
                     {

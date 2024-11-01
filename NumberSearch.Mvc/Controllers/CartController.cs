@@ -937,7 +937,7 @@ namespace NumberSearch.Mvc.Controllers
                             }
 
                             // Create the confirmation email.
-                            var confirmationEmail = new Email
+                            var confirmationEmail = new DataAccess.Models.Email
                             {
                                 PrimaryEmailAddress = order.Email,
                                 SalesEmailAddress = string.IsNullOrWhiteSpace(order.SalesEmail) ? string.Empty : order.SalesEmail,

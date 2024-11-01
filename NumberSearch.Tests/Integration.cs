@@ -544,7 +544,6 @@ namespace NumberSearch.Tests
 
             var result = await client.DIDInventorySearchAsync(pComNetCredentials, DIDSearch, ReturnAmount);
 
-            Assert.NotNull(result);
             Assert.NotEmpty(result.DIDOrder);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
@@ -579,7 +578,6 @@ namespace NumberSearch.Tests
         {
             var result = await FirstCom.FirstPointComSMS.GetSMSRoutingByDialedNumberAsync("12069574634".AsMemory(), pComNetCredentials.Username.AsMemory(), pComNetCredentials.Password.AsMemory());
 
-            Assert.NotNull(result);
             Assert.True(result.QueryResult.text is "OK");
             Assert.True(result.QueryResult.code is 0);
             Assert.True(result.epid is 265);
@@ -591,7 +589,6 @@ namespace NumberSearch.Tests
         {
             var result = await FirstCom.FirstPointComSMS.EnableSMSByDialedNumberAsync("12069574634", pComNetCredentials.Username, pComNetCredentials.Password);
 
-            Assert.NotNull(result);
             Assert.True(result.code is not 0);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
@@ -601,7 +598,6 @@ namespace NumberSearch.Tests
         {
             var result = await FirstCom.FirstPointComSMS.RouteSMSToEPIDByDialedNumberAsync("12069574634", 265, pComNetCredentials.Username, pComNetCredentials.Password);
 
-            Assert.NotNull(result);
             Assert.True(result.text is "Routed OK!");
             Assert.True(result.code is 0);
             output.WriteLine(JsonSerializer.Serialize(result));

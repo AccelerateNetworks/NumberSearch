@@ -1,9 +1,6 @@
 ﻿using NumberSearch.DataAccess.Models;
-using NumberSearch.Mvc.Models;
 
-using System;
-
-namespace NumberSearch.Mvc
+namespace NumberSearch.Mvc.Models
 {
     public class SearchResults
     {
@@ -15,8 +12,8 @@ namespace NumberSearch.Mvc
         public string Message { get; set; } = string.Empty;
         public string AlertType { get; set; } = string.Empty;
         public string City { get; set; } = string.Empty;
-        public string[] Cities { get; set; } = Array.Empty<string>();
-        public PhoneNumber[] PhoneNumbers { get; set; } = Array.Empty<PhoneNumber>();
+        public string[] Cities { get; set; } = [];
+        public PhoneNumber[] PhoneNumbers { get; set; } = [];
         public Cart Cart { get; set; } = new();
     }
 }

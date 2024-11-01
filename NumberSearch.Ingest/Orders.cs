@@ -337,7 +337,7 @@ namespace NumberSearch.Ingest
 
             output.Append("<p>Have a great day, hombre! 🤠</p>");
 
-            var notificationEmail = new Email
+            var notificationEmail = new DataAccess.Models.Email
             {
                 PrimaryEmailAddress = appConfig.EmailDan.ToString(),
                 CarbonCopy = appConfig.EmailTom.ToString(),
@@ -394,7 +394,7 @@ namespace NumberSearch.Ingest
                                 var invoiceStatus = convertedInvoice.status_id is "4" ? "paid" : "approved";
                                 var checkUpdate = await order.PutAsync(postgresql.ToString());
                                 string name = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName;
-                                var message = new Email
+                                var message = new DataAccess.Models.Email
                                 {
                                     SalesEmailAddress = string.IsNullOrWhiteSpace(order.SalesEmail) ? string.Empty : order.SalesEmail,
                                     PrimaryEmailAddress = "dan@acceleratenetworks.com",
@@ -461,7 +461,7 @@ namespace NumberSearch.Ingest
                                     var checkUpdate = await order.PutAsync(postgresql.ToString());
                                     string name = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName;
                                     var invoiceStatus = convertedInvoice.status_id is "4" ? "paid" : "converted from a quote";
-                                    var message = new Email
+                                    var message = new DataAccess.Models.Email
                                     {
                                         SalesEmailAddress = string.IsNullOrWhiteSpace(order.SalesEmail) ? string.Empty : order.SalesEmail,
                                         PrimaryEmailAddress = "dan@acceleratenetworks.com",
@@ -567,7 +567,7 @@ namespace NumberSearch.Ingest
                             if (order.DateUpfrontInvoicePaid is not null && upfrontInvoice.status_id is "4")
                             {
                                 string name = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName;
-                                var message = new Email
+                                var message = new DataAccess.Models.Email
                                 {
                                     SalesEmailAddress = string.IsNullOrWhiteSpace(order.SalesEmail) ? string.Empty : order.SalesEmail,
                                     PrimaryEmailAddress = "support@acceleratenetworks.com",

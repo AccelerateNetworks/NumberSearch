@@ -126,7 +126,7 @@ namespace NumberSearch.Ingest
 
                         if (originalOrder is not null)
                         {
-                            var notificationEmail = new Email
+                            var notificationEmail = new DataAccess.Models.Email
                             {
                                 PrimaryEmailAddress = originalOrder.Email,
                                 SalesEmailAddress = string.IsNullOrWhiteSpace(originalOrder?.SalesEmail) ? string.Empty : originalOrder.SalesEmail,

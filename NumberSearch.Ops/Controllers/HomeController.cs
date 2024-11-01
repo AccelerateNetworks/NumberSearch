@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
+using NumberSearch.DataAccess.Models;
 using NumberSearch.Ops.Models;
 
 using System;
@@ -378,7 +379,7 @@ public class HomeController : Controller
                 email.Completed = false;
 
                 // Directly send the email.
-                NumberSearch.DataAccess.Email toSend = new()
+                Email toSend = new()
                 {
                     EmailId = email.EmailId,
                     OrderId = email.OrderId,

@@ -405,7 +405,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
 
                 // Send out the confirmation email.
-                var confirmationEmail = new Email
+                var confirmationEmail = new DataAccess.Models.Email
                 {
                     PrimaryEmailAddress = order.Email,
                     CarbonCopy = _SmtpUsername,
