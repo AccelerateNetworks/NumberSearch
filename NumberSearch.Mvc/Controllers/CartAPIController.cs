@@ -633,14 +633,14 @@ namespace NumberSearch.Mvc.Controllers
                 return BadRequest(ModelState);
             }
 
-            var phoneNumber = await DataAccess.Models.PhoneNumber.GetAsync(dialedPhoneNumber, _postgresql).ConfigureAwait(false);
+            var phoneNumber = await DataAccess.Models.PhoneNumber.GetAsync(dialedPhoneNumber, _postgresql);
             var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), DialedNumber = phoneNumber.DialedNumber, Quantity = 1 };
 
             // Check that the number is still avalible from the provider.
             if (phoneNumber.IngestedFrom == "BulkVS")
             {
                 var npanxx = $"{phoneNumber.NPA}{phoneNumber.NXX}";
-                var doesItStillExist = await OrderTn.GetAsync(phoneNumber.NPA, phoneNumber.NXX, _bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
+                var doesItStillExist = await OrderTn.GetAsync(phoneNumber.NPA, phoneNumber.NXX, _bulkVSusername.AsMemory(), _bulkVSpassword.AsMemory());
                 var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
                 if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
                 {

@@ -28,7 +28,7 @@ namespace NumberSearch.Ingest
         {
 
             // Prevent another run from starting while this is still going.
-            var lockingStats = new IngestStatistics
+            IngestStatistics lockingStats = new()
             {
                 IngestedFrom = "OwnedNumbers",
                 StartDate = DateTime.Now,
@@ -42,11 +42,11 @@ namespace NumberSearch.Ingest
                 Lock = true
             };
 
-            await lockingStats.PostAsync(appConfig.Postgresql).ConfigureAwait(false);
-            var smsRouteChanges = await Owned.IngestAsync(appConfig);
+            await lockingStats.PostAsync(appConfig.Postgresql.ToString()).ConfigureAwait(false);
+            SMSRouteChange[] smsRouteChanges = await Owned.IngestAsync(appConfig);
 
             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
-            await lockingStats.DeleteAsync(appConfig.Postgresql).ConfigureAwait(false);
+            await lockingStats.DeleteAsync(appConfig.Postgresql.ToString()).ConfigureAwait(false);
 
             return smsRouteChanges;
         }
@@ -60,7 +60,7 @@ namespace NumberSearch.Ingest
             // Ingest all owned numbers from the providers.
             try
             {
-                var firstComNumbers = await FirstPointComAsync(configuration.PComNetUsername, configuration.PComNetPassword).ConfigureAwait(false);
+                var firstComNumbers = await FirstPointComAsync(configuration.PComNetUsername, configuration.PComNetPassword);
                 if (firstComNumbers != null)
                 {
                     allNumbers.AddRange(firstComNumbers);
@@ -118,12 +118,12 @@ namespace NumberSearch.Ingest
             try
             {
                 Log.Information("[OwnedNumbers] Looking for LRN changes on owned numbers.");
-                var changedNumbers = await VerifyServiceProvidersAsync(configuration.BulkVSAPIKEY, configuration.Postgresql).ConfigureAwait(false);
+                var changedNumbers = await VerifyServiceProvidersAsync(configuration.BulkVSAPIKEY, configuration.Postgresql);
 
                 if (changedNumbers != null && changedNumbers.Any())
                 {
                     Log.Information($"[OwnedNumbers] Emailing out a notification that {changedNumbers.Count()} numbers LRN updates.");
-                    var checkSend = await SendPortingNotificationEmailAsync(changedNumbers, configuration.SmtpUsername, configuration.SmtpPassword, configuration.EmailDan, configuration.EmailOrders, configuration.Postgresql).ConfigureAwait(false);
+                    var checkSend = await SendPortingNotificationEmailAsync(changedNumbers, configuration.SmtpUsername, configuration.SmtpPassword, configuration.EmailDan, configuration.EmailOrders, configuration.Postgresql);
                 }
             }
             catch (Exception ex)
@@ -133,28 +133,28 @@ namespace NumberSearch.Ingest
             }
 
             // Offer unassigned phone numbers we own for purchase on the website.
-            _ = await OfferUnassignedNumberForSaleAsync(configuration.Postgresql).ConfigureAwait(false);
+            _ = await OfferUnassignedNumberForSaleAsync(configuration.Postgresql);
 
             // Match up owned numbers and their billingClients.
-            _ = await MatchOwnedNumbersToBillingClientsAsync(configuration.Postgresql).ConfigureAwait(false);
+            _ = await MatchOwnedNumbersToBillingClientsAsync(configuration.Postgresql);
 
             // Link up E911 registrations to owned numbers.
-            await VerifyEmergencyInformationAsync(configuration.Postgresql, configuration.BulkVSUsername, configuration.BulkVSPassword).ConfigureAwait(false);
+            await VerifyEmergencyInformationAsync(configuration.Postgresql, configuration.BulkVSUsername, configuration.BulkVSPassword);
 
             // Match numbers to destinations and domains in FusionPBX.
             await MatchOwnedNumbersToFusionPBXAsync(configuration.Postgresql, configuration.FusionPBXUsername, configuration.FusionPBXPassword);
 
             // Verify SMS routing with Endstream.
-            var smsRouteChanges = await VerifySMSRoutingAsync(configuration.Postgresql, configuration.PComNetUsername, configuration.PComNetPassword);
+            SMSRouteChange[] smsRouteChanges = await VerifySMSRoutingAsync(configuration.Postgresql, configuration.PComNetUsername, configuration.PComNetPassword);
 
             // Update the statuses on old or orphaned port requests and ported numbers.
             await PortRequests.UpdatePortRequestsAndNumbersByExternalIdAsync(configuration);
 
             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
-            var lockEntry = await IngestStatistics.GetLockAsync("OwnedNumbers", configuration.Postgresql).ConfigureAwait(false);
+            var lockEntry = await IngestStatistics.GetLockAsync("OwnedNumbers", configuration.Postgresql.ToString());
             if (lockEntry is not null)
             {
-                _ = await lockEntry.DeleteAsync(configuration.Postgresql).ConfigureAwait(false);
+                _ = await lockEntry.DeleteAsync(configuration.Postgresql.ToString());
             }
 
             // Remove all of the old numbers from the database.
@@ -175,7 +175,7 @@ namespace NumberSearch.Ingest
                 Priority = false
             };
 
-            if (await combined.PostAsync(configuration.Postgresql).ConfigureAwait(false))
+            if (await combined.PostAsync(configuration.Postgresql.ToString()))
             {
                 Log.Information("[OwnedNumbers] Completed the ingest process.");
             }
@@ -189,20 +189,20 @@ namespace NumberSearch.Ingest
 
         public record SMSRouteChange(string DialedNumber, string OldRoute, string NewRoute, string Message);
 
-        public static async Task<SMSRouteChange[]> VerifySMSRoutingAsync(string connectionString, string pComNetUsername, string pComNetPassword)
+        public static async Task<SMSRouteChange[]> VerifySMSRoutingAsync(ReadOnlyMemory<char> connectionString, ReadOnlyMemory<char> pComNetUsername, ReadOnlyMemory<char> pComNetPassword)
         {
             Log.Information($"[OwnedNumbers] Verifying SMS Routing for Owned Phone numbers.");
 
             var changes = new List<SMSRouteChange>();
 
-            var ownedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
+            var ownedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString.ToString());
 
             foreach (var number in ownedNumbers.Where(x => x.Status is "Active"))
             {
                 bool updated = false;
                 try
                 {
-                    var checkSMSRouting = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync($"1{number.DialedNumber}", pComNetUsername, pComNetPassword);
+                    var checkSMSRouting = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync($"1{number.DialedNumber}".AsMemory(), pComNetUsername, pComNetPassword);
                     if (!string.IsNullOrWhiteSpace(checkSMSRouting.route))
                     {
                         // Update the owned number with the route.
@@ -232,7 +232,7 @@ namespace NumberSearch.Ingest
 
                 if (updated)
                 {
-                    var checkUpdate = await number.PutAsync(connectionString);
+                    var checkUpdate = await number.PutAsync(connectionString.ToString());
                     Log.Information($"[OwnedNumbers] Updated SMS routing for {number.DialedNumber} with FirstPointCom.");
                 }
             }
@@ -242,15 +242,15 @@ namespace NumberSearch.Ingest
             return [.. changes];
         }
 
-        public static async Task MatchOwnedNumbersToFusionPBXAsync(string connectionString, string fusionPBXUsername, string fusionPBXPassword)
+        public static async Task MatchOwnedNumbersToFusionPBXAsync(ReadOnlyMemory<char> connectionString, ReadOnlyMemory<char> fusionPBXUsername, ReadOnlyMemory<char> fusionPBXPassword)
         {
             Log.Information($"[OwnedNumbers] Matching FusionPBX data for Owned Phone numbers.");
 
-            var ownedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
+            var ownedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString.ToString()).ConfigureAwait(false);
 
             try
             {
-                var destination = await DestinationDetails.GetByDialedNumberAsync("2068588757", fusionPBXUsername, fusionPBXPassword);
+                var destination = await DestinationDetails.GetByDialedNumberAsync("2068588757".AsMemory(), fusionPBXUsername, fusionPBXPassword);
 
                 // If we aren't getting good data back from FusionPBX then skip this updating process.
                 if (destination is not null && !string.IsNullOrWhiteSpace(destination.domain_uuid))
@@ -261,7 +261,7 @@ namespace NumberSearch.Ingest
 
                         try
                         {
-                            destination = await DestinationDetails.GetByDialedNumberAsync(ownedNumber.DialedNumber, fusionPBXUsername, fusionPBXPassword);
+                            destination = await DestinationDetails.GetByDialedNumberAsync(ownedNumber.DialedNumber.AsMemory(), fusionPBXUsername, fusionPBXPassword);
 
                             if (destination is not null && !string.IsNullOrWhiteSpace(destination.domain_uuid))
                             {
@@ -273,9 +273,9 @@ namespace NumberSearch.Ingest
                                     updated = true;
                                 }
 
-                                var domain = await DomainDetails.GetByDomainIdAsync(destination.domain_uuid, fusionPBXUsername, fusionPBXPassword);
+                                var domain = await DomainDetails.GetByDomainIdAsync(destination.domain_uuid.AsMemory(), fusionPBXUsername, fusionPBXPassword);
 
-                                if (domain is not null && !string.IsNullOrWhiteSpace(domain.domain_name))
+                                if (!string.IsNullOrWhiteSpace(domain.domain_name))
                                 {
                                     if (ownedNumber.FPBXDomainName != domain.domain_name)
                                     {
@@ -318,7 +318,7 @@ namespace NumberSearch.Ingest
                         if (updated)
                         {
                             ownedNumber.DateUpdated = DateTime.Now;
-                            _ = await ownedNumber.PutAsync(connectionString);
+                            _ = await ownedNumber.PutAsync(connectionString.ToString());
                             Log.Information("[OwnedNumbers] Updated FusionPBX data for Owned Phone number {@OwnedNumber}", ownedNumber);
                         }
                     }
@@ -333,7 +333,7 @@ namespace NumberSearch.Ingest
             Log.Information($"[OwnedNumbers] Updated FusionPBX data for Owned Phone numbers.");
         }
 
-        public static async Task<IEnumerable<OwnedPhoneNumber>> FirstPointComAsync(string username, string password)
+        public static async Task<IEnumerable<OwnedPhoneNumber>> FirstPointComAsync(ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
             var numbers = new List<OwnedPhoneNumber>();
 
@@ -341,7 +341,7 @@ namespace NumberSearch.Ingest
             {
                 try
                 {
-                    var results = await FirstPointComOwnedPhoneNumber.GetAsync(npa.ToString(), username, password).ConfigureAwait(false);
+                    var results = await FirstPointComOwnedPhoneNumber.GetAsync(npa.ToString().AsMemory(), username, password).ConfigureAwait(false);
 
                     Log.Information($"[OwnedNumbers] [FirstPointCom] Retrieved {results.DIDOrder.Length} owned numbers.");
 
@@ -377,7 +377,7 @@ namespace NumberSearch.Ingest
             return numbers.Count != 0 ? numbers.ToArray() : new List<OwnedPhoneNumber>();
         }
 
-        public static async Task<IngestStatistics> SubmitOwnedNumbersAsync(IEnumerable<OwnedPhoneNumber> newlyIngested, string connectionString, string bulkVSUsername, string bulkVSPassword)
+        public static async Task<IngestStatistics> SubmitOwnedNumbersAsync(IEnumerable<OwnedPhoneNumber> newlyIngested, ReadOnlyMemory<char> connectionString, ReadOnlyMemory<char> bulkVSUsername, ReadOnlyMemory<char> bulkVSPassword)
         {
             var start = DateTime.Now;
             var ingestedNew = 0;
@@ -385,10 +385,10 @@ namespace NumberSearch.Ingest
 
             try
             {
-                var existingOwnedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
+                var existingOwnedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString.ToString());
                 var existingAsDict = existingOwnedNumbers.DistinctBy(x => x.DialedNumber).ToDictionary(x => x.DialedNumber, x => x);
                 var newAsDict = newlyIngested.ToDictionary(x => x.DialedNumber, x => x);
-                var portedPhoneNumbers = await PortedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
+                var portedPhoneNumbers = await PortedPhoneNumber.GetAllAsync(connectionString.ToString());
 
                 foreach (var item in newlyIngested)
                 {
@@ -399,8 +399,8 @@ namespace NumberSearch.Ingest
                         var matchingPort = portedPhoneNumbers.Where(x => x.PortedDialedNumber == item.DialedNumber).FirstOrDefault();
                         if (matchingPort is not null && !string.IsNullOrWhiteSpace(matchingPort.RequestStatus) && matchingPort.RequestStatus is not "COMPLETE")
                         {
-                            var externalStatus = await TnRecord.GetByDialedNumberAsync(item.DialedNumber, bulkVSUsername, bulkVSPassword);
-                            if (externalStatus?.Status is not "Active")
+                            var externalStatus = await TnRecord.GetByDialedNumberAsync(item.DialedNumber.AsMemory(), bulkVSUsername, bulkVSPassword);
+                            if (externalStatus.Status is not "Active")
                             {
                                 // If it is a ported number and the port has not complete mark it as ported in.
                                 item.Status = "Porting In";
@@ -417,7 +417,7 @@ namespace NumberSearch.Ingest
                         }
                         item.Active = true;
                         // Add new owned numbers.
-                        var checkCreate = await item.PostAsync(connectionString).ConfigureAwait(false);
+                        var checkCreate = await item.PostAsync(connectionString.ToString());
                         if (checkCreate)
                         {
                             ingestedNew++;
@@ -434,8 +434,8 @@ namespace NumberSearch.Ingest
                         var matchingPort = portedPhoneNumbers.Where(x => x.PortedDialedNumber == item.DialedNumber).FirstOrDefault();
                         if (matchingPort is not null && !string.IsNullOrWhiteSpace(matchingPort.RequestStatus) && matchingPort.RequestStatus is not "COMPLETE")
                         {
-                            var externalStatus = await TnRecord.GetByDialedNumberAsync(item.DialedNumber, bulkVSUsername, bulkVSPassword);
-                            if (externalStatus?.Status is not "Active")
+                            var externalStatus = await TnRecord.GetByDialedNumberAsync(item.DialedNumber.AsMemory(), bulkVSUsername, bulkVSPassword);
+                            if (externalStatus.Status is not "Active")
                             {
                                 // If it is a ported number and the port has not complete mark it as ported in.
                                 number.Status = "Porting In";
@@ -456,7 +456,7 @@ namespace NumberSearch.Ingest
                         number.TrunkGroup = item.TrunkGroup;
                         number.Active = true;
 
-                        var checkCreate = await number.PutAsync(connectionString).ConfigureAwait(false);
+                        var checkCreate = await number.PutAsync(connectionString.ToString());
                         if (checkCreate)
                         {
                             updatedExisting++;
@@ -479,7 +479,7 @@ namespace NumberSearch.Ingest
                     {
                         item.Status = "Cancelled";
                     }
-                    var checkCreate = await item.PutAsync(connectionString).ConfigureAwait(false);
+                    var checkCreate = await item.PutAsync(connectionString.ToString());
                     if (checkCreate)
                     {
                         updatedExisting++;
@@ -534,13 +534,13 @@ namespace NumberSearch.Ingest
             }
         }
 
-        public static async Task<IngestStatistics> OfferUnassignedNumberForSaleAsync(string connectionString)
+        public static async Task<IngestStatistics> OfferUnassignedNumberForSaleAsync(ReadOnlyMemory<char> connectionString)
         {
             var start = DateTime.Now;
             var ingestedNew = 0;
             var updatedExisting = 0;
 
-            var numbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
+            var numbers = await OwnedPhoneNumber.GetAllAsync(connectionString.ToString());
 
             List<DataAccess.Models.PhoneNumber> newUnassigned = [];
 
@@ -548,7 +548,7 @@ namespace NumberSearch.Ingest
             {
                 if (item?.Notes is not null && item?.Notes.Trim() == "Unassigned")
                 {
-                    var number = await DataAccess.Models.PhoneNumber.GetAsync(item.DialedNumber, connectionString).ConfigureAwait(false);
+                    var number = await DataAccess.Models.PhoneNumber.GetAsync(item.DialedNumber, connectionString.ToString());
 
                     if (number is null || item.DialedNumber != number.DialedNumber)
                     {
@@ -583,7 +583,7 @@ namespace NumberSearch.Ingest
                         number.IngestedFrom = "OwnedNumber";
                         number.Purchased = false;
 
-                        _ = await number.PutAsync(connectionString);
+                        _ = await number.PutAsync(connectionString.ToString());
                         updatedExisting++;
 
                         Log.Information($"[Ingest] [OwnedNumber] Continued offering unassigned number {item.DialedNumber} up for sale.");
@@ -593,7 +593,7 @@ namespace NumberSearch.Ingest
 
             DataAccess.Models.PhoneNumber[] typedNumbers = Services.AssignNumberTypes([..newUnassigned]);
             DataAccess.Models.PhoneNumber[] locations = await Services.AssignRatecenterAndRegionAsync(typedNumbers);
-            _ = await Services.SubmitPhoneNumbersAsync(locations, connectionString.AsMemory());
+            _ = await Services.SubmitPhoneNumbersAsync(locations, connectionString);
 
             DateTime end = DateTime.Now;
 
@@ -615,14 +615,14 @@ namespace NumberSearch.Ingest
             return stats;
         }
 
-        public static async Task<IngestStatistics> MatchOwnedNumbersToBillingClientsAsync(string connectionString)
+        public static async Task<IngestStatistics> MatchOwnedNumbersToBillingClientsAsync(ReadOnlyMemory<char> connectionString)
         {
             var start = DateTime.Now;
             var updatedExisting = 0;
 
-            var numbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
-            var purchased = await PurchasedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
-            var ported = await PortedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
+            var numbers = await OwnedPhoneNumber.GetAllAsync(connectionString.ToString());
+            var purchased = await PurchasedPhoneNumber.GetAllAsync(connectionString.ToString());
+            var ported = await PortedPhoneNumber.GetAllAsync(connectionString.ToString());
 
             foreach (var number in numbers)
             {
@@ -639,7 +639,7 @@ namespace NumberSearch.Ingest
                         continue;
                     }
 
-                    var order = await Order.GetByIdAsync(match2.OrderId ?? Guid.NewGuid(), connectionString).ConfigureAwait(false);
+                    var order = await Order.GetByIdAsync(match2.OrderId ?? Guid.NewGuid(), connectionString.ToString());
 
                     //var badLink = $"https://billing.acceleratenetworks.com/clients/{number.BillingClientId}/edit";
                     //var checkLink = badLink.GetStringAsync();
@@ -649,7 +649,7 @@ namespace NumberSearch.Ingest
                         number.BillingClientId = order.BillingClientId;
                         number.OwnedBy = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName;
 
-                        var checkUpdate = await number.PutAsync(connectionString).ConfigureAwait(false);
+                        var checkUpdate = await number.PutAsync(connectionString.ToString());
                         updatedExisting++;
 
                         Log.Information($"[OwnedNumbers] [ClientMatch] Associated Owned Number {match2?.PortedDialedNumber} with billing client id {order?.BillingClientId}");
@@ -661,14 +661,14 @@ namespace NumberSearch.Ingest
                 }
                 else
                 {
-                    var order = await Order.GetByIdAsync(match.OrderId, connectionString).ConfigureAwait(false);
+                    var order = await Order.GetByIdAsync(match.OrderId, connectionString.ToString());
 
                     if (order is not null && !string.IsNullOrWhiteSpace(order?.BillingClientId))
                     {
                         number.BillingClientId = order.BillingClientId;
                         number.OwnedBy = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName;
 
-                        var checkUpdate = await number.PutAsync(connectionString).ConfigureAwait(false);
+                        var checkUpdate = await number.PutAsync(connectionString.ToString());
                         updatedExisting++;
 
                         Log.Information($"[OwnedNumbers] [ClientMatch] Associated Owned Number {match?.DialedNumber} with billing client id {order?.BillingClientId}");
@@ -680,9 +680,9 @@ namespace NumberSearch.Ingest
                 }
             }
 
-            var end = DateTime.Now;
+            DateTime end = DateTime.Now;
 
-            var stats = new IngestStatistics
+            IngestStatistics stats = new()
             {
                 StartDate = start,
                 EndDate = end,
@@ -700,19 +700,19 @@ namespace NumberSearch.Ingest
             return stats;
         }
 
-        public class ServiceProviderChanged
-        {
-            public string DialedNumber { get; set; } = string.Empty;
-            public string OldSPID { get; set; } = string.Empty;
-            public string CurrentSPID { get; set; } = string.Empty;
-            public string OldSPIDName { get; set; } = string.Empty;
-            public string CurrentSPIDName { get; set; } = string.Empty;
-            public string RawQuery { get; set; } = string.Empty;
-        }
+        public readonly record struct ServiceProviderChanged
+        (
+             string DialedNumber,
+             string OldSPID,
+             string CurrentSPID,
+             string OldSPIDName,
+             string CurrentSPIDName,
+             string RawQuery
+        );
 
-        public static async Task<IEnumerable<ServiceProviderChanged>> VerifyServiceProvidersAsync(string bulkApiKey, string connectionString)
+        public static async Task<ServiceProviderChanged[]> VerifyServiceProvidersAsync(ReadOnlyMemory<char> bulkApiKey, ReadOnlyMemory<char> connectionString)
         {
-            var owned = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
+            var owned = await OwnedPhoneNumber.GetAllAsync(connectionString.ToString());
             var serviceProviderChanged = new List<ServiceProviderChanged>();
 
             // Only query data for numbers with a status of Active.
@@ -729,7 +729,7 @@ namespace NumberSearch.Ingest
                     }
                     else
                     {
-                        var result = await LrnBulkCnam.GetAsync(number.DialedNumber, bulkApiKey).ConfigureAwait(false);
+                        var result = await LrnBulkCnam.GetAsync(number.DialedNumber, bulkApiKey.ToString());
 
                         var provider = "BulkVS";
                         var newSpid = result?.spid ?? string.Empty;
@@ -753,7 +753,7 @@ namespace NumberSearch.Ingest
                             // Update the SPID to the current value.
                             number.SPID = newSpid;
                             number.SPIDName = newSpidName;
-                            var checkUpdate = await number.PutAsync(connectionString).ConfigureAwait(false);
+                            var checkUpdate = await number.PutAsync(connectionString.ToString());
                             if (checkUpdate)
                             {
                                 Log.Information($"[OwnedNumbers] Updated {newSpidName}, {newSpid} for {number.DialedNumber} from [{provider}].");
@@ -779,18 +779,18 @@ namespace NumberSearch.Ingest
 
             Log.Information($"[OwnedNumbers] Found {serviceProviderChanged.Count} numbers whose Service Provider has changed since the last ingest.");
 
-            return serviceProviderChanged;
+            return [..serviceProviderChanged];
         }
 
-        public static async Task VerifyEmergencyInformationAsync(string connectionString, string bulkVSUsername, string bulkVSPassword)
+        public static async Task VerifyEmergencyInformationAsync(ReadOnlyMemory<char> connectionString, ReadOnlyMemory<char> bulkVSUsername, ReadOnlyMemory<char> bulkVSPassword)
         {
-            var emergencyInformation = await EmergencyInformation.GetAllAsync(connectionString).ConfigureAwait(false);
+            var emergencyInformation = await EmergencyInformation.GetAllAsync(connectionString.ToString());
 
             Log.Information($"[OwnedNumbers] Verifying Emergency Information for {emergencyInformation?.Count()} Owned Phone numbers.");
 
-            var ownedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString).ConfigureAwait(false);
+            var ownedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString.ToString());
 
-            var e911Registrations = await E911Record.GetAllAsync(bulkVSUsername, bulkVSPassword);
+            var e911Registrations = await E911Record.GetAllAsync(bulkVSUsername.ToString(), bulkVSPassword.ToString());
 
             foreach (var record in e911Registrations)
             {
@@ -815,7 +815,7 @@ namespace NumberSearch.Ingest
                         existing.State = existing.State != record.State ? record.State : existing.State;
                         existing.Zip = existing.Zip != record.Zip ? record.Zip : existing.Zip;
 
-                        var checkUpdate = await existing.PutAsync(connectionString);
+                        var checkUpdate = await existing.PutAsync(connectionString.ToString());
 
                         if (!checkUpdate)
                         {
@@ -844,8 +844,8 @@ namespace NumberSearch.Ingest
 
                         ownedNumber.EmergencyInformationId = registration.EmergencyInformationId;
 
-                        var checkCreate = await registration.PostAsync(connectionString);
-                        var checkUpdate = await ownedNumber.PutAsync(connectionString);
+                        var checkCreate = await registration.PostAsync(connectionString.ToString());
+                        var checkUpdate = await ownedNumber.PutAsync(connectionString.ToString());
 
                         if (!checkCreate && !checkUpdate)
                         {
@@ -875,8 +875,8 @@ namespace NumberSearch.Ingest
 
                     ownedNumber.EmergencyInformationId = registration.EmergencyInformationId;
 
-                    var checkCreate = await registration.PostAsync(connectionString);
-                    var checkUpdate = await ownedNumber.PutAsync(connectionString);
+                    var checkCreate = await registration.PostAsync(connectionString.ToString());
+                    var checkUpdate = await ownedNumber.PutAsync(connectionString.ToString());
 
                     if (!checkCreate && !checkUpdate)
                     {
@@ -888,15 +888,15 @@ namespace NumberSearch.Ingest
             }
         }
 
-        public static async Task<bool> SendPortingNotificationEmailAsync(IEnumerable<ServiceProviderChanged> changes, string smtpUsername, string smtpPassword, string emailPrimary, string emailCC, string connectionString)
+        public static async Task<bool> SendPortingNotificationEmailAsync(ServiceProviderChanged[] changes, ReadOnlyMemory<char> smtpUsername, ReadOnlyMemory<char> smtpPassword, ReadOnlyMemory<char> emailPrimary, ReadOnlyMemory<char> emailCC, ReadOnlyMemory<char> connectionString)
         {
-            if ((changes is null) || !changes.Any())
+            if (changes.Length is 0)
             {
                 // Successfully did nothing.
                 return true;
             }
 
-            var options = new JsonSerializerOptions
+            JsonSerializerOptions options = new()
             {
                 WriteIndented = true
             };
@@ -907,17 +907,17 @@ namespace NumberSearch.Ingest
 
             var notificationEmail = new Email
             {
-                PrimaryEmailAddress = emailPrimary,
-                CarbonCopy = emailCC,
+                PrimaryEmailAddress = emailPrimary.ToString(),
+                CarbonCopy = emailCC.ToString(),
                 DateSent = DateTime.Now,
-                Subject = $"[Ingest] {changes.Count()} phone numbers changed Service Providers.",
+                Subject = $"[Ingest] {changes.Length} phone numbers changed Service Providers.",
                 MessageBody = output.ToString(),
                 OrderId = new Guid(),
                 Completed = true
             };
 
-            var checkSend = await notificationEmail.SendEmailAsync(smtpUsername, smtpPassword).ConfigureAwait(false);
-            var checkSave = await notificationEmail.PostAsync(connectionString).ConfigureAwait(false);
+            var checkSend = await notificationEmail.SendEmailAsync(smtpUsername.ToString(), smtpPassword.ToString());
+            var checkSave = await notificationEmail.PostAsync(connectionString.ToString());
 
             return checkSave && checkSend;
         }

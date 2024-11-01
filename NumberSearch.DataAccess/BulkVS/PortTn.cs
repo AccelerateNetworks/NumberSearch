@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 
 using Serilog;
 
+using System;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
@@ -24,7 +25,7 @@ namespace NumberSearch.DataAccess.BulkVS
         public PortTnNote[] Notes { get; set; } = [];
 
 
-        public static async Task<PortTn> GetAsync(string orderId, string username, string password)
+        public static async Task<PortTn> GetAsync(ReadOnlyMemory<char> orderId, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
             string baseUrl = "https://portal.bulkvs.com/api/v1.0/";
             string endpoint = "portTn";
@@ -32,7 +33,7 @@ namespace NumberSearch.DataAccess.BulkVS
             string route = $"{baseUrl}{endpoint}{orderIdParameter}";
             try
             {
-                return await route.WithBasicAuth(username, password).GetJsonAsync<PortTn>().ConfigureAwait(false);
+                return await route.WithBasicAuth(username.ToString(), password.ToString()).GetJsonAsync<PortTn>();
             }
             catch (FlurlHttpException ex)
             {
@@ -43,14 +44,14 @@ namespace NumberSearch.DataAccess.BulkVS
             }
         }
 
-        public static async Task<TNList[]> GetAllAsync(string username, string password)
+        public static async Task<TNList[]> GetAllAsync(ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
             string baseUrl = "https://portal.bulkvs.com/api/v1.0/";
             string endpoint = "portTn";
             string route = $"{baseUrl}{endpoint}";
             try
             {
-                return await route.WithBasicAuth(username, password).GetJsonAsync<TNList[]>().ConfigureAwait(false);
+                return await route.WithBasicAuth(username.ToString(), password.ToString()).GetJsonAsync<TNList[]>();
             }
             catch (FlurlHttpException ex)
             {
@@ -92,17 +93,17 @@ namespace NumberSearch.DataAccess.BulkVS
         public string Pin { get; set; } = string.Empty;
     }
 
-    public class TNList
-    {
-        public string OrderId { get; set; } = string.Empty;
-        public string ReferenceId { get; set; } = string.Empty;
-        public string TN { get; set; } = string.Empty;
-        [JsonPropertyName("LNP Status")]
-        [JsonProperty("LNP Status")]
-        public string LNPStatus { get; set; } = string.Empty;
-        public string RDD { get; set; } = string.Empty;
-        public string Reason { get; set; } = string.Empty;
-    }
+    public readonly record struct TNList
+    (
+        string OrderId,
+        string ReferenceId,
+        string TN,
+        [property: JsonPropertyName("LNP Status")]
+        [property: JsonProperty("LNP Status")]
+        string LNPStatus,
+        string RDD,
+        string Reason
+    );
 
     public class PortTnAttachment
     {

@@ -5,6 +5,7 @@ using Serilog;
 
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using static NumberSearch.Ingest.Program;
@@ -21,12 +22,12 @@ namespace NumberSearch.Ingest
 
             foreach (var request in bulkVSPortRequests.ToArray())
             {
-                var portedNumbers = await PortedPhoneNumber.GetByExternalIdAsync(request.OrderId, configuration.Postgresql).ConfigureAwait(false);
+                var portedNumbers = await PortedPhoneNumber.GetByExternalIdAsync(request.OrderId, configuration.Postgresql.ToString()).ConfigureAwait(false);
 
                 bool focChanged = false;
                 bool portCompleted = false;
 
-                var bulkStatus = await PortTn.GetAsync(request.OrderId, configuration.BulkVSUsername, configuration.BulkVSPassword).ConfigureAwait(false);
+                var bulkStatus = await PortTn.GetAsync(request.OrderId.AsMemory(), configuration.BulkVSUsername, configuration.BulkVSPassword).ConfigureAwait(false);
 
                 foreach (var number in portedNumbers)
                 {
@@ -35,7 +36,7 @@ namespace NumberSearch.Ingest
                     {
                         var matchingNumber = bulkStatus.TNList.Where(x => x.TN == $"1{number.PortedDialedNumber}").FirstOrDefault();
 
-                        if (matchingNumber is not null)
+                        if (matchingNumber.OrderId == request.OrderId)
                         {
                             var checkRDDParse = DateTime.TryParse(matchingNumber.RDD, out var FOCDate);
 
@@ -61,8 +62,8 @@ namespace NumberSearch.Ingest
                                 }
                             }
 
-                            var checkPortedNumberUpdate = await number.PutAsync(configuration.Postgresql).ConfigureAwait(false);
-                            Log.Information($"[BulkVS] [PortRequests] Updated BulkVS Port Request {request?.OrderId} - {number?.PortedDialedNumber} - {number?.RequestStatus} - {number?.DateFirmOrderCommitment?.ToShortDateString()}");
+                            var checkPortedNumberUpdate = await number.PutAsync(configuration.Postgresql.ToString());
+                            Log.Information($"[BulkVS] [PortRequests] Updated BulkVS Port Request {request.OrderId} - {number?.PortedDialedNumber} - {number?.RequestStatus} - {number?.DateFirmOrderCommitment?.ToShortDateString()}");
                         }
                     }
                 }
@@ -76,7 +77,7 @@ namespace NumberSearch.Ingest
 
                 if (portedNumbers.FirstOrDefault() is not null)
                 {
-                    var portRequest = await PortRequest.GetByOrderIdAsync(portedNumbers.FirstOrDefault()?.OrderId ?? Guid.Empty, configuration.Postgresql).ConfigureAwait(false);
+                    var portRequest = await PortRequest.GetByOrderIdAsync(portedNumbers.FirstOrDefault()?.OrderId ?? Guid.Empty, configuration.Postgresql.ToString());
 
                     if (portRequest is not null && portRequest.OrderId == portedNumbers.FirstOrDefault()?.OrderId)
                     {
@@ -117,11 +118,11 @@ namespace NumberSearch.Ingest
                         }
 
                         // Update the request in the database.
-                        var checkUpdate = await portRequest.PutAsync(configuration.Postgresql).ConfigureAwait(false);
+                        var checkUpdate = await portRequest.PutAsync(configuration.Postgresql.ToString());
                         Log.Information($"[BulkVS] [PortRequests] Updated BulkVS Port Request {portRequest?.BulkVSId} - {portRequest?.RequestStatus} - {portRequest?.DateCompleted?.ToShortDateString()}");
 
                         // Get the original order and the numbers associated with the outstanding Port Request.
-                        var originalOrder = await Order.GetByIdAsync(portRequest!.OrderId, configuration.Postgresql).ConfigureAwait(false);
+                        var originalOrder = await Order.GetByIdAsync(portRequest!.OrderId, configuration.Postgresql.ToString());
 
                         if (originalOrder is not null)
                         {
@@ -129,7 +130,7 @@ namespace NumberSearch.Ingest
                             {
                                 PrimaryEmailAddress = originalOrder.Email,
                                 SalesEmailAddress = string.IsNullOrWhiteSpace(originalOrder?.SalesEmail) ? string.Empty : originalOrder.SalesEmail,
-                                CarbonCopy = configuration.EmailOrders,
+                                CarbonCopy = configuration.EmailOrders.ToString(),
                                 OrderId = originalOrder!.OrderId
                             };
 
@@ -169,8 +170,8 @@ Accelerate Networks
 <br />                                                                            
 206-858-8757 (call or text)";
 
-                                var checkSend = await notificationEmail.SendEmailAsync(configuration.SmtpUsername, configuration.SmtpPassword).ConfigureAwait(false);
-                                var checkSave = await notificationEmail.PostAsync(configuration.Postgresql).ConfigureAwait(false);
+                                var checkSend = await notificationEmail.SendEmailAsync(configuration.SmtpUsername.ToString(), configuration.SmtpPassword.ToString());
+                                var checkSave = await notificationEmail.PostAsync(configuration.Postgresql.ToString());
 
                                 if (checkSend && checkSave)
                                 {
@@ -211,8 +212,8 @@ Accelerate Networks
 <br />                                                                            
 206-858-8757 (call or text)";
 
-                                var checkSend = await notificationEmail.SendEmailAsync(configuration.SmtpUsername, configuration.SmtpPassword).ConfigureAwait(false);
-                                var checkSave = await notificationEmail.PostAsync(configuration.Postgresql).ConfigureAwait(false);
+                                var checkSend = await notificationEmail.SendEmailAsync(configuration.SmtpUsername.ToString(), configuration.SmtpPassword.ToString());
+                                var checkSave = await notificationEmail.PostAsync(configuration.Postgresql.ToString());
 
                                 if (checkSend && checkSave)
                                 {
@@ -235,24 +236,24 @@ Accelerate Networks
         {
             Log.Information("[BulkVS] [PortRequests] Ingesting Port Request statuses using the external OrderId.");
 
-            var portRequests = await PortRequest.GetAllAsync(configuration.Postgresql);
+            var portRequests = await PortRequest.GetAllAsync(configuration.Postgresql.ToString());
             var notCompleted = portRequests.Where(x => x.VendorSubmittedTo is "BulkVS" && x.RequestStatus is not "COMPLETE" && x.DateCompleted is null && !string.IsNullOrWhiteSpace(x.BulkVSId)).ToArray();
             foreach (var request in notCompleted)
             {
                 string[] OrderIds = request.BulkVSId.Replace(" ", "").Split(",");
                 foreach (var orderId in OrderIds)
                 {
-                    PortTn bulkVSPortRequest = await PortTn.GetAsync(orderId, configuration.BulkVSUsername, configuration.BulkVSPassword);
+                    PortTn bulkVSPortRequest = await PortTn.GetAsync(orderId.AsMemory(), configuration.BulkVSUsername, configuration.BulkVSPassword);
                     var firstNumber = bulkVSPortRequest.TNList.FirstOrDefault();
-                    if (bulkVSPortRequest.OrderDetails.OrderId == orderId && firstNumber is not null && !string.IsNullOrWhiteSpace(firstNumber.LNPStatus))
+                    if (bulkVSPortRequest.OrderDetails.OrderId == orderId && !string.IsNullOrWhiteSpace(firstNumber.LNPStatus))
                     {
                         request.RequestStatus = firstNumber.LNPStatus;
 
-                        var related = await PortedPhoneNumber.GetByPortRequestIdAsync(request.PortRequestId, configuration.Postgresql);
+                        var related = await PortedPhoneNumber.GetByPortRequestIdAsync(request.PortRequestId, configuration.Postgresql.ToString());
                         foreach (var port in related)
                         {
                             var match = bulkVSPortRequest.TNList.FirstOrDefault(x => x.TN.Contains(port.PortedDialedNumber));
-                            if (match is not null && !string.IsNullOrWhiteSpace(match.LNPStatus) && port.RequestStatus != match.LNPStatus)
+                            if (!string.IsNullOrWhiteSpace(match.LNPStatus) && port.RequestStatus != match.LNPStatus)
                             {
                                 port.RequestStatus = match.LNPStatus;
                                 port.ExternalPortRequestId = bulkVSPortRequest.OrderDetails.OrderId;
@@ -261,28 +262,28 @@ Accelerate Networks
                                 {
                                     port.DateFirmOrderCommitment = FOCDate;
                                 }
-                                var checkUpdate = await port.PutAsync(configuration.Postgresql);
+                                var checkUpdate = await port.PutAsync(configuration.Postgresql.ToString());
                             }
                         }
                     }
                     // If there is no first number then BulkVS returned a 404, which means the port request has been removed from their system and we won't be able to get updates on it.
-                    if (firstNumber is null)
+                    if (string.IsNullOrWhiteSpace(firstNumber.LNPStatus))
                     {
                         request.DateCompleted = DateTime.Now;
                         request.DateUpdated = DateTime.Now;
                         request.RequestStatus = "404";
                     }
                 }
-                var checkUpdated = await request.PutAsync(configuration.Postgresql);
+                var checkUpdated = await request.PutAsync(configuration.Postgresql.ToString());
             }
 
-            var portedNumbers = await PortedPhoneNumber.GetAllAsync(configuration.Postgresql);
+            var portedNumbers = await PortedPhoneNumber.GetAllAsync(configuration.Postgresql.ToString());
             var inComplete = portedNumbers.Where(x => x.RequestStatus is not "COMPLETE" && x.RequestStatus is not "404" && !string.IsNullOrWhiteSpace(x.ExternalPortRequestId)).ToArray();
             foreach (var number in inComplete)
             {
-                PortTn bulkVSPortRequest = await PortTn.GetAsync(number.ExternalPortRequestId, configuration.BulkVSUsername, configuration.BulkVSPassword);
+                PortTn bulkVSPortRequest = await PortTn.GetAsync(number.ExternalPortRequestId.AsMemory(), configuration.BulkVSUsername, configuration.BulkVSPassword);
                 var match = bulkVSPortRequest.TNList.FirstOrDefault(x => x.TN.Contains(number.PortedDialedNumber));
-                if (bulkVSPortRequest.OrderDetails.OrderId == number.ExternalPortRequestId && match is not null && !string.IsNullOrWhiteSpace(match.LNPStatus) && number.RequestStatus != match.LNPStatus)
+                if (bulkVSPortRequest.OrderDetails.OrderId == number.ExternalPortRequestId && !string.IsNullOrWhiteSpace(match.LNPStatus) && number.RequestStatus != match.LNPStatus)
                 {
                     number.RequestStatus = match.LNPStatus;
                     number.ExternalPortRequestId = bulkVSPortRequest.OrderDetails.OrderId;
@@ -291,15 +292,15 @@ Accelerate Networks
                     {
                         number.DateFirmOrderCommitment = FOCDate;
                     }
-                    var checkUpdate = await number.PutAsync(configuration.Postgresql);
+                    var checkUpdate = await number.PutAsync(configuration.Postgresql.ToString());
                 }
                 // If there is no first number then BulkVS returned a 404, which means the port request has been removed from their system and we won't be able to get updates on it.
-                if (match is null)
+                if (string.IsNullOrWhiteSpace(match.LNPStatus))
                 {
                     number.DateIngested = DateTime.Now;
                     number.RequestStatus = "404";
                     number.Completed = false;
-                    var checkUpdate = await number.PutAsync(configuration.Postgresql);
+                    var checkUpdate = await number.PutAsync(configuration.Postgresql.ToString());
                 }
             }
         }

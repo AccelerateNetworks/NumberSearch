@@ -20,21 +20,21 @@ namespace NumberSearch.Ingest
             .AddUserSecrets("328593cf-cbb9-48e9-8938-e38a44c8291d")
             .Build();
 
-            var appConfig = new IngestConfiguration
+            var appConfig = new IngestConfiguration()
             {
-                Postgresql = string.IsNullOrWhiteSpace(config.GetConnectionString("PostgresqlProd")) ? throw new Exception("PostgresqlProd config key is blank.") : config.GetConnectionString("PostgresqlProd") ?? string.Empty,
-                BulkVSAPIKEY = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSAPIKEY")) ? throw new Exception("BulkVSAPIKEY config key is blank.") : config.GetConnectionString("BulkVSAPIKEY") ?? string.Empty,
-                BulkVSAPISecret = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSAPISecret")) ? throw new Exception("BulkVSAPISecret config key is blank.") : config.GetConnectionString("BulkVSAPISecret") ?? string.Empty,
-                BulkVSUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSUsername")) ? throw new Exception("BulkVSUsername config key is blank.") : config.GetConnectionString("BulkVSUsername") ?? string.Empty,
-                BulkVSPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSPassword")) ? throw new Exception("BulkVSPassword config key is blank.") : config.GetConnectionString("BulkVSPassword") ?? string.Empty,
-                PComNetUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("PComNetUsername")) ? throw new Exception("PComNetUsername config key is blank.") : config.GetConnectionString("PComNetUsername") ?? string.Empty,
-                PComNetPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("PComNetPassword")) ? throw new Exception("PComNetPassword config key is blank.") : config.GetConnectionString("PComNetPassword") ?? string.Empty,
-                SmtpUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("SmtpUsername")) ? throw new Exception("SmtpUsername config key is blank.") : config.GetConnectionString("SmtpUsername") ?? string.Empty,
-                SmtpPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("SmtpPassword")) ? throw new Exception("SmtpPassword config key is blank.") : config.GetConnectionString("SmtpPassword") ?? string.Empty,
-                EmailOrders = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailOrders")) ? throw new Exception("EmailOrders config key is blank.") : config.GetConnectionString("EmailOrders") ?? string.Empty,
-                EmailDan = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailDan")) ? throw new Exception("EmailDan config key is blank.") : config.GetConnectionString("EmailDan") ?? string.Empty,
-                EmailTom = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailTom")) ? throw new Exception("EmailTom config key is blank.") : config.GetConnectionString("EmailTom") ?? string.Empty,
-                InvoiceNinjaToken = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailTom")) ? throw new Exception("InvoiceNinjaToken config key is blank.") : config.GetConnectionString("InvoiceNinjaToken") ?? string.Empty,
+                Postgresql = string.IsNullOrWhiteSpace(config.GetConnectionString("PostgresqlProd")) ? throw new Exception("PostgresqlProd config key is blank.") : config.GetConnectionString("PostgresqlProd").AsMemory(),
+                BulkVSAPIKEY = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSAPIKEY")) ? throw new Exception("BulkVSAPIKEY config key is blank.") : config.GetConnectionString("BulkVSAPIKEY").AsMemory(),
+                BulkVSAPISecret = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSAPISecret")) ? throw new Exception("BulkVSAPISecret config key is blank.") : config.GetConnectionString("BulkVSAPISecret").AsMemory(),
+                BulkVSUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSUsername")) ? throw new Exception("BulkVSUsername config key is blank.") : config.GetConnectionString("BulkVSUsername").AsMemory(),
+                BulkVSPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSPassword")) ? throw new Exception("BulkVSPassword config key is blank.") : config.GetConnectionString("BulkVSPassword").AsMemory(),
+                PComNetUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("PComNetUsername")) ? throw new Exception("PComNetUsername config key is blank.") : config.GetConnectionString("PComNetUsername").AsMemory(),
+                PComNetPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("PComNetPassword")) ? throw new Exception("PComNetPassword config key is blank.") : config.GetConnectionString("PComNetPassword").AsMemory(),
+                SmtpUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("SmtpUsername")) ? throw new Exception("SmtpUsername config key is blank.") : config.GetConnectionString("SmtpUsername").AsMemory(),
+                SmtpPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("SmtpPassword")) ? throw new Exception("SmtpPassword config key is blank.") : config.GetConnectionString("SmtpPassword").AsMemory(),
+                EmailOrders = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailOrders")) ? throw new Exception("EmailOrders config key is blank.") : config.GetConnectionString("EmailOrders").AsMemory(),
+                EmailDan = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailDan")) ? throw new Exception("EmailDan config key is blank.") : config.GetConnectionString("EmailDan").AsMemory(),
+                EmailTom = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailTom")) ? throw new Exception("EmailTom config key is blank.") : config.GetConnectionString("EmailTom").AsMemory(),
+                InvoiceNinjaToken = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailTom")) ? throw new Exception("InvoiceNinjaToken config key is blank.") : config.GetConnectionString("InvoiceNinjaToken").AsMemory(),
             };
 
             Log.Logger = new LoggerConfiguration()
@@ -126,7 +126,7 @@ namespace NumberSearch.Ingest
                     Log.Information("[Heartbeat] Cycle complete. Daily Timer {Elapsed:000} ms of {Limit:000} ms. ({percentP:P2})", dailyTimer.ElapsedMilliseconds, dailyCycle.TotalMilliseconds, (dailyTimer.ElapsedMilliseconds / dailyCycle.TotalMilliseconds));
 
                     // Limit this to 1 request every 10 seconds to the database.
-                    await Task.Delay(10000).ConfigureAwait(false);
+                    await Task.Delay(10000);
                 }
             }
             catch (Exception ex)
@@ -144,8 +144,8 @@ namespace NumberSearch.Ingest
                 // Notify someone that there's been a failure.
                 var notificationEmail = new Email
                 {
-                    PrimaryEmailAddress = appConfig.EmailTom,
-                    CarbonCopy = appConfig.EmailDan,
+                    PrimaryEmailAddress = appConfig.EmailTom.ToString(),
+                    CarbonCopy = appConfig.EmailDan.ToString(),
                     DateSent = DateTime.Now,
                     Subject = $"[Ingest] App is down.",
                     MessageBody = $"Something has gone wrong and the ingest app is down at {DateTime.Now}. Please capture the logs and then restart or redeploy the ingest application to restore service.",
@@ -153,42 +153,40 @@ namespace NumberSearch.Ingest
                     Completed = true
                 };
 
-                var checkSend = await notificationEmail.SendEmailAsync(appConfig.SmtpUsername, appConfig.SmtpPassword).ConfigureAwait(false);
-                var checkSave = await notificationEmail.PostAsync(appConfig.Postgresql).ConfigureAwait(false);
+                var checkSend = await notificationEmail.SendEmailAsync(appConfig.SmtpUsername.ToString(), appConfig.SmtpPassword.ToString());
+                var checkSave = await notificationEmail.PostAsync(appConfig.Postgresql.ToString());
 
                 // Save the log.
                 await Log.CloseAndFlushAsync();
             }
         }
 
-        public class IngestConfiguration
-        {
-            public string CallFlow { get; set; } = string.Empty;
-            public string ChannelGroup { get; set; } = string.Empty;
-            public string PComNetUsername { get; set; } = string.Empty;
-            public string PComNetPassword { get; set; } = string.Empty;
-            public string BulkVSAPIKEY { get; set; } = string.Empty;
-            public string BulkVSAPISecret { get; set; } = string.Empty;
-            public string BulkVSUsername { get; set; } = string.Empty;
-            public string BulkVSPassword { get; set; } = string.Empty;
-            public string Postgresql { get; set; } = string.Empty;
-            public string PostgresqlProd { get; set; } = string.Empty;
-            public string SmtpUsername { get; set; } = string.Empty;
-            public string SmtpPassword { get; set; } = string.Empty;
-            public string MicrosoftClientId { get; set; } = string.Empty;
-            public string MicrosoftClientSecret { get; set; } = string.Empty;
-            public string InvoiceNinjaToken { get; set; } = string.Empty;
-            public string Data247Username { get; set; } = string.Empty;
-            public string Data247Password { get; set; } = string.Empty;
-            public string EmailOrders { get; set; } = string.Empty;
-            public string EmailDan { get; set; } = string.Empty;
-            public string EmailTom { get; set; } = string.Empty;
-            public string AzureStorageAccount { get; set; } = string.Empty;
-            public string TeleDynamicsUsername { get; set; } = string.Empty;
-            public string TeleDynamicsPassword { get; set; } = string.Empty;
-            public string CallWithUsAPIKEY { get; set; } = string.Empty;
-            public string FusionPBXUsername { get; set; } = string.Empty;
-            public string FusionPBXPassword { get; set; } = string.Empty;
-        }
+        public readonly record struct IngestConfiguration(
+            ReadOnlyMemory<char> CallFlow,
+            ReadOnlyMemory<char> ChannelGroup,
+            ReadOnlyMemory<char> PComNetUsername,
+            ReadOnlyMemory<char> PComNetPassword,
+            ReadOnlyMemory<char> BulkVSAPIKEY,
+            ReadOnlyMemory<char> BulkVSAPISecret,
+            ReadOnlyMemory<char> BulkVSUsername,
+            ReadOnlyMemory<char> BulkVSPassword,
+            ReadOnlyMemory<char> Postgresql,
+            ReadOnlyMemory<char> PostgresqlProd,
+            ReadOnlyMemory<char> SmtpUsername,
+            ReadOnlyMemory<char> SmtpPassword,
+            ReadOnlyMemory<char> MicrosoftClientId,
+            ReadOnlyMemory<char> MicrosoftClientSecret,
+            ReadOnlyMemory<char> InvoiceNinjaToken,
+            ReadOnlyMemory<char> Data247Username,
+            ReadOnlyMemory<char> Data247Password,
+            ReadOnlyMemory<char> EmailOrders,
+            ReadOnlyMemory<char> EmailDan,
+            ReadOnlyMemory<char> EmailTom,
+            ReadOnlyMemory<char> AzureStorageAccount,
+            ReadOnlyMemory<char> TeleDynamicsUsername,
+            ReadOnlyMemory<char> TeleDynamicsPassword,
+            ReadOnlyMemory<char> CallWithUsAPIKEY,
+            ReadOnlyMemory<char> FusionPBXUsername,
+            ReadOnlyMemory<char> FusionPBXPassword);
     }
 }

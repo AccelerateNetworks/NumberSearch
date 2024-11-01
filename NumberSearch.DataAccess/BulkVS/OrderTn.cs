@@ -26,7 +26,7 @@ namespace NumberSearch.DataAccess.BulkVS
         public string Mrc { get; set; } = string.Empty;
         public string Nrc { get; set; } = string.Empty;
 
-        public static async Task<OrderTn[]> GetRawAsync(string npa, string nxx, string username, string password)
+        public static async Task<OrderTn[]> GetRawAsync(string npa, string nxx, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
             string baseUrl = "https://portal.bulkvs.com/api/v1.0/";
             string endpoint = "orderTn";
@@ -35,7 +35,7 @@ namespace NumberSearch.DataAccess.BulkVS
             string route = $"{baseUrl}{endpoint}{npaParameter}{nxxParameter}";
             try
             {
-                return await route.WithBasicAuth(username, password).GetJsonAsync<OrderTn[]>().ConfigureAwait(false);
+                return await route.WithBasicAuth(username.ToString(), password.ToString()).GetJsonAsync<OrderTn[]>().ConfigureAwait(false);
             }
             catch (FlurlHttpException ex)
             {
@@ -45,7 +45,7 @@ namespace NumberSearch.DataAccess.BulkVS
             }
         }
 
-        public static async Task<PhoneNumber[]> GetAsync(int inNpa, string username, string password)
+        public static async Task<PhoneNumber[]> GetAsync(int inNpa, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
             var results = await GetRawAsync(inNpa.ToString("000"), string.Empty, username, password).ConfigureAwait(false);
             var output = new List<PhoneNumber>();
@@ -82,7 +82,7 @@ namespace NumberSearch.DataAccess.BulkVS
             return [.. output];
         }
 
-        public static async Task<PhoneNumber[]> GetAsync(int inNpa, int inNxx, string username, string password)
+        public static async Task<PhoneNumber[]> GetAsync(int inNpa, int inNxx, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
             var results = await GetRawAsync(inNpa.ToString("000"), inNxx.ToString("000"), username, password).ConfigureAwait(false);
             var output = new List<PhoneNumber>();

@@ -1,23 +1,24 @@
 ﻿using ServiceReference1;
 
+using System;
 using System.Threading.Tasks;
 
 namespace FirstCom
 {
     public class FirstPointComOwnedPhoneNumber
     {
-        public static async Task<DIDOrderInfoArray> GetAsync(string npa, string username, string password)
+        public static async Task<DIDOrderInfoArray> GetAsync(ReadOnlyMemory<char> npa, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
             var Auth = new Credentials
             {
-                Username = username,
-                Password = password
+                Username = username.ToString(),
+                Password = password.ToString()
             };
 
             var DIDSearch = new DIDOrderQuery
             {
                 DID = string.Empty,
-                NPA = npa,
+                NPA = npa.ToString(),
                 NXX = string.Empty,
                 RateCenter = string.Empty
             };

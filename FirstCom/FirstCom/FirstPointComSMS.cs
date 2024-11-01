@@ -1,5 +1,6 @@
 ﻿using ServiceReference1;
 
+using System;
 using System.Threading.Tasks;
 
 namespace FirstCom
@@ -13,17 +14,17 @@ namespace FirstCom
         /// <param name="username"></param>
         /// <param name="password"></param>
         /// <returns></returns>
-        public static async Task<SMSLongcodeRoute> GetSMSRoutingByDialedNumberAsync(string dialedNumber, string username, string password)
+        public static async Task<SMSLongcodeRoute> GetSMSRoutingByDialedNumberAsync(ReadOnlyMemory<char> dialedNumber, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
             var Auth = new Credentials
             {
-                Username = username,
-                Password = password
+                Username = username.ToString(),
+                Password = password.ToString()
             };
 
             using var client = new DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
 
-            return await client.LongCodeShowRoutingAsync(Auth, dialedNumber).ConfigureAwait(false);
+            return await client.LongCodeShowRoutingAsync(Auth, dialedNumber.ToString());
         }
 
         public static async Task<QueryResult> EnableSMSByDialedNumberAsync(string dialedNumber, string username, string password)

@@ -14,60 +14,56 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.BulkVS
 {
-    public class TnRecord
+    public readonly record struct TnRecord
+    (
+        string TN,
+        string Status,
+        string Lidb,
+        [property: JsonPropertyName("Portout Pin")]
+        [property: JsonProperty("Portout Pin")]
+        string PortoutPin,
+        TnRecord.TnRecordRouting Routing,
+        TnRecord.TnRecordMessaging Messaging,
+        [property: JsonPropertyName("TN Details")]
+        [property: JsonProperty("TN Details")]
+        TnRecord.TnRecordTNDetails TNDetails
+    )
     {
-        public string TN { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
-        public string Lidb { get; set; } = string.Empty;
-        [JsonPropertyName("Portout Pin")]
-        [JsonProperty("Portout Pin")]
-        public string PortoutPin { get; set; } = string.Empty;
-        public TnRecordRouting Routing { get; set; } = new();
-        public TnRecordMessaging Messaging { get; set; } = new();
-        [JsonPropertyName("TN Details")]
-        [JsonProperty("TN Details")]
-        public TnRecordTNDetails TNDetails { get; set; } = new();
 
-        public class TnRecordRouting
-        {
-            [JsonPropertyName("Trunk Group")]
-            [JsonProperty("Trunk Group")]
-            public string TrunkGroup { get; set; } = string.Empty;
-            [JsonPropertyName("Custom URI")]
-            [JsonProperty("Custom URI")]
-            public string CustomURI { get; set; } = string.Empty;
-            [JsonPropertyName("Call Forward")]
-            [JsonProperty("Call Forward")]
-            public object CallForward { get; set; } = new();
-        }
+        public readonly record struct TnRecordRouting
+        (
+            [property: JsonPropertyName("Trunk Group")]
+            [property: JsonProperty("Trunk Group")]
+            string TrunkGroup,
+            [property: JsonPropertyName("Custom URI")]
+            [property: JsonProperty("Custom URI")]
+            string CustomURI,
+            [property: JsonPropertyName("Call Forward")]
+            [property: JsonProperty("Call Forward")]
+            object CallForward);
 
-        public class TnRecordMessaging
-        {
-            public bool Sms { get; set; }
-            public bool Mms { get; set; }
-        }
 
-        public class TnRecordTNDetails
-        {
-            [JsonPropertyName("Rate Center")]
-            [JsonProperty("Rate Center")]
-            public string RateCenter { get; set; } = string.Empty;
-            public string State { get; set; } = string.Empty;
-            public string Tier { get; set; } = string.Empty;
-            public bool Cnam { get; set; }
-            [JsonPropertyName("Activation Date")]
-            [JsonProperty("Activation Date")]
-            public string ActivationDate { get; set; } = string.Empty;
-        }
+        public readonly record struct TnRecordMessaging(bool Sms, bool Mms);
 
-        public static async Task<TnRecord[]> GetRawAsync(string username, string password)
+        public readonly record struct TnRecordTNDetails(
+            [property: JsonPropertyName("Rate Center")]
+            [property: JsonProperty("Rate Center")]
+            string RateCenter,
+            string State,
+            string Tier,
+            bool Cnam,
+            [property: JsonPropertyName("Activation Date")]
+            [property: JsonProperty("Activation Date")]
+            string ActivationDate);
+
+        public static async Task<TnRecord[]> GetRawAsync(ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
             string baseUrl = "https://portal.bulkvs.com/api/v1.0/";
             string endpoint = "tnRecord";
             string route = $"{baseUrl}{endpoint}";
             try
             {
-                return await route.WithBasicAuth(username, password).GetJsonAsync<TnRecord[]>().ConfigureAwait(false);
+                return await route.WithBasicAuth(username.ToString(), password.ToString()).GetJsonAsync<TnRecord[]>();
             }
             catch (FlurlHttpException ex)
             {
@@ -77,7 +73,7 @@ namespace NumberSearch.DataAccess.BulkVS
             }
         }
 
-        public static async Task<TnRecord> GetByDialedNumberAsync(string dialedNumber, string username, string password)
+        public static async Task<TnRecord> GetByDialedNumberAsync(ReadOnlyMemory<char> dialedNumber, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
             string baseUrl = "https://portal.bulkvs.com/api/v1.0/";
             string endpoint = "tnRecord";
@@ -85,8 +81,8 @@ namespace NumberSearch.DataAccess.BulkVS
             string route = $"{baseUrl}{endpoint}{numberParameter}";
             try
             {
-                var results = await route.WithBasicAuth(username, password).GetJsonAsync<TnRecord[]>().ConfigureAwait(false);
-                return results.FirstOrDefault() ?? new();
+                var results = await route.WithBasicAuth(username.ToString(), password.ToString()).GetJsonAsync<TnRecord[]>();
+                return results.FirstOrDefault();
             }
             catch (FlurlHttpException ex)
             {
@@ -96,7 +92,7 @@ namespace NumberSearch.DataAccess.BulkVS
             }
         }
 
-        public static async Task<PhoneNumber[]> GetAsync(string username, string password)
+        public static async Task<PhoneNumber[]> GetAsync(ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
             var results = await GetRawAsync(username, password).ConfigureAwait(false);
             var output = new List<PhoneNumber>();
@@ -134,7 +130,7 @@ namespace NumberSearch.DataAccess.BulkVS
             return [.. output];
         }
 
-        public static async Task<OwnedPhoneNumber[]> GetOwnedAsync(string username, string password)
+        public static async Task<OwnedPhoneNumber[]> GetOwnedAsync(ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
             var results = await GetRawAsync(username, password).ConfigureAwait(false);
             var output = new List<OwnedPhoneNumber>();

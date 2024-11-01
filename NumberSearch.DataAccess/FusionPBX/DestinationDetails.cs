@@ -44,26 +44,22 @@ namespace NumberSearch.DataAccess.FusionPBX
         public string destination_order { get; set; } = string.Empty;
         public string destination_distinctive_ring { get; set; } = string.Empty;
         public string destination_conditions { get; set; } = string.Empty;
-        public DestinationAction[] destination_actions { get; set; } = Array.Empty<DestinationAction>();
+        public DestinationAction[] destination_actions { get; set; } = [];
         public string insert_date { get; set; } = string.Empty;
         public string insert_user { get; set; } = string.Empty;
         public string update_date { get; set; } = string.Empty;
         public string update_user { get; set; } = string.Empty;
 
-        public class DestinationAction
-        {
-            public string destination_app { get; set; } = string.Empty;
-            public string destination_data { get; set; } = string.Empty;
-        }
+        public readonly record struct DestinationAction(string destination_app,string destination_data);
 
-        public static async Task<DestinationDetails> GetByDialedNumberAsync(string dialedNumber, string username, string password)
+        public static async Task<DestinationDetails> GetByDialedNumberAsync(ReadOnlyMemory<char> dialedNumber, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
             string baseUrl = "https://acceleratenetworks.sip.callpipe.com/app/rest_api/rest.php";
             string url = $"{baseUrl}";
 
             var response = await url
-                .WithBasicAuth(username, password)
-                .PostJsonAsync(new { action = "destination-details", number = dialedNumber });
+                .WithBasicAuth(username.ToString(), password.ToString())
+                .PostJsonAsync(new { action = "destination-details", number = dialedNumber.ToString() });
 
             //var s = await response.GetStringAsync();
 
@@ -71,28 +67,26 @@ namespace NumberSearch.DataAccess.FusionPBX
         }
     }
 
-
-    public class DomainDetails
+    public readonly record struct DomainDetails(
+        string domain_uuid,
+        string domain_parent_uuid,
+        string domain_name,
+        bool domain_enabled,
+        string domain_description,
+        string insert_date,
+        string insert_user,
+        string update_date,
+        string update_user
+        )
     {
-        public string domain_uuid { get; set; } = string.Empty;
-        public string domain_parent_uuid { get; set; } = string.Empty;
-        public string domain_name { get; set; } = string.Empty;
-        public bool domain_enabled { get; set; } = false;
-        public string domain_description { get; set; } = string.Empty;
-        public string insert_date { get; set; } = string.Empty;
-        public string insert_user { get; set; } = string.Empty;
-        public string update_date { get; set; } = string.Empty;
-        public string update_user { get; set; } = string.Empty;
-
-
-        public static async Task<DomainDetails> GetByDomainIdAsync(string dialedNumber, string username, string password)
+        public static async Task<DomainDetails> GetByDomainIdAsync(ReadOnlyMemory<char> domainUUID, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
             string baseUrl = "https://acceleratenetworks.sip.callpipe.com/app/rest_api/rest.php";
             string url = $"{baseUrl}";
 
             var response = await url
-                .WithBasicAuth(username, password)
-                .PostJsonAsync(new { action = "domain-details", domain_uuid = dialedNumber });
+                .WithBasicAuth(username.ToString(), password.ToString())
+                .PostJsonAsync(new { action = "domain-details", domain_uuid = domainUUID.ToString() });
 
             return await response.GetJsonAsync<DomainDetails>();
         }

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 
 using ServiceReference;
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -49,7 +50,7 @@ namespace FirstCom
                 var numbers = new List<DIDOrderInfo>();
 
 
-                var results = await FirstPointComOwnedPhoneNumber.GetAsync("206", username, password).ConfigureAwait(false);
+                var results = await FirstPointComOwnedPhoneNumber.GetAsync("206".AsMemory(), username.AsMemory(), password.AsMemory()).ConfigureAwait(false);
 
                 await Task.Delay(1000);
             });

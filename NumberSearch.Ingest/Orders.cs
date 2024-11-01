@@ -39,7 +39,7 @@ namespace NumberSearch.Ingest
             };
 
 
-            if (await combined.PostAsync(appConfig.Postgresql).ConfigureAwait(false))
+            if (await combined.PostAsync(appConfig.Postgresql.ToString()))
             {
                 Log.Information($"[DailyEmails] Sent out the emails {DateTime.Now}.");
             }
@@ -53,7 +53,7 @@ namespace NumberSearch.Ingest
         public static async Task<bool> DailyBriefingEmailAsync(Owned.SMSRouteChange[] smsRouteChanges, IngestConfiguration appConfig)
         {
             // Gather all of the info to put into the daily email.
-            var orders = await Order.GetAllAsync(appConfig.Postgresql);
+            var orders = await Order.GetAllAsync(appConfig.Postgresql.ToString());
 
             var ordersToMarkCompleted = new List<Order>();
             var ordersWithCompletedPortRequests = new List<Order>();
@@ -77,7 +77,7 @@ namespace NumberSearch.Ingest
                 // Orders that should be marked as complete now that the port requests are complete?
                 else if (order.Quote is false && order.Completed is false)
                 {
-                    var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, appConfig.Postgresql);
+                    var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, appConfig.Postgresql.ToString());
                     if (portRequest is not null && portRequest?.State is "COMPLETE")
                     {
                         ordersWithCompletedPortRequests.Add(order);
@@ -86,7 +86,7 @@ namespace NumberSearch.Ingest
                 // Orders that have unfinished port requests
                 else if (order.Quote is false && order.Completed is false)
                 {
-                    var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, appConfig.Postgresql);
+                    var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, appConfig.Postgresql.ToString());
                     if (portRequest is not null && portRequest?.State is not "COMPLETE" && portRequest?.DateSubmitted > order.DateSubmitted)
                     {
                         ordersWithUnfinishedPortRequests.Add(order);
@@ -95,7 +95,7 @@ namespace NumberSearch.Ingest
                 // Orders that have unsubmitted port requests
                 else if (order.Quote is false && order.Completed is false)
                 {
-                    var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, appConfig.Postgresql);
+                    var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, appConfig.Postgresql.ToString());
                     if (portRequest is not null && portRequest?.State is not "COMPLETE" && portRequest?.DateSubmitted < order.DateSubmitted)
                     {
                         ordersWithUnsubmittedPortRequests.Add(order);
@@ -339,8 +339,8 @@ namespace NumberSearch.Ingest
 
             var notificationEmail = new Email
             {
-                PrimaryEmailAddress = appConfig.EmailDan,
-                CarbonCopy = appConfig.EmailTom,
+                PrimaryEmailAddress = appConfig.EmailDan.ToString(),
+                CarbonCopy = appConfig.EmailTom.ToString(),
                 SalesEmailAddress = "support@acceleratenetworks.com",
                 DateSent = DateTime.Now,
                 Subject = $"[Ingest] Daily Briefing for {DateTime.Now.ToShortDateString()}",
@@ -349,17 +349,17 @@ namespace NumberSearch.Ingest
                 Completed = false
             };
 
-            var checkSend = await notificationEmail.SendEmailAsync(appConfig.SmtpUsername, appConfig.SmtpPassword).ConfigureAwait(false);
-            var checkSave = await notificationEmail.PostAsync(appConfig.Postgresql).ConfigureAwait(false);
+            var checkSend = await notificationEmail.SendEmailAsync(appConfig.SmtpUsername.ToString(), appConfig.SmtpPassword.ToString()).ConfigureAwait(false);
+            var checkSave = await notificationEmail.PostAsync(appConfig.Postgresql.ToString()).ConfigureAwait(false);
 
             return checkSend && checkSave;
         }
 
-        public async static Task CheckForQuoteConversionsAsync(string postgresql, string invoiceNinjaToken, string emailUsername, string emailPassword)
+        public async static Task CheckForQuoteConversionsAsync(ReadOnlyMemory<char> postgresql, ReadOnlyMemory<char> invoiceNinjaToken, ReadOnlyMemory<char> emailUsername, ReadOnlyMemory<char> emailPassword)
         {
             Log.Information($"[Quote Conversion] Looking for quotes that were converted to invoices in the billing system.");
 
-            var orders = await Order.GetAllQuotesAsync(postgresql).ConfigureAwait(false);
+            var orders = await Order.GetAllQuotesAsync(postgresql.ToString());
 
             // Don't both checking orders that are from before we upgraded to the current version of invoiceNinja.
             foreach (var order in orders.Where(x => x.DateSubmitted > DateTime.Parse("02/01/2023")))
@@ -371,11 +371,11 @@ namespace NumberSearch.Ingest
                     {
                         try
                         {
-                            var upfront = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceId, invoiceNinjaToken);
+                            var upfront = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceId, invoiceNinjaToken.ToString());
 
                             if (upfront is not null && upfront.id == order.BillingInvoiceId && !string.IsNullOrWhiteSpace(upfront.invoice_id))
                             {
-                                var convertedInvoice = await Invoice.GetByIdAsync(upfront.invoice_id, invoiceNinjaToken);
+                                var convertedInvoice = await Invoice.GetByIdAsync(upfront.invoice_id, invoiceNinjaToken.ToString());
 
                                 string newUpfrontLink = convertedInvoice.invitations.FirstOrDefault()?.link ?? string.Empty;
 
@@ -392,7 +392,7 @@ namespace NumberSearch.Ingest
                                 }
 
                                 var invoiceStatus = convertedInvoice.status_id is "4" ? "paid" : "approved";
-                                var checkUpdate = await order.PutAsync(postgresql);
+                                var checkUpdate = await order.PutAsync(postgresql.ToString());
                                 string name = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName;
                                 var message = new Email
                                 {
@@ -405,12 +405,12 @@ namespace NumberSearch.Ingest
                                 };
 
                                 // Send the message the email server.
-                                var checkSend = await message.SendEmailAsync(emailUsername, emailPassword).ConfigureAwait(false);
+                                var checkSend = await message.SendEmailAsync(emailUsername.ToString(), emailPassword.ToString());
 
                                 // If it didn't work try it again.
                                 if (!checkSend)
                                 {
-                                    checkSend = await message.SendEmailAsync(emailUsername, emailPassword).ConfigureAwait(false);
+                                    checkSend = await message.SendEmailAsync(emailUsername.ToString(), emailPassword.ToString());
                                 }
 
                                 // Mark it as sent.
@@ -419,7 +419,7 @@ namespace NumberSearch.Ingest
                                 message.Completed = checkSend;
 
                                 // Update the database with the email's new status.
-                                var checkSave = await message.PostAsync(postgresql).ConfigureAwait(false);
+                                var checkSave = await message.PostAsync(postgresql.ToString());
 
                                 // Log the success or failure of the operation.
                                 if (checkSend && checkSave)
@@ -437,7 +437,7 @@ namespace NumberSearch.Ingest
                             if (ex.StatusCode is 404)
                             {
                                 // Maybe it's an invoice rather than a Quote
-                                var convertedInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, invoiceNinjaToken);
+                                var convertedInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, invoiceNinjaToken.ToString());
 
                                 if (convertedInvoice is not null && convertedInvoice.id == order.BillingInvoiceId && !string.IsNullOrWhiteSpace(convertedInvoice.id))
                                 {
@@ -458,7 +458,7 @@ namespace NumberSearch.Ingest
                                     order.UpfrontInvoiceLink = string.IsNullOrWhiteSpace(newUpfrontLink) ? order.UpfrontInvoiceLink : newUpfrontLink;
 
 
-                                    var checkUpdate = await order.PutAsync(postgresql);
+                                    var checkUpdate = await order.PutAsync(postgresql.ToString());
                                     string name = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName;
                                     var invoiceStatus = convertedInvoice.status_id is "4" ? "paid" : "converted from a quote";
                                     var message = new Email
@@ -472,12 +472,12 @@ namespace NumberSearch.Ingest
                                     };
 
                                     // Send the message the email server.
-                                    var checkSend = await message.SendEmailAsync(emailUsername, emailPassword).ConfigureAwait(false);
+                                    var checkSend = await message.SendEmailAsync(emailUsername.ToString(), emailPassword.ToString());
 
                                     // If it didn't work try it again.
                                     if (!checkSend)
                                     {
-                                        checkSend = await message.SendEmailAsync(emailUsername, emailPassword).ConfigureAwait(false);
+                                        checkSend = await message.SendEmailAsync(emailUsername.ToString(), emailPassword.ToString());
                                     }
 
                                     // Mark it as sent.
@@ -486,7 +486,7 @@ namespace NumberSearch.Ingest
                                     message.Completed = checkSend;
 
                                     // Update the database with the email's new status.
-                                    var checkSave = await message.PostAsync(postgresql).ConfigureAwait(false);
+                                    var checkSave = await message.PostAsync(postgresql.ToString());
 
                                     // Log the success or failure of the operation.
                                     if (checkSend && checkSave)
@@ -528,11 +528,11 @@ namespace NumberSearch.Ingest
             }
         }
 
-        public async static Task CheckForInvoicePaymentAsync(string postgresql, string invoiceNinjaToken, string emailUsername, string emailPassword)
+        public async static Task CheckForInvoicePaymentAsync(ReadOnlyMemory<char> postgresql, ReadOnlyMemory<char> invoiceNinjaToken, ReadOnlyMemory<char> emailUsername, ReadOnlyMemory<char> emailPassword)
         {
             Log.Information($"[Invoice Payment] Looking for invoices that were paid in the billing system.");
 
-            var orders = await Order.GetAllAsync(postgresql).ConfigureAwait(false);
+            var orders = await Order.GetAllAsync(postgresql.ToString());
 
             // Don't both checking orders that are from before we upgraded to the current version of invoiceNinja.
             foreach (var order in orders.Where(x => x.DateSubmitted > DateTime.Parse("02/01/2023")))
@@ -542,7 +542,7 @@ namespace NumberSearch.Ingest
                 {
                     if (!string.IsNullOrWhiteSpace(order.BillingInvoiceId) && order.DateUpfrontInvoicePaid is null)
                     {
-                        var upfrontInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, invoiceNinjaToken);
+                        var upfrontInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, invoiceNinjaToken.ToString());
 
                         if (upfrontInvoice is not null && upfrontInvoice.id == order.BillingInvoiceId && !string.IsNullOrWhiteSpace(upfrontInvoice.id))
                         {
@@ -561,7 +561,7 @@ namespace NumberSearch.Ingest
                             }
                             string newUpfrontLink = upfrontInvoice.invitations.FirstOrDefault()?.link ?? string.Empty;
                             order.UpfrontInvoiceLink = string.IsNullOrWhiteSpace(newUpfrontLink) ? order.UpfrontInvoiceLink : newUpfrontLink;
-                            var checkUpdate = await order.PutAsync(postgresql);
+                            var checkUpdate = await order.PutAsync(postgresql.ToString());
 
                             // Only send the email of the invoice has actually been paid.
                             if (order.DateUpfrontInvoicePaid is not null && upfrontInvoice.status_id is "4")
@@ -578,12 +578,12 @@ namespace NumberSearch.Ingest
                                 };
 
                                 // Send the message the email server.
-                                var checkSend = await message.SendEmailAsync(emailUsername, emailPassword).ConfigureAwait(false);
+                                var checkSend = await message.SendEmailAsync(emailUsername.ToString(), emailPassword.ToString());
 
                                 // If it didn't work try it again.
                                 if (!checkSend)
                                 {
-                                    checkSend = await message.SendEmailAsync(emailUsername, emailPassword).ConfigureAwait(false);
+                                    checkSend = await message.SendEmailAsync(emailUsername.ToString(), emailPassword.ToString());
                                 }
 
                                 // Mark it as sent.
@@ -592,7 +592,7 @@ namespace NumberSearch.Ingest
                                 message.Completed = checkSend;
 
                                 // Update the database with the email's new status.
-                                var checkSave = await message.PostAsync(postgresql).ConfigureAwait(false);
+                                var checkSave = await message.PostAsync(postgresql.ToString());
 
                                 // Log the success or failure of the operation.
                                 if (checkSend && checkSave)

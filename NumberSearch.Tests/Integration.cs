@@ -492,7 +492,7 @@ namespace NumberSearch.Tests
             // Arrange
 
             // Act
-            var result = await DestinationDetails.GetByDialedNumberAsync("4254541206", _configuration.FusionPBXUsername, _configuration.FusionPBXPassword);
+            var result = await DestinationDetails.GetByDialedNumberAsync("4254541206".AsMemory(), _configuration.FusionPBXUsername.AsMemory(), _configuration.FusionPBXPassword.AsMemory());
 
             // Assert        
             Assert.True(result.destination_enabled);
@@ -506,7 +506,7 @@ namespace NumberSearch.Tests
             // Arrange
 
             // Act
-            var result = await DomainDetails.GetByDomainIdAsync("f86cace8-9d5c-47df-b084-48e6cb58a95d", _configuration.FusionPBXUsername, _configuration.FusionPBXPassword);
+            var result = await DomainDetails.GetByDomainIdAsync("f86cace8-9d5c-47df-b084-48e6cb58a95d".AsMemory(), _configuration.FusionPBXUsername.AsMemory(), _configuration.FusionPBXPassword.AsMemory());
 
             // Assert        
             Assert.False(string.IsNullOrWhiteSpace(result.domain_name));
@@ -577,7 +577,7 @@ namespace NumberSearch.Tests
         [Fact]
         public async Task FirstComGetRoutingTestAsync()
         {
-            var result = await FirstCom.FirstPointComSMS.GetSMSRoutingByDialedNumberAsync("12069574634", pComNetCredentials.Username, pComNetCredentials.Password);
+            var result = await FirstCom.FirstPointComSMS.GetSMSRoutingByDialedNumberAsync("12069574634".AsMemory(), pComNetCredentials.Username.AsMemory(), pComNetCredentials.Password.AsMemory());
 
             Assert.NotNull(result);
             Assert.True(result.QueryResult.text is "OK");
@@ -614,7 +614,7 @@ namespace NumberSearch.Tests
             var npa = 206;
 
             // Act
-            var results = await OrderTn.GetAsync(npa, bulkVSUsername, bulkVSPassword);
+            var results = await OrderTn.GetAsync(npa, bulkVSUsername.AsMemory(), bulkVSPassword.AsMemory());
 
             // Assert
             Assert.NotNull(results);
@@ -739,7 +739,7 @@ namespace NumberSearch.Tests
             // Arrange
 
             // Act
-            var results = await TnRecord.GetAsync(bulkVSUsername, bulkVSPassword);
+            var results = await TnRecord.GetAsync(bulkVSUsername.AsMemory(), bulkVSPassword.AsMemory());
 
             // Assert
             Assert.NotNull(results);
@@ -778,7 +778,7 @@ namespace NumberSearch.Tests
             // Arrange
 
             // Act
-            var results = await TnRecord.GetOwnedAsync(bulkVSUsername, bulkVSPassword);
+            var results = await TnRecord.GetOwnedAsync(bulkVSUsername.AsMemory(), bulkVSPassword.AsMemory());
 
             // Assert
             Assert.NotNull(results);
@@ -793,7 +793,7 @@ namespace NumberSearch.Tests
             // Arrange
 
             // Act
-            var results = await PortTn.GetAllAsync(bulkVSUsername, bulkVSPassword);
+            var results = await PortTn.GetAllAsync(bulkVSUsername.AsMemory(), bulkVSPassword.AsMemory());
 
             // Assert
             Assert.NotNull(results);
@@ -856,13 +856,13 @@ namespace NumberSearch.Tests
             // Arrange
 
             // Act
-            var results = await PortTn.GetAllAsync(bulkVSUsername, bulkVSPassword);
+            var results = await PortTn.GetAllAsync(bulkVSUsername.AsMemory(), bulkVSPassword.AsMemory());
 
             // Assert
             Assert.NotNull(results);
             Assert.NotEmpty(results);
 
-            var result = await PortTn.GetAsync("1642300", bulkVSUsername, bulkVSPassword);
+            var result = await PortTn.GetAsync("1642300".AsMemory(), bulkVSUsername.AsMemory(), bulkVSPassword.AsMemory());
 
             Assert.NotNull(result);
             output.WriteLine(JsonSerializer.Serialize(result));

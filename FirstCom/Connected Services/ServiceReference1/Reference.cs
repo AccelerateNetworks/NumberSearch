@@ -149,7 +149,7 @@ namespace ServiceReference1
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.1.0")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="https://api.1pcom.net/")]
-    public partial class SMSLongcodeRoute
+    public partial struct SMSLongcodeRoute
     {
         
         private string routeField;
