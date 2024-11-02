@@ -14,19 +14,19 @@ namespace NumberSearch.DataAccess.LCGuide
             string nxxParameter = $"&nxx={nxx}";
             string route = $"{baseUrl}{npaParameter}{nxxParameter}";
 
-            var result = await route.GetStringAsync().ConfigureAwait(false);
+            var result = await route.GetStringAsync();
 
             if (result.Contains("</rc>") && result.Contains("<region>"))
             {
                 var rateCenterStart = result.IndexOf("<rc>") + "<rc>".Length;
                 var rateCenterEnd = result.IndexOf("</rc>");
-                var rateCenterText = result[rateCenterStart..rateCenterEnd];
+                ReadOnlyMemory<char> rateCenterText = result.AsMemory()[rateCenterStart..rateCenterEnd];
 
                 var regionStart = result.IndexOf("<region>") + "<region>".Length;
                 var regionEnd = result.IndexOf("</region>");
-                var regionText = result[regionStart..regionEnd];
+                ReadOnlyMemory<char> regionText = result.AsMemory()[regionStart..regionEnd];
 
-                return new RateCenterLookup(rateCenterText.AsMemory(), regionText.AsMemory());
+                return new RateCenterLookup(rateCenterText, regionText);
             }
             else
             {

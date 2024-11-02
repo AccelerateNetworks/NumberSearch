@@ -1,5 +1,6 @@
 ﻿using Flurl.Http;
 
+using System;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
@@ -13,7 +14,7 @@ namespace NumberSearch.DataAccess
     [System.ComponentModel.DesignerCategory("code")]
     [XmlType(AnonymousType = true)]
     [XmlRoot(Namespace = "", ElementName = "response", IsNullable = false)]
-    public class SalesTax
+    public record SalesTax
     {
         public Addressline addressline { get; set; } = new();
         public TaxRate rate { get; set; } = new();
@@ -29,7 +30,7 @@ namespace NumberSearch.DataAccess
         [System.Serializable()]
         [System.ComponentModel.DesignerCategory("code")]
         [XmlType(AnonymousType = true)]
-        public partial class Addressline
+        public partial record Addressline
         {
             [XmlAttribute()]
             public int code { get; set; }
@@ -60,7 +61,7 @@ namespace NumberSearch.DataAccess
         [System.Serializable()]
         [System.ComponentModel.DesignerCategory("code")]
         [XmlType(AnonymousType = true)]
-        public partial class TaxRate
+        public partial record TaxRate
         {
             [XmlAttribute()]
             public string name { get; set; } = string.Empty;
@@ -72,7 +73,7 @@ namespace NumberSearch.DataAccess
             public decimal localrate { get; set; }
         }
 
-        public static async Task<SalesTax> GetLocalAPIAsync(string streetAddress, string city, string zip)
+        public static async Task<SalesTax> GetLocalAPIAsync(ReadOnlyMemory<char> streetAddress, ReadOnlyMemory<char> city, ReadOnlyMemory<char> zip)
         {
             string baseUrl = "https://wataxlookup.acceleratenetworks.com/";
             string endpoint = "AddressRates.aspx";
@@ -82,7 +83,7 @@ namespace NumberSearch.DataAccess
             string zipParameter = $"&zip={zip}";
             string url = $"{baseUrl}{endpoint}{outputParameter}{addrParameter}{cityParameter}{zipParameter}";
 
-            using var result = await url.GetStreamAsync().ConfigureAwait(false);
+            using var result = await url.GetStreamAsync();
 
             // Learn more about this XML serialization method: https://docs.microsoft.com/en-us/dotnet/standard/serialization/how-to-deserialize-an-object
             var serializer = new XmlSerializer(typeof(SalesTax));
@@ -96,7 +97,7 @@ namespace NumberSearch.DataAccess
         /// <param name="city"> A valid City name (ex. Seattle) </param>
         /// <param name="zip"> A valid Zip code inside Washington State (ex. 98501) </param>
         /// <returns></returns>
-        public static async Task<SalesTax> GetAsync(string streetAddress, string city, string zip)
+        public static async Task<SalesTax> GetAsync(ReadOnlyMemory<char> streetAddress, ReadOnlyMemory<char> city, ReadOnlyMemory<char> zip)
         {
             string baseUrl = "http://webgis.dor.wa.gov/webapi/";
             string endpoint = "AddressRates.aspx";
@@ -106,7 +107,7 @@ namespace NumberSearch.DataAccess
             string zipParameter = $"&zip={zip}";
             string url = $"{baseUrl}{endpoint}{outputParameter}{addrParameter}{cityParameter}{zipParameter}";
 
-            using var result = await url.GetStreamAsync().ConfigureAwait(false);
+            using var result = await url.GetStreamAsync();
 
             // Learn more about this XML serialization method: https://docs.microsoft.com/en-us/dotnet/standard/serialization/how-to-deserialize-an-object
             var serializer = new XmlSerializer(typeof(SalesTax));

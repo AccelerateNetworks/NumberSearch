@@ -454,8 +454,8 @@ namespace NumberSearch.Ops.Controllers
                     {
                         try
                         {
-                            var response = await LineTypeIntelligenceResponse.GetByDialedNumberAsync(phoneNumber.DialedNumber, _config.TwilioUsername, _config.TwilioPassword);
-                            if (!string.IsNullOrWhiteSpace(response.line_type_intelligence?.carrier_name))
+                            var response = await LineTypeIntelligenceResponse.GetByDialedNumberAsync(phoneNumber.DialedNumber.AsMemory(), _config.TwilioUsername.AsMemory(), _config.TwilioPassword.AsMemory());
+                            if (!string.IsNullOrWhiteSpace(response.line_type_intelligence.carrier_name))
                             {
                                 // Update the owned number record
                                 if (owned is not null)
@@ -495,8 +495,8 @@ namespace NumberSearch.Ops.Controllers
                 {
                     try
                     {
-                        var response = await LineTypeIntelligenceResponse.GetByDialedNumberAsync(phoneNumber.DialedNumber, _config.TwilioUsername, _config.TwilioPassword);
-                        if (!string.IsNullOrWhiteSpace(response.line_type_intelligence?.carrier_name))
+                        var response = await LineTypeIntelligenceResponse.GetByDialedNumberAsync(phoneNumber.DialedNumber.AsMemory(), _config.TwilioUsername.AsMemory(), _config.TwilioPassword.AsMemory());
+                        if (!string.IsNullOrWhiteSpace(response.line_type_intelligence.carrier_name))
                         {
                             // Update the owned number record
                             var owned = await _context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == phoneNumber.DialedNumber);
@@ -654,8 +654,8 @@ namespace NumberSearch.Ops.Controllers
                 {
                     try
                     {
-                        var response = await LineTypeIntelligenceResponse.GetByDialedNumberAsync(phoneNumber.DialedNumber, _config.TwilioUsername, _config.TwilioPassword);
-                        if (!string.IsNullOrWhiteSpace(response.line_type_intelligence?.carrier_name))
+                        var response = await LineTypeIntelligenceResponse.GetByDialedNumberAsync(phoneNumber.DialedNumber.AsMemory(), _config.TwilioUsername.AsMemory(), _config.TwilioPassword.AsMemory());
+                        if (!string.IsNullOrWhiteSpace(response.line_type_intelligence.carrier_name))
                         {
                             // Update the owned number record
                             result.Message += $"✔️ {phoneNumber.DialedNumber} - Old: {number.TwilioCarrierName} - New: {response.line_type_intelligence.carrier_name.Trim()}\n";

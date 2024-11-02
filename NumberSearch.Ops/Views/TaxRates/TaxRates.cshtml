@@ -30,7 +30,7 @@
             </tr>
         </thead>
         <tbody>
-            @if (Model?.Rates?.data is not null)
+            @if (Model?.Rates.data is not null)
             {
                 foreach (var rate in Model.Rates.data)
                 {
@@ -45,7 +45,10 @@
                             @rate.rate
                         </td>
                         <td data-order="@rate.updated_at">
-                            @rate.updated_at
+                            @{
+                                DateTimeOffset timeOffset = DateTimeOffset.FromUnixTimeSeconds(rate.updated_at);
+                            }
+                            @timeOffset.LocalDateTime
                         </td>
                     </tr>
                 }

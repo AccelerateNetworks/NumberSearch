@@ -8,6 +8,7 @@ using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.LCGuide;
 using NumberSearch.DataAccess.Models;
 using NumberSearch.DataAccess.TeleDynamics;
+using NumberSearch.DataAccess.Twilio;
 using NumberSearch.Mvc.Models;
 
 using ServiceReference1;
@@ -78,7 +79,7 @@ namespace NumberSearch.Tests
             var result = await Client.GetAllClientsAsync(invoiceNinjaToken);
 
             // Assert        
-            Assert.NotNull(result);
+            Assert.False(string.IsNullOrWhiteSpace(result.data.FirstOrDefault().id));
             Assert.NotEmpty(result.data);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
@@ -128,10 +129,11 @@ namespace NumberSearch.Tests
         public async Task GetBillingTaxRatesAsync()
         {
             // Act
-            var result = await TaxRate.GetAllAsync(invoiceNinjaToken);
+            var result = await TaxRate.GetAllAsync(invoiceNinjaToken.AsMemory());
 
             // Assert        
-            Assert.NotNull(result);
+            Assert.False(string.IsNullOrWhiteSpace(result.data.FirstOrDefault().id));
+            Assert.False(string.IsNullOrWhiteSpace(result.data.FirstOrDefault().name));
             Assert.NotEmpty(result.data);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
@@ -162,7 +164,9 @@ namespace NumberSearch.Tests
             var result = await Client.GetByEmailAsync("mary@dcigi.com", invoiceNinjaToken);
 
             // Assert        
-            Assert.NotNull(result);
+            Assert.False(string.IsNullOrWhiteSpace(result.data.FirstOrDefault().id));
+            Assert.False(string.IsNullOrWhiteSpace(result.data.FirstOrDefault().contacts.FirstOrDefault().id));
+            Assert.False(string.IsNullOrWhiteSpace(result.data.FirstOrDefault().contacts.FirstOrDefault().email));
             Assert.NotEmpty(result.data);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
@@ -228,7 +232,7 @@ namespace NumberSearch.Tests
             var result = await Client.GetByIdAsync("q9wdLRXajP", invoiceNinjaToken);
 
             // Assert        
-            Assert.NotNull(result);
+            Assert.False(string.IsNullOrWhiteSpace(result.id));
             Assert.Equal("q9wdLRXajP", result.id);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
@@ -398,10 +402,9 @@ namespace NumberSearch.Tests
         //    string phoneNumber = "2065579450";
 
         //    // Act
-        //    var result = await LineTypeIntelligenceResponse.GetByDialedNumberAsync(phoneNumber, _configuration.TwilioUsername, _configuration.TwilioPassword);
+        //    var result = await LineTypeIntelligenceResponse.GetByDialedNumberAsync(phoneNumber.AsMemory(), _configuration.TwilioUsername.AsMemory(), _configuration.TwilioPassword.AsMemory());
 
         //    // Assert        
-        //    Assert.NotNull(result);
         //    Assert.False(string.IsNullOrWhiteSpace(result.line_type_intelligence.carrier_name));
         //    output.WriteLine(JsonSerializer.Serialize(result));
         //}
@@ -1023,7 +1026,7 @@ namespace NumberSearch.Tests
         public async Task GetPhoneNumbersByQueryAsync()
         {
             var conn = postgresql;
-            var results = await PhoneNumber.SearchAsync("*", conn);
+            var results = await PhoneNumber.SearchAsync("206", conn);
             Assert.NotNull(results);
             int count = 0;
             foreach (var result in results)
@@ -1635,7 +1638,7 @@ namespace NumberSearch.Tests
             string city = string.Empty;
             string zip = "98501";
 
-            var result = await SalesTax.GetLocalAPIAsync(address, city, zip);
+            var result = await SalesTax.GetLocalAPIAsync(address.AsMemory(), city.AsMemory(), zip.AsMemory());
 
             Assert.NotNull(result);
             Assert.True(result.rate1 > 0.0M);

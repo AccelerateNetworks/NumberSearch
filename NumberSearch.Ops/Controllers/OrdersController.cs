@@ -1758,7 +1758,7 @@ public class OrdersController(OpsConfig opsConfig,
                             try
                             {
                                 // Use our own API
-                                specificTaxRate = await NumberSearch.DataAccess.SalesTax.GetLocalAPIAsync(order.Address ?? string.Empty, string.Empty, order.Zip ?? string.Empty).ConfigureAwait(false);
+                                specificTaxRate = await NumberSearch.DataAccess.SalesTax.GetLocalAPIAsync(order.Address.AsMemory(), string.Empty.AsMemory(), order.Zip.AsMemory());
                             }
                             catch
                             {
@@ -1770,7 +1770,7 @@ public class OrdersController(OpsConfig opsConfig,
                                 try
                                 {
                                     // Fall back to using the state's API
-                                    specificTaxRate = await NumberSearch.DataAccess.SalesTax.GetAsync(order.Address ?? string.Empty, order.City ?? string.Empty, order.Zip ?? string.Empty).ConfigureAwait(false);
+                                    specificTaxRate = await NumberSearch.DataAccess.SalesTax.GetAsync(order.Address.AsMemory(), order.City.AsMemory(), order.Zip.AsMemory());
                                 }
                                 catch
                                 {
@@ -1791,9 +1791,9 @@ public class OrdersController(OpsConfig opsConfig,
                             var taxRateName = $"{rateName}, WA - {specificTaxRate.loccode}";
                             var taxRateValue = specificTaxRate.rate1 * 100M;
 
-                            var existingTaxRates = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                            var existingTaxRates = await TaxRate.GetAllAsync(_invoiceNinjaToken.AsMemory());
                             billingTaxRate = existingTaxRates.data.Where(x => x.name == taxRateName).FirstOrDefault();
-                            if (billingTaxRate is null)
+                            if (string.IsNullOrWhiteSpace(billingTaxRate.name))
                             {
                                 billingTaxRate = new TaxRateDatum
                                 {
@@ -1801,7 +1801,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     rate = taxRateValue
                                 };
 
-                                var checkCreate = await billingTaxRate.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                var checkCreate = await billingTaxRate.PostAsync(_invoiceNinjaToken.AsMemory());
                             }
 
                             Log.Information($"[Checkout] {billingTaxRate.name} @ {billingTaxRate.rate}.");
@@ -1814,14 +1814,14 @@ public class OrdersController(OpsConfig opsConfig,
                         // Just in case things go wrong.
                         if (billingTaxRate.rate > 15 || billingTaxRate.rate < 0)
                         {
-                            billingTaxRate.rate = 0;
+                            billingTaxRate = billingTaxRate with { rate = 0 };
                         }
 
                         // Create a billing client and send out an invoice.
-                        var billingClients = await Client.GetByEmailAsync(order.Email ?? string.Empty, _invoiceNinjaToken).ConfigureAwait(false);
+                        var billingClients = await Client.GetByEmailAsync(order.Email ?? string.Empty, _invoiceNinjaToken);
                         var billingClient = billingClients.data.FirstOrDefault();
 
-                        if (billingClient is null)
+                        if (string.IsNullOrWhiteSpace(billingClient.id))
                         {
                             // Create a new client in the billing system.
                             var newBillingClient = new ClientDatum
@@ -1841,15 +1841,15 @@ public class OrdersController(OpsConfig opsConfig,
                                 postal_code = order?.Zip ?? string.Empty
                             };
 
-                            var newClient = await newBillingClient.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                            newBillingClient.id = newClient.id;
+                            var newClient = await newBillingClient.PostAsync(_invoiceNinjaToken.AsMemory());
+                            newBillingClient = newBillingClient with { id = newClient.id };
                             var billingClientContact = newBillingClient.contacts.FirstOrDefault();
-                            var newClientContact = newClient?.contacts?.FirstOrDefault();
-                            if (billingClientContact is not null && newClientContact is not null)
+                            var newClientContact = newClient.contacts.FirstOrDefault();
+                            if (!string.IsNullOrWhiteSpace(newClientContact.id))
                             {
-                                billingClientContact.id = newClientContact.id;
+                                billingClientContact = billingClientContact with { id = newClientContact.id };
                             }
-                            billingClient = await newBillingClient.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                            billingClient = await newBillingClient.PutAsync(_invoiceNinjaToken.AsMemory());
                             Log.Information($"[Checkout] Created billing client {billingClient.name}, {billingClient.id}.");
                         }
                         else
@@ -1858,7 +1858,7 @@ public class OrdersController(OpsConfig opsConfig,
                         }
 
                         // Create the invoices for this order and submit it to the billing system.
-                        var upfrontInvoice = new InvoiceDatum
+                        InvoiceDatum upfrontInvoice = new()
                         {
                             id = billingClient.id,
                             line_items = [.. onetimeItems],

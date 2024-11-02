@@ -876,7 +876,7 @@ namespace NumberSearch.Mvc.Controllers
                                 try
                                 {
                                     // Use our own API
-                                    specificTaxRate = await SalesTax.GetLocalAPIAsync(order.Address, string.Empty, order.Zip).ConfigureAwait(false);
+                                    specificTaxRate = await SalesTax.GetLocalAPIAsync(order.Address.AsMemory(), string.Empty.AsMemory(), order.Zip.AsMemory());
                                 }
                                 catch
                                 {
@@ -888,7 +888,7 @@ namespace NumberSearch.Mvc.Controllers
                                     try
                                     {
                                         // Fall back to using the state's API
-                                        specificTaxRate = await SalesTax.GetAsync(order.Address, order.City, order.Zip).ConfigureAwait(false);
+                                        specificTaxRate = await SalesTax.GetAsync(order.Address.AsMemory(), order.City.AsMemory(), order.Zip.AsMemory());
                                     }
                                     catch
                                     {
@@ -910,9 +910,9 @@ namespace NumberSearch.Mvc.Controllers
                                 var taxRateName = $"{rateName}, WA - {specificTaxRate.loccode}";
                                 var taxRateValue = specificTaxRate.rate1 * 100M;
 
-                                var existingTaxRates = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                var existingTaxRates = await TaxRate.GetAllAsync(_invoiceNinjaToken.AsMemory());
                                 billingTaxRate = existingTaxRates.data.Where(x => x.name == taxRateName).FirstOrDefault();
-                                if (billingTaxRate is null)
+                                if (string.IsNullOrWhiteSpace(billingTaxRate.name))
                                 {
                                     billingTaxRate = new TaxRateDatum
                                     {
@@ -920,7 +920,7 @@ namespace NumberSearch.Mvc.Controllers
                                         rate = taxRateValue
                                     };
 
-                                    var checkCreate = await billingTaxRate.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                    var checkCreate = await billingTaxRate.PostAsync(_invoiceNinjaToken.AsMemory());
                                 }
 
                                 Log.Information($"[Checkout] {billingTaxRate.name} @ {billingTaxRate.rate}.");
@@ -933,7 +933,7 @@ namespace NumberSearch.Mvc.Controllers
                             // Just in case things go wrong.
                             if (billingTaxRate.rate > 15 || billingTaxRate.rate < 0)
                             {
-                                billingTaxRate.rate = 0;
+                                billingTaxRate = billingTaxRate with { rate = 0 };
                             }
 
                             // Create the confirmation email.
@@ -966,7 +966,7 @@ Accelerate Networks
 
                             // To get the right data into invoice ninja 5 we must first create the billing client using a unique name,
                             // and then update that billing client with the rest of the address and contact data once we have its id.
-                            if (billingClient is null)
+                            if (string.IsNullOrWhiteSpace(billingClient.id))
                             {
                                 // Create a new client in the billing system.
                                 var newBillingClient = new ClientDatum
@@ -987,15 +987,15 @@ Accelerate Networks
                                 };
 
                                 // Create the client and get its id.
-                                var newClient = await newBillingClient.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                newBillingClient.id = newClient.id;
+                                var newClient = await newBillingClient.PostAsync(_invoiceNinjaToken.AsMemory());
+                                newBillingClient = newBillingClient with { id = newClient.id };
                                 var billingClientContact = newBillingClient.contacts.FirstOrDefault();
                                 var clientContact = newClient.contacts.FirstOrDefault();
-                                if (billingClientContact is not null && clientContact is not null)
+                                if (!string.IsNullOrWhiteSpace(clientContact.id))
                                 {
-                                    billingClientContact.id = clientContact.id;
+                                    billingClientContact = billingClientContact with { id = clientContact.id };
                                 }
-                                billingClient = await newBillingClient.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                billingClient = await newBillingClient.PutAsync(_invoiceNinjaToken.AsMemory());
                                 Log.Information($"[Checkout] Created billing client {billingClient.name}, {billingClient.id}.");
                             }
                             else

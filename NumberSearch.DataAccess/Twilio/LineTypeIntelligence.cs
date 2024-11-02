@@ -2,43 +2,48 @@
 
 using Serilog;
 
+using System;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.Twilio
 {
 
-    public class LineTypeIntelligenceResponse
+    public readonly record struct LineTypeIntelligenceResponse
+    (
+        object call_forwarding,
+        object caller_name,
+        string calling_country_code,
+        string country_code,
+        object disposable_phone_number_risk,
+        object identity_match,
+        LineTypeIntelligence line_type_intelligence,
+        object live_activity,
+        string national_format,
+        string phone_number,
+        object reassigned_number,
+        object sim_swap,
+        object sms_pumping_risk,
+        string url,
+        bool valid,
+        object[] validation_errors)
     {
-        public object call_forwarding { get; set; } = new();
-        public object caller_name { get; set; } = new();
-        public string calling_country_code { get; set; } = string.Empty;
-        public string country_code { get; set; } = string.Empty;
-        public object disposable_phone_number_risk { get; set; } = new();
-        public object identity_match { get; set; } = new();
-        public LineTypeIntelligence line_type_intelligence { get; set; } = new();
-        public object live_activity { get; set; } = new();
-        public string national_format { get; set; } = string.Empty;
-        public string phone_number { get; set; } = string.Empty;
-        public object reassigned_number { get; set; } = new();
-        public object sim_swap { get; set; } = new();
-        public object sms_pumping_risk { get; set; } = new();
-        public string url { get; set; } = string.Empty;
-        public bool valid { get; set; }
-        public object[] validation_errors { get; set; } = [];
-
-        public static async Task<LineTypeIntelligenceResponse> GetByDialedNumberAsync(string dialedNumber, string username, string password)
+        public static async Task<LineTypeIntelligenceResponse> GetByDialedNumberAsync(ReadOnlyMemory<char> dialedNumber, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
+            string numberParameter;
             if (dialedNumber.Length is 10)
             {
-                dialedNumber = $"1{dialedNumber}";
+                numberParameter = $"+1{dialedNumber}?Fields=line_type_intelligence";
+            }
+            else
+            {
+                numberParameter = $"+{dialedNumber}?Fields=line_type_intelligence";
             }
             string baseUrl = "https://lookups.twilio.com/";
             string endpoint = "v2/PhoneNumbers/";
-            string numberParameter = $"+{dialedNumber}?Fields=line_type_intelligence";
             string route = $"{baseUrl}{endpoint}{numberParameter}";
             try
             {
-                var response = await route.WithBasicAuth(username, password).GetJsonAsync<LineTypeIntelligenceResponse>().ConfigureAwait(false);
+                var response = await route.WithBasicAuth(username.ToString(), password.ToString()).GetJsonAsync<LineTypeIntelligenceResponse>();
                 return response;
             }
             catch (FlurlHttpException ex)
@@ -50,12 +55,12 @@ namespace NumberSearch.DataAccess.Twilio
         }
     }
 
-    public class LineTypeIntelligence
-    {
-        public string carrier_name { get; set; } = string.Empty;
-        public object error_code { get; set; } = new();
-        public string mobile_country_code { get; set; } = string.Empty;
-        public string mobile_network_code { get; set; } = string.Empty;
-        public string type { get; set; } = string.Empty;
-    }
+    public readonly record struct LineTypeIntelligence
+    (
+        string carrier_name,
+        object error_code,
+        string mobile_country_code,
+        string mobile_network_code,
+        string type
+    );
 }

@@ -1,14 +1,13 @@
 ﻿using Flurl.Http;
 
+using System;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.InvoiceNinja
 {
-    public class TaxRate
+    public readonly record struct TaxRate(TaxRateDatum[] data)
     {
-        public TaxRateDatum[] data { get; set; } = [];
-
-        public static async Task<TaxRate> GetAllAsync(string token)
+        public static async Task<TaxRate> GetAllAsync(ReadOnlyMemory<char> token)
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
             string endpoint = "tax_rates";
@@ -18,28 +17,24 @@ namespace NumberSearch.DataAccess.InvoiceNinja
 
             return await url
                 .WithHeader(tokenHeader, token)
-                .GetJsonAsync<TaxRate>()
-                .ConfigureAwait(false);
+                .GetJsonAsync<TaxRate>();
         }
     }
 
-    public class TaxSingle
-    {
-        public TaxRateDatum data { get; set; } = new();
-    }
+    public readonly record struct TaxSingle(TaxRateDatum data);
 
-    public class TaxRateDatum
-    {
-        public string account_key { get; set; } = string.Empty;
-        public bool is_owner { get; set; }
-        public string id { get; set; } = string.Empty;
-        public string name { get; set; } = string.Empty;
-        public decimal rate { get; set; } = 0M;
-        public bool is_inclusive { get; set; }
-        public int updated_at { get; set; }
-        public object archived_at { get; set; } = new();
-
-        public async Task<TaxRateDatum> PostAsync(string token)
+    public readonly record struct TaxRateDatum
+    (
+        string account_key,
+        bool is_owner,
+        string id,
+        string name,
+        decimal rate,
+        bool is_inclusive,
+        int updated_at,
+        object archived_at
+    ) {
+        public async Task<TaxRateDatum> PostAsync(ReadOnlyMemory<char> token)
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
             string endpoint = "tax_rates";
@@ -52,11 +47,10 @@ namespace NumberSearch.DataAccess.InvoiceNinja
                 .WithHeader(tokenHeader, token)
                 .WithHeader(contentHeader, contentHeaderValue)
                 .PostJsonAsync(new { name, rate })
-                .ReceiveJson<TaxSingle>()
-                .ConfigureAwait(false);
+                .ReceiveJson<TaxSingle>();
 
             // Unwrap the data we want from the single-field parent object.
-            return result?.data ?? new();
+            return result.data;
         }
     }
 }

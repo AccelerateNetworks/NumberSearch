@@ -17,7 +17,7 @@ namespace NumberSearch.Ops.Controllers
     [ApiExplorerSettings(IgnoreApi = true)]
     public class TaxRatesController(IConfiguration config) : Controller
     {
-        private readonly string _invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken") ?? string.Empty;
+        private readonly ReadOnlyMemory<char> _invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken").AsMemory();
 
         [Authorize]
         [HttpGet]
@@ -27,20 +27,20 @@ namespace NumberSearch.Ops.Controllers
         {
             if (!string.IsNullOrWhiteSpace(taxRateId))
             {
-                var result = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                var result = await TaxRate.GetAllAsync(_invoiceNinjaToken);
 
                 return View("TaxRates", new TaxRateResult
                 {
                     Rates = new TaxRate
                     {
-                        data = result.data.Where(x => x.id.Contains(taxRateId)).ToArray()
+                        data = [.. result.data.Where(x => x.id.Contains(taxRateId))]
                     }
                 });
             }
             else
             {
                 // Show all orders
-                var result = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                var result = await TaxRate.GetAllAsync(_invoiceNinjaToken);
 
                 return View("TaxRates", new TaxRateResult
                 {
@@ -72,7 +72,7 @@ namespace NumberSearch.Ops.Controllers
                     {
                         try
                         {
-                            specificTaxRate = await NumberSearch.DataAccess.SalesTax.GetLocalAPIAsync(location.Address, location.City, location.Zip).ConfigureAwait(false);
+                            specificTaxRate = await NumberSearch.DataAccess.SalesTax.GetLocalAPIAsync(location.Address.AsMemory(), location.City.AsMemory(), location.Zip.AsMemory());
                         }
                         catch
                         {
@@ -93,10 +93,10 @@ namespace NumberSearch.Ops.Controllers
                         var taxRateName = $"{rateName}, WA - {specificTaxRate.loccode}";
                         var taxRateValue = specificTaxRate.rate1 * 100M;
 
-                        var existingTaxRates = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                        var existingTaxRates = await TaxRate.GetAllAsync(_invoiceNinjaToken);
                         var billingTaxRate = existingTaxRates.data.Where(x => x.name == taxRateName).FirstOrDefault();
 
-                        if (billingTaxRate is null)
+                        if (string.IsNullOrWhiteSpace(billingTaxRate.name))
                         {
                             billingTaxRate = new TaxRateDatum
                             {
@@ -104,9 +104,9 @@ namespace NumberSearch.Ops.Controllers
                                 rate = taxRateValue
                             };
 
-                            var checkCreate = await billingTaxRate.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                            var checkCreate = await billingTaxRate.PostAsync(_invoiceNinjaToken);
 
-                            var result = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                            var result = await TaxRate.GetAllAsync(_invoiceNinjaToken);
 
                             return View("TaxRates", new TaxRateResult
                             {
@@ -119,7 +119,7 @@ namespace NumberSearch.Ops.Controllers
                         }
                         else
                         {
-                            var unchanged = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                            var unchanged = await TaxRate.GetAllAsync(_invoiceNinjaToken);
 
                             return View("TaxRates", new TaxRateResult
                             {
@@ -137,7 +137,7 @@ namespace NumberSearch.Ops.Controllers
                         Address = location.Address ?? string.Empty,
                         City = location.City ?? string.Empty,
                         Zip = location.Zip ?? string.Empty,
-                        Rates = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false),
+                        Rates = await TaxRate.GetAllAsync(_invoiceNinjaToken),
                         Message = $"Failed to create a Tax Rate for {location.Address}, {location.City}, {location.Zip}."
                     });
                 }
@@ -149,7 +149,7 @@ namespace NumberSearch.Ops.Controllers
                     Log.Fatal(ex.InnerException?.Message ?? "Inner Exception Message was null.");
                     Log.Fatal(ex.InnerException?.StackTrace ?? "Inner Exception Message StackTrace was null.");
 
-                    var result = await TaxRate.GetAllAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                    var result = await TaxRate.GetAllAsync(_invoiceNinjaToken);
 
                     return View("TaxRates", new TaxRateResult
                     {
