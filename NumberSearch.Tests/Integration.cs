@@ -460,11 +460,11 @@ namespace NumberSearch.Tests
         public async Task RateCenterLookupAsync()
         {
             // Arrange
-            string npa = "425";
-            string nxx = "780";
+            int npa = 425;
+            int nxx = 780;
 
             // Act
-            var result = await RateCenterLookup.GetAsync(npa.AsMemory(), nxx.AsMemory());
+            var result = await RateCenterLookup.GetAsync(npa, nxx);
 
             // Assert        
             Assert.False(string.IsNullOrWhiteSpace(result.Region.ToString()));
@@ -476,11 +476,11 @@ namespace NumberSearch.Tests
         public async Task BadRateCenterLookupAsync()
         {
             // Arrange
-            string npa = "844";
-            string nxx = "646";
+            int npa = 844;
+            int nxx = 646;
 
             // Act
-            var result = await RateCenterLookup.GetAsync(npa.AsMemory(), nxx.AsMemory());
+            var result = await RateCenterLookup.GetAsync(npa, nxx);
 
             // Assert        
             Assert.True(string.IsNullOrWhiteSpace(result.Region.ToString()));

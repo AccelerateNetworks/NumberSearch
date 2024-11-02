@@ -7,7 +7,6 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Ingest
@@ -19,16 +18,13 @@ namespace NumberSearch.Ingest
         /// </summary>
         /// <param name="numbers"></param>
         /// <returns></returns>
-        public static PhoneNumber[] AssignNumberTypes(in PhoneNumber[] numbers)
+        public static ref readonly PhoneNumber[] AssignNumberTypes(in PhoneNumber[] numbers)
         {
             // NumberTypes
-            var Executive = "Executive";
-            var Premium = "Premium";
-            var Standard = "Standard";
-            var Tollfree = "Tollfree";
-
-            // Bail early if there's no data.
-            if (numbers.Length is 0) { return numbers ?? []; }
+            string Executive = "Executive";
+            string Premium = "Premium";
+            string Standard = "Standard";
+            string Tollfree = "Tollfree";
 
             // Assign a Type based on number of repeating digits.
             foreach (var number in numbers)
@@ -55,7 +51,7 @@ namespace NumberSearch.Ingest
                 }
             }
 
-            return numbers;
+            return ref numbers;
         }
 
         /// <summary>
@@ -226,7 +222,7 @@ namespace NumberSearch.Ingest
                 {
                     try
                     {
-                        match = await RateCenterLookup.GetAsync(number.NPA.ToString().AsMemory(), number.NXX.ToString().AsMemory()).ConfigureAwait(false);
+                        match = await RateCenterLookup.GetAsync(number.NPA, number.NXX);
 
                         if (!string.IsNullOrWhiteSpace(match.RateCenter.ToString()))
                         {

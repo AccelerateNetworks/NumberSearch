@@ -7,7 +7,7 @@ namespace NumberSearch.DataAccess.LCGuide
 {
     public readonly record struct RateCenterLookup(ReadOnlyMemory<char> RateCenter, ReadOnlyMemory<char> Region)
     {
-        public static async Task<RateCenterLookup> GetAsync(ReadOnlyMemory<char> npa, ReadOnlyMemory<char> nxx)
+        public static async Task<RateCenterLookup> GetAsync(int npa, int nxx)
         {
             string baseUrl = "https://localcallingguide.com/xmlprefix.php?";
             string npaParameter = $"npa={npa}";
