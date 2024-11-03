@@ -500,7 +500,7 @@ namespace NumberSearch.Ingest
                     StartDate = start,
                     EndDate = end,
                     IngestedFrom = "OwnedNumbers",
-                    NumbersRetrived = newlyIngested.Count(),
+                    NumbersRetrived = newlyIngested.Length,
                     Priority = false,
                     Lock = false,
                     IngestedNew = ingestedNew,
@@ -715,7 +715,7 @@ namespace NumberSearch.Ingest
         public static async Task<ServiceProviderChanged[]> VerifyServiceProvidersAsync(ReadOnlyMemory<char> bulkApiKey, ReadOnlyMemory<char> connectionString)
         {
             var owned = await OwnedPhoneNumber.GetAllAsync(connectionString.ToString());
-            List<ServiceProviderChanged> serviceProviderChanged = new();
+            List<ServiceProviderChanged> serviceProviderChanged = [];
 
             // Only query data for numbers with a status of Active.
             foreach (var number in owned.Where(x => x.Status is "Active"))
@@ -731,11 +731,11 @@ namespace NumberSearch.Ingest
                     }
                     else
                     {
-                        var result = await LrnBulkCnam.GetAsync(number.DialedNumber, bulkApiKey.ToString());
+                        var result = await LrnBulkCnam.GetAsync(number.DialedNumber.AsMemory(), bulkApiKey);
 
                         var provider = "BulkVS";
-                        var newSpid = result?.spid ?? string.Empty;
-                        var newSpidName = result?.lec ?? string.Empty;
+                        var newSpid = result.spid ?? string.Empty;
+                        var newSpidName = result.lec ?? string.Empty;
 
                         var updatedSPID = newSpid != number.SPID && !string.IsNullOrWhiteSpace(newSpid);
                         var updatedSPIDName = newSpidName != number.SPIDName && !string.IsNullOrWhiteSpace(newSpidName);
@@ -792,7 +792,7 @@ namespace NumberSearch.Ingest
 
             var ownedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString.ToString());
 
-            var e911Registrations = await E911Record.GetAllAsync(bulkVSUsername.ToString(), bulkVSPassword.ToString());
+            var e911Registrations = await E911Record.GetAllAsync(bulkVSUsername, bulkVSPassword);
 
             foreach (var record in e911Registrations)
             {

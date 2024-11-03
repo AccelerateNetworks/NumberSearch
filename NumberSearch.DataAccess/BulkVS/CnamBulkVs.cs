@@ -7,20 +7,15 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.BulkVS
 {
-    public class CnamBulkVs
+    public readonly record struct CnamBulkVs(string name, string number, long time, DateTime LastChecked)
     {
-        public string name { get; set; } = string.Empty;
-        public string number { get; set; } = string.Empty;
-        public long time { get; set; }
-        public DateTime LastChecked { get; set; }
-
         /// <summary>
         /// Get CNAM lookup information for a specific dialed number.
         /// </summary>
         /// <param name="dialedNumber"></param>
         /// <param name="apiKey"></param>
         /// <returns></returns>
-        public static async Task<CnamBulkVs> GetAsync(string dialedNumber, string apiKey)
+        public static async Task<CnamBulkVs> GetAsync(ReadOnlyMemory<char> dialedNumber, ReadOnlyMemory<char> apiKey)
         {
             string baseUrl = "https://cnam.bulkvs.com/";
             string apikeyParameter = $"?id={apiKey}";
@@ -30,12 +25,10 @@ namespace NumberSearch.DataAccess.BulkVS
 
             try
             {
-                var result = await route.GetJsonAsync<CnamBulkVs>().ConfigureAwait(false);
-
+                var result = await route.GetJsonAsync<CnamBulkVs>();
                 // Handle the time requested.
                 // https://stackoverflow.com/questions/2477712/convert-local-time-10-digit-number-to-a-readable-datetime-format
-
-                result.LastChecked = new DateTime(1970, 1, 1).AddSeconds(result.time);
+                result = result with { LastChecked = new DateTime(1970, 1, 1).AddSeconds(result.time) };
                 return result;
             }
             catch (FlurlHttpException ex)

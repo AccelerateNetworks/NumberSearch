@@ -657,10 +657,10 @@ namespace NumberSearch.Tests
             var number = "2064083008";
 
             // Act
-            var result = await CnamBulkVs.GetAsync(number, bulkVSKey);
+            var result = await CnamBulkVs.GetAsync(number.AsMemory(), bulkVSKey.AsMemory());
 
             // Assert
-            Assert.NotNull(result);
+            Assert.False(string.IsNullOrWhiteSpace(result.number));
             Assert.False(string.IsNullOrWhiteSpace(result.name));
             output.WriteLine(JsonSerializer.Serialize(result));
         }
@@ -672,10 +672,9 @@ namespace NumberSearch.Tests
             var number = "4252008183";
 
             // Act
-            var result = await LrnBulkCnam.GetAsync(number, bulkVSKey);
+            var result = await LrnBulkCnam.GetAsync(number.AsMemory(), bulkVSKey.AsMemory());
 
             // Assert
-            Assert.NotNull(result);
             Assert.False(string.IsNullOrWhiteSpace(result.spid));
             output.WriteLine(JsonSerializer.Serialize(result));
         }
@@ -687,10 +686,9 @@ namespace NumberSearch.Tests
             var number = "8662122226";
 
             // Act
-            var result = await LrnBulkCnam.GetAsync(number, bulkVSKey);
+            var result = await LrnBulkCnam.GetAsync(number.AsMemory(), bulkVSKey.AsMemory());
 
             // Assert
-            Assert.NotNull(result);
             Assert.False(string.IsNullOrWhiteSpace(result.jurisdiction));
             output.WriteLine(JsonSerializer.Serialize(result));
         }
@@ -702,14 +700,14 @@ namespace NumberSearch.Tests
             var number = "2064083008";
 
             // Act
-            var result = await LrnBulkCnam.GetAsync(number, bulkVSKey);
+            var result = await LrnBulkCnam.GetAsync(number.AsMemory(), bulkVSKey.AsMemory());
 
             // Assert
-            Assert.NotNull(result);
+            Assert.False(string.IsNullOrWhiteSpace(result.tn));
             Assert.False(string.IsNullOrWhiteSpace(result.spid));
             output.WriteLine(JsonSerializer.Serialize(result));
 
-            result.LIDBName = "IntegrationTest";
+            result = result with { LIDBName = "IntegrationTest" };
 
             var lookup = new PhoneNumberLookup(result);
             var checkPost = await lookup.PostAsync(postgresql);
@@ -751,10 +749,10 @@ namespace NumberSearch.Tests
             // Arrange
             var portedNumber = "8605530426";
             // Act
-            var results = await ValidatePortability.GetAsync(portedNumber, bulkVSUsername, bulkVSPassword);
+            var results = await ValidatePortability.GetAsync(portedNumber.AsMemory(), bulkVSUsername.AsMemory(), bulkVSPassword.AsMemory());
 
             // Assert
-            Assert.NotNull(results);
+            Assert.True(results.Portable);
             output.WriteLine(JsonSerializer.Serialize(results));
         }
 
@@ -804,10 +802,10 @@ namespace NumberSearch.Tests
         {
             // Arrange
             // Act
-            var results = await E911Record.ValidateAddressAsync("", "", "", "", "", "", bulkVSUsername, bulkVSPassword);
+            var results = await E911Record.ValidateAddressAsync("", "", "", "", "", "", bulkVSUsername.AsMemory(), bulkVSPassword.AsMemory());
 
             // Assert
-            Assert.NotNull(results);
+            Assert.False(string.IsNullOrWhiteSpace(results.Status));
             output.WriteLine(JsonSerializer.Serialize(results));
         }
 
@@ -816,7 +814,7 @@ namespace NumberSearch.Tests
         {
             // Arrange
             // Act
-            var results = await E911Record.GetAsync("12062574158", bulkVSUsername, bulkVSPassword);
+            var results = await E911Record.GetAsync("12062574158".AsMemory(), bulkVSUsername.AsMemory(), bulkVSPassword.AsMemory());
 
             // Assert
             Assert.NotNull(results);
@@ -828,10 +826,10 @@ namespace NumberSearch.Tests
         {
             // Arrange
             // Act
-            var results = await E911Record.PostAsync("", "", "", [], bulkVSUsername, bulkVSPassword);
+            var results = await E911Record.PostAsync("", "", "", [], bulkVSUsername.AsMemory(), bulkVSPassword.AsMemory());
 
             // Assert
-            Assert.NotNull(results);
+            Assert.True(string.IsNullOrWhiteSpace(results.Status));
             output.WriteLine(JsonSerializer.Serialize(results));
         }
 
@@ -863,7 +861,7 @@ namespace NumberSearch.Tests
 
             var result = await PortTn.GetAsync("1642300".AsMemory(), bulkVSUsername.AsMemory(), bulkVSPassword.AsMemory());
 
-            Assert.NotNull(result);
+            Assert.NotEmpty(result.TNList);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 

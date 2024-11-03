@@ -150,9 +150,9 @@ namespace NumberSearch.Mvc.Controllers
 
             if (checkParse && phoneNumber is not null)
             {
-                var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSAPIUsername, _bulkVSAPIPassword).ConfigureAwait(false);
+                var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber.AsMemory(), _bulkVSAPIUsername.AsMemory(), _bulkVSAPIPassword.AsMemory());
 
-                if (portable is not null && portable.Portable)
+                if (portable.Portable)
                 {
                     var port = new PortedPhoneNumber
                     {

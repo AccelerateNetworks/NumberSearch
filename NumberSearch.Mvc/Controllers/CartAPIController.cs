@@ -814,7 +814,7 @@ namespace NumberSearch.Mvc.Controllers
             if (checkParse && phoneNumber is not null)
             {
                 // Determine if the number is a wireless number.
-                var lrnLookup = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _apiKey).ConfigureAwait(false);
+                var lrnLookup = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber.AsMemory(), _apiKey.AsMemory());
 
                 bool wireless = false;
 
@@ -848,8 +848,8 @@ namespace NumberSearch.Mvc.Controllers
                     NPA = phoneNumber.NPA,
                     NXX = phoneNumber.NXX,
                     XXXX = phoneNumber.XXXX,
-                    City = lrnLookup?.city ?? string.Empty,
-                    State = lrnLookup?.province ?? string.Empty,
+                    City = lrnLookup.city ?? string.Empty,
+                    State = lrnLookup.province ?? string.Empty,
                     DateIngested = DateTime.Now,
                     IngestedFrom = "UserInput",
                     Wireless = wireless
@@ -912,7 +912,7 @@ namespace NumberSearch.Mvc.Controllers
                 try
                 {
                     // Determine if the number is a wireless number.
-                    var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _apiKey).ConfigureAwait(false);
+                    var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber.AsMemory(), _apiKey.AsMemory());
 
                     bool wireless = false;
 

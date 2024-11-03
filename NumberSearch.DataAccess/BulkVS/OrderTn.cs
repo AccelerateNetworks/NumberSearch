@@ -1,7 +1,5 @@
 ﻿using Flurl.Http;
 
-using Newtonsoft.Json;
-
 using NumberSearch.DataAccess.Models;
 
 using Serilog;
@@ -13,29 +11,28 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.BulkVS
 {
-    public class OrderTn
+    public readonly record struct OrderTn
+    (
+        string TN,
+        [property: JsonPropertyName("Rate Center")]
+        string RateCenter,
+        string State,
+        [property: JsonPropertyName("Per Minute Rate")]
+        string PerMinuteRate,
+        string Mrc,
+        string Nrc
+    )
     {
-        public string TN { get; set; } = string.Empty;
-        [JsonPropertyName("Rate Center")]
-        [JsonProperty("Rate Center")]
-        public string RateCenter { get; set; } = string.Empty;
-        public string State { get; set; } = string.Empty;
-        [JsonPropertyName("Per Minute Rate")]
-        [JsonProperty("Per Minute Rate")]
-        public string PerMinuteRate { get; set; } = string.Empty;
-        public string Mrc { get; set; } = string.Empty;
-        public string Nrc { get; set; } = string.Empty;
-
-        public static async Task<OrderTn[]> GetRawAsync(string npa, string nxx, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
+        public static async ValueTask<OrderTn[]> GetRawAsync(int npa, int nxx, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
             string baseUrl = "https://portal.bulkvs.com/api/v1.0/";
             string endpoint = "orderTn";
-            string npaParameter = $"?Npa={npa}";
-            string nxxParameter = string.IsNullOrWhiteSpace(nxx) ? string.Empty : $"&Nxx={nxx}";
+            string npaParameter = $"?Npa={npa:000}";
+            string nxxParameter = PhoneNumbersNA.AreaCode.ValidNXX(nxx) ? string.Empty : $"&Nxx={nxx:000}";
             string route = $"{baseUrl}{endpoint}{npaParameter}{nxxParameter}";
             try
             {
-                return await route.WithBasicAuth(username.ToString(), password.ToString()).GetJsonAsync<OrderTn[]>().ConfigureAwait(false);
+                return await route.WithBasicAuth(username.ToString(), password.ToString()).GetJsonAsync<OrderTn[]>();
             }
             catch (FlurlHttpException ex)
             {
@@ -47,14 +44,11 @@ namespace NumberSearch.DataAccess.BulkVS
 
         public static async Task<PhoneNumber[]> GetAsync(int inNpa, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
-            var results = await GetRawAsync(inNpa.ToString("000"), string.Empty, username, password).ConfigureAwait(false);
-            var output = new List<PhoneNumber>();
+            OrderTn[] results = await GetRawAsync(inNpa, default, username, password);
+            List<PhoneNumber> output = [];
 
             // Bail out early if something is wrong.
-            if (results is null || results.Length == 0)
-            {
-                return [];
-            }
+            if (results.Length is 0) { return []; }
 
             foreach (var item in results)
             {
@@ -84,14 +78,11 @@ namespace NumberSearch.DataAccess.BulkVS
 
         public static async Task<PhoneNumber[]> GetAsync(int inNpa, int inNxx, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
-            var results = await GetRawAsync(inNpa.ToString("000"), inNxx.ToString("000"), username, password).ConfigureAwait(false);
-            var output = new List<PhoneNumber>();
+            OrderTn[] results = await GetRawAsync(inNpa, inNxx, username, password);
+            List<PhoneNumber> output = [];
 
             // Bail out early if something is wrong.
-            if (results is null || results.Length == 0)
-            {
-                return [];
-            }
+            if (results.Length is 0) { return []; }
 
             foreach (var item in results)
             {
@@ -120,19 +111,18 @@ namespace NumberSearch.DataAccess.BulkVS
         }
     }
 
-    public class OrderTnRequestBody
+    public readonly record struct OrderTnRequestBody
+    (
+        string TN,
+        string Lidb,
+        [property: JsonPropertyName("Portout Pin")]
+        string PortoutPin,
+        [property: JsonPropertyName("Trunk Group")]
+        string TrunkGroup,
+        bool Sms,
+        bool Mms
+    )
     {
-        public string TN { get; set; } = string.Empty;
-        public string Lidb { get; set; } = string.Empty;
-        [JsonPropertyName("Portout Pin")]
-        [JsonProperty("Portout Pin")]
-        public string PortoutPin { get; set; } = string.Empty;
-        [JsonProperty("Trunk Group")]
-        [JsonPropertyName("Trunk Group")]
-        public string TrunkGroup { get; set; } = string.Empty;
-        public bool Sms { get; set; }
-        public bool Mms { get; set; }
-
         /// <summary>
         /// Submit an order for a phone number to BulkVS.
         /// </summary>
@@ -178,11 +168,11 @@ namespace NumberSearch.DataAccess.BulkVS
             string route = $"{baseUrl}{endpoint}";
             try
             {
-                var response = await route.WithBasicAuth(username, password).PostJsonAsync(this).ReceiveString().ConfigureAwait(false);
+                var response = await route.WithBasicAuth(username, password).PostJsonAsync(this).ReceiveString();
                 OrderTnResponseBody weatherForecast =
-                System.Text.Json.JsonSerializer.Deserialize<OrderTnResponseBody>(response) ?? new();
-                weatherForecast.RawResponse = response;
-                return weatherForecast ?? new();
+                System.Text.Json.JsonSerializer.Deserialize<OrderTnResponseBody>(response);
+                weatherForecast = weatherForecast with { RawResponse = response };
+                return weatherForecast;
             }
             catch (FlurlHttpException ex)
             {
@@ -201,59 +191,43 @@ namespace NumberSearch.DataAccess.BulkVS
         }
     }
 
-    public class OrderTnResponseBody
-    {
-        public string TN { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
-        public string Lidb { get; set; } = string.Empty;
-        [JsonPropertyName("Portout Pin")]
-        public string PortoutPin { get; set; } = string.Empty;
-        public OrderTnRouting Routing { get; set; } = new();
-        public OrderTnMessaging Messaging { get; set; } = new();
-        [JsonPropertyName("TN Details")]
-        [JsonProperty("TN Details")]
-        public OrderTnTNDetails TNDetails { get; set; } = new();
-        public OrderTnFailed Failed { get; set; } = new();
-        public string RawResponse { get; set; } = string.Empty;
-    }
+    public readonly record struct OrderTnResponseBody
+    (
+        string TN,
+        string Status,
+        string Lidb,
+        [property: JsonPropertyName("Portout Pin")]
+        string PortoutPin,
+        OrderTnRouting Routing,
+        OrderTnMessaging Messaging,
+        [property: JsonPropertyName("TN Details")]
+        OrderTnTNDetails TNDetails,
+        OrderTnFailed Failed,
+        string RawResponse
+    );
 
-    public class OrderTnRouting
-    {
-        [JsonPropertyName("Trunk Group")]
-        [JsonProperty("Trunk Group")]
-        public string TrunkGroup { get; set; } = string.Empty;
-        [JsonPropertyName("Custom URI")]
-        [JsonProperty("Custom URI")]
-        public string CustomURI { get; set; } = string.Empty;
-        [JsonPropertyName("Call Forward")]
-        [JsonProperty("Call Forward")]
-        public object CallForward { get; set; } = new();
-    }
+    public readonly record struct OrderTnRouting
+    (
+        [property: JsonPropertyName("Trunk Group")]
+        string TrunkGroup,
+        [property: JsonPropertyName("Custom URI")]
+        string CustomURI,
+        [property: JsonPropertyName("Call Forward")]
+        object CallForward
+    );
 
-    public class OrderTnMessaging
-    {
-        public bool Sms { get; set; }
-        public bool Mms { get; set; }
-    }
+    public readonly record struct OrderTnMessaging(bool Sms,bool Mms);
 
-    public class OrderTnTNDetails
-    {
-        [JsonPropertyName("Rate Center")]
-        [JsonProperty("Rate Center")]
-        public string RateCenter { get; set; } = string.Empty;
-        public string State { get; set; } = string.Empty;
-        public string Tier { get; set; } = string.Empty;
-        public bool Cnam { get; set; }
-        [JsonPropertyName("Activation Date")]
-        [JsonProperty("Activation Date")]
-        public string ActivationDate { get; set; } = string.Empty;
-    }
+    public readonly record struct OrderTnTNDetails
+    (
+        [property: JsonPropertyName("Rate Center")]
+        string RateCenter,
+        string State,
+        string Tier,
+        bool Cnam,
+        [property: JsonPropertyName("Activation Date")]
+        string ActivationDate
+    );
 
-    public class OrderTnFailed
-    {
-        public string TN { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
-        public string Code { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-    }
+    public readonly record struct OrderTnFailed(string TN,string Status,string Code,string Description); 
 }

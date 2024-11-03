@@ -423,8 +423,8 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     try
                     {
-                        var checkPortable = await ValidatePortability.GetAsync(contact.DialedNumber, _configuration.BulkVSUsername, _configuration.BulkVSPassword);
-                        if (checkPortable is null || checkPortable?.Portable is false)
+                        var checkPortable = await ValidatePortability.GetAsync(contact.DialedNumber.AsMemory(), _configuration.BulkVSUsername.AsMemory(), _configuration.BulkVSPassword.AsMemory());
+                        if (string.IsNullOrWhiteSpace(checkPortable.TN) || checkPortable.Portable is false)
                         {
                             order.ContactPhoneNumber = string.Empty;
                             _ = cart.SetToSession(HttpContext.Session);

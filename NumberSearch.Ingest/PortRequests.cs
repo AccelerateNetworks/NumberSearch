@@ -5,7 +5,6 @@ using Serilog;
 
 using System;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using static NumberSearch.Ingest.Program;
@@ -32,7 +31,7 @@ namespace NumberSearch.Ingest
                 foreach (var number in portedNumbers)
                 {
                     // If the request has been assigned and external port request id than it has been submitted to the vendor.
-                    if (!string.IsNullOrWhiteSpace(number.ExternalPortRequestId) && bulkStatus is not null)
+                    if (!string.IsNullOrWhiteSpace(number.ExternalPortRequestId) && bulkStatus.TNList.Length != 0)
                     {
                         var matchingNumber = bulkStatus.TNList.Where(x => x.TN == $"1{number.PortedDialedNumber}").FirstOrDefault();
 

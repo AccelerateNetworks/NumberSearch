@@ -192,10 +192,10 @@ namespace NumberSearch.Mvc.Controllers
             {
                 try
                 {
-                    var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSUsername, _bulkVSPassword).ConfigureAwait(false);
+                    var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber.AsMemory(), _bulkVSUsername.AsMemory(), _bulkVSPassword.AsMemory());
 
                     // Fail fast
-                    if (portable is null || portable?.Portable is false)
+                    if (portable.Portable is false)
                     {
                         Log.Information($"[Portability] {phoneNumber.DialedNumber} is not Portable.");
 
@@ -215,52 +215,52 @@ namespace NumberSearch.Mvc.Controllers
                     if (checkNumber is null && phoneNumber.Type is NumberType.Canada)
                     {
                         // Warning this costs $
-                        var canada = await DataAccess.CallWithUs.LRNLookup.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _callWithUsAPIkey).ConfigureAwait(false);
+                        var canada = await DataAccess.CallWithUs.LRNLookup.GetAsync(phoneNumber.DialedNumber.AsMemory(), _callWithUsAPIkey.AsMemory());
 
                         checkNumber = new PhoneNumberLookup(new LrnBulkCnam
                         {
-                            lata = canada?.LATA ?? string.Empty,
-                            lrn = canada?.LRN ?? string.Empty,
-                            jurisdiction = canada?.State ?? string.Empty,
-                            ocn = canada?.OCN ?? string.Empty,
-                            ratecenter = canada?.Ratecenter ?? string.Empty,
+                            lata = canada.LATA ?? string.Empty,
+                            lrn = canada.LRN ?? string.Empty,
+                            jurisdiction = canada.State ?? string.Empty,
+                            ocn = canada.OCN ?? string.Empty,
+                            ratecenter = canada.Ratecenter ?? string.Empty,
                             tn = $"1{phoneNumber.DialedNumber}",
-                            lec = canada?.Company ?? string.Empty,
-                            lectype = canada?.Prefix_Type ?? string.Empty,
-                            city = canada?.Ratecenter ?? string.Empty,
-                            province = canada?.State ?? string.Empty,
+                            lec = canada.Company ?? string.Empty,
+                            lectype = canada.Prefix_Type ?? string.Empty,
+                            city = canada.Ratecenter ?? string.Empty,
+                            province = canada.State ?? string.Empty,
                         })
                         {
-                            LosingCarrier = portable?.LosingCarrier ?? string.Empty
+                            LosingCarrier = portable.LosingCarrier ?? string.Empty
                         };
 
                         // Warning this costs $$$$
-                        var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSKey);
-                        checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName.name ?? string.Empty;
+                        var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber.AsMemory(), _bulkVSKey.AsMemory());
+                        checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName.name) ? string.Empty : numberName.name ?? string.Empty;
                         freshQuery = true;
                     }
                     else if (checkNumber is null && phoneNumber.Type is NumberType.Tollfree)
                     {
                         checkNumber = new PhoneNumberLookup()
                         {
-                            DialedNumber = portable?.TN ?? $"1{phoneNumber.DialedNumber}",
-                            Ratecenter = portable?.RateCenter ?? string.Empty,
-                            State = portable?.State ?? string.Empty,
-                            LosingCarrier = portable?.LosingCarrier ?? string.Empty,
+                            DialedNumber = portable.TN ?? $"1{phoneNumber.DialedNumber}",
+                            Ratecenter = portable.RateCenter ?? string.Empty,
+                            State = portable.State ?? string.Empty,
+                            LosingCarrier = portable.LosingCarrier ?? string.Empty,
                         };
                     }
                     else if (checkNumber is null)
                     {
                         // Warning this costs $$$$
-                        var result = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSKey).ConfigureAwait(false);
+                        var result = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber.AsMemory(), _bulkVSKey.AsMemory());
                         checkNumber = new PhoneNumberLookup(result)
                         {
-                            LosingCarrier = portable?.LosingCarrier ?? string.Empty
+                            LosingCarrier = portable.LosingCarrier ?? string.Empty
                         };
 
                         // Warning this costs $$$$
-                        var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSKey);
-                        checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName.name ?? string.Empty;
+                        var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber.AsMemory(), _bulkVSKey.AsMemory());
+                        checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName.name) ? string.Empty : numberName.name ?? string.Empty;
                         freshQuery = true;
                     }
 

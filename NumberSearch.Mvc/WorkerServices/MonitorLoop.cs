@@ -78,24 +78,23 @@ namespace NumberSearch.Mvc.WorkerServices
                                                     if (nto.IngestedFrom == "BulkVS")
                                                     {
                                                         // Buy it and save the receipt.
-                                                        var executeOrder = new OrderTnRequestBody
-                                                        {
-                                                            TN = nto.DialedNumber,
-                                                            Lidb = "Accelerate Networks",
-                                                            PortoutPin = productOrder.PIN,
-                                                            TrunkGroup = "SFO",
-                                                            Sms = false,
-                                                            Mms = false
-                                                        };
+                                                        var executeOrder = new OrderTnRequestBody(
+                                                            nto.DialedNumber,
+                                                            "Accelerate Networks",
+                                                            productOrder.PIN,
+                                                            "SFO",
+                                                            false,
+                                                            false
+                                                        );
 
                                                         var orderResponse = await executeOrder.PostAsync(_bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
 
-                                                        nto.Purchased = string.IsNullOrWhiteSpace(orderResponse?.Failed?.Description) && orderResponse?.Status is "Active";
+                                                        nto.Purchased = string.IsNullOrWhiteSpace(orderResponse.Failed.Description) && orderResponse.Status is "Active";
                                                         productOrder.DateOrdered = DateTime.Now;
                                                         // Keep the raw response as a receipt.
-                                                        productOrder.OrderResponse = orderResponse?.RawResponse ?? JsonSerializer.Serialize(orderResponse);
+                                                        productOrder.OrderResponse = orderResponse.RawResponse ?? JsonSerializer.Serialize(orderResponse);
                                                         // If the status code of the order comes back as 200 then it was successful.
-                                                        productOrder.Completed = string.IsNullOrWhiteSpace(orderResponse?.Failed?.Description);
+                                                        productOrder.Completed = string.IsNullOrWhiteSpace(orderResponse.Failed.Description);
 
                                                         var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
                                                         var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);

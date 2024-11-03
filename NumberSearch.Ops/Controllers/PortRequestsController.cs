@@ -42,10 +42,10 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
         {
             try
             {
-                var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
+                var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber.AsMemory(), _bulkVSusername.AsMemory(), _bulkVSpassword.AsMemory());
 
                 // Fail fast
-                if (portable is null || portable.Portable is false)
+                if (portable.Portable is false)
                 {
                     Log.Information($"[Portability] {phoneNumber.DialedNumber} is not Portable.");
 
@@ -57,7 +57,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                 }
 
                 // Lookup the number.
-                var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSAPIKey).ConfigureAwait(false);
+                var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber.AsMemory(), _bulkVSAPIKey.AsMemory());
 
                 // Determine if the number is a wireless number.
                 bool wireless = false;
@@ -83,8 +83,8 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                         break;
                 }
 
-                var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSAPIKey);
-                checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName.name;
+                var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber.AsMemory(), _bulkVSAPIKey.AsMemory());
+                checkNumber = checkNumber with { LIDBName = string.IsNullOrWhiteSpace(numberName.name) ? string.Empty : numberName.name };
 
                 Log.Information($"[Portability] {phoneNumber.DialedNumber} is Portable.");
 
@@ -494,7 +494,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                         var lookups = new List<LrnBulkCnam>();
                         foreach (var item in numbers)
                         {
-                            var spidCheck = await LrnBulkCnam.GetAsync(item.PortedDialedNumber, _bulkVSAPIKey).ConfigureAwait(false);
+                            var spidCheck = await LrnBulkCnam.GetAsync(item.PortedDialedNumber.AsMemory(), _bulkVSAPIKey.AsMemory());
                             lookups.Add(spidCheck);
                         }
 
@@ -539,7 +539,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                                 {
                                     var bulkResponse = await bulkVSPortRequest.PutAsync(_bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
 
-                                    if (bulkResponse is not null && !string.IsNullOrWhiteSpace(bulkResponse?.OrderId) && portRequest is not null)
+                                    if (!string.IsNullOrWhiteSpace(bulkResponse.OrderId) && portRequest is not null)
                                     {
                                         portRequest.DateSubmitted = DateTime.Now;
                                         portRequest.VendorSubmittedTo = "BulkVS";
@@ -552,7 +552,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                                             var updatedNumber = numbers.Where(x => $"1{x.PortedDialedNumber}" == number).FirstOrDefault();
                                             if (updatedNumber is not null)
                                             {
-                                                updatedNumber.ExternalPortRequestId = bulkResponse?.OrderId ?? "No Id Provided by BulkVS";
+                                                updatedNumber.ExternalPortRequestId = bulkResponse.OrderId ?? "No Id Provided by BulkVS";
                                                 updatedNumber.IngestedFrom = "BulkVS";
                                                 updatedNumber.RawResponse = JsonSerializer.Serialize(bulkResponse);
                                                 context.PortedPhoneNumbers.Update(updatedNumber);
@@ -563,14 +563,11 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                                         numbers = await context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
 
                                         // Add a note to handle scenarios where the requested FOC is to soon.
-                                        var note = new PortTNNote
-                                        {
-                                            Note = "If the port completion date requested is unavailable please pick the next available date and set the port to complete at 8pm that day."
-                                        };
+                                        PortTNNote note = new([], "If the port completion date requested is unavailable please pick the next available date and set the port to complete at 8pm that day.");
 
-                                        await note.PostAsync(bulkResponse?.OrderId ?? string.Empty, _bulkVSusername, _bulkVSpassword);
+                                        await note.PostAsync(bulkResponse.OrderId ?? string.Empty, _bulkVSusername, _bulkVSpassword);
 
-                                        if (bulkResponse is not null && !string.IsNullOrWhiteSpace(bulkResponse.Description))
+                                        if (!string.IsNullOrWhiteSpace(bulkResponse.Description))
                                         {
                                             responseMessages.Add($"{bulkResponse.Description} - {bulkResponse.Code}");
                                         }
@@ -584,7 +581,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                                         return View("PortRequestEdit", new PortRequestResult
                                         {
                                             Order = order,
-                                            Message = $"Failed to submit port request to BulkVS. {bulkResponse?.Description} - {bulkResponse?.Code}",
+                                            Message = $"Failed to submit port request to BulkVS. {bulkResponse.Description} - {bulkResponse.Code}",
                                             PortRequest = portRequest ?? new(),
                                             PhoneNumbers = numbers
                                         });
@@ -647,7 +644,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                                 var bulkResponse = await bulkVSPortRequest.PutAsync(_bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
                                 Log.Information(JsonSerializer.Serialize(bulkResponse));
 
-                                if (bulkResponse is not null && portRequest is not null && !string.IsNullOrWhiteSpace(bulkResponse?.OrderId))
+                                if (portRequest is not null && !string.IsNullOrWhiteSpace(bulkResponse.OrderId))
                                 {
                                     portRequest.DateSubmitted = DateTime.Now;
                                     portRequest.VendorSubmittedTo = "BulkVS";
@@ -657,7 +654,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
 
                                     foreach (var number in numbers)
                                     {
-                                        number.ExternalPortRequestId = bulkResponse?.OrderId;
+                                        number.ExternalPortRequestId = bulkResponse.OrderId;
                                         number.RawResponse = JsonSerializer.Serialize(bulkResponse);
                                         context.PortedPhoneNumbers.Update(number);
                                         await context.SaveChangesAsync();
@@ -666,14 +663,11 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                                     numbers = await context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
 
                                     // Add a note to handle senarios where the requested FOC is to soon.
-                                    var note = new PortTNNote
-                                    {
-                                        Note = "If the port completion date requested is unavailable please pick the next available date and set the port to complete at 8pm that day."
-                                    };
+                                    PortTNNote note = new([], "If the port completion date requested is unavailable please pick the next available date and set the port to complete at 8pm that day.");
 
-                                    await note.PostAsync(bulkResponse?.OrderId ?? string.Empty, _bulkVSusername, _bulkVSpassword);
+                                    await note.PostAsync(bulkResponse.OrderId ?? string.Empty, _bulkVSusername, _bulkVSpassword);
 
-                                    if (bulkResponse is not null && !string.IsNullOrWhiteSpace(bulkResponse.Description))
+                                    if (!string.IsNullOrWhiteSpace(bulkResponse.Description))
                                     {
                                         responseMessages.Add($"{bulkResponse.Description} - {bulkResponse.Code}");
                                     }
@@ -685,7 +679,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                                     return View("PortRequestEdit", new PortRequestResult
                                     {
                                         Order = order,
-                                        Message = $"Failed to submit port request to BulkVS. {bulkResponse?.Description} - {bulkResponse?.Code}",
+                                        Message = $"Failed to submit port request to BulkVS. {bulkResponse.Description} - {bulkResponse.Code}",
                                         PortRequest = portRequest ?? new(),
                                         PhoneNumbers = numbers
                                     });

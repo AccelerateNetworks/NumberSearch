@@ -298,9 +298,9 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
 
                     string[] addressChunks = order.Address?.Split(" ") ?? [];
                     string withoutUnitNumber = string.Join(" ", addressChunks[1..]);
-                    var checkAddress = await E911Record.ValidateAddressAsync(addressChunks[0], withoutUnitNumber, order.Address2 ?? string.Empty,
-                        order.City ?? string.Empty, order.State ?? string.Empty, order.Zip ?? string.Empty, opsConfig.BulkVSUsername,
-                        opsConfig.BulkVSPassword);
+                    var checkAddress = await E911Record.ValidateAddressAsync(addressChunks[0], withoutUnitNumber, 
+                        order.Address2 ?? string.Empty, order.City ?? string.Empty, order.State ?? string.Empty, 
+                        order.Zip ?? string.Empty, opsConfig.BulkVSUsername.AsMemory(), opsConfig.BulkVSPassword.AsMemory());
 
                     if (checkAddress.Status is "GEOCODED" && !string.IsNullOrWhiteSpace(checkAddress.AddressID))
                     {
@@ -310,7 +310,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
                         {
                             var response = await E911Record.PostAsync($"1{phoneNumber.DialedNumber}",
                                 string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName,
-                                checkAddress.AddressID, [], opsConfig.BulkVSUsername, opsConfig.BulkVSPassword);
+                                checkAddress.AddressID, [], opsConfig.BulkVSUsername.AsMemory(), opsConfig.BulkVSPassword.AsMemory());
 
                             if (response.Status is "Success" && existing is not null)
                             {

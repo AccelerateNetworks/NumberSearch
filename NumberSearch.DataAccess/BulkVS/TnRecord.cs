@@ -94,7 +94,7 @@ namespace NumberSearch.DataAccess.BulkVS
 
         public static async Task<PhoneNumber[]> GetAsync(ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
-            var results = await GetRawAsync(username, password).ConfigureAwait(false);
+            var results = await GetRawAsync(username, password);
             var output = new List<PhoneNumber>();
 
             // Bail out early if something is wrong.
@@ -132,7 +132,7 @@ namespace NumberSearch.DataAccess.BulkVS
 
         public static async Task<OwnedPhoneNumber[]> GetOwnedAsync(ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
-            var results = await GetRawAsync(username, password).ConfigureAwait(false);
+            var results = await GetRawAsync(username, password);
             var output = new List<OwnedPhoneNumber>();
 
             // Bail out early if something is wrong.

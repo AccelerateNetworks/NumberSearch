@@ -34,7 +34,7 @@ namespace NumberSearch.Mvc.Controllers
                 try
                 {
                     // Determine if the number is a wireless number.
-                    var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSAPIKey).ConfigureAwait(false);
+                    var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber.AsMemory(), _bulkVSAPIKey.AsMemory());
 
                     bool wireless = false;
 
@@ -59,8 +59,8 @@ namespace NumberSearch.Mvc.Controllers
                             break;
                     }
 
-                    var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber ?? string.Empty, _bulkVSAPIKey);
-                    checkNumber.LIDBName = string.IsNullOrWhiteSpace(numberName?.name) ? string.Empty : numberName.name;
+                    var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber.AsMemory(), _bulkVSAPIKey.AsMemory());
+                    checkNumber = checkNumber with { LIDBName = string.IsNullOrWhiteSpace(numberName.name) ? string.Empty : numberName.name };
 
                     var checkLong = long.TryParse(checkNumber.activation.ToString(), out var timeInSeconds);
 

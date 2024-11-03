@@ -2,28 +2,29 @@
 
 using Serilog;
 
+using System;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.CallWithUs
 {
-    public class LRNLookup
+    public readonly record struct LRNLookup(
+        string LRN,
+        string State,
+        string Ratecenter,
+        string LATA,
+        string OCN,
+        string Company,
+        string Prefix_Type,
+        string CLLI
+        )
     {
-        public string LRN { get; set; } = string.Empty;
-        public string State { get; set; } = string.Empty;
-        public string Ratecenter { get; set; } = string.Empty;
-        public string LATA { get; set; } = string.Empty;
-        public string OCN { get; set; } = string.Empty;
-        public string Company { get; set; } = string.Empty;
-        public string Prefix_Type { get; set; } = string.Empty;
-        public string CLLI { get; set; } = string.Empty;
-
         /// <summary>
         /// Docs: http://callwithus.com/API#lrn
         /// </summary>
         /// <param name="dialedNumber"></param>
         /// <param name="apiKey"></param>
         /// <returns></returns>
-        public static async Task<LRNLookup> GetAsync(string dialedNumber, string apiKey)
+        public static async Task<LRNLookup> GetAsync(ReadOnlyMemory<char> dialedNumber, ReadOnlyMemory<char> apiKey)
         {
             string baseUrl = "http://lrn.callwithus.com/api/lrn/index.php";
             string apikeyParameter = $"?key={apiKey}";
@@ -33,7 +34,7 @@ namespace NumberSearch.DataAccess.CallWithUs
 
             try
             {
-                var raw = await route.GetStringAsync().ConfigureAwait(false);
+                var raw = await route.GetStringAsync();
                 var chunks = raw.Split(',');
                 return new LRNLookup
                 {
