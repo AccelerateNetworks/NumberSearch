@@ -166,14 +166,16 @@ namespace FirstCom.Models
                 NXX = nxx.ToString("000"),
                 RateCenter = string.Empty
             };
-            // Limited to 100 results at the moment. There's no way to offset the results to get the complete list of numbers, so we won't bother.
-            int ReturnAmount = 100;
+            // There's no way to offset the results to get the complete list of numbers, so we won't bother.
+            int ReturnAmount = 9999;
 
             using var client = new DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
             DIDOrderInfoArray result = await client.DIDInventorySearchAsync(Auth, DIDSearch, ReturnAmount);
 
             // Supply a default capacity to the list to skip resizing it.
             List<PhoneNumber> list = new(result.DIDOrder.Length);
+
+            Log.Information("[FirstPointCom] {@text}", result.queryresult.text);
 
             foreach (var item in result.DIDOrder)
             {

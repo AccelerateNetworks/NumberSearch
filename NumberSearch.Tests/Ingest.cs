@@ -94,7 +94,7 @@ namespace NumberSearch.Tests
         //public async Task TestFirstPointComIngest()
         //{
         //    TimeSpan cycle = TimeSpan.FromMinutes(10);
-        //    await Provider.FirstPointComCompleteAsync(cycle, ingestConfiguration);
+        //    await Provider.FirstPointComPriorityAsync(cycle, ingestConfiguration);
 
         //    output.WriteLine("Done");
         //}

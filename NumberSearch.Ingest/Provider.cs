@@ -160,7 +160,7 @@ namespace NumberSearch.Ingest
 
             // Ingest priority phones numbers from the BulkVs API.
             Log.Information("[BulkVS] Ingesting priority data from BulkVS.");
-            var BulkVSStats = await Provider.BulkVSAsync(appConfig.BulkVSUsername, appConfig.BulkVSPassword, AreaCode.Priority, appConfig.Postgresql).ConfigureAwait(false);
+            var BulkVSStats = await Provider.BulkVSAsync(appConfig.BulkVSUsername, appConfig.BulkVSPassword, AreaCode.Priority, appConfig.Postgresql);
 
             var combined = new IngestStatistics
             {

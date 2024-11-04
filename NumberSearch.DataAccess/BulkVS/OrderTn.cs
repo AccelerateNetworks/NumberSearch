@@ -28,7 +28,7 @@ namespace NumberSearch.DataAccess.BulkVS
             string baseUrl = "https://portal.bulkvs.com/api/v1.0/";
             string endpoint = "orderTn";
             string npaParameter = $"?Npa={npa:000}";
-            string nxxParameter = PhoneNumbersNA.AreaCode.ValidNXX(nxx) ? string.Empty : $"&Nxx={nxx:000}";
+            string nxxParameter = PhoneNumbersNA.AreaCode.ValidNXX(nxx) ? $"&Nxx={nxx:000}" : string.Empty;
             string route = $"{baseUrl}{endpoint}{npaParameter}{nxxParameter}";
             try
             {
