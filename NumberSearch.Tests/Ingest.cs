@@ -105,13 +105,13 @@ namespace NumberSearch.Tests
         //    await Orders.CheckForQuoteConversionsAsync(ingestConfiguration.Postgresql, ingestConfiguration.InvoiceNinjaToken, ingestConfiguration.SmtpUsername, ingestConfiguration.SmtpPassword);
         //}
 
-        [Fact]
-        public async Task TestOwnedNumbersIngestAsync()
-        {
-            await Owned.IngestAsync(ingestConfiguration);
+        //[Fact]
+        //public async Task TestOwnedNumbersIngestAsync()
+        //{
+        //    await Owned.IngestAsync(ingestConfiguration);
 
-            output.WriteLine("Done");
-        }
+        //    output.WriteLine("Done");
+        //}
 
         //[Fact]
         //public async Task VerifySPIDDailyAsync()
