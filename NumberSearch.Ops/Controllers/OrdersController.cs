@@ -382,8 +382,8 @@ public class OrdersController(OpsConfig opsConfig,
                 // Get fresh invoice links
                 if (!string.IsNullOrWhiteSpace(order.BillingClientId) && !string.IsNullOrWhiteSpace(order.BillingInvoiceReoccuringId))
                 {
-                    var recurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(order.BillingClientId, _invoiceNinjaToken).ConfigureAwait(false);
-                    var reoccurringLink = recurringInvoiceLinks.Where(x => x.id == order.BillingInvoiceReoccuringId).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                    ReccurringInvoiceDatum[] recurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(order.BillingClientId, _invoiceNinjaToken);
+                    string reoccurringLink = recurringInvoiceLinks.Where(x => x.id == order.BillingInvoiceReoccuringId).FirstOrDefault().invitations.FirstOrDefault().link;
 
                     if (!string.IsNullOrWhiteSpace(reoccurringLink))
                     {
@@ -391,8 +391,8 @@ public class OrdersController(OpsConfig opsConfig,
                     }
                     else
                     {
-                        var quoteLinks = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
-                        reoccurringLink = quoteLinks?.invitations.FirstOrDefault()?.link;
+                        InvoiceDatum quoteLinks = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceReoccuringId, _invoiceNinjaToken);
+                        reoccurringLink = quoteLinks.invitations.FirstOrDefault().link;
                         if (!string.IsNullOrWhiteSpace(reoccurringLink))
                         {
                             order.ReoccuringInvoiceLink = reoccurringLink;
@@ -404,8 +404,8 @@ public class OrdersController(OpsConfig opsConfig,
                 {
                     try
                     {
-                        var oneTimeInvoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(order.BillingClientId, _invoiceNinjaToken, false).ConfigureAwait(false);
-                        var oneTimeLink = oneTimeInvoiceLinks.Where(x => x.id == order.BillingInvoiceId).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                        InvoiceDatum[] oneTimeInvoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(order.BillingClientId, _invoiceNinjaToken, false);
+                        string oneTimeLink = oneTimeInvoiceLinks.Where(x => x.id == order.BillingInvoiceId).FirstOrDefault().invitations.FirstOrDefault().link;
 
                         if (!string.IsNullOrWhiteSpace(oneTimeLink))
                         {
@@ -415,8 +415,8 @@ public class OrdersController(OpsConfig opsConfig,
                         {
                             try
                             {
-                                var quoteLinks = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
-                                oneTimeLink = quoteLinks?.invitations.FirstOrDefault()?.link;
+                                InvoiceDatum quoteLinks = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
+                                oneTimeLink = quoteLinks.invitations.FirstOrDefault().link;
                                 if (!string.IsNullOrWhiteSpace(oneTimeLink))
                                 {
                                     order.UpfrontInvoiceLink = oneTimeLink;
@@ -1871,7 +1871,7 @@ public class OrdersController(OpsConfig opsConfig,
                         if (order is not null && order.Quote)
                         {
                             // Mark the invoices as quotes.
-                            upfrontInvoice.entity_type = "quote";
+                            upfrontInvoice = upfrontInvoice with { entity_type = "quote" };
                             var reoccurringInvoice = new InvoiceDatum
                             {
                                 client_id = billingClient.id,
@@ -1925,11 +1925,11 @@ public class OrdersController(OpsConfig opsConfig,
                                 {
                                     try
                                     {
-                                        createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        if (string.IsNullOrWhiteSpace(createNewOneTimeInvoice?.id) && string.IsNullOrWhiteSpace(createNewOneTimeInvoice?.client_id))
+                                        createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken);
+                                        if (string.IsNullOrWhiteSpace(createNewOneTimeInvoice.id) && string.IsNullOrWhiteSpace(createNewOneTimeInvoice.client_id))
                                         {
-                                            BillingInvoiceId = createNewOneTimeInvoice?.id;
-                                            BillingClientId = createNewOneTimeInvoice?.client_id;
+                                            BillingInvoiceId = createNewOneTimeInvoice.id;
+                                            BillingClientId = createNewOneTimeInvoice.client_id;
                                         }
                                     }
                                     catch (FlurlHttpException ex)
@@ -1946,12 +1946,12 @@ public class OrdersController(OpsConfig opsConfig,
                                     // Update the existing invoice.
                                     try
                                     {
-                                        createNewOneTimeInvoice.line_items = upfrontInvoice.line_items;
-                                        createNewOneTimeInvoice = await createNewOneTimeInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        if (string.IsNullOrWhiteSpace(createNewOneTimeInvoice?.id) && string.IsNullOrWhiteSpace(createNewOneTimeInvoice?.client_id))
+                                        createNewOneTimeInvoice = createNewOneTimeInvoice with { line_items = upfrontInvoice.line_items };
+                                        createNewOneTimeInvoice = await createNewOneTimeInvoice.PutAsync(_invoiceNinjaToken);
+                                        if (string.IsNullOrWhiteSpace(createNewOneTimeInvoice.id) && string.IsNullOrWhiteSpace(createNewOneTimeInvoice.client_id))
                                         {
-                                            BillingInvoiceId = createNewOneTimeInvoice?.id;
-                                            BillingClientId = createNewOneTimeInvoice?.client_id;
+                                            BillingInvoiceId = createNewOneTimeInvoice.id;
+                                            BillingClientId = createNewOneTimeInvoice.client_id;
                                         }
                                     }
                                     catch (FlurlHttpException ex)
@@ -1964,7 +1964,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     }
                                 }
 
-                                var createNewReoccurringInvoice = new InvoiceDatum();
+                                InvoiceDatum createNewReoccurringInvoice = new();
                                 try
                                 {
                                     if (!string.IsNullOrWhiteSpace(order.BillingInvoiceReoccuringId))
@@ -1986,11 +1986,11 @@ public class OrdersController(OpsConfig opsConfig,
                                 {
                                     try
                                     {
-                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        if (string.IsNullOrWhiteSpace(createNewReoccurringInvoice?.id) && string.IsNullOrWhiteSpace(createNewReoccurringInvoice?.client_id))
+                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken);
+                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken.AsMemory());
+                                        if (string.IsNullOrWhiteSpace(createNewReoccurringInvoice.id) && string.IsNullOrWhiteSpace(createNewReoccurringInvoice.client_id))
                                         {
-                                            BillingInvoiceReoccuringId = createNewReoccurringInvoice?.id;
+                                            BillingInvoiceReoccuringId = createNewReoccurringInvoice.id;
                                         }
                                     }
                                     catch (FlurlHttpException ex)
@@ -2007,12 +2007,12 @@ public class OrdersController(OpsConfig opsConfig,
                                     // Update the existing invoice.
                                     try
                                     {
-                                        createNewReoccurringInvoice.line_items = reoccurringInvoice.line_items;
-                                        createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        if (string.IsNullOrWhiteSpace(createNewReoccurringInvoice?.id) && string.IsNullOrWhiteSpace(createNewReoccurringInvoice?.client_id))
+                                        createNewReoccurringInvoice = createNewReoccurringInvoice with { line_items = reoccurringInvoice.line_items };
+                                        createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken);
+                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken.AsMemory());
+                                        if (string.IsNullOrWhiteSpace(createNewReoccurringInvoice.id) && string.IsNullOrWhiteSpace(createNewReoccurringInvoice.client_id))
                                         {
-                                            BillingInvoiceReoccuringId = createNewReoccurringInvoice?.id;
+                                            BillingInvoiceReoccuringId = createNewReoccurringInvoice.id;
                                         }
                                     }
                                     catch (FlurlHttpException ex)
@@ -2035,9 +2035,9 @@ public class OrdersController(OpsConfig opsConfig,
                                     _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
-                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(BillingClientId ?? string.Empty, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
-                                    var oneTimeLink = invoiceLinks.Where(x => x.id == BillingInvoiceId).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-                                    var reoccurringLink = invoiceLinks.Where(x => x.id == BillingInvoiceReoccuringId).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    InvoiceDatum[] invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(BillingClientId ?? string.Empty, _invoiceNinjaToken, order.Quote);
+                                    string oneTimeLink = invoiceLinks.Where(x => x.id == BillingInvoiceId).FirstOrDefault().invitations.FirstOrDefault().link;
+                                    string reoccurringLink = invoiceLinks.Where(x => x.id == BillingInvoiceReoccuringId).FirstOrDefault().invitations.FirstOrDefault().link;
 
                                     if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                     {
@@ -2058,7 +2058,7 @@ public class OrdersController(OpsConfig opsConfig,
                             }
                             else if (reoccurringInvoice.line_items.Length != 0)
                             {
-                                var createNewReoccurringInvoice = new InvoiceDatum();
+                                InvoiceDatum createNewReoccurringInvoice = new();
                                 try
                                 {
                                     if (!string.IsNullOrWhiteSpace(order.BillingInvoiceReoccuringId))
@@ -2079,8 +2079,8 @@ public class OrdersController(OpsConfig opsConfig,
                                 {
                                     try
                                     {
-                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken);
+                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken.AsMemory());
                                     }
                                     catch (FlurlHttpException ex)
                                     {
@@ -2096,9 +2096,9 @@ public class OrdersController(OpsConfig opsConfig,
                                     // Update the existing invoice.
                                     try
                                     {
-                                        createNewReoccurringInvoice.line_items = reoccurringInvoice.line_items;
-                                        createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        createNewReoccurringInvoice = createNewReoccurringInvoice with { line_items = reoccurringInvoice.line_items };
+                                        createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken);
+                                        ReccurringInvoiceDatum createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken.AsMemory());
                                     }
                                     catch (FlurlHttpException ex)
                                     {
@@ -2119,8 +2119,8 @@ public class OrdersController(OpsConfig opsConfig,
                                     _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
-                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccurringInvoice.client_id, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
-                                    var reoccurringLink = invoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    InvoiceDatum[] invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccurringInvoice.client_id, _invoiceNinjaToken, order.Quote);
+                                    string reoccurringLink = invoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                                     if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                     {
@@ -2135,7 +2135,7 @@ public class OrdersController(OpsConfig opsConfig,
                             }
                             else if (upfrontInvoice.line_items.Length != 0)
                             {
-                                var createNewOneTimeInvoice = new InvoiceDatum();
+                                InvoiceDatum createNewOneTimeInvoice = new();
 
                                 try
                                 {
@@ -2160,7 +2160,7 @@ public class OrdersController(OpsConfig opsConfig,
                                 {
                                     try
                                     {
-                                        createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken);
                                     }
                                     catch (FlurlHttpException ex)
                                     {
@@ -2176,8 +2176,8 @@ public class OrdersController(OpsConfig opsConfig,
                                     // Update the existing invoice.
                                     try
                                     {
-                                        createNewOneTimeInvoice.line_items = upfrontInvoice.line_items;
-                                        createNewOneTimeInvoice = await createNewOneTimeInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        createNewOneTimeInvoice = createNewOneTimeInvoice with { line_items = upfrontInvoice.line_items };
+                                        createNewOneTimeInvoice = await createNewOneTimeInvoice.PutAsync(_invoiceNinjaToken);
                                     }
                                     catch (FlurlHttpException ex)
                                     {
@@ -2198,9 +2198,9 @@ public class OrdersController(OpsConfig opsConfig,
                                     _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
-                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
+                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, order.Quote);
                                     Log.Information(JsonSerializer.Serialize(invoiceLinks));
-                                    var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                                     if (!string.IsNullOrWhiteSpace(oneTimeLink))
                                     {
@@ -2266,7 +2266,7 @@ public class OrdersController(OpsConfig opsConfig,
                                 {
                                     try
                                     {
-                                        createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken);
                                     }
                                     catch (FlurlHttpException ex)
                                     {
@@ -2281,13 +2281,12 @@ public class OrdersController(OpsConfig opsConfig,
                                 {
                                     try
                                     {
-                                        createNewOneTimeInvoice.line_items = upfrontInvoice.line_items;
+                                        createNewOneTimeInvoice = createNewOneTimeInvoice with { line_items = upfrontInvoice.line_items };
                                         if (createNewOneTimeInvoice.tax_name1 != upfrontInvoice.tax_name1)
                                         {
-                                            createNewOneTimeInvoice.tax_name1 = upfrontInvoice.tax_name1;
-                                            createNewOneTimeInvoice.tax_rate1 = upfrontInvoice.tax_rate1;
+                                            createNewOneTimeInvoice = createNewOneTimeInvoice with { tax_name1 = upfrontInvoice.tax_name1, tax_rate1 = upfrontInvoice.tax_rate1 };
                                         }
-                                        createNewOneTimeInvoice = await createNewOneTimeInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        createNewOneTimeInvoice = await createNewOneTimeInvoice.PutAsync(_invoiceNinjaToken);
                                     }
                                     catch (FlurlHttpException ex)
                                     {
@@ -2304,7 +2303,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     try
                                     {
                                         // Create
-                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken.AsMemory());
                                     }
                                     catch (FlurlHttpException ex)
                                     {
@@ -2320,13 +2319,13 @@ public class OrdersController(OpsConfig opsConfig,
                                     try
                                     {
                                         // Update
-                                        createNewReoccurringInvoice.line_items = reoccurringInvoice.line_items;
+                                        createNewReoccurringInvoice = createNewReoccurringInvoice with { line_items = reoccurringInvoice.line_items };
                                         if (createNewReoccurringInvoice.tax_name1 != reoccurringInvoice.tax_name1)
                                         {
-                                            createNewReoccurringInvoice.tax_name1 = reoccurringInvoice.tax_name1;
-                                            createNewReoccurringInvoice.tax_rate1 = reoccurringInvoice.tax_rate1;
+                                            createNewReoccurringInvoice = createNewReoccurringInvoice with { tax_name1 = reoccurringInvoice.tax_name1 };
+                                            createNewReoccurringInvoice = createNewReoccurringInvoice with { tax_rate1 = reoccurringInvoice.tax_rate1 };
                                         }
-                                        createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken.AsMemory());
                                     }
                                     catch (FlurlHttpException ex)
                                     {
@@ -2348,10 +2347,10 @@ public class OrdersController(OpsConfig opsConfig,
                                     _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
-                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
-                                    var recurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
-                                    var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-                                    var reoccurringLink = recurringInvoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, order.Quote);
+                                    var recurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken);
+                                    var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
+                                    var reoccurringLink = recurringInvoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                                     if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                     {
@@ -2394,7 +2393,7 @@ public class OrdersController(OpsConfig opsConfig,
                                 {
                                     try
                                     {
-                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken.AsMemory());
                                     }
                                     catch (FlurlHttpException ex)
                                     {
@@ -2409,8 +2408,8 @@ public class OrdersController(OpsConfig opsConfig,
                                 {
                                     try
                                     {
-                                        createNewReoccurringInvoice.line_items = reoccurringInvoice.line_items;
-                                        createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        createNewReoccurringInvoice = createNewReoccurringInvoice with { line_items = reoccurringInvoice.line_items };
+                                        createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken.AsMemory());
                                     }
                                     catch (FlurlHttpException ex)
                                     {
@@ -2431,8 +2430,8 @@ public class OrdersController(OpsConfig opsConfig,
                                     _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
-                                    var invoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewReoccurringInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
-                                    var reoccurringLink = invoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var invoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewReoccurringInvoice.client_id, _invoiceNinjaToken);
+                                    var reoccurringLink = invoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                                     if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                     {
@@ -2471,7 +2470,7 @@ public class OrdersController(OpsConfig opsConfig,
                                 {
                                     try
                                     {
-                                        createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken);
                                     }
                                     catch (FlurlHttpException ex)
                                     {
@@ -2486,8 +2485,8 @@ public class OrdersController(OpsConfig opsConfig,
                                 {
                                     try
                                     {
-                                        createNewOneTimeInvoice.line_items = upfrontInvoice.line_items;
-                                        createNewOneTimeInvoice = await upfrontInvoice.PutAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        createNewOneTimeInvoice = createNewOneTimeInvoice with { line_items = upfrontInvoice.line_items };
+                                        createNewOneTimeInvoice = await upfrontInvoice.PutAsync(_invoiceNinjaToken);
                                     }
                                     catch (FlurlHttpException ex)
                                     {
@@ -2508,8 +2507,8 @@ public class OrdersController(OpsConfig opsConfig,
                                     _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                                     await _context.SaveChangesAsync();
 
-                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, order.Quote).ConfigureAwait(false);
-                                    var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                    var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, order.Quote);
+                                    var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                                     if (!string.IsNullOrWhiteSpace(oneTimeLink))
                                     {
@@ -2661,7 +2660,7 @@ public class OrdersController(OpsConfig opsConfig,
 
             using var writer = new StreamWriter(completePath);
             using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-            await csv.WriteRecordsAsync(pairs.Select(x => x.Order)).ConfigureAwait(false);
+            await csv.WriteRecordsAsync(pairs.Select(x => x.Order));
             var file = new FileInfo(completePath);
 
             if (file.Exists)

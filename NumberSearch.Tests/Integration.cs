@@ -103,7 +103,7 @@ namespace NumberSearch.Tests
             var result = await Invoice.GetByIdAsync("olejnL4ejN", invoiceNinjaToken);
 
             // Assert        
-            Assert.NotNull(result);
+            Assert.False(string.IsNullOrWhiteSpace(result.id));
             Assert.Equal("olejnL4ejN", result.id);
             Assert.True(result.balance > 0);
             output.WriteLine(JsonSerializer.Serialize(result));
@@ -579,7 +579,7 @@ namespace NumberSearch.Tests
         [Fact]
         public async Task FirstComGetRoutingTestAsync()
         {
-            var result = await FirstCom.FirstPointComSMS.GetSMSRoutingByDialedNumberAsync("12069574634".AsMemory(), pComNetCredentials.Username.AsMemory(), pComNetCredentials.Password.AsMemory());
+            var result = await FirstCom.Models.FirstPointCom.GetSMSRoutingByDialedNumberAsync("12069574634".AsMemory(), pComNetCredentials.Username.AsMemory(), pComNetCredentials.Password.AsMemory());
 
             Assert.True(result.QueryResult.text is "OK");
             Assert.True(result.QueryResult.code is 0);
@@ -590,7 +590,7 @@ namespace NumberSearch.Tests
         [Fact]
         public async Task FirstComGetSMSEnableTestAsync()
         {
-            var result = await FirstCom.FirstPointComSMS.EnableSMSByDialedNumberAsync("12069574634", pComNetCredentials.Username, pComNetCredentials.Password);
+            var result = await FirstCom.Models.FirstPointCom.EnableSMSByDialedNumberAsync("12069574634".AsMemory(), pComNetCredentials.Username.AsMemory(), pComNetCredentials.Password.AsMemory());
 
             Assert.True(result.code is not 0);
             output.WriteLine(JsonSerializer.Serialize(result));
@@ -599,7 +599,7 @@ namespace NumberSearch.Tests
         [Fact]
         public async Task FirstComGetRouteSMSToEPIDTestAsync()
         {
-            var result = await FirstCom.FirstPointComSMS.RouteSMSToEPIDByDialedNumberAsync("12069574634", 265, pComNetCredentials.Username, pComNetCredentials.Password);
+            var result = await FirstCom.Models.FirstPointCom.RouteSMSToEPIDByDialedNumberAsync("12069574634".AsMemory(), 265, pComNetCredentials.Username.AsMemory(), pComNetCredentials.Password.AsMemory());
 
             Assert.True(result.text is "Routed OK!");
             Assert.True(result.code is 0);

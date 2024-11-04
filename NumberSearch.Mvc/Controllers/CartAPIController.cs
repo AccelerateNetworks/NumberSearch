@@ -1,4 +1,5 @@
 ﻿using FirstCom;
+using FirstCom.Models;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -680,7 +681,7 @@ namespace NumberSearch.Mvc.Controllers
             else if (phoneNumber.IngestedFrom == "FirstPointCom")
             {
                 // Verify that tele has the number.
-                var results = await NpaNxxFirstPointCom.GetAsync(phoneNumber.NPA.ToString().AsMemory(), phoneNumber.NXX.ToString().AsMemory(), string.Empty.AsMemory(), _fpcusername.AsMemory(), _fpcpassword.AsMemory());
+                var results = await FirstPointCom.GetPhoneNumbersByNpaNxxAsync(phoneNumber.NPA, phoneNumber.NXX, string.Empty.AsMemory(), _fpcusername.AsMemory(), _fpcpassword.AsMemory());
                 var matchingNumber = results.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
                 if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
                 {

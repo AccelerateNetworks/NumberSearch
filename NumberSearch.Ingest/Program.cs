@@ -9,6 +9,8 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
+using static NumberSearch.Ingest.Owned;
+
 namespace NumberSearch.Ingest
 {
     public class Program
@@ -118,7 +120,11 @@ namespace NumberSearch.Ingest
                     {
                         dailyTimer.Restart();
 
-                        var smsRouteChanges = await Owned.OwnedDailyAsync(appConfig);
+                        await Owned.OwnedDailyAsync(appConfig);
+
+                        // Verify SMS routing with Endstream.
+                        SMSRouteChange[] smsRouteChanges = await VerifySMSRoutingAsync(appConfig.Postgresql, appConfig.PComNetUsername, appConfig.PComNetPassword);
+
                         var email = await Orders.EmailDailyAsync(smsRouteChanges, appConfig);
                     }
 

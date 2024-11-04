@@ -1,4 +1,4 @@
-﻿using FirstCom;
+﻿using FirstCom.Models;
 
 using Flurl.Http;
 
@@ -104,7 +104,7 @@ namespace NumberSearch.Mvc.WorkerServices
                                                     else if (nto.IngestedFrom == "FirstPointCom")
                                                     {
                                                         // Buy it and save the receipt.
-                                                        var executeOrder = await FirstPointComOrderPhoneNumber.PostAsync($"1{nto.DialedNumber}", _fpcusername, _fpcpassword).ConfigureAwait(false);
+                                                        var executeOrder = await FirstPointCom.OrderPhoneNumberAsync($"1{nto.DialedNumber}".AsMemory(), _fpcusername.AsMemory(), _fpcpassword.AsMemory());
 
                                                         nto.Purchased = executeOrder.code == 0;
                                                         productOrder.DateOrdered = DateTime.Now;

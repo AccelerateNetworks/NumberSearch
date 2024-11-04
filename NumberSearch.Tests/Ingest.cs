@@ -94,7 +94,9 @@ namespace NumberSearch.Tests
         //public async Task TestFirstPointComIngest()
         //{
         //    TimeSpan cycle = TimeSpan.FromMinutes(10);
-        //    await Provider.FirstPointComPriorityAsync(cycle, ingestConfiguration);
+        //    await Provider.FirstPointComCompleteAsync(cycle, ingestConfiguration);
+
+        //    output.WriteLine("Done");
         //}
 
         //[Fact]
@@ -103,11 +105,13 @@ namespace NumberSearch.Tests
         //    await Orders.CheckForQuoteConversionsAsync(ingestConfiguration.Postgresql, ingestConfiguration.InvoiceNinjaToken, ingestConfiguration.SmtpUsername, ingestConfiguration.SmtpPassword);
         //}
 
-        //[Fact]
-        //public async Task TestOwnedNumbersIngestAsync()
-        //{
-        //    await Owned.IngestAsync(ingestConfiguration);
-        //}
+        [Fact]
+        public async Task TestOwnedNumbersIngestAsync()
+        {
+            await Owned.IngestAsync(ingestConfiguration);
+
+            output.WriteLine("Done");
+        }
 
         //[Fact]
         //public async Task VerifySPIDDailyAsync()

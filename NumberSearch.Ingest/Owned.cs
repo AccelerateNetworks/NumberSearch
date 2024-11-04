@@ -1,4 +1,5 @@
 ﻿using FirstCom;
+using FirstCom.Models;
 
 using Flurl.Http;
 
@@ -26,7 +27,7 @@ namespace NumberSearch.Ingest
     public class Owned
     {
 
-        public static async Task<SMSRouteChange[]> OwnedDailyAsync(IngestConfiguration appConfig)
+        public static async Task OwnedDailyAsync(IngestConfiguration appConfig)
         {
 
             // Prevent another run from starting while this is still going.
@@ -45,15 +46,14 @@ namespace NumberSearch.Ingest
             };
 
             await lockingStats.PostAsync(appConfig.Postgresql.ToString());
-            SMSRouteChange[] smsRouteChanges = await Owned.IngestAsync(appConfig);
+            await Owned.IngestAsync(appConfig);
 
             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
             await lockingStats.DeleteAsync(appConfig.Postgresql.ToString());
 
-            return smsRouteChanges;
         }
 
-        public async static Task<SMSRouteChange[]> IngestAsync(IngestConfiguration configuration)
+        public async static Task IngestAsync(IngestConfiguration configuration)
         {
             Log.Information("[OwnedNumbers] Ingesting data for OwnedNumbers.");
             List<OwnedPhoneNumber> allNumbers = [];
@@ -146,9 +146,6 @@ namespace NumberSearch.Ingest
             // Match numbers to destinations and domains in FusionPBX.
             await MatchOwnedNumbersToFusionPBXAsync(configuration.Postgresql, configuration.FusionPBXUsername, configuration.FusionPBXPassword);
 
-            // Verify SMS routing with Endstream.
-            SMSRouteChange[] smsRouteChanges = await VerifySMSRoutingAsync(configuration.Postgresql, configuration.PComNetUsername, configuration.PComNetPassword);
-
             // Update the statuses on old or orphaned port requests and ported numbers.
             await PortRequests.UpdatePortRequestsAndNumbersByExternalIdAsync(configuration);
 
@@ -185,8 +182,6 @@ namespace NumberSearch.Ingest
             {
                 Log.Fatal("[OwnedNumbers] Failed to completed the ingest process.");
             }
-
-            return smsRouteChanges;
         }
 
         public readonly record struct SMSRouteChange(string DialedNumber, string OldRoute, string NewRoute, string Message);
@@ -204,7 +199,7 @@ namespace NumberSearch.Ingest
                 bool updated = false;
                 try
                 {
-                    var checkSMSRouting = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync($"1{number.DialedNumber}".AsMemory(), pComNetUsername, pComNetPassword);
+                    var checkSMSRouting = await FirstPointCom.GetSMSRoutingByDialedNumberAsync($"1{number.DialedNumber}".AsMemory(), pComNetUsername, pComNetPassword);
                     if (!string.IsNullOrWhiteSpace(checkSMSRouting.route))
                     {
                         // Update the owned number with the route.
@@ -343,7 +338,7 @@ namespace NumberSearch.Ingest
             {
                 try
                 {
-                    var results = await FirstPointComOwnedPhoneNumber.GetAsync(npa.ToString().AsMemory(), username, password).ConfigureAwait(false);
+                    var results = await FirstPointCom.GetOwnedPhoneNumbersAsync(npa, username, password);
 
                     Log.Information($"[OwnedNumbers] [FirstPointCom] Retrieved {results.DIDOrder.Length} owned numbers.");
 

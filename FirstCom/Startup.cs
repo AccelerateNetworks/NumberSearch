@@ -50,7 +50,7 @@ namespace FirstCom
                 var numbers = new List<DIDOrderInfo>();
 
 
-                var results = await FirstPointComOwnedPhoneNumber.GetAsync("206".AsMemory(), username.AsMemory(), password.AsMemory()).ConfigureAwait(false);
+                var results = await Models.FirstPointCom.GetOwnedPhoneNumbersAsync(206, username.AsMemory(), password.AsMemory());
 
                 await Task.Delay(1000);
             });

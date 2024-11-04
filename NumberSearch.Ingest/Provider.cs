@@ -1,4 +1,5 @@
 ﻿using FirstCom;
+using FirstCom.Models;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
@@ -349,7 +350,7 @@ namespace NumberSearch.Ingest
                             // Verify that tele has the number.
                             try
                             {
-                                var results = await NpaNxxFirstPointCom.GetAsync(phoneNumber.NPA.ToString(new CultureInfo("en-US")).AsMemory(), phoneNumber.NXX.ToString(new CultureInfo("en-US")).AsMemory(), string.Empty.AsMemory(), _fpcusername, _fpcpassword);
+                                var results = await FirstPointCom.GetPhoneNumbersByNpaNxxAsync(phoneNumber.NPA, phoneNumber.NXX, string.Empty.AsMemory(), _fpcusername, _fpcpassword);
                                 var matchingNumber = results?.Where(x => x?.DialedNumber == phoneNumber?.DialedNumber)?.FirstOrDefault();
                                 if (matchingNumber is not null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
                                 {

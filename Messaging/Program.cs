@@ -4,6 +4,7 @@ using Amazon.S3.Transfer;
 using DnsClient;
 
 using FirstCom;
+using FirstCom.Models;
 
 using Flurl.Http;
 
@@ -974,18 +975,18 @@ public static class Endpoints
         try
         {
             // Verify that this number is routed through our upstream provider.
-            var checkRouted = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber.AsMemory(), appSettings.ConnectionStrings.PComNetUsername.AsMemory(), appSettings.ConnectionStrings.PComNetPassword.AsMemory());
+            var checkRouted = await FirstPointCom.GetSMSRoutingByDialedNumberAsync(dialedNumber.AsMemory(), appSettings.ConnectionStrings.PComNetUsername.AsMemory(), appSettings.ConnectionStrings.PComNetPassword.AsMemory());
             Log.Information(System.Text.Json.JsonSerializer.Serialize(checkRouted));
             registeredUpstream = checkRouted.QueryResult.code is 0 && checkRouted.epid is 265;
             upstreamStatusDescription = checkRouted.QueryResult.text;
             if (checkRouted.QueryResult.code is not 0 || checkRouted.epid is not 265)
             {
                 // Enabled routing and set the EPID if the number is not already routed.
-                var enableSMS = await FirstPointComSMS.EnableSMSByDialedNumberAsync(dialedNumber, appSettings.ConnectionStrings.PComNetUsername, appSettings.ConnectionStrings.PComNetPassword);
+                var enableSMS = await FirstPointCom.EnableSMSByDialedNumberAsync(dialedNumber.AsMemory(), appSettings.ConnectionStrings.PComNetUsername.AsMemory(), appSettings.ConnectionStrings.PComNetPassword.AsMemory());
                 Log.Information(System.Text.Json.JsonSerializer.Serialize(enableSMS));
-                var setRouting = await FirstPointComSMS.RouteSMSToEPIDByDialedNumberAsync(dialedNumber, 265, appSettings.ConnectionStrings.PComNetUsername, appSettings.ConnectionStrings.PComNetPassword);
+                var setRouting = await FirstPointCom.RouteSMSToEPIDByDialedNumberAsync(dialedNumber.AsMemory(), 265, appSettings.ConnectionStrings.PComNetUsername.AsMemory(), appSettings.ConnectionStrings.PComNetPassword.AsMemory());
                 Log.Information(System.Text.Json.JsonSerializer.Serialize(setRouting));
-                var checkRoutedAgain = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber.AsMemory(), appSettings.ConnectionStrings.PComNetUsername.AsMemory(), appSettings.ConnectionStrings.PComNetPassword.AsMemory());
+                var checkRoutedAgain = await FirstPointCom.GetSMSRoutingByDialedNumberAsync(dialedNumber.AsMemory(), appSettings.ConnectionStrings.PComNetUsername.AsMemory(), appSettings.ConnectionStrings.PComNetPassword.AsMemory());
                 Log.Information(System.Text.Json.JsonSerializer.Serialize(checkRouted));
                 registeredUpstream = checkRouted.QueryResult.code is 0 && checkRouted.epid is 265;
                 upstreamStatusDescription = checkRouted.QueryResult.text;
@@ -2005,7 +2006,7 @@ public static class Endpoints
                 registration.AsDialed = dialedNumber;
 
                 // Verify that this number is routed through our upstream provider.
-                var checkRouted = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber.AsMemory(), appSettings.ConnectionStrings.PComNetUsername.AsMemory(), appSettings.ConnectionStrings.PComNetPassword.AsMemory());
+                var checkRouted = await FirstPointCom.GetSMSRoutingByDialedNumberAsync(dialedNumber.AsMemory(), appSettings.ConnectionStrings.PComNetUsername.AsMemory(), appSettings.ConnectionStrings.PComNetPassword.AsMemory());
                 registration.RegisteredUpstream = checkRouted.QueryResult.code is 0 && checkRouted.epid is 265;
                 registration.UpstreamStatusDescription = $"{checkRouted.eptype} {checkRouted.additional} {checkRouted.QueryResult.text}".Trim();
 

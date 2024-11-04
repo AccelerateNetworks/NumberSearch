@@ -3,6 +3,7 @@
 using CsvHelper;
 
 using FirstCom;
+using FirstCom.Models;
 
 using Flurl.Http;
 
@@ -228,16 +229,16 @@ namespace NumberSearch.Ops.Controllers
                 try
                 {
                     // Verify that this number is routed through our upstream provider.
-                    var checkRouted = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber.AsMemory(), _config.PComNetUsername.AsMemory(), _config.PComNetPassword.AsMemory());
+                    var checkRouted = await FirstPointCom.GetSMSRoutingByDialedNumberAsync(dialedNumber.AsMemory(), _config.PComNetUsername.AsMemory(), _config.PComNetPassword.AsMemory());
                     Log.Information(System.Text.Json.JsonSerializer.Serialize(checkRouted));
                     registeredUpstream = checkRouted.QueryResult.code is 0;
                     upstreamStatusDescription = checkRouted.QueryResult.text;
                     if (checkRouted.QueryResult.code is not 0)
                     {
                         // Enabled routing and set the EPID if the number is not already routed.
-                        var enableSMS = await FirstPointComSMS.EnableSMSByDialedNumberAsync(dialedNumber, _config.PComNetUsername, _config.PComNetPassword);
+                        var enableSMS = await FirstPointCom.EnableSMSByDialedNumberAsync(dialedNumber.AsMemory(), _config.PComNetUsername.AsMemory(), _config.PComNetPassword.AsMemory());
                         Log.Information(System.Text.Json.JsonSerializer.Serialize(enableSMS));
-                        var checkRoutedAgain = await FirstPointComSMS.GetSMSRoutingByDialedNumberAsync(dialedNumber.AsMemory(), _config.PComNetUsername.AsMemory(), _config.PComNetPassword.AsMemory());
+                        var checkRoutedAgain = await FirstPointCom.GetSMSRoutingByDialedNumberAsync(dialedNumber.AsMemory(), _config.PComNetUsername.AsMemory(), _config.PComNetPassword.AsMemory());
                         Log.Information(System.Text.Json.JsonSerializer.Serialize(checkRouted));
                         registeredUpstream = checkRouted.QueryResult.code is 0;
                         upstreamStatusDescription = checkRouted.QueryResult.text;
@@ -248,7 +249,7 @@ namespace NumberSearch.Ops.Controllers
                     {
                         try
                         {
-                            var response = await FirstCom.FirstPointComSMS.SMSToEmailByDialedNumberAsync(dialedNumber, toEmail.Email, _config.PComNetUsername, _config.PComNetPassword);
+                            var response = await FirstPointCom.SMSToEmailByDialedNumberAsync(dialedNumber.AsMemory(), toEmail.Email.AsMemory(), _config.PComNetUsername.AsMemory(), _config.PComNetPassword.AsMemory());
                             result.Message = $"✔️ Reregistration complete! {response.text} This number is routed for SMS service with our upstream vendor: {checkRouted.QueryResult.text}";
                         }
                         catch (FlurlHttpException ex)

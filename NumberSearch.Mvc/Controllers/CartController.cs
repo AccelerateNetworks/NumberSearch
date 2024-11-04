@@ -37,7 +37,7 @@ namespace NumberSearch.Mvc.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> IndexAsync(bool? emptyCart, string product, int? quantity)
         {
-            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
+            await HttpContext.Session.LoadAsync();
             var cart = Cart.GetFromSession(HttpContext.Session);
 
             if (emptyCart.HasValue && emptyCart.Value)
@@ -138,7 +138,7 @@ namespace NumberSearch.Mvc.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> CheckoutAsync()
         {
-            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
+            await HttpContext.Session.LoadAsync();
             var cart = Cart.GetFromSession(HttpContext.Session);
 
             if (cart is not null && cart.ProductOrders is not null && cart.ProductOrders.Count == 0)
@@ -202,7 +202,7 @@ namespace NumberSearch.Mvc.Controllers
         {
             if (Id != Guid.Empty)
             {
-                var order = await Order.GetByIdAsync(Id, _postgresql).ConfigureAwait(false);
+                var order = await Order.GetByIdAsync(Id, _postgresql);
                 if (order == null || string.IsNullOrWhiteSpace(order.Email))
                 {
                     return View("Index", new CartResult
@@ -216,10 +216,10 @@ namespace NumberSearch.Mvc.Controllers
                     return Redirect($"/Cart/Order/{order?.MergedOrderId}");
                 }
 
-                var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql).ConfigureAwait(false);
-                var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
-                var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
-                var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                var productOrders = await ProductOrder.GetAsync(order.OrderId, _postgresql);
+                var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql);
+                var verifiedPhoneNumbers = await VerifiedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql);
+                var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql);
 
                 // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
                 // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
@@ -230,7 +230,7 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     if (item.ProductId != Guid.Empty)
                     {
-                        var product = await Product.GetByIdAsync(item.ProductId, _postgresql).ConfigureAwait(false);
+                        var product = await Product.GetByIdAsync(item.ProductId, _postgresql);
                         if (product is not null)
                         {
                             products.Add(product);
@@ -238,7 +238,7 @@ namespace NumberSearch.Mvc.Controllers
                     }
                     else if (item.ServiceId != Guid.Empty)
                     {
-                        var service = await Service.GetAsync(item.ServiceId, _postgresql).ConfigureAwait(false);
+                        var service = await Service.GetAsync(item.ServiceId, _postgresql);
                         if (service is not null)
                         {
                             services.Add(service);
@@ -246,7 +246,7 @@ namespace NumberSearch.Mvc.Controllers
                     }
                     else if (item.CouponId is not null)
                     {
-                        var coupon = await Coupon.GetByIdAsync(item.CouponId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
+                        var coupon = await Coupon.GetByIdAsync(item.CouponId ?? Guid.NewGuid(), _postgresql);
                         if (coupon is not null)
                         {
                             coupons.Add(coupon);
@@ -272,7 +272,7 @@ namespace NumberSearch.Mvc.Controllers
 
                 if (AddPortingInfo is not null)
                 {
-                    var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                    var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql);
 
                     _ = cart.SetToSession(HttpContext.Session);
 
@@ -302,11 +302,11 @@ namespace NumberSearch.Mvc.Controllers
         {
             if (Id != Guid.Empty)
             {
-                var order = await Order.GetByIdAsync(Id, _postgresql).ConfigureAwait(false);
+                var order = await Order.GetByIdAsync(Id, _postgresql);
                 if (order is not null)
                 {
-                    var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
-                    var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                    var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql);
+                    var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql);
 
                     if (portedPhoneNumbers.Any())
                     {
@@ -335,7 +335,7 @@ namespace NumberSearch.Mvc.Controllers
 
             if (order is not null && !string.IsNullOrWhiteSpace(order.Email))
             {
-                await HttpContext.Session.LoadAsync().ConfigureAwait(false);
+                await HttpContext.Session.LoadAsync();
                 var cart = Cart.GetFromSession(HttpContext.Session);
 
                 cart.Order = order;
@@ -458,7 +458,7 @@ namespace NumberSearch.Mvc.Controllers
 
                 if (order.OrderId != Guid.Empty)
                 {
-                    var orderExists = await Order.GetByIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                    var orderExists = await Order.GetByIdAsync(order.OrderId, _postgresql);
 
                     // Create a new order.
                     if (orderExists is null)
@@ -498,13 +498,13 @@ namespace NumberSearch.Mvc.Controllers
                         }
 
                         // Save to db.
-                        var submittedOrder = await order.PostAsync(_postgresql).ConfigureAwait(false);
+                        var submittedOrder = await order.PostAsync(_postgresql);
 
                         // Send a confirmation email.
                         if (submittedOrder)
                         {
                             bool NoEmail = order.NoEmail;
-                            order = await Order.GetByIdAsync(order.OrderId, _postgresql).ConfigureAwait(false) ?? new();
+                            order = await Order.GetByIdAsync(order.OrderId, _postgresql) ?? new();
                             order.NoEmail = NoEmail;
 
                             // Submit the number orders and track the total cost.
@@ -530,7 +530,7 @@ namespace NumberSearch.Mvc.Controllers
 
                                         var cost = nto.NumberType == "Executive" ? 200 : nto.NumberType == "Premium" ? 40 : nto.NumberType == "Standard" ? 20 : 20;
 
-                                        var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                        var checkSubmitted = await productOrder.PostAsync(_postgresql);
                                         var purchsedNumber = new PurchasedPhoneNumber
                                         {
                                             Completed = false,
@@ -547,7 +547,7 @@ namespace NumberSearch.Mvc.Controllers
                                             PIN = pin.ToString()
                                         };
 
-                                        var checkPurchaseOrder = await purchsedNumber.PostAsync(_postgresql).ConfigureAwait(false);
+                                        var checkPurchaseOrder = await purchsedNumber.PostAsync(_postgresql);
 
                                         totalNumberPurchasingCost += cost;
 
@@ -652,7 +652,7 @@ namespace NumberSearch.Mvc.Controllers
 
                                         emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? productOrder.PortedDialedNumber : emailSubject;
 
-                                        var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                        var checkSubmitted = await productOrder.PostAsync(_postgresql);
                                     }
 
                                     if (productOrder.VerifiedPhoneNumberId is not null)
@@ -673,7 +673,7 @@ namespace NumberSearch.Mvc.Controllers
 
                                         emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? verfied?.VerifiedDialedNumber : emailSubject;
 
-                                        var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                        var checkSubmitted = await productOrder.PostAsync(_postgresql);
                                     }
 
                                     if (productOrder.ProductId != Guid.Empty)
@@ -694,7 +694,7 @@ namespace NumberSearch.Mvc.Controllers
 
                                         emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? product?.Name : emailSubject;
 
-                                        var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                        var checkSubmitted = await productOrder.PostAsync(_postgresql);
                                     }
 
                                     if (productOrder.ServiceId != Guid.Empty)
@@ -715,7 +715,7 @@ namespace NumberSearch.Mvc.Controllers
 
                                         emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? service?.Name : emailSubject;
 
-                                        var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                        var checkSubmitted = await productOrder.PostAsync(_postgresql);
                                     }
 
                                     // Apply coupon discounts
@@ -823,7 +823,7 @@ namespace NumberSearch.Mvc.Controllers
                                             }
                                         }
 
-                                        var checkSubmitted = await productOrder.PostAsync(_postgresql).ConfigureAwait(false);
+                                        var checkSubmitted = await productOrder.PostAsync(_postgresql);
                                     }
                                 }
                             }
@@ -850,7 +850,7 @@ namespace NumberSearch.Mvc.Controllers
                                 {
                                     portedNumber.OrderId = order.OrderId;
 
-                                    var checkPort = await portedNumber.PostAsync(_postgresql).ConfigureAwait(false);
+                                    var checkPort = await portedNumber.PostAsync(_postgresql);
 
                                     Log.Information($"[Checkout] Saved port request for number {portedNumber.PortedDialedNumber}.");
                                 }
@@ -863,7 +863,7 @@ namespace NumberSearch.Mvc.Controllers
                                 {
                                     verifiedNumber.OrderId = order.OrderId;
 
-                                    var checkVerified = await verifiedNumber.PostAsync(_postgresql).ConfigureAwait(false);
+                                    var checkVerified = await verifiedNumber.PostAsync(_postgresql);
 
                                     Log.Information($"[Checkout] Saved Verified Number {verifiedNumber.VerifiedDialedNumber} to the Database.");
                                 }
@@ -961,7 +961,7 @@ Accelerate Networks
                             };
 
                             // Create a billing client and send out an invoice.
-                            var billingClients = await Client.GetByEmailAsync(order.Email, _invoiceNinjaToken).ConfigureAwait(false);
+                            var billingClients = await Client.GetByEmailAsync(order.Email, _invoiceNinjaToken);
                             var billingClient = billingClients.data.FirstOrDefault();
 
                             // To get the right data into invoice ninja 5 we must first create the billing client using a unique name,
@@ -1016,7 +1016,7 @@ Accelerate Networks
                             if (order.Quote)
                             {
                                 // Mark the invoices as quotes.
-                                upfrontInvoice.entity_type = "quote";
+                                upfrontInvoice = upfrontInvoice with { entity_type = "quote" };
                                 var reoccurringInvoice = new InvoiceDatum
                                 {
                                     client_id = billingClient.id,
@@ -1045,21 +1045,21 @@ Accelerate Networks
                                     // Retry once on invoice creation failures.
                                     try
                                     {
-                                        var createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        var createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        var createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken);
+                                        var createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken);
+                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken.AsMemory());
 
-                                        if (createNewOneTimeInvoice is not null && createNewReoccurringInvoice is not null)
+                                        if (!string.IsNullOrWhiteSpace(createNewOneTimeInvoice.id) && !string.IsNullOrWhiteSpace(createNewReoccurringInvoice.id))
                                         {
                                             // Update the order with the billing system's client and the two invoice Id's.
                                             order.BillingClientId = createNewOneTimeInvoice.client_id.ToString(CultureInfo.CurrentCulture);
                                             order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
                                             order.BillingInvoiceReoccuringId = createNewReoccurringInvoice.id.ToString(CultureInfo.CurrentCulture);
-                                            var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
+                                            var checkQuoteUpdate = await order.PutAsync(_postgresql);
 
-                                            var oneTimeInvoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, true).ConfigureAwait(false);
-                                            var oneTimeLink = oneTimeInvoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-                                            var reoccurringLink = oneTimeInvoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                            var oneTimeInvoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, true);
+                                            var oneTimeLink = oneTimeInvoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
+                                            var reoccurringLink = oneTimeInvoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                                             if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                             {
@@ -1098,7 +1098,7 @@ Accelerate Networks
                                     }
                                     catch (FlurlHttpException ex)
                                     {
-                                        var error = await ex.GetResponseStringAsync().ConfigureAwait(false);
+                                        var error = await ex.GetResponseStringAsync();
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
                                         Log.Fatal(error);
                                         Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
@@ -1110,18 +1110,18 @@ Accelerate Networks
                                     try
                                     {
                                         // Submit them to the billing system.
-                                        var createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        var createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken);
+                                        var createNewHiddenReoccurringInvoice = await hiddenReoccurringInvoice.PostAsync(_invoiceNinjaToken.AsMemory());
 
-                                        if (createNewReoccurringInvoice is not null)
+                                        if (!string.IsNullOrWhiteSpace(createNewReoccurringInvoice.id))
                                         {
                                             // Update the order with the billing system's client and the two invoice Id's.
                                             order.BillingClientId = createNewReoccurringInvoice.client_id.ToString(CultureInfo.CurrentCulture);
                                             order.BillingInvoiceReoccuringId = createNewReoccurringInvoice.id.ToString(CultureInfo.CurrentCulture);
-                                            var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
+                                            var checkQuoteUpdate = await order.PutAsync(_postgresql);
 
-                                            var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccurringInvoice.client_id, _invoiceNinjaToken, true).ConfigureAwait(false);
-                                            var reoccurringLink = invoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                            var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccurringInvoice.client_id, _invoiceNinjaToken, true);
+                                            var reoccurringLink = invoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                                             if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                             {
@@ -1154,7 +1154,7 @@ Accelerate Networks
                                     }
                                     catch (FlurlHttpException ex)
                                     {
-                                        var error = await ex.GetResponseStringAsync().ConfigureAwait(false);
+                                        var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
                                         Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
@@ -1165,17 +1165,17 @@ Accelerate Networks
                                     try
                                     {
                                         // Submit them to the billing system.
-                                        var createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        var createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken);
 
-                                        if (createNewOneTimeInvoice is not null)
+                                        if (!string.IsNullOrWhiteSpace(createNewOneTimeInvoice.id))
                                         {
                                             // Update the order with the billing system's client and the two invoice Id's.
                                             order.BillingClientId = createNewOneTimeInvoice.client_id.ToString(CultureInfo.CurrentCulture);
                                             order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
-                                            var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
+                                            var checkQuoteUpdate = await order.PutAsync(_postgresql);
 
-                                            var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, true).ConfigureAwait(false);
-                                            var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                            var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, true);
+                                            var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                                             if (!string.IsNullOrWhiteSpace(oneTimeLink))
                                             {
@@ -1209,7 +1209,7 @@ Accelerate Networks
                                     }
                                     catch (FlurlHttpException ex)
                                     {
-                                        var error = await ex.GetResponseStringAsync().ConfigureAwait(false);
+                                        var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
                                         Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
@@ -1238,21 +1238,21 @@ Accelerate Networks
                                 {
                                     try
                                     {
-                                        var createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        var createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        var createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken);
+                                        var createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken.AsMemory());
 
-                                        if (createNewOneTimeInvoice is not null && createNewReoccurringInvoice is not null)
+                                        if (!string.IsNullOrWhiteSpace(createNewReoccurringInvoice.id))
                                         {
                                             // Update the order with the billing system's client and the two invoice Id's.
                                             order.BillingClientId = createNewOneTimeInvoice.client_id.ToString(CultureInfo.CurrentCulture);
                                             order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
                                             order.BillingInvoiceReoccuringId = createNewReoccurringInvoice.id.ToString(CultureInfo.CurrentCulture);
-                                            var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
+                                            var checkQuoteUpdate = await order.PutAsync(_postgresql);
 
-                                            var oneTimeInvoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, false).ConfigureAwait(false);
-                                            var recurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
-                                            var oneTimeLink = oneTimeInvoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-                                            var reoccurringLink = recurringInvoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                            var oneTimeInvoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, false);
+                                            var recurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken);
+                                            var oneTimeLink = oneTimeInvoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
+                                            var reoccurringLink = recurringInvoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                                             if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                             {
@@ -1302,24 +1302,24 @@ Accelerate Networks
                                 else if (reoccurringInvoice.line_items.Length != 0)
                                 {
                                     // Bill upfront for the first month of reoccurring service so that we can get their payment information on file.
-                                    upfrontInvoice.line_items = reoccurringInvoice.line_items;
+                                    upfrontInvoice = upfrontInvoice with { line_items = reoccurringInvoice.line_items };
 
                                     try
                                     {
-                                        var createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        var createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
-                                        if (createNewReoccurringInvoice is not null && createNewOneTimeInvoice is not null)
+                                        var createNewReoccurringInvoice = await reoccurringInvoice.PostAsync(_invoiceNinjaToken.AsMemory());
+                                        var createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken);
+                                        if (!string.IsNullOrWhiteSpace(createNewReoccurringInvoice.id) && !string.IsNullOrWhiteSpace(createNewOneTimeInvoice.id))
                                         {
                                             // Update the order with the billing system's client and the two invoice Id's.
                                             order.BillingClientId = createNewReoccurringInvoice.client_id.ToString(CultureInfo.CurrentCulture);
                                             order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
                                             order.BillingInvoiceReoccuringId = createNewReoccurringInvoice.id.ToString(CultureInfo.CurrentCulture);
-                                            var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
+                                            var checkQuoteUpdate = await order.PutAsync(_postgresql);
 
-                                            var oneTimeInvoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, false).ConfigureAwait(false);
-                                            var recurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken).ConfigureAwait(false);
-                                            var oneTimeLink = oneTimeInvoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
-                                            var reoccurringLink = recurringInvoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                            var oneTimeInvoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, false);
+                                            var recurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken);
+                                            var oneTimeLink = oneTimeInvoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
+                                            var reoccurringLink = recurringInvoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                                             if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                             {
@@ -1368,17 +1368,17 @@ Accelerate Networks
                                 {
                                     try
                                     {
-                                        var createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken).ConfigureAwait(false);
+                                        var createNewOneTimeInvoice = await upfrontInvoice.PostAsync(_invoiceNinjaToken);
 
-                                        if (createNewOneTimeInvoice is not null)
+                                        if (!string.IsNullOrWhiteSpace(createNewOneTimeInvoice.id))
                                         {
                                             // Update the order with the billing system's client and the two invoice Id's.
                                             order.BillingClientId = createNewOneTimeInvoice.client_id.ToString(CultureInfo.CurrentCulture);
                                             order.BillingInvoiceId = createNewOneTimeInvoice.id.ToString(CultureInfo.CurrentCulture);
-                                            var checkQuoteUpdate = await order.PutAsync(_postgresql).ConfigureAwait(false);
+                                            var checkQuoteUpdate = await order.PutAsync(_postgresql);
 
-                                            var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, false).ConfigureAwait(false);
-                                            var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault()?.invitations.FirstOrDefault()?.link;
+                                            var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, false);
+                                            var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                                             if (!string.IsNullOrWhiteSpace(oneTimeLink))
                                             {
@@ -1546,20 +1546,20 @@ Accelerate Networks
                             {
                                 confirmationEmail.Completed = false;
                                 confirmationEmail.PrimaryEmailAddress = string.IsNullOrWhiteSpace(order.SalesEmail) ? _emailOrders : order.SalesEmail;
-                                var checkSave = await confirmationEmail.PostAsync(_postgresql).ConfigureAwait(false);
+                                var checkSave = await confirmationEmail.PostAsync(_postgresql);
                                 Log.Information($"Suppressed sending out the confirmation emails for {order.OrderId}.");
                             }
                             else
                             {
                                 // Queue up the confirmation email.
                                 confirmationEmail.Completed = false;
-                                var checkSave = await confirmationEmail.PostAsync(_postgresql).ConfigureAwait(false);
+                                var checkSave = await confirmationEmail.PostAsync(_postgresql);
                                 Log.Information($"Sent out the confirmation emails for {order.OrderId}.");
                             }
 
                             // Allow the background work to commence.
                             order.BackgroundWorkCompleted = false;
-                            var checkOrderUpdate = order.PutAsync(_postgresql).ConfigureAwait(false);
+                            var checkOrderUpdate = order.PutAsync(_postgresql);
 
                             if (cart is not null && cart.PortedPhoneNumbers is not null && cart.PortedPhoneNumbers.Count != 0)
                             {

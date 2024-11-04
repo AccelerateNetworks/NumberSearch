@@ -371,13 +371,13 @@ namespace NumberSearch.Ingest
                     {
                         try
                         {
-                            var upfront = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceId, invoiceNinjaToken.ToString());
+                            InvoiceDatum upfront = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceId, invoiceNinjaToken.ToString());
 
-                            if (upfront is not null && upfront.id == order.BillingInvoiceId && !string.IsNullOrWhiteSpace(upfront.invoice_id))
+                            if ( upfront.id == order.BillingInvoiceId && !string.IsNullOrWhiteSpace(upfront.invoice_id))
                             {
                                 var convertedInvoice = await Invoice.GetByIdAsync(upfront.invoice_id, invoiceNinjaToken.ToString());
 
-                                string newUpfrontLink = convertedInvoice.invitations.FirstOrDefault()?.link ?? string.Empty;
+                                string newUpfrontLink = convertedInvoice.invitations.FirstOrDefault().link;
 
                                 order.BillingInvoiceId = convertedInvoice.id;
                                 order.BillingClientId = convertedInvoice.client_id;
@@ -439,7 +439,7 @@ namespace NumberSearch.Ingest
                                 // Maybe it's an invoice rather than a Quote
                                 var convertedInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, invoiceNinjaToken.ToString());
 
-                                if (convertedInvoice is not null && convertedInvoice.id == order.BillingInvoiceId && !string.IsNullOrWhiteSpace(convertedInvoice.id))
+                                if (convertedInvoice.id == order.BillingInvoiceId && !string.IsNullOrWhiteSpace(convertedInvoice.id))
                                 {
                                     if (convertedInvoice.status_id is "4")
                                     {
@@ -454,7 +454,7 @@ namespace NumberSearch.Ingest
                                         order.Quote = false;
                                         order.DateConvertedFromQuote = DateTime.Now;
                                     }
-                                    string newUpfrontLink = convertedInvoice.invitations.FirstOrDefault()?.link ?? string.Empty;
+                                    string newUpfrontLink = convertedInvoice.invitations.FirstOrDefault().link;
                                     order.UpfrontInvoiceLink = string.IsNullOrWhiteSpace(newUpfrontLink) ? order.UpfrontInvoiceLink : newUpfrontLink;
 
 
@@ -544,7 +544,7 @@ namespace NumberSearch.Ingest
                     {
                         var upfrontInvoice = await Invoice.GetByIdAsync(order.BillingInvoiceId, invoiceNinjaToken.ToString());
 
-                        if (upfrontInvoice is not null && upfrontInvoice.id == order.BillingInvoiceId && !string.IsNullOrWhiteSpace(upfrontInvoice.id))
+                        if (upfrontInvoice.id == order.BillingInvoiceId && !string.IsNullOrWhiteSpace(upfrontInvoice.id))
                         {
                             if (upfrontInvoice.status_id is "4")
                             {
@@ -559,7 +559,7 @@ namespace NumberSearch.Ingest
                                 order.Quote = false;
                                 order.DateConvertedFromQuote = DateTime.Now;
                             }
-                            string newUpfrontLink = upfrontInvoice.invitations.FirstOrDefault()?.link ?? string.Empty;
+                            string newUpfrontLink = upfrontInvoice.invitations.FirstOrDefault().link;
                             order.UpfrontInvoiceLink = string.IsNullOrWhiteSpace(newUpfrontLink) ? order.UpfrontInvoiceLink : newUpfrontLink;
                             var checkUpdate = await order.PutAsync(postgresql.ToString());
 

@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.InvoiceNinja
 {
-    public class Invoice
+    public readonly record struct Invoice(InvoiceDatum[] data)
     {
-        public InvoiceDatum[] data { get; set; } = [];
         //public InvoiceMeta meta { get; set; }
 
         public static async Task<InvoiceDatum[]> GetAllAsync(string token)
@@ -26,10 +25,9 @@ namespace NumberSearch.DataAccess.InvoiceNinja
 
             var result = await url
                 .WithHeader(tokenHeader, token)
-                .GetJsonAsync<Invoice>()
-                .ConfigureAwait(false);
+                .GetJsonAsync<Invoice>();
 
-            return result?.data ?? [];
+            return result.data;
         }
 
         public static async Task<InvoiceDatum[]> GetByClientIdWithInoviceLinksAsync(string clientId, string token, bool quote)
@@ -47,11 +45,10 @@ namespace NumberSearch.DataAccess.InvoiceNinja
 
             var result = await url
                 .WithHeader(tokenHeader, token)
-                .GetJsonAsync<Invoice>()
-                .ConfigureAwait(false);
+                .GetJsonAsync<Invoice>();
 
             // Unwrap the data we want from the single-field parent object.
-            return result?.data ?? [];
+            return result.data;
         }
 
         public static async Task<InvoiceDatum> GetByIdAsync(string invoiceId, string token)
@@ -64,11 +61,10 @@ namespace NumberSearch.DataAccess.InvoiceNinja
 
             var result = await url
                 .WithHeader(tokenHeader, token)
-                .GetJsonAsync<InvoiceSingle>()
-                .ConfigureAwait(false);
+                .GetJsonAsync<InvoiceSingle>();
 
             // Unwrap the data we want from the single-field parent object.
-            return result?.data ?? new();
+            return result.data;
         }
 
         public static async Task<InvoiceDatum> GetQuoteByIdAsync(string invoiceId, string token)
@@ -81,73 +77,63 @@ namespace NumberSearch.DataAccess.InvoiceNinja
 
             var result = await url
                 .WithHeader(tokenHeader, token)
-                .GetJsonAsync<InvoiceSingle>()
-                .ConfigureAwait(false);
+                .GetJsonAsync<InvoiceSingle>();
 
             // Unwrap the data we want from the single-field parent object.
-            return result?.data ?? new();
+            return result.data;
         }
     }
 
-    public class InvoiceSingle
-    {
-        public InvoiceDatum data { get; set; } = new();
-    }
+    public readonly record struct InvoiceSingle(InvoiceDatum data);
 
-    public class InvoiceMeta
-    {
-        public InovicePagination pagination { get; set; } = new();
-    }
+    public readonly record struct InvoiceMeta(InovicePagination pagination);
 
-    public class InovicePagination
-    {
-        public int total { get; set; }
-        public int count { get; set; }
-        public int per_page { get; set; }
-        public int current_page { get; set; }
-        public int total_pages { get; set; }
-        public InvoiceLinks links { get; set; } = new();
-    }
+    public readonly record struct InovicePagination
+    (
+        int total,
+        int count,
+        int per_page,
+        int current_page,
+        int total_pages,
+        InvoiceLinks links
+    );
 
-    public class InvoiceLinks
-    {
-        public string next { get; set; } = string.Empty;
-    }
+    public readonly record struct InvoiceLinks(string next);
 
-    public class Line_Items
-    {
-        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-        public decimal quantity { get; set; }
-        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-        public decimal cost { get; set; }
-        public string product_key { get; set; } = string.Empty;
-        public string notes { get; set; } = string.Empty;
-        public int discount { get; set; }
-        public string tax_name1 { get; set; } = string.Empty;
-        public int tax_rate1 { get; set; }
-        public string tax_name2 { get; set; } = string.Empty;
-        public int tax_rate2 { get; set; }
-        public string tax_name3 { get; set; } = string.Empty;
-        public int tax_rate3 { get; set; }
-        public string date { get; set; } = string.Empty;
-        public string custom_value1 { get; set; } = string.Empty;
-        public string custom_value2 { get; set; } = string.Empty;
-        public string custom_value3 { get; set; } = string.Empty;
-        public string custom_value4 { get; set; } = string.Empty;
-        public string type_id { get; set; } = string.Empty;
-        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-        public decimal product_cost { get; set; }
-        [JsonConverter(typeof(BooleanConverter))]
-        public bool is_amount_discount { get; set; }
-        public string sort_id { get; set; } = string.Empty;
-        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-        public decimal line_total { get; set; }
-        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-        public decimal gross_line_total { get; set; }
-        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-        public decimal tax_amount { get; set; }
-        public string tax_id { get; set; } = string.Empty;
-    }
+    public readonly record struct Line_Items
+    (
+        [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
+        decimal quantity,
+        [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
+        decimal cost,
+        string product_key,
+        string notes,
+        int discount,
+        string tax_name1,
+        int tax_rate1,
+        string tax_name2,
+        int tax_rate2,
+        string tax_name3,
+        int tax_rate3,
+        string date,
+        string custom_value1,
+        string custom_value2,
+        string custom_value3,
+        string custom_value4,
+        string type_id,
+        [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
+        decimal product_cost,
+        [property: JsonConverter(typeof(BooleanConverter))]
+        bool is_amount_discount,
+        string sort_id,
+        [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
+        decimal line_total,
+        [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
+        decimal gross_line_total,
+        [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
+        decimal tax_amount,
+        string tax_id
+    );
 
 
     public class BooleanConverter : JsonConverter<bool>
@@ -178,89 +164,90 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         }
     }
 
-    public class Invitation
-    {
-        public string id { get; set; } = string.Empty;
-        public string client_contact_id { get; set; } = string.Empty;
-        public string key { get; set; } = string.Empty;
-        public string link { get; set; } = string.Empty;
-        public string sent_date { get; set; } = string.Empty;
-        public string viewed_date { get; set; } = string.Empty;
-        public string opened_date { get; set; } = string.Empty;
-        public int updated_at { get; set; }
-        public int archived_at { get; set; }
-        public int created_at { get; set; }
-        public string email_status { get; set; } = string.Empty;
-        public string email_error { get; set; } = string.Empty;
-    }
+    public readonly record struct Invitation
+    (
+        string id,
+        string client_contact_id,
+        string key,
+        string link,
+        string sent_date,
+        string viewed_date,
+        string opened_date,
+        int updated_at,
+        int archived_at,
+        int created_at,
+        string email_status,
+        string email_error
+    );
 
-    public class InvoiceDatum
+    public readonly record struct InvoiceDatum
+    (
+        string id,
+        string user_id,
+        string project_id,
+        string assigned_user_id,
+        decimal amount,
+        decimal balance,
+        string client_id,
+        string vendor_id,
+        string status_id,
+        string design_id,
+        string invoice_id,
+        string recurring_id,
+        int created_at,
+        int updated_at,
+        int archived_at,
+        bool is_deleted,
+        string number,
+        decimal discount,
+        string po_number,
+        string date,
+        string last_sent_date,
+        string next_send_date,
+        string due_date,
+        string terms,
+        string public_notes,
+        string private_notes,
+        bool uses_inclusive_taxes,
+        string tax_name1,
+        decimal tax_rate1,
+        string tax_name2,
+        int tax_rate2,
+        string tax_name3,
+        int tax_rate3,
+        decimal total_taxes,
+        bool is_amount_discount,
+        string footer,
+        int partial,
+        string partial_due_date,
+        string custom_value1,
+        string custom_value2,
+        string custom_value3,
+        string custom_value4,
+        bool has_tasks,
+        bool has_expenses,
+        int custom_surcharge1,
+        int custom_surcharge2,
+        int custom_surcharge3,
+        int custom_surcharge4,
+        int exchange_rate,
+        bool custom_surcharge_tax1,
+        bool custom_surcharge_tax2,
+        bool custom_surcharge_tax3,
+        bool custom_surcharge_tax4,
+        Line_Items[] line_items,
+        string entity_type,
+        string reminder1_sent,
+        string reminder2_sent,
+        string reminder3_sent,
+        string reminder_last_sent,
+        float paid_to_date,
+        string subscription_id,
+        bool auto_bill_enabled,
+        Invitation[] invitations,
+        object[] documents
+    )
     {
-        public string id { get; set; } = string.Empty;
-        public string user_id { get; set; } = string.Empty;
-        public string project_id { get; set; } = string.Empty;
-        public string assigned_user_id { get; set; } = string.Empty;
-        public decimal amount { get; set; }
-        public decimal balance { get; set; }
-        public string client_id { get; set; } = string.Empty;
-        public string vendor_id { get; set; } = string.Empty;
-        public string status_id { get; set; } = string.Empty;
-        public string design_id { get; set; } = string.Empty;
-        public string invoice_id { get; set; } = string.Empty;
-        public string recurring_id { get; set; } = string.Empty;
-        public int created_at { get; set; }
-        public int updated_at { get; set; }
-        public int archived_at { get; set; }
-        public bool is_deleted { get; set; }
-        public string number { get; set; } = string.Empty;
-        public decimal discount { get; set; }
-        public string po_number { get; set; } = string.Empty;
-        public string date { get; set; } = string.Empty;
-        public string last_sent_date { get; set; } = string.Empty;
-        public string next_send_date { get; set; } = string.Empty;
-        public string due_date { get; set; } = string.Empty;
-        public string terms { get; set; } = string.Empty;
-        public string public_notes { get; set; } = string.Empty;
-        public string private_notes { get; set; } = string.Empty;
-        public bool uses_inclusive_taxes { get; set; }
-        public string tax_name1 { get; set; } = string.Empty;
-        public decimal tax_rate1 { get; set; }
-        public string tax_name2 { get; set; } = string.Empty;
-        public int tax_rate2 { get; set; }
-        public string tax_name3 { get; set; } = string.Empty;
-        public int tax_rate3 { get; set; }
-        public decimal total_taxes { get; set; }
-        public bool is_amount_discount { get; set; }
-        public string footer { get; set; } = string.Empty;
-        public int partial { get; set; }
-        public string partial_due_date { get; set; } = string.Empty;
-        public string custom_value1 { get; set; } = string.Empty;
-        public string custom_value2 { get; set; } = string.Empty;
-        public string custom_value3 { get; set; } = string.Empty;
-        public string custom_value4 { get; set; } = string.Empty;
-        public bool has_tasks { get; set; }
-        public bool has_expenses { get; set; }
-        public int custom_surcharge1 { get; set; }
-        public int custom_surcharge2 { get; set; }
-        public int custom_surcharge3 { get; set; }
-        public int custom_surcharge4 { get; set; }
-        public int exchange_rate { get; set; }
-        public bool custom_surcharge_tax1 { get; set; }
-        public bool custom_surcharge_tax2 { get; set; }
-        public bool custom_surcharge_tax3 { get; set; }
-        public bool custom_surcharge_tax4 { get; set; }
-        public Line_Items[] line_items { get; set; } = [];
-        public string entity_type { get; set; } = string.Empty;
-        public string reminder1_sent { get; set; } = string.Empty;
-        public string reminder2_sent { get; set; } = string.Empty;
-        public string reminder3_sent { get; set; } = string.Empty;
-        public string reminder_last_sent { get; set; } = string.Empty;
-        public float paid_to_date { get; set; }
-        public string subscription_id { get; set; } = string.Empty;
-        public bool auto_bill_enabled { get; set; }
-        public Invitation[] invitations { get; set; } = [];
-        public object[] documents { get; set; } = [];
-
         public async Task<InvoiceDatum> PostAsync(string token)
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
@@ -281,11 +268,10 @@ namespace NumberSearch.DataAccess.InvoiceNinja
                 .WithHeader(requestedHeader, requestedHeaderValue)
                 .WithHeader(contentHeader, contentHeaderValue)
                 .PostJsonAsync(new { client_id, tax_name1, tax_rate1, entity_type, line_items })
-                .ReceiveJson<InvoiceSingle>()
-                .ConfigureAwait(false);
+                .ReceiveJson<InvoiceSingle>();
 
             // Unwrap the data we want from the single-field parent object.
-            return result?.data ?? new();
+            return result.data;
         }
 
         public async Task<InvoiceDatum> PutAsync(string token)
@@ -306,11 +292,10 @@ namespace NumberSearch.DataAccess.InvoiceNinja
                 .WithHeader(tokenHeader, token)
                 .WithHeader(contentHeader, contentHeaderValue)
                 .PutJsonAsync(new { id, line_items, tax_name1, tax_rate1 })
-                .ReceiveJson<InvoiceSingle>()
-                .ConfigureAwait(false);
+                .ReceiveJson<InvoiceSingle>();
 
             // Unwrap the data we want from the single-field parent object.
-            return result?.data ?? new();
+            return result.data;
         }
 
         public async Task<InvoiceDatum> DeleteAsync(string token)
@@ -331,18 +316,15 @@ namespace NumberSearch.DataAccess.InvoiceNinja
                 .WithHeader(tokenHeader, token)
                 .WithHeader(contentHeader, contentHeaderValue)
                 .DeleteAsync()
-                .ReceiveJson<InvoiceSingle>()
-                .ConfigureAwait(false);
+                .ReceiveJson<InvoiceSingle>();
 
             // Unwrap the data we want from the single-field parent object.
-            return result?.data ?? new();
+            return result.data;
         }
     }
 
-    public class ReccurringInvoice
+    public readonly record struct ReccurringInvoice(ReccurringInvoiceDatum[] data)
     {
-        public ReccurringInvoiceDatum[] data { get; set; } = [];
-
         public static async Task<ReccurringInvoiceDatum[]> GetByClientIdWithLinksAsync(string clientId, string token)
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
@@ -354,10 +336,9 @@ namespace NumberSearch.DataAccess.InvoiceNinja
 
             var result = await url
                 .WithHeader(tokenHeader, token)
-                .GetJsonAsync<ReccurringInvoice>()
-                .ConfigureAwait(false);
+                .GetJsonAsync<ReccurringInvoice>();
 
-            return result?.data ?? [];
+            return result.data;
         }
 
         public static async Task<ReccurringInvoiceDatum> GetByIdAsync(string id, string token)
@@ -370,85 +351,81 @@ namespace NumberSearch.DataAccess.InvoiceNinja
 
             var result = await url
                 .WithHeader(tokenHeader, token)
-                .GetJsonAsync<ReccurringInvoiceSingle>()
-                .ConfigureAwait(false);
+                .GetJsonAsync<ReccurringInvoiceSingle>();
 
-            return result?.data ?? new();
+            return result.data;
         }
     }
 
-    public class ReccurringInvoiceSingle
-    {
-        public ReccurringInvoiceDatum data { get; set; } = new();
-    }
+    public readonly record struct ReccurringInvoiceSingle(ReccurringInvoiceDatum data);   
 
-    public class ReccurringInvoiceDatum
-    {
-        public string id { get; set; } = string.Empty;
-        public string user_id { get; set; } = string.Empty;
-        public string project_id { get; set; } = string.Empty;
-        public string assigned_user_id { get; set; } = string.Empty;
-        public decimal amount { get; set; }
-        public decimal balance { get; set; }
-        public string client_id { get; set; } = string.Empty;
-        public string vendor_id { get; set; } = string.Empty;
-        public string status_id { get; set; } = string.Empty;
-        public string design_id { get; set; } = string.Empty;
-        public int created_at { get; set; }
-        public int updated_at { get; set; }
-        public int archived_at { get; set; }
-        public bool is_deleted { get; set; }
-        public string number { get; set; } = string.Empty;
-        public decimal discount { get; set; }
-        public string po_number { get; set; } = string.Empty;
-        public string date { get; set; } = string.Empty;
-        public string last_sent_date { get; set; } = string.Empty;
-        public string next_send_date { get; set; } = string.Empty;
-        public string due_date { get; set; } = string.Empty;
-        public string terms { get; set; } = string.Empty;
-        public string public_notes { get; set; } = string.Empty;
-        public string private_notes { get; set; } = string.Empty;
-        public bool uses_inclusive_taxes { get; set; }
-        public string tax_name1 { get; set; } = string.Empty;
-        public decimal tax_rate1 { get; set; }
-        public string tax_name2 { get; set; } = string.Empty;
-        public decimal tax_rate2 { get; set; }
-        public string tax_name3 { get; set; } = string.Empty;
-        public decimal tax_rate3 { get; set; }
-        public decimal total_taxes { get; set; }
-        public bool is_amount_discount { get; set; }
-        public string footer { get; set; } = string.Empty;
-        public decimal partial { get; set; }
-        public string partial_due_date { get; set; } = string.Empty;
-        public string custom_value1 { get; set; } = string.Empty;
-        public string custom_value2 { get; set; } = string.Empty;
-        public string custom_value3 { get; set; } = string.Empty;
-        public string custom_value4 { get; set; } = string.Empty;
-        public bool has_tasks { get; set; }
-        public bool has_expenses { get; set; }
-        public decimal custom_surcharge1 { get; set; }
-        public decimal custom_surcharge2 { get; set; }
-        public decimal custom_surcharge3 { get; set; }
-        public decimal custom_surcharge4 { get; set; }
-        public decimal exchange_rate { get; set; }
-        public bool custom_surcharge_tax1 { get; set; }
-        public bool custom_surcharge_tax2 { get; set; }
-        public bool custom_surcharge_tax3 { get; set; }
-        public bool custom_surcharge_tax4 { get; set; }
-        public Line_Items[] line_items { get; set; } = [];
-        public string entity_type { get; set; } = string.Empty;
-        public string frequency_id { get; set; } = string.Empty;
-        public int remaining_cycles { get; set; }
-        public object[] recurring_dates { get; set; } = [];
-        public string auto_bill { get; set; } = string.Empty;
-        public bool auto_bill_enabled { get; set; }
-        public string due_date_days { get; set; } = string.Empty;
-        public decimal paid_to_date { get; set; }
-        public string subscription_id { get; set; } = string.Empty;
-        public Invitation[] invitations { get; set; } = [];
-        public object[] documents { get; set; } = [];
-
-        public async Task<ReccurringInvoiceDatum> PostAsync(string token)
+    public readonly record struct ReccurringInvoiceDatum
+    (
+        string id,
+        string user_id,
+        string project_id,
+        string assigned_user_id,
+        decimal amount,
+        decimal balance,
+        string client_id,
+        string vendor_id,
+        string status_id,
+        string design_id,
+        int created_at,
+        int updated_at,
+        int archived_at,
+        bool is_deleted,
+        string number,
+        decimal discount,
+        string po_number,
+        string date,
+        string last_sent_date,
+        string next_send_date,
+        string due_date,
+        string terms,
+        string public_notes,
+        string private_notes,
+        bool uses_inclusive_taxes,
+        string tax_name1,
+        decimal tax_rate1,
+        string tax_name2,
+        decimal tax_rate2,
+        string tax_name3,
+        decimal tax_rate3,
+        decimal total_taxes,
+        bool is_amount_discount,
+        string footer,
+        decimal partial,
+        string partial_due_date,
+        string custom_value1,
+        string custom_value2,
+        string custom_value3,
+        string custom_value4,
+        bool has_tasks,
+        bool has_expenses,
+        decimal custom_surcharge1,
+        decimal custom_surcharge2,
+        decimal custom_surcharge3,
+        decimal custom_surcharge4,
+        decimal exchange_rate,
+        bool custom_surcharge_tax1,
+        bool custom_surcharge_tax2,
+        bool custom_surcharge_tax3,
+        bool custom_surcharge_tax4,
+        Line_Items[] line_items,
+        string entity_type,
+        string frequency_id,
+        int remaining_cycles,
+        object[] recurring_dates,
+        string auto_bill,
+        bool auto_bill_enabled,
+        string due_date_days,
+        decimal paid_to_date,
+        string subscription_id,
+        Invitation[] invitations,
+        object[] documents
+    ){
+        public async Task<ReccurringInvoiceDatum> PostAsync(ReadOnlyMemory<char> token)
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
             string endpoint = "recurring_invoices";
@@ -460,18 +437,17 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             string url = $"{baseUrl}{endpoint}";
 
             var result = await url
-                .WithHeader(tokenHeader, token)
+                .WithHeader(tokenHeader, token.ToString())
                 .WithHeader(requestedHeader, requestedHeaderValue)
                 .WithHeader(contentHeader, contentHeaderValue)
                 .PostJsonAsync(new { client_id, tax_name1, tax_rate1, entity_type, frequency_id, auto_bill_enabled, auto_bill, line_items })
-                .ReceiveJson<ReccurringInvoiceSingle>()
-                .ConfigureAwait(false);
+                .ReceiveJson<ReccurringInvoiceSingle>();
 
             // Unwrap the data we want from the single-field parent object.
-            return result?.data ?? new();
+            return result.data;
         }
 
-        public async Task<ReccurringInvoiceDatum> PutAsync(string token)
+        public async Task<ReccurringInvoiceDatum> PutAsync(ReadOnlyMemory<char> token)
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
             string endpoint = "recurring_invoices";
@@ -484,15 +460,14 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             string url = $"{baseUrl}{endpoint}{clientIdParameter}";
 
             var result = await url
-                .WithHeader(tokenHeader, token)
+                .WithHeader(tokenHeader, token.ToString())
                 .WithHeader(requestedHeader, requestedHeaderValue)
                 .WithHeader(contentHeader, contentHeaderValue)
                 .PutJsonAsync(new { client_id, tax_name1, tax_rate1, entity_type, frequency_id, auto_bill_enabled, auto_bill, line_items })
-                .ReceiveJson<ReccurringInvoiceSingle>()
-                .ConfigureAwait(false);
+                .ReceiveJson<ReccurringInvoiceSingle>();
 
             // Unwrap the data we want from the single-field parent object.
-            return result?.data ?? new();
+            return result.data;
         }
     }
 }
