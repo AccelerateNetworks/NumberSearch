@@ -52,9 +52,9 @@ namespace NumberSearch.Mvc.Controllers
             // Add portable numbers to cart in bulk
             if (!string.IsNullOrWhiteSpace(dialedNumber))
             {
-                var parsedNumbers = dialedNumber.ExtractDialedNumbers();
+                var parsedNumbers = dialedNumber.ExtractDialedNumbers().ToArray();
 
-                if (!parsedNumbers.Any())
+                if (parsedNumbers.Length == 0)
                 {
                     return View("Index", new LookupResults
                     {
@@ -134,9 +134,9 @@ namespace NumberSearch.Mvc.Controllers
             // Add portable numbers to cart in bulk
             if (!string.IsNullOrWhiteSpace(dialedNumber))
             {
-                var parsedNumbers = dialedNumber.ExtractDialedNumbers();
+                var parsedNumbers = dialedNumber.ExtractDialedNumbers().ToArray();
 
-                if (!parsedNumbers.Any())
+                if (parsedNumbers.Length == 0)
                 {
                     return View("Index", new LookupResults
                     {
@@ -188,7 +188,7 @@ namespace NumberSearch.Mvc.Controllers
         {
             var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
 
-            if (checkParse && phoneNumber is not null)
+            if (checkParse)
             {
                 try
                 {

@@ -70,7 +70,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 var checkConvert = int.TryParse(cleanedQuery, out var code);
 
-                if (checkConvert && PhoneNumbersNA.AreaCode.All.Contains(code))
+                if (checkConvert && PhoneNumbersNA.AreaCodes.All.Contains(code))
                 {
                     cleanedQuery += "*******";
                 }

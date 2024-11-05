@@ -334,7 +334,7 @@ namespace NumberSearch.Ingest
         {
             List<OwnedPhoneNumber> numbers = [];
 
-            foreach (int npa in AreaCode.All)
+            foreach (int npa in AreaCodes.All)
             {
                 try
                 {
@@ -346,7 +346,7 @@ namespace NumberSearch.Ingest
                     {
                         var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.DID, out var phoneNumber);
 
-                        if (checkParse && phoneNumber is not null)
+                        if (checkParse)
                         {
                             numbers.Add(new OwnedPhoneNumber
                             {
@@ -551,7 +551,7 @@ namespace NumberSearch.Ingest
                     {
                         var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item?.DialedNumber ?? string.Empty, out var phoneNumber);
 
-                        if (checkParse && phoneNumber is not null)
+                        if (checkParse)
                         {
                             number = new DataAccess.Models.PhoneNumber
                             {
@@ -717,7 +717,7 @@ namespace NumberSearch.Ingest
             {
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number.DialedNumber, out var phoneNumber);
 
-                if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+                if (checkParse && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
                 {
                     if (phoneNumber.DialedNumber.IsTollfree())
                     {

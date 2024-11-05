@@ -108,7 +108,7 @@ namespace NumberSearch.Ingest
             Log.Information("Ingesting data from BulkVS");
             // Breaking this into chunks to limit peak memory consumption.
             List<IngestStatistics> allStats = [];
-            var groups = PhoneNumbersNA.AreaCode.All.Chunk(50);
+            var groups = PhoneNumbersNA.AreaCodes.All.Chunk(50);
             foreach (var group in groups)
             {
                 var BulkVSStats = await Provider.BulkVSAsync(appConfig.BulkVSUsername, appConfig.BulkVSPassword, group, appConfig.Postgresql);
@@ -266,7 +266,7 @@ namespace NumberSearch.Ingest
 
             // Ingest all available numbers in the FirsPointCom API.
             Log.Information("[FirstPointCom] Ingesting data from FirstPointCom");
-            var FirstPointComStats = await Provider.FirstPointComAsync(appConfig.PComNetUsername, appConfig.PComNetPassword, PhoneNumbersNA.AreaCode.All, appConfig.Postgresql);
+            var FirstPointComStats = await Provider.FirstPointComAsync(appConfig.PComNetUsername, appConfig.PComNetPassword, PhoneNumbersNA.AreaCodes.All, appConfig.Postgresql);
 
             // Remove the lock from the database to prevent it from getting cluttered with blank entries.
             var lockEntry = await IngestStatistics.GetLockAsync("FirstPointCom", appConfig.Postgresql.ToString());

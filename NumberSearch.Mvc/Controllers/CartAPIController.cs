@@ -38,9 +38,9 @@ namespace NumberSearch.Mvc.Controllers
                 // Add portable numbers to cart in bulk
                 if (!string.IsNullOrWhiteSpace(dialedNumber))
                 {
-                    var parsedNumbers = dialedNumber.ExtractDialedNumbers();
+                    var parsedNumbers = dialedNumber.ExtractDialedNumbers().ToArray();
 
-                    if (!parsedNumbers.Any())
+                    if (parsedNumbers.Length == 0)
                     {
                         return BadRequest("No dialed phone numbers found. Please try a different query. 🥺👉👈");
                     }
@@ -812,7 +812,7 @@ namespace NumberSearch.Mvc.Controllers
 
             var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedPhoneNumber, out var phoneNumber);
 
-            if (checkParse && phoneNumber is not null)
+            if (checkParse)
             {
                 // Determine if the number is a wireless number.
                 var lrnLookup = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber.AsMemory(), _apiKey.AsMemory());
@@ -908,7 +908,7 @@ namespace NumberSearch.Mvc.Controllers
 
             var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedPhoneNumber, out var phoneNumber);
 
-            if (checkParse && phoneNumber is not null)
+            if (checkParse)
             {
                 try
                 {

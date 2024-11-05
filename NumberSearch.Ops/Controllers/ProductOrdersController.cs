@@ -103,7 +103,7 @@ public class ProductOrdersController : Controller
             {
                 var checkNumber = PhoneNumbersNA.PhoneNumber.TryParse(productOrder.DialedNumber, out var number);
 
-                if (checkNumber && number is not null)
+                if (checkNumber)
                 {
                     var checkExists = await _context.ProductOrders.Where(x => x.OrderId == productOrder.OrderId && x.DialedNumber == number.DialedNumber).FirstOrDefaultAsync();
 
@@ -140,7 +140,7 @@ public class ProductOrdersController : Controller
             {
                 var checkNumber = PhoneNumbersNA.PhoneNumber.TryParse(productOrder.PortedDialedNumber, out var number);
 
-                if (checkNumber && number is not null)
+                if (checkNumber)
                 {
                     var checkExists = await _context.ProductOrders.Where(x => x.OrderId == productOrder.OrderId && x.PortedDialedNumber == number.DialedNumber).FirstOrDefaultAsync();
 
@@ -148,7 +148,7 @@ public class ProductOrdersController : Controller
                     {
                         var portRequestsController = new PortRequestsController(_configuration, _context);
 
-                        var port = await portRequestsController.VerifyPortabilityAsync(number?.DialedNumber ?? string.Empty);
+                        var port = await portRequestsController.VerifyPortabilityAsync(number.DialedNumber ?? string.Empty);
 
                         if (port.Portable)
                         {
@@ -164,7 +164,7 @@ public class ProductOrdersController : Controller
                             await _context.SaveChangesAsync();
                         }
 
-                        productOrder.PortedDialedNumber = number?.DialedNumber;
+                        productOrder.PortedDialedNumber = number.DialedNumber;
                         productOrder.PortedPhoneNumberId = port.PortedPhoneNumberId;
                         productOrder.Quantity = 1;
                         _context.Add(productOrder);

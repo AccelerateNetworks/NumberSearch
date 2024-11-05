@@ -632,7 +632,7 @@ public class OrdersController(OpsConfig opsConfig,
                 {
                     var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(serviceNumber ?? string.Empty, out var phoneNumber);
                     // Register the number for E911 service.
-                    if (phoneNumber is not null && checkParse)
+                    if (checkParse)
                     {
                         try
                         {

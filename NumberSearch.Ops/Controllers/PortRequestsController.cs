@@ -38,7 +38,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
     {
         var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number, out var phoneNumber);
 
-        if (checkParse && phoneNumber is not null)
+        if (checkParse)
         {
             try
             {
@@ -299,7 +299,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
 
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
 
-                if (portRequest is not null && checkParse && phoneNumber is not null)
+                if (portRequest is not null && checkParse)
                 {
                     var port = await VerifyPortabilityAsync(phoneNumber.DialedNumber ?? string.Empty);
 

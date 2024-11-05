@@ -54,14 +54,14 @@ namespace NumberSearch.DataAccess.BulkVS
             {
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.TN, out var phoneNumber);
 
-                if (checkParse && phoneNumber is not null)
+                if (checkParse)
                 {
                     output.Add(new PhoneNumber
                     {
                         NPA = phoneNumber.NPA,
                         NXX = phoneNumber.NXX,
                         XXXX = phoneNumber.XXXX,
-                        DialedNumber = phoneNumber?.DialedNumber ?? string.Empty,
+                        DialedNumber = phoneNumber.DialedNumber ?? string.Empty,
                         City = string.IsNullOrWhiteSpace(item.RateCenter) ? "Unknown City" : item.RateCenter,
                         State = string.IsNullOrWhiteSpace(item.State) ? "Unknown State" : item.State,
                         DateIngested = DateTime.Now,
@@ -88,14 +88,14 @@ namespace NumberSearch.DataAccess.BulkVS
             {
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.TN, out var phoneNumber);
 
-                if (checkParse && phoneNumber is not null)
+                if (checkParse)
                 {
                     output.Add(new PhoneNumber
                     {
                         NPA = phoneNumber.NPA,
                         NXX = phoneNumber.NXX,
                         XXXX = phoneNumber.XXXX,
-                        DialedNumber = phoneNumber?.DialedNumber ?? string.Empty,
+                        DialedNumber = phoneNumber.DialedNumber ?? string.Empty,
                         City = string.IsNullOrWhiteSpace(item.RateCenter) ? "Unknown City" : item.RateCenter,
                         State = string.IsNullOrWhiteSpace(item.State) ? "Unknown State" : item.State,
                         DateIngested = DateTime.Now,

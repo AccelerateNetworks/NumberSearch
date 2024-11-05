@@ -108,14 +108,14 @@ namespace NumberSearch.DataAccess.BulkVS
 
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.TN, out var phoneNumber);
 
-                if (checkParse && phoneNumber is not null)
+                if (checkParse)
                 {
                     output.Add(new PhoneNumber
                     {
                         NPA = phoneNumber.NPA,
                         NXX = phoneNumber.NXX,
                         XXXX = phoneNumber.XXXX,
-                        DialedNumber = phoneNumber?.DialedNumber ?? string.Empty,
+                        DialedNumber = phoneNumber.DialedNumber ?? string.Empty,
                         City = string.IsNullOrWhiteSpace(item.TNDetails.RateCenter) ? "Unknown City" : item.TNDetails.RateCenter,
                         State = string.IsNullOrWhiteSpace(item.TNDetails.State) ? "Unknown State" : item.TNDetails.State,
                         DateIngested = DateTime.Now,
@@ -145,11 +145,11 @@ namespace NumberSearch.DataAccess.BulkVS
             {
                 var checkParsed = PhoneNumbersNA.PhoneNumber.TryParse(item.TN, out var phoneNumber);
 
-                if (checkParsed && phoneNumber is not null)
+                if (checkParsed)
                 {
                     output.Add(new OwnedPhoneNumber
                     {
-                        DialedNumber = phoneNumber?.DialedNumber ?? string.Empty,
+                        DialedNumber = phoneNumber.DialedNumber ?? string.Empty,
                         IngestedFrom = "BulkVS",
                         TrunkGroup = item.Routing.TrunkGroup ?? string.Empty,
                         Active = true,

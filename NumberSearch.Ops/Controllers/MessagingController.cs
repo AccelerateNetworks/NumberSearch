@@ -99,7 +99,7 @@ namespace NumberSearch.Ops.Controllers
             string alertType = "alert-success";
             bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
             var token = await GetTokenAsync();
-            if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+            if (checkParse && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
             {
                 var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration>();
                 message = $"🔃 Upstream Status {refresh.UpstreamStatusDescription} for {refresh.AsDialed} routed to {refresh.CallbackUrl}";
@@ -138,7 +138,7 @@ namespace NumberSearch.Ops.Controllers
             var result = new MessagingResult { AlertType = "alert-success" };
             bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
             var token = await GetTokenAsync();
-            if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+            if (checkParse && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
             {
                 try
                 {
@@ -167,7 +167,7 @@ namespace NumberSearch.Ops.Controllers
             }
 
             // Refresh the status
-            if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+            if (checkParse && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
             {
                 var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration>();
             }
@@ -220,7 +220,7 @@ namespace NumberSearch.Ops.Controllers
             }
 
             bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(toEmail.DialedNumber, out var phoneNumber);
-            if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+            if (checkParse && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
             {
                 bool registeredUpstream = false;
                 string upstreamStatusDescription = string.Empty;
@@ -346,14 +346,14 @@ namespace NumberSearch.Ops.Controllers
             string alertType = "alert-success";
             bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(registrationRequest.DialedNumber, out var phoneNumber);
             var token = await GetTokenAsync();
-            if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+            if (checkParse && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
             {
                 var request = await $"{_baseUrl}client/register".WithOAuthBearerToken(token.AccessToken).PostJsonAsync(registrationRequest);
                 var response = await request.GetJsonAsync<RegistrationResponse>();
                 message = $"✔️ Reregistration complete! {response.Message}";
             }
             // Refresh the status
-            if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+            if (checkParse && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
             {
                 var refresh = await $"{_baseUrl}client?asDialed={phoneNumber.DialedNumber}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration>();
             }
@@ -389,7 +389,7 @@ namespace NumberSearch.Ops.Controllers
             var result = new MessagingResult { AlertType = "alert-success" };
             bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
             var token = await GetTokenAsync();
-            if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+            if (checkParse && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
             {
                 try
                 {
@@ -451,7 +451,7 @@ namespace NumberSearch.Ops.Controllers
                 {
                     bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number.AsDialed, out var phoneNumber);
                     bool checkOwned = existing.TryGetValue(phoneNumber.DialedNumber, out var owned);
-                    if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(number.AsDialed) && checkOwned && string.IsNullOrWhiteSpace(owned?.TwilioCarrierName))
+                    if (checkParse && !string.IsNullOrWhiteSpace(number.AsDialed) && checkOwned && string.IsNullOrWhiteSpace(owned?.TwilioCarrierName))
                     {
                         try
                         {
@@ -492,7 +492,7 @@ namespace NumberSearch.Ops.Controllers
             else
             {
                 bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber, out var phoneNumber);
-                if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
+                if (checkParse && !string.IsNullOrWhiteSpace(phoneNumber.DialedNumber))
                 {
                     try
                     {
@@ -651,7 +651,7 @@ namespace NumberSearch.Ops.Controllers
             foreach (var number in existing)
             {
                 bool checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number.DialedNumber, out var phoneNumber);
-                if (checkParse && phoneNumber is not null)
+                if (checkParse)
                 {
                     try
                     {

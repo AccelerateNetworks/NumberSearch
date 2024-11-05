@@ -375,7 +375,7 @@ try
             if (!string.IsNullOrWhiteSpace(msisdn))
             {
                 bool checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(msisdn, out var fromPhoneNumber);
-                if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
+                if (checkFrom && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
                 {
                     if (fromPhoneNumber.Type is not PhoneNumbersNA.NumberType.ShortCode)
                     {
@@ -404,7 +404,7 @@ try
                 {
                     var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
 
-                    if (checkTo && toPhoneNumber is not null)
+                    if (checkTo)
                     {
                         var formattedNumber = toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode ? $"{toPhoneNumber.DialedNumber}" : $"1{toPhoneNumber.DialedNumber}";
                         // Prevent the duplicates from being included in the the recipients list.
@@ -419,7 +419,7 @@ try
                 {
                     var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
 
-                    if (checkTo && toPhoneNumber is not null)
+                    if (checkTo)
                     {
                         var formattedNumber = toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode ? $"{toPhoneNumber.DialedNumber}" : $"1{toPhoneNumber.DialedNumber}";
                         // Prevent the duplicates from being included in the the recipients list.
@@ -1177,7 +1177,7 @@ public static class Endpoints
             try
             {
                 bool checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(asDialed, out var asDialedNumber);
-                if (checkFrom && asDialedNumber is not null && !string.IsNullOrWhiteSpace(asDialedNumber.DialedNumber))
+                if (checkFrom && !string.IsNullOrWhiteSpace(asDialedNumber.DialedNumber))
                 {
                     string dialedNumber = asDialedNumber.Type is not PhoneNumbersNA.NumberType.ShortCode ? $"1{asDialedNumber.DialedNumber}" : asDialedNumber.DialedNumber;
 
@@ -1275,7 +1275,7 @@ public static class Endpoints
             try
             {
                 bool checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(asDialed, out var fromPhoneNumber);
-                if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
+                if (checkFrom && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
                 {
                     if (fromPhoneNumber.Type is not PhoneNumbersNA.NumberType.ShortCode)
                     {
@@ -1449,7 +1449,7 @@ public static class Endpoints
         if (message is not null && !string.IsNullOrWhiteSpace(message.MSISDN))
         {
             bool checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(message.MSISDN, out var fromPhoneNumber);
-            if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
+            if (checkFrom && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
             {
                 if (fromPhoneNumber.Type is not PhoneNumbersNA.NumberType.ShortCode)
                 {
@@ -1499,7 +1499,7 @@ public static class Endpoints
             {
                 var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
 
-                if (checkTo && toPhoneNumber is not null)
+                if (checkTo)
                 {
                     var formattedNumber = toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode ? $"{toPhoneNumber.DialedNumber}" : $"1{toPhoneNumber.DialedNumber}";
                     // Prevent the MSISDN from being included in the the recipients list. But allow circular messages where the MSISDN and To are the same to support testing.
@@ -1805,7 +1805,7 @@ public static class Endpoints
             if (!string.IsNullOrWhiteSpace(msisdn))
             {
                 bool checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(msisdn, out var fromPhoneNumber);
-                if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
+                if (checkFrom && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
                 {
                     if (fromPhoneNumber.Type is not PhoneNumbersNA.NumberType.ShortCode)
                     {
@@ -1834,7 +1834,7 @@ public static class Endpoints
                 {
                     var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
 
-                    if (checkTo && toPhoneNumber is not null)
+                    if (checkTo)
                     {
                         var formattedNumber = toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode ? $"{toPhoneNumber.DialedNumber}" : $"1{toPhoneNumber.DialedNumber}";
                         // Prevent the duplicates from being included in the the recipients list.
@@ -1849,7 +1849,7 @@ public static class Endpoints
                 {
                     var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
 
-                    if (checkTo && toPhoneNumber is not null)
+                    if (checkTo)
                     {
                         var formattedNumber = toPhoneNumber.Type is PhoneNumbersNA.NumberType.ShortCode ? $"{toPhoneNumber.DialedNumber}" : $"1{toPhoneNumber.DialedNumber}";
                         // Prevent the duplicates from being included in the the recipients list.
@@ -2243,7 +2243,7 @@ namespace Models
             if (!string.IsNullOrWhiteSpace(ani))
             {
                 var checkFrom = PhoneNumbersNA.PhoneNumber.TryParse(ani, out var fromPhoneNumber);
-                if (checkFrom && fromPhoneNumber is not null && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
+                if (checkFrom && !string.IsNullOrWhiteSpace(fromPhoneNumber.DialedNumber))
                 {
                     FromPhoneNumber = fromPhoneNumber;
                     ani = $"1{fromPhoneNumber.DialedNumber}";
@@ -2260,14 +2260,14 @@ namespace Models
                 {
                     var checkTo = PhoneNumbersNA.PhoneNumber.TryParse(number, out var toPhoneNumber);
 
-                    if (checkTo && toPhoneNumber is not null)
+                    if (checkTo)
                     {
                         ToPhoneNumbers.Add(toPhoneNumber);
                     }
                 }
 
                 // This will drop the numbers that couldn't be parsed.
-                recip = ToPhoneNumbers is not null && ToPhoneNumbers.Count != 0 ? ToPhoneNumbers.Count > 1 ? string.Join(",", ToPhoneNumbers.Select(x => $"1{x.DialedNumber!}")) : $"1{ToPhoneNumbers?.FirstOrDefault()?.DialedNumber}" ?? string.Empty : string.Empty;
+                recip = ToPhoneNumbers is not null && ToPhoneNumbers.Count != 0 ? ToPhoneNumbers.Count > 1 ? string.Join(",", ToPhoneNumbers.Select(x => $"1{x.DialedNumber!}")) : $"1{ToPhoneNumbers?.FirstOrDefault().DialedNumber}" ?? string.Empty : string.Empty;
                 ToParsed = true;
             }
 

@@ -36,7 +36,7 @@
             {
                 var number = failed.FirstOrDefault()?.To;
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number ?? string.Empty, out var phoneNumber);
-                if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(number) && Model is not null)
+                if (checkParse && !string.IsNullOrWhiteSpace(number) && Model is not null)
                 {
                     var ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == phoneNumber.DialedNumber);
                     string AsDialedLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{number}</a>" : number;
@@ -96,7 +96,7 @@
             {
                 var number = failed.FirstOrDefault()?.To;
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number ?? string.Empty, out var phoneNumber);
-                if (checkParse && phoneNumber is not null && !string.IsNullOrWhiteSpace(number) && Model is not null)
+                if (checkParse && !string.IsNullOrWhiteSpace(number) && Model is not null)
                 {
                     var ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == phoneNumber.DialedNumber);
                     string AsDialedLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{number}</a>" : number;

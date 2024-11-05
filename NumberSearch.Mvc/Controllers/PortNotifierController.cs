@@ -29,7 +29,7 @@ namespace NumberSearch.Mvc.Controllers
 
             var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(Query, out var phoneNumber);
 
-            if (checkParse && phoneNumber is not null)
+            if (checkParse)
             {
                 try
                 {

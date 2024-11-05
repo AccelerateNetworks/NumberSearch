@@ -251,7 +251,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
                 }
             }
             // Register the number for E911 service.
-            if (phoneNumber is not null && checkParse && !string.IsNullOrWhiteSpace(UnparsedAddress) && existing is not null)
+            if (checkParse && !string.IsNullOrWhiteSpace(UnparsedAddress) && existing is not null)
             {
                 try
                 {

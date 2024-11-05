@@ -54,7 +54,7 @@ namespace NumberSearch.Mvc.Controllers
 
             var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(Query, out var phoneNumber);
 
-            if (checkParse && phoneNumber is not null)
+            if (checkParse)
             {
                 try
                 {
@@ -148,7 +148,7 @@ namespace NumberSearch.Mvc.Controllers
 
             var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(Query, out var phoneNumber);
 
-            if (checkParse && phoneNumber is not null)
+            if (checkParse)
             {
                 var portable = await ValidatePortability.GetAsync(phoneNumber.DialedNumber.AsMemory(), _bulkVSAPIUsername.AsMemory(), _bulkVSAPIPassword.AsMemory());
 
