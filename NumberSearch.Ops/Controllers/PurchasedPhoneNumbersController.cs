@@ -48,7 +48,7 @@ public class PurchasedPhoneNumbersController(numberSearchContext context) : Cont
         {
             var order = await context.PurchasedPhoneNumbers.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
 
-            return View("NumberOrders", new PurchasedResult { PurchasedPhoneNumber = order ?? new(), Owned = owned });
+            return View("NumberOrders", new PurchasedResult { PurchasedPhoneNumber = order ?? new(), PurchasedPhoneNumbers = [order ?? new()], Owned = owned });
         }
     }
 
