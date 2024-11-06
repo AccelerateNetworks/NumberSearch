@@ -1,5 +1,4 @@
-﻿using FirstCom;
-using FirstCom.Models;
+﻿using FirstCom.Models;
 
 using Flurl.Http;
 
@@ -10,8 +9,6 @@ using NumberSearch.DataAccess.FusionPBX;
 using PhoneNumbersNA;
 
 using Serilog;
-
-using ServiceReference;
 
 using System;
 using System.Collections.Generic;

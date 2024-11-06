@@ -476,7 +476,16 @@ namespace NumberSearch.Ops.Models
 
                     if (!string.IsNullOrWhiteSpace(foreignId))
                     {
-                        dict.Add(foreignId, item);
+                        var checkDuplicate = dict.TryGetValue(foreignId, out var value);
+                        if (checkDuplicate && value is not null)
+                        {
+                            // Merge the quantities.
+                            value.Quantity += item.Quantity;
+                        }
+                        else
+                        {
+                            dict.Add(foreignId, item);
+                        }
                     }
                 }
 
