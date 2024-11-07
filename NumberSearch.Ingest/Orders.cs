@@ -1,14 +1,22 @@
 ﻿using Flurl.Http;
 
+using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.AspNetCore.Identity.Data;
+
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.InvoiceNinja;
+
+using Org.BouncyCastle.Pqc.Crypto.Lms;
 
 using Serilog;
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.ServiceModel.Channels;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 using static NumberSearch.Ingest.Program;
@@ -50,6 +58,43 @@ namespace NumberSearch.Ingest
 
             return combined;
         }
+
+        private static Task<AccessTokenResponse> GetTokenAsync(IngestConfiguration appConfig)
+        {
+            var loginRequest = new LoginRequest()
+            {
+                Email = appConfig.MessagingUsername.ToString(),
+                Password = appConfig.MessagingPassword.ToString(),
+                TwoFactorCode = string.Empty,
+                TwoFactorRecoveryCode = string.Empty
+            };
+            return $"{appConfig.MessagingURL}login".PostJsonAsync(loginRequest).ReceiveJson<AccessTokenResponse>();
+        }
+
+        private class MessageRecord
+        {
+            [Key]
+            public Guid Id { get; set; } = Guid.NewGuid();
+            public string From { get; set; } = string.Empty;
+            public string To { get; set; } = string.Empty;
+            public string Content { get; set; } = string.Empty;
+            public string MediaURLs { get; set; } = string.Empty;
+            [JsonConverter(typeof(JsonStringEnumConverter))]
+            public MessageType MessageType { get; set; }
+            [JsonConverter(typeof(JsonStringEnumConverter))]
+            public MessageSource MessageSource { get; set; }
+            // Convert to DateTimeOffset if db is not SQLite.
+            [DataType(DataType.DateTime)]
+            public DateTime DateReceivedUTC { get; set; } = DateTime.UtcNow;
+            public string RawRequest { get; set; } = string.Empty;
+            public string RawResponse { get; set; } = string.Empty;
+            public bool Succeeded { get; set; } = false;
+            public string ToForward { get; set; } = string.Empty;
+        }
+
+        private enum MessageType { SMS, MMS };
+        private enum MessageSource { Incoming, Outgoing };
+
         public static async Task<bool> DailyBriefingEmailAsync(Owned.SMSRouteChange[] smsRouteChanges, IngestConfiguration appConfig)
         {
             // Gather all of the info to put into the daily email.
@@ -66,6 +111,10 @@ namespace NumberSearch.Ingest
             var oneWeekFollowUp = new List<Order>();
             var oneMonthFollowUp = new List<Order>();
             var yearlyFollowUp = new List<Order>();
+            var failedMessages = Array.Empty<MessageRecord>();
+
+            var token = await GetTokenAsync(appConfig);
+            failedMessages = await $"{appConfig.MessagingURL}message/all/failed?start={DateTime.Now.AddDays(-3).ToShortDateString()}&end={DateTime.Now.AddDays(1).ToShortDateString()}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<MessageRecord[]>();
 
             foreach (var order in orders)
             {
@@ -335,6 +384,20 @@ namespace NumberSearch.Ingest
                 output.Append("<li>None</li></ul>");
             }
 
+            output.Append("<p>Failed outbound SMS/MMS messages:</p><ul>");
+            if (failedMessages.Length > 0)
+            {
+                foreach (var item in failedMessages)
+                {
+                    output.Append($"<li>From {item.From} to {item.To} at {item.DateReceivedUTC}</li>");
+                }
+                output.Append("</ul>");
+            }
+            else
+            {
+                output.Append("<li>None</li></ul>");
+            }
+
             output.Append("<p>Have a great day, hombre! 🤠</p>");
 
             var notificationEmail = new DataAccess.Models.Email
@@ -349,8 +412,8 @@ namespace NumberSearch.Ingest
                 Completed = false
             };
 
-            var checkSend = await notificationEmail.SendEmailAsync(appConfig.SmtpUsername.ToString(), appConfig.SmtpPassword.ToString()).ConfigureAwait(false);
-            var checkSave = await notificationEmail.PostAsync(appConfig.Postgresql.ToString()).ConfigureAwait(false);
+            var checkSend = await notificationEmail.SendEmailAsync(appConfig.SmtpUsername.ToString(), appConfig.SmtpPassword.ToString());
+            var checkSave = await notificationEmail.PostAsync(appConfig.Postgresql.ToString());
 
             return checkSend && checkSave;
         }

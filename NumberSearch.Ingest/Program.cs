@@ -197,6 +197,10 @@ namespace NumberSearch.Ingest
             ReadOnlyMemory<char> TeleDynamicsPassword,
             ReadOnlyMemory<char> CallWithUsAPIKEY,
             ReadOnlyMemory<char> FusionPBXUsername,
-            ReadOnlyMemory<char> FusionPBXPassword);
+            ReadOnlyMemory<char> FusionPBXPassword,
+            ReadOnlyMemory<char> MessagingUsername,
+            ReadOnlyMemory<char> MessagingPassword,
+            ReadOnlyMemory<char> MessagingURL
+        );
     }
 }
