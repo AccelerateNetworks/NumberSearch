@@ -77,9 +77,9 @@ namespace NumberSearch.Mvc.Controllers
             }
 
             // If there's a city provided we need to use a more specific results count query.
-            var count = (string.IsNullOrWhiteSpace(city))
-                ? await PhoneNumber.NumberOfResultsInQuery(cleanedQuery, _postgresql).ConfigureAwait(false)
-                : await PhoneNumber.NumberOfResultsInQueryWithCity(cleanedQuery, city, _postgresql).ConfigureAwait(false);
+            int count = string.IsNullOrWhiteSpace(city)
+                ? await PhoneNumber.NumberOfResultsInQuery(cleanedQuery, _postgresql)
+                : await PhoneNumber.NumberOfResultsInQueryWithCity(cleanedQuery, city, _postgresql);
 
             // Handle out of range page values.
             page = page < 1 ? 1 : page;
@@ -90,30 +90,30 @@ namespace NumberSearch.Mvc.Controllers
             // Select a view for the data.
             if (!string.IsNullOrWhiteSpace(view) && view == "Recommended")
             {
-                results = await PhoneNumber.RecommendedPaginatedSearchAsync(cleanedQuery, page, _postgresql).ConfigureAwait(false);
+                results = await PhoneNumber.RecommendedPaginatedSearchAsync(cleanedQuery, page, _postgresql);
             }
             else if (!string.IsNullOrWhiteSpace(view) && view == "Sequential")
             {
-                results = await PhoneNumber.SequentialPaginatedSearchAsync(cleanedQuery, page, _postgresql).ConfigureAwait(false);
+                results = await PhoneNumber.SequentialPaginatedSearchAsync(cleanedQuery, page, _postgresql);
             }
             else if (!string.IsNullOrWhiteSpace(view) && view == "Location")
             {
                 // If a city is provided then we need to filter our results down to just that city.
                 if (!string.IsNullOrWhiteSpace(city))
                 {
-                    results = await PhoneNumber.LocationByCityPaginatedSearchAsync(cleanedQuery, city, page, _postgresql).ConfigureAwait(false);
+                    results = await PhoneNumber.LocationByCityPaginatedSearchAsync(cleanedQuery, city, page, _postgresql);
                 }
                 else
                 {
-                    results = await PhoneNumber.LocationPaginatedSearchAsync(cleanedQuery, page, _postgresql).ConfigureAwait(false);
+                    results = await PhoneNumber.LocationPaginatedSearchAsync(cleanedQuery, page, _postgresql);
                 }
             }
             else
             {
-                results = await PhoneNumber.RecommendedPaginatedSearchAsync(cleanedQuery, page, _postgresql).ConfigureAwait(false);
+                results = await PhoneNumber.RecommendedPaginatedSearchAsync(cleanedQuery, page, _postgresql);
             }
 
-            var cart = Cart.GetFromSession(HttpContext.Session);
+            Cart cart = Cart.GetFromSession(HttpContext.Session);
 
             // The query is a complete phone number and we have no results, perhaps they mean to port it?
             if (cleanedQuery.Length == 10 && !cleanedQuery.Contains('*') && !results.Any())

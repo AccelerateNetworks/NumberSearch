@@ -1,5 +1,4 @@
-﻿using FirstCom;
-using FirstCom.Models;
+﻿using FirstCom.Models;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
@@ -9,7 +8,6 @@ using Serilog;
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 

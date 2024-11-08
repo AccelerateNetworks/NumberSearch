@@ -79,7 +79,10 @@ namespace NumberSearch.Tests
                 EmailTom = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailTom")) ? throw new Exception("EmailTom config key is blank.") : config.GetConnectionString("EmailTom").AsMemory(),
                 FusionPBXUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("FusionPBXUsername")) ? throw new Exception("FusionPBXUsername config key is blank.") : config.GetConnectionString("FusionPBXUsername").AsMemory(),
                 FusionPBXPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("FusionPBXPassword")) ? throw new Exception("FusionPBXPassword config key is blank.") : config.GetConnectionString("FusionPBXPassword").AsMemory(),
-                InvoiceNinjaToken = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailTom")) ? throw new Exception("InvoiceNinjaToken config key is blank.") : config.GetConnectionString("InvoiceNinjaToken").AsMemory(),
+                InvoiceNinjaToken = string.IsNullOrWhiteSpace(config.GetConnectionString("InvoiceNinjaToken")) ? throw new Exception("InvoiceNinjaToken config key is blank.") : config.GetConnectionString("InvoiceNinjaToken").AsMemory(),
+                MessagingUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("MessagingUsername")) ? throw new Exception("MessagingUsername config key is blank.") : config.GetConnectionString("MessagingUsername").AsMemory(),
+                MessagingPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("MessagingPassword")) ? throw new Exception("MessagingPassword config key is blank.") : config.GetConnectionString("MessagingPassword").AsMemory(),
+                MessagingURL = string.IsNullOrWhiteSpace(config.GetConnectionString("MessagingURL")) ? throw new Exception("MessagingURL config key is blank.") : config.GetConnectionString("MessagingURL").AsMemory()
             };
             ingestConfiguration = appConfig;
         }
@@ -128,7 +131,8 @@ namespace NumberSearch.Tests
         //[Fact]
         //public async Task DailyBreifingEmailToDan()
         //{
-        //    var checkRun = await Orders.DailyBriefingEmailAsync(ingestConfiguration);
+        //    var emptyChanges = Array.Empty<Owned.SMSRouteChange>();
+        //    var checkRun = await Orders.DailyBriefingEmailAsync(emptyChanges, ingestConfiguration);
         //}
 
         //[Fact]

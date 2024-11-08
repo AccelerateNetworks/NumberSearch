@@ -1,8 +1,10 @@
 ﻿
 using AccelerateNetworks.Operations;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace NumberSearch.Ops.Models
 {
@@ -445,7 +447,9 @@ namespace NumberSearch.Ops.Models
             {
                 var dict = new Dictionary<string, ProductOrder>();
 
-                foreach (var item in ProductOrders)
+                ReadOnlySpan<ProductOrder> span = CollectionsMarshal.AsSpan(ProductOrders);
+
+                foreach (var item in span)
                 {
                     var foreignId = string.Empty;
 

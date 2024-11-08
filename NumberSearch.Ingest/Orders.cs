@@ -114,8 +114,8 @@ namespace NumberSearch.Ingest
             var failedMessages = Array.Empty<MessageRecord>();
 
             var token = await GetTokenAsync(appConfig);
-            failedMessages = await $"{appConfig.MessagingURL}message/all/failed?start={DateTime.Now.AddDays(-3).ToShortDateString()}&end={DateTime.Now.AddDays(1).ToShortDateString()}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<MessageRecord[]>();
-
+            var messages = await $"{appConfig.MessagingURL}message/all/failed?start={DateTime.Now.AddDays(-3).ToShortDateString()}&end={DateTime.Now.AddDays(1).ToShortDateString()}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<MessageRecord[]>();
+            failedMessages = messages.Where(x => x.MessageSource is MessageSource.Outgoing).ToArray();
             foreach (var order in orders)
             {
                 // Orders that should be marked as complete because the install data has passed?

@@ -79,6 +79,7 @@ namespace NumberSearch.Mvc.Controllers
             var cordless = cart.Products.Where(x => x.Name.Contains("DP")).ToArray();
             int handsets = 0;
             int basestations = 0;
+
             foreach (var item in cordless)
             {
                 var productOrder = cart?.ProductOrders?.FirstOrDefault(x => x.ProductId == item.ProductId);
