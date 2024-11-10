@@ -8,6 +8,9 @@ using FirstCom.Models;
 
 using Flurl.Http;
 
+using MailKit;
+using MailKit.Net.Imap;
+using MailKit.Search;
 using MailKit.Security;
 
 using Messaging;
@@ -35,6 +38,7 @@ using Serilog.Events;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Linq;
 using System.Net.Mail;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -186,6 +190,7 @@ try
     builder.Services.AddMemoryCache();
     builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
     builder.Services.AddAWSService<IAmazonS3>();
+    builder.Services.AddHostedService<TimedHostedService>();
 
     // Add Application Insights
     builder.Services.AddApplicationInsightsTelemetry();
@@ -2192,6 +2197,31 @@ namespace Models
                 Completed = false;
                 return false;
             }
+        }
+
+        public readonly record struct InboundEmail(string Subject, string Content, string To, string From);
+
+        public static async Task<ReadOnlyMemory<InboundEmail>> GetEmailsAsync(string username, string password, CancellationToken cls)
+        {
+            using var client = new ImapClient();
+            await client.ConnectAsync("witcher.mxrouting.net", 0, SecureSocketOptions.StartTls, cls);
+            await client.AuthenticateAsync(username, password, cls);
+            var inbox = client.Inbox;
+            var folder = await inbox.OpenAsync(MailKit.FolderAccess.ReadWrite, cls);
+            var query = SearchQuery.Recent.And(SearchQuery.NotSeen);
+            var recentAndUnanswered = await inbox.SearchAsync(query, cls);
+            List<InboundEmail> emails = [];
+            foreach (var uid in recentAndUnanswered)
+            {
+                var message = await inbox.GetMessageAsync(uid);
+                var fromNumberStart = message.Subject.IndexOf("from 1");
+                var toNumberStart = message.Subject.IndexOf("to 1");
+                var justTheText = message.TextBody.Split("\r\n");
+                emails.Add(new InboundEmail(message.Subject, justTheText.FirstOrDefault() ?? message.TextBody, message.Subject.Substring(toNumberStart + 3, 11), message.Subject.Substring(fromNumberStart + 5, 11)));
+                _ = await inbox.StoreAsync(uid, new StoreFlagsRequest(StoreAction.Add, MessageFlags.Seen) { Silent = true }, cls);
+            }
+            await client.DisconnectAsync(true, cls);
+            return emails.ToArray().AsMemory();
         }
     }
 
