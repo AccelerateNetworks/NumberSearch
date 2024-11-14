@@ -15,7 +15,7 @@ namespace Messaging
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Timed Hosted Service running.");
+            _logger.LogInformation("[Background Worker] Timed Hosted Service running.");
 
             // When the timer should have no due-time, then do the work once now.
             await DoWork(appSettings, stoppingToken);
@@ -32,7 +32,7 @@ namespace Messaging
             }
             catch (OperationCanceledException)
             {
-                _logger.LogInformation("Timed Hosted Service is stopping.");
+                _logger.LogInformation("[Background Worker] Timed Hosted Service is stopping.");
             }
         }
 
@@ -41,7 +41,7 @@ namespace Messaging
         {
             int count = Interlocked.Increment(ref _executionCount);
 
-            _logger.LogInformation("Timed Hosted Service is working. Count: {Count}", count);
+            _logger.LogInformation("[Background Worker] Timed Hosted Service is running.");
 
             var contextOptions = new DbContextOptionsBuilder<MessagingContext>()
                                 .UseSqlite()
@@ -54,10 +54,10 @@ namespace Messaging
             foreach (var email in MemoryMarshal.ToEnumerable(emails))
             {
                 await EmailToForwardedMessageAsync(email, dbContext);
-                _logger.LogInformation("To {to} From {from}", email.To, email.From);
+                _logger.LogInformation("[Background Worker] [EmailToText] Forwarded message To {to} From {from}", email.To, email.From);
             }
             // Send the messages outbound
-            _logger.LogInformation("Timed Hosted Service has completed. Count: {Count}", count);
+            _logger.LogInformation("[Background Worker] Timed Hosted Service has completed.");
         }
 
         private async Task EmailToForwardedMessageAsync(EmailMessage.InboundEmail email, MessagingContext messagingContext)
