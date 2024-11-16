@@ -1,5 +1,4 @@
-﻿using MailKit.Net.Pop3;
-
+﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 using Models;
@@ -70,8 +69,11 @@ namespace Messaging
                 MediaURLs = [],
                 Message = email.Content
             };
-
-            _ = await Endpoints.SendMessageAsync(message, false, appSettings, messagingContext);
+            _logger.LogInformation("[Background Worker] Send Message Request: {message}", System.Text.Json.JsonSerializer.Serialize(message));
+            var response = await Endpoints.SendMessageAsync(message, false, appSettings, messagingContext);
+            var text = System.Text.Json.JsonSerializer.Serialize(response.Result as Ok<SendMessageResponse>);
+            text = string.IsNullOrWhiteSpace(text) ? System.Text.Json.JsonSerializer.Serialize(response.Result as BadRequest<SendMessageResponse>) : text;
+            _logger.LogInformation("[Background Worker] Send Message Response: {text}", text);
         }
     }
 }
