@@ -2208,15 +2208,15 @@ namespace Models
             await client.AuthenticateAsync(username, password, cls);
             var inbox = client.Inbox;
             var folder = await inbox.OpenAsync(MailKit.FolderAccess.ReadWrite, cls);
-            var query = SearchQuery.DeliveredAfter(DateTime.Now.AddHours(-3));
+            var query = SearchQuery.Recent.And(SearchQuery.NotSeen);
             var recentAndUnanswered = await inbox.SearchAsync(query, cls);
             List<InboundEmail> emails = [];
-            foreach (var uid in recentAndUnanswered.Where(x => x.Id is 32))
+            foreach (var uid in recentAndUnanswered)
             {
                 var message = await inbox.GetMessageAsync(uid);
                 var fromNumberStart = message.Subject.IndexOf("from 1");
                 var toNumberStart = message.Subject.IndexOf("to 1");
-                var justTheText = message.TextBody.Split("\r\n");
+                var justTheText = message.TextBody.Split(Environment.NewLine);
                 emails.Add(new InboundEmail(message.Subject, justTheText.FirstOrDefault() ?? message.TextBody, message.Subject.Substring(toNumberStart + 3, 11), message.Subject.Substring(fromNumberStart + 5, 11)));
                 _ = await inbox.StoreAsync(uid, new StoreFlagsRequest(StoreAction.Add, MessageFlags.Seen) { Silent = true }, cls);
             }
