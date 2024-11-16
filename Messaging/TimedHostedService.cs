@@ -47,14 +47,22 @@ namespace Messaging
                                 .Options;
             using var dbContext = new MessagingContext(contextOptions);
 
-            // Check for emails
-            var emails = await EmailMessage.GetEmailsAsync(appSettings.ConnectionStrings.EmailUsername, appSettings.ConnectionStrings.EmailPassword, cls);
-            // Transform each email to a text message
-            foreach (var email in MemoryMarshal.ToEnumerable(emails))
+            try
             {
-                await EmailToForwardedMessageAsync(email, dbContext);
-                _logger.LogInformation("[Background Worker] [EmailToText] Forwarded message To {to} From {from}", email.To, email.From);
+                // Check for emails
+                var emails = await EmailMessage.GetEmailsAsync(appSettings.ConnectionStrings.EmailUsername, appSettings.ConnectionStrings.EmailPassword, cls);
+                // Transform each email to a text message
+                foreach (var email in MemoryMarshal.ToEnumerable(emails))
+                {
+                    await EmailToForwardedMessageAsync(email, dbContext);
+                    _logger.LogInformation("[Background Worker] [EmailToText] Forwarded message To {to} From {from}", email.To, email.From);
+                }
             }
+            catch (Exception ex) {
+
+                _logger.LogInformation("[Background Worker] [EmailToText] Failed to get new email messages.");
+            }
+
             // Send the messages outbound
             _logger.LogInformation("[Background Worker] Timed Hosted Service has completed.");
         }
