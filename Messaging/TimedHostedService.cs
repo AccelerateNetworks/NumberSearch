@@ -58,9 +58,10 @@ namespace Messaging
                     _logger.LogInformation("[Background Worker] [EmailToText] Forwarded message To {to} From {from}", email.To, email.From);
                 }
             }
-            catch (Exception ex) {
+            catch (Exception ex) 
+            {
 
-                _logger.LogInformation("[Background Worker] [EmailToText] Failed to get new email messages.");
+                _logger.LogInformation("[Background Worker] [EmailToText] Failed to get new email messages. {ex}", ex);
             }
 
             // Send the messages outbound
