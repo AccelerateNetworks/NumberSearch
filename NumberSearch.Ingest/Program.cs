@@ -15,6 +15,29 @@ namespace NumberSearch.Ingest
 {
     public class Program
     {
+
+        public readonly record struct IngestConfiguration(
+            ReadOnlyMemory<char> PComNetUsername,
+            ReadOnlyMemory<char> PComNetPassword,
+            ReadOnlyMemory<char> BulkVSAPIKEY,
+            ReadOnlyMemory<char> BulkVSAPISecret,
+            ReadOnlyMemory<char> BulkVSUsername,
+            ReadOnlyMemory<char> BulkVSPassword,
+            ReadOnlyMemory<char> Postgresql,
+            ReadOnlyMemory<char> PostgresqlProd,
+            ReadOnlyMemory<char> SmtpUsername,
+            ReadOnlyMemory<char> SmtpPassword,
+            ReadOnlyMemory<char> InvoiceNinjaToken,
+            ReadOnlyMemory<char> EmailOrders,
+            ReadOnlyMemory<char> EmailDan,
+            ReadOnlyMemory<char> EmailTom,
+            ReadOnlyMemory<char> FusionPBXUsername,
+            ReadOnlyMemory<char> FusionPBXPassword,
+            ReadOnlyMemory<char> MessagingUsername,
+            ReadOnlyMemory<char> MessagingPassword,
+            ReadOnlyMemory<char> MessagingURL
+        );
+
         public static async Task Main()
         {
             var config = new ConfigurationBuilder()
@@ -24,19 +47,24 @@ namespace NumberSearch.Ingest
 
             var appConfig = new IngestConfiguration()
             {
-                Postgresql = string.IsNullOrWhiteSpace(config.GetConnectionString("PostgresqlProd")) ? throw new Exception("PostgresqlProd config key is blank.") : config.GetConnectionString("PostgresqlProd").AsMemory(),
+                PComNetUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("PComNetUsername")) ? throw new Exception("PComNetUsername config key is blank.") : config.GetConnectionString("PComNetUsername").AsMemory(),
+                PComNetPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("PComNetPassword")) ? throw new Exception("PComNetPassword config key is blank.") : config.GetConnectionString("PComNetPassword").AsMemory(),
                 BulkVSAPIKEY = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSAPIKEY")) ? throw new Exception("BulkVSAPIKEY config key is blank.") : config.GetConnectionString("BulkVSAPIKEY").AsMemory(),
                 BulkVSAPISecret = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSAPISecret")) ? throw new Exception("BulkVSAPISecret config key is blank.") : config.GetConnectionString("BulkVSAPISecret").AsMemory(),
                 BulkVSUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSUsername")) ? throw new Exception("BulkVSUsername config key is blank.") : config.GetConnectionString("BulkVSUsername").AsMemory(),
                 BulkVSPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("BulkVSPassword")) ? throw new Exception("BulkVSPassword config key is blank.") : config.GetConnectionString("BulkVSPassword").AsMemory(),
-                PComNetUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("PComNetUsername")) ? throw new Exception("PComNetUsername config key is blank.") : config.GetConnectionString("PComNetUsername").AsMemory(),
-                PComNetPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("PComNetPassword")) ? throw new Exception("PComNetPassword config key is blank.") : config.GetConnectionString("PComNetPassword").AsMemory(),
+                Postgresql = string.IsNullOrWhiteSpace(config.GetConnectionString("PostgresqlProd")) ? throw new Exception("PostgresqlProd config key is blank.") : config.GetConnectionString("PostgresqlProd").AsMemory(),
                 SmtpUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("SmtpUsername")) ? throw new Exception("SmtpUsername config key is blank.") : config.GetConnectionString("SmtpUsername").AsMemory(),
                 SmtpPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("SmtpPassword")) ? throw new Exception("SmtpPassword config key is blank.") : config.GetConnectionString("SmtpPassword").AsMemory(),
+                InvoiceNinjaToken = string.IsNullOrWhiteSpace(config.GetConnectionString("InvoiceNinjaToken")) ? throw new Exception("InvoiceNinjaToken config key is blank.") : config.GetConnectionString("InvoiceNinjaToken").AsMemory(),
                 EmailOrders = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailOrders")) ? throw new Exception("EmailOrders config key is blank.") : config.GetConnectionString("EmailOrders").AsMemory(),
                 EmailDan = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailDan")) ? throw new Exception("EmailDan config key is blank.") : config.GetConnectionString("EmailDan").AsMemory(),
                 EmailTom = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailTom")) ? throw new Exception("EmailTom config key is blank.") : config.GetConnectionString("EmailTom").AsMemory(),
-                InvoiceNinjaToken = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailTom")) ? throw new Exception("InvoiceNinjaToken config key is blank.") : config.GetConnectionString("InvoiceNinjaToken").AsMemory(),
+                FusionPBXUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("FusionPBXUsername")) ? throw new Exception("FusionPBXUsername config key is blank.") : config.GetConnectionString("FusionPBXUsername").AsMemory(),
+                FusionPBXPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("FusionPBXPassword")) ? throw new Exception("FusionPBXPassword config key is blank.") : config.GetConnectionString("FusionPBXPassword").AsMemory(),
+                MessagingUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("MessagingUsername")) ? throw new Exception("MessagingUsername config key is blank.") : config.GetConnectionString("MessagingUsername").AsMemory(),
+                MessagingPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("MessagingPassword")) ? throw new Exception("MessagingPassword config key is blank.") : config.GetConnectionString("MessagingPassword").AsMemory(),
+                MessagingURL = string.IsNullOrWhiteSpace(config.GetConnectionString("MessagingURL")) ? throw new Exception("MessagingURL config key is blank.") : config.GetConnectionString("MessagingURL").AsMemory()
             };
 
             Log.Logger = new LoggerConfiguration()
@@ -170,37 +198,5 @@ namespace NumberSearch.Ingest
                 await Log.CloseAndFlushAsync();
             }
         }
-
-        public readonly record struct IngestConfiguration(
-            ReadOnlyMemory<char> CallFlow,
-            ReadOnlyMemory<char> ChannelGroup,
-            ReadOnlyMemory<char> PComNetUsername,
-            ReadOnlyMemory<char> PComNetPassword,
-            ReadOnlyMemory<char> BulkVSAPIKEY,
-            ReadOnlyMemory<char> BulkVSAPISecret,
-            ReadOnlyMemory<char> BulkVSUsername,
-            ReadOnlyMemory<char> BulkVSPassword,
-            ReadOnlyMemory<char> Postgresql,
-            ReadOnlyMemory<char> PostgresqlProd,
-            ReadOnlyMemory<char> SmtpUsername,
-            ReadOnlyMemory<char> SmtpPassword,
-            ReadOnlyMemory<char> MicrosoftClientId,
-            ReadOnlyMemory<char> MicrosoftClientSecret,
-            ReadOnlyMemory<char> InvoiceNinjaToken,
-            ReadOnlyMemory<char> Data247Username,
-            ReadOnlyMemory<char> Data247Password,
-            ReadOnlyMemory<char> EmailOrders,
-            ReadOnlyMemory<char> EmailDan,
-            ReadOnlyMemory<char> EmailTom,
-            ReadOnlyMemory<char> AzureStorageAccount,
-            ReadOnlyMemory<char> TeleDynamicsUsername,
-            ReadOnlyMemory<char> TeleDynamicsPassword,
-            ReadOnlyMemory<char> CallWithUsAPIKEY,
-            ReadOnlyMemory<char> FusionPBXUsername,
-            ReadOnlyMemory<char> FusionPBXPassword,
-            ReadOnlyMemory<char> MessagingUsername,
-            ReadOnlyMemory<char> MessagingPassword,
-            ReadOnlyMemory<char> MessagingURL
-        );
     }
 }

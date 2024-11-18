@@ -48,7 +48,7 @@ namespace NumberSearch.Ops
             Configuration.Bind("ConnectionStrings", opsConfig);
             services.AddSingleton(opsConfig);
 
-            services.AddDbContext<ApplicationDbContext>(options =>
+            services.AddDbContextPool<ApplicationDbContext>(options =>
                 options.UseNpgsql(
                     Configuration.GetConnectionString("PostgresqlProd")));
 
