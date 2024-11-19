@@ -862,6 +862,12 @@ namespace NumberSearch.Tests
             var result = await PortTn.GetAsync("1642300".AsMemory(), bulkVSUsername.AsMemory(), bulkVSPassword.AsMemory());
 
             Assert.NotEmpty(result.TNList);
+            foreach (var item in result.TNList)
+            {
+                Assert.False(string.IsNullOrWhiteSpace(item.LNPStatus));
+                Assert.False(string.IsNullOrWhiteSpace(item.RDD));
+                Assert.False(string.IsNullOrWhiteSpace(item.TN));
+            }
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 

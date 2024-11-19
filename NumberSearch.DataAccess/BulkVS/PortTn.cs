@@ -30,6 +30,8 @@ namespace NumberSearch.DataAccess.BulkVS
             try
             {
                 return await route.WithBasicAuth(username.ToString(), password.ToString()).GetJsonAsync<PortTn>();
+                //var x = await route.WithBasicAuth(username.ToString(), password.ToString()).GetStringAsync();
+                //return result;
             }
             catch (FlurlHttpException ex)
             {

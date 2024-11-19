@@ -35,7 +35,7 @@ namespace NumberSearch.Ingest
                     {
                         var matchingNumber = bulkStatus.TNList.Where(x => x.TN == $"1{number.PortedDialedNumber}").FirstOrDefault();
 
-                        if (matchingNumber.OrderId == request.OrderId)
+                        if (!string.IsNullOrWhiteSpace(matchingNumber.TN))
                         {
                             var checkRDDParse = DateTime.TryParse(matchingNumber.RDD, out var FOCDate);
 
@@ -54,11 +54,13 @@ namespace NumberSearch.Ingest
                             if (!string.IsNullOrWhiteSpace(matchingNumber.LNPStatus) && matchingNumber.LNPStatus != number.RequestStatus)
                             {
                                 number.RequestStatus = matchingNumber.LNPStatus.Trim();
-                                if (number.RequestStatus == "COMPLETE")
-                                {
-                                    portCompleted = true;
-                                    number.Completed = true;
-                                }
+                            }
+
+                            // If it's done, mark it as done.
+                            if (number.RequestStatus is "COMPLETE")
+                            {
+                                portCompleted = true;
+                                number.Completed = true;
                             }
 
                             var checkPortedNumberUpdate = await number.PutAsync(configuration.Postgresql.ToString());
@@ -78,7 +80,7 @@ namespace NumberSearch.Ingest
                 {
                     var portRequest = await PortRequest.GetByOrderIdAsync(portedNumbers.FirstOrDefault()?.OrderId ?? Guid.Empty, configuration.Postgresql.ToString());
 
-                    if (portRequest is not null && portRequest.OrderId == portedNumbers.FirstOrDefault()?.OrderId)
+                    if (portRequest is not null && portRequest.OrderId == portedNumbers.FirstOrDefault()?.OrderId && !portRequest.Completed)
                     {
                         // If all the numbers have been ported.
                         if ((completed != null) && completed.Any() && numberStatuses is not null && completed.Count() == numberStatuses.Count())
