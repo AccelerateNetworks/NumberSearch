@@ -27,6 +27,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\FirstCom\FirstCom.csproj" />
+		<ProjectReference Include="..\NumberSearch.Mvc\NumberSearch.Mvc.csproj" />
 	</ItemGroup>
 
 </Project>
