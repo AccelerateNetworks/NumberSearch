@@ -1,7 +1,5 @@
 ﻿using Flurl.Http;
 
-using Newtonsoft.Json;
-
 using Serilog;
 
 using System;

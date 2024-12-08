@@ -1,7 +1,5 @@
 ﻿using Flurl.Http;
 
-using Newtonsoft.Json;
-
 using Serilog;
 
 using System;
@@ -70,7 +68,7 @@ namespace NumberSearch.DataAccess.BulkVS
         public readonly record struct ProvisionRequest
         (
             string TN,
-            [property: JsonProperty("Caller Name")]
+            [property: JsonPropertyName("Caller Name")]
             string CallerName,
             string AddressID,
             string[] Sms

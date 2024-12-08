@@ -1,7 +1,5 @@
 ﻿using Flurl.Http;
 
-using Newtonsoft.Json;
-
 using NumberSearch.DataAccess.Models;
 
 using Serilog;
@@ -20,12 +18,10 @@ namespace NumberSearch.DataAccess.BulkVS
         string Status,
         string Lidb,
         [property: JsonPropertyName("Portout Pin")]
-        [property: JsonProperty("Portout Pin")]
         string PortoutPin,
         TnRecord.TnRecordRouting Routing,
         TnRecord.TnRecordMessaging Messaging,
         [property: JsonPropertyName("TN Details")]
-        [property: JsonProperty("TN Details")]
         TnRecord.TnRecordTNDetails TNDetails
     )
     {
@@ -33,13 +29,10 @@ namespace NumberSearch.DataAccess.BulkVS
         public readonly record struct TnRecordRouting
         (
             [property: JsonPropertyName("Trunk Group")]
-            [property: JsonProperty("Trunk Group")]
             string TrunkGroup,
             [property: JsonPropertyName("Custom URI")]
-            [property: JsonProperty("Custom URI")]
             string CustomURI,
             [property: JsonPropertyName("Call Forward")]
-            [property: JsonProperty("Call Forward")]
             object CallForward);
 
 
@@ -47,13 +40,11 @@ namespace NumberSearch.DataAccess.BulkVS
 
         public readonly record struct TnRecordTNDetails(
             [property: JsonPropertyName("Rate Center")]
-            [property: JsonProperty("Rate Center")]
             string RateCenter,
             string State,
             string Tier,
             bool Cnam,
             [property: JsonPropertyName("Activation Date")]
-            [property: JsonProperty("Activation Date")]
             string ActivationDate);
 
         public static async Task<TnRecord[]> GetRawAsync(ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)

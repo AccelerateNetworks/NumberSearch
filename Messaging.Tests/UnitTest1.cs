@@ -70,7 +70,7 @@ namespace Messaging.Tests
 
                 var response = await _httpClient.PostAsJsonAsync("/login", authRequest);
                 // For debugging.
-                //var x = await response.Content.ReadAsStringAsync();
+                var x = await response.Content.ReadAsStringAsync();
 
                 var authCredentials = await response.Content.ReadFromJsonAsync<AccessTokenResponse>();
                 _httpClient.DefaultRequestHeaders.Authorization = new("Bearer", authCredentials?.AccessToken ?? string.Empty);
