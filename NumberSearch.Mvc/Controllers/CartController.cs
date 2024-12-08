@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Mail;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
@@ -342,7 +341,7 @@ namespace NumberSearch.Mvc.Controllers
                 cart.Order = order;
 
                 // This is purely so that we can isolate the state of this call when it fails out.
-                Log.Information(JsonSerializer.Serialize(cart));
+                Log.Information("{@cart}", cart);
 
                 var emailDomain = new MailAddress(order.Email);
 
@@ -353,12 +352,12 @@ namespace NumberSearch.Mvc.Controllers
                     var record = result.Answers.MxRecords().FirstOrDefault();
                     if (record is not null)
                     {
-                        Log.Information($"[Checkout] Email address {order.Email} has a valid domain: {emailDomain.Host}.");
+                        Log.Information("[Checkout] Email address {Email} has a valid domain: {Host}.", order.Email, emailDomain.Host);
                     }
                     else
                     {
                         _ = cart.SetToSession(HttpContext.Session);
-                        Log.Error($"[Checkout] Email address {order.Email} has an invalid domain: {emailDomain.Host}.");
+                        Log.Error("[Checkout] Email address {Email} has an invalid domain: {Host}.", order.Email, emailDomain.Host);
                         var message = $"💀 The email server at {emailDomain.Host} didn't have an MX record. Please supply a valid email address.";
                         return View("Order", new CartResult { Message = message, Cart = cart });
                     }
@@ -366,7 +365,7 @@ namespace NumberSearch.Mvc.Controllers
                 catch (Exception ex)
                 {
                     _ = cart.SetToSession(HttpContext.Session);
-                    Log.Error($"[Checkout] Email address {order.Email} has an invalid domain: {emailDomain.Host}. {ex.Message}");
+                    Log.Error("[Checkout] Email address {Email} has an invalid domain: {Host}. {Message}", order.Email, emailDomain.Host, ex.Message);
                     var message = $"💀 The email server at {emailDomain.Host} didn't have an MX record. Please supply a valid email address.";
                     return View("Order", new CartResult { Message = message, Cart = cart });
                 }
@@ -376,7 +375,7 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     order.InstallDate = null;
                     _ = cart.SetToSession(HttpContext.Session);
-                    Log.Error($"[Checkout] The install date needs to be at least one day in the future.");
+                    Log.Error("[Checkout] The install date needs to be at least one day in the future.");
                     var message = $"💀 The install date needs to be at least one day in the future.";
                     return View("Order", new CartResult { Message = message, Cart = cart });
                 }
@@ -386,7 +385,7 @@ namespace NumberSearch.Mvc.Controllers
                     order.FirstName = string.Empty;
                     order.LastName = string.Empty;
                     _ = cart.SetToSession(HttpContext.Session);
-                    Log.Error($"[Checkout] Your business name cannot be the same as your last name or first name.");
+                    Log.Error("[Checkout] Your business name cannot be the same as your last name or first name.");
                     var message = $"💀 Your business name cannot be the same as your last name or first name.";
                     return View("Order", new CartResult { Message = message, Cart = cart });
                 }
@@ -396,7 +395,7 @@ namespace NumberSearch.Mvc.Controllers
                     order.AddressUnitNumber = string.Empty;
                     order.AddressUnitType = string.Empty;
                     _ = cart.SetToSession(HttpContext.Session);
-                    Log.Error($"[Checkout] Please set the Unit Type for the Unit Number you provided.");
+                    Log.Error("[Checkout] Please set the Unit Type for the Unit Number you provided.");
                     var message = $"💀 Please set the Unit Type for the Unit Number you provided.";
                     return View("Order", new CartResult { Message = message, Cart = cart });
                 }
@@ -405,7 +404,7 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     order.AddressUnitNumber = string.Empty;
                     _ = cart.SetToSession(HttpContext.Session);
-                    Log.Error($"[Checkout] The billing address and unit number cannot be the same.");
+                    Log.Error("[Checkout] The billing address and unit number cannot be the same.");
                     var message = $"💀 The billing address and unit number cannot be the same.";
                     return View("Order", new CartResult { Message = message, Cart = cart });
                 }
@@ -416,7 +415,7 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     order.ContactPhoneNumber = string.Empty;
                     _ = cart.SetToSession(HttpContext.Session);
-                    Log.Error($"[Checkout] The Direct phone number is not a dialable North American phone number.");
+                    Log.Error("[Checkout] The Direct phone number is not a dialable North American phone number.");
                     var message = $"💀 The Direct phone number is not a dialable North American phone number.";
                     return View("Order", new CartResult { Message = message, Cart = cart });
                 }
@@ -429,7 +428,7 @@ namespace NumberSearch.Mvc.Controllers
                         {
                             order.ContactPhoneNumber = string.Empty;
                             _ = cart.SetToSession(HttpContext.Session);
-                            Log.Error($"[Checkout] The contact phone number is not a dialable North American phone number.");
+                            Log.Error("[Checkout] The contact phone number is not a dialable North American phone number.");
                             var message = $"💀 The contact phone number is not a dialable North American phone number.";
                             return View("Order", new CartResult { Message = message, Cart = cart });
                         }
@@ -438,7 +437,7 @@ namespace NumberSearch.Mvc.Controllers
                     {
                         order.ContactPhoneNumber = string.Empty;
                         _ = cart.SetToSession(HttpContext.Session);
-                        Log.Error($"[Checkout] The contact phone number is not a dialable North American phone number. {ex.Message}");
+                        Log.Error("[Checkout] The contact phone number is not a dialable North American phone number. {Message}", ex.Message);
                         var message = $"💀 The contact phone number is not a dialable North American phone number.";
                         return View("Order", new CartResult { Message = message, Cart = cart });
                     }
@@ -468,7 +467,7 @@ namespace NumberSearch.Mvc.Controllers
                         order.BackgroundWorkCompleted = true;
 
                         // Format the address information
-                        Log.Information($"[Checkout] Parsing address data from {order.Address}");
+                        Log.Information("[Checkout] Parsing address data from {Address}", order.Address);
                         var addressParts = order.UnparsedAddress.Split(", ");
                         if (addressParts.Length == 5)
                         {
@@ -476,7 +475,7 @@ namespace NumberSearch.Mvc.Controllers
                             order.City = addressParts[1];
                             order.State = addressParts[2];
                             order.Zip = addressParts[3];
-                            Log.Information($"[Checkout] Address: {order.Address} City: {order.City} State: {order.State} Zip: {order.Zip}");
+                            Log.Information("[Checkout] Address: {Address} City: {City} State: {State} Zip: {Zip}", order.Address, order.City, order.State, order.Zip);
                         }
                         else if (addressParts.Length == 6)
                         {
@@ -485,7 +484,7 @@ namespace NumberSearch.Mvc.Controllers
                             order.City = addressParts[2];
                             order.State = addressParts[3];
                             order.Zip = addressParts[4];
-                            Log.Information($"[Checkout] Address: {order.Address} City: {order.City} State: {order.State} Zip: {order.Zip}");
+                            Log.Information("[Checkout] Address: {Address} City: {City} State: {State} Zip: {Zip}", order.Address, order.City, order.State, order.Zip);
                         }
                         else
                         {
@@ -853,7 +852,7 @@ namespace NumberSearch.Mvc.Controllers
 
                                     var checkPort = await portedNumber.PostAsync(_postgresql);
 
-                                    Log.Information($"[Checkout] Saved port request for number {portedNumber.PortedDialedNumber}.");
+                                    Log.Information("[Checkout] Saved port request for number {PortedDialedNumber}.", portedNumber.PortedDialedNumber);
                                 }
                             }
 
@@ -866,7 +865,7 @@ namespace NumberSearch.Mvc.Controllers
 
                                     var checkVerified = await verifiedNumber.PostAsync(_postgresql);
 
-                                    Log.Information($"[Checkout] Saved Verified Number {verifiedNumber.VerifiedDialedNumber} to the Database.");
+                                    Log.Information("[Checkout] Saved Verified Number {VerifiedDialedNumber} to the Database.", verifiedNumber.VerifiedDialedNumber);
                                 }
                             }
 
@@ -881,7 +880,7 @@ namespace NumberSearch.Mvc.Controllers
                                 }
                                 catch
                                 {
-                                    Log.Fatal($"[Checkout] Failed to get the Sale Tax rate from the local API for {order.Address}, {order.Zip}.");
+                                    Log.Fatal("[Checkout] Failed to get the Sale Tax rate from the local API for {Address}, {Zip}.", order.Address, order.Zip);
                                 }
 
                                 if (specificTaxRate is null)
@@ -893,7 +892,7 @@ namespace NumberSearch.Mvc.Controllers
                                     }
                                     catch
                                     {
-                                        Log.Fatal($"[Checkout] Failed to get the Sale Tax rate from the state's API for {order.City}, {order.Zip}.");
+                                        Log.Fatal("[Checkout] Failed to get the Sale Tax rate from the state's API for {City}, {Zip}.", order.City, order.Zip);
                                     }
                                 }
                             }
@@ -997,11 +996,11 @@ Accelerate Networks
                                     billingClientContact = billingClientContact with { id = clientContact.id };
                                 }
                                 billingClient = await newBillingClient.PutAsync(_invoiceNinjaToken.AsMemory());
-                                Log.Information($"[Checkout] Created billing client {billingClient.name}, {billingClient.id}.");
+                                Log.Information("[Checkout] Created billing client {Name}, {Id}.", billingClient.name, billingClient.id);
                             }
                             else
                             {
-                                Log.Information($"[Checkout] Found billing client {billingClient.name}, {billingClient.id}.");
+                                Log.Information("[Checkout] Found billing client {Name}, {Id}.");
                             }
 
                             // Create the invoices for this order and submit it to the billing system.
@@ -1102,8 +1101,8 @@ Accelerate Networks
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
                                         Log.Fatal(error);
-                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
-                                        Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
+                                        Log.Fatal("{@Upfront}", upfrontInvoice);
+                                        Log.Fatal("{@Reoccuring}", reoccurringInvoice);
                                     }
                                 }
                                 else if (reoccurringInvoice.line_items.Length != 0)
@@ -1158,7 +1157,7 @@ Accelerate Networks
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
-                                        Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
+                                        Log.Fatal("{@Reoccurring}", reoccurringInvoice);
                                     }
                                 }
                                 else if (upfrontInvoice.line_items.Length != 0)
@@ -1213,7 +1212,7 @@ Accelerate Networks
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
-                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                        Log.Fatal("{@Upfront}", upfrontInvoice);
                                     }
                                 }
                             }
@@ -1294,8 +1293,8 @@ Accelerate Networks
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
                                         Log.Fatal(error);
-                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
-                                        Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
+                                        Log.Fatal("{@Upfront}", upfrontInvoice);
+                                        Log.Fatal("{@Reoccurring}", reoccurringInvoice);
                                     }
 
 
@@ -1362,7 +1361,7 @@ Accelerate Networks
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
                                         Log.Fatal(error);
-                                        Log.Fatal(JsonSerializer.Serialize(reoccurringInvoice));
+                                        Log.Fatal("{@Reoccurring}", reoccurringInvoice);
                                     }
                                 }
                                 else if (upfrontInvoice.line_items.Length != 0)
@@ -1505,7 +1504,7 @@ Accelerate Networks
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system on the first attempt.");
                                         Log.Fatal(error);
-                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                        Log.Fatal("{@Upfront}", upfrontInvoice);
                                     }
                                 }
                             }
@@ -1548,14 +1547,14 @@ Accelerate Networks
                                 confirmationEmail.Completed = false;
                                 confirmationEmail.PrimaryEmailAddress = string.IsNullOrWhiteSpace(order.SalesEmail) ? _emailOrders : order.SalesEmail;
                                 var checkSave = await confirmationEmail.PostAsync(_postgresql);
-                                Log.Information($"Suppressed sending out the confirmation emails for {order.OrderId}.");
+                                Log.Information("Suppressed sending out the confirmation emails for {OrderId}.", order.OrderId);
                             }
                             else
                             {
                                 // Queue up the confirmation email.
                                 confirmationEmail.Completed = false;
                                 var checkSave = await confirmationEmail.PostAsync(_postgresql);
-                                Log.Information($"Sent out the confirmation emails for {order.OrderId}.");
+                                Log.Information("Sent out the confirmation emails for {OrderId}.", order.OrderId);
                             }
 
                             // Allow the background work to commence.

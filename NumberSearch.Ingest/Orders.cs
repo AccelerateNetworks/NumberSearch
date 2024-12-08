@@ -49,11 +49,11 @@ namespace NumberSearch.Ingest
 
             if (await combined.PostAsync(appConfig.Postgresql.ToString()))
             {
-                Log.Information($"[DailyEmails] Sent out the emails {DateTime.Now}.");
+                Log.Information("[DailyEmails] Sent out the emails {Now}.", DateTime.Now);
             }
             else
             {
-                Log.Fatal($"[DailyEmails] Failed to send out the emails {DateTime.Now}.");
+                Log.Fatal("[DailyEmails] Failed to send out the emails {Now}.", DateTime.Now);
             }
 
             return combined;
@@ -420,7 +420,7 @@ namespace NumberSearch.Ingest
 
         public async static Task CheckForQuoteConversionsAsync(ReadOnlyMemory<char> postgresql, ReadOnlyMemory<char> invoiceNinjaToken, ReadOnlyMemory<char> emailUsername, ReadOnlyMemory<char> emailPassword)
         {
-            Log.Information($"[Quote Conversion] Looking for quotes that were converted to invoices in the billing system.");
+            Log.Information("[Quote Conversion] Looking for quotes that were converted to invoices in the billing system.");
 
             var orders = await Order.GetAllQuotesAsync(postgresql.ToString());
 
@@ -487,11 +487,11 @@ namespace NumberSearch.Ingest
                                 // Log the success or failure of the operation.
                                 if (checkSend && checkSave)
                                 {
-                                    Log.Information($"[Quote Conversion] Successfully sent out email {message.EmailId} for order {order.OrderId}.");
+                                    Log.Information("[Quote Conversion] Successfully sent out email {EmailId} for order {@Order}.", message.EmailId, order);
                                 }
                                 else
                                 {
-                                    Log.Fatal($"[Quote Conversion] Failed to sent out the email {message.EmailId} for order {order.OrderId}.");
+                                    Log.Fatal("[Quote Conversion] Failed to sent out the email {EmailId} for order {@Order}.", message.EmailId, order);
                                 }
                             }
                         }
@@ -554,11 +554,11 @@ namespace NumberSearch.Ingest
                                     // Log the success or failure of the operation.
                                     if (checkSend && checkSave)
                                     {
-                                        Log.Information($"[Quote Conversion] Successfully sent out email {message.EmailId} for order {order.OrderId}.");
+                                        Log.Information("[Quote Conversion] Successfully sent out email {EmailId} for order {@Order}.", message.EmailId, order);
                                     }
                                     else
                                     {
-                                        Log.Fatal($"[Quote Conversion] Failed to sent out the email {message.EmailId} for order {order.OrderId}.");
+                                        Log.Fatal("[Quote Conversion] Failed to sent out the email {EmailId} for order {@Order}.", message.EmailId, order);
                                     }
 
                                 }
@@ -593,7 +593,7 @@ namespace NumberSearch.Ingest
 
         public async static Task CheckForInvoicePaymentAsync(ReadOnlyMemory<char> postgresql, ReadOnlyMemory<char> invoiceNinjaToken, ReadOnlyMemory<char> emailUsername, ReadOnlyMemory<char> emailPassword)
         {
-            Log.Information($"[Invoice Payment] Looking for invoices that were paid in the billing system.");
+            Log.Information("[Invoice Payment] Looking for invoices that were paid in the billing system.");
 
             var orders = await Order.GetAllAsync(postgresql.ToString());
 
@@ -660,11 +660,11 @@ namespace NumberSearch.Ingest
                                 // Log the success or failure of the operation.
                                 if (checkSend && checkSave)
                                 {
-                                    Log.Information($"[Invoice Payment] Successfully sent out email {message.EmailId} for order {order.OrderId}.");
+                                    Log.Information("[Invoice Payment] Successfully sent out email {EmailId} for order {@Order}.", message.EmailId, order);
                                 }
                                 else
                                 {
-                                    Log.Fatal($"[Invoice Payment] Failed to sent out the email {message.EmailId} for order {order.OrderId}.");
+                                    Log.Fatal("[Invoice Payment] Failed to sent out the email {EmailId} for order {@Order}.", message.EmailId, order);
                                 }
                             }
                         }

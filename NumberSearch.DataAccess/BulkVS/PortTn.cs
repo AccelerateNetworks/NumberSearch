@@ -35,7 +35,7 @@ namespace NumberSearch.DataAccess.BulkVS
             }
             catch (FlurlHttpException ex)
             {
-                Log.Error($"[Porting] [BulkVS] {ex.Message} for BulkVS orderId {orderId}.");
+                Log.Error("[Porting] [BulkVS] {Message} for BulkVS orderId {Id}.", ex.Message, orderId);
                 var x = await ex.GetResponseStringAsync();
                 Log.Error(x);
                 return new();
@@ -54,7 +54,7 @@ namespace NumberSearch.DataAccess.BulkVS
             }
             catch (FlurlHttpException ex)
             {
-                Log.Warning($"[Porting] [BulkVS] {ex.Message} for BulkVS port requests.");
+                Log.Warning("[Porting] [BulkVS] {Message} for BulkVS port requests.", ex.Message);
                 Log.Error(await ex.GetResponseStringAsync());
                 return [];
             }

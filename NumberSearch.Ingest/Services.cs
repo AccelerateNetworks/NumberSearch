@@ -125,8 +125,8 @@ namespace NumberSearch.Ingest
                         }
                     }
                 }
-                Log.Information($"Found {inserts?.Count} new Phone Numbers to Insert.");
-                Log.Information($"Found {updates?.Count} existing Phone Numbers to Update.");
+                Log.Information("Found {Count} new Phone Numbers to Insert.", inserts?.Count);
+                Log.Information("Found {Count} existing Phone Numbers to Update.", updates?.Count);
             }
 
             var count = 0;
@@ -143,7 +143,7 @@ namespace NumberSearch.Ingest
                 {
                     if (count % 100 == 0 && count != 0)
                     {
-                        Log.Information($"Updated {count} of {updates?.Count} Phone Numbers.");
+                        Log.Information("Updated {Count} of {UpdatesCount} Phone Numbers.", count, updates?.Count);
                     }
                     try
                     {
@@ -152,12 +152,12 @@ namespace NumberSearch.Ingest
                     catch (Exception ex)
                     {
                         Log.Fatal(ex.Message);
-                        Log.Fatal($"{update.DialedNumber} {update.NPA} {update.NXX} {update.XXXX} {update.City} {update.State} {update.IngestedFrom} {update.NumberType} {update.DateIngested} {update.Purchased}");
+                        Log.Fatal("{@Update}", update);
                     }
                     count++;
                 });
 
-                Log.Information($"Updated {updates?.Count} Phone Numbers");
+                Log.Information("Updated {Count} Phone Numbers", updates?.Count);
             }
 
             var listInserts = inserts?.Values.ToList();
@@ -172,15 +172,15 @@ namespace NumberSearch.Ingest
 
                     if (check) { stats!.IngestedNew += group.Count; };
 
-                    Log.Information($"{stats?.IngestedNew} of {listInserts?.Count} submitted to the database.");
+                    Log.Information("{IngestedNew} of {Count} submitted to the database.", stats?.IngestedNew, listInserts?.Count);
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"Failed to submit a batch of PhoneNumbers to the database. Exception: {ex?.Message}");
+                    Log.Error("Failed to submit a batch of PhoneNumbers to the database. Exception: {Message}", ex.Message);
                     count = 0;
                     foreach (var number in group)
                     {
-                        Log.Error($"{count}. {number?.DialedNumber}, {number?.IngestedFrom}");
+                        Log.Error("{Count}. {DialedNumber}, {IngestedFrom}", count, number?.DialedNumber, number?.IngestedFrom);
                         count++;
                     }
                 }
@@ -196,7 +196,7 @@ namespace NumberSearch.Ingest
         /// <returns> A list of phone numbers. </returns>
         public static async Task<PhoneNumber[]> AssignRatecenterAndRegionAsync(PhoneNumber[] numbers)
         {
-            Log.Information($"Ingesting the Ratecenters and Regions on {numbers.Length} phone numbers.");
+            Log.Information("Ingesting the Ratecenters and Regions on {Length} phone numbers.", numbers.Length);
 
             // Cache the lookups because API requests are expensive and phone numbers tend to be ingested in groups.
             var npaNxxLookup = new Dictionary<string, RateCenterLookup>();
@@ -234,14 +234,14 @@ namespace NumberSearch.Ingest
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"Faild to ingesting the Ratecenter and Region on {number.DialedNumber}");
+                        Log.Error("Failed to ingesting the Ratecenter and Region on {DialedNumber}", number.DialedNumber);
                         Log.Error(ex.Message);
                         Log.Error(ex.StackTrace ?? "No stack trace found.");
                     }
                 }
             }
 
-            Log.Information($"Ingesting the Ratecenters and Regions on {numbers.Length} phone numbers.");
+            Log.Information("Ingesting the Ratecenters and Regions on {Length} phone numbers.", numbers.Length);
 
             return numbers;
         }

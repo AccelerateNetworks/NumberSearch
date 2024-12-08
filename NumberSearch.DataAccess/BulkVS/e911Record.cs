@@ -41,7 +41,7 @@ namespace NumberSearch.DataAccess.BulkVS
             }
             catch (FlurlHttpException ex)
             {
-                Log.Warning($"[E911] [BulkVS] No results found for number {dialedNumber}.");
+                Log.Warning("[E911] [BulkVS] No results found for number {dialedNumber}.", dialedNumber);
                 //var response = await ex.GetResponseStringAsync();
                 Log.Warning(await ex.GetResponseStringAsync());
                 return [];
@@ -61,7 +61,7 @@ namespace NumberSearch.DataAccess.BulkVS
             }
             catch (FlurlHttpException ex)
             {
-                Log.Warning($"[E911] [BulkVS] No results found.");
+                Log.Warning("[E911] [BulkVS] No results found.");
                 Log.Warning(await ex.GetResponseStringAsync());
                 return [];
             }
@@ -116,7 +116,7 @@ namespace NumberSearch.DataAccess.BulkVS
             }
             catch (FlurlHttpException ex)
             {
-                Log.Warning($"[E911] [BulkVS] Unable to provision E911 service for {dialedNumber}.");
+                Log.Warning("[E911] [BulkVS] Unable to provision E911 service for {dialedNumber}.", dialedNumber);
                 var x = await ex.GetResponseStringAsync();
                 Log.Warning(x);
                 return new();

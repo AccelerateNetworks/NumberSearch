@@ -64,7 +64,7 @@ namespace NumberSearch.Ingest
                             }
 
                             var checkPortedNumberUpdate = await number.PutAsync(configuration.Postgresql.ToString());
-                            Log.Information($"[BulkVS] [PortRequests] Updated BulkVS Port Request {request.OrderId} - {number?.PortedDialedNumber} - {number?.RequestStatus} - {number?.DateFirmOrderCommitment?.ToShortDateString()}");
+                            Log.Information("[BulkVS] [PortRequests] Updated BulkVS Port Request {OrderId} - {PortedDialedNumber} - {RequestStatus} - {DateFirmOrderCommitment}", request.OrderId, number?.PortedDialedNumber, number?.RequestStatus, number?.DateFirmOrderCommitment?.ToShortDateString());
                         }
                     }
                 }
@@ -120,7 +120,7 @@ namespace NumberSearch.Ingest
 
                         // Update the request in the database.
                         var checkUpdate = await portRequest.PutAsync(configuration.Postgresql.ToString());
-                        Log.Information($"[BulkVS] [PortRequests] Updated BulkVS Port Request {portRequest?.BulkVSId} - {portRequest?.RequestStatus} - {portRequest?.DateCompleted?.ToShortDateString()}");
+                        Log.Information("[BulkVS] [PortRequests] Updated BulkVS Port Request {BulkVSId} - {RequestStatus} - {DateCompleted}", portRequest?.BulkVSId, portRequest?.RequestStatus, portRequest?.DateCompleted?.ToShortDateString());
 
                         // Get the original order and the numbers associated with the outstanding Port Request.
                         var originalOrder = await Order.GetByIdAsync(portRequest!.OrderId, configuration.Postgresql.ToString());
@@ -176,11 +176,11 @@ Accelerate Networks
 
                                 if (checkSend && checkSave)
                                 {
-                                    Log.Information($"Successfully sent out the port completed email for Order {originalOrder.OrderId}.");
+                                    Log.Information("Successfully sent out the port completed email for Order {OrderId}.", originalOrder.OrderId);
                                 }
                                 else
                                 {
-                                    Log.Fatal($"Failed to sent out the port completed email for Order {originalOrder.OrderId}.");
+                                    Log.Fatal("Failed to sent out the port completed email for Order {OrderId}.", originalOrder.OrderId);
                                 }
                             }
                             else if (focChanged)
@@ -218,11 +218,11 @@ Accelerate Networks
 
                                 if (checkSend && checkSave)
                                 {
-                                    Log.Information($"Sucessfully sent out the port date set email for Order {originalOrder.OrderId}.");
+                                    Log.Information("Sucessfully sent out the port date set email for Order {OrderId}.", originalOrder.OrderId);
                                 }
                                 else
                                 {
-                                    Log.Fatal($"Failed to sent out the port date set email for Order {originalOrder.OrderId}.");
+                                    Log.Fatal("Failed to sent out the port date set email for Order {OrderId}.", originalOrder.OrderId);
                                 }
                             }
                         }

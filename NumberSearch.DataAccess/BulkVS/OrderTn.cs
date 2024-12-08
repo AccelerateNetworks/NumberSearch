@@ -36,7 +36,7 @@ namespace NumberSearch.DataAccess.BulkVS
             }
             catch (FlurlHttpException ex)
             {
-                Log.Warning($"[Ingest] [BulkVS] No results found for area code {npa}.");
+                Log.Warning("[Ingest] [BulkVS] No results found for area code {npa}.", npa);
                 Log.Warning(await ex.GetResponseStringAsync());
                 return [];
             }
@@ -70,7 +70,7 @@ namespace NumberSearch.DataAccess.BulkVS
                 }
                 else
                 {
-                    Log.Warning($"[Ingest] [BulkVS] Failed to parse {item.TN}.");
+                    Log.Warning("[Ingest] [BulkVS] Failed to parse {TN}.", item.TN);
                 }
             }
             return [.. output];
@@ -104,7 +104,7 @@ namespace NumberSearch.DataAccess.BulkVS
                 }
                 else
                 {
-                    Log.Warning($"[Ingest] [BulkVS] Failed to parse {item.TN}");
+                    Log.Warning("[Ingest] [BulkVS] Failed to parse {TN}", item.TN);
                 }
             }
             return [.. output];

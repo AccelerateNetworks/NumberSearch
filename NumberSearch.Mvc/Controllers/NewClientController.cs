@@ -141,13 +141,13 @@ namespace NumberSearch.Mvc.Controllers
 
                         newClient.BillImagePath = fileName;
 
-                        Log.Information($"[New Client] BlobContainer: {containerClient.Name} BlobClient: {blobClient.Name}");
+                        Log.Information("[New Client] BlobContainer: {Container} BlobClient: {Client}", containerClient.Name, blobClient.Name);
                     }
                     catch (Exception ex)
                     {
                         Log.Fatal("[New Client] Failed to save the bill image to the server and attach it to the confirmation email.");
-                        Log.Fatal($"[New Client] {ex.Message}");
-                        Log.Fatal($"[New Client] {ex.InnerException}");
+                        Log.Fatal("[New Client] {Message}", ex.Message);
+                        Log.Fatal("[New Client] {InnerException}", ex.InnerException);
                     }
                 }
 

@@ -197,7 +197,7 @@ namespace NumberSearch.Mvc.Controllers
                     // Fail fast
                     if (portable.Portable is false)
                     {
-                        Log.Information($"[Portability] {phoneNumber.DialedNumber} is not Portable.");
+                        Log.Information("[Portability] {DialedNumber} is not Portable.", phoneNumber.DialedNumber);
 
                         return new PortedPhoneNumber
                         {
@@ -301,7 +301,7 @@ namespace NumberSearch.Mvc.Controllers
                         var checkLog = await checkNumber.PostAsync(_postgresql).ConfigureAwait(false);
                     }
 
-                    Log.Information($"[Portability] {phoneNumber.DialedNumber} is Portable.");
+                    Log.Information("[Portability] {DialedNumber} is Portable.", phoneNumber.DialedNumber);
 
                     var portableNumber = new PortedPhoneNumber
                     {
@@ -324,9 +324,9 @@ namespace NumberSearch.Mvc.Controllers
                 }
                 catch (Exception ex)
                 {
-                    Log.Information($"[Portability] {dialedNumber} is not Portable.");
-                    Log.Fatal($"[Portability] {ex.Message}");
-                    Log.Fatal($"[Portability] {ex.InnerException}");
+                    Log.Information("[Portability] {DialedNumber} is not Portable.", dialedNumber);
+                    Log.Fatal("[Portability] {Message}", ex.Message);
+                    Log.Fatal("[Portability] {InnerException}", ex.InnerException);
 
                     return new PortedPhoneNumber
                     {
@@ -341,7 +341,7 @@ namespace NumberSearch.Mvc.Controllers
             }
             else
             {
-                Log.Information($"[Portability] {dialedNumber} is not Portable. Failed NPA, NXX, XXXX parsing.");
+                Log.Information("[Portability] {DialedNumber} is not Portable. Failed NPA, NXX, XXXX parsing.", dialedNumber);
 
                 return new PortedPhoneNumber
                 {

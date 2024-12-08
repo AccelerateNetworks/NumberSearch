@@ -63,7 +63,7 @@ namespace NumberSearch.Mvc.Controllers
 
                     if (portable is not null && portable.Portable)
                     {
-                        Log.Information($"[Portability] {phoneNumber.DialedNumber} is Portable.");
+                        Log.Information("[Portability] {DialedNumber} is Portable.", phoneNumber.DialedNumber);
 
 
                         return View("Index", new PortingResults
@@ -76,7 +76,7 @@ namespace NumberSearch.Mvc.Controllers
                     }
                     else
                     {
-                        Log.Information($"[Portability] {phoneNumber.DialedNumber} is not Portable.");
+                        Log.Information("[Portability] {DialedNumber} is not Portable.", phoneNumber.DialedNumber);
 
                         var port = new PortedPhoneNumber
                         {
@@ -103,7 +103,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
                 catch (Exception ex)
                 {
-                    Log.Fatal($"[Portability] {ex.Message}");
+                    Log.Fatal("[Portability] {Message}", ex.Message);
 
                     var port = new PortedPhoneNumber
                     {
@@ -241,19 +241,19 @@ namespace NumberSearch.Mvc.Controllers
 
                             existing.BillImagePath = fileName;
 
-                            Log.Information($"[Port Request] BlobContainer: {containerClient.Name} BlobClient: {blobClient.Name}");
+                            Log.Information("[Port Request] BlobContainer: {Container} BlobClient: {Blob}", containerClient.Name, blobClient.Name);
                             Log.Information("[Port Request] Successfully saved the bill image to the server and attached it to the confirmation email.");
                         }
                         catch (Exception ex)
                         {
                             Log.Fatal("[Port Request] Failed to save the bill image to the server and attach it to the confirmation email.");
-                            Log.Fatal($"[Port Request] {ex.Message}");
-                            Log.Fatal($"[Port Request] {ex.InnerException}");
+                            Log.Fatal("[Port Request] {Message}", ex.Message);
+                            Log.Fatal("[Port Request] {InnerException}", ex.InnerException);
                         }
                     }
 
                     // Format the address information
-                    Log.Information($"[Port Request] Parsing address data from {portRequest.Address}");
+                    Log.Information("[Port Request] Parsing address data from {Address}", portRequest.Address);
                     if (portRequest is not null && !string.IsNullOrWhiteSpace(portRequest.UnparsedAddress) && portRequest.UnparsedAddress != existing.UnparsedAddress)
                     {
                         var addressParts = portRequest.UnparsedAddress.Split(", ");
@@ -264,17 +264,17 @@ namespace NumberSearch.Mvc.Controllers
                             existing.State = addressParts[2];
                             existing.Zip = addressParts[3];
                             portRequest.UnparsedAddress = portRequest.UnparsedAddress;
-                            Log.Information($"[Port Request] Address: {existing.Address} City: {existing.City} State: {existing.State} Zip: {existing.Zip}");
+                            Log.Information("[Port Request] Address: {Address} City: {City} State: {State} Zip: {Zip}", existing.Address, existing.City, existing.State, existing.Zip);
                         }
                         else
                         {
-                            Log.Error($"[Port Request] Failed automatic address formatting.");
+                            Log.Error("[Port Request] Failed automatic address formatting.");
                             return RedirectToAction("Cart", "Order", existing.OrderId);
                         }
                     }
                     else
                     {
-                        Log.Error($"[Port Request] No address information submitted.");
+                        Log.Error("[Port Request] No address information submitted.");
                         return RedirectToAction("Cart", "Order", existing?.OrderId);
                     }
 
@@ -290,19 +290,19 @@ namespace NumberSearch.Mvc.Controllers
                     existing.DateUpdated = DateTime.Now;
 
                     // Save the rest of the data to the DB.
-                    var checkExisting = await existing.PutAsync(_postgresql).ConfigureAwait(false);
+                    var checkExisting = await existing.PutAsync(_postgresql);
 
                     if (checkExisting && order is not null)
                     {
                         // Associate the ported numbers with their porting information.
-                        portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false) ?? new();
+                        portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql)?? new();
 
-                        var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
+                        var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql);
 
                         foreach (var number in portedNumbers)
                         {
                             number.PortRequestId = portRequest.PortRequestId;
-                            _ = await number.PutAsync(_postgresql).ConfigureAwait(false);
+                            _ = await number.PutAsync(_postgresql);
                         }
                     }
 
@@ -323,7 +323,7 @@ namespace NumberSearch.Mvc.Controllers
                 {
                     using var stream = new System.IO.MemoryStream();
 
-                    await portRequest.BillImage.CopyToAsync(stream).ConfigureAwait(false);
+                    await portRequest.BillImage.CopyToAsync(stream);
 
                     var fileExtension = Path.GetExtension(portRequest.BillImage.FileName);
                     var fileName = $"{Guid.NewGuid()}{fileExtension}";
@@ -348,20 +348,20 @@ namespace NumberSearch.Mvc.Controllers
 
                     portRequest.BillImagePath = fileName;
 
-                    Log.Information($"[Port Request] BlobContainer: {containerClient.Name} BlobClient: {blobClient.Name}");
+                    Log.Information("[Port Request] BlobContainer: {Container} BlobClient: {Blob}", containerClient.Name, blobClient.Name);
                     Log.Information("[Port Request] Successfully saved the bill image to the server and attached it to the confirmation email.");
                 }
                 catch (Exception ex)
                 {
                     Log.Fatal("[Port Request] Failed to save the bill image to the server and attach it to the confirmation email.");
-                    Log.Fatal($"[Port Request] {ex.Message}");
-                    Log.Fatal($"[Port Request] {ex.InnerException}");
+                    Log.Fatal("[Port Request] {Message}", ex.Message);
+                    Log.Fatal("[Port Request] {InnerException}", ex.InnerException);
                 }
             }
 
 
             // Format the address information
-            Log.Information($"[Port Request] Parsing address data from {portRequest.UnparsedAddress}");
+            Log.Information("[Port Request] Parsing address data from {UnparsedAddress}", portRequest.UnparsedAddress);
             if (portRequest is not null && !string.IsNullOrWhiteSpace(portRequest.UnparsedAddress))
             {
                 var addressParts = portRequest.UnparsedAddress.Split(", ");
@@ -371,36 +371,36 @@ namespace NumberSearch.Mvc.Controllers
                     portRequest.City = addressParts[1];
                     portRequest.State = addressParts[2];
                     portRequest.Zip = addressParts[3];
-                    Log.Information($"[Port Request] Address: {portRequest.Address} City: {portRequest.City} State: {portRequest.State} Zip: {portRequest.Zip}");
+                    Log.Information("[Port Request] Address: {Address} City: {City} State: {State} Zip: {Zip}", portRequest.Address, portRequest.City, portRequest.State, portRequest.Zip);
                 }
                 else
                 {
-                    Log.Error($"[Port Request] Failed automatic address formatting.");
+                    Log.Error("[Port Request] Failed automatic address formatting.");
                     return RedirectToAction("Cart", "Order", portRequest.OrderId);
                 }
             }
             else
             {
-                Log.Error($"[Port Request] No address information submitted.");
+                Log.Error("[Port Request] No address information submitted.");
                 return RedirectToAction("Cart", "Order", portRequest?.OrderId);
             }
 
             // Save the rest of the data to the DB.
-            var checkPortRequest = await portRequest.PostAsync(_postgresql).ConfigureAwait(false);
+            var checkPortRequest = await portRequest.PostAsync(_postgresql);
 
             if (checkPortRequest && order is not null)
             {
                 // Associate the ported numbers with their porting information.
-                portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false) ?? new();
+                portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql) ?? new();
 
-                var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
+                var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql);
 
                 string formattedNumbers = string.Empty;
 
                 foreach (var number in portedNumbers)
                 {
                     number.PortRequestId = portRequest.PortRequestId;
-                    var checkPortUpdate = await number.PutAsync(_postgresql).ConfigureAwait(false);
+                    var checkPortUpdate = await number.PutAsync(_postgresql);
                     formattedNumbers += $"<br />{number?.PortedDialedNumber}";
                 }
 
@@ -430,11 +430,11 @@ Accelerate Networks
                     OrderId = order.OrderId,
                     Subject = $"Porting information added for {portedNumbers.FirstOrDefault()?.PortedDialedNumber}"
                 };
-                _ = await confirmationEmail.PostAsync(_postgresql).ConfigureAwait(false);
+                _ = await confirmationEmail.PostAsync(_postgresql);
 
                 // Trigger the backwork process to run again and send this email.
                 order.BackgroundWorkCompleted = false;
-                _ = await order.PutAsync(_postgresql).ConfigureAwait(false);
+                _ = await order.PutAsync(_postgresql);
 
                 // Reset the session and clear the Cart.
                 HttpContext.Session.Clear();

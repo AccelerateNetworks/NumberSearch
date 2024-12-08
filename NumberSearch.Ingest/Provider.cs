@@ -62,11 +62,11 @@ namespace NumberSearch.Ingest
                 try
                 {
                     numbers.AddRange(await OrderTn.GetAsync(code, username, password));
-                    Log.Information($"[BulkVS] Found {numbers.Count} Phone Numbers");
+                    Log.Information("[BulkVS] Found {Count} Phone Numbers", numbers.Count);
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"[BulkVS] Area code {code} failed @ {DateTime.Now}: {ex.Message}");
+                    Log.Error("[BulkVS] Area code {Code} failed @ {Now}: {Message}", code, DateTime.Now, ex.Message);
                 }
             }
 
@@ -141,11 +141,11 @@ namespace NumberSearch.Ingest
 
             if (await combined.PostAsync(appConfig.Postgresql.ToString()))
             {
-                Log.Information($"[BulkVS] Completed the ingest process {DateTime.Now}.");
+                Log.Information("[BulkVS] Completed the ingest process {Now}.", DateTime.Now);
             }
             else
             {
-                Log.Fatal($"[BulkVS] Failed to completed the ingest process {DateTime.Now}.");
+                Log.Fatal("[BulkVS] Failed to completed the ingest process {Now}.", DateTime.Now);
             }
 
             return combined;
@@ -154,7 +154,7 @@ namespace NumberSearch.Ingest
         public static async Task<IngestStatistics> BulkVSPriorityAsync(TimeSpan cycle, IngestConfiguration appConfig)
         {
             DateTime start = DateTime.Now;
-            Log.Information($"[BulkVS] Priority ingest started at {start}.");
+            Log.Information("[BulkVS] Priority ingest started at {Start}.", start);
 
             // Ingest priority phones numbers from the BulkVs API.
             Log.Information("[BulkVS] Ingesting priority data from BulkVS.");
@@ -184,14 +184,14 @@ namespace NumberSearch.Ingest
 
             if (await combined.PostAsync(appConfig.Postgresql.ToString()))
             {
-                Log.Information($"[BulkVS] Completed the priority ingest process {DateTime.Now}.");
+                Log.Information("[BulkVS] Completed the priority ingest process {Now}.", DateTime.Now);
             }
             else
             {
-                Log.Fatal($"[BulkVS] Failed to completed the priority ingest process {DateTime.Now}.");
+                Log.Fatal("[BulkVS] Failed to completed the priority ingest process {Now}.", DateTime.Now);
             }
 
-            Log.Information($"[BulkVS] [PortRequests] Priority ingest of Port Request statuses started at {DateTime.Now}.");
+            Log.Information("[BulkVS] [PortRequests] Priority ingest of Port Request statuses started at {Now}.", DateTime.Now);
 
             // Update the statuses of all the active port requests with BulkVS.
             await PortRequests.UpdateStatusesBulkVSAsync(appConfig);
@@ -202,7 +202,7 @@ namespace NumberSearch.Ingest
         public static async Task<IngestStatistics> FirstPointComPriorityAsync(TimeSpan cycle, IngestConfiguration appConfig)
         {
             DateTime start = DateTime.Now;
-            Log.Debug($"[FirstPointCom] Priority ingest started at {start}");
+            Log.Debug("[FirstPointCom] Priority ingest started at {Start}", start);
 
 
             // Ingest priority numbers in the FirsPointCom API.
@@ -233,11 +233,11 @@ namespace NumberSearch.Ingest
 
             if (await combined.PostAsync(appConfig.Postgresql.ToString()))
             {
-                Log.Information($"[FirstPointCom] Completed the priority ingest process {DateTime.Now}.");
+                Log.Information("[FirstPointCom] Completed the priority ingest process {Now}.", DateTime.Now);
             }
             else
             {
-                Log.Fatal($"[FirstPointCom] Failed to completed the priority ingest process {DateTime.Now}.");
+                Log.Fatal("[FirstPointCom] Failed to completed the priority ingest process {Now}.", DateTime.Now);
             }
 
             return combined;
@@ -294,11 +294,11 @@ namespace NumberSearch.Ingest
 
             if (await combined.PostAsync(appConfig.Postgresql.ToString()))
             {
-                Log.Information($"[FirstPointCom] Completed the FirstPointCom ingest process {DateTime.Now}.");
+                Log.Information("[FirstPointCom] Completed the FirstPointCom ingest process {Now}.", DateTime.Now);
             }
             else
             {
-                Log.Fatal($"[FirstPointCom] Failed to completed the FirstPointCom ingest process {DateTime.Now}.");
+                Log.Fatal("[FirstPointCom] Failed to completed the FirstPointCom ingest process {Now}.", DateTime.Now);
             }
             return combined;
         }
@@ -326,11 +326,11 @@ namespace NumberSearch.Ingest
                                 var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
                                 if (checkIfExists is not null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
                                 {
-                                    Log.Information($"[BulkVS] Found {phoneNumber.DialedNumber} in {doesItStillExist.Length} results returned for {npanxx}.");
+                                    Log.Information("[BulkVS] Found {DialedNumber} in {Length} results returned for {npanxx}.", phoneNumber.DialedNumber, doesItStillExist.Length, npanxx);
                                 }
                                 else
                                 {
-                                    Log.Warning($"[BulkVS] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Length} results returned for {npanxx}.");
+                                    Log.Warning("[BulkVS] Failed to find {DialedNumber} in {Length} results returned for {npanxx}.", phoneNumber.DialedNumber, doesItStillExist.Length, npanxx);
 
                                     // Remove numbers that are unpurchasable.
                                     _ = await phoneNumber.DeleteAsync(_postgresql.ToString());
@@ -338,8 +338,8 @@ namespace NumberSearch.Ingest
                             }
                             catch (Exception ex)
                             {
-                                Log.Error($"{ex.Message}");
-                                Log.Error($"[BulkVS] Failed to query BulkVS for {phoneNumber?.DialedNumber}.");
+                                Log.Error(ex.Message);
+                                Log.Error("[BulkVS] Failed to query BulkVS for {DialedNumber}.", phoneNumber?.DialedNumber);
                             }
 
                         }
@@ -352,11 +352,11 @@ namespace NumberSearch.Ingest
                                 var matchingNumber = results?.Where(x => x?.DialedNumber == phoneNumber?.DialedNumber)?.FirstOrDefault();
                                 if (matchingNumber is not null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
                                 {
-                                    Log.Information($"[FirstPointCom] Found {phoneNumber.DialedNumber} in {results?.Length} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
+                                    Log.Information("[FirstPointCom] Found {DialedNumber} in {Length} results returned for {NPA}, {NXX}.", phoneNumber.DialedNumber, results?.Length, phoneNumber.NPA, phoneNumber.NXX);
                                 }
                                 else
                                 {
-                                    Log.Warning($"[FirstPointCom] Failed to find {phoneNumber.DialedNumber} in {results?.Length} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
+                                    Log.Warning("[FirstPointCom] Failed to find {DialedNumber} in {Length} results returned for {NPA}, {NXX}.", phoneNumber.DialedNumber, results?.Length, phoneNumber.NPA, phoneNumber.NXX);
 
                                     // Remove numbers that are unpurchasable.
                                     _ = await phoneNumber.DeleteAsync(_postgresql.ToString());
@@ -364,8 +364,8 @@ namespace NumberSearch.Ingest
                             }
                             catch (Exception ex)
                             {
-                                Log.Error($"{ex.Message}");
-                                Log.Error($"[FirstPointCom] Failed to query FirstPointCom for {phoneNumber?.DialedNumber}.");
+                                Log.Error(ex.Message);
+                                Log.Error("[FirstPointCom] Failed to query FirstPointCom for {DialedNumber}.", phoneNumber?.DialedNumber);
                             }
                         }
                         else if (phoneNumber.IngestedFrom is "OwnedNumber")
@@ -374,11 +374,11 @@ namespace NumberSearch.Ingest
                             var matchingNumber = await OwnedPhoneNumber.GetByDialedNumberAsync(phoneNumber.DialedNumber, _postgresql.ToString());
                             if (matchingNumber is not null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
                             {
-                                Log.Information($"[OwnedNumber] Found {phoneNumber.DialedNumber}.");
+                                Log.Information("[OwnedNumber] Found {DialedNumber}.", phoneNumber.DialedNumber);
                             }
                             else
                             {
-                                Log.Warning($"[OwnedNumber] Failed to find {phoneNumber.DialedNumber}.");
+                                Log.Warning("[OwnedNumber] Failed to find {DialedNumber}.", phoneNumber.DialedNumber);
 
                                 // Remove numbers that are unpurchasable.
                                 _ = await phoneNumber.DeleteAsync(_postgresql.ToString());

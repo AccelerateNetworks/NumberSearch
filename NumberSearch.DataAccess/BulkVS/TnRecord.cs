@@ -67,7 +67,7 @@ namespace NumberSearch.DataAccess.BulkVS
             }
             catch (FlurlHttpException ex)
             {
-                Log.Warning($"[Ingest] [OwnedNumbers] [BulkVS] No results found.");
+                Log.Warning("[Ingest] [OwnedNumbers] [BulkVS] No results found.");
                 Log.Warning(await ex.GetResponseStringAsync());
                 return [];
             }
@@ -86,7 +86,7 @@ namespace NumberSearch.DataAccess.BulkVS
             }
             catch (FlurlHttpException ex)
             {
-                Log.Warning($"[Ingest] [OwnedNumbers] [BulkVS] No results found.");
+                Log.Warning("[Ingest] [OwnedNumbers] [BulkVS] No results found.");
                 Log.Warning(await ex.GetResponseStringAsync());
                 return new();
             }
@@ -124,7 +124,7 @@ namespace NumberSearch.DataAccess.BulkVS
                 }
                 else
                 {
-                    Log.Fatal($"[Ingest] [BulkVS] Failed to parse {item.TN}");
+                    Log.Fatal("[Ingest] [BulkVS] Failed to parse {TN}", item.TN);
                 }
             }
             return [.. output];
@@ -158,7 +158,7 @@ namespace NumberSearch.DataAccess.BulkVS
                 }
                 else
                 {
-                    Log.Fatal($"[Ingest] [BulkVS] Failed to parse {item.TN}");
+                    Log.Fatal("[Ingest] [BulkVS] Failed to parse {TN}", item.TN);
                 }
             }
             return [.. output];

@@ -113,7 +113,7 @@ namespace NumberSearch.Mvc.Controllers
                         IngestedFrom = "UserInput"
                     };
 
-                    Log.Error($"[VerifedNumber] Failed to find number {phoneNumber.DialedNumber}");
+                    Log.Error("[VerifedNumber] Failed to find number {DialedNumber}", phoneNumber.DialedNumber);
                     Log.Error(ex.Message);
                     Log.Error(ex.InnerException?.Message ?? "No innner exception found.");
 

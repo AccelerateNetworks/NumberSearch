@@ -45,7 +45,7 @@ namespace NumberSearch.Mvc.WorkerServices
             {
                 await Task.Delay(5000).ConfigureAwait(false);
 
-                var orders = await Order.GetByBackGroundworkNotCompletedAsync(_postgresql).ConfigureAwait(false);
+                var orders = await Order.GetByBackGroundworkNotCompletedAsync(_postgresql);
                 if (orders is not null && orders.Any())
                 {
                     foreach (var order in orders)
@@ -54,14 +54,14 @@ namespace NumberSearch.Mvc.WorkerServices
                         taskQueue.QueueBackgroundWorkItem(async token =>
                         {
                             Log.Information(
-                                $"[Background Worker] Queued Background Task {order.OrderId} is starting.");
+                                "[Background Worker] Queued Background Task {OrderId} is starting.", order.OrderId);
 
                             while (!token.IsCancellationRequested)
                             {
                                 // Execute the phone number purchases required for this order.
-                                var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                                var purchasedPhoneNumbers = await PurchasedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql);
 
-                                Log.Information($"[Background Worker] {purchasedPhoneNumbers.Count()} phone numbers to purchase.");
+                                Log.Information("[Background Worker] {Count} phone numbers to purchase.", purchasedPhoneNumbers.Count());
 
                                 foreach (var productOrder in purchasedPhoneNumbers)
                                 {
@@ -69,7 +69,7 @@ namespace NumberSearch.Mvc.WorkerServices
                                     {
                                         try
                                         {
-                                            var nto = await PhoneNumber.GetAsync(productOrder.DialedNumber, _postgresql).ConfigureAwait(false);
+                                            var nto = await PhoneNumber.GetAsync(productOrder.DialedNumber, _postgresql);
 
                                             if (nto is not null && !productOrder.Completed)
                                             {
@@ -87,7 +87,7 @@ namespace NumberSearch.Mvc.WorkerServices
                                                             false
                                                         );
 
-                                                        var orderResponse = await executeOrder.PostAsync(_bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
+                                                        var orderResponse = await executeOrder.PostAsync(_bulkVSusername, _bulkVSpassword);
 
                                                         nto.Purchased = string.IsNullOrWhiteSpace(orderResponse.Failed.Description) && orderResponse.Status is "Active";
                                                         productOrder.DateOrdered = DateTime.Now;
@@ -96,10 +96,10 @@ namespace NumberSearch.Mvc.WorkerServices
                                                         // If the status code of the order comes back as 200 then it was successful.
                                                         productOrder.Completed = string.IsNullOrWhiteSpace(orderResponse.Failed.Description);
 
-                                                        var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
-                                                        var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
+                                                        var checkVerifyOrder = await productOrder.PutAsync(_postgresql);
+                                                        var checkMarkPurchased = await nto.PutAsync(_postgresql);
 
-                                                        Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from BulkVS.");
+                                                        Log.Information("[Background Worker] Purchased number {DialedNumber} from BulkVS.", nto.DialedNumber);
                                                     }
                                                     else if (nto.IngestedFrom == "FirstPointCom")
                                                     {
@@ -111,14 +111,14 @@ namespace NumberSearch.Mvc.WorkerServices
                                                         productOrder.OrderResponse = JsonSerializer.Serialize(executeOrder);
                                                         productOrder.Completed = executeOrder.code == 0;
 
-                                                        var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
-                                                        var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
+                                                        var checkVerifyOrder = await productOrder.PutAsync(_postgresql);
+                                                        var checkMarkPurchased = await nto.PutAsync(_postgresql);
 
-                                                        Log.Information($"[Background Worker] Purchased number {nto.DialedNumber} from FirstPointCom.");
+                                                        Log.Information("[Background Worker] Purchased number {DialedNumber} from FirstPointCom.", nto.DialedNumber);
                                                     }
                                                     else if (nto.IngestedFrom == "OwnedNumber")
                                                     {
-                                                        var ownedNumber = await OwnedPhoneNumber.GetByDialedNumberAsync(nto.DialedNumber, _postgresql).ConfigureAwait(false);
+                                                        var ownedNumber = await OwnedPhoneNumber.GetByDialedNumberAsync(nto.DialedNumber, _postgresql);
 
                                                         if (ownedNumber is not null)
                                                         {
@@ -132,28 +132,28 @@ namespace NumberSearch.Mvc.WorkerServices
                                                             ownedNumber.Notes = $"Purchased in Order {order?.OrderId}";
                                                             ownedNumber.OwnedBy = string.IsNullOrWhiteSpace(order?.BusinessName) ? $"{order?.FirstName} {order?.LastName}" : order?.BusinessName ?? string.Empty;
 
-                                                            var checkVerifyOrder = await productOrder.PutAsync(_postgresql).ConfigureAwait(false);
-                                                            var checkMarkPurchased = await nto.PutAsync(_postgresql).ConfigureAwait(false);
-                                                            var checkOwnedNumber = await ownedNumber.PutAsync(_postgresql).ConfigureAwait(false);
+                                                            var checkVerifyOrder = await productOrder.PutAsync(_postgresql);
+                                                            var checkMarkPurchased = await nto.PutAsync(_postgresql);
+                                                            var checkOwnedNumber = await ownedNumber.PutAsync(_postgresql);
 
-                                                            Log.Information($"[Background Worker] Purchased number {nto?.DialedNumber} from OwnedNumbers.");
+                                                            Log.Information("[Background Worker] Purchased number {DialedNumber} from OwnedNumbers.", nto?.DialedNumber);
                                                         }
                                                         else
                                                         {
-                                                            Log.Information($"[Background Worker] Failed to purchase number {nto?.DialedNumber} from OwnedNumbers as could not be found in the database.");
+                                                            Log.Information("[Background Worker] Failed to purchase number {DialedNumber} from OwnedNumbers as could not be found in the database.", nto?.DialedNumber);
                                                         }
                                                     }
                                                 }
                                                 catch (FlurlHttpException ex)
                                                 {
-                                                    Log.Fatal($"[Background Worker] Failed to purchase number {nto.DialedNumber}");
-                                                    Log.Fatal($"[Background Worker] {await ex.GetResponseStringAsync()}");
+                                                    Log.Fatal("[Background Worker] Failed to purchase number {DialedNumber}", nto.DialedNumber);
+                                                    Log.Fatal("[Background Worker] {Message}", await ex.GetResponseStringAsync());
                                                 }
                                                 catch (Exception ex)
                                                 {
-                                                    Log.Fatal($"[Background Worker] Failed to purchase number {nto.DialedNumber}");
-                                                    Log.Fatal($"[Background Worker] {ex.Message}");
-                                                    Log.Fatal($"[Background Worker] {ex.StackTrace}");
+                                                    Log.Fatal("[Background Worker] Failed to purchase number {DialedNumber}", nto.DialedNumber);
+                                                    Log.Fatal("[Background Worker] {Message}", ex.Message);
+                                                    Log.Fatal("[Background Worker] {StackTrace}", ex.StackTrace);
                                                 }
                                             }
                                         }
@@ -165,8 +165,8 @@ namespace NumberSearch.Mvc.WorkerServices
                                 }
 
                                 // Send out the confirmation emails.
-                                var emails = await Email.GetByOrderAsync(order?.OrderId ?? Guid.NewGuid(), _postgresql).ConfigureAwait(false);
-                                Log.Information($"[Background Worker] {emails.Count()} emails to send.");
+                                var emails = await Email.GetByOrderAsync(order?.OrderId ?? Guid.NewGuid(), _postgresql);
+                                Log.Information("[Background Worker] {Count} emails to send.", emails.Count());
 
                                 foreach (var message in emails)
                                 {
@@ -181,12 +181,12 @@ namespace NumberSearch.Mvc.WorkerServices
                                     }
 
                                     // Send the message the email server.
-                                    var checkSend = await message.SendEmailAsync(_emailUsername, _emailPassword).ConfigureAwait(false);
+                                    var checkSend = await message.SendEmailAsync(_emailUsername, _emailPassword);
 
                                     // If it didn't work try it again.
                                     if (!checkSend)
                                     {
-                                        checkSend = await message.SendEmailAsync(_emailUsername, _emailPassword).ConfigureAwait(false);
+                                        checkSend = await message.SendEmailAsync(_emailUsername, _emailPassword);
                                     }
 
                                     // Mark it as sent.
@@ -195,21 +195,21 @@ namespace NumberSearch.Mvc.WorkerServices
                                     message.Completed = checkSend;
 
                                     // Update the database with the email's new status.
-                                    var checkSave = await message.PutAsync(_postgresql).ConfigureAwait(false);
+                                    var checkSave = await message.PutAsync(_postgresql);
 
                                     // Log the success or failure of the operation.
                                     if (checkSend && checkSave)
                                     {
-                                        Log.Information($"[Background Worker] Successfully sent out email {message.EmailId} for order {order?.OrderId}.");
+                                        Log.Information("[Background Worker] Successfully sent out email {EmailId} for order {OrderId}.", message.EmailId, order?.OrderId);
                                     }
                                     else
                                     {
-                                        Log.Fatal($"[Background Worker] Failed to sent out the email {message.EmailId} for order {order?.OrderId}.");
+                                        Log.Fatal("[Background Worker] Failed to sent out the email {EmailId} for order {OrderId}.", message.EmailId, order?.OrderId);
                                     }
                                 }
 
                                 Log.Information(
-                                    $"[Background Worker] Queued Background Task {order?.OrderId} is Completed.");
+                                    "[Background Worker] Queued Background Task {OrderId} is Completed.", order?.OrderId);
 
                                 break;
                             }
@@ -217,7 +217,7 @@ namespace NumberSearch.Mvc.WorkerServices
 
                         // To prevent repeated queuing.
                         order.BackgroundWorkCompleted = true;
-                        var checkUpdate = order.PutAsync(_postgresql).ConfigureAwait(false);
+                        var checkUpdate = order.PutAsync(_postgresql);
                     }
                 }
                 else

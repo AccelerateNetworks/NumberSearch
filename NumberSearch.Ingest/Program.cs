@@ -77,7 +77,7 @@ namespace NumberSearch.Ingest
                 ))
                 .CreateLogger();
 
-            Log.Information($"[Heartbeat] Ingest scheduling loop is starting. {Environment.ProcessorCount} threads detected.");
+            Log.Information("[Heartbeat] Ingest scheduling loop is starting. {ProcessorCount} threads detected.", Environment.ProcessorCount);
             Stopwatch priorityTimer = new();
             Stopwatch dailyTimer = new();
             Stopwatch bulkVSTimer = new();

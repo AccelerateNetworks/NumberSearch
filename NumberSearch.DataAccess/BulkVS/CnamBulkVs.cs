@@ -33,7 +33,7 @@ namespace NumberSearch.DataAccess.BulkVS
             }
             catch (FlurlHttpException ex)
             {
-                Log.Error($"Failed to parse response from BulkVS for {dialedNumber}");
+                Log.Error("Failed to parse response from BulkVS for {dialedNumber}", dialedNumber);
                 Log.Error(await ex.GetResponseStringAsync());
                 return new();
             }

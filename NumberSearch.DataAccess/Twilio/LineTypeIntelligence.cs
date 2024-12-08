@@ -48,7 +48,7 @@ namespace NumberSearch.DataAccess.Twilio
             }
             catch (FlurlHttpException ex)
             {
-                Log.Warning($"[Portability] [BulkVS] No results found for number {dialedNumber}.");
+                Log.Warning("[Portability] [BulkVS] No results found for number {dialedNumber}.", dialedNumber);
                 Log.Warning(await ex.GetResponseStringAsync());
                 return new();
             }

@@ -167,7 +167,7 @@ namespace NumberSearch.DataAccess.Models
             }
             catch (Exception ex)
             {
-                Log.Fatal($"[Email] Failed to send email {EmailId}.");
+                Log.Fatal("[Email] Failed to send email {EmailId}.", EmailId);
                 Log.Fatal(ex.Message);
                 Log.Fatal(ex.StackTrace ?? "StackTrace was null.");
                 Completed = false;

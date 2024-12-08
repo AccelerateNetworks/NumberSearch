@@ -38,7 +38,7 @@ namespace NumberSearch.DataAccess.BulkVS
             }
             catch (FlurlHttpException ex)
             {
-                Log.Warning($"[Portability] [BulkVS] No results found for number {dialedNumber}.");
+                Log.Warning("[Portability] [BulkVS] No results found for number {dialedNumber}.", dialedNumber);
                 var result = await ex.GetResponseStringAsync();
                 Log.Warning(result);
                 return new()

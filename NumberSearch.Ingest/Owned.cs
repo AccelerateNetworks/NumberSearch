@@ -91,7 +91,7 @@ namespace NumberSearch.Ingest
             IngestStatistics ownedNumberStats;
             if (allNumbers.Count > 0)
             {
-                Log.Information($"[OwnedNumbers] Submitting {allNumbers.Count} numbers to the database.");
+                Log.Information("[OwnedNumbers] Submitting {Count} numbers to the database.", allNumbers.Count);
                 ownedNumberStats = await SubmitOwnedNumbersAsync([.. allNumbers.DistinctBy(x => x.DialedNumber)], configuration.Postgresql, configuration.BulkVSUsername, configuration.BulkVSPassword);
             }
             else
@@ -121,7 +121,7 @@ namespace NumberSearch.Ingest
 
                 if (changedNumbers.Length != 0)
                 {
-                    Log.Information($"[OwnedNumbers] Emailing out a notification that {changedNumbers.Length} numbers LRN updates.");
+                    Log.Information("[OwnedNumbers] Emailing out a notification that {Changed} numbers LRN updates.", changedNumbers.Length);
                     _ = await SendPortingNotificationEmailAsync(changedNumbers, configuration.SmtpUsername, configuration.SmtpPassword, configuration.EmailDan, configuration.EmailOrders, configuration.Postgresql);
                 }
             }
@@ -209,7 +209,7 @@ namespace NumberSearch.Ingest
                     }
                     else
                     {
-                        Log.Error($"[OwnedNumbers] Could not verify SMS routing for {number.DialedNumber} with FirstPointCom. {checkSMSRouting.QueryResult.text}");
+                        Log.Error("[OwnedNumbers] Could not verify SMS routing for {Number} with FirstPointCom. {Text}", number.DialedNumber, checkSMSRouting.QueryResult.text);
                         // Update the owned number with the route.
                         if (number.SMSRoute != checkSMSRouting.QueryResult.text)
                         {
@@ -221,17 +221,17 @@ namespace NumberSearch.Ingest
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"[OwnedNumbers] Could not verify SMS routing for {number.DialedNumber} with FirstPointCom. {ex.Message}");
+                    Log.Error("[OwnedNumbers] Could not verify SMS routing for {DialedNumber} with FirstPointCom. {Message}", number.DialedNumber, ex.Message);
                 }
 
                 if (updated)
                 {
                     var checkUpdate = await number.PutAsync(connectionString.ToString());
-                    Log.Information($"[OwnedNumbers] Updated SMS routing for {number.DialedNumber} with FirstPointCom.");
+                    Log.Information("[OwnedNumbers] Updated SMS routing for {DialedNumber} with FirstPointCom.", number.DialedNumber);
                 }
             }
 
-            Log.Information($"[OwnedNumbers] Verified SMS Routing for {ownedNumbers.Count()} Owned Phone numbers.");
+            Log.Information("[OwnedNumbers] Verified SMS Routing for {Count} Owned Phone numbers.", ownedNumbers.Count());
 
             return [.. changes];
         }
@@ -337,7 +337,7 @@ namespace NumberSearch.Ingest
                 {
                     var results = await FirstPointCom.GetOwnedPhoneNumbersAsync(npa, username, password);
 
-                    Log.Information($"[OwnedNumbers] [FirstPointCom] Retrieved {results.DIDOrder.Length} owned numbers.");
+                    Log.Information("[OwnedNumbers] [FirstPointCom] Retrieved {Length} owned numbers.", results.DIDOrder.Length);
 
                     foreach (var item in results.DIDOrder)
                     {
@@ -355,18 +355,18 @@ namespace NumberSearch.Ingest
                         }
                         else
                         {
-                            Log.Fatal($"[OwnedNumber] Failed to parse Owned Number {item.DID} from FirstPointCom.");
+                            Log.Fatal("[OwnedNumber] Failed to parse Owned Number {DID} from FirstPointCom.", item.DID);
                         }
                     }
                 }
                 catch (Exception ex)
                 {
                     Log.Error(ex.Message);
-                    Log.Error($"[OwnedNumbers] [FirstPointCom] No numbers found for NPA {npa}");
+                    Log.Error("[OwnedNumbers] [FirstPointCom] No numbers found for NPA {NPA}", npa);
                 }
             }
 
-            Log.Information($"[OwnedNumbers] [FirstPointCom] Ingested {numbers.Count} owned numbers.");
+            Log.Information("[OwnedNumbers] [FirstPointCom] Ingested {Count} owned numbers.", numbers.Count);
 
             return numbers.Count != 0 ? [.. numbers] : [];
         }
@@ -415,11 +415,11 @@ namespace NumberSearch.Ingest
                         if (checkCreate)
                         {
                             ingestedNew++;
-                            Log.Information($"[OwnedNumbers] Added {item.DialedNumber} as an owned number.");
+                            Log.Information("[OwnedNumbers] Added {DialedNumber} as an owned number.", item.DialedNumber);
                         }
                         else
                         {
-                            Log.Fatal($"[OwnedNumbers] Failed to add {item.DialedNumber} as an owned number.");
+                            Log.Fatal("[OwnedNumbers] Failed to add {DialedNumber} as an owned number.", item.DialedNumber);
                         }
                     }
                     else
@@ -454,11 +454,11 @@ namespace NumberSearch.Ingest
                         if (checkCreate)
                         {
                             updatedExisting++;
-                            Log.Information($"[OwnedNumbers] Updated {item.DialedNumber} as an owned number.");
+                            Log.Information("[OwnedNumbers] Updated {DialedNumber} as an owned number.", item.DialedNumber);
                         }
                         else
                         {
-                            Log.Fatal($"[OwnedNumbers] Failed to update {item.DialedNumber} as an owned number.");
+                            Log.Fatal("[OwnedNumbers] Failed to update {DialedNumber} as an owned number.", item.DialedNumber);
                         }
                     }
                 }
@@ -477,11 +477,11 @@ namespace NumberSearch.Ingest
                     if (checkCreate)
                     {
                         updatedExisting++;
-                        Log.Information($"[OwnedNumbers] Updated {item.DialedNumber} as an owned number.");
+                        Log.Information("[OwnedNumbers] Updated {DialedNumber} as an owned number.", item.DialedNumber);
                     }
                     else
                     {
-                        Log.Fatal($"[OwnedNumbers] Failed to update {item.DialedNumber} as an owned number.");
+                        Log.Fatal("[OwnedNumbers] Failed to update {DialedNumber} as an owned number.", item.DialedNumber);
                     }
                 }
 
@@ -502,15 +502,15 @@ namespace NumberSearch.Ingest
                     FailedToIngest = 0
                 };
 
-                Log.Information($"[OwnedNumbers] Updated {updatedExisting} owned numbers.");
-                Log.Information($"[OwnedNumbers] Added {ingestedNew} new owned numbers.");
+                Log.Information("[OwnedNumbers] Updated {Updated} owned numbers.", updatedExisting);
+                Log.Information("[OwnedNumbers] Added {New} new owned numbers.", ingestedNew);
 
                 return stats;
             }
             catch (Exception ex)
             {
-                Log.Fatal($"{ex.Message}");
-                Log.Fatal($"{ex.StackTrace}");
+                Log.Fatal(ex.Message);
+                Log.Fatal(ex.StackTrace ?? string.Empty);
                 return new()
                 {
                     StartDate = start,
@@ -564,11 +564,11 @@ namespace NumberSearch.Ingest
                             newUnassigned.Add(number);
                             ingestedNew++;
 
-                            Log.Information($"[Ingest] [OwnedNumber] Put unassigned number {item?.DialedNumber} up for sale.");
+                            Log.Information("[Ingest] [OwnedNumber] Put unassigned number {DialedNumber} up for sale.", item?.DialedNumber ?? string.Empty);
                         }
                         else
                         {
-                            Log.Fatal($"[Ingest] [OwnedNumber] Failed to put unassigned number {item?.DialedNumber} up for sale. Number could not be parsed.");
+                            Log.Fatal("[Ingest] [OwnedNumber] Failed to put unassigned number {DialedNumber} up for sale. Number could not be parsed.", item?.DialedNumber ?? string.Empty);
                         }
                     }
                     else
@@ -580,7 +580,7 @@ namespace NumberSearch.Ingest
                         _ = await number.PutAsync(connectionString.ToString());
                         updatedExisting++;
 
-                        Log.Information($"[Ingest] [OwnedNumber] Continued offering unassigned number {item.DialedNumber} up for sale.");
+                        Log.Information("[Ingest] [OwnedNumber] Continued offering unassigned number {DialedNumber} up for sale.", item.DialedNumber);
                     }
                 }
             }
@@ -629,7 +629,7 @@ namespace NumberSearch.Ingest
                     if (match2 is null)
                     {
                         // Do nothing if we can't find a match in our system for this number.
-                        Log.Information($"[OwnedNumbers] [ClientMatch] Couldn't associate Owned Number {number.DialedNumber} with a billing client.");
+                        Log.Information("[OwnedNumbers] [ClientMatch] Couldn't associate Owned Number {DialedNumber} with a billing client.", number.DialedNumber);
                         continue;
                     }
 
@@ -646,11 +646,11 @@ namespace NumberSearch.Ingest
                         var checkUpdate = await number.PutAsync(connectionString.ToString());
                         updatedExisting++;
 
-                        Log.Information($"[OwnedNumbers] [ClientMatch] Associated Owned Number {match2?.PortedDialedNumber} with billing client id {order?.BillingClientId}");
+                        Log.Information("[OwnedNumbers] [ClientMatch] Associated Owned Number {PortedDialedNumber} with billing client id {BillingClientId}", match2?.PortedDialedNumber, order?.BillingClientId);
                     }
                     else
                     {
-                        Log.Information($"[OwnedNumbers] [ClientMatch] Couldn't associate Owned Number {match2?.PortedDialedNumber} with a billing client.");
+                        Log.Information("[OwnedNumbers] [ClientMatch] Couldn't associate Owned Number {PortedDialedNumber} with a billing client.", match2?.PortedDialedNumber);
                     }
                 }
                 else
@@ -665,11 +665,11 @@ namespace NumberSearch.Ingest
                         var checkUpdate = await number.PutAsync(connectionString.ToString());
                         updatedExisting++;
 
-                        Log.Information($"[OwnedNumbers] [ClientMatch] Associated Owned Number {match?.DialedNumber} with billing client id {order?.BillingClientId}");
+                        Log.Information("[OwnedNumbers] [ClientMatch] Associated Owned Number {DialedNumber} with billing client id {BillingClientId}", match?.DialedNumber, order?.BillingClientId);
                     }
                     else
                     {
-                        Log.Information($"[OwnedNumbers] [ClientMatch] Couldn't associate Owned Number {match?.DialedNumber} with a billing client.");
+                        Log.Information("[OwnedNumbers] [ClientMatch] Couldn't associate Owned Number {DialedNumber} with a billing client.", match?.DialedNumber);
                     }
                 }
             }
@@ -719,7 +719,7 @@ namespace NumberSearch.Ingest
                     if (phoneNumber.DialedNumber.IsTollfree())
                     {
                         // Skip the LRNlookup if the current number is TollFree.
-                        Log.Information($"[OwnedNumbers] Skipping Toll Free number {number.DialedNumber}.");
+                        Log.Information("[OwnedNumbers] Skipping Toll Free number {DialedNumber}.", number.DialedNumber);
                     }
                     else
                     {
@@ -750,28 +750,28 @@ namespace NumberSearch.Ingest
                             var checkUpdate = await number.PutAsync(connectionString.ToString());
                             if (checkUpdate)
                             {
-                                Log.Information($"[OwnedNumbers] Updated {newSpidName}, {newSpid} for {number.DialedNumber} from [{provider}].");
+                                Log.Information("[OwnedNumbers] Updated {SpidName}, {Spid} for {DialedNumber} from [{Provider}].", newSpidName, newSpid, number.DialedNumber, provider);
                             }
                             else
                             {
-                                Log.Fatal($"[OwnedNumbers] Failed to update {newSpidName}, {newSpid} for {number.DialedNumber} from [{provider}].");
+                                Log.Fatal("[OwnedNumbers] Failed to update {SpidName}, {Spid} for {DialedNumber} from [{Provider}].", newSpidName, newSpid, number.DialedNumber, provider);
                             }
 
                         }
                         else
                         {
                             // Do nothing because either the SPID is the same or it's invalid.
-                            Log.Information($"[OwnedNumbers] Found {newSpidName}, {newSpid} for {number.DialedNumber} from [{provider}].");
+                            Log.Information("[OwnedNumbers] Found {SpidName}, {Spid} for {DialedNumber} from [{Provider}].", newSpidName, newSpid, number.DialedNumber, provider);
                         }
                     }
                 }
                 else
                 {
-                    Log.Fatal($"[OwnedNumbers] Failed to parsed Owned Number {number.DialedNumber}.");
+                    Log.Fatal("[OwnedNumbers] Failed to parsed Owned Number {DialedNumber}.", number.DialedNumber);
                 }
             }
 
-            Log.Information($"[OwnedNumbers] Found {serviceProviderChanged.Count} numbers whose Service Provider has changed since the last ingest.");
+            Log.Information("[OwnedNumbers] Found {Count} numbers whose Service Provider has changed since the last ingest.", serviceProviderChanged.Count);
 
             return [.. serviceProviderChanged];
         }
@@ -780,7 +780,7 @@ namespace NumberSearch.Ingest
         {
             var emergencyInformation = await EmergencyInformation.GetAllAsync(connectionString.ToString());
 
-            Log.Information($"[OwnedNumbers] Verifying Emergency Information for {emergencyInformation?.Count()} Owned Phone numbers.");
+            Log.Information("[OwnedNumbers] Verifying Emergency Information for {Count} Owned Phone numbers.", emergencyInformation?.Count());
 
             var ownedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString.ToString());
 
@@ -813,7 +813,7 @@ namespace NumberSearch.Ingest
 
                         if (!checkUpdate)
                         {
-                            Log.Error($"Failed to update E911 record for {existing.DialedNumber} from {JsonSerializer.Serialize(record)}");
+                            Log.Error("Failed to update E911 record for {DialedNumber} from {@record}", existing.DialedNumber, record);
                         }
                     }
                     else
@@ -843,7 +843,7 @@ namespace NumberSearch.Ingest
 
                         if (!checkCreate && !checkUpdate)
                         {
-                            Log.Error($"Failed to create E911 record for {number.DialedNumber} from {JsonSerializer.Serialize(record)}");
+                            Log.Error("Failed to create E911 record for {DialedNumber} from {@record}", number.DialedNumber, record);
                         }
                     }
                 }
@@ -874,7 +874,7 @@ namespace NumberSearch.Ingest
 
                     if (!checkCreate && !checkUpdate)
                     {
-                        Log.Error($"Failed to create E911 record for {number.DialedNumber} from {JsonSerializer.Serialize(record)}");
+                        Log.Error("Failed to create E911 record for {DialedNumber} from {@record}", number.DialedNumber, record);
                     }
                 }
 

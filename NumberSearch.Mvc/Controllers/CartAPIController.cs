@@ -645,11 +645,11 @@ namespace NumberSearch.Mvc.Controllers
                 var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
                 if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
                 {
-                    Log.Information($"[BulkVS] Found {phoneNumber.DialedNumber} in {doesItStillExist.Length} results returned for {npanxx}.");
+                    Log.Information("[BulkVS] Found {DialedNumber} in {Length} results returned for {npanxx}.", phoneNumber.DialedNumber, doesItStillExist.Length, npanxx);
                 }
                 else
                 {
-                    Log.Warning($"[BulkVS] Failed to find {phoneNumber.DialedNumber} in {doesItStillExist.Length} results returned for {npanxx}.");
+                    Log.Warning("[BulkVS] Failed to find {DialedNumber} in {Length} results returned for {npanxx}.", phoneNumber.DialedNumber, doesItStillExist.Length, npanxx);
 
                     var purchaseOrder = new PurchasedPhoneNumber
                     {
@@ -685,11 +685,11 @@ namespace NumberSearch.Mvc.Controllers
                 var matchingNumber = results.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
                 if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
                 {
-                    Log.Information($"[FirstPointCom] Found {phoneNumber.DialedNumber} in {results.Length} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
+                    Log.Information("[FirstPointCom] Found {DialedNumber} in {Length} results returned for {NPA}, {NXX}.", phoneNumber.DialedNumber, results.Length, phoneNumber.NPA, phoneNumber.NXX);
                 }
                 else
                 {
-                    Log.Warning($"[FirstPointCom] Failed to find {phoneNumber.DialedNumber} in {results.Length} results returned for {phoneNumber.NPA}, {phoneNumber.NXX}.");
+                    Log.Warning("[FirstPointCom] Failed to find {DialedNumber} in {Length} results returned for {NPA}, {NXX}.", phoneNumber.DialedNumber, results.Length, phoneNumber.NPA, phoneNumber.NXX);
 
                     var purchaseOrder = new PurchasedPhoneNumber
                     {
@@ -711,7 +711,7 @@ namespace NumberSearch.Mvc.Controllers
                     _ = purchaseOrder.PostAsync(_postgresql);
 
                     // Remove numbers that are unpurchasable.
-                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql);
 
                     // Sadly its gone. And the user needs to pick a different number.
                     return BadRequest($"{dialedPhoneNumber} is no longer available.");
@@ -720,14 +720,14 @@ namespace NumberSearch.Mvc.Controllers
             else if (phoneNumber.IngestedFrom == "OwnedNumber")
             {
                 // Verify that we still have the number.
-                var matchingNumber = await OwnedPhoneNumber.GetByDialedNumberAsync(phoneNumber.DialedNumber, _postgresql).ConfigureAwait(false);
+                var matchingNumber = await OwnedPhoneNumber.GetByDialedNumberAsync(phoneNumber.DialedNumber, _postgresql);
                 if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
                 {
-                    Log.Information($"[OwnedNumber] Found {phoneNumber.DialedNumber}.");
+                    Log.Information("[OwnedNumber] Found {DialedNumber}.", phoneNumber.DialedNumber);
                 }
                 else
                 {
-                    Log.Warning($"[OwnedNumber] Failed to find {phoneNumber.DialedNumber}.");
+                    Log.Warning("[OwnedNumber] Failed to find {DialedNumber}.", phoneNumber.DialedNumber);
 
                     var purchaseOrder = new PurchasedPhoneNumber
                     {
@@ -749,7 +749,7 @@ namespace NumberSearch.Mvc.Controllers
                     _ = purchaseOrder.PostAsync(_postgresql);
 
                     // Remove numbers that are unpurchasable.
-                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql);
 
                     // Sadly its gone. And the user needs to pick a different number.
                     return BadRequest($"{dialedPhoneNumber} is no longer available.");
@@ -777,7 +777,7 @@ namespace NumberSearch.Mvc.Controllers
                 _ = purchaseOrder.PostAsync(_postgresql);
 
                 // Remove numbers that are unpurchasable.
-                var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+                var checkRemove = await phoneNumber.DeleteAsync(_postgresql);
 
                 // Sadly its gone. And the user needs to pick a different number.
                 return BadRequest($"{dialedPhoneNumber} is no longer available.");
@@ -787,7 +787,7 @@ namespace NumberSearch.Mvc.Controllers
             if (phoneNumber.Purchased)
             {
                 // Remove numbers that are unpurchasable.
-                var checkRemove = await phoneNumber.DeleteAsync(_postgresql).ConfigureAwait(false);
+                var checkRemove = await phoneNumber.DeleteAsync(_postgresql);
 
                 // Sadly its gone. And the user needs to pick a different number.
                 return BadRequest($"{dialedPhoneNumber} is no longer available.");
@@ -840,7 +840,7 @@ namespace NumberSearch.Mvc.Controllers
                         break;
                 }
 
-                Log.Information($"[AddToCart] {phoneNumber.DialedNumber} has an OCN Type of {lrnLookup.lectype}.");
+                Log.Information("[AddToCart] {DialedNumber} has an OCN Type of {lectype}.", phoneNumber.DialedNumber, lrnLookup.lectype);
 
                 portedPhoneNumber = new PortedPhoneNumber
                 {
