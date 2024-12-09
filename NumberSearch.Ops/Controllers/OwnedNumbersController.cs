@@ -256,7 +256,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
                 try
                 {
                     // Format the address information
-                    Log.Information($"[Checkout] Parsing address data from {UnparsedAddress}");
+                    Log.Information("[Checkout] Parsing address data from {UnparsedAddress}", UnparsedAddress);
                     var order = new Order
                     {
                         FirstName = FirstName ?? string.Empty,
@@ -274,7 +274,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
                         order.City = addressParts[1];
                         order.State = addressParts[2];
                         order.Zip = addressParts[3];
-                        Log.Information($"[Checkout] Address: {order.Address} City: {order.City} State: {order.State} Zip: {order.Zip}");
+                        Log.Information("[Checkout] Address: {Address} City: {City} State: {State} Zip: {Zip}", order.Address, order.City, order.State, order.Zip);
                     }
                     else if (addressParts is not null && addressParts.Length == 6)
                     {
@@ -283,7 +283,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
                         order.City = addressParts[2];
                         order.State = addressParts[3];
                         order.Zip = addressParts[4];
-                        Log.Information($"[Checkout] Address: {order.Address} City: {order.City} State: {order.State} Zip: {order.Zip}");
+                        Log.Information("[Checkout] Address: {Address} City: {City} State: {State} Zip: {Zip}", order.Address, order.City, order.State, order.Zip);
                     }
                     else
                     {
@@ -304,7 +304,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
 
                     if (checkAddress.Status is "GEOCODED" && !string.IsNullOrWhiteSpace(checkAddress.AddressID))
                     {
-                        Log.Information(JsonSerializer.Serialize(checkAddress));
+                        Log.Information("{@checkAddress}", checkAddress);
 
                         try
                         {
@@ -314,7 +314,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
 
                             if (response.Status is "Success" && existing is not null)
                             {
-                                Log.Information(JsonSerializer.Serialize(response));
+                                Log.Information("{@response}", response);
                                 order.E911ServiceNumber = response.TN;
                                 var emergencyRecord = new EmergencyInformation
                                 {
