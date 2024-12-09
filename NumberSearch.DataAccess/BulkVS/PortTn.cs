@@ -38,7 +38,8 @@ namespace NumberSearch.DataAccess.BulkVS
                 Log.Error("[Porting] [BulkVS] {Message} for BulkVS orderId {Id}.", ex.Message, orderId);
                 var x = await ex.GetResponseStringAsync();
                 Log.Error(x);
-                return new();
+                // Had a null length of TNList that crashed the ingest app one time in prod, explictity creating an array of length 0 to avoid that null.
+                return new PortTn(new OrderDetails(), new EndUserInfo(), [], [], []);
             }
         }
 
