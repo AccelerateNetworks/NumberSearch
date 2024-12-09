@@ -346,7 +346,7 @@ public class OrdersController(OpsConfig opsConfig,
         try
         {
             // Format the address information
-            Log.Information($"[Checkout] Parsing address data from {order.Address}");
+            Log.Information("[Checkout] Parsing address data from {Address}", order.Address);
             var addressParts = order?.UnparsedAddress?.Split(", ") ?? [];
             if (order is not null && addressParts is not null && addressParts.Length > 4)
             {
@@ -354,7 +354,7 @@ public class OrdersController(OpsConfig opsConfig,
                 order.City = addressParts[1] ?? string.Empty;
                 order.State = addressParts[2] ?? string.Empty;
                 order.Zip = addressParts[3] ?? string.Empty;
-                Log.Information($"[Checkout] Address: {order.Address} City: {order.City} State: {order.State} Zip: {order.Zip}");
+                Log.Information("[Checkout] Address: {Address} City: {City} State: {State} Zip: {Zip}", order.Address, order.City, order.State, order.Zip);
             }
             else
             {
@@ -626,7 +626,7 @@ public class OrdersController(OpsConfig opsConfig,
             if (order is not null)
             {
                 var orderToUpdate = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == order.OrderId);
-                Log.Information($"{JsonSerializer.Serialize(order)}");
+                Log.Information($"@order", order);
 
                 if (order is not null && order.OrderId == Guid.Parse(orderId))
                 {
@@ -644,7 +644,7 @@ public class OrdersController(OpsConfig opsConfig,
 
                             if (checkAddress.Status is "GEOCODED" && !string.IsNullOrWhiteSpace(checkAddress.AddressID))
                             {
-                                Log.Information(JsonSerializer.Serialize(checkAddress));
+                                Log.Information("{@checkAddress}", checkAddress);
 
                                 try
                                 {
@@ -654,7 +654,7 @@ public class OrdersController(OpsConfig opsConfig,
 
                                     if (response.Status is "Success")
                                     {
-                                        Log.Information(JsonSerializer.Serialize(response));
+                                        Log.Information("{@response}", response);
                                         order.E911ServiceNumber = response.TN;
                                         var emergencyRecord = new EmergencyInformation
                                         {
@@ -1762,7 +1762,7 @@ public class OrdersController(OpsConfig opsConfig,
                             }
                             catch
                             {
-                                Log.Fatal($"[Checkout] Failed to get the Sale Tax rate from the local API for {order.Address}, {order.Zip}.");
+                                Log.Fatal("[Checkout] Failed to get the Sale Tax rate from the local API for {Address}, {Zip}.", order.Address, order.Zip);
                             }
 
                             if (specificTaxRate is null)
@@ -1774,7 +1774,7 @@ public class OrdersController(OpsConfig opsConfig,
                                 }
                                 catch
                                 {
-                                    Log.Fatal($"[Checkout] Failed to get the Sale Tax rate from the state's API for {order.City}, {order.Zip}.");
+                                    Log.Fatal("[Checkout] Failed to get the Sale Tax rate from the state's API for {City}, {Zip}.", order.City, order.Zip);
                                 }
                             }
                         }
@@ -1804,7 +1804,7 @@ public class OrdersController(OpsConfig opsConfig,
                                 var checkCreate = await billingTaxRate.PostAsync(_invoiceNinjaToken.AsMemory());
                             }
 
-                            Log.Information($"[Checkout] {billingTaxRate.name} @ {billingTaxRate.rate}.");
+                            Log.Information("[Checkout] {Name} @ {Rate}.", billingTaxRate.name, billingTaxRate.rate);
                         }
                         else
                         {
@@ -1850,11 +1850,11 @@ public class OrdersController(OpsConfig opsConfig,
                                 billingClientContact = billingClientContact with { id = newClientContact.id };
                             }
                             billingClient = await newBillingClient.PutAsync(_invoiceNinjaToken.AsMemory());
-                            Log.Information($"[Checkout] Created billing client {billingClient.name}, {billingClient.id}.");
+                            Log.Information("[Checkout] Created billing client {Name}, {Id}.", billingClient.name, billingClient.id);
                         }
                         else
                         {
-                            Log.Information($"[Checkout] Found billing client {billingClient.name}, {billingClient.id}.");
+                            Log.Information("[Checkout] Found billing client {Name}, {Id}.", billingClient.name, billingClient.id);
                         }
 
                         // Create the invoices for this order and submit it to the billing system.
@@ -1937,7 +1937,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
                                         Log.Error(error);
-                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                        Log.Fatal("{@upfrontInvoice}", upfrontInvoice);
                                         return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
@@ -1959,7 +1959,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal("[Checkout] Failed to update the existing invoices in the billing system.");
                                         Log.Error(error);
-                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                        Log.Fatal("{@upfrontInvoice}", upfrontInvoice);
                                         return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update the existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
@@ -1977,7 +1977,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     Log.Warning("[Checkout] Failed to find existing reoccurring invoice in the billing system.");
                                     var error = await ex.GetResponseStringAsync();
                                     Log.Error(error);
-                                    Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                    Log.Fatal("{@upfrontInvoice}", upfrontInvoice);
                                     return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find the existing  reoccurring invoice in the billing system 😡 {error}", AlertType = "alert-danger" });
 
                                 }
@@ -1998,7 +1998,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal("[Checkout] Failed to create new invoices in the billing system.");
                                         Log.Error(error);
-                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                        Log.Fatal("{@upfrontInvoice}", upfrontInvoice);
                                         return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create new invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
@@ -2020,7 +2020,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal("[Checkout] Failed to update the existing invoices in the billing system.");
                                         Log.Error(error);
-                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                        Log.Fatal("{@upfrontInvoice}", upfrontInvoice);
                                         return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update the existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
@@ -2085,7 +2085,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     catch (FlurlHttpException ex)
                                     {
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                        Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
+                                        Log.Fatal("{@createNewReoccurringInvoice}", createNewReoccurringInvoice);
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
                                         return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
@@ -2103,7 +2103,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     catch (FlurlHttpException ex)
                                     {
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                        Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
+                                        Log.Fatal("{@createNewReoccurringInvoice}", createNewReoccurringInvoice);
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
                                         return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
@@ -2167,7 +2167,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
                                         var message = await ex.GetResponseStringAsync();
                                         Log.Fatal(message);
-                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                        Log.Fatal("{@upfrontInvoice}", upfrontInvoice);
                                         return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create new invoices in the billing system 😡 {message}", AlertType = "alert-danger" });
                                     }
                                 }
@@ -2184,7 +2184,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
                                         var message = await ex.GetResponseStringAsync();
                                         Log.Fatal(message);
-                                        Log.Fatal(JsonSerializer.Serialize(upfrontInvoice));
+                                        Log.Fatal("{@upfrontInvoice}", upfrontInvoice);
                                         return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update existing invoices in the billing system 😡 {message}", AlertType = "alert-danger" });
                                     }
                                 }
@@ -2199,7 +2199,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     await _context.SaveChangesAsync();
 
                                     var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, order.Quote);
-                                    Log.Information(JsonSerializer.Serialize(invoiceLinks));
+                                    Log.Information("{@invoiceLinks}", invoiceLinks);
                                     var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                                     if (!string.IsNullOrWhiteSpace(oneTimeLink))
@@ -2255,7 +2255,7 @@ public class OrdersController(OpsConfig opsConfig,
                                 catch (FlurlHttpException ex)
                                 {
                                     Log.Fatal("[Checkout] Failed to find existing the invoices in the billing system.");
-                                    Log.Fatal(JsonSerializer.Serialize(createNewOneTimeInvoice));
+                                    Log.Fatal("{@createNewOneTimeInvoice}", createNewOneTimeInvoice);
                                     var error = await ex.GetResponseStringAsync();
                                     Log.Fatal(error);
                                     //return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
@@ -2271,7 +2271,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     catch (FlurlHttpException ex)
                                     {
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                        Log.Fatal(JsonSerializer.Serialize(createNewOneTimeInvoice));
+                                        Log.Fatal("{@createNewOneTimeInvoice}", createNewOneTimeInvoice);
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
                                         return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
@@ -2291,7 +2291,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     catch (FlurlHttpException ex)
                                     {
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                        Log.Fatal(JsonSerializer.Serialize(createNewOneTimeInvoice));
+                                        Log.Fatal("{@createNewOneTimeInvoice}", createNewOneTimeInvoice);
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
                                         return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
@@ -2308,7 +2308,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     catch (FlurlHttpException ex)
                                     {
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                        Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
+                                        Log.Fatal("{@createNewReoccurringInvoice}", createNewReoccurringInvoice);
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
                                         return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
@@ -2330,7 +2330,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     catch (FlurlHttpException ex)
                                     {
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                        Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
+                                        Log.Fatal("{@createNewReoccurringInvoice}", createNewReoccurringInvoice);
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
                                         return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
@@ -2398,7 +2398,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     catch (FlurlHttpException ex)
                                     {
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                        Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
+                                        Log.Fatal("{@createNewReoccurringInvoice}", createNewReoccurringInvoice);
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
                                         return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
@@ -2414,7 +2414,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     catch (FlurlHttpException ex)
                                     {
                                         Log.Fatal("[Checkout] Failed to update the invoices in the billing system.");
-                                        Log.Fatal(JsonSerializer.Serialize(createNewReoccurringInvoice));
+                                        Log.Fatal("{@createNewReoccurringInvoice}", createNewReoccurringInvoice);
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
                                         return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
@@ -2475,7 +2475,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     catch (FlurlHttpException ex)
                                     {
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                        Log.Fatal(JsonSerializer.Serialize(createNewOneTimeInvoice));
+                                        Log.Fatal("{@createNewOneTimeInvoice}", createNewOneTimeInvoice);
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
                                         return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
@@ -2491,7 +2491,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     catch (FlurlHttpException ex)
                                     {
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
-                                        Log.Fatal(JsonSerializer.Serialize(createNewOneTimeInvoice));
+                                        Log.Fatal("{@createNewOneTimeInvoice}", createNewOneTimeInvoice);
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
                                         return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });

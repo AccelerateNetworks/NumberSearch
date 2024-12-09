@@ -3,7 +3,6 @@ using Amazon.S3.Transfer;
 
 using DnsClient;
 
-using FirstCom;
 using FirstCom.Models;
 
 using Flurl.Http;
@@ -38,7 +37,6 @@ using Serilog.Events;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
-using System.Linq;
 using System.Net.Mail;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -336,7 +334,7 @@ try
     {
         if (token != appSettings.ConnectionStrings.PComNetIncomingToken)
         {
-            Log.Warning($"Token is not valid. Token: {token} is not {appSettings.ConnectionStrings.PComNetIncomingToken}");
+            Log.Warning("Token is not valid. Token: {Token} is not {ConfigToken}", token, appSettings.ConnectionStrings.PComNetIncomingToken);
             return TypedResults.Unauthorized();
         }
 
@@ -358,7 +356,7 @@ try
             // Disabled because this secret value changes whenever.
             //if (serversecret != firstPointIncomingMMSSecret)
             //{
-            //    Log.Warning($"Token is not valid. serversecret: {serversecret} is not {firstPointIncomingMMSSecret}");
+            //    Log.Warning("Token is not valid. serversecret: {Serversecret} is not {FirstPointIncomingMMSSecret}", serversecret, firstPointIncomingMMSSecret);
             //    return TypedResults.Unauthorized();
             //}
 
@@ -393,7 +391,7 @@ try
                 }
                 else
                 {
-                    Log.Error($"Failed to parse MSISDN {msisdn} from incoming request {incomingRequest} please file a ticket with the message provider.");
+                    Log.Error($"Failed to parse MSISDN {msisdn} from incoming request {incomingRequest} please file a ticket with the message provider.", msisdn, incomingRequest);
                     // We want the customer to get this message event if the From address is invalid.
                     toForward.Content = $"This message was received from an invalid phone number {msisdn}. You will not be able to respond. {toForward.Content}";
                     toForward.From = "12068588757";
@@ -449,7 +447,7 @@ try
                 }
                 else
                 {
-                    Log.Error($"Failed to parse To {to} from incoming request {incomingRequest} please file a ticket with the message provider.");
+                    Log.Error("Failed to parse To {To} from incoming request {Incoming} please file a ticket with the message provider.", to, incomingRequest);
 
                     messageRecord.Content = toForward.Content;
                     messageRecord.From = toForward.From;
@@ -544,7 +542,7 @@ try
                     var response = await client.CallbackUrl.PostJsonAsync(toForward);
                     string responseText = await response.GetStringAsync();
                     Log.Information(responseText);
-                    Log.Information(System.Text.Json.JsonSerializer.Serialize(toForward));
+                    Log.Information("{@toForward}", toForward);
                     messageRecord.RawResponse = responseText;
                     messageRecord.Succeeded = true;
                 }
@@ -552,9 +550,9 @@ try
                 {
                     string error = await ex.GetResponseStringAsync();
                     Log.Error(error);
-                    Log.Error(System.Text.Json.JsonSerializer.Serialize(client));
-                    Log.Error(System.Text.Json.JsonSerializer.Serialize(toForward));
-                    Log.Error($"Failed to forward message to {toForward.To}");
+                    Log.Error("{@client}", client);
+                    Log.Error("{@toForward}", toForward);
+                    Log.Error("Failed to forward message to {To}", toForward.To);
                     messageRecord.RawResponse = $"Failed to forward message to {toForward.To} {error}";
                 }
 
@@ -607,12 +605,12 @@ try
                     var checkSend = await email.SendEmailAsync(appSettings.ConnectionStrings.EmailUsername, appSettings.ConnectionStrings.EmailPassword, $"{toForward.From}@texts.acceleratenetworks.com", [.. attachmentPaths]);
                 }
 
-                Log.Information(System.Text.Json.JsonSerializer.Serialize(messageRecord));
+                Log.Information("{@messageRecord}", messageRecord);
                 return TypedResults.Ok("The incoming message was received and forwarded to the client.");
             }
             else
             {
-                Log.Warning($"{toForward.To} is not registered as a client.");
+                Log.Warning("{To} is not registered as a client.", toForward.To);
 
                 messageRecord.To = toForward.To;
                 messageRecord.From = toForward.From;
@@ -932,11 +930,11 @@ public static class Endpoints
                 var record = result.Answers.MxRecords().FirstOrDefault();
                 if (record is not null)
                 {
-                    Log.Information($"Email address {registration.Email} has a valid domain: {emailDomain.Host}.");
+                    Log.Information("Email address {Email} has a valid domain: {Host}.", registration.Email, emailDomain.Host);
                 }
                 else
                 {
-                    Log.Error($"Email address {registration.Email} has an invalid domain: {emailDomain.Host}.");
+                    Log.Error("Email address {Email} has an invalid domain: {Host}.", registration.Email, emailDomain.Host);
                     return TypedResults.BadRequest(new RegistrationResponse
                     {
                         DialedNumber = registration.DialedNumber,
@@ -1106,7 +1104,7 @@ public static class Endpoints
                         var response = await registration.CallbackUrl.PostJsonAsync(messageToForward);
                         string responseText = await response.GetStringAsync();
                         Log.Information(responseText);
-                        Log.Information(System.Text.Json.JsonSerializer.Serialize(messageToForward));
+                        Log.Information("{@messageToForward}", messageToForward);
                         failedMessage.RawResponse = responseText;
                         failedMessage.Succeeded = true;
                         await db.SaveChangesAsync();
@@ -1367,7 +1365,7 @@ public static class Endpoints
                             var response = await client.CallbackUrl.PostJsonAsync(toForward);
                             string responseText = await response.GetStringAsync();
                             Log.Information(responseText);
-                            Log.Information(System.Text.Json.JsonSerializer.Serialize(toForward));
+                            Log.Information("{@Forward}", toForward);
                             messageRecord.RawResponse = responseText;
                             messageRecord.Succeeded = true;
                         }
@@ -1375,9 +1373,9 @@ public static class Endpoints
                         {
                             string error = await ex.GetResponseStringAsync();
                             Log.Error(error);
-                            Log.Error(System.Text.Json.JsonSerializer.Serialize(client));
-                            Log.Error(System.Text.Json.JsonSerializer.Serialize(toForward));
-                            Log.Error($"Failed to forward message to {toForward.To}");
+                            Log.Error("{@Client}", client);
+                            Log.Error("{@toForward}", toForward);
+                            Log.Error("Failed to forward message to {To}", toForward.To);
                             messageRecord.RawResponse = $"Failed to forward message to {toForward.To} at {client.CallbackUrl} {ex.StatusCode} {error}";
                         }
 
@@ -1391,12 +1389,12 @@ public static class Endpoints
                             return TypedResults.BadRequest($"Failed to save incoming message to the database. {ex.Message} {System.Text.Json.JsonSerializer.Serialize(messageRecord)}");
                         }
 
-                        Log.Information(System.Text.Json.JsonSerializer.Serialize(messageRecord));
+                        Log.Information("{@messageRecord}", messageRecord);
                         return TypedResults.Ok("The incoming message was replayed and forwarded to the client.");
                     }
                     else
                     {
-                        Log.Warning($"{toForward.To} is not registered as a client.");
+                        Log.Warning("{To} is not registered as a client.", toForward.To);
 
                         messageRecord.To = toForward.To;
                         messageRecord.From = toForward.From;
@@ -1634,7 +1632,7 @@ public static class Endpoints
             {
                 if (toForward.messagebody.Length > 160)
                 {
-                    Log.Error($"SMS Message body length exceeded. Length: {toForward.messagebody.Length}");
+                    Log.Error("SMS Message body length exceeded. Length: {Length}", toForward.messagebody.Length);
                     return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. SMS Message body length exceeded. Length: {toForward.messagebody.Length}", MessageSent = false });
                 }
                 else
@@ -1699,7 +1697,7 @@ public static class Endpoints
         catch (FlurlHttpException ex)
         {
             var error = await ex.GetResponseStringAsync();
-            Log.Error($"{ex?.StatusCode} - {ex?.Message} - {ex?.Call?.Request?.Url} - {error}");
+            Log.Error("{StatusCode} - {Message} - {Url} - {Error}", ex?.StatusCode, ex?.Message, ex?.Call?.Request?.Url, error);
 
             record = new MessageRecord
             {
@@ -1768,7 +1766,7 @@ public static class Endpoints
     {
         if (token != appSettings.ConnectionStrings.PComNetIncomingToken)
         {
-            Log.Warning($"Token is not valid. Token: {token} is not {appSettings.ConnectionStrings.PComNetIncomingToken}");
+            Log.Warning("Token is not valid. Token: {Token} is not {PComNetIncomingToken}", token, appSettings.ConnectionStrings.PComNetIncomingToken);
             return TypedResults.Unauthorized();
         }
 
@@ -1823,7 +1821,7 @@ public static class Endpoints
                 }
                 else
                 {
-                    Log.Error($"Failed to parse MSISDN {msisdn} from incoming request {incomingRequest} please file a ticket with the message provider.");
+                    Log.Error("Failed to parse MSISDN {Msisdn} from incoming request {IncomingRequest} please file a ticket with the message provider.", msisdn, incomingRequest);
                     // We want the customer to get this message event if the From address is invalid.
                     toForward.Content = $"This message was received from an invalid phone number {msisdn}. You will not be able to respond. {toForward.Content}";
                     toForward.From = "12068588757";
@@ -1879,7 +1877,7 @@ public static class Endpoints
                 }
                 else
                 {
-                    Log.Error($"Failed to parse To {to} from incoming request {incomingRequest} please file a ticket with the message provider.");
+                    Log.Error("Failed to parse To {To} from incoming request {IncomingRequest} please file a ticket with the message provider.", to, incomingRequest);
 
                     messageRecord.Content = toForward.Content;
                     messageRecord.From = toForward.From;
@@ -1920,7 +1918,7 @@ public static class Endpoints
                         var response = await client.CallbackUrl.PostJsonAsync(toForward);
                         string responseText = await response.GetStringAsync();
                         Log.Information(responseText);
-                        Log.Information(System.Text.Json.JsonSerializer.Serialize(toForward));
+                        Log.Information("{@toForward}", toForward);
                         messageRecord.RawResponse = responseText;
                         messageRecord.Succeeded = true;
                     }
@@ -1929,9 +1927,9 @@ public static class Endpoints
                 {
                     string error = await ex.GetResponseStringAsync();
                     Log.Error(error);
-                    Log.Error(System.Text.Json.JsonSerializer.Serialize(client));
-                    Log.Error(System.Text.Json.JsonSerializer.Serialize(toForward));
-                    Log.Error($"Failed to forward message to {toForward.To}");
+                    Log.Error("{@client}", client);
+                    Log.Error("{@toForward}", toForward);
+                    Log.Error("Failed to forward message to {To}", toForward.To);
                     messageRecord.RawResponse = $"Failed to forward message to {toForward.To} at {client.CallbackUrl} {ex.StatusCode} {error}";
                 }
 
@@ -1964,12 +1962,12 @@ public static class Endpoints
                     var checkSend = await email.SendEmailAsync(appSettings.ConnectionStrings.EmailUsername, appSettings.ConnectionStrings.EmailPassword, $"{toForward.From}@texts.acceleratenetworks.com", null);
                 }
 
-                Log.Information(System.Text.Json.JsonSerializer.Serialize(messageRecord));
+                Log.Information("{@messageRecord}", messageRecord);
                 return TypedResults.Ok("The incoming message was received and forwarded to the client.");
             }
             else
             {
-                Log.Warning($"{toForward.To} is not registered as a client.");
+                Log.Warning("{To} is not registered as a client.", toForward.To);
 
                 messageRecord.To = toForward.To;
                 messageRecord.From = toForward.From;
@@ -2073,18 +2071,18 @@ public static class Endpoints
                 var record = result.Answers.MxRecords().FirstOrDefault();
                 if (record is not null)
                 {
-                    Log.Information($"[Checkout] Email address {ToEmailAddress} has a valid domain: {emailDomain.Host}.");
+                    Log.Information("[Checkout] Email address {ToEmailAddress} has a valid domain: {Host}.", ToEmailAddress, emailDomain.Host);
                 }
                 else
                 {
-                    Log.Error($"[Checkout] Email address {ToEmailAddress} has an invalid domain: {emailDomain.Host}.");
+                    Log.Error("[Checkout] Email address {ToEmailAddress} has an invalid domain: {Host}.", ToEmailAddress, emailDomain.Host);
                     var message = $"💀 The email server at {emailDomain.Host} didn't have an MX record. Please supply a valid email address.";
                     return TypedResults.BadRequest(message);
                 }
             }
             catch (Exception ex)
             {
-                Log.Error($"[Checkout] Email address {ToEmailAddress} has an invalid domain: {emailDomain.Host}. {ex.Message}");
+                Log.Error("[Checkout] Email address {ToEmailAddress} has an invalid domain: {Host}. {Message}", ToEmailAddress, emailDomain.Host, ex.Message);
                 var message = $"💀 The email server at {emailDomain.Host} didn't have an MX record. Please supply a valid email address. {ex.Message}";
                 return TypedResults.BadRequest(message);
             }
@@ -2191,7 +2189,7 @@ namespace Models
             }
             catch (Exception ex)
             {
-                Log.Fatal($"[Email] Failed to send email {Subject}.");
+                Log.Fatal("[Email] Failed to send email {Subject}.", Subject);
                 Log.Fatal(ex.Message);
                 Log.Fatal(ex.StackTrace ?? "StackTrace was null.");
                 Completed = false;

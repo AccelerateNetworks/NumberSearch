@@ -47,7 +47,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                 // Fail fast
                 if (portable.Portable is false)
                 {
-                    Log.Information($"[Portability] {phoneNumber.DialedNumber} is not Portable.");
+                    Log.Information("[Portability] {DialedNumber} is not Portable.", phoneNumber.DialedNumber);
 
                     return new AccelerateNetworks.Operations.PortedPhoneNumber
                     {
@@ -86,7 +86,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                 var numberName = await CnamBulkVs.GetAsync(phoneNumber.DialedNumber.AsMemory(), _bulkVSAPIKey.AsMemory());
                 checkNumber = checkNumber with { LIDBName = string.IsNullOrWhiteSpace(numberName.name) ? string.Empty : numberName.name };
 
-                Log.Information($"[Portability] {phoneNumber.DialedNumber} is Portable.");
+                Log.Information("[Portability] {DialedNumber} is Portable.", phoneNumber.DialedNumber);
 
                 var portableNumber = new AccelerateNetworks.Operations.PortedPhoneNumber
                 {
@@ -108,9 +108,9 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
             }
             catch (Exception ex)
             {
-                Log.Information($"[Portability] {number} is not Portable.");
-                Log.Fatal($"[Portability] {ex.Message}");
-                Log.Fatal($"[Portability] {ex.InnerException}");
+                Log.Information("[Portability] {number} is not Portable.", number);
+                Log.Fatal("[Portability] {Message}", ex.Message);
+                Log.Fatal("[Portability] {InnerException}", ex.InnerException);
 
                 return new AccelerateNetworks.Operations.PortedPhoneNumber
                 {
@@ -121,7 +121,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
         }
         else
         {
-            Log.Information($"[Portability] {number} is not Portable. Failed NPA, NXX, XXXX parsing.");
+            Log.Information("[Portability] {number} is not Portable. Failed NPA, NXX, XXXX parsing.", number);
 
             return new AccelerateNetworks.Operations.PortedPhoneNumber
             {
@@ -305,7 +305,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
 
                     if (port is not null && port.Portable)
                     {
-                        Log.Information($"[Portability] {port.PortedDialedNumber} is Portable.");
+                        Log.Information("[Portability] {PortedDialedNumber} is Portable.", port.PortedDialedNumber);
 
                         port.OrderId = order.OrderId;
                         port.PortRequestId = portRequest.PortRequestId;
@@ -368,7 +368,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                     if (!string.IsNullOrWhiteSpace(portRequest.UnparsedAddress) && portRequest.UnparsedAddress != fromDb.UnparsedAddress)
                     {
                         // Format the address information
-                        Log.Information($"[Checkout] Parsing address data from {portRequest.UnparsedAddress}");
+                        Log.Information("[Checkout] Parsing address data from {UnparsedAddress}", portRequest.UnparsedAddress);
                         var addressParts = portRequest.UnparsedAddress?.Split(", ") ?? [];
                         if (addressParts is not null && addressParts.Length > 4)
                         {
@@ -377,7 +377,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                             fromDb.State = addressParts[2];
                             fromDb.Zip = addressParts[3];
                             fromDb.UnparsedAddress = portRequest.UnparsedAddress;
-                            Log.Information($"[Checkout] Address: {fromDb.Address} City: {fromDb.City} State: {fromDb.State} Zip: {fromDb.Zip}");
+                            Log.Information("[Checkout] Address: {Address} City: {City} State: {State} Zip: {Zip}", fromDb.Address, fromDb.City,fromDb.State, fromDb.Zip);
                         }
                         else
                         {
@@ -642,7 +642,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                             {
 
                                 var bulkResponse = await bulkVSPortRequest.PutAsync(_bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
-                                Log.Information(JsonSerializer.Serialize(bulkResponse));
+                                Log.Information("[PortRequest] {@bulkResponse}", bulkResponse);
 
                                 if (portRequest is not null && !string.IsNullOrWhiteSpace(bulkResponse.OrderId))
                                 {
@@ -727,7 +727,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                 context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                 await context.SaveChangesAsync();
 
-                Log.Information($"[Port Request] Updated Order {order.OrderId} to kick off the background work.");
+                Log.Information("[Port Request] Updated Order {OrderId} to kick off the background work.", order.OrderId);
 
                 return View("PortRequestEdit", new PortRequestResult
                 {

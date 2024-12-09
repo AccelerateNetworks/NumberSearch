@@ -143,7 +143,7 @@ namespace NumberSearch.Ops.Controllers
                 }
                 catch (Exception ex)
                 {
-                    Log.Fatal($"[Checkout] Failed to get the Sale Tax rate for {location.Address}, {location.City}, {location.Zip}.");
+                    Log.Fatal("[Checkout] Failed to get the Sale Tax rate for {Address}, {City}, {Zip}.", location.Address, location.City, location.Zip);
                     Log.Fatal(ex.Message);
                     Log.Fatal(ex.StackTrace ?? "StackTrace was null.");
                     Log.Fatal(ex.InnerException?.Message ?? "Inner Exception Message was null.");

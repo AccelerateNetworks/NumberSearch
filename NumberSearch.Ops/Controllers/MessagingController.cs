@@ -230,16 +230,16 @@ namespace NumberSearch.Ops.Controllers
                 {
                     // Verify that this number is routed through our upstream provider.
                     var checkRouted = await FirstPointCom.GetSMSRoutingByDialedNumberAsync(dialedNumber.AsMemory(), _config.PComNetUsername.AsMemory(), _config.PComNetPassword.AsMemory());
-                    Log.Information(System.Text.Json.JsonSerializer.Serialize(checkRouted));
+                    Log.Information("[Messaging] {@Routed}", checkRouted);
                     registeredUpstream = checkRouted.QueryResult.code is 0;
                     upstreamStatusDescription = checkRouted.QueryResult.text;
                     if (checkRouted.QueryResult.code is not 0)
                     {
                         // Enabled routing and set the EPID if the number is not already routed.
                         var enableSMS = await FirstPointCom.EnableSMSByDialedNumberAsync(dialedNumber.AsMemory(), _config.PComNetUsername.AsMemory(), _config.PComNetPassword.AsMemory());
-                        Log.Information(System.Text.Json.JsonSerializer.Serialize(enableSMS));
+                        Log.Information("{@enableSMS}", enableSMS);
                         var checkRoutedAgain = await FirstPointCom.GetSMSRoutingByDialedNumberAsync(dialedNumber.AsMemory(), _config.PComNetUsername.AsMemory(), _config.PComNetPassword.AsMemory());
-                        Log.Information(System.Text.Json.JsonSerializer.Serialize(checkRouted));
+                        Log.Information("{@checkRouted}", checkRouted);
                         registeredUpstream = checkRouted.QueryResult.code is 0;
                         upstreamStatusDescription = checkRouted.QueryResult.text;
                         result.Message = $"❓Attempted to set and enable SMS routing for {dialedNumber}. SMS Enabled? {enableSMS.text} SMS Routed? {checkRoutedAgain.QueryResult.text} Please try again in 24 hours.";
