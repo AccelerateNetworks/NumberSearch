@@ -69,31 +69,31 @@ steps:
 
 - task: FileTransform@2
   inputs:
-    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Tests/bin/Release/net8.0/'
+    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Tests/bin/Release/net9.0/'
     jsonTargetFiles: 'appsettings.json'
     xmlTransformationRules: '' # disabled
 
 - task: FileTransform@2
   inputs:
-    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Mvc/bin/Release/net8.0/'
+    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Mvc/bin/Release/net9.0/'
     jsonTargetFiles: 'appsettings.json'
     xmlTransformationRules: '' # disabled
 
 - task: FileTransform@2
   inputs:
-    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ingest/bin/Release/net8.0/'
+    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ingest/bin/Release/net9.0/'
     jsonTargetFiles: 'appsettings.json'
     xmlTransformationRules: '' # disabled
 
 - task: FileTransform@2
   inputs:
-    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ops/bin/Release/net8.0/'
+    folderPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ops/bin/Release/net9.0/'
     jsonTargetFiles: 'appsettings.json'
     xmlTransformationRules: '' # disabled
 
 - task: FileTransform@2
   inputs:
-    folderPath: '$(System.DefaultWorkingDirectory)/Messaging/bin/Release/net8.0/'
+    folderPath: '$(System.DefaultWorkingDirectory)/Messaging/bin/Release/net9.0/'
     jsonTargetFiles: 'appsettings.json'
     xmlTransformationRules: '' # disabled
 
@@ -106,23 +106,23 @@ steps:
 - task: PublishPipelineArtifact@1
   inputs:
     artifactName: 'Mvc'
-    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Mvc/bin/Release/net8.0/'
+    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Mvc/bin/Release/net9.0/'
     publishLocation: 'pipeline'
 
 - task: PublishPipelineArtifact@1
   inputs:
     artifactName: 'Ingest'
-    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ingest/bin/Release/net8.0/'
+    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ingest/bin/Release/net9.0/'
     publishLocation: 'pipeline'
 
 - task: PublishPipelineArtifact@1
   inputs:
     artifactName: 'Ops'
-    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ops/bin/Release/net8.0/'
+    targetPath: '$(System.DefaultWorkingDirectory)/NumberSearch.Ops/bin/Release/net9.0/'
     publishLocation: 'pipeline'
 
 - task: PublishPipelineArtifact@1
   inputs:
     artifactName: 'Messaging'
-    targetPath: '$(System.DefaultWorkingDirectory)/Messaging/bin/Release/net8.0/'
+    targetPath: '$(System.DefaultWorkingDirectory)/Messaging/bin/Release/net9.0/'
     publishLocation: 'pipeline'
