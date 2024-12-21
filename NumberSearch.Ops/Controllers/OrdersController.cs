@@ -737,7 +737,28 @@ public class OrdersController(OpsConfig opsConfig,
                                             PurchasedPhoneNumbers = purchasedPhoneNumbers
                                         };
 
-                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Successfully registered {phoneNumber.DialedNumber} with E911! 🥳", AlertType = "alert-success" });
+                                        // Find numbers registered for E911 service manually.
+                                        var e911Registrations = new List<EmergencyInformation>();
+
+                                        foreach (var number in purchasedPhoneNumbers)
+                                        {
+                                            var match = await _context.EmergencyInformation.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == number.DialedNumber);
+                                            if (match is not null)
+                                            {
+                                                e911Registrations.Add(match);
+                                            }
+                                        }
+
+                                        foreach (var number in portedPhoneNumbers)
+                                        {
+                                            var match = await _context.EmergencyInformation.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == number.PortedDialedNumber);
+                                            if (match is not null)
+                                            {
+                                                e911Registrations.Add(match);
+                                            }
+                                        }
+
+                                        return View("OrderEdit", new EditOrderResult { Order = order, EmergencyInformation = [.. e911Registrations], Cart = cart, Message = $"Successfully registered {phoneNumber.DialedNumber} with E911! 🥳", AlertType = "alert-success" });
                                     }
                                     else
                                     {
