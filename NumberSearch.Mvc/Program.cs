@@ -18,10 +18,12 @@ namespace NumberSearch.Mvc
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .Enrich.FromLogContext()
-                .WriteTo.Console()
+                //.WriteTo.Console()
                 .WriteTo.File($"NumberSearch.Mvc_{DateTime.Now:yyyyMMdd}.txt",
                                                 rollingInterval: RollingInterval.Day,
                                                 rollOnFileSizeLimit: true,
+                                                retainedFileCountLimit: 2,
+                                                retainedFileTimeLimit: TimeSpan.FromDays(3),
                                                 shared: true)
                 .CreateLogger();
 

@@ -14,10 +14,9 @@ namespace NumberSearch.Ops
         public static async Task<int> Main(string[] args)
         {
             Log.Logger = new LoggerConfiguration()
-                            .MinimumLevel.Debug()
                             .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                             .Enrich.FromLogContext()
-                            .WriteTo.Console()
+                            //.WriteTo.Console()
                             .CreateLogger();
 
             try
@@ -42,9 +41,11 @@ namespace NumberSearch.Ops
                 .UseSerilog((hostingContext, services, loggerConfiguration) => loggerConfiguration
                     .ReadFrom.Configuration(hostingContext.Configuration)
                     .Enrich.FromLogContext()
-                    .WriteTo.Console()
-                    .WriteTo.File($"NumberSearch.Ops_{DateTime.Now:yyyyMMdd}.txt",
+                    //.WriteTo.Console()
+                    .WriteTo.File($"Ops.txt",
                         rollingInterval: RollingInterval.Day,
+                        retainedFileTimeLimit: TimeSpan.FromDays(3),
+                        retainedFileCountLimit: 2,
                         rollOnFileSizeLimit: true))
                 .ConfigureWebHostDefaults(webBuilder =>
                 {

@@ -68,13 +68,16 @@ namespace NumberSearch.Ingest
             };
 
             Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console()
-                .WriteTo.Async(x => x.File(
-                    $"{DateTime.Now:yyyyMMdd}_NumberSearch.Ingest.txt",
+                // Enable when debugging otherwise the linux system logs will duplicate all the log lines produced.
+                //.WriteTo.Console()
+                .WriteTo.File(
+                    $"Ingest.txt",
                     rollingInterval: RollingInterval.Day,
                     rollOnFileSizeLimit: true,
-                    buffered: true
-                ))
+                    retainedFileCountLimit: 2,
+                    retainedFileTimeLimit: TimeSpan.FromDays(3),
+                    shared: true
+                )
                 .CreateLogger();
 
             Log.Information("[Heartbeat] Ingest scheduling loop is starting. {ProcessorCount} threads detected.", Environment.ProcessorCount);

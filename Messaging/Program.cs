@@ -46,10 +46,12 @@ Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
-                .WriteTo.Console()
+                //.WriteTo.Console()
                 .WriteTo.File(
-                    $"{DateTime.Now:yyyyMMdd}_NumberSearch.Messaging.txt",
+                    $"Messaging.txt",
                     rollingInterval: RollingInterval.Day,
+                    retainedFileCountLimit: 2,
+                    retainedFileTimeLimit: TimeSpan.FromDays(3),
                     rollOnFileSizeLimit: true
                 )
                 .CreateLogger();
