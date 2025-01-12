@@ -48,7 +48,7 @@ Log.Logger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
                 //.WriteTo.Console()
                 .WriteTo.File(
-                    $"Messaging.txt",
+                    $"log.txt",
                     rollingInterval: RollingInterval.Day,
                     retainedFileCountLimit: 2,
                     retainedFileTimeLimit: TimeSpan.FromDays(3),

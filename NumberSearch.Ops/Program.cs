@@ -42,7 +42,7 @@ namespace NumberSearch.Ops
                     .ReadFrom.Configuration(hostingContext.Configuration)
                     .Enrich.FromLogContext()
                     //.WriteTo.Console()
-                    .WriteTo.File($"Ops.txt",
+                    .WriteTo.File($"log.txt",
                         rollingInterval: RollingInterval.Day,
                         retainedFileTimeLimit: TimeSpan.FromDays(3),
                         retainedFileCountLimit: 2,

@@ -71,7 +71,7 @@ namespace NumberSearch.Ingest
                 // Enable when debugging otherwise the linux system logs will duplicate all the log lines produced.
                 //.WriteTo.Console()
                 .WriteTo.File(
-                    $"Ingest.txt",
+                    $"log.txt",
                     rollingInterval: RollingInterval.Day,
                     rollOnFileSizeLimit: true,
                     retainedFileCountLimit: 2,

@@ -19,7 +19,7 @@ namespace NumberSearch.Mvc
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .Enrich.FromLogContext()
                 //.WriteTo.Console()
-                .WriteTo.File($"NumberSearch.Mvc_{DateTime.Now:yyyyMMdd}.txt",
+                .WriteTo.File($"log.txt",
                                                 rollingInterval: RollingInterval.Day,
                                                 rollOnFileSizeLimit: true,
                                                 retainedFileCountLimit: 2,
