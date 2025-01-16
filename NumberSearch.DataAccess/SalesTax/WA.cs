@@ -17,7 +17,7 @@ namespace NumberSearch.DataAccess
     public record SalesTax
     {
         public Addressline addressline { get; set; } = new();
-        public TaxRate rate { get; set; } = new();
+        public Rate rate { get; set; } = new();
         [XmlAttribute()]
         public int loccode { get; set; }
         [XmlAttribute()]
@@ -61,7 +61,7 @@ namespace NumberSearch.DataAccess
         [System.Serializable()]
         [System.ComponentModel.DesignerCategory("code")]
         [XmlType(AnonymousType = true)]
-        public partial record TaxRate
+        public partial record Rate
         {
             [XmlAttribute()]
             public string name { get; set; } = string.Empty;
@@ -114,4 +114,21 @@ namespace NumberSearch.DataAccess
             return (SalesTax)serializer.Deserialize(result)!;
         }
     }
+
+    public readonly record struct TaxRate(string name, int locationCode, decimal state, decimal local, decimal rta, decimal rate, DateTime effectiveDate, DateTime expirationDate)
+    {
+        public static async Task<TaxRate> GetSalesTaxAsync(ReadOnlyMemory<char> streetAddress, ReadOnlyMemory<char> city, ReadOnlyMemory<char> zip)
+        {
+            string baseUrl = "https://wataxlookup.acceleratenetworks.com/";
+            string endpoint = "GetTaxRate";
+            string addrParameter = $"?addr={streetAddress}";
+            string cityParameter = $"&city={city}";
+            string zipParameter = $"&zip={zip}";
+            string url = $"{baseUrl}{endpoint}{addrParameter}{cityParameter}{zipParameter}";
+
+            var result = await url.GetJsonAsync<TaxRate>();
+
+            return result;
+        }
+    };
 }

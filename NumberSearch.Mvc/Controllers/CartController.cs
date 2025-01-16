@@ -870,31 +870,19 @@ namespace NumberSearch.Mvc.Controllers
                             }
 
                             // Handle the tax information for the invoice and fall back to simpler queries if we get failures.
-                            SalesTax specificTaxRate = null!;
+                            DataAccess.TaxRate specificTaxRate = new();
                             if (order.State is "WA" || order.State is "Washington")
                             {
                                 try
                                 {
                                     // Use our own API
-                                    specificTaxRate = await SalesTax.GetLocalAPIAsync(order.Address.AsMemory(), string.Empty.AsMemory(), order.Zip.AsMemory());
+                                    specificTaxRate = await DataAccess.TaxRate.GetSalesTaxAsync(order.Address.AsMemory(), string.Empty.AsMemory(), order.Zip.AsMemory());
                                 }
                                 catch
                                 {
                                     Log.Fatal("[Checkout] Failed to get the Sale Tax rate from the local API for {Address}, {Zip}.", order.Address, order.Zip);
                                 }
 
-                                if (specificTaxRate is null)
-                                {
-                                    try
-                                    {
-                                        // Fall back to using the state's API
-                                        specificTaxRate = await SalesTax.GetAsync(order.Address.AsMemory(), order.City.AsMemory(), order.Zip.AsMemory());
-                                    }
-                                    catch
-                                    {
-                                        Log.Fatal("[Checkout] Failed to get the Sale Tax rate from the state's API for {City}, {Zip}.", order.City, order.Zip);
-                                    }
-                                }
                             }
 
                             var billingTaxRate = new TaxRateDatum
@@ -904,13 +892,14 @@ namespace NumberSearch.Mvc.Controllers
                             };
 
                             // Validation rules to prevent impossible tax rates.
-                            if (specificTaxRate is not null && specificTaxRate.rate1 > 0 && specificTaxRate.rate1 < 0.15M && !string.IsNullOrWhiteSpace(specificTaxRate.rate?.name) && (order.State is "WA" || order.State is "Washington"))
+                            if (specificTaxRate.rate > 0 && specificTaxRate.rate < 0.15M && !string.IsNullOrWhiteSpace(specificTaxRate.name) && (order.State is "WA" || order.State is "Washington"))
                             {
-                                var rateName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(specificTaxRate.rate.name.ToLowerInvariant());
-                                var taxRateName = $"{rateName}, WA - {specificTaxRate.loccode}";
-                                var taxRateValue = specificTaxRate.rate1 * 100M;
+                                var rateName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(specificTaxRate.name.ToLowerInvariant());
+                                var quarter = specificTaxRate.effectiveDate.Month + 2 / 3;
+                                var taxRateName = $"{rateName}, WA - {specificTaxRate.locationCode} - Q{quarter}{specificTaxRate.effectiveDate.Year}";
+                                var taxRateValue = specificTaxRate.rate * 100M;
 
-                                var existingTaxRates = await TaxRate.GetAllAsync(_invoiceNinjaToken.AsMemory());
+                                var existingTaxRates = await DataAccess.InvoiceNinja.TaxRate.GetAllAsync(_invoiceNinjaToken.AsMemory());
                                 billingTaxRate = existingTaxRates.data.Where(x => x.name == taxRateName).FirstOrDefault();
                                 if (string.IsNullOrWhiteSpace(billingTaxRate.name))
                                 {

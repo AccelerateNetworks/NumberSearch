@@ -129,7 +129,7 @@ namespace NumberSearch.Tests
         public async Task GetBillingTaxRatesAsync()
         {
             // Act
-            var result = await TaxRate.GetAllAsync(invoiceNinjaToken.AsMemory());
+            var result = await DataAccess.InvoiceNinja.TaxRate.GetAllAsync(invoiceNinjaToken.AsMemory());
 
             // Assert        
             Assert.False(string.IsNullOrWhiteSpace(result.data.FirstOrDefault().id));
@@ -1646,6 +1646,19 @@ namespace NumberSearch.Tests
 
             Assert.NotNull(result);
             Assert.True(result.rate1 > 0.0M);
+            output.WriteLine(JsonSerializer.Serialize(result));
+        }
+
+        [Fact]
+        public async Task GetRateAsync()
+        {
+            string address = "6300 linderson way";
+            string city = string.Empty;
+            string zip = "98501";
+
+            var result = await DataAccess.TaxRate.GetSalesTaxAsync(address.AsMemory(), city.AsMemory(), zip.AsMemory());
+
+            Assert.True(result.rate > 0.0m);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
