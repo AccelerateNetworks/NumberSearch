@@ -1617,38 +1617,6 @@ namespace NumberSearch.Tests
             Assert.NotNull(results);
         }
 
-        //[Fact]
-        //public async Task GetSaleTaxForOrderAsync()
-        //{
-        //    var conn = postgresql;
-
-        //    var results = await Order.GetAllAsync(conn);
-
-        //    Assert.NotNull(results);
-        //    Assert.NotEmpty(results);
-
-        //    var order = results.FirstOrDefault();
-
-        //    var taxrate = await SalesTax.GetTaxRateAsync(order.Address, order.City, order.Zip);
-
-        //    Assert.True(taxrate > 0.0M);
-        //    output.WriteLine($"Taxrate: {taxrate}");
-        //}
-
-        [Fact]
-        public async Task GetRawSaleTaxInfoAsync()
-        {
-            string address = "6300 linderson way";
-            string city = string.Empty;
-            string zip = "98501";
-
-            var result = await SalesTax.GetLocalAPIAsync(address.AsMemory(), city.AsMemory(), zip.AsMemory());
-
-            Assert.NotNull(result);
-            Assert.True(result.rate1 > 0.0M);
-            output.WriteLine(JsonSerializer.Serialize(result));
-        }
-
         [Fact]
         public async Task GetRateAsync()
         {
