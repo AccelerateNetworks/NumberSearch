@@ -1713,25 +1713,54 @@ public class OrdersController(OpsConfig opsConfig,
                                     }
                                     else if (coupon.Name == "Install")
                                     {
-
-                                        onetimeItems.Add(new Line_Items
+                                        // If they have selected onsite installation this coupon removes a $75 charge.
+                                        if (order.OnsiteInstallation)
                                         {
-                                            product_key = coupon.Name,
-                                            notes = coupon.Description ?? string.Empty,
-                                            cost = 60 * -1,
-                                            quantity = 1
-                                        });
+                                            onetimeItems.Add(new Line_Items
+                                            {
+                                                product_key = coupon.Name,
+                                                notes = coupon.Description,
+                                                cost = 75 * -1,
+                                                quantity = 1
+                                            });
+                                        }
+                                        else
+                                        {
+                                            onetimeItems.Add(new Line_Items
+                                            {
+                                                product_key = coupon.Name,
+                                                notes = coupon.Description,
+                                                cost = 0,
+                                                quantity = 1
+                                            });
+                                        }
                                     }
                                     else if (coupon.Type == "Number")
                                     {
-                                        totalCost -= totalNumberPurchasingCost;
-                                        onetimeItems.Add(new Line_Items
+                                        if (coupon.Name.Contains("20"))
                                         {
-                                            product_key = coupon.Name ?? string.Empty,
-                                            notes = coupon.Description ?? string.Empty,
-                                            cost = totalNumberPurchasingCost * -1,
-                                            quantity = 1
-                                        });
+                                            var discountTo20 = cart?.PhoneNumbers is not null && cart.PhoneNumbers.Count != 0 ? cart.PhoneNumbers.Count * 20 :
+                                            cart?.PurchasedPhoneNumbers is not null && cart.PurchasedPhoneNumbers.Count != 0 ? cart.PurchasedPhoneNumbers.Count * 20 : 0;
+                                            totalCost -= totalNumberPurchasingCost - discountTo20;
+                                            onetimeItems.Add(new Line_Items
+                                            {
+                                                product_key = coupon.Name,
+                                                notes = coupon.Description,
+                                                cost = (totalNumberPurchasingCost - discountTo20) * -1,
+                                                quantity = 1
+                                            });
+                                        }
+                                        else
+                                        {
+                                            totalCost -= totalNumberPurchasingCost;
+                                            onetimeItems.Add(new Line_Items
+                                            {
+                                                product_key = coupon.Name,
+                                                notes = coupon.Description,
+                                                cost = totalNumberPurchasingCost * -1,
+                                                quantity = 1
+                                            });
+                                        }
                                     }
                                     else
                                     {
@@ -1750,25 +1779,71 @@ public class OrdersController(OpsConfig opsConfig,
                         // Handle hardware installation scenarios, if hardware is in the order.
                         if (cart.Products.Count != 0)
                         {
-                            if (order.OnsiteInstallation)
+                            // Add the call out charge and install estimate to the Cart.
+                            var onsite = await _context.Products.FirstOrDefaultAsync(x => x.ProductId == Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"));
+                            var estimate = await _context.Products.FirstOrDefaultAsync(x => x.ProductId == Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"));
+
+                            // Sum all of the install time estimates.
+                            decimal totalInstallTime = 0m;
+                            foreach (var item in cart.Products)
                             {
-                                onetimeItems.Add(new Line_Items
+                                var quantity = cart.ProductOrders?.Where(x => x.ProductId == item.ProductId).FirstOrDefault();
+
+                                if (item.InstallTime > 0m && quantity is not null)
                                 {
-                                    product_key = "Onsite Hardware Installation",
-                                    notes = $"We'll come visit you and get all your phones setup.",
-                                    cost = 60,
-                                    quantity = 1
-                                });
+                                    totalInstallTime += item.InstallTime * quantity.Quantity;
+                                }
                             }
-                            else
+
+                            if (onsite is not null && estimate is not null)
                             {
-                                onetimeItems.Add(new Line_Items
+                                var productOrderOnsite = new ProductOrder
                                 {
-                                    product_key = "Remote Installation",
-                                    notes = $"We'll walk you through getting all your phones setup virtually.",
-                                    cost = 0,
-                                    quantity = 1
-                                });
+                                    ProductOrderId = Guid.NewGuid(),
+                                    ProductId = onsite.ProductId,
+                                    Quantity = 1
+                                };
+
+                                var productOrderEstimate = new ProductOrder
+                                {
+                                    ProductOrderId = Guid.NewGuid(),
+                                    ProductId = estimate.ProductId,
+                                    Quantity = decimal.ToInt32(Math.Ceiling(totalInstallTime))
+                                };
+
+                                if (order.OnsiteInstallation)
+                                {
+                                    // Add the install charges if they're not already in the Cart.
+                                    var checkOnsiteExists = cart.Products.FirstOrDefault(x => x.ProductId == Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"));
+                                    var checkEstimateExists = cart.Products.FirstOrDefault(x => x.ProductId == Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"));
+
+                                    if (checkOnsiteExists is null && checkEstimateExists is null)
+                                    {
+                                        _ = cart.AddProduct(onsite, productOrderOnsite);
+                                        _ = cart.AddProduct(estimate, productOrderEstimate);
+                                    }
+                                }
+                                else
+                                {
+                                    // Remove the install charges as this is now a remote install.
+                                    _ = cart.RemoveProduct(onsite, productOrderOnsite);
+                                    _ = cart.RemoveProduct(estimate, productOrderEstimate);
+
+                                    // Handle hardware installation scenarios, if hardware is in the order.
+                                    if (cart?.Products is not null && cart.Products.Count != 0)
+                                    {
+                                        if (!order.OnsiteInstallation)
+                                        {
+                                            onetimeItems.Add(new Line_Items
+                                            {
+                                                product_key = "Remote Installation",
+                                                notes = $"We'll walk you through getting all your phones setup virtually.",
+                                                cost = 0,
+                                                quantity = 1
+                                            });
+                                        }
+                                    }
+                                }
                             }
                         }
 
@@ -1861,11 +1936,11 @@ public class OrdersController(OpsConfig opsConfig,
                                 billingClientContact = billingClientContact with { id = newClientContact.id };
                             }
                             billingClient = await newBillingClient.PutAsync(_invoiceNinjaToken.AsMemory());
-                            Log.Information("[Checkout] Created billing client {Name}, {Id}.", billingClient.name, billingClient.id);
+                            Log.Information("[Checkout] Created billing client {Name}, {Id}.", billingClient.display_name, billingClient.id);
                         }
                         else
                         {
-                            Log.Information("[Checkout] Found billing client {Name}, {Id}.", billingClient.name, billingClient.id);
+                            Log.Information("[Checkout] Found billing client {Name}, {Id}.", billingClient.display_name, billingClient.id);
                         }
 
                         // Create the invoices for this order and submit it to the billing system.
@@ -2334,7 +2409,6 @@ public class OrdersController(OpsConfig opsConfig,
                                         if (createNewReoccurringInvoice.tax_name1 != reoccurringInvoice.tax_name1)
                                         {
                                             createNewReoccurringInvoice = createNewReoccurringInvoice with { tax_name1 = reoccurringInvoice.tax_name1 };
-                                            createNewReoccurringInvoice = createNewReoccurringInvoice with { tax_rate1 = reoccurringInvoice.tax_rate1 };
                                         }
                                         createNewReoccurringInvoice = await createNewReoccurringInvoice.PutAsync(_invoiceNinjaToken.AsMemory());
                                     }
@@ -2497,7 +2571,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     try
                                     {
                                         createNewOneTimeInvoice = createNewOneTimeInvoice with { line_items = upfrontInvoice.line_items };
-                                        createNewOneTimeInvoice = await upfrontInvoice.PutAsync(_invoiceNinjaToken);
+                                        createNewOneTimeInvoice = await createNewOneTimeInvoice.PutAsync(_invoiceNinjaToken);
                                     }
                                     catch (FlurlHttpException ex)
                                     {

@@ -125,7 +125,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
             var result = await url
                 .WithHeader(tokenHeader, token)
                 .WithHeader(contentHeader, contentHeaderValue)
-                .PostJsonAsync(new { name })
+                .PostJsonAsync(new { name, contacts })
                 .ReceiveJson<ClientSingle>();
 
             // Unwrap the data we want from the single-field parent object.

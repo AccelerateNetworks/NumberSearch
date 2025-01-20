@@ -8,7 +8,6 @@ using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.LCGuide;
 using NumberSearch.DataAccess.Models;
 using NumberSearch.DataAccess.TeleDynamics;
-using NumberSearch.DataAccess.Twilio;
 using NumberSearch.Mvc.Models;
 
 using ServiceReference1;
@@ -105,6 +104,15 @@ namespace NumberSearch.Tests
             // Assert        
             Assert.False(string.IsNullOrWhiteSpace(result.id));
             Assert.Equal("olejnL4ejN", result.id);
+            Assert.True(result.balance > 0);
+            output.WriteLine(JsonSerializer.Serialize(result));
+
+                            // Act
+            result = await Invoice.GetByIdAsync("oQeZZ5vepZ", invoiceNinjaToken);
+
+            // Assert        
+            Assert.False(string.IsNullOrWhiteSpace(result.id));
+            Assert.Equal("oQeZZ5vepZ", result.id);
             Assert.True(result.balance > 0);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
@@ -267,132 +275,128 @@ namespace NumberSearch.Tests
         //    Assert.True(checkDelete.is_deleted);
         //}
 
-        //[Fact]
-        //public async Task CreateUpdateAndDeleteBillingInvoiceByClientByIdAsync()
-        //{
+        [Fact]
+        public async Task CreateUpdateAndDeleteBillingInvoiceByClientByIdAsync()
+        {
 
-        //    // Arrange
-        //    var testCreateClient = new ClientDatum
-        //    {
-        //        name = "IntegrationTest",
-        //        contacts = new ClientContact[] {
-        //            new ClientContact {
-        //                email = "integrationTest@example.com"
-        //            }
-        //        }
-        //    };
+            // Arrange
+            var testCreateClient = new ClientDatum
+            {
+                name = "IntegrationTest",
+                contacts = [
+                    new ClientContact {
+                        email = "integrationTest@example.com"
+                    }
+                ]
+            };
 
-        //    // Act
-        //    var testClient = await testCreateClient.PostAsync(invoiceNinjaToken);
+            // Act
+            var testClient = await testCreateClient.PostAsync(invoiceNinjaToken.AsMemory());
 
-        //    // Assert        
-        //    Assert.NotNull(testClient);
-        //    Assert.Equal(testCreateClient.name, testClient.name);
-        //    Assert.Equal(testCreateClient.contacts.FirstOrDefault().email, testClient.contacts.FirstOrDefault().email);
-        //    output.WriteLine(JsonSerializer.Serialize(testClient));
+            // Assert        
+            Assert.Equal(testCreateClient.name, testClient.name);
+            Assert.Equal(testCreateClient.contacts.FirstOrDefault().email, testClient.contacts.FirstOrDefault().email);
+            output.WriteLine(JsonSerializer.Serialize(testClient));
 
+            var existingTaxRates = await DataAccess.InvoiceNinja.TaxRate.GetAllAsync(invoiceNinjaToken.AsMemory());
+            var rate = existingTaxRates.data.LastOrDefault();
 
-        //    var testInvoice = new Invoice_Items[] {
-        //        new Invoice_Items {
-        //            product_key = "IntegrationTest",
-        //            notes = "IntegrationTest",
-        //            cost = 10,
-        //            qty = 1
-        //        }
-        //    };
+            var testInvoice = new Line_Items[] {
+                new() {
+                    product_key = "IntegrationTest",
+                    notes = "IntegrationTest",
+                    cost = 10,
+                    quantity = 1
+                }
+            };
 
-        //    var testCreate = new InvoiceDatum
-        //    {
-        //        id = testClient.id,
-        //        invoice_items = testInvoice,
-        //        is_recurring = true,
-        //        frequency_id = 4
-        //    };
+            var testCreate = new InvoiceDatum
+            {
+                client_id = testClient.id,
+                line_items = testInvoice,
+                tax_name1 = rate.name,
+                tax_rate1 = rate.rate,
+            };
 
-        //    // Act
-        //    var result = await testCreate.PostAsync(invoiceNinjaToken);
+            // Act
+            var result = await testCreate.PostAsync(invoiceNinjaToken);
 
-        //    // Assert        
-        //    Assert.NotNull(result);
-        //    Assert.Equal(result.invoice_items.FirstOrDefault().notes, testCreate.invoice_items.FirstOrDefault().notes);
-        //    output.WriteLine(JsonSerializer.Serialize(result));
+            // Assert        
+            Assert.Equal(result.line_items.FirstOrDefault().notes, testCreate.line_items.FirstOrDefault().notes);
+            output.WriteLine(JsonSerializer.Serialize(result));
 
-        //    result.invoice_items.FirstOrDefault().notes = "Updated";
+            var item = result.line_items.FirstOrDefault();
+            result.line_items[0] = item with { notes = "Updated" };
 
-        //    var updateTest = await result.PutAsync(invoiceNinjaToken);
+            var updateTest = await result.PutAsync(invoiceNinjaToken);
 
-        //    // Assert        
-        //    Assert.NotNull(updateTest);
-        //    Assert.Equal(result.invoice_items.FirstOrDefault().notes, updateTest.invoice_items.FirstOrDefault().notes);
-        //    output.WriteLine(JsonSerializer.Serialize(updateTest));
+            // Assert        
+            Assert.Equal(result.line_items.FirstOrDefault().notes, updateTest.line_items.FirstOrDefault().notes);
+            output.WriteLine(JsonSerializer.Serialize(updateTest));
 
-        //    var deleteTest = await updateTest.DeleteAsync(invoiceNinjaToken);
+            var deleteTest = await updateTest.DeleteAsync(invoiceNinjaToken);
 
-        //    Assert.NotNull(deleteTest);
-        //    Assert.True(deleteTest.is_deleted);
+            Assert.True(deleteTest.is_deleted);
 
-        //    var checkDelete = await testClient.DeleteAsync(invoiceNinjaToken);
+            var checkDelete = await testClient.DeleteAsync(invoiceNinjaToken.AsMemory());
 
-        //    Assert.NotNull(checkDelete);
-        //    Assert.True(checkDelete.is_deleted);
-        //}
+            Assert.True(checkDelete.is_deleted);
+        }
 
-        //[Fact]
-        //public async Task CreateAndUpdateBillingClientByIdAsync()
-        //{
-        //    // Arrange
-        //    var testCreate = new ClientDatum
-        //    {
-        //        name = "IntegrationTest",
-        //        contacts = new ClientContact[] {
-        //            new ClientContact {
-        //                email = "integrationTest@example.com"
-        //            }
-        //        }
-        //    };
+        [Fact]
+        public async Task CreateAndUpdateBillingClientByIdAsync()
+        {
+            // Arrange
+            var testCreate = new ClientDatum
+            {
+                name = "IntegrationTest",
+                contacts = [
+                    new ClientContact {
+                        email = "integrationTest@example.com"
+                    }
+                ]
+            };
 
-        //    // Act
-        //    var result = await testCreate.PostAsync(invoiceNinjaToken);
+            // Act
+            var result = await testCreate.PostAsync(invoiceNinjaToken.AsMemory());
 
-        //    // Assert        
-        //    Assert.NotNull(result);
-        //    Assert.Equal(testCreate.name, result.name);
-        //    Assert.Equal(testCreate.contacts.FirstOrDefault().email, result.contacts.FirstOrDefault().email);
-        //    output.WriteLine(JsonSerializer.Serialize(result));
+            // Assert        
+            Assert.Equal(testCreate.name, result.name);
+            Assert.Equal(testCreate.contacts.FirstOrDefault().email, result.contacts.FirstOrDefault().email);
+            output.WriteLine(JsonSerializer.Serialize(result));
 
-        //    result.contacts.FirstOrDefault().first_name = "IntegrationTest";
+            var item = result.contacts.FirstOrDefault();
+            result.contacts[0] = item with { first_name = "IntegrationTest" };
 
-        //    var updateResult = await result.PutAsync(invoiceNinjaToken);
+            var updateResult = await result.PutAsync(invoiceNinjaToken.AsMemory());
 
-        //    Assert.NotNull(result);
-        //    Assert.Equal(updateResult.name, result.name);
-        //    Assert.Equal(updateResult.id, result.id);
-        //    Assert.Equal(updateResult.contacts.FirstOrDefault().email, result.contacts.FirstOrDefault().email);
-        //    output.WriteLine(JsonSerializer.Serialize(result));
+            Assert.Equal(updateResult.name, result.name);
+            Assert.Equal(updateResult.id, result.id);
+            Assert.Equal(updateResult.contacts.FirstOrDefault().email, result.contacts.FirstOrDefault().email);
+            output.WriteLine(JsonSerializer.Serialize(result));
 
-        //    var checkDelete = await updateResult.DeleteAsync(invoiceNinjaToken);
+            var checkDelete = await updateResult.DeleteAsync(invoiceNinjaToken.AsMemory());
 
-        //    Assert.NotNull(checkDelete);
-        //    Assert.True(checkDelete.is_deleted);
-        //}
+            Assert.True(checkDelete.is_deleted);
+        }
 
         // Disabled because it costs money
         //[Fact]
-        //public async Task LRNLookupTestAsync()
-        //{
-        //    // Arrange
-        //    string phoneNumber = "2065579450";
+        // public async Task LRNLookupTestAsync()
+        // {
+        //     // Arrange
+        //     string phoneNumber = "2065579450";
 
-        //    // Act
-        //    var result = await LrnLookup.GetAsync(phoneNumber, token);
+        //     // Act
+        //     var result = await LrnLookup.GetAsync(phoneNumber, token);
 
-        //    // Assert        
-        //    Assert.NotNull(result);
-        //    Assert.False(string.IsNullOrWhiteSpace(result.status));
-        //    Assert.True(result.code == 200);
-        //    Assert.False(string.IsNullOrWhiteSpace(result.data.lrn));
-        //    output.WriteLine(JsonSerializer.Serialize(result));
-        //}
+        //     // Assert        
+        //     Assert.NotNull(result);
+        //     Assert.False(string.IsNullOrWhiteSpace(result.status));
+        //     Assert.True(result.code == 200);
+        //     Assert.False(string.IsNullOrWhiteSpace(result.data.lrn));
+        //     output.WriteLine(JsonSerializer.Serialize(result));
+        // }
 
         // Disabled because it costs money
         //[Fact]
