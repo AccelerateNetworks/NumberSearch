@@ -3,6 +3,8 @@
 using Serilog;
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
@@ -20,9 +22,9 @@ namespace NumberSearch.DataAccess.BulkVS
         string City,
         string State,
         string Zip,
-        string[] Sms,
+        //string[] Sms,
         [property: JsonPropertyName("Last Modification")]
-        DateTime LastModification
+        string LastModification
     )
     {
         public static async Task<E911Record[]> GetAsync(ReadOnlyMemory<char> dialedNumber, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
@@ -34,14 +36,14 @@ namespace NumberSearch.DataAccess.BulkVS
             string route = $"{baseUrl}{endpoint}{numberParameter}{limitParameter}";
             try
             {
-                return await route.WithBasicAuth(username.ToString(), password.ToString())
-                    .GetJsonAsync<E911Record[]>();
+                var results = await route.WithBasicAuth(username.ToString(), password.ToString()).GetJsonAsync<E911Record[]>();
+                return results;
             }
             catch (FlurlHttpException ex)
             {
                 Log.Warning("[E911] [BulkVS] No results found for number {dialedNumber}.", dialedNumber);
-                //var response = await ex.GetResponseStringAsync();
-                Log.Warning(await ex.GetResponseStringAsync());
+                var response = await ex.GetResponseStringAsync();
+                Log.Warning(response);
                 return [];
             }
         }

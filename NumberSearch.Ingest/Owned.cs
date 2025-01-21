@@ -12,6 +12,7 @@ using Serilog;
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -798,9 +799,17 @@ namespace NumberSearch.Ingest
                     if (existing is not null && existing.DialedNumber == number.DialedNumber)
                     {
                         // Update the existing record with the current data.
-                        existing.Sms = record.Sms.Length != 0 ? string.Join(',', record.Sms) : string.Empty;
+                        //existing.Sms = record.Sms.Length != 0 ? string.Join(',', record.Sms) : string.Empty;
                         existing.RawResponse = JsonSerializer.Serialize(record);
-                        existing.BulkVSLastModificationDate = existing.BulkVSLastModificationDate != record.LastModification ? record.LastModification : existing.BulkVSLastModificationDate;
+                        if (!string.IsNullOrWhiteSpace(record.LastModification))
+                        {
+                            var checkDate = DateTime.TryParseExact(record.LastModification, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime lastMod);
+                            if (checkDate)
+                            {
+                                existing.BulkVSLastModificationDate = existing.BulkVSLastModificationDate != lastMod ? lastMod : existing.BulkVSLastModificationDate;
+                            }
+                        }
+
                         existing.ModifiedDate = DateTime.Now;
                         existing.CallerName = existing.CallerName != record.CallerName ? record.CallerName : existing.CallerName;
                         existing.AddressLine1 = existing.AddressLine1 != record.AddressLine1 ? record.AddressLine1 : existing.AddressLine1;
@@ -818,18 +827,28 @@ namespace NumberSearch.Ingest
                     }
                     else
                     {
+                        DateTime lastMod = DateTime.Now;
+                        if (!string.IsNullOrWhiteSpace(record.LastModification))
+                        {
+                            var checkDate = DateTime.TryParseExact(record.LastModification, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var last);
+                            if (checkDate)
+                            {
+                                lastMod = last;
+                            }
+                        }
+
                         // Create a new record to replace the existing one.
                         var registration = new EmergencyInformation
                         {
                             DialedNumber = number.DialedNumber,
-                            Sms = record.Sms.Length != 0 ? string.Join(',', record.Sms) : string.Empty,
+                            //Sms = record.Sms.Length != 0 ? string.Join(',', record.Sms) : string.Empty,
                             State = record.State,
                             City = record.City,
                             Zip = record.Zip,
                             CallerName = record.CallerName,
                             AddressLine1 = record.AddressLine1,
                             AddressLine2 = record.AddressLine2,
-                            BulkVSLastModificationDate = record.LastModification,
+                            BulkVSLastModificationDate = lastMod,
                             DateIngested = DateTime.Now,
                             IngestedFrom = "BulkVS",
                             ModifiedDate = DateTime.Now,
@@ -849,18 +868,28 @@ namespace NumberSearch.Ingest
                 }
                 else if (checkParse && ownedNumber is not null && ownedNumber.DialedNumber == number.DialedNumber)
                 {
+                    DateTime lastMod = DateTime.Now;
+                    if (!string.IsNullOrWhiteSpace(record.LastModification))
+                    {
+                        var checkDate = DateTime.TryParseExact(record.LastModification, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var last);
+                        if (checkDate)
+                        {
+                            lastMod = last;
+                        }
+                    }
+
                     // Create a new E911 record if none is linked to this owned number.
                     var registration = new EmergencyInformation
                     {
                         DialedNumber = number.DialedNumber,
-                        Sms = record.Sms.Length != 0 ? string.Join(',', record.Sms) : string.Empty,
+                        //Sms = record.Sms.Length != 0 ? string.Join(',', record.Sms) : string.Empty,
                         State = record.State,
                         City = record.City,
                         Zip = record.Zip,
                         CallerName = record.CallerName,
                         AddressLine1 = record.AddressLine1,
                         AddressLine2 = record.AddressLine2,
-                        BulkVSLastModificationDate = record.LastModification,
+                        BulkVSLastModificationDate = lastMod,
                         DateIngested = DateTime.Now,
                         IngestedFrom = "BulkVS",
                         ModifiedDate = DateTime.Now,
