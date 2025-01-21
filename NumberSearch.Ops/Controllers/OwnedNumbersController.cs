@@ -213,7 +213,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
     [Route("/Home/OwnedNumbers/{dialedNumber}/RegisterE911")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> RegisterE911Async(string dialedNumber, string UnparsedAddress, string AddressUnitType, string AddressUnitNumber, string FirstName, string LastName, string BusinessName)
+    public async Task<IActionResult> RegisterE911Async(string dialedNumber, string UnparsedAddress, string AddressUnitType, string AddressUnitNumber, string CallerName)
     {
         var existing = await context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
 
@@ -250,6 +250,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
                     relatedOrders.Add(order);
                 }
             }
+
             // Register the number for E911 service.
             if (checkParse && !string.IsNullOrWhiteSpace(UnparsedAddress) && existing is not null)
             {
@@ -259,9 +260,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
                     Log.Information("[Checkout] Parsing address data from {UnparsedAddress}", UnparsedAddress);
                     var order = new Order
                     {
-                        FirstName = FirstName ?? string.Empty,
-                        LastName = LastName ?? string.Empty,
-                        BusinessName = BusinessName ?? string.Empty,
+                        BusinessName = CallerName,
                         AddressUnitType = AddressUnitType ?? string.Empty,
                         AddressUnitNumber = AddressUnitNumber ?? string.Empty,
                         UnparsedAddress = UnparsedAddress ?? string.Empty
@@ -313,8 +312,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
 
                         try
                         {
-                            var response = await E911Record.PostAsync($"1{phoneNumber.DialedNumber}",
-                                string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName,
+                            var response = await E911Record.PostAsync($"1{phoneNumber.DialedNumber}", order.BusinessName,
                                 checkAddress.AddressID, [], opsConfig.BulkVSUsername.AsMemory(), opsConfig.BulkVSPassword.AsMemory());
 
                             if (response.Status is "Success" && existing is not null)
@@ -338,6 +336,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
                                     ModifiedDate = DateTime.Now,
                                     Zip = response.Zip
                                 };
+
                                 // Save the record to our database
                                 context.EmergencyInformation.Add(emergencyRecord);
 

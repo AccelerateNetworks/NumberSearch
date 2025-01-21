@@ -638,7 +638,7 @@ public class OrdersController(OpsConfig opsConfig,
                         {
                             string[] addressChunks = order.Address?.Split(" ") ?? [];
                             string withoutUnitNumber = string.Join(" ", addressChunks[1..]);
-                            var checkAddress = await E911Record.ValidateAddressAsync(addressChunks[0], withoutUnitNumber, order.Address2 ?? string.Empty,
+                            var checkAddress = await E911Record.ValidateAddressAsync(addressChunks[0], withoutUnitNumber, string.IsNullOrWhiteSpace(order.Address2) ? "NG911" : order.Address2,
                                 order.City ?? string.Empty, order.State ?? string.Empty, order.Zip ?? string.Empty, _config.BulkVSUsername.AsMemory(),
                                 _config.BulkVSPassword.AsMemory());
 
@@ -666,7 +666,7 @@ public class OrdersController(OpsConfig opsConfig,
                                             City = response.City,
                                             DateIngested = DateTime.Now,
                                             DialedNumber = phoneNumber.DialedNumber,
-                                            Sms = response.Sms?.Length != 0 ? string.Join(',', response.Sms ?? []) : string.Empty,
+                                            //Sms = response.Sms?.Length != 0 ? string.Join(',', response.Sms ?? []) : string.Empty,
                                             State = response.State,
                                             EmergencyInformationId = Guid.NewGuid(),
                                             IngestedFrom = "BulkVS",

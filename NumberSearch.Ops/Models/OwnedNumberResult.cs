@@ -20,7 +20,7 @@ namespace NumberSearch.Ops.Models
         public string AddressUnitNumber { get; set; } = string.Empty;
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
-        public string BusinessName { get; set; } = string.Empty;
+        public string CallerName { get; set; } = string.Empty;
     }
     // For the list all page
     public class OwnedNumberResultForm
