@@ -295,11 +295,16 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
                     {
                         order.Address2 = $"{AddressUnitType} {AddressUnitNumber}";
                     }
+                    else
+                    {
+                        // Per issue # 488.
+                        order.Address2 = "NG911";
+                    }
 
                     string[] addressChunks = order.Address?.Split(" ") ?? [];
                     string withoutUnitNumber = string.Join(" ", addressChunks[1..]);
-                    var checkAddress = await E911Record.ValidateAddressAsync(addressChunks[0], withoutUnitNumber, 
-                        order.Address2 ?? string.Empty, order.City ?? string.Empty, order.State ?? string.Empty, 
+                    var checkAddress = await E911Record.ValidateAddressAsync(addressChunks[0], withoutUnitNumber,
+                        order.Address2 ?? string.Empty, order.City ?? string.Empty, order.State ?? string.Empty,
                         order.Zip ?? string.Empty, opsConfig.BulkVSUsername.AsMemory(), opsConfig.BulkVSPassword.AsMemory());
 
                     if (checkAddress.Status is "GEOCODED" && !string.IsNullOrWhiteSpace(checkAddress.AddressID))
