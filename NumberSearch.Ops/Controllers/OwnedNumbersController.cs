@@ -287,6 +287,18 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
                     else
                     {
                         Log.Error($"[Checkout] Failed automatic address formatting.");
+                        var e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
+
+                        return View("OwnedNumberEdit", new OwnedNumberResult
+                        {
+                            Message = $"❌ Failed to register with E911! 😠 Address {order.Address} {order.Address2} {order.City} {order.State} {order.Zip} failed to validate for E911 Service.",
+                            AlertType = "alert-danger",
+                            PurchasedPhoneNumbers = localPurchasedNumbers,
+                            PortedPhoneNumbers = localPortedNumbers,
+                            Owned = existing,
+                            RelatedOrders = [.. relatedOrders],
+                            EmergencyInformation = e911 ?? new()
+                        });
                     }
 
                     // Fill out the address2 information from its components.
@@ -329,7 +341,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
                                     City = response.City,
                                     DateIngested = DateTime.Now,
                                     DialedNumber = phoneNumber.DialedNumber,
-                                    Sms = response.Sms.Length != 0 ? string.Join(',', response.Sms) : string.Empty,
+                                    //Sms = response.Sms.Length != 0 ? string.Join(',', response.Sms) : string.Empty,
                                     State = response.State,
                                     EmergencyInformationId = Guid.NewGuid(),
                                     IngestedFrom = "BulkVS",
@@ -354,7 +366,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
 
                                 return View("OwnedNumberEdit", new OwnedNumberResult
                                 {
-                                    Message = $"Successfully registered {phoneNumber.DialedNumber} with E911! 🥳",
+                                    Message = $"Successfully registered {phoneNumber.DialedNumber} with E911! 🥳 {emergencyRecord.RawResponse}",
                                     AlertType = "alert-success",
                                     PurchasedPhoneNumbers = localPurchasedNumbers,
                                     PortedPhoneNumbers = localPortedNumbers,

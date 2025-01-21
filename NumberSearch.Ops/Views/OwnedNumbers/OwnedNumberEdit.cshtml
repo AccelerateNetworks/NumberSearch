@@ -245,7 +245,7 @@ else
     @Html.AntiForgeryToken()
     @{
         var latestOrder = Model?.RelatedOrders.OrderByDescending(x => x.DateSubmitted).FirstOrDefault();
-        string callerName = string.IsNullOrWhiteSpace(latestOrder?.BusinessName) ? $"{latestOrder?.FirstName} {latestOrder?.LastName}" : latestOrder.BusinessName;
+        string callerName = string.IsNullOrWhiteSpace(latestOrder?.BusinessName) ? $"{latestOrder?.FirstName?.Trim()} {latestOrder?.LastName?.Trim()}" : latestOrder.BusinessName;
         string address = latestOrder?.UnparsedAddress ?? string.Empty;
     }
     <div class="mb-3" id="searchForm">
