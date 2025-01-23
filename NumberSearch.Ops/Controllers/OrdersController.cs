@@ -631,6 +631,9 @@ public class OrdersController(OpsConfig opsConfig,
                 if (order is not null && order.OrderId == Guid.Parse(orderId))
                 {
                     var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(serviceNumber ?? string.Empty, out var phoneNumber);
+
+                    var responseModel = new EditOrderResult { Order = order, Message = "Failed to register with E911! 😠 The currently selected phone number is not a valid value.", AlertType = "alert-danger" };
+
                     // Register the number for E911 service.
                     if (checkParse)
                     {
@@ -686,61 +689,13 @@ public class OrdersController(OpsConfig opsConfig,
 
                                         await _context.SaveChangesAsync();
 
-                                        var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                                        var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                                        var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                                        var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-
-                                        var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
-                                        var products = new List<Product>();
-                                        foreach (var productId in productsToGet)
-                                        {
-                                            var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == productId);
-                                            if (product is not null)
-                                            {
-                                                products.Add(product);
-                                            }
-                                        }
-
-                                        var servicesToGet = productOrders.Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
-                                        var services = new List<Service>();
-                                        foreach (var serviceId in servicesToGet)
-                                        {
-                                            var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == serviceId);
-                                            if (service is not null)
-                                            {
-                                                services.Add(service);
-                                            }
-                                        }
-
-                                        var couponsToGet = productOrders.Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
-                                        var coupons = new List<Coupon>();
-                                        foreach (var couponId in couponsToGet)
-                                        {
-                                            var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == couponId);
-                                            if (coupon is not null)
-                                            {
-                                                coupons.Add(coupon);
-                                            }
-                                        }
-
-                                        var cart = new Cart
-                                        {
-                                            Order = order,
-                                            PhoneNumbers = [],
-                                            ProductOrders = productOrders,
-                                            Products = products,
-                                            Services = services,
-                                            Coupons = coupons,
-                                            PortedPhoneNumbers = portedPhoneNumbers,
-                                            VerifiedPhoneNumbers = verifiedPhoneNumbers,
-                                            PurchasedPhoneNumbers = purchasedPhoneNumbers
-                                        };
+                                        var cart = await GetCartForOrderAsync(order, _context);
+                                        responseModel.Cart = cart;
 
                                         // Find numbers registered for E911 service manually.
                                         var e911Registrations = new List<EmergencyInformation>();
 
-                                        foreach (var number in purchasedPhoneNumbers)
+                                        foreach (var number in cart.PurchasedPhoneNumbers)
                                         {
                                             var match = await _context.EmergencyInformation.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == number.DialedNumber);
                                             if (match is not null)
@@ -749,7 +704,7 @@ public class OrdersController(OpsConfig opsConfig,
                                             }
                                         }
 
-                                        foreach (var number in portedPhoneNumbers)
+                                        foreach (var number in cart.PortedPhoneNumbers)
                                         {
                                             var match = await _context.EmergencyInformation.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == number.PortedDialedNumber);
                                             if (match is not null)
@@ -758,292 +713,108 @@ public class OrdersController(OpsConfig opsConfig,
                                             }
                                         }
 
-                                        return View("OrderEdit", new EditOrderResult { Order = order, EmergencyInformation = [.. e911Registrations], Cart = cart, Message = $"Successfully registered {phoneNumber.DialedNumber} with E911! 🥳", AlertType = "alert-success" });
+                                        responseModel.EmergencyInformation = [.. e911Registrations];
+                                        responseModel.Message = $"Successfully registered {phoneNumber.DialedNumber} with E911! 🥳";
+                                        responseModel.AlertType = "alert-success";
+                                        return View("OrderEdit", responseModel);
                                     }
                                     else
                                     {
-                                        var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                                        var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                                        var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                                        var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-
-                                        var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
-                                        var products = new List<Product>();
-                                        foreach (var productId in productsToGet)
-                                        {
-                                            var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == productId);
-                                            if (product is not null)
-                                            {
-                                                products.Add(product);
-                                            }
-                                        }
-
-                                        var servicesToGet = productOrders.Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
-                                        var services = new List<Service>();
-                                        foreach (var serviceId in servicesToGet)
-                                        {
-                                            var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == serviceId);
-                                            if (service is not null)
-                                            {
-                                                services.Add(service);
-                                            }
-                                        }
-
-                                        var couponsToGet = productOrders.Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
-                                        var coupons = new List<Coupon>();
-                                        foreach (var couponId in couponsToGet)
-                                        {
-                                            var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == couponId);
-                                            if (coupon is not null)
-                                            {
-                                                coupons.Add(coupon);
-                                            }
-                                        }
-
-                                        var cart = new Cart
-                                        {
-                                            Order = order,
-                                            PhoneNumbers = [],
-                                            ProductOrders = productOrders,
-                                            Products = products,
-                                            Services = services,
-                                            Coupons = coupons,
-                                            PortedPhoneNumbers = portedPhoneNumbers,
-                                            VerifiedPhoneNumbers = verifiedPhoneNumbers,
-                                            PurchasedPhoneNumbers = purchasedPhoneNumbers
-                                        };
-
-                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to register with E911! 😠 {JsonSerializer.Serialize(response)}", AlertType = "alert-danger" });
+                                        var cart = await GetCartForOrderAsync(order, _context);
+                                        responseModel.Cart = cart;
+                                        responseModel.Message = $"Failed to register with E911! 😠 {JsonSerializer.Serialize(response)}";
+                                        return View("OrderEdit", responseModel);
                                     }
                                 }
                                 catch (FlurlHttpException ex)
                                 {
-                                    var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                                    var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                                    var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                                    var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-
-                                    var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
-                                    var products = new List<Product>();
-                                    foreach (var productId in productsToGet)
-                                    {
-                                        var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == productId);
-                                        if (product is not null)
-                                        {
-                                            products.Add(product);
-                                        }
-                                    }
-
-                                    var servicesToGet = productOrders.Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
-                                    var services = new List<Service>();
-                                    foreach (var serviceId in servicesToGet)
-                                    {
-                                        var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == serviceId);
-                                        if (service is not null)
-                                        {
-                                            services.Add(service);
-                                        }
-                                    }
-
-                                    var couponsToGet = productOrders.Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
-                                    var coupons = new List<Coupon>();
-                                    foreach (var couponId in couponsToGet)
-                                    {
-                                        var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == couponId);
-                                        if (coupon is not null)
-                                        {
-                                            coupons.Add(coupon);
-                                        }
-                                    }
-
-                                    var cart = new Cart
-                                    {
-                                        Order = order,
-                                        PhoneNumbers = [],
-                                        ProductOrders = productOrders,
-                                        Products = products,
-                                        Services = services,
-                                        Coupons = coupons,
-                                        PortedPhoneNumbers = portedPhoneNumbers,
-                                        VerifiedPhoneNumbers = verifiedPhoneNumbers,
-                                        PurchasedPhoneNumbers = purchasedPhoneNumbers
-                                    };
-
-                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to register with E911! 😠 {await ex.GetResponseStringAsync()}", AlertType = "alert-danger" });
+                                    var cart = await GetCartForOrderAsync(order, _context);
+                                    responseModel.Cart = cart;
+                                    responseModel.Message = $"Failed to register with E911! 😠 {await ex.GetResponseStringAsync()}";
+                                    return View("OrderEdit", responseModel);
                                 }
                             }
                             else
                             {
-                                var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                                var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                                var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                                var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-
-                                var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
-                                var products = new List<Product>();
-                                foreach (var productId in productsToGet)
-                                {
-                                    var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == productId);
-                                    if (product is not null)
-                                    {
-                                        products.Add(product);
-                                    }
-                                }
-
-                                var servicesToGet = productOrders.Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
-                                var services = new List<Service>();
-                                foreach (var serviceId in servicesToGet)
-                                {
-                                    var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == serviceId);
-                                    if (service is not null)
-                                    {
-                                        services.Add(service);
-                                    }
-                                }
-
-                                var couponsToGet = productOrders.Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
-                                var coupons = new List<Coupon>();
-                                foreach (var couponId in couponsToGet)
-                                {
-                                    var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == couponId);
-                                    if (coupon is not null)
-                                    {
-                                        coupons.Add(coupon);
-                                    }
-                                }
-
-                                var cart = new Cart
-                                {
-                                    Order = order,
-                                    PhoneNumbers = [],
-                                    ProductOrders = productOrders,
-                                    Products = products,
-                                    Services = services,
-                                    Coupons = coupons,
-                                    PortedPhoneNumbers = portedPhoneNumbers,
-                                    VerifiedPhoneNumbers = verifiedPhoneNumbers,
-                                    PurchasedPhoneNumbers = purchasedPhoneNumbers
-                                };
-
-                                return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to register with E911! 😠 Address {order.Address} {order.Address2} {order.City} {order.State} {order.Zip} failed to validate for E911 Service. {JsonSerializer.Serialize(checkAddress)}", AlertType = "alert-danger" });
+                                var cart = await GetCartForOrderAsync(order, _context);
+                                responseModel.Cart = cart;
+                                responseModel.Message = $"Failed to register with E911! 😠 Address {order.Address} {order.Address2} {order.City} {order.State} {order.Zip} failed to validate for E911 Service. {JsonSerializer.Serialize(checkAddress)}";
+                                return View("OrderEdit", responseModel);
                             }
                         }
                         catch (FlurlHttpException ex)
                         {
-                            var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                            var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                            var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                            var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-
-                            var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
-                            var products = new List<Product>();
-                            foreach (var productId in productsToGet)
-                            {
-                                var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == productId);
-                                if (product is not null)
-                                {
-                                    products.Add(product);
-                                }
-                            }
-
-                            var servicesToGet = productOrders.Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
-                            var services = new List<Service>();
-                            foreach (var serviceId in servicesToGet)
-                            {
-                                var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == serviceId);
-                                if (service is not null)
-                                {
-                                    services.Add(service);
-                                }
-                            }
-
-                            var couponsToGet = productOrders.Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
-                            var coupons = new List<Coupon>();
-                            foreach (var couponId in couponsToGet)
-                            {
-                                var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == couponId);
-                                if (coupon is not null)
-                                {
-                                    coupons.Add(coupon);
-                                }
-                            }
-
-                            var cart = new Cart
-                            {
-                                Order = order,
-                                PhoneNumbers = [],
-                                ProductOrders = productOrders,
-                                Products = products,
-                                Services = services,
-                                Coupons = coupons,
-                                PortedPhoneNumbers = portedPhoneNumbers,
-                                VerifiedPhoneNumbers = verifiedPhoneNumbers,
-                                PurchasedPhoneNumbers = purchasedPhoneNumbers
-                            };
-
-                            return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to register with E911! 😠 {await ex.GetResponseStringAsync()}", AlertType = "alert-danger" });
+                            var cart = await GetCartForOrderAsync(order, _context);
+                            responseModel.Cart = cart;
+                            responseModel.Message = $"Failed to register with E911! 😠 {await ex.GetResponseStringAsync()}";
+                            return View("OrderEdit", responseModel);
                         }
                     }
                     else
                     {
-                        var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                        var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                        var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-                        var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
-
-                        var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
-                        var products = new List<Product>();
-                        foreach (var productId in productsToGet)
-                        {
-                            var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == productId);
-                            if (product is not null)
-                            {
-                                products.Add(product);
-                            }
-                        }
-
-                        var servicesToGet = productOrders.Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
-                        var services = new List<Service>();
-                        foreach (var serviceId in servicesToGet)
-                        {
-                            var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == serviceId);
-                            if (service is not null)
-                            {
-                                services.Add(service);
-                            }
-                        }
-
-                        var couponsToGet = productOrders.Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
-                        var coupons = new List<Coupon>();
-                        foreach (var couponId in couponsToGet)
-                        {
-                            var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == couponId);
-                            if (coupon is not null)
-                            {
-                                coupons.Add(coupon);
-                            }
-                        }
-
-                        var cart = new Cart
-                        {
-                            Order = order,
-                            PhoneNumbers = [],
-                            ProductOrders = productOrders,
-                            Products = products,
-                            Services = services,
-                            Coupons = coupons,
-                            PortedPhoneNumbers = portedPhoneNumbers,
-                            VerifiedPhoneNumbers = verifiedPhoneNumbers,
-                            PurchasedPhoneNumbers = purchasedPhoneNumbers
-                        };
-
-                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = "Failed to register with E911! 😠 The currently selected phone number is not a valid value.", AlertType = "alert-danger" });
+                        var cart = await GetCartForOrderAsync(order, _context);
+                        responseModel.Cart = cart;
+                        return View("OrderEdit", responseModel);
                     }
                 }
             }
 
             return Redirect("/Home/Order");
         }
+    }
+
+    public static async Task<Cart> GetCartForOrderAsync(Order order, numberSearchContext _context)
+    {
+        var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+        var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+        var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+        var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+
+        var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
+        var products = new List<Product>();
+        foreach (var productId in productsToGet)
+        {
+            var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == productId);
+            if (product is not null)
+            {
+                products.Add(product);
+            }
+        }
+
+        var servicesToGet = productOrders.Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
+        var services = new List<Service>();
+        foreach (var serviceId in servicesToGet)
+        {
+            var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == serviceId);
+            if (service is not null)
+            {
+                services.Add(service);
+            }
+        }
+
+        var couponsToGet = productOrders.Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
+        var coupons = new List<Coupon>();
+        foreach (var couponId in couponsToGet)
+        {
+            var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == couponId);
+            if (coupon is not null)
+            {
+                coupons.Add(coupon);
+            }
+        }
+
+        return new Cart
+        {
+            Order = order,
+            PhoneNumbers = [],
+            ProductOrders = productOrders,
+            Products = products,
+            Services = services,
+            Coupons = coupons,
+            PortedPhoneNumbers = portedPhoneNumbers,
+            VerifiedPhoneNumbers = verifiedPhoneNumbers,
+            PurchasedPhoneNumbers = purchasedPhoneNumbers
+        };
     }
 
     [Authorize]

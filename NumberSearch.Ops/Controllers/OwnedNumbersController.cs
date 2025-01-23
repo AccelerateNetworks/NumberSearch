@@ -67,38 +67,19 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
             var owned = await context.OwnedPhoneNumbers.AsNoTracking().FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
             if (owned is not null && owned.DialedNumber == dialedNumber)
             {
-                var orderIds = new List<Guid>();
-                var localPortedNumbers = await context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == dialedNumber).ToArrayAsync();
-                var localPurchasedNumbers = await context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == dialedNumber).ToArrayAsync();
+
                 var e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
-
-                // Get the orderIds for all the related orders.
-                var portedOrders = localPortedNumbers.Where(x => x.OrderId.HasValue && x.OrderId != Guid.Empty).Select(x => x.OrderId.GetValueOrDefault()).ToList();
-                orderIds.AddRange(portedOrders);
-                var purchasedOrders = localPurchasedNumbers.Where(x => x.OrderId != Guid.Empty).Select(x => x.OrderId).ToList();
-                orderIds.AddRange(purchasedOrders);
-
-                var relatedOrders = new List<Order>();
-
-                foreach (var id in orderIds.Distinct())
-                {
-                    var order = await context.Orders.FirstOrDefaultAsync(x => x.OrderId == id);
-                    if (order is not null && order.OrderId == id)
-                    {
-                        relatedOrders.Add(order);
-                    }
-                }
+                var relatedToOrders = await GetRelatedOrdersByDialedNumberAsync(owned, context);
 
                 return View("OwnedNumberEdit", new OwnedNumberResult
                 {
-                    PurchasedPhoneNumbers = localPurchasedNumbers,
-                    PortedPhoneNumbers = localPortedNumbers,
+                    PurchasedPhoneNumbers = relatedToOrders.localPurchasedNumbers,
+                    PortedPhoneNumbers = relatedToOrders.localPortedNumbers,
                     Owned = owned,
                     EmergencyInformation = e911 ?? new(),
-                    RelatedOrders = [.. relatedOrders],
+                    RelatedOrders = [.. relatedToOrders.relatedOrders],
                 });
             }
-
         }
 
         // Show all orders
@@ -167,36 +148,17 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
                 existing.Active = number.Owned.Active;
                 await context.SaveChangesAsync();
 
-                var orderIds = new List<Guid>();
-                var localPortedNumbers = await context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == existing.DialedNumber).ToArrayAsync();
-                var localPurchasedNumbers = await context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == existing.DialedNumber).ToArrayAsync();
                 var e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
-
-                // Get the orderIds for all the related orders.
-                var portedOrders = localPortedNumbers.Where(x => x.OrderId.HasValue && x.OrderId != Guid.Empty).Select(x => x.OrderId.GetValueOrDefault()).ToList();
-                orderIds.AddRange(portedOrders);
-                var purchasedOrders = localPurchasedNumbers.Where(x => x.OrderId != Guid.Empty).Select(x => x.OrderId).ToList();
-                orderIds.AddRange(purchasedOrders);
-
-                var relatedOrders = new List<Order>();
-
-                foreach (var id in orderIds.Distinct())
-                {
-                    var order = await context.Orders.FirstOrDefaultAsync(x => x.OrderId == id);
-                    if (order is not null && order.OrderId == id)
-                    {
-                        relatedOrders.Add(order);
-                    }
-                }
+                var relatedToOwned = await GetRelatedOrdersByDialedNumberAsync(existing, context);
 
                 return View("OwnedNumberEdit", new OwnedNumberResult
                 {
                     Message = $"✔️ Updated {number.Owned.DialedNumber}!",
                     AlertType = "alert-success",
-                    PurchasedPhoneNumbers = localPurchasedNumbers,
-                    PortedPhoneNumbers = localPortedNumbers,
+                    PurchasedPhoneNumbers = relatedToOwned.localPurchasedNumbers,
+                    PortedPhoneNumbers = relatedToOwned.localPortedNumbers,
                     Owned = existing,
-                    RelatedOrders = [.. relatedOrders],
+                    RelatedOrders = [.. relatedToOwned.relatedOrders],
                     EmergencyInformation = e911 ?? new()
                 });
             }
@@ -217,39 +179,27 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
     {
         var existing = await context.OwnedPhoneNumbers.FirstOrDefaultAsync(x => x.DialedNumber == dialedNumber);
 
-        if (string.IsNullOrWhiteSpace(dialedNumber) && string.IsNullOrWhiteSpace(UnparsedAddress) && string.IsNullOrWhiteSpace(existing?.DialedNumber))
+        if (existing is null || string.IsNullOrWhiteSpace(dialedNumber) && string.IsNullOrWhiteSpace(UnparsedAddress) && string.IsNullOrWhiteSpace(existing?.DialedNumber))
         {
             return Redirect("/Home/OwnedNumbers/");
         }
         else
         {
             var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedNumber ?? string.Empty, out var phoneNumber);
+            var relatedToOwned = await GetRelatedOrdersByDialedNumberAsync(existing, context);
+            var e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
 
-            List<Guid> orderIds = [];
-            PortedPhoneNumber[] localPortedNumbers = [];
-            PurchasedPhoneNumber[] localPurchasedNumbers = [];
-            if (existing is not null)
+            // Declaring it here saves us from repeating it for every error path.
+            var responseModel = new OwnedNumberResult
             {
-                localPortedNumbers = await context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == existing.DialedNumber).ToArrayAsync();
-                localPurchasedNumbers = await context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == existing.DialedNumber).ToArrayAsync();
-
-                // Get the orderIds for all the related orders.
-                var portedOrders = localPortedNumbers.Where(x => x.OrderId.HasValue && x.OrderId != Guid.Empty).Select(x => x.OrderId.GetValueOrDefault()).ToList();
-                orderIds.AddRange(portedOrders);
-                var purchasedOrders = localPurchasedNumbers.Where(x => x.OrderId != Guid.Empty).Select(x => x.OrderId).ToList();
-                orderIds.AddRange(purchasedOrders);
-            }
-
-            List<Order> relatedOrders = [];
-
-            foreach (var id in orderIds.Distinct())
-            {
-                var order = await context.Orders.FirstOrDefaultAsync(x => x.OrderId == id);
-                if (order is not null && order.OrderId == id)
-                {
-                    relatedOrders.Add(order);
-                }
-            }
+                Message = $"❌ Failed to register with E911! 😠 The currently selected phone number {dialedNumber} is not a valid value!",
+                AlertType = "alert-danger",
+                PurchasedPhoneNumbers = relatedToOwned.localPurchasedNumbers,
+                PortedPhoneNumbers = relatedToOwned.localPortedNumbers,
+                Owned = existing ?? new(),
+                RelatedOrders = [.. relatedToOwned.relatedOrders],
+                EmergencyInformation = e911 ?? new()
+            };
 
             // Register the number for E911 service.
             if (checkParse && !string.IsNullOrWhiteSpace(UnparsedAddress) && existing is not null)
@@ -287,30 +237,12 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
                     else
                     {
                         Log.Error($"[Checkout] Failed automatic address formatting.");
-                        var e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
-
-                        return View("OwnedNumberEdit", new OwnedNumberResult
-                        {
-                            Message = $"❌ Failed to register with E911! 😠 Address {order.Address} {order.Address2} {order.City} {order.State} {order.Zip} failed to validate for E911 Service.",
-                            AlertType = "alert-danger",
-                            PurchasedPhoneNumbers = localPurchasedNumbers,
-                            PortedPhoneNumbers = localPortedNumbers,
-                            Owned = existing,
-                            RelatedOrders = [.. relatedOrders],
-                            EmergencyInformation = e911 ?? new()
-                        });
+                        responseModel.Message = $"❌ Failed to register with E911! 😠 Address {order.Address} {order.Address2} {order.City} {order.State} {order.Zip} failed to validate for E911 Service.";
+                        return View("OwnedNumberEdit", responseModel);
                     }
 
-                    // Fill out the address2 information from its components.
-                    if (!string.IsNullOrWhiteSpace(AddressUnitNumber))
-                    {
-                        order.Address2 = $"{AddressUnitType} {AddressUnitNumber}";
-                    }
-                    else
-                    {
-                        // Per issue # 488.
-                        order.Address2 = "NG911";
-                    }
+                    // Fill out the address2 information from its components, or use NG911 per issue #488.
+                    order.Address2 = !string.IsNullOrWhiteSpace(AddressUnitNumber) ? $"{AddressUnitType} {AddressUnitNumber}" : "NG911";
 
                     string[] addressChunks = order.Address?.Split(" ") ?? [];
                     string withoutUnitNumber = string.Join(" ", addressChunks[1..]);
@@ -362,101 +294,83 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
 
                                 await context.SaveChangesAsync();
 
-                                var e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
-
-                                return View("OwnedNumberEdit", new OwnedNumberResult
-                                {
-                                    Message = $"Successfully registered {phoneNumber.DialedNumber} with E911! 🥳 {emergencyRecord.RawResponse}",
-                                    AlertType = "alert-success",
-                                    PurchasedPhoneNumbers = localPurchasedNumbers,
-                                    PortedPhoneNumbers = localPortedNumbers,
-                                    Owned = existing ?? new(),
-                                    RelatedOrders = [.. relatedOrders],
-                                    EmergencyInformation = e911 ?? new()
-                                });
+                                // Need a fresh copy of the E911 values here, as they've been updated.
+                                e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
+                                responseModel.Message = $"Successfully registered {phoneNumber.DialedNumber} with E911! 🥳 {emergencyRecord.RawResponse}";
+                                responseModel.AlertType = "alert-success";
+                                responseModel.EmergencyInformation = e911 ?? new();
+                                return View("OwnedNumberEdit", responseModel);
                             }
                             else
                             {
-                                var e911 = existing is not null ? await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber) : new();
-
-                                return View("OwnedNumberEdit", new OwnedNumberResult
-                                {
-                                    Message = $"Failed to register with E911! 😠 {JsonSerializer.Serialize(response)}",
-                                    AlertType = "alert-danger",
-                                    PurchasedPhoneNumbers = localPurchasedNumbers,
-                                    PortedPhoneNumbers = localPortedNumbers,
-                                    Owned = existing ?? new(),
-                                    RelatedOrders = [.. relatedOrders],
-                                    EmergencyInformation = e911 ?? new()
-                                });
+                                e911 = existing is not null ? await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber) : new();
+                                responseModel.EmergencyInformation = e911 ?? new();
+                                responseModel.Message = $"Failed to register with E911! 😠 {JsonSerializer.Serialize(response)}";
+                                return View("OwnedNumberEdit", responseModel);
                             }
                         }
                         catch (FlurlHttpException ex)
                         {
-                            var e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
-
-                            return View("OwnedNumberEdit", new OwnedNumberResult
-                            {
-                                Message = $"Failed to register with E911! 😠 {await ex.GetResponseStringAsync()}",
-                                AlertType = "alert-danger",
-                                PurchasedPhoneNumbers = localPurchasedNumbers,
-                                PortedPhoneNumbers = localPortedNumbers,
-                                Owned = existing ?? new(),
-                                RelatedOrders = [.. relatedOrders],
-                                EmergencyInformation = e911 ?? new()
-                            });
+                            e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
+                            responseModel.EmergencyInformation = e911 ?? new();
+                            responseModel.Message = $"Failed to register with E911! 😠 {await ex.GetResponseStringAsync()}";
+                            return View("OwnedNumberEdit", responseModel);
                         }
                     }
                     else
                     {
-                        var e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
-
-                        return View("OwnedNumberEdit", new OwnedNumberResult
-                        {
-                            Message = $"❌ Failed to register with E911! 😠 Address {order.Address} {order.Address2} {order.City} {order.State} {order.Zip} failed to validate for E911 Service. {JsonSerializer.Serialize(checkAddress)}",
-                            AlertType = "alert-danger",
-                            PurchasedPhoneNumbers = localPurchasedNumbers,
-                            PortedPhoneNumbers = localPortedNumbers,
-                            Owned = existing,
-                            RelatedOrders = [.. relatedOrders],
-                            EmergencyInformation = e911 ?? new()
-                        });
+                        e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
+                        responseModel.EmergencyInformation = e911 ?? new();
+                        responseModel.Message = $"❌ Failed to register with E911! 😠 Address {order.Address} {order.Address2} {order.City} {order.State} {order.Zip} failed to validate for E911 Service. {JsonSerializer.Serialize(checkAddress)}";
+                        return View("OwnedNumberEdit", responseModel);
                     }
                 }
                 catch (FlurlHttpException ex)
                 {
-                    var e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
-
-                    return View("OwnedNumberEdit", new OwnedNumberResult
-                    {
-                        Message = $"❌ Failed to register with E911! 😠 {await ex.GetResponseStringAsync()}",
-                        AlertType = "alert-danger",
-                        PurchasedPhoneNumbers = localPurchasedNumbers,
-                        PortedPhoneNumbers = localPortedNumbers,
-                        Owned = existing,
-                        RelatedOrders = [.. relatedOrders],
-                        EmergencyInformation = e911 ?? new()
-                    });
+                    e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existing.DialedNumber);
+                    responseModel.EmergencyInformation = e911 ?? new();
+                    responseModel.Message = $"❌ Failed to register with E911! 😠 {await ex.GetResponseStringAsync()}";
+                    return View("OwnedNumberEdit", responseModel);
                 }
             }
             else
             {
-                string existingDialedNumber = existing?.DialedNumber ?? string.Empty;
-
-                var e911 = await context.EmergencyInformation.FirstOrDefaultAsync(x => x.DialedNumber == existingDialedNumber);
-
-                return View("OwnedNumberEdit", new OwnedNumberResult
-                {
-                    Message = $"❌ Failed to register with E911! 😠 The currently selected phone number {dialedNumber} is not a valid value!",
-                    AlertType = "alert-danger",
-                    PurchasedPhoneNumbers = localPurchasedNumbers,
-                    PortedPhoneNumbers = localPortedNumbers,
-                    Owned = existing ?? new(),
-                    RelatedOrders = [.. relatedOrders],
-                    EmergencyInformation = e911 ?? new()
-                });
+                return View("OwnedNumberEdit", responseModel);
             }
         }
+    }
+
+    public readonly record struct RelatedToOwned(AccelerateNetworks.Operations.PortedPhoneNumber[] localPortedNumbers, AccelerateNetworks.Operations.PurchasedPhoneNumber[] localPurchasedNumbers, AccelerateNetworks.Operations.Order[] relatedOrders);
+
+    public async Task<RelatedToOwned> GetRelatedOrdersByDialedNumberAsync(AccelerateNetworks.Operations.OwnedPhoneNumber existing, numberSearchContext context)
+    {
+        List<Guid> orderIds = [];
+        AccelerateNetworks.Operations.PortedPhoneNumber[] localPortedNumbers = [];
+        AccelerateNetworks.Operations.PurchasedPhoneNumber[] localPurchasedNumbers = [];
+        if (existing is not null)
+        {
+            localPortedNumbers = await context.PortedPhoneNumbers.Where(x => x.PortedDialedNumber == existing.DialedNumber).ToArrayAsync();
+            localPurchasedNumbers = await context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == existing.DialedNumber).ToArrayAsync();
+
+            // Get the orderIds for all the related orders.
+            var portedOrders = localPortedNumbers.Where(x => x.OrderId.HasValue && x.OrderId != Guid.Empty).Select(x => x.OrderId.GetValueOrDefault()).ToList();
+            orderIds.AddRange(portedOrders);
+            var purchasedOrders = localPurchasedNumbers.Where(x => x.OrderId != Guid.Empty).Select(x => x.OrderId).ToList();
+            orderIds.AddRange(purchasedOrders);
+        }
+
+        List<AccelerateNetworks.Operations.Order> relatedOrders = [];
+
+        foreach (var id in orderIds.Distinct())
+        {
+            var order = await context.Orders.FirstOrDefaultAsync(x => x.OrderId == id);
+            if (order is not null && order.OrderId == id)
+            {
+                relatedOrders.Add(order);
+            }
+        }
+
+        return new(localPortedNumbers, localPurchasedNumbers, [.. relatedOrders]);
     }
 
     [Authorize]
