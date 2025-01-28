@@ -80,7 +80,9 @@ namespace NumberSearch.Ops.Controllers
                 else
                 {
                     string[] carrierQuery = lookup.Lec.Split(' ');
-                    var relatedCarriers = await _context.Carriers.Where(x => x.Lec != null && x.Lec.Contains(carrierQuery[0], StringComparison.CurrentCultureIgnoreCase)).ToArrayAsync();
+                    string query = carrierQuery[0].ToLowerInvariant();
+                    var relatedCarriers = await _context.Carriers.ToArrayAsync();
+                    relatedCarriers = relatedCarriers.Where(x => x.Lec != null && x.Lec.Contains(query, StringComparison.InvariantCultureIgnoreCase)).ToArray();
                     if (relatedCarriers.Length != 0)
                     {
                         return View("Create", new CreateCarrier
