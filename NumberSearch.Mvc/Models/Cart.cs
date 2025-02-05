@@ -73,11 +73,8 @@ namespace NumberSearch.Mvc.Models
         /// </summary>
         /// <param name="newPhoneNumber"></param>
         /// <returns></returns>
-        public bool AddPhoneNumber(PhoneNumber phoneNumber, ProductOrder productOrder)
+        public bool AddPhoneNumber(ref PhoneNumber phoneNumber, ref ProductOrder productOrder)
         {
-            phoneNumber ??= new PhoneNumber();
-            productOrder ??= new ProductOrder();
-
             // We're using dictionaries here to prevent duplicates.
             var phoneNumbers = PhoneNumbersToDictionary();
             var productOrders = ProductOrdersToDictionary();
@@ -104,11 +101,8 @@ namespace NumberSearch.Mvc.Models
         /// </summary>
         /// <param name="newPhoneNumber"></param>
         /// <returns></returns>
-        public bool AddPortedPhoneNumber(PortedPhoneNumber portedPhoneNumber, ProductOrder productOrder)
+        public bool AddPortedPhoneNumber(ref PortedPhoneNumber portedPhoneNumber, ref ProductOrder productOrder)
         {
-            portedPhoneNumber ??= new PortedPhoneNumber();
-            productOrder ??= new ProductOrder();
-
             // We're using dictionaries here to prevent duplicates.
             var portedPhoneNumbers = PortedPhoneNumbersToDictionary();
             var productOrders = ProductOrdersToDictionary();
@@ -136,11 +130,8 @@ namespace NumberSearch.Mvc.Models
         /// <param name="verifiedPhoneNumber"></param>
         /// <param name="productOrder"></param>
         /// <returns></returns>
-        public bool AddVerifiedPhoneNumber(VerifiedPhoneNumber verifiedPhoneNumber, ProductOrder productOrder)
+        public bool AddVerifiedPhoneNumber(ref VerifiedPhoneNumber verifiedPhoneNumber,ref ProductOrder productOrder)
         {
-            verifiedPhoneNumber ??= new VerifiedPhoneNumber();
-            productOrder ??= new ProductOrder();
-
             // We're using dictionaries here to prevent duplicates.
             var verifiedPhoneNumbers = VerifiedPhoneNumbersToDictionary();
             var productOrders = ProductOrdersToDictionary();
@@ -168,7 +159,7 @@ namespace NumberSearch.Mvc.Models
         /// <param name="product"></param>
         /// <param name="productOrder"></param>
         /// <returns></returns>
-        public bool AddProduct(Product product, ProductOrder productOrder)
+        public bool AddProduct(ref Product product, ref ProductOrder productOrder)
         {
             var products = ProductsToDictionary();
             var productOrders = ProductOrdersToDictionary();
@@ -195,7 +186,7 @@ namespace NumberSearch.Mvc.Models
         /// <param name="service"></param>
         /// <param name="productOrder"></param>
         /// <returns></returns>
-        public bool AddService(Service service, ProductOrder productOrder)
+        public bool AddService(ref Service service, ref ProductOrder productOrder)
         {
             var services = ServicesToDictionary();
             var productOrders = ProductOrdersToDictionary();
@@ -222,7 +213,7 @@ namespace NumberSearch.Mvc.Models
         /// <param name="coupon"></param>
         /// <param name="productOrder"></param>
         /// <returns></returns>
-        public bool AddCoupon(Coupon coupon, ProductOrder productOrder)
+        public bool AddCoupon(ref Coupon coupon, ref ProductOrder productOrder)
         {
             var coupons = CouponsToDictionary();
             var productOrders = ProductOrdersToDictionary();
@@ -249,11 +240,8 @@ namespace NumberSearch.Mvc.Models
         /// <param name="phoneNumber"></param>
         /// <param name="productOrder"></param>
         /// <returns></returns>
-        public bool RemovePhoneNumber(PhoneNumber phoneNumber, ProductOrder productOrder)
+        public bool RemovePhoneNumber(ref PhoneNumber phoneNumber, ref ProductOrder productOrder)
         {
-            phoneNumber ??= new PhoneNumber();
-            productOrder ??= new ProductOrder();
-
             var phoneNumbers = PhoneNumbersToDictionary();
             var productOrders = ProductOrdersToDictionary();
 
@@ -286,11 +274,8 @@ namespace NumberSearch.Mvc.Models
         /// <param name="phoneNumber"></param>
         /// <param name="productOrder"></param>
         /// <returns></returns>
-        public bool RemovePortedPhoneNumber(PortedPhoneNumber portedPhoneNumber, ProductOrder productOrder)
+        public bool RemovePortedPhoneNumber(ref PortedPhoneNumber portedPhoneNumber, ref ProductOrder productOrder)
         {
-            portedPhoneNumber ??= new PortedPhoneNumber();
-            productOrder ??= new ProductOrder();
-
             var portedPhoneNumbers = PortedPhoneNumbersToDictionary();
             var productOrders = ProductOrdersToDictionary();
 
@@ -323,11 +308,8 @@ namespace NumberSearch.Mvc.Models
         /// <param name="verifiedPhoneNumber"></param>
         /// <param name="productOrder"></param>
         /// <returns></returns>
-        public bool RemoveVerifiedPhoneNumber(VerifiedPhoneNumber verifiedPhoneNumber, ProductOrder productOrder)
+        public bool RemoveVerifiedPhoneNumber(ref VerifiedPhoneNumber verifiedPhoneNumber, ref ProductOrder productOrder)
         {
-            verifiedPhoneNumber ??= new VerifiedPhoneNumber();
-            productOrder ??= new ProductOrder();
-
             var verifedPhoneNumbers = VerifiedPhoneNumbersToDictionary();
             var productOrders = ProductOrdersToDictionary();
 
@@ -361,11 +343,8 @@ namespace NumberSearch.Mvc.Models
         /// <param name="product"></param>
         /// <param name="productOrder"></param>
         /// <returns></returns>
-        public bool RemoveProduct(Product product, ProductOrder productOrder)
+        public bool RemoveProduct(ref Product product, ref ProductOrder productOrder)
         {
-            product ??= new Product();
-            productOrder ??= new ProductOrder();
-
             var products = ProductsToDictionary();
             var productOrders = ProductOrdersToDictionary();
 
@@ -398,11 +377,8 @@ namespace NumberSearch.Mvc.Models
         /// <param name="service"></param>
         /// <param name="productOrder"></param>
         /// <returns></returns>
-        public bool RemoveService(Service service, ProductOrder productOrder)
+        public bool RemoveService(ref Service service, ref ProductOrder productOrder)
         {
-            service ??= new Service();
-            productOrder ??= new ProductOrder();
-
             var services = ServicesToDictionary();
             var productOrders = ProductOrdersToDictionary();
 
@@ -435,11 +411,8 @@ namespace NumberSearch.Mvc.Models
         /// <param name="coupon"></param>
         /// <param name="productOrder"></param>
         /// <returns></returns>
-        public bool RemoveCoupon(Coupon coupon, ProductOrder productOrder)
+        public bool RemoveCoupon(ref Coupon coupon, ref ProductOrder productOrder)
         {
-            coupon ??= new Coupon();
-            productOrder ??= new ProductOrder();
-
             var coupons = CouponsToDictionary();
             var productOrders = ProductOrdersToDictionary();
 

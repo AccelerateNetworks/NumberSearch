@@ -795,7 +795,7 @@ namespace NumberSearch.Mvc.Controllers
 
             await httpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(httpContext.Session);
-            var checkAdd = cart.AddPhoneNumber(phoneNumber, productOrder);
+            var checkAdd = cart.AddPhoneNumber(ref phoneNumber, ref productOrder);
             var checkSet = cart.SetToSession(httpContext.Session);
 
             return Ok(dialedPhoneNumber);
@@ -871,7 +871,7 @@ namespace NumberSearch.Mvc.Controllers
                 var wirelessCount = cart.PortedPhoneNumbers.Count(x => x.Wireless == true);
                 var nonWirelessCount = cart.PortedPhoneNumbers.Count(x => x.Wireless == false);
 
-                if (wirelessCount > 0 && !portedPhoneNumber.Wireless)
+                if (wirelessCount > 0 && portedPhoneNumber.Wireless)
                 {
                     // Tell the user about the failure
                     return BadRequest("This phone number cannot be added to an order that already has wireless numbers in it. Please create a separate order for non-wireless numbers.");
@@ -886,7 +886,7 @@ namespace NumberSearch.Mvc.Controllers
 
             var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), PortedDialedNumber = portedPhoneNumber.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber?.PortedPhoneNumberId, Quantity = 1 };
 
-            var checkAdd = cart.AddPortedPhoneNumber(portedPhoneNumber!, productOrder);
+            var checkAdd = cart.AddPortedPhoneNumber(ref portedPhoneNumber, ref productOrder);
             var checkSet = cart.SetToSession(httpContext.Session);
 
             if (checkAdd && checkSet)
@@ -973,7 +973,7 @@ namespace NumberSearch.Mvc.Controllers
 
                     await httpContext.Session.LoadAsync().ConfigureAwait(false);
                     var cart = Cart.GetFromSession(httpContext.Session);
-                    var checkAdd = cart.AddVerifiedPhoneNumber(verifiedPhoneNumber, productOrder);
+                    var checkAdd = cart.AddVerifiedPhoneNumber(ref verifiedPhoneNumber, ref productOrder);
                     var checkSet = cart.SetToSession(httpContext.Session);
 
                     if (checkAdd && checkSet)
@@ -1013,9 +1013,9 @@ namespace NumberSearch.Mvc.Controllers
                     Quantity = Quantity > 0 ? Quantity : 1
                 };
 
-                await httpContext.Session.LoadAsync().ConfigureAwait(false);
+                await httpContext.Session.LoadAsync();
                 var cart = Cart.GetFromSession(httpContext.Session);
-                var checkAdd = cart.AddProduct(product, productOrder);
+                var checkAdd = cart.AddProduct(ref product, ref productOrder);
                 var checkSet = cart.SetToSession(httpContext.Session);
                 if (checkAdd && checkSet)
                 {
@@ -1044,7 +1044,7 @@ namespace NumberSearch.Mvc.Controllers
 
                 await httpContext.Session.LoadAsync().ConfigureAwait(false);
                 var cart = Cart.GetFromSession(httpContext.Session);
-                var checkAdd = cart.AddService(service, productOrder);
+                var checkAdd = cart.AddService(ref service, ref productOrder);
 
                 var stdSeat = new Guid("16e2c639-445b-4ae6-9925-07300318206b");
                 var concurrentSeat = new Guid("48eb4627-8692-4a3b-8be1-be64bbeea534");
@@ -1087,7 +1087,7 @@ namespace NumberSearch.Mvc.Controllers
                                     ServiceId = e911Id,
                                     Quantity = totalE911FeeItems > 0 ? totalE911FeeItems : 1
                                 };
-                                checkAdd = cart.AddService(e911fee, e911ProductOrder);
+                                checkAdd = cart.AddService(ref e911fee, ref e911ProductOrder);
                             }
                         }
                         else
@@ -1098,7 +1098,7 @@ namespace NumberSearch.Mvc.Controllers
                                 ServiceId = e911Id,
                                 Quantity = Quantity > 0 ? Quantity : 1
                             };
-                            checkAdd = cart.AddService(e911fee, e911ProductOrder);
+                            checkAdd = cart.AddService(ref e911fee, ref e911ProductOrder);
                         }
                     }
 
@@ -1144,28 +1144,28 @@ namespace NumberSearch.Mvc.Controllers
 
                 if (coupon.Type == "Install" && cart.Products is not null && cart.Products.Count != 0)
                 {
-                    var checkAdd = cart.AddCoupon(coupon, productOrder);
+                    var checkAdd = cart.AddCoupon(ref coupon, ref productOrder);
                     var checkSet = cart.SetToSession(httpContext.Session);
 
                     return Ok(couponName.ToString());
                 }
                 else if (coupon.Type == "Port" && cart.PortedPhoneNumbers is not null && cart.PortedPhoneNumbers.Count != 0)
                 {
-                    var checkAdd = cart.AddCoupon(coupon, productOrder);
+                    var checkAdd = cart.AddCoupon(ref coupon, ref productOrder);
                     var checkSet = cart.SetToSession(httpContext.Session);
 
                     return Ok(couponName.ToString());
                 }
                 else if (coupon.Type == "Number" && cart.PhoneNumbers is not null && cart.PhoneNumbers.Count != 0)
                 {
-                    var checkAdd = cart.AddCoupon(coupon, productOrder);
+                    var checkAdd = cart.AddCoupon(ref coupon, ref productOrder);
                     var checkSet = cart.SetToSession(httpContext.Session);
 
                     return Ok(couponName.ToString());
                 }
                 else if (coupon.Type == "Service" && cart.Services is not null && cart.Services.Count != 0)
                 {
-                    var checkAdd = cart.AddCoupon(coupon, productOrder);
+                    var checkAdd = cart.AddCoupon(ref coupon, ref productOrder);
                     var checkSet = cart.SetToSession(httpContext.Session);
 
                     return Ok(couponName.ToString());
@@ -1189,7 +1189,7 @@ namespace NumberSearch.Mvc.Controllers
 
             await httpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(httpContext.Session);
-            var checkRemove = cart.RemovePhoneNumber(phoneNumber, productOrder);
+            var checkRemove = cart.RemovePhoneNumber(ref phoneNumber, ref productOrder);
             var checkSet = cart.SetToSession(httpContext.Session);
 
             if (checkRemove && checkSet)
@@ -1218,9 +1218,9 @@ namespace NumberSearch.Mvc.Controllers
             {
                 var productOrder = cart.ProductOrders?.Where(x => x.PortedPhoneNumberId == portedPhoneNumber.PortedPhoneNumberId).FirstOrDefault();
 
-                var newProductOrder = new ProductOrder { PortedDialedNumber = portedPhoneNumber.PortedDialedNumber ?? string.Empty, PortedPhoneNumberId = portedPhoneNumber?.PortedPhoneNumberId, Quantity = 1 };
+                productOrder ??= new ProductOrder { PortedDialedNumber = portedPhoneNumber.PortedDialedNumber ?? string.Empty, PortedPhoneNumberId = portedPhoneNumber?.PortedPhoneNumberId, Quantity = 1 };
 
-                var checkRemove = cart.RemovePortedPhoneNumber(portedPhoneNumber!, productOrder ?? newProductOrder);
+                var checkRemove = cart.RemovePortedPhoneNumber(ref portedPhoneNumber, ref productOrder);
                 var checkSet = cart.SetToSession(httpContext.Session);
 
                 if (checkRemove && checkSet)
@@ -1254,9 +1254,9 @@ namespace NumberSearch.Mvc.Controllers
             if (verifedPhoneNumber is not null)
             {
                 var productOrder = cart.ProductOrders?.Where(x => x.VerifiedPhoneNumberId == verifedPhoneNumber.VerifiedPhoneNumberId).FirstOrDefault();
-                var newProductOrder = new ProductOrder { VerifiedPhoneNumberId = verifedPhoneNumber.VerifiedPhoneNumberId, Quantity = 1 };
+                productOrder ??= new ProductOrder { VerifiedPhoneNumberId = verifedPhoneNumber.VerifiedPhoneNumberId, Quantity = 1 };
 
-                var checkRemove = cart.RemoveVerifiedPhoneNumber(verifedPhoneNumber, productOrder ?? newProductOrder);
+                var checkRemove = cart.RemoveVerifiedPhoneNumber(ref verifedPhoneNumber, ref productOrder);
                 var checkSet = cart.SetToSession(httpContext.Session);
 
                 if (checkRemove && checkSet)
@@ -1286,7 +1286,7 @@ namespace NumberSearch.Mvc.Controllers
 
             await httpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(httpContext.Session);
-            var checkRemove = cart.RemoveProduct(product, productOrder);
+            var checkRemove = cart.RemoveProduct(ref product, ref productOrder);
             var checkSet = cart.SetToSession(httpContext.Session);
 
             if (checkRemove && checkSet)
@@ -1311,7 +1311,7 @@ namespace NumberSearch.Mvc.Controllers
 
             await httpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(httpContext.Session);
-            var checkRemove = cart.RemoveService(service, productOrder);
+            var checkRemove = cart.RemoveService(ref service, ref productOrder);
             var checkSet = cart.SetToSession(httpContext.Session);
 
             if (checkRemove && checkSet)
@@ -1336,7 +1336,7 @@ namespace NumberSearch.Mvc.Controllers
 
             await httpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(httpContext.Session);
-            var checkRemove = cart.RemoveCoupon(coupon, productOrder);
+            var checkRemove = cart.RemoveCoupon(ref coupon, ref productOrder);
             var checkSet = cart.SetToSession(httpContext.Session);
 
             if (checkRemove && checkSet)

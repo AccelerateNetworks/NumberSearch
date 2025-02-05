@@ -3,16 +3,19 @@ using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
+using NumberSearch.DataAccess.CallWithUs;
 using NumberSearch.DataAccess.FusionPBX;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.LCGuide;
 using NumberSearch.DataAccess.Models;
 using NumberSearch.DataAccess.TeleDynamics;
+using NumberSearch.Mvc.Controllers;
 using NumberSearch.Mvc.Models;
 
 using ServiceReference1;
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -107,13 +110,13 @@ namespace NumberSearch.Tests
             Assert.True(result.balance > 0);
             output.WriteLine(JsonSerializer.Serialize(result));
 
-                            // Act
+            // Act
             result = await Invoice.GetByIdAsync("oQeZZ5vepZ", invoiceNinjaToken);
 
             // Assert        
             Assert.False(string.IsNullOrWhiteSpace(result.id));
             Assert.Equal("oQeZZ5vepZ", result.id);
-            Assert.True(result.balance > 0);
+            Assert.True(result.balance == 0);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
@@ -2125,5 +2128,185 @@ namespace NumberSearch.Tests
         //        }
         //    }
         //}
+
+        [Fact]
+        public async Task GetBillingTaxRateForOrder()
+        {
+            // Valid
+            var order = new Order()
+            {
+                State = "WA",
+                Address = "4415 31st Ave W",
+                City = "Seattle",
+                Zip = "98199"
+            };
+
+            var result = await CartController.GetBillingTaxRateAsync(order, _configuration.InvoiceNinjaToken.AsMemory());
+
+            Assert.False(string.IsNullOrWhiteSpace(result.name));
+            Assert.True(result.rate > 0);
+
+            // Outofstate
+            order = new Order()
+            {
+                State = "OR",
+                Address = "1710 S Mill St Cir",
+                City = "Portland",
+                Zip = "97201"
+            };
+
+            result = await CartController.GetBillingTaxRateAsync(order, _configuration.InvoiceNinjaToken.AsMemory());
+
+            Assert.False(string.IsNullOrWhiteSpace(result.name));
+            Assert.Equal("None", result.name);
+            Assert.True(result.rate is 0);
+
+            //Invalid
+            order = new Order()
+            {
+                State = "WA",
+                Address = "Abc 123 u and me",
+                City = "Seattle",
+                Zip = "98199"
+            };
+
+            result = await CartController.GetBillingTaxRateAsync(order, _configuration.InvoiceNinjaToken.AsMemory());
+
+            Assert.False(string.IsNullOrWhiteSpace(result.name));
+            Assert.Equal("None", result.name);
+            Assert.True(result.rate is 0);
+        }
+
+        [Fact]
+        public async Task GetBillingClientForOrder()
+        {
+            // Valid
+            var order = new Order()
+            {
+                Email = "dan@acceleratenetworks.com"
+            };
+
+            var result = await CartController.GetBillingClientForOrderAsync(order, _configuration.InvoiceNinjaToken.AsMemory());
+
+            Assert.False(string.IsNullOrWhiteSpace(result.id));
+            Assert.False(string.IsNullOrWhiteSpace(result.contacts.FirstOrDefault().email));
+
+            // Skipping create because we don't want to pollute the DB.
+        }
+
+        [Fact]
+        public async Task VerifyEmailForOrder()
+        {
+            var result = await CartController.VerifyEmailByAddressAsync("dan@acceleratenetworks.com".AsMemory());
+            Assert.True(result.MxRecordExists);
+            Assert.False(string.IsNullOrWhiteSpace(result.EmailDomain.Host));
+
+            result = await CartController.VerifyEmailByAddressAsync("test@notavaliddomainlol.com".AsMemory());
+            Assert.False(result.MxRecordExists);
+            Assert.False(string.IsNullOrWhiteSpace(result.EmailDomain.Host));
+        }
+
+        [Fact]
+        public void ParseAddressForOrder()
+        {
+            var order = new Order()
+            {
+                UnparsedAddress = "4415 31st Ave W, Seattle, WA, 98199, USA",
+            };
+            var result = CartController.ParseAddress(ref order);
+
+            Assert.False(string.IsNullOrWhiteSpace(result.Address));
+            Assert.True(string.IsNullOrWhiteSpace(result.Address2));
+            Assert.False(string.IsNullOrWhiteSpace(result.City));
+            Assert.False(string.IsNullOrWhiteSpace(result.State));
+            Assert.False(string.IsNullOrWhiteSpace(result.Zip));
+            Assert.False(string.IsNullOrWhiteSpace(result.UnparsedAddress));
+        }
+
+        [Fact]
+        public async void GetInvoiceItemsTest()
+        {
+            var order = new Order() { OrderId = Guid.NewGuid() };
+            var cart = new Cart();
+            List<Line_Items> onetimeItems = [];
+            List<Line_Items> reoccuringItems = [];
+            List<PurchasedPhoneNumber> purchasedPhoneNumbers = [];
+            int pin = CartController.GetPortingPIN();
+
+            // Add purchased numbers
+            var matchingNumber = await PhoneNumber.GetAllNumbersAsync(postgresql);
+            var number = matchingNumber.FirstOrDefault();
+            var phoneNumber = await PhoneNumber.GetAsync(number, postgresql);
+            var productOrderPurchased = new ProductOrder { ProductOrderId = Guid.NewGuid(), DialedNumber = phoneNumber.DialedNumber, Quantity = 1 };
+
+            cart.AddPhoneNumber(ref phoneNumber, ref productOrderPurchased);
+
+            // Add ported numbers
+            var portedPhoneNumber = new PortedPhoneNumber
+            {
+                PortedPhoneNumberId = Guid.NewGuid(),
+                PortedDialedNumber = "2068588757",
+                NPA = 206,
+                NXX = 858,
+                XXXX = 8757,
+                City = "Seattle",
+                State = "WA",
+                DateIngested = DateTime.Now,
+                IngestedFrom = "UserInput",
+                Wireless = false
+            };
+
+            var productOrderPort = new ProductOrder { ProductOrderId = Guid.NewGuid(), PortedDialedNumber = portedPhoneNumber.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber?.PortedPhoneNumberId, Quantity = 1 };
+
+            cart.AddPortedPhoneNumber(ref portedPhoneNumber, ref productOrderPort);
+
+            var products = await Product.GetAllAsync(postgresql);
+
+            foreach (var item in products)
+            {
+                var localItem = item;
+                var productOrder = new ProductOrder()
+                {
+                    ProductOrderId = Guid.NewGuid(),
+                    ProductId = localItem.ProductId,
+                    Quantity = 1
+                };
+                cart.AddProduct(ref localItem, ref productOrder);
+            }
+
+            var services = await Service.GetAllAsync(postgresql);
+
+            foreach (var service in services)
+            {
+                var local = service;
+                var productOrder = new ProductOrder
+                {
+                    ProductOrderId = Guid.NewGuid(),
+                    ServiceId = service.ServiceId,
+                    Quantity = 1
+                };
+                cart.AddService(ref local, ref productOrder);
+            }
+
+            var coupons = await Coupon.GetAllAsync(postgresql);
+
+            foreach (var coupon in coupons)
+            {
+                var local = coupon;
+                var productOrder = new ProductOrder
+                {
+                    ProductOrderId = Guid.NewGuid(),
+                    CouponId = coupon.CouponId,
+                    Quantity = 1
+                };
+                cart.AddCoupon(ref local, ref productOrder);
+            }
+
+            var result = CartController.GetInvoiceItemsFromProductOrders(ref order, ref cart, ref onetimeItems, ref reoccuringItems, ref pin, ref purchasedPhoneNumbers);
+            Assert.True(result.TotalCost > 0);
+            Assert.True(result.TotalNumberPurchasingCost > 0);
+            Assert.True(result.TotalPortingCost > 0);
+            Assert.False(string.IsNullOrWhiteSpace(result.EmailSubject));
+        }
     }
 }

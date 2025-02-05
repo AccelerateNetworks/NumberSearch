@@ -91,8 +91,8 @@ namespace NumberSearch.Mvc.Controllers
                     if (portedNumber is null)
                     {
                         var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), PortedDialedNumber = portableNumber.PortedDialedNumber, PortedPhoneNumberId = portableNumber.PortedPhoneNumberId, Quantity = 1 };
-
-                        var checkAdd = cart.AddPortedPhoneNumber(portableNumber, productOrder);
+                        var local = portableNumber;
+                        var checkAdd = cart.AddPortedPhoneNumber(ref local, ref productOrder);
                     }
                 }
 
@@ -103,8 +103,8 @@ namespace NumberSearch.Mvc.Controllers
                     if (portedNumber is null)
                     {
                         var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), PortedDialedNumber = wirelessNumber.PortedDialedNumber, PortedPhoneNumberId = wirelessNumber.PortedPhoneNumberId, Quantity = 1 };
-
-                        var checkAdd = cart.AddPortedPhoneNumber(wirelessNumber, productOrder);
+                        var local = wirelessNumber;
+                        var checkAdd = cart.AddPortedPhoneNumber(ref local, ref productOrder);
                     }
                 }
 

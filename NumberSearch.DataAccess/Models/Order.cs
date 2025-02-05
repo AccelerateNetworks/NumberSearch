@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess
 {
-    public class Order
+    public record Order
     {
         public Guid OrderId { get; set; }
         public string FirstName { get; set; } = string.Empty;
