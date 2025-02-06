@@ -1,4 +1,6 @@
-﻿using DnsClient;
+﻿using Azure.Storage.Blobs;
+
+using DnsClient;
 
 using Flurl.Http;
 
@@ -19,6 +21,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Mail;
 using System.Threading.Tasks;
@@ -31,6 +34,8 @@ namespace NumberSearch.Mvc.Controllers
         private readonly string _postgresql = mvcConfiguration.PostgresqlProd;
         private readonly string _invoiceNinjaToken = mvcConfiguration.InvoiceNinjaToken;
         private readonly string _emailOrders = mvcConfiguration.EmailOrders;
+        private readonly string _azureStorage = mvcConfiguration.AzureStorageAccount;
+        private readonly string _SmtpUsername = mvcConfiguration.SmtpUsername;
         private readonly MvcConfiguration _configuration = mvcConfiguration;
 
         [HttpGet]
@@ -341,6 +346,326 @@ namespace NumberSearch.Mvc.Controllers
             else
             {
                 return Redirect($"/Cart/");
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> AddPortingInformationAsync(PortRequest portRequest)
+        {
+            var order = await Order.GetByIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
+            var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql);
+
+            portRequest.PortRequestId = Guid.NewGuid();
+
+            // Prevent duplicate submissions of port requests.
+            if (order is not null && order.OrderId != Guid.Empty)
+            {
+                var existing = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+
+                if (existing is not null && existing.OrderId != Guid.Empty && existing.OrderId == order.OrderId)
+                {
+                    // Update the existing port request.
+                    if (portRequest.BillImage != null && portRequest.BillImage.Length > 0)
+                    {
+                        try
+                        {
+                            using var stream = new System.IO.MemoryStream();
+                            await portRequest.BillImage.CopyToAsync(stream).ConfigureAwait(false);
+
+                            var fileExtension = Path.GetExtension(portRequest.BillImage.FileName);
+                            var fileName = $"{Guid.NewGuid()}{fileExtension}";
+
+                            // Create a BlobServiceClient object which will be used to create a container client
+                            BlobServiceClient blobServiceClient = new(_azureStorage);
+
+                            //Create a unique name for the container
+                            string containerName = existing.OrderId.ToString();
+
+                            // Create the container and return a container client object
+                            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+                            await containerClient.CreateIfNotExistsAsync();
+
+                            // Get a reference to a blob
+                            BlobClient blobClient = containerClient.GetBlobClient(fileName);
+
+                            // Open the file and upload its data
+                            // You have to rewind the MemoryStream before copying
+                            stream.Seek(0, SeekOrigin.Begin);
+                            await blobClient.UploadAsync(stream, true);
+
+                            existing.BillImagePath = fileName;
+
+                            Log.Information("[Port Request] BlobContainer: {Container} BlobClient: {Blob}", containerClient.Name, blobClient.Name);
+                            Log.Information("[Port Request] Successfully saved the bill image to the server and attached it to the confirmation email.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Fatal("[Port Request] Failed to save the bill image to the server and attach it to the confirmation email.");
+                            Log.Fatal("[Port Request] {Message}", ex.Message);
+                            Log.Fatal("[Port Request] {InnerException}", ex.InnerException);
+                            return View("Success", new OrderWithPorts
+                            {
+                                Order = order ?? new(),
+                                PortRequest = portRequest,
+                                PhoneNumbers = [.. portedNumbers],
+                                AlertType = "alert-danger",
+                                Message = $"😞 Failed to save the bill image file. {ex.Message} {ex.StackTrace}"
+                            });
+                        }
+                    }
+
+                    // Format the address information
+                    Log.Information("[Port Request] Parsing address data from {Address}", portRequest.Address);
+                    if (portRequest is not null && !string.IsNullOrWhiteSpace(portRequest.UnparsedAddress))
+                    {
+                        var addressParts = portRequest.UnparsedAddress.Split(", ");
+                        if (addressParts.Length == 5)
+                        {
+                            portRequest.Address = addressParts[0];
+                            portRequest.City = addressParts[1];
+                            portRequest.State = addressParts[2];
+                            portRequest.Zip = addressParts[3];
+                            Log.Information("[Checkout] Address: {Address} City: {City} State: {State} Zip: {Zip}", portRequest.Address, portRequest.City, portRequest.State, portRequest.Zip);
+                        }
+                        else if (addressParts.Length == 6)
+                        {
+                            portRequest.Address = addressParts[0];
+                            portRequest.Address2 = addressParts[1];
+                            portRequest.City = addressParts[2];
+                            portRequest.State = addressParts[3];
+                            portRequest.Zip = addressParts[4];
+                            Log.Information("[Checkout] Address: {Address} City: {City} State: {State} Zip: {Zip}", portRequest.Address, portRequest.City, portRequest.State, portRequest.Zip);
+                        }
+                        else
+                        {
+                            Log.Error("[Port Request] Failed automatic address formatting.");
+                            return View("Success", new OrderWithPorts
+                            {
+                                Order = order ?? new(),
+                                PortRequest = existing,
+                                PhoneNumbers = [.. portedNumbers],
+                                AlertType = "alert-warning",
+                                Message = "😞 Failed to parse address. Please use the autocomplete and place the unit # in the Service Address 2 box."
+                            });
+                        }
+                    }
+                    else
+                    {
+                        Log.Error("[Port Request] No address information submitted.");
+                        return View("Success", new OrderWithPorts
+                        {
+                            Order = order ?? new(),
+                            PortRequest = existing,
+                            PhoneNumbers = [.. portedNumbers],
+                            AlertType = "alert-warning",
+                            Message = "😞 Failed to parse address. Please make sure you've entered it correctly."
+                        });
+                    }
+
+                    existing.BillingPhone = existing.BillingPhone != portRequest.BillingPhone ? portRequest.BillingPhone : existing.BillingPhone;
+                    existing.BusinessContact = existing.BusinessContact != portRequest.BusinessContact ? portRequest.BusinessContact : existing.BusinessContact;
+                    existing.ProviderAccountNumber = existing.ProviderAccountNumber != portRequest.ProviderAccountNumber ? portRequest.ProviderAccountNumber : existing.ProviderAccountNumber;
+                    existing.BusinessName = existing.BusinessName != portRequest.BusinessName ? portRequest.BusinessName : existing.BusinessName;
+                    existing.CallerId = existing.CallerId != portRequest.CallerId ? portRequest.CallerId : existing.CallerId;
+                    existing.ProviderPIN = existing.ProviderPIN != portRequest.ProviderPIN ? portRequest.ProviderPIN : existing.ProviderPIN;
+                    existing.PartialPort = existing.PartialPort != portRequest.PartialPort ? portRequest.PartialPort : existing.PartialPort;
+                    existing.PartialPortDescription = existing.PartialPortDescription != portRequest.PartialPortDescription ? portRequest.PartialPortDescription : existing.PartialPortDescription;
+                    existing.LocationType = existing.LocationType != portRequest.LocationType ? portRequest.LocationType : existing.LocationType;
+                    existing.DateUpdated = DateTime.Now;
+
+                    // Save the rest of the data to the DB.
+                    var checkExisting = await existing.PutAsync(_postgresql);
+
+                    if (checkExisting && order is not null)
+                    {
+                        // Associate the ported numbers with their porting information.
+                        portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql) ?? new();
+
+                        foreach (var number in portedNumbers)
+                        {
+                            number.PortRequestId = portRequest.PortRequestId;
+                            _ = await number.PutAsync(_postgresql);
+                        }
+                    }
+
+                    // Reset the session and clear the Cart.
+                    HttpContext.Session.Clear();
+
+                    return View("Success", new OrderWithPorts
+                    {
+                        Order = order ?? new(),
+                        PortRequest = existing,
+                        Message = "✔️ Successfully updated your Porting information.",
+                        AlertType = "alert-success",
+                        PhoneNumbers = [.. portedNumbers],
+                    });
+                }
+            }
+
+            if (portRequest.BillImage != null && portRequest.BillImage.Length > 0)
+            {
+                try
+                {
+                    using var stream = new System.IO.MemoryStream();
+
+                    await portRequest.BillImage.CopyToAsync(stream);
+
+                    var fileExtension = Path.GetExtension(portRequest.BillImage.FileName);
+                    var fileName = $"{Guid.NewGuid()}{fileExtension}";
+
+                    // Create a BlobServiceClient object which will be used to create a container client
+                    BlobServiceClient blobServiceClient = new(_azureStorage);
+
+                    //Create a unique name for the container
+                    string containerName = portRequest.OrderId.ToString();
+
+                    // Create the container and return a container client object
+                    var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+                    await containerClient.CreateIfNotExistsAsync();
+
+                    // Get a reference to a blob
+                    BlobClient blobClient = containerClient.GetBlobClient(fileName);
+
+                    // Open the file and upload its data
+                    // You have to rewind the MemoryStream before copying
+                    stream.Seek(0, SeekOrigin.Begin);
+                    await blobClient.UploadAsync(stream, true);
+
+                    portRequest.BillImagePath = fileName;
+
+                    Log.Information("[Port Request] BlobContainer: {Container} BlobClient: {Blob}", containerClient.Name, blobClient.Name);
+                    Log.Information("[Port Request] Successfully saved the bill image to the server and attached it to the confirmation email.");
+                }
+                catch (Exception ex)
+                {
+                    Log.Fatal("[Port Request] Failed to save the bill image to the server and attach it to the confirmation email.");
+                    Log.Fatal("[Port Request] {Message}", ex.Message);
+                    Log.Fatal("[Port Request] {InnerException}", ex.InnerException);
+                    return View("Success", new OrderWithPorts
+                    {
+                        Order = order ?? new(),
+                        PortRequest = portRequest,
+                        PhoneNumbers = [.. portedNumbers],
+                        AlertType = "alert-danger",
+                        Message = $"😞 Failed to save the bill image file. {ex.Message} {ex.StackTrace}"
+                    });
+                }
+            }
+
+            // Format the address information
+            Log.Information("[Port Request] Parsing address data from {UnparsedAddress}", portRequest.UnparsedAddress);
+            if (portRequest is not null && !string.IsNullOrWhiteSpace(portRequest.UnparsedAddress))
+            {
+                var addressParts = portRequest.UnparsedAddress.Split(", ");
+                if (addressParts.Length == 5)
+                {
+                    portRequest.Address = addressParts[0];
+                    portRequest.City = addressParts[1];
+                    portRequest.State = addressParts[2];
+                    portRequest.Zip = addressParts[3];
+                    Log.Information("[Checkout] Address: {Address} City: {City} State: {State} Zip: {Zip}", portRequest.Address, portRequest.City, portRequest.State, portRequest.Zip);
+                }
+                else if (addressParts.Length == 6)
+                {
+                    portRequest.Address = addressParts[0];
+                    portRequest.Address2 = addressParts[1];
+                    portRequest.City = addressParts[2];
+                    portRequest.State = addressParts[3];
+                    portRequest.Zip = addressParts[4];
+                    Log.Information("[Checkout] Address: {Address} City: {City} State: {State} Zip: {Zip}", portRequest.Address, portRequest.City, portRequest.State, portRequest.Zip);
+                }
+                else
+                {
+                    Log.Error("[Port Request] Failed automatic address formatting.");
+                    return View("Success", new OrderWithPorts
+                    {
+                        Order = order ?? new(),
+                        PortRequest = portRequest,
+                        PhoneNumbers = [.. portedNumbers],
+                        AlertType = "alert-warning",
+                        Message = "😞 Failed to parse address. Please use the autocomplete and place the unit # in the Service Address 2 box."
+                    });
+                }
+            }
+            else
+            {
+                Log.Error("[Port Request] No address information submitted.");
+                return View("Success", new OrderWithPorts
+                {
+                    Order = order ?? new(),
+                    PortRequest = portRequest ?? new(),
+                    PhoneNumbers = [.. portedNumbers],
+                    AlertType = "alert-warning",
+                    Message = "😞 Failed to parse address. Please use the autocomplete and place the unit # in the Service Address 2 box."
+                });
+            }
+
+            // Save the rest of the data to the DB.
+            var checkPortRequest = await portRequest.PostAsync(_postgresql);
+
+            if (checkPortRequest && order is not null)
+            {
+                // Associate the ported numbers with their porting information.
+                portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql) ?? new();
+
+                string formattedNumbers = string.Empty;
+
+                foreach (var number in portedNumbers)
+                {
+                    number.PortRequestId = portRequest.PortRequestId;
+                    var checkPortUpdate = await number.PutAsync(_postgresql);
+                    formattedNumbers += $"<br />{number?.PortedDialedNumber}";
+                }
+
+                // Send out the confirmation email.
+                var confirmationEmail = new DataAccess.Models.Email
+                {
+                    PrimaryEmailAddress = order.Email,
+                    CarbonCopy = _SmtpUsername,
+                    MessageBody = $@"Hi {order.FirstName},
+<br />
+<br />
+Thanks for adding porting information to your order!
+<br />
+<br />
+Feel free to <a href='https://acceleratenetworks.com/Cart/Order/{order.OrderId}'>review the order here</a>, and let us know if you have any questions.
+<br />
+<br />
+Numbers tied to this port request:
+{formattedNumbers}
+<br />
+<br />
+Sincerely,
+<br />
+Accelerate Networks
+<br />
+206-858-8757 (call or text)",
+                    OrderId = order.OrderId,
+                    Subject = $"Porting information added for {portedNumbers.FirstOrDefault()?.PortedDialedNumber}"
+                };
+                _ = await confirmationEmail.PostAsync(_postgresql);
+
+                // Trigger the backwork process to run again and send this email.
+                order.BackgroundWorkCompleted = false;
+                _ = await order.PutAsync(_postgresql);
+
+                // Reset the session and clear the Cart.
+                HttpContext.Session.Clear();
+
+                return View("Success", new OrderWithPorts
+                {
+                    Order = order,
+                    PortRequest = portRequest,
+                    PhoneNumbers = [.. portedNumbers],
+                    Message = $"📨 A confirmation email will be sent to {order?.Email} shortly.",
+                    AlertType = "alert-info",
+                });
+            }
+            else
+            {
+                return RedirectToAction("Cart", "Order", portRequest.OrderId);
             }
         }
 
