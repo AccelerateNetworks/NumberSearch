@@ -384,11 +384,11 @@ public class OrdersController(OpsConfig opsConfig,
                 {
                     ReccurringInvoiceDatum[] recurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(order.BillingClientId, _invoiceNinjaToken);
                     var reoccurring = recurringInvoiceLinks.Where(x => x.id == order.BillingInvoiceReoccuringId).FirstOrDefault();
-                    if(reoccurring.invitations is null)
+                    if(reoccurring.invitations is null && recurringInvoiceLinks.Length > 0)
                     {
                         reoccurring = recurringInvoiceLinks.MaxBy(x => x.updated_at);
-                    }
-                    string reoccurringLink = reoccurring.invitations.FirstOrDefault().link;
+                    } 
+                    string reoccurringLink = reoccurring.invitations?.FirstOrDefault().link ?? string.Empty;
 
                     if (!string.IsNullOrWhiteSpace(reoccurringLink))
                     {
