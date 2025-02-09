@@ -11,51 +11,51 @@
 
 <script type="text/javascript">
     function handleSearchQuery(textBox) {
-        var route = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest?text=';
-        var suffix = '&maxSuggestions=5&countryCode=USA,CAN&f=pjson';
-        fetch(`${route}${textBox.value}${suffix}`)
-            .then(
-                function (response) {
-                    if (response.status !== 200) {
-                        console.log('Looks like there was a problem. Status Code: ' +
-                            response.status);
-                        return;
-                    }
+    var route = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest?text=';
+    var suffix = '&maxSuggestions=5&countryCode=USA,CAN&f=pjson';
+    fetch(`${route}${textBox.value}${suffix}`)
+    .then(
+    function (response) {
+    if (response.status !== 200) {
+    console.log('Looks like there was a problem. Status Code: ' +
+    response.status);
+    return;
+    }
 
-                    // Examine the text in the response
-                    response.json().then(function (data) {
-                        var options = '';
-                        var longestResult = 0;
-                        if (data.suggestions != undefined) {
-                            for (var i = 0; i < data.suggestions.length; i++) {
-                                options += `<li class='list-group-item' onclick='setAddress(this.innerHTML)'>${data.suggestions[i].text}</li>`;
-                                if (longestResult < data.suggestions[i].text.length) {
-                                    longestResult = data.suggestions[i].text.length;
-                                }
-                            }
+    // Examine the text in the response
+    response.json().then(function (data) {
+    var options = '';
+    var longestResult = 0;
+    if (data.suggestions != undefined) {
+    for (var i = 0; i < data.suggestions.length; i++) {
+    options += `<li class='list-group-item' onclick='setAddress(this.innerHTML)'>${data.suggestions[i].text}</li>`;
+    if (longestResult < data.suggestions[i].text.length) {
+    longestResult = data.suggestions[i].text.length;
+    }
+    }
 
-                            var datalist = document.getElementById("addressOptions");
-                            datalist.innerHTML = options;
-                            datalist.hidden = false;
-                        }
+    var datalist = document.getElementById("addressOptions");
+    datalist.innerHTML = options;
+    datalist.hidden = false;
+    }
 
-                        var textBox = document.getElementById("address");
-                        textBox.focus();
+    var textBox = document.getElementById("address");
+    textBox.focus();
 
-                        console.log(datalist);
-                    });
-                }
-            )
-            .catch(function (err) {
-                console.log('Fetch Error :-S', err);
-            });
+    console.log(datalist);
+    });
+    }
+    )
+    .catch(function (err) {
+    console.log('Fetch Error :-S', err);
+    });
     }
 
     function setAddress(address) {
-        var textBox = document.getElementById("address");
-        textBox.value = address;
-        var datalist = document.getElementById("addressOptions");
-        datalist.hidden = true;
+    var textBox = document.getElementById("address");
+    textBox.value = address;
+    var datalist = document.getElementById("addressOptions");
+    datalist.hidden = true;
     }
 </script>
 
@@ -63,59 +63,59 @@
 
     $(document).ready(function () {
 
-        bsCustomFileInput.init()
-        locationType();
-        partial();
+    bsCustomFileInput.init()
+    locationType();
+    partial();
 
-        $("#ltoption1").change(function () {
-            locationType();
-        });
+    $("#ltoption1").change(function () {
+    locationType();
+    });
 
-        $("#ltoption2").change(function () {
-            locationType();
-        });
+    $("#ltoption2").change(function () {
+    locationType();
+    });
 
-        $("#ppoption1").change(function () {
-            partial();
-        });
+    $("#ppoption1").change(function () {
+    partial();
+    });
 
-        $("#ppoption2").change(function () {
-            partial();
-        });
+    $("#ppoption2").change(function () {
+    partial();
+    });
 
-        $("#callerId").on('keyup', function () {
-            $("#charCount").text(`  ${15 - this.value.length} Characters Remaining`);
-        });
+    $("#callerId").on('keyup', function () {
+    $("#charCount").text(`  ${15 - this.value.length} Characters Remaining`);
+    });
 
-        function locationType() {
-            var selectedLocation = $('input[name="PortRequest.LocationType"]:checked').val();
+    function locationType() {
+    var selectedLocation = $('input[name="PortRequest.LocationType"]:checked').val();
 
-            if (selectedLocation == "Business") {
-                $(".business").show();
-                $(".residential").hide();
-            }
+    if (selectedLocation == "Business") {
+    $(".business").show();
+    $(".residential").hide();
+    }
 
-            if (selectedLocation == "Residential") {
-                $(".business").hide();
-                $(".residential").show();
-            }
-        }
+    if (selectedLocation == "Residential") {
+    $(".business").hide();
+    $(".residential").show();
+    }
+    }
 
-        function partial() {
-            var selectedLocation = $('input[name="PortRequest.PartialPort"]:checked').val();
+    function partial() {
+    var selectedLocation = $('input[name="PortRequest.PartialPort"]:checked').val();
 
-            if (selectedLocation == "true") {
-                $("#partialDescripton").show();
-            }
+    if (selectedLocation == "true") {
+    $("#partialDescripton").show();
+    }
 
-            if (selectedLocation == "false") {
-                $("#partialDescripton").hide();
-            }
-        }
+    if (selectedLocation == "false") {
+    $("#partialDescripton").hide();
+    }
+    }
     });
 
     $(function () {
-        $('[data-toggle="popover"]').popover()
+    $('[data-toggle="popover"]').popover()
     })
 
 </script>
@@ -125,7 +125,7 @@
             <div class="col-lg-10 col-md-11">
                 <h1 class="display-3 text-light d-none d-sm-block">Porting Information</h1>
                 <h4 class="display-4 text-light d-block d-sm-none">Porting Information</h4>
-                <p class="lead text-white">We need you to provide this information to bring your existing phone numbers over to our network. Without this information we can't begin transitioning you from your old phone provider.</p>
+                <p class="lead text-white">Bring your phone numbers with you!</p>
             </div>
         </div>
     </div>
@@ -148,227 +148,20 @@
                 </div>
             }
         }
-        if (Model?.Order.DateSubmitted < DateTime.Now && string.IsNullOrWhiteSpace(Model?.Message))
+        if (Model?.Order.DateSubmitted < Model?.PortRequest.DateSubmitted && string.IsNullOrWhiteSpace(Model?.Message))
         {
             <div class="alert alert-success" role="alert">
-                ✔️ Your porting information was submitted on @Model.Order.DateSubmitted.ToShortDateString() at @Model.Order.DateSubmitted.ToShortTimeString(). Review your <a href="https://acceleratenetworks.com/cart/order/@Model?.Order?.OrderId">Order here</a>.
+                ✔️ Your porting information was submitted on @Model.PortRequest.DateSubmitted.ToShortDateString() at @Model.PortRequest.DateSubmitted.ToShortTimeString(). Review your <a href="https://acceleratenetworks.com/cart/order/@Model?.Order?.OrderId">Order here</a>.
             </div>
         }
-        <form asp-controller="Cart" asp-action="AddPortingInformation" method="post" enctype="multipart/form-data" class="needs-validation mb-3">
-            @Html.AntiForgeryToken()
-            <input asp-for="PortRequest.OrderId" type="text" value="@Model?.Order?.OrderId" hidden />
-            <input asp-for="PortRequest.PortRequestId" type="text" value="Guid.NewGuid()" hidden />
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="billingPhone">Current Billing Phone Number</label>
-                    <select asp-for="PortRequest.BillingPhone" class="custom-select d-block w-100" id="billingPhone" title="Also known as the BTN. This is the number that is normally provided on a copy of your bill or statement in the upper right corner or is the first number listed on the bill." required>
-                        @if (Model?.PhoneNumbers is not null)
-                        {
-                            foreach (var number in Model.PhoneNumbers)
-                            {
-                                if (Model?.PortRequest?.BillingPhone == number.PortedDialedNumber)
-                                {
-                                    <option value="@number.PortedDialedNumber" selected>@number.PortedDialedNumber</option>
-                                }
-                                else
-                                {
-                                    <option value="@number.PortedDialedNumber">@number.PortedDialedNumber</option>
-                                }
-                            }
-                        }
-                    </select>
-                    <small class="text-muted">
-                        The primary phone number on the account often acting as the account number, shown in the upper right corner of the Centurylink, Frontier & Ziply Fiber bills.
-                    </small>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="accountNumber">Current Account Number</label>
-                    <input asp-for="PortRequest.ProviderAccountNumber" type="text" value="@Model?.PortRequest?.ProviderAccountNumber" class="form-control" id="accountNumber" placeholder="1234567891011" title="The account number is usually found on the invoice or a copy of a bill from your current provider." required>
-                    <small class="text-muted">
-                        The account number for your account with your current provider.
-                    </small>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="pin">Account PIN or Password <span class="text-muted">(Optional)</span></label>
-                    <input asp-for="PortRequest.ProviderPIN" type="text" value="@Model?.PortRequest?.ProviderPIN" class="form-control" id="pin" placeholder="1234" title="The PIN or password for the existing account.">
-                    <small class="text-muted">
-                        The PIN for your account with your current provider.
-                    </small>
-                </div>
+        <div class="row">
+            <div class="col-md-6">
+                <h3>Find your bill</h3>
+                <p>We need a copy of your bill from your current phone service provider. Please provide us with your current account number, PIN or password, and billing address from your current provider. Without this information, we can't start the switch.</p>
             </div>
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="locationType">Location Type</label>
-                    <div class="form-group">
-                        <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                            @{
-                                if (Model?.PortRequest?.LocationType == "Residential")
-                                {
-                                    <label class="btn btn-outline-secondary">
-                                        <input asp-for="PortRequest.LocationType" type="radio" id="ltoption1" value="Business"> Business
-                                    </label>
-                                    <label class="btn btn-outline-secondary">
-                                        <input asp-for="PortRequest.LocationType" type="radio" id="ltoption2" value="Residential" checked> Residential
-                                    </label>
-                                }
-                                else
-                                {
-                                    <label class="btn btn-outline-secondary">
-                                        <input asp-for="PortRequest.LocationType" type="radio" id="ltoption1" value="Business" checked> Business
-                                    </label>
-                                    <label class="btn btn-outline-secondary">
-                                        <input asp-for="PortRequest.LocationType" type="radio" id="ltoption2" value="Residential"> Residential
-                                    </label>
-                                }
-                            }
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-3 business">
-                    <label for="partialPort">Business Contact</label>
-                    @{
-                        var contactName = string.IsNullOrWhiteSpace(Model?.PortRequest?.BusinessContact) ? $"{Model?.Order?.FirstName} {Model?.Order?.LastName}" : Model?.PortRequest?.BusinessContact;
-                    }
-                    <input asp-for="PortRequest.BusinessContact" type="text" value="@contactName" class="form-control" id="businessContact" placeholder="Alexander Graham-Bell" title="This is the name of the owner or contact who will be submitting the port order.">
-                </div>
-                <div class="col-md-4 mb-3 business">
-                    <label for="partialPortDescription">Business Name</label>
-                    @{
-                        var businessName = string.IsNullOrWhiteSpace(Model?.PortRequest?.BusinessName) ? Model?.Order?.BusinessName : Model?.PortRequest?.BusinessName;
-                    }
-                    <input asp-for="PortRequest.BusinessName" type="text" value="@businessName" class="form-control" id="businessName" placeholder="American Telegraf and Telephone Company" title="Name of the business associated with the numbers being ported.">
-                </div>
-
-                <div class="col-md-4 mb-3 residential">
-                    <label for="partialPort">First Name</label>
-                    @{
-                        var firstName = string.IsNullOrWhiteSpace(Model?.PortRequest?.ResidentialFirstName) ? Model?.Order?.FirstName : Model?.PortRequest?.ResidentialFirstName;
-                    }
-                    <input asp-for="PortRequest.ResidentialFirstName" type="text" value="@firstName" class="form-control" id="residentalFirstName" placeholder="Alexander" title="The first name of the person currently being billed for this phone number.">
-                </div>
-                <div class="col-md-4 mb-3 residential">
-                    <label for="partialPortDescription">Last Name</label>
-                    @{
-                        var lastName = string.IsNullOrWhiteSpace(Model?.PortRequest?.ResidentialLastName) ? Model?.Order?.LastName : Model?.PortRequest?.ResidentialLastName;
-                    }
-                    <input asp-for="PortRequest.ResidentialLastName" type="text" value="@lastName" class="form-control" id="residentalLastName" placeholder="Graham-Bell" title="The last name of the person currently being billed for this phone number.">
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <div class="mb-3" id="searchForm">
-                    <label for="address">Service Address</label>
-                    @{
-                        var address = string.IsNullOrWhiteSpace(Model?.PortRequest?.UnparsedAddress) ? Model?.Order?.UnparsedAddress : Model?.PortRequest?.UnparsedAddress;
-                    }
-                    <input asp-for="PortRequest.UnparsedAddress" type="text" value="@address" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" data-toggle="dropdown" required>
-                    <ul class="list-group" role="menu" aria-labelledby="menu1" id="addressOptions">
-                    </ul>
-                    <small class="text-muted">
-                        Enter the service address for the account with your existing provider.
-                    </small>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label for="address2">Service Address 2 <span class="text-muted">(Optional)</span></label>
-                @{
-                    var address2 = string.IsNullOrWhiteSpace(Model?.PortRequest?.Address2) ? Model?.Order?.Address2 : Model?.PortRequest?.Address2;
-                }
-                <input asp-for="PortRequest.Address2" type="text" value="@address2" class="form-control" id="address2" title="The city of the service address listed above." placeholder="Apartment or suite">
-                <small class="text-muted">
-                    The unit number for the address on the account with your old provider.
-                </small>
-            </div>
-
-            @if (!string.IsNullOrWhiteSpace(Model?.PortRequest?.City))
-            {
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label for="unitType">City</label>
-                        <input asp-for="PortRequest.City" type="text" class="form-control" id="address2" readonly>
-
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label for="address2">State</label>
-                        <input asp-for="PortRequest.State" type="text" class="form-control" id="address2" readonly>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label for="address2">Zip</label>
-                        <input asp-for="PortRequest.Zip" type="text" class="form-control" id="address2" readonly>
-                    </div>
-                </div>
-            }
-
-            <div class="row">
-                <div class="col-md-6">
-                    <label for="callerId">Caller ID <span class="text-muted">(15 Characters Maximum)</span></label>
-                    <input asp-for="PortRequest.CallerId" type="text" value="@Model?.PortRequest?.CallerId" class="form-control" id="callerId" title="Sets Caller ID (aka CNAM) for all numbers in this port order, 15 character limit. Only letters, numbers, and spaces are allowed." placeholder="Alexander" maxlength="15" pattern="[a-zA-Z0-9\s]+" required>
-                    <label><strong id="charCount"></strong></label>
-                </div>
-                <div class="col-md-6">
-                    <label for="inputGroupFile02">An Image of Your Current Bill</label>
-                    <div class="input-group">
-                        <div class="custom-file">
-                            <input asp-for="PortRequest.BillImage" type="file" class="custom-file-input" id="inputGroupFile02" />
-                            <span asp-validation-for="PortRequest.BillImage"></span>
-                            @{
-                                var billLabel = string.IsNullOrWhiteSpace(Model?.PortRequest?.BillImagePath) ? "Choose Image" : Model?.PortRequest?.BillImagePath;
-                            }
-                            <label class="custom-file-label" for="inputGroupFile02">@billLabel</label>
-                        </div>
-                    </div>
-                    <small class="text-muted">
-                        Provide a copy of a recent bill that you received from your current phone service provider.
-                    </small>
-                    @if (!string.IsNullOrWhiteSpace(Model?.PortRequest?.BillImagePath))
-                    {
-                        <div class="d-grid gap-2">
-                            <a class="btn btn-outline-success" href="https://ops.acceleratenetworks.com/Home/BillImage/@Model?.Order?.OrderId?fileName=@Model?.PortRequest?.BillImagePath" target="_blank">View Bill Image</a>
-                        </div>
-                    }
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-3 mb-3">
-                    <label for="partialPort">
-                        Partial Port
-                    </label>
-                    <div class="form-group">
-                        <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                            @{
-                                if (Model?.PortRequest?.PartialPort ?? false)
-                                {
-                                    <label class="btn btn-outline-secondary">
-                                        <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption1" value="true" checked> Yes
-                                    </label>
-                                    <label class="btn btn-outline-secondary">
-                                        <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption2" value="false"> No
-                                    </label>
-                                }
-                                else
-                                {
-                                    <label class="btn btn-outline-secondary">
-                                        <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption1" value="true"> Yes
-                                    </label>
-                                    <label class="btn btn-outline-secondary">
-                                        <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption2" value="false" checked> No
-                                    </label>
-                                }
-                            }
-                        </div>
-                    </div>
-                    <small class="text-muted">
-                        Do you want to retain any services with your old carrier?
-                    </small>
-                </div>
-                <div class="col-md-6 mb-3" id="partialDescripton">
-                    <label for="partialPortDescription">Partial Port Description</label>
-                    <input asp-for="PortRequest.PartialPortDescription" type="text" value="@Model?.PortRequest?.PartialPortDescription" class="form-control" id="partialPortDescription" title="Describe what services the old carrier should leave alone. Contact the old carrier to confirm they will leave these services intact.">
-                </div>
+            <div class="col-md-4">
                 <div class="col-md-6 mb-3">
-                    <label for="locationType">Numbers to Port</label>
+                    <label for="locationType">@Model.PhoneNumbers.Count() Numbers to Port</label>
                     @if (Model?.PhoneNumbers is not null)
                     {
                         foreach (var number in Model.PhoneNumbers)
@@ -378,17 +171,258 @@
                     }
                 </div>
             </div>
+            <div class="col">
+                <a class="btn btn-secondary" href="/cart/order/@Model?.Order?.OrderId">View Order</a>
+            </div>
+        </div>
+    }
+</div>
+@{
+    <form asp-controller="Cart" asp-action="AddPortingInformation" method="post" enctype="multipart/form-data" class="needs-validation mb-3">
+        @Html.AntiForgeryToken()
+        <input asp-for="PortRequest.OrderId" type="text" value="@Model?.Order?.OrderId" hidden />
+        <input asp-for="PortRequest.PortRequestId" type="text" value="Guid.NewGuid()" hidden />
+        <div class="p-3 bg-light">
+            <div class="container pt-3">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="inputGroupFile02">An Image of Your Current Bill</label>
+                        <div class="input-group">
+                            <div class="custom-file">
+                                <input asp-for="PortRequest.BillImage" type="file" class="custom-file-input" id="inputGroupFile02" />
+                                <span asp-validation-for="PortRequest.BillImage"></span>
+                                @{
+                                    var billLabel = string.IsNullOrWhiteSpace(Model?.PortRequest?.BillImagePath) ? "Choose Image" : Model?.PortRequest?.BillImagePath;
+                                }
+                                <label class="custom-file-label" for="inputGroupFile02">@billLabel</label>
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            Provide a copy of a recent bill that you received from your current phone service provider.
+                        </small>
+                        @if (!string.IsNullOrWhiteSpace(Model?.PortRequest?.BillImagePath))
+                        {
+                            <div class="d-grid gap-2">
+                                <a class="btn btn-outline-success" href="https://ops.acceleratenetworks.com/Home/BillImage/@Model?.Order?.OrderId?fileName=@Model?.PortRequest?.BillImagePath" target="_blank">View Bill Image</a>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="billingPhone">Current Billing Phone Number</label>
+                        <select asp-for="PortRequest.BillingPhone" class="custom-select d-block w-100" id="billingPhone" title="Also known as the BTN. This is the number that is normally provided on a copy of your bill or statement in the upper right corner or is the first number listed on the bill." required>
+                            @if (Model?.PhoneNumbers is not null)
+                            {
+                                foreach (var number in Model.PhoneNumbers)
+                                {
+                                    if (Model?.PortRequest?.BillingPhone == number.PortedDialedNumber)
+                                    {
+                                        <option value="@number.PortedDialedNumber" selected>@number.PortedDialedNumber</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@number.PortedDialedNumber">@number.PortedDialedNumber</option>
+                                    }
+                                }
+                            }
+                        </select>
+                        <small class="text-muted">
+                            The primary phone number on the account often acting as the account number, shown in the upper right corner of the Centurylink, Frontier & Ziply Fiber bills.
+                        </small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="accountNumber">Current Account Number</label>
+                        <input asp-for="PortRequest.ProviderAccountNumber" type="text" value="@Model?.PortRequest?.ProviderAccountNumber" class="form-control" id="accountNumber" title="The account number is usually found on the invoice or a copy of a bill from your current provider." required>
+                        <small class="text-muted">
+                            The account number for your account with your current provider.
+                        </small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="pin">Account PIN or Password <span class="text-muted">(Optional)</span></label>
+                        <input asp-for="PortRequest.ProviderPIN" type="text" value="@Model?.PortRequest?.ProviderPIN" class="form-control" id="pin" title="The PIN or password for the existing account.">
+                        <small class="text-muted">
+                            The PIN for your account with your current provider.
+                        </small>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="locationType">Location Type</label>
+                        <div class="form-group">
+                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                @{
+                                    if (Model?.PortRequest?.LocationType == "Residential")
+                                    {
+                                        <label class="btn btn-outline-secondary">
+                                            <input asp-for="PortRequest.LocationType" type="radio" id="ltoption1" value="Business"> Business
+                                        </label>
+                                        <label class="btn btn-outline-secondary">
+                                            <input asp-for="PortRequest.LocationType" type="radio" id="ltoption2" value="Residential" checked> Residential
+                                        </label>
+                                    }
+                                    else
+                                    {
+                                        <label class="btn btn-outline-secondary">
+                                            <input asp-for="PortRequest.LocationType" type="radio" id="ltoption1" value="Business" checked> Business
+                                        </label>
+                                        <label class="btn btn-outline-secondary">
+                                            <input asp-for="PortRequest.LocationType" type="radio" id="ltoption2" value="Residential"> Residential
+                                        </label>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3 business">
+                        <label for="partialPort">Business Contact</label>
+                        @{
+                            var contactName = string.IsNullOrWhiteSpace(Model?.PortRequest?.BusinessContact) ? $"{Model?.Order?.FirstName} {Model?.Order?.LastName}" : Model?.PortRequest?.BusinessContact;
+                        }
+                        <input asp-for="PortRequest.BusinessContact" type="text" value="@contactName" class="form-control" id="businessContact" placeholder="Alexander Graham-Bell" title="This is the name of the owner or contact who will be submitting the port order.">
+                    </div>
+                    <div class="col-md-4 mb-3 business">
+                        <label for="partialPortDescription">Business Name</label>
+                        @{
+                            var businessName = string.IsNullOrWhiteSpace(Model?.PortRequest?.BusinessName) ? Model?.Order?.BusinessName : Model?.PortRequest?.BusinessName;
+                        }
+                        <input asp-for="PortRequest.BusinessName" type="text" value="@businessName" class="form-control" id="businessName" placeholder="American Telegraf and Telephone Company" title="Name of the business associated with the numbers being ported.">
+                    </div>
+
+                    <div class="col-md-4 mb-3 residential">
+                        <label for="partialPort">First Name</label>
+                        @{
+                            var firstName = string.IsNullOrWhiteSpace(Model?.PortRequest?.ResidentialFirstName) ? Model?.Order?.FirstName : Model?.PortRequest?.ResidentialFirstName;
+                        }
+                        <input asp-for="PortRequest.ResidentialFirstName" type="text" value="@firstName" class="form-control" id="residentalFirstName" placeholder="Alexander" title="The first name of the person currently being billed for this phone number.">
+                    </div>
+                    <div class="col-md-4 mb-3 residential">
+                        <label for="partialPortDescription">Last Name</label>
+                        @{
+                            var lastName = string.IsNullOrWhiteSpace(Model?.PortRequest?.ResidentialLastName) ? Model?.Order?.LastName : Model?.PortRequest?.ResidentialLastName;
+                        }
+                        <input asp-for="PortRequest.ResidentialLastName" type="text" value="@lastName" class="form-control" id="residentalLastName" placeholder="Graham-Bell" title="The last name of the person currently being billed for this phone number.">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="mb-3" id="searchForm">
+                        <label for="address">Service Address</label>
+                        @{
+                            var address = string.IsNullOrWhiteSpace(Model?.PortRequest?.UnparsedAddress) ? Model?.Order?.UnparsedAddress : Model?.PortRequest?.UnparsedAddress;
+                        }
+                        <input asp-for="PortRequest.UnparsedAddress" type="text" value="@address" class="form-control" id="address" placeholder="5432 5th Ave" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" data-toggle="dropdown" required>
+                        <ul class="list-group" role="menu" aria-labelledby="menu1" id="addressOptions">
+                        </ul>
+                        <small class="text-muted">
+                            Enter the service address for the account with your existing provider.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="address2">Service Address 2 <span class="text-muted">(Optional)</span></label>
+                    @{
+                        var address2 = string.IsNullOrWhiteSpace(Model?.PortRequest?.Address2) ? Model?.Order?.Address2 : Model?.PortRequest?.Address2;
+                    }
+                    <input asp-for="PortRequest.Address2" type="text" value="@address2" class="form-control" id="address2" title="The city of the service address listed above.">
+                    <small class="text-muted">
+                        The unit number for the address on the account with your old provider.
+                    </small>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model?.PortRequest?.City))
+                {
+                    <div class="row" hidden>
+                        <div class="col-md-4 mb-3">
+                            <label for="unitType">City</label>
+                            <input asp-for="PortRequest.City" type="text" class="form-control" id="address2" readonly>
+
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="address2">State</label>
+                            <input asp-for="PortRequest.State" type="text" class="form-control" id="address2" readonly>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="address2">Zip</label>
+                            <input asp-for="PortRequest.Zip" type="text" class="form-control" id="address2" readonly>
+                        </div>
+                    </div>
+                }
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="partialPort">
+                            Partial Port
+                        </label>
+                        <div class="form-group">
+                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                @{
+                                    if (Model?.PortRequest?.PartialPort ?? false)
+                                    {
+                                        <label class="btn btn-outline-secondary">
+                                            <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption1" value="true" checked> Yes
+                                        </label>
+                                        <label class="btn btn-outline-secondary">
+                                            <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption2" value="false"> No
+                                        </label>
+                                    }
+                                    else
+                                    {
+                                        <label class="btn btn-outline-secondary">
+                                            <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption1" value="true"> Yes
+                                        </label>
+                                        <label class="btn btn-outline-secondary">
+                                            <input asp-for="PortRequest.PartialPort" type="radio" id="ppoption2" value="false" checked> No
+                                        </label>
+                                    }
+                                }
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            Do you want to retain any services with your old carrier?
+                        </small>
+                    </div>
+                    <div class="col-md-9 mb-3" id="partialDescripton">
+                        <label for="partialPortDescription">Partial Port Description</label>
+                        <input asp-for="PortRequest.PartialPortDescription" type="text" value="@Model?.PortRequest?.PartialPortDescription" class="form-control" id="partialPortDescription" title="Describe what services the old carrier should leave alone. Contact the old carrier to confirm they will leave these services intact.">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container pt-3">
+
+            <h3>Pick your Branding</h3>
+            <div class="row">
+                <p class="col-md-4">When you call out from your phone numbers, what Caller ID do you want your customers to see?</p>
+                <div class="col-md-4">
+                    <label for="callerId">Caller ID <span class="text-muted">(15 Characters Maximum)</span></label>
+                    <input asp-for="PortRequest.CallerId" type="text" value="@Model?.PortRequest?.CallerId" class="form-control" id="callerId" title="Sets Caller ID (aka CNAM) for all numbers in this port order, 15 character limit. Only letters, numbers, and spaces are allowed." maxlength="15" pattern="[a-zA-Z0-9\s]+" required>
+                    <label><strong id="charCount"></strong></label>
+                </div>
+                <div class="col-md-4">
+                    <label for="locationType">Existing Caller IDs</label>
+                    @if (Model?.PhoneNumbers is not null)
+                    {
+                        List<string> callerIds = [];
+                        foreach (var number in Model.PhoneNumbers.DistinctBy(x => x.LrnLookup.LIDBName))
+                        {
+                            <h4>@number.LrnLookup.LIDBName</h4>
+                        }
+                    }
+                </div>
+            </div>
             <hr class="mb-4">
-            @if (Model?.Order.DateSubmitted < DateTime.Now)
+            @if (Model?.Order.DateSubmitted < Model?.PortRequest.DateSubmitted)
             {
                 <button class="btn btn-primary btn-lg btn-block shadow" type="submit" value="Submit">Update your Port</button>
             }
             else
             {
-                <button class="btn btn-primary btn-lg btn-block shadow" type="submit" value="Submit">Request a Port</button>
+                <button class="btn btn-success btn-lg btn-block shadow" type="submit" value="Submit">Request a Port</button>
             }
             <br />
-        </form>
-    }
+        </div>
 
-</div>
+    </form>
+}

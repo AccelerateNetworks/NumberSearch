@@ -652,6 +652,15 @@
                 </ul>
             </div>
             <div class="col-md-8 order-md-1">
+                @if (ported is not null && ported.Any() && Model?.Cart?.Order?.OrderId != Guid.Empty && Model?.Cart?.Order?.DateSubmitted > DateTime.MinValue)
+                {
+                    <hr class="mb-3">
+                    <h4 class="mb-3">Next Steps</h4>
+                    <p>Now that you've completed your order, please add your porting information using the button below so we can bring your existing phone numbers onto our network.</p>
+                    <a asp-controller="Cart" asp-action="PortingInformation" asp-route-id="@Model?.Cart?.Order?.OrderId" class="btn btn-primary btn-lg btn-block shadow mb-3">Add Porting Information</a>
+                    <p>We also need this New Client Setup information to configure your phones with the correct extensions and menu options.</p>
+                    <a href="/Cart/Order/@Model?.Cart?.Order?.OrderId/NewClient" class="btn btn-primary btn-lg btn-block shadow mb-4">Add New Client Setup Information</a>
+                }
                 <h4 class="mb-3">Billing Information</h4>
                 @if (!string.IsNullOrWhiteSpace(Model?.Message))
                 {
@@ -887,21 +896,11 @@
                             </div>
                         </div>
                     </div>
-                    @{
-                        if (ported is not null && ported.Any() && Model?.Cart?.Order?.OrderId != Guid.Empty && Model?.Cart?.Order?.DateSubmitted > DateTime.MinValue)
-                        {
-                            <hr class="mb-3">
-                            <h4 class="mb-3">Next Steps</h4>
-                            <p>Now that you've complete your order, please fillout these two pages so we can bring your existing phone numbers onto our network and configure your phones with the correct extentions. If you have any questions please contact your sales representative or our support staff at (206) 858-8757.</p>
-                            <a asp-controller="Cart" asp-action="PortingInformation" asp-route-id="@Model?.Cart?.Order?.OrderId" class="btn btn-primary btn-lg btn-block shadow">Add Porting Information</a>
-                            <a href="/Cart/Order/@Model?.Cart?.Order?.OrderId/NewClient" class="btn btn-primary btn-lg btn-block shadow">Add New Client Setup Information</a>
-                        }
-                        else if (Model?.Cart?.Order?.OrderId != Guid.Empty && Model?.Cart?.Order?.DateSubmitted == DateTime.MinValue)
-                        {
+                    @if (Model?.Cart?.Order?.OrderId != Guid.Empty && Model?.Cart?.Order?.DateSubmitted == DateTime.MinValue)
+                    {
 
-                            <hr class="mb-4">
-                            <button class="btn btn-primary btn-lg btn-block shadow" type="submit" value="Submit">Submit your Order</button>
-                        }
+                        <hr class="mb-4">
+                        <button class="btn btn-primary btn-lg btn-block shadow" type="submit" value="Submit">Submit your Order</button>
                     }
                     <br />
                 </form>

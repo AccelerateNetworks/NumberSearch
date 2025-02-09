@@ -331,6 +331,12 @@ namespace NumberSearch.Mvc.Controllers
                     var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql);
                     var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql);
 
+                    foreach (var phoneNumber in portedPhoneNumbers)
+                    {
+                        var numberName = await CnamBulkVs.GetAsync(phoneNumber.PortedDialedNumber.AsMemory(), mvcConfiguration.BulkVSAPIKEY.AsMemory());
+                        phoneNumber.LrnLookup.LIDBName = string.IsNullOrWhiteSpace(numberName.name) ? string.Empty : numberName.name ?? string.Empty;
+                    }
+
                     if (portedPhoneNumbers.Any())
                     {
                         return View("Success", new OrderWithPorts
@@ -356,6 +362,11 @@ namespace NumberSearch.Mvc.Controllers
         {
             var order = await Order.GetByIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
             var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql);
+            foreach (var phoneNumber in portedNumbers)
+            {
+                var numberName = await CnamBulkVs.GetAsync(phoneNumber.PortedDialedNumber.AsMemory(), mvcConfiguration.BulkVSAPIKEY.AsMemory());
+                phoneNumber.LrnLookup.LIDBName = string.IsNullOrWhiteSpace(numberName.name) ? string.Empty : numberName.name ?? string.Empty;
+            }
 
             portRequest.PortRequestId = Guid.NewGuid();
 
