@@ -383,10 +383,16 @@ public class OrdersController(OpsConfig opsConfig,
                 if (!string.IsNullOrWhiteSpace(order.BillingClientId) && !string.IsNullOrWhiteSpace(order.BillingInvoiceReoccuringId))
                 {
                     ReccurringInvoiceDatum[] recurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(order.BillingClientId, _invoiceNinjaToken);
-                    string reoccurringLink = recurringInvoiceLinks.Where(x => x.id == order.BillingInvoiceReoccuringId).FirstOrDefault().invitations.FirstOrDefault().link;
+                    var reoccurring = recurringInvoiceLinks.Where(x => x.id == order.BillingInvoiceReoccuringId).FirstOrDefault();
+                    if(reoccurring.invitations is null)
+                    {
+                        reoccurring = recurringInvoiceLinks.MaxBy(x => x.updated_at);
+                    }
+                    string reoccurringLink = reoccurring.invitations.FirstOrDefault().link;
 
                     if (!string.IsNullOrWhiteSpace(reoccurringLink))
                     {
+                        order.BillingInvoiceReoccuringId = reoccurring.id != order.BillingInvoiceReoccuringId && !string.IsNullOrWhiteSpace(reoccurring.id) ? reoccurring.id : order.BillingInvoiceReoccuringId;
                         order.ReoccuringInvoiceLink = reoccurringLink;
                     }
                     else
