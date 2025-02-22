@@ -12,6 +12,10 @@
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 		<TieredPGO>true</TieredPGO>
 	</PropertyGroup>
+	<PropertyGroup>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);1591</NoWarn>
+	</PropertyGroup>
 	<ItemGroup>
 		<Compile Remove="Services\**" />
 		<Content Remove="Services\**" />

@@ -15,6 +15,7 @@ using Serilog;
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,12 +27,44 @@ namespace NumberSearch.Mvc.Controllers
     {
         private readonly string _postgresql = mvcConfiguration.PostgresqlProd;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="DialedNumber"></param>
+        /// <param name="City"></param>
+        /// <param name="State"></param>
+        /// <param name="DateIngested"></param>
+        /// <param name="Wireless"></param>
+        /// <param name="Portable"></param>
+        /// <param name="LastPorted"></param>
+        /// <param name="SPID"></param>
+        /// <param name="LATA"></param>
+        /// <param name="LEC"></param>
+        /// <param name="LECType"></param>
+        /// <param name="LIDBName"></param>
+        /// <param name="LRN"></param>
+        /// <param name="OCN"></param>
+        /// <param name="CarrierName"></param>
+        /// <param name="CarrierLogoLink"></param>
+        /// <param name="CarrierColor"></param>
+        /// <param name="CarrierType"></param>
         public record BulkLookupResult(string DialedNumber, string City, string State, DateTime DateIngested, bool Wireless, bool Portable, DateTime LastPorted, string SPID, string LATA, string LEC, string LECType, string LIDBName, string LRN, string OCN, string CarrierName, string CarrierLogoLink, string CarrierColor, string CarrierType);
 
+        /// <summary>
+        /// Get detailed information about a list of North American phone numbers.
+        /// </summary>
+        /// <param name="token">To get an API token please contact Accelerate Networks at 206-858-8757</param>
+        /// <param name="dialedNumber">One or more valid phone number.</param>
+        /// <returns>Detailed information on a per phone number basis.</returns>
+        /// <response code="200">A list of phone number details. </response>
+        /// <response code="400">No dialed phone numbers found. Please try a different query. 🥺👉👈</response>
+        /// <response code="400">Token is invalid. Please supply the correct token in your request or contact support@acceleratenetworks.com for help.</response>
         [HttpGet("Number/Search/Bulk")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         [OutputCache(Duration = 0)]
-        public async Task<IActionResult> NumberSearchBulkAsync(string token, string dialedNumber)
+        [Produces<List<BulkLookupResult>>]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> NumberSearchBulkAsync([Required] string token, [Required] string dialedNumber)
         {
             if (!string.IsNullOrWhiteSpace(token) && token == "Memorable8142024")
             {
@@ -72,7 +105,7 @@ namespace NumberSearch.Mvc.Controllers
             }
         }
 
-
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("Add/NewClient/{id}/ExtensionRegistration")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddNewClientExtensionRegistrationAsync([FromRoute] Guid id, [FromBody] ExtensionRegistration registration)
@@ -110,7 +143,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return BadRequest("Couldn't find a NewClient with this id.");
         }
-
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("Remove/NewClient/{id}/ExtensionRegistration/{extRegId}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> RemoveNewClientExtensionRegistrationAsync([FromRoute] Guid id, [FromRoute] Guid extRegId)
@@ -144,7 +177,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return BadRequest("Couldn't find a NewClient with this id.");
         }
-
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("Add/NewClient/{id}/NumberDescription")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddNewClientNumberDescriptionAsync([FromRoute] Guid id, [FromBody] NumberDescription description)
@@ -182,7 +215,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return BadRequest("Couldn't find a NewClient with this id.");
         }
-
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("Remove/NewClient/{id}/NumberDescription/{numDesId}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> RemoveNewClientNumberDescriptionAsync([FromRoute] Guid id, [FromRoute] Guid numDesId)
@@ -216,7 +249,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return BadRequest("Couldn't find a NewClient with this id.");
         }
-
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("Add/NewClient/{id}/IntercomRegistration")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddNewClientIntercomRegistrationAsync([FromRoute] Guid id, [FromBody] IntercomRegistration description)
@@ -254,7 +287,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return BadRequest("Couldn't find a NewClient with this id.");
         }
-
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("Remove/NewClient/{id}/IntercomRegistration/{numDesId}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> RemoveNewClientIntercomRegistrationAsync([FromRoute] Guid id, [FromRoute] Guid numDesId)
@@ -288,7 +321,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return BadRequest("Couldn't find a NewClient with this id.");
         }
-
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("Add/NewClient/{id}/SpeedDialKey")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddNewClientSpeedDialKeyAsync([FromRoute] Guid id, [FromBody] SpeedDialKey description)
@@ -326,7 +359,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return BadRequest("Couldn't find a NewClient with this id.");
         }
-
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("Remove/NewClient/{id}/SpeedDialKey/{numDesId}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> RemoveNewClientSpeedDialKeyAsync([FromRoute] Guid id, [FromRoute] Guid numDesId)
@@ -360,7 +393,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return BadRequest("Couldn't find a NewClient with this id.");
         }
-
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("Add/NewClient/{id}/FollowMeRegistration")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddNewClientFollowMeRegistrationAsync([FromRoute] Guid id, [FromBody] FollowMeRegistration description)
@@ -398,7 +431,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return BadRequest("Couldn't find a NewClient with this id.");
         }
-
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("Remove/NewClient/{id}/FollowMeRegistration/{numDesId}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> RemoveNewClientFollowMeRegistrationAsync([FromRoute] Guid id, [FromRoute] Guid numDesId)
@@ -432,8 +465,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return BadRequest("Couldn't find a NewClient with this id.");
         }
-
-
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("Add/NewClient/{id}/PhoneMenuOption")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddNewClientPhoneMenuOptionAsync([FromRoute] Guid id, [FromBody] PhoneMenuOption option)
@@ -471,7 +503,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return BadRequest("Couldn't find a NewClient with this id.");
         }
-
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("Remove/NewClient/{id}/PhoneMenuOption/{menuOptId}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> RemoveNewClientPhoneMenuOptionAsync([FromRoute] Guid id, [FromRoute] Guid menuOptId)
@@ -505,7 +537,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return BadRequest("Couldn't find a NewClient with this id.");
         }
-
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("Cart/Add/{type}/{id}/{quantity}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddToCartAsync([FromRoute] string type, [FromRoute] string id, [FromRoute] int quantity)
@@ -556,7 +588,7 @@ namespace NumberSearch.Mvc.Controllers
                     return NotFound(ModelState);
             }
         }
-
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("Cart/Remove/{type}/{id}/{quantity}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> RemoveFromCartAsync([FromRoute] string type, [FromRoute] string id, [FromRoute] int quantity)

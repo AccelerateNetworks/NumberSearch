@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 
 using NumberSearch.Mvc.Models;
 using NumberSearch.Mvc.WorkerServices;
@@ -14,9 +15,11 @@ using Serilog;
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Threading.RateLimiting;
 
 namespace NumberSearch.Mvc
@@ -65,7 +68,25 @@ namespace NumberSearch.Mvc
 
             services.AddRazorPages();
 
-            services.AddSwaggerGen();
+            services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = "NumberSearch API",
+                    Description = "An API for looking up numbers from Accelerate Networks.",
+                    TermsOfService = new Uri("https://acceleratenetworks.com/privacy"),
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Accelerate Networks",
+                        Url = new Uri("https://acceleratenetworks.com/")
+                    }
+                });
+
+                // using System.Reflection;
+                var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+            });
 
             services.AddSingleton<MonitorLoop>();
             services.AddHostedService<QueuedHostedService>();
@@ -163,7 +184,10 @@ namespace NumberSearch.Mvc
             // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sales API V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "NumberSeach API");
+                c.EnableTryItOutByDefault();
+                c.EnableValidator();
+                c.DisplayRequestDuration();
             });
 
             app.UseRouting();
