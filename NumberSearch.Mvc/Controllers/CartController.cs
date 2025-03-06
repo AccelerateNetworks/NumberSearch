@@ -1034,13 +1034,10 @@ Accelerate Networks
                             }
                             else
                             {
-                                // Reset the session and clear the Cart.
+                                // Reset the session and clear the Cart. Show them their order?
                                 HttpContext.Session.Clear();
 
-                                return View("Success", new OrderWithPorts
-                                {
-                                    Order = order
-                                });
+                                return Redirect($"/Cart/Order/{cart?.Order?.OrderId}"); ;
                             }
                         }
                     }

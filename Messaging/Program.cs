@@ -1634,6 +1634,7 @@ public static class Endpoints
             {
                 if (toForward.messagebody.Length > 160)
                 {
+                    // TODO: convert to an MMS.
                     Log.Error("SMS Message body length exceeded. Length: {Length}", toForward.messagebody.Length);
                     return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit message to FirstPoint. SMS Message body length exceeded. Length: {toForward.messagebody.Length}", MessageSent = false });
                 }
