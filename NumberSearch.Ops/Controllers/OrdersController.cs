@@ -411,21 +411,21 @@ public class OrdersController(OpsConfig opsConfig,
                     try
                     {
                         InvoiceDatum[] oneTimeInvoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(order.BillingClientId, _invoiceNinjaToken, false);
-                        string oneTimeLink = oneTimeInvoiceLinks.Where(x => x.id == order.BillingInvoiceId).FirstOrDefault().invitations.FirstOrDefault().link;
+                        var oneTimeLink = oneTimeInvoiceLinks.Where(x => x.id == order.BillingInvoiceId).FirstOrDefault().invitations?.FirstOrDefault() ?? new() { link = "" };
 
-                        if (!string.IsNullOrWhiteSpace(oneTimeLink))
+                        if (!string.IsNullOrWhiteSpace(oneTimeLink.link))
                         {
-                            order.UpfrontInvoiceLink = oneTimeLink;
+                            order.UpfrontInvoiceLink = oneTimeLink.link;
                         }
                         else
                         {
                             try
                             {
                                 InvoiceDatum quoteLinks = await Invoice.GetQuoteByIdAsync(order.BillingInvoiceId, _invoiceNinjaToken);
-                                oneTimeLink = quoteLinks.invitations.FirstOrDefault().link;
-                                if (!string.IsNullOrWhiteSpace(oneTimeLink))
+                                oneTimeLink = quoteLinks.invitations.FirstOrDefault();
+                                if (!string.IsNullOrWhiteSpace(oneTimeLink.link))
                                 {
-                                    order.UpfrontInvoiceLink = oneTimeLink;
+                                    order.UpfrontInvoiceLink = oneTimeLink.link;
                                 }
                             }
                             catch (FlurlHttpException ex)

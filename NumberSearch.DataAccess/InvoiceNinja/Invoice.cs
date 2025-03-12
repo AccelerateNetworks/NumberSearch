@@ -357,7 +357,7 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         }
     }
 
-    public readonly record struct ReccurringInvoiceSingle(ReccurringInvoiceDatum data);   
+    public readonly record struct ReccurringInvoiceSingle(ReccurringInvoiceDatum data);
 
     public readonly record struct ReccurringInvoiceDatum
     (
@@ -424,7 +424,8 @@ namespace NumberSearch.DataAccess.InvoiceNinja
         string subscription_id,
         Invitation[] invitations,
         object[] documents
-    ){
+    )
+    {
         public async Task<ReccurringInvoiceDatum> PostAsync(ReadOnlyMemory<char> token)
         {
             string baseUrl = "https://billing.acceleratenetworks.com/api/v1/";
