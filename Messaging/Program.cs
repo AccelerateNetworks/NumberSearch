@@ -37,7 +37,9 @@ using Serilog.Events;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Net.Http;
 using System.Net.Mail;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
@@ -328,7 +330,7 @@ try
         .WithOpenApi(x => new(x)
         {
             Summary = "Send an SMS or MMS Message.",
-            Description = "Submit outbound messages to this endpoint. The 'to' field is a comma separated list of dialed numbers, or a single dialed number without commas. The 'msisdn' the dialed number of the client that is sending the message. The 'message' field is a string. No validation of the message field occurs before it is forwarded to our upstream vendors. If you include any file paths in the MediaURLs array the message will be sent as an MMS."
+            Description = "Submit outbound messages to this endpoint. The 'to' field is a comma separated list of dialed numbers, or a single dialed number without commas. The 'msisdn' the dialed number of the client that is sending the message. The 'message' field is a string. No validation of the message field occurs before it is forwarded to our upstream vendors. If you include any file paths in the MediaURLs array the message will be sent as an MMS. If the Message field is loner than 160 characters, but less than 1600 characters, the message will be sent as an MMS, not an SMS, even if no MediaURLs are provided."
         });
 
     // Don't move this or it will break multipart form handling.
@@ -1632,7 +1634,77 @@ public static class Endpoints
             }
             else
             {
-                if (toForward.messagebody.Length > 160)
+                // MMS text parts are limited to 1600 characters.
+                if (toForward.messagebody.Length > 160 && toForward.messagebody.Length <= 1600)
+                {
+                    // Create a .text file and a .smil file 
+                    var multipartContent = new MultipartFormDataContent {
+                        { new StringContent(appSettings.ConnectionStrings.PComNetUsername), "username" },
+                        { new StringContent(appSettings.ConnectionStrings.PComNetPassword), "password" },
+                        { new StringContent(toForward.to), "recip" },
+                        { new StringContent(toForward.msisdn), "ani" },
+                    };
+
+                    string filename = "part-001.txt";
+                    var data = Encoding.UTF8.GetBytes(toForward.messagebody);
+                    multipartContent.Add(new ByteArrayContent(data), "ufiles", filename);
+                    record.Content = toForward.messagebody;
+
+                    // pass them on to the vendor
+                    var MMSResponse = await appSettings.ConnectionStrings.FirstPointOutboundMMSMessageURL.PostAsync(multipartContent).ReceiveString();
+
+                    // Parse the oddly formatted response.
+                    var toJSON = JsonSerializer.Deserialize<FirstPointResponseMMS>(MMSResponse);
+                    sendMessage = new FirstPointResponse { Response = toJSON?.Response ?? new() };
+
+                    if (sendMessage is not null && sendMessage?.Response?.Text is "OK")
+                    {
+                        record = new MessageRecord
+                        {
+                            Id = Guid.NewGuid(),
+                            DateReceivedUTC = DateTime.UtcNow,
+                            From = message?.MSISDN ?? "MSISDN was blank",
+                            To = message?.To ?? "To was blank",
+                            MediaURLs = string.Empty,
+                            MessageSource = MessageSource.Outgoing,
+                            MessageType = MessageType.MMS,
+                            RawRequest = System.Text.Json.JsonSerializer.Serialize(multipartContent),
+                            RawResponse = MMSResponse,
+                            Succeeded = true
+                        };
+
+                        db.Messages.Add(record);
+                        await db.SaveChangesAsync();
+
+                        // Let the caller know that delivery status for specific numbers.
+                        return TypedResults.Ok(new SendMessageResponse
+                        {
+                            Message = $"MMS Message sent to {toForward.to}",
+                            MessageSent = true,
+                        });
+                    }
+                    else
+                    {
+                        record = new MessageRecord
+                        {
+                            Id = Guid.NewGuid(),
+                            DateReceivedUTC = DateTime.UtcNow,
+                            From = message?.MSISDN ?? "MSISDN was blank",
+                            To = message?.To ?? "To was blank",
+                            MediaURLs = string.Empty,
+                            MessageSource = MessageSource.Outgoing,
+                            MessageType = MessageType.MMS,
+                            RawRequest = System.Text.Json.JsonSerializer.Serialize(multipartContent),
+                            RawResponse = MMSResponse
+                        };
+
+                        db.Messages.Add(record);
+                        await db.SaveChangesAsync();
+
+                        return TypedResults.BadRequest(new SendMessageResponse { Message = $"Failed to submit the MMS message to FirstPoint. {MMSResponse}" });
+                    }
+                }
+                else if (toForward.messagebody.Length > 160)
                 {
                     // TODO: convert to an MMS.
                     Log.Error("SMS Message body length exceeded. Length: {Length}", toForward.messagebody.Length);
