@@ -234,10 +234,12 @@ public class OrdersController(OpsConfig opsConfig,
                 }
 
                 var couponsToGet = productOrders.Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
+                var allCoupons = await _context.Coupons.AsNoTracking().ToArrayAsync();
                 var coupons = new List<Coupon>();
+
                 foreach (var couponId in couponsToGet)
                 {
-                    var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == couponId);
+                    var coupon = allCoupons.FirstOrDefault(x => x.CouponId == couponId);
                     if (coupon is not null)
                     {
                         coupons.Add(coupon);
@@ -257,7 +259,7 @@ public class OrdersController(OpsConfig opsConfig,
                     PurchasedPhoneNumbers = purchasedPhoneNumbers
                 };
 
-                return View("OrderEdit", new EditOrderResult { Order = order, PortRequest = portRequest ?? new(), ProductItems = productItems, EmergencyInformation = [.. e911Registrations], Cart = cart });
+                return View("OrderEdit", new EditOrderResult { Order = order, PortRequest = portRequest ?? new(), ProductItems = productItems, EmergencyInformation = [.. e911Registrations], Cart = cart, PossibleCoupons = allCoupons });
             }
         }
     }
@@ -384,10 +386,10 @@ public class OrdersController(OpsConfig opsConfig,
                 {
                     ReccurringInvoiceDatum[] recurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(order.BillingClientId, _invoiceNinjaToken);
                     var reoccurring = recurringInvoiceLinks.Where(x => x.id == order.BillingInvoiceReoccuringId).FirstOrDefault();
-                    if(reoccurring.invitations is null && recurringInvoiceLinks.Length > 0)
+                    if (reoccurring.invitations is null && recurringInvoiceLinks.Length > 0)
                     {
                         reoccurring = recurringInvoiceLinks.MaxBy(x => x.updated_at);
-                    } 
+                    }
                     string reoccurringLink = reoccurring.invitations?.FirstOrDefault().link ?? string.Empty;
 
                     if (!string.IsNullOrWhiteSpace(reoccurringLink))
@@ -1285,6 +1287,57 @@ public class OrdersController(OpsConfig opsConfig,
                 productItems = await _context.ProductItems.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
 
                 return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, ProductItems = productItems, Message = $"Created {productItems.Length} Product Items for this order. 😀", AlertType = "alert-success" });
+            }
+        }
+        else
+        {
+            return Redirect("/Home/Orders");
+        }
+    }
+
+    [Authorize]
+    [Route("/Order/{orderId}/AddCoupon")]
+    public async Task<IActionResult> AddCoupon(Guid? orderId, Guid? couponId)
+    {
+        if (orderId is not null && orderId != Guid.Empty)
+        {
+            var order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId);
+
+            if (order is null)
+            {
+                return View("OrderEdit", new EditOrderResult { Message = $"An order with an Order Id of {orderId} could not be found. 😭" });
+            }
+            else
+            {
+                var cart = await GetOrderEditCartAsync(order);
+
+                if (couponId is not null && couponId != Guid.Empty)
+                {
+                    var matchingCoupon = await _context.Coupons.FirstOrDefaultAsync(x => x.CouponId == couponId);
+                    if (matchingCoupon is not null)
+                    {
+                        var productOrder = new ProductOrder { CouponId = matchingCoupon?.CouponId, OrderId = order.OrderId, Quantity = 1, CreateDate = DateTime.Now, ProductOrderId = Guid.NewGuid() };
+                        var checkAdd = cart.AddCoupon(matchingCoupon, productOrder);
+                      
+                        _context.ProductOrders.Add(productOrder);
+                        await _context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        return View("OrderEdit", new EditOrderResult { Message = $"A coupon with a CouponId of {couponId} could not be found. 😭" });
+                    }
+                }
+
+                var productOrders = await _context.ProductOrders.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                var purchasedPhoneNumbers = await _context.PurchasedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
+                var productItems = await _context.ProductItems.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
+                var allCoupons = await _context.Coupons.ToArrayAsync();
+
+                cart = await GetOrderEditCartAsync(order);
+
+                return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, ProductItems = productItems, PossibleCoupons = allCoupons, Message = $"Added coupon {couponId} to this order {order.OrderId}. 😀", AlertType = "alert-success" });
             }
         }
         else

@@ -12,19 +12,21 @@
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="ProductOrder!.OrderId" class="control-label"></label>
-                <input asp-for="ProductOrder!.OrderId" class="form-control" readonly />
+@*                 <label asp-for="ProductOrder!.OrderId" class="control-label"></label>
+ *@                <input asp-for="ProductOrder!.OrderId" class="form-control disabled" readonly hidden />
                 <span asp-validation-for="ProductOrder!.OrderId" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="ProductOrder!.ProductOrderId" class="control-label"></label>
-                <input asp-for="ProductOrder!.ProductOrderId" value="@Guid.NewGuid()" class="form-control" readonly />
+            <div class="form-group mb-3">
+@*                 <label asp-for="ProductOrder!.ProductOrderId" class="control-label"></label>
+ *@                <input asp-for="ProductOrder!.ProductOrderId" value="@Guid.NewGuid()" class="form-control disabled" readonly hidden />
                 <span asp-validation-for="ProductOrder!.ProductOrderId" class="text-danger"></span>
             </div>
+            <h5>⚡ Use only 1 of the 5 fields below</h5>
+            <hr />
             <div class="form-group">
                 <label asp-for="ProductOrder!.ProductId" class="control-label"></label>
-                <select asp-for="ProductOrder!.ProductId" class="form-select mr-sm-2" id="name" required>
-                    <option selected>Choose...</option>
+                <select asp-for="ProductOrder!.ProductId" class="form-select mr-sm-2" id="name" >
+                    <option selected></option>
                     @if (Model?.Products is not null)
                     {
                         foreach (var product in Model.Products.OrderByDescending(x => x.Name))
@@ -37,8 +39,8 @@
             </div>
             <div class="form-group">
                 <label asp-for="ProductOrder!.ServiceId" class="control-label"></label>
-                <select asp-for="ProductOrder!.ServiceId" class="form-select mr-sm-2" id="name" required>
-                    <option selected>Choose...</option>
+                <select asp-for="ProductOrder!.ServiceId" class="form-select mr-sm-2" id="name" >
+                    <option selected></option>
                     @if (Model?.Services is not null)
                     {
                         foreach (var product in Model.Services.OrderByDescending(x => x.Name))
@@ -61,8 +63,8 @@
             </div>
             <div class="form-group">
                 <label asp-for="ProductOrder!.CouponId" class="control-label"></label>
-                <select asp-for="ProductOrder!.CouponId" class="form-select mr-sm-2" id="name" required>
-                    <option selected>Choose...</option>
+                <select asp-for="ProductOrder!.CouponId" class="form-select mr-sm-2" id="name" >
+                    <option selected></option>
                     @if (Model?.Coupons is not null)
                     {
                         foreach (var product in Model.Coupons.OrderByDescending(x => x.Name))
@@ -73,14 +75,15 @@
                 </select>
                 <span asp-validation-for="ProductOrder!.CouponId" class="text-danger"></span>
             </div>
+            <hr />
             <div class="form-group">
                 <label asp-for="ProductOrder!.Quantity" class="control-label"></label>
                 <input type="number" asp-for="ProductOrder!.Quantity" class="form-control" />
                 <span asp-validation-for="ProductOrder!.Quantity" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ProductOrder!.CreateDate" class="control-label"></label>
-                <input asp-for="ProductOrder!.CreateDate" class="form-control" readonly />
+@*                 <label asp-for="ProductOrder!.CreateDate" class="control-label"></label>
+ *@                <input asp-for="ProductOrder!.CreateDate" class="form-control disabled" readonly hidden />
                 <span asp-validation-for="ProductOrder!.CreateDate" class="text-danger"></span>
             </div>
             @*            <div class="form-group">
@@ -97,6 +100,10 @@
                 <input type="submit" value="Create" class="btn btn-primary mt-3 mb-3" />
             </div>
         </form>
+    </div>
+    <div class="col-md-4">
+        <p>Create only one new Product Order at a time. If you don't know how this process works, please ask Dan to walk you through it.</p>
+        <p>A Product Order is a combination of a Product like a specific deskphone SKU and an Order for a specific customer. It allows us to keep track of quantities and product types without making the Products unique to every new Order. This is common database schema design in eCommerce apps.</p>
     </div>
 </div>
 <a href="/Order/@Model?.ProductOrder?.OrderId/ProductOrders" class="btn btn-outline-primary">Back to List</a>

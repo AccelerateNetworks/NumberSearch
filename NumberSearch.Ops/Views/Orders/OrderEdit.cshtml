@@ -5,51 +5,51 @@
 
 <script type="text/javascript">
     function handleSearchQuery(textBox) {
-        var route = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest?text=';
-        var suffix = '&maxSuggestions=5&countryCode=USA,CAN&f=pjson';
-        fetch(`${route}${textBox.value}${suffix}`)
-            .then(
-                function (response) {
-                    if (response.status !== 200) {
-                        console.log('Looks like there was a problem. Status Code: ' +
-                            response.status);
-                        return;
-                    }
+    var route = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest?text=';
+    var suffix = '&maxSuggestions=5&countryCode=USA,CAN&f=pjson';
+    fetch(`${route}${textBox.value}${suffix}`)
+    .then(
+    function (response) {
+    if (response.status !== 200) {
+    console.log('Looks like there was a problem. Status Code: ' +
+    response.status);
+    return;
+    }
 
-                    // Examine the text in the response
-                    response.json().then(function (data) {
-                        var options = '';
-                        var longestResult = 0;
-                        if (data.suggestions != undefined) {
-                            for (var i = 0; i < data.suggestions.length; i++) {
-                                options += `<li class='list-group-item' onclick='setAddress(this.innerHTML)'>${data.suggestions[i].text}</li>`;
-                                if (longestResult < data.suggestions[i].text.length) {
-                                    longestResult = data.suggestions[i].text.length;
-                                }
-                            }
+    // Examine the text in the response
+    response.json().then(function (data) {
+    var options = '';
+    var longestResult = 0;
+    if (data.suggestions != undefined) {
+    for (var i = 0; i < data.suggestions.length; i++) {
+    options += `<li class='list-group-item' onclick='setAddress(this.innerHTML)'>${data.suggestions[i].text}</li>`;
+    if (longestResult < data.suggestions[i].text.length) {
+    longestResult = data.suggestions[i].text.length;
+    }
+    }
 
-                            var datalist = document.getElementById("addressOptions");
-                            datalist.innerHTML = options;
-                            datalist.hidden = false;
-                        }
+    var datalist = document.getElementById("addressOptions");
+    datalist.innerHTML = options;
+    datalist.hidden = false;
+    }
 
-                        var textBox = document.getElementById("address");
-                        textBox.focus();
+    var textBox = document.getElementById("address");
+    textBox.focus();
 
-                        console.log(datalist);
-                    });
-                }
-            )
-            .catch(function (err) {
-                console.log('Fetch Error :-S', err);
-            });
+    console.log(datalist);
+    });
+    }
+    )
+    .catch(function (err) {
+    console.log('Fetch Error :-S', err);
+    });
     }
 
     function setAddress(address) {
-        var textBox = document.getElementById("address");
-        textBox.value = address;
-        var datalist = document.getElementById("addressOptions");
-        datalist.hidden = true;
+    var textBox = document.getElementById("address");
+    textBox.value = address;
+    var datalist = document.getElementById("addressOptions");
+    datalist.hidden = true;
     }
 </script>
 
@@ -774,7 +774,7 @@
                             {
                                 foreach (var item in Model.Cart.Coupons)
                                 {
-                                    var productOrder = productOrders[item.CouponId.ToString()];
+                                    var checkProductOrder = productOrders.TryGetValue(item.CouponId.ToString(), out var productOrder);
                                     <tr>
                                         <td scope="row"><h4>@item.Name</h4></td>
                                         <td>Discount</td>
@@ -782,10 +782,10 @@
                                         <td></td>
                                         <td>
                                             <div class="btn-group">
-                                                <a href="/ProductOrders/Edit/@productOrder.ProductOrderId" class="btn btn-outline-warning">
+                                                <a href="/ProductOrders/Edit/@productOrder?.ProductOrderId" class="btn btn-outline-warning">
                                                     Edit
                                                 </a>
-                                                <a href="/ProductOrders/Delete/@productOrder.ProductOrderId" class="btn btn-outline-danger">
+                                                <a href="/ProductOrders/Delete/@productOrder?.ProductOrderId" class="btn btn-outline-danger">
                                                     Delete
                                                 </a>
                                             </div>
@@ -816,8 +816,27 @@
                 </div>
             </div>
             <div class="col">
-                @if (Model?.Cart?.Products is not null && Model.Cart.Products.Any())
-                {
+                <form action="/Order/@Model?.Order?.OrderId/AddCoupon" method="get">
+                    <div class="input-group">
+                        @if (Model?.PossibleCoupons is not null && Model.PossibleCoupons.Length != 0)
+                        {
+                            <select class="form-select" id="floatingSelect" aria-label="Quote Status" name="couponId">
+                                @foreach (var coupon in Model.PossibleCoupons)
+                                {
+                                    <option value="@coupon.CouponId" >@coupon.Name - @coupon.Description</option>
+                                }
+                            </select>
+                        }
+                        <button href="/Home/Order/@Model?.Order?.OrderId/NewInvoices" type="submit" class="btn btn-outline-secondary">
+                            Add Coupon
+                        </button>
+                    </div>
+                    <div class="form-text">Quickly add a discount coupon to this existing order by selecting the coupon above and clicking the Add Coupon button.</div>
+                </form>
+            </div>
+            @if (Model?.Cart?.Products is not null && Model.Cart.Products.Any())
+            {
+                <div class="col">
                     <form action="/Order/@Model?.Order?.OrderId/CreateProductItems" method="get">
                         <div class="input-group">
                             <button class="btn btn-warning text-white btn-block" type="submit" id="button-addon1">
@@ -834,8 +853,8 @@
                         </div>
                     </form>
                     <div class="form-text">If you want to link this Order to an order for Hardware from TeleDynamics enter the Order # here and hit the button to ingest all of that information. Find the Order # at <a href="https://www.teledynamics.com/#/ordersAndQuotes" target="_blank">https://www.teledynamics.com/#/ordersAndQuotes</a></div>
-                }
-            </div>
+                </div>
+            }
         </div>
         @if (Model?.ProductItems is not null && Model?.ProductItems?.Length > 0)
         {

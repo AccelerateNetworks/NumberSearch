@@ -9,6 +9,7 @@ namespace NumberSearch.Ops.Models
         public ProductItem[] ProductItems { get; set; } = [];
         public PortRequest PortRequest { get; set; } = new();
         public EmergencyInformation[] EmergencyInformation { get; set; } = [];
+        public Coupon[] PossibleCoupons { get; set; } = [];
         public string Message { get; set; } = string.Empty;
         public string AlertType { get; set; } = string.Empty;
     }
