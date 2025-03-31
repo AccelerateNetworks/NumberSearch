@@ -59,14 +59,21 @@ namespace NumberSearch.Ingest
 
             foreach (var code in areaCodes)
             {
-                try
+                var sample = await OrderTn.GetAsync(code, username, password);
+                int[] nxxs = [.. sample.Select(x => x.NXX).Distinct()];
+
+                foreach (int nxx in nxxs)
                 {
-                    numbers.AddRange(await OrderTn.GetAsync(code, username, password));
-                    Log.Information("[BulkVS] Found {Count} Phone Numbers", numbers.Count);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("[BulkVS] Area code {Code} failed @ {Now}: {Message}", code, DateTime.Now, ex.Message);
+                    try
+                    {
+                        var results = await OrderTn.GetAsync(code, nxx, username, password);
+                        numbers.AddRange(results);
+                        Log.Information("[BulkVS] Found {Count} Phone Numbers for {Code}, {NXX}", results.Length, code, nxx);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error("[BulkVS] Area code {Code}, {NXX} failed @ {Now}: {Message}", code, nxx, DateTime.Now, ex.Message);
+                    }
                 }
             }
 

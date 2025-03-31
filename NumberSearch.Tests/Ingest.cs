@@ -90,7 +90,7 @@ namespace NumberSearch.Tests
         //[Fact]
         //public async Task TestBulkVSPortStatusUpdates()
         //{
-        //    await PortRequests.UpdateStatusesBulkVSAsync(ingestConfiguration);
+        //    await Provider.BulkVSPriorityAsync(TimeSpan.FromMinutes(10), ingestConfiguration);
         //}
 
         //[Fact]

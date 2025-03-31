@@ -74,6 +74,59 @@ namespace NumberSearch.Tests
             //_peerlessApiKey = config.GetConnectionString("PeerlessAPIKey");
         }
 
+        // Takes 6 seconds to run
+        //[Fact]
+        //public async Task VerifyAllPriorityNumbersArePurchasableAsync()
+        //{
+        //    // Act
+        //    var result = await PhoneNumber.GetAllByAreaCodeAsync(541, postgresql);
+        //    output.WriteLine($"{result.Count()} numbers found in NumberSearch for NPA 541.");
+
+        //    var byNXX = result.GroupBy(x => x.NXX).ToArray();
+        //    var NXXs = byNXX.Select(x => x.Key).ToArray();
+        //    output.WriteLine($"{byNXX.Length} NXX groups found in NPA 541.");
+        //    output.WriteLine(JsonSerializer.Serialize(NXXs));
+
+        //    int purchaseableNumbersTotal = 0;
+        //    int unpurchasableNumbersTotal = 0;
+
+        //    // Avoid calling the API for every number by grouping them by the NXX, which is the smallest unit we can ask the API for.
+        //    foreach (var nxxGroup in byNXX)
+        //    {
+        //        int purchaseableNumbers = 0;
+        //        int unpurchasableNumbers = 0;
+
+        //        int NPA = nxxGroup.FirstOrDefault().NPA;
+        //        int NXX = nxxGroup.FirstOrDefault().NXX;
+        //        var doesItStillExist = await OrderTn.GetAsync(NPA, NXX, bulkVSUsername.AsMemory(), bulkVSPassword.AsMemory());
+
+        //        foreach (var phoneNumber in nxxGroup)
+        //        {
+        //            var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
+        //            if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
+        //            {
+        //                purchaseableNumbers++;
+        //            }
+        //            else
+        //            {
+        //                unpurchasableNumbers++;
+        //                if (unpurchasableNumbers is 1)
+        //                {
+        //                    output.WriteLine($"Unpurchasable Example: {JsonSerializer.Serialize(phoneNumber)}");
+        //                }
+        //            }
+        //        }
+
+        //        purchaseableNumbersTotal += purchaseableNumbers;
+        //        unpurchasableNumbersTotal += unpurchasableNumbers;
+
+        //        output.WriteLine($"{doesItStillExist.Length} numbers found in BulkVS for {NPA}, {NXX}. {nxxGroup.Count()} found in NumbersSearch. A difference of {doesItStillExist.Length - nxxGroup.Count()} numbers.");
+        //        output.WriteLine($"{purchaseableNumbers} from NumberSearch were still purchaseable in BulkVS. {unpurchasableNumbers} were not purchasable.");
+        //    }
+
+        //    output.WriteLine($"Of {result.Count()} numbers found in NumberSearch for NPA 541; {purchaseableNumbersTotal} were still purchaseable in BulkVS and {unpurchasableNumbersTotal} were not purchasable.");
+        //}
+
         [Fact]
         public async Task GetAllBillingClientsAsync()
         {
