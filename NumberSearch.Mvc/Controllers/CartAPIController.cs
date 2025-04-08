@@ -673,7 +673,7 @@ namespace NumberSearch.Mvc.Controllers
             if (phoneNumber.IngestedFrom == "BulkVS")
             {
                 var npanxx = $"{phoneNumber.NPA}{phoneNumber.NXX}";
-                var doesItStillExist = await OrderTn.GetAsync(phoneNumber.NPA, phoneNumber.NXX, _bulkVSusername.AsMemory(), _bulkVSpassword.AsMemory());
+                var doesItStillExist = await OrderTn.GetAsync(phoneNumber.NPA, phoneNumber.NXX, 0, _bulkVSusername.AsMemory(), _bulkVSpassword.AsMemory());
                 var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
                 if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
                 {
@@ -1152,7 +1152,7 @@ namespace NumberSearch.Mvc.Controllers
             var input = couponName.Trim().ToLowerInvariant();
 
             // Drop everything that's not a letter or number.
-            input = new string(input.Where(c => char.IsLetterOrDigit(c)).ToArray());
+            input = new string([.. input.Where(c => char.IsLetterOrDigit(c))]);
 
             var coupons = await Coupon.GetAllAsync(_postgresql).ConfigureAwait(false);
 

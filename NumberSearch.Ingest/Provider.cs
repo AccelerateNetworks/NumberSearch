@@ -66,9 +66,18 @@ namespace NumberSearch.Ingest
                 {
                     try
                     {
-                        var results = await OrderTn.GetAsync(code, nxx, username, password);
-                        numbers.AddRange(results);
-                        Log.Information("[BulkVS] Found {Count} Phone Numbers for {Code}, {NXX}", results.Length, code, nxx);
+                        if (AreaCode.Priority.Contains(code))
+                        {
+                            var results = await OrderTn.GetAsync(code, nxx, 0, username, password);
+                            numbers.AddRange(results);
+                            Log.Information("[BulkVS] Found {Count} Phone Numbers for {Code}, {NXX}", results.Length, code, nxx);
+                        }
+                        else
+                        {
+                            var results = await OrderTn.GetAsync(code, nxx, 100, username, password);
+                            numbers.AddRange(results);
+                            Log.Information("[BulkVS] Found {Count} Phone Numbers for {Code}, {NXX}", results.Length, code, nxx);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -329,7 +338,7 @@ namespace NumberSearch.Ingest
                             string npanxx = $"{phoneNumber.NPA}{phoneNumber.NXX}";
                             try
                             {
-                                var doesItStillExist = await OrderTn.GetAsync(phoneNumber.NPA, phoneNumber.NXX, _bulkVSusername, _bulkVSpassword);
+                                var doesItStillExist = await OrderTn.GetAsync(phoneNumber.NPA, phoneNumber.NXX, 0, _bulkVSusername, _bulkVSpassword);
                                 var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
                                 if (checkIfExists is not null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
                                 {

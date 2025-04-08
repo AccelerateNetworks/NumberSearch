@@ -23,13 +23,14 @@ namespace NumberSearch.DataAccess.BulkVS
         string Nrc
     )
     {
-        public static async ValueTask<OrderTn[]> GetRawAsync(int npa, int nxx, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
+        public static async ValueTask<OrderTn[]> GetRawAsync(int npa, int nxx, int limit, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
             string baseUrl = "https://portal.bulkvs.com/api/v1.0/";
             string endpoint = "orderTn";
             string npaParameter = $"?Npa={npa:000}";
             string nxxParameter = PhoneNumbersNA.AreaCode.ValidNXX(nxx) ? $"&Nxx={nxx:000}" : string.Empty;
             string route = $"{baseUrl}{endpoint}{npaParameter}{nxxParameter}";
+            if (limit > 0) { route += $"&Limit={limit}"; }
             try
             {
                 return await route.WithBasicAuth(username.ToString(), password.ToString()).GetJsonAsync<OrderTn[]>();
@@ -44,7 +45,7 @@ namespace NumberSearch.DataAccess.BulkVS
 
         public static async Task<PhoneNumber[]> GetAsync(int inNpa, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
-            OrderTn[] results = await GetRawAsync(inNpa, default, username, password);
+            OrderTn[] results = await GetRawAsync(inNpa, default, 0, username, password);
             List<PhoneNumber> output = [];
 
             // Bail out early if something is wrong.
@@ -76,9 +77,9 @@ namespace NumberSearch.DataAccess.BulkVS
             return [.. output];
         }
 
-        public static async Task<PhoneNumber[]> GetAsync(int inNpa, int inNxx, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
+        public static async Task<PhoneNumber[]> GetAsync(int inNpa, int inNxx, int limit, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
-            OrderTn[] results = await GetRawAsync(inNpa, inNxx, username, password);
+            OrderTn[] results = await GetRawAsync(inNpa, inNxx, limit, username, password);
             List<PhoneNumber> output = [];
 
             // Bail out early if something is wrong.
