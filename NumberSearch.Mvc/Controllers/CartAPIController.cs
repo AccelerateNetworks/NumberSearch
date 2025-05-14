@@ -918,7 +918,7 @@ namespace NumberSearch.Mvc.Controllers
 
             var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), PortedDialedNumber = portedPhoneNumber.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber?.PortedPhoneNumberId, Quantity = 1 };
 
-            var checkAdd = cart.AddPortedPhoneNumber(ref portedPhoneNumber, ref productOrder);
+            var checkAdd = cart.AddPortedPhoneNumber(ref portedPhoneNumber!, ref productOrder);
             var checkSet = cart.SetToSession(httpContext.Session);
 
             if (checkAdd && checkSet)
@@ -1252,7 +1252,7 @@ namespace NumberSearch.Mvc.Controllers
 
                 productOrder ??= new ProductOrder { PortedDialedNumber = portedPhoneNumber.PortedDialedNumber ?? string.Empty, PortedPhoneNumberId = portedPhoneNumber?.PortedPhoneNumberId, Quantity = 1 };
 
-                var checkRemove = cart.RemovePortedPhoneNumber(ref portedPhoneNumber, ref productOrder);
+                var checkRemove = cart.RemovePortedPhoneNumber(ref portedPhoneNumber!, ref productOrder);
                 var checkSet = cart.SetToSession(httpContext.Session);
 
                 if (checkRemove && checkSet)

@@ -194,8 +194,8 @@ namespace NumberSearch.Ingest
                     Completed = true
                 };
 
-                var checkSend = await notificationEmail.SendEmailAsync(appConfig.SmtpUsername.ToString(), appConfig.SmtpPassword.ToString());
-                var checkSave = await notificationEmail.PostAsync(appConfig.Postgresql.ToString());
+                _ = await notificationEmail.SendEmailAsync(appConfig.SmtpUsername.ToString(), appConfig.SmtpPassword.ToString());
+                _ = await notificationEmail.PostAsync(appConfig.Postgresql.ToString());
 
                 // Save the log.
                 await Log.CloseAndFlushAsync();
