@@ -16,6 +16,8 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
+using ZLinq;
+
 using static NumberSearch.Ingest.Program;
 
 namespace NumberSearch.Ingest
@@ -112,7 +114,7 @@ namespace NumberSearch.Ingest
 
             var token = await GetTokenAsync(appConfig);
             var messages = await $"{appConfig.MessagingURL}message/all/failed?start={DateTime.Now.AddDays(-3).ToShortDateString()}&end={DateTime.Now.AddDays(1).ToShortDateString()}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<MessageRecord[]>();
-            failedMessages = messages.Where(x => x.MessageSource is MessageSource.Outgoing).ToArray();
+            failedMessages = messages.AsValueEnumerable().Where(x => x.MessageSource is MessageSource.Outgoing).ToArray();
             foreach (var order in orders)
             {
                 // Orders that should be marked as complete because the install data has passed?
@@ -437,7 +439,7 @@ namespace NumberSearch.Ingest
                             {
                                 var convertedInvoice = await Invoice.GetByIdAsync(upfront.invoice_id, invoiceNinjaToken.ToString());
 
-                                string newUpfrontLink = convertedInvoice.invitations.FirstOrDefault().link;
+                                string newUpfrontLink = convertedInvoice.invitations.AsValueEnumerable().FirstOrDefault().link;
 
                                 order.BillingInvoiceId = convertedInvoice.id;
                                 order.BillingClientId = convertedInvoice.client_id;
@@ -514,7 +516,7 @@ namespace NumberSearch.Ingest
                                         order.Quote = false;
                                         order.DateConvertedFromQuote = DateTime.Now;
                                     }
-                                    string newUpfrontLink = convertedInvoice.invitations.FirstOrDefault().link;
+                                    string newUpfrontLink = convertedInvoice.invitations.AsValueEnumerable().FirstOrDefault().link;
                                     order.UpfrontInvoiceLink = string.IsNullOrWhiteSpace(newUpfrontLink) ? order.UpfrontInvoiceLink : newUpfrontLink;
 
 
@@ -619,7 +621,7 @@ namespace NumberSearch.Ingest
                                 order.Quote = false;
                                 order.DateConvertedFromQuote = DateTime.Now;
                             }
-                            string newUpfrontLink = upfrontInvoice.invitations.FirstOrDefault().link;
+                            string newUpfrontLink = upfrontInvoice.invitations.AsValueEnumerable().FirstOrDefault().link;
                             order.UpfrontInvoiceLink = string.IsNullOrWhiteSpace(newUpfrontLink) ? order.UpfrontInvoiceLink : newUpfrontLink;
                             var checkUpdate = await order.PutAsync(postgresql.ToString());
 

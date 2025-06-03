@@ -175,7 +175,17 @@ namespace NumberSearch.Mvc
             });
             app.UseRateLimiter();
 
-            app.UseSecurityHeaders();
+            var policyCollection = new HeaderPolicyCollection()
+                .AddPermissionsPolicy(builder =>
+                {
+                    // If a new feature policy is added that follows the standard conventions, you can use this overload
+                    // iframe 'self' http://testUrl.com
+                    builder.AddCustomFeature("iframe") // 
+                        .Self()
+                        .For("https://youtube.com");
+                });
+
+            app.UseSecurityHeaders(policyCollection);
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();

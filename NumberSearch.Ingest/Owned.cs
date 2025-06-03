@@ -17,6 +17,9 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Xml;
+
+using ZLinq;
 
 using static NumberSearch.Ingest.Program;
 
@@ -93,7 +96,7 @@ namespace NumberSearch.Ingest
             if (allNumbers.Count > 0)
             {
                 Log.Information("[OwnedNumbers] Submitting {Count} numbers to the database.", allNumbers.Count);
-                ownedNumberStats = await SubmitOwnedNumbersAsync([.. allNumbers.DistinctBy(x => x.DialedNumber)], configuration.Postgresql, configuration.BulkVSUsername, configuration.BulkVSPassword);
+                ownedNumberStats = await SubmitOwnedNumbersAsync([.. allNumbers.AsValueEnumerable().DistinctBy(x => x.DialedNumber)], configuration.Postgresql, configuration.BulkVSUsername, configuration.BulkVSPassword);
             }
             else
             {
@@ -381,8 +384,8 @@ namespace NumberSearch.Ingest
             try
             {
                 var existingOwnedNumbers = await OwnedPhoneNumber.GetAllAsync(connectionString.ToString());
-                var existingAsDict = existingOwnedNumbers.DistinctBy(x => x.DialedNumber).ToDictionary(x => x.DialedNumber, x => x);
-                var newAsDict = newlyIngested.ToDictionary(x => x.DialedNumber, x => x);
+                var existingAsDict = existingOwnedNumbers.AsValueEnumerable().DistinctBy(x => x.DialedNumber).ToDictionary(x => x.DialedNumber, x => x);
+                var newAsDict = newlyIngested.AsValueEnumerable().ToDictionary(x => x.DialedNumber, x => x);
                 var portedPhoneNumbers = await PortedPhoneNumber.GetAllAsync(connectionString.ToString());
 
                 foreach (OwnedPhoneNumber item in newlyIngested)
@@ -391,7 +394,7 @@ namespace NumberSearch.Ingest
 
                     if (checkExisting is false || number is null)
                     {
-                        var matchingPort = portedPhoneNumbers.Where(x => x.PortedDialedNumber == item.DialedNumber).FirstOrDefault();
+                        var matchingPort = portedPhoneNumbers.AsValueEnumerable().Where(x => x.PortedDialedNumber == item.DialedNumber).FirstOrDefault();
                         if (matchingPort is not null && !string.IsNullOrWhiteSpace(matchingPort.RequestStatus) && matchingPort.RequestStatus is not "COMPLETE")
                         {
                             TnRecord externalStatus = await TnRecord.GetByDialedNumberAsync(item.DialedNumber.AsMemory(), bulkVSUsername, bulkVSPassword);
@@ -426,7 +429,7 @@ namespace NumberSearch.Ingest
                     else
                     {
                         // Update existing owned numbers.
-                        var matchingPort = portedPhoneNumbers.Where(x => x.PortedDialedNumber == item.DialedNumber).FirstOrDefault();
+                        var matchingPort = portedPhoneNumbers.AsValueEnumerable().Where(x => x.PortedDialedNumber == item.DialedNumber).FirstOrDefault();
                         if (matchingPort is not null && !string.IsNullOrWhiteSpace(matchingPort.RequestStatus) && matchingPort.RequestStatus is not "COMPLETE")
                         {
                             var externalStatus = await TnRecord.GetByDialedNumberAsync(item.DialedNumber.AsMemory(), bulkVSUsername, bulkVSPassword);
@@ -464,7 +467,7 @@ namespace NumberSearch.Ingest
                     }
                 }
 
-                OwnedPhoneNumber[] unmatchedExistingNumbers = existingOwnedNumbers.Where(x => !newAsDict.ContainsKey(x.DialedNumber)).ToArray();
+                OwnedPhoneNumber[] unmatchedExistingNumbers = existingOwnedNumbers.AsValueEnumerable().Where(x => !newAsDict.ContainsKey(x.DialedNumber)).ToArray();
 
                 foreach (var item in unmatchedExistingNumbers)
                 {
@@ -621,11 +624,11 @@ namespace NumberSearch.Ingest
 
             foreach (var number in numbers)
             {
-                var match = purchased.Where(x => x.DialedNumber == number.DialedNumber).FirstOrDefault();
+                var match = purchased.AsValueEnumerable().Where(x => x.DialedNumber == number.DialedNumber).FirstOrDefault();
 
                 if (match is null)
                 {
-                    var match2 = ported.Where(x => x.PortedDialedNumber == number.DialedNumber).FirstOrDefault();
+                    var match2 = ported.AsValueEnumerable().Where(x => x.PortedDialedNumber == number.DialedNumber).FirstOrDefault();
 
                     if (match2 is null)
                     {
@@ -791,10 +794,10 @@ namespace NumberSearch.Ingest
             {
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(record.TN, out var number);
 
-                var ownedNumber = ownedNumbers.FirstOrDefault(x => x.DialedNumber == number.DialedNumber);
+                var ownedNumber = ownedNumbers.AsValueEnumerable().FirstOrDefault(x => x.DialedNumber == number.DialedNumber);
                 if (checkParse && ownedNumber is not null && ownedNumber.EmergencyInformationId is not null && ownedNumber.EmergencyInformationId.HasValue)
                 {
-                    var existing = emergencyInformation?.FirstOrDefault(x => x.EmergencyInformationId == ownedNumber.EmergencyInformationId.GetValueOrDefault());
+                    var existing = emergencyInformation?.AsValueEnumerable().FirstOrDefault(x => x.EmergencyInformationId == ownedNumber.EmergencyInformationId.GetValueOrDefault());
 
                     if (existing is not null && existing.DialedNumber == number.DialedNumber)
                     {

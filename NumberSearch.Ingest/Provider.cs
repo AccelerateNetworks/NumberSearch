@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using ZLinq;
+
 using static NumberSearch.Ingest.Program;
 
 namespace NumberSearch.Ingest
@@ -326,7 +328,7 @@ namespace NumberSearch.Ingest
             {
                 var numbersByAreaCode = await PhoneNumber.GetAllByAreaCodeAsync(code, _postgresql.ToString());
 
-                PhoneNumber[] numbers = [.. numbersByAreaCode.Where(x => x.NumberType == numberType.ToString())];
+                PhoneNumber[] numbers = [.. numbersByAreaCode.AsValueEnumerable().Where(x => x.NumberType == numberType.ToString())];
 
                 if (numbers is not null && numbers.Length != 0)
                 {
@@ -339,7 +341,7 @@ namespace NumberSearch.Ingest
                             try
                             {
                                 var doesItStillExist = await OrderTn.GetAsync(phoneNumber.NPA, phoneNumber.NXX, 0, _bulkVSusername, _bulkVSpassword);
-                                var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
+                                var checkIfExists = doesItStillExist.AsValueEnumerable().Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
                                 if (checkIfExists is not null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
                                 {
                                     Log.Information("[BulkVS] Found {DialedNumber} in {Length} results returned for {npanxx}.", phoneNumber.DialedNumber, doesItStillExist.Length, npanxx);
@@ -365,7 +367,7 @@ namespace NumberSearch.Ingest
                             try
                             {
                                 var results = await FirstPointCom.GetPhoneNumbersByNpaNxxAsync(phoneNumber.NPA, phoneNumber.NXX, string.Empty.AsMemory(), _fpcusername, _fpcpassword);
-                                var matchingNumber = results?.Where(x => x?.DialedNumber == phoneNumber?.DialedNumber)?.FirstOrDefault();
+                                var matchingNumber = results?.AsValueEnumerable().Where(x => x?.DialedNumber == phoneNumber?.DialedNumber).FirstOrDefault();
                                 if (matchingNumber is not null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
                                 {
                                     Log.Information("[FirstPointCom] Found {DialedNumber} in {Length} results returned for {NPA}, {NXX}.", phoneNumber.DialedNumber, results?.Length, phoneNumber.NPA, phoneNumber.NXX);

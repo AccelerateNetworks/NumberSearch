@@ -7,6 +7,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
+using ZLinq;
+
 using static NumberSearch.Ingest.Program;
 
 namespace NumberSearch.Ingest
@@ -19,7 +21,7 @@ namespace NumberSearch.Ingest
 
             var bulkVSPortRequests = await PortTn.GetAllAsync(configuration.BulkVSUsername, configuration.BulkVSPassword).ConfigureAwait(false);
 
-            foreach (var request in bulkVSPortRequests.ToArray())
+            foreach (var request in bulkVSPortRequests.AsValueEnumerable().ToArray())
             {
                 var portedNumbers = await PortedPhoneNumber.GetByExternalIdAsync(request.OrderId, configuration.Postgresql.ToString()).ConfigureAwait(false);
 
@@ -33,7 +35,7 @@ namespace NumberSearch.Ingest
                     // If the request has been assigned and external port request id than it has been submitted to the vendor.
                     if (!string.IsNullOrWhiteSpace(number?.ExternalPortRequestId) && bulkStatus.TNList is not null && bulkStatus.TNList?.Length != 0)
                     {
-                        var matchingNumber = bulkStatus.TNList.Where(x => x.TN == $"1{number.PortedDialedNumber}").FirstOrDefault();
+                        var matchingNumber = bulkStatus.TNList!.AsValueEnumerable().Where(x => x.TN == $"1{number.PortedDialedNumber}").FirstOrDefault();
 
                         if (!string.IsNullOrWhiteSpace(matchingNumber.TN))
                         {
@@ -72,9 +74,9 @@ namespace NumberSearch.Ingest
                 // All of the statuses for all of the numbers.
                 var numberStatuses = portedNumbers.Select(x => x.RequestStatus);
 
-                var canceled = numberStatuses?.Where(x => x == "CANCELLED");
-                var rejected = numberStatuses?.Where(x => x == "EXCEPTION");
-                var completed = numberStatuses?.Where(x => x == "COMPLETE");
+                var canceled = numberStatuses.Where(x => x == "CANCELLED");
+                var rejected = numberStatuses.Where(x => x == "EXCEPTION");
+                var completed = numberStatuses.Where(x => x == "COMPLETE");
 
                 if (portedNumbers.FirstOrDefault() is not null)
                 {
@@ -83,7 +85,7 @@ namespace NumberSearch.Ingest
                     if (portRequest is not null && portRequest.OrderId == portedNumbers.FirstOrDefault()?.OrderId && !portRequest.Completed)
                     {
                         // If all the numbers have been ported.
-                        if ((completed != null) && completed.Any() && numberStatuses is not null && completed.Count() == numberStatuses.Count())
+                        if (completed.Any() && numberStatuses.Any() && completed.Count() == numberStatuses.Count())
                         {
                             portRequest.RequestStatus = "COMPLETE";
                             portRequest.DateCompleted = DateTime.Now;
@@ -92,7 +94,7 @@ namespace NumberSearch.Ingest
                             portRequest.VendorSubmittedTo = "BulkVS";
                         }
                         // If the porting of a number has been canceled.
-                        else if ((canceled != null) && (canceled.Any()))
+                        else if (canceled.Any())
                         {
                             portRequest.RequestStatus = "CANCELLED";
                             portRequest.DateCompleted = DateTime.Now;
@@ -101,7 +103,7 @@ namespace NumberSearch.Ingest
                             portRequest.VendorSubmittedTo = "BulkVS";
                         }
                         // If a request to port a number has been rejected.
-                        else if ((rejected != null) && (rejected.Any()))
+                        else if (rejected.Any())
                         {
                             portRequest.RequestStatus = "EXCEPTION";
                             portRequest.DateCompleted = DateTime.Now;
@@ -112,7 +114,7 @@ namespace NumberSearch.Ingest
                         // If the none of the port request completion criteria have been met.
                         else
                         {
-                            portRequest.RequestStatus = numberStatuses?.FirstOrDefault() ?? string.Empty;
+                            portRequest.RequestStatus = numberStatuses.FirstOrDefault() ?? string.Empty;
                             portRequest.DateUpdated = DateTime.Now;
                             portRequest.Completed = false;
                             portRequest.VendorSubmittedTo = "BulkVS";
@@ -155,7 +157,7 @@ namespace NumberSearch.Ingest
 Great news, your old provider has released your phone numbers to Accelerate Networks!
 <br />
 <br />
-The port request for the numbers listed below has been set to {portedNumbers?.FirstOrDefault()?.DateFirmOrderCommitment?.ToShortDateString()}, port requests usually complete at 5 PM PST on the day of port completion.
+The port request for the numbers listed below has been set to {portedNumbers?.AsValueEnumerable().FirstOrDefault()?.DateFirmOrderCommitment?.ToShortDateString()}, port requests usually complete at 5 PM PST on the day of port completion.
 <br />
 <br />
 Feel free to <a href='https://acceleratenetworks.com/Cart/Order/{originalOrder.OrderId}'>review the order here</a>, and let us know if you have any questions. It is now safe to cancel phone service with your old provider for the numbers that have ported in the list below.
@@ -191,7 +193,7 @@ Accelerate Networks
                                 }
 
                                 // Port date set or updated.
-                                var hasFOCdate = portedNumbers?.Where(x => x.DateFirmOrderCommitment != null).FirstOrDefault();
+                                var hasFOCdate = portedNumbers?.AsValueEnumerable().Where(x => x.DateFirmOrderCommitment != null).FirstOrDefault();
                                 notificationEmail.Subject = $"Port completion date set for {hasFOCdate?.DateFirmOrderCommitment}";
                                 notificationEmail.SalesEmailAddress = string.IsNullOrWhiteSpace(originalOrder.SalesEmail) ? string.Empty : originalOrder.SalesEmail;
                                 notificationEmail.MessageBody = $@"Hi {originalOrder.FirstName},
@@ -238,14 +240,14 @@ Accelerate Networks
             Log.Information("[BulkVS] [PortRequests] Ingesting Port Request statuses using the external OrderId.");
 
             var portRequests = await PortRequest.GetAllAsync(configuration.Postgresql.ToString());
-            var notCompleted = portRequests.Where(x => x.VendorSubmittedTo is "BulkVS" && x.RequestStatus is not "COMPLETE" && x.DateCompleted is null && !string.IsNullOrWhiteSpace(x.BulkVSId)).ToArray();
+            var notCompleted = portRequests.AsValueEnumerable().Where(x => x.VendorSubmittedTo is "BulkVS" && x.RequestStatus is not "COMPLETE" && x.DateCompleted is null && !string.IsNullOrWhiteSpace(x.BulkVSId)).ToArray();
             foreach (var request in notCompleted)
             {
                 string[] OrderIds = request.BulkVSId.Replace(" ", "").Split(",");
                 foreach (var orderId in OrderIds)
                 {
                     PortTn bulkVSPortRequest = await PortTn.GetAsync(orderId.AsMemory(), configuration.BulkVSUsername, configuration.BulkVSPassword);
-                    var firstNumber = bulkVSPortRequest.TNList.FirstOrDefault();
+                    var firstNumber = bulkVSPortRequest.TNList.AsValueEnumerable().FirstOrDefault();
                     if (bulkVSPortRequest.OrderDetails.OrderId == orderId && !string.IsNullOrWhiteSpace(firstNumber.LNPStatus))
                     {
                         request.RequestStatus = firstNumber.LNPStatus;
@@ -253,7 +255,7 @@ Accelerate Networks
                         var related = await PortedPhoneNumber.GetByPortRequestIdAsync(request.PortRequestId, configuration.Postgresql.ToString());
                         foreach (var port in related)
                         {
-                            var match = bulkVSPortRequest.TNList.FirstOrDefault(x => x.TN.Contains(port.PortedDialedNumber));
+                            var match = bulkVSPortRequest.TNList.AsValueEnumerable().FirstOrDefault(x => x.TN.Contains(port.PortedDialedNumber));
                             if (!string.IsNullOrWhiteSpace(match.LNPStatus) && port.RequestStatus != match.LNPStatus)
                             {
                                 port.RequestStatus = match.LNPStatus;
@@ -279,11 +281,11 @@ Accelerate Networks
             }
 
             var portedNumbers = await PortedPhoneNumber.GetAllAsync(configuration.Postgresql.ToString());
-            var inComplete = portedNumbers.Where(x => x.RequestStatus is not "COMPLETE" && x.RequestStatus is not "404" && !string.IsNullOrWhiteSpace(x.ExternalPortRequestId)).ToArray();
+            var inComplete = portedNumbers.AsValueEnumerable().Where(x => x.RequestStatus is not "COMPLETE" && x.RequestStatus is not "404" && !string.IsNullOrWhiteSpace(x.ExternalPortRequestId)).ToArray();
             foreach (var number in inComplete)
             {
                 PortTn bulkVSPortRequest = await PortTn.GetAsync(number.ExternalPortRequestId.AsMemory(), configuration.BulkVSUsername, configuration.BulkVSPassword);
-                var match = bulkVSPortRequest.TNList.FirstOrDefault(x => x.TN.Contains(number.PortedDialedNumber));
+                var match = bulkVSPortRequest.TNList.AsValueEnumerable().FirstOrDefault(x => x.TN.Contains(number.PortedDialedNumber));
                 if (bulkVSPortRequest.OrderDetails.OrderId == number.ExternalPortRequestId && !string.IsNullOrWhiteSpace(match.LNPStatus) && number.RequestStatus != match.LNPStatus)
                 {
                     number.RequestStatus = match.LNPStatus;

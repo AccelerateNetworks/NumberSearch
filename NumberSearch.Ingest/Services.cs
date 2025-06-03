@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using ZLinq;
+
 namespace NumberSearch.Ingest
 {
     public class Services
@@ -30,7 +32,7 @@ namespace NumberSearch.Ingest
             foreach (var number in numbers)
             {
                 // https://stackoverflow.com/questions/39472429/count-all-character-occurrences-in-a-string-c-sharp
-                int count = number.DialedNumber.GroupBy(static c => c).Select(c => c.Count()).Max();
+                int count = number.DialedNumber.AsValueEnumerable().GroupBy(static c => c).Select(c => c.Count()).Max();
 
                 number.NumberType = count switch
                 {
@@ -85,7 +87,7 @@ namespace NumberSearch.Ingest
             if (numbers.Length > 0)
             {
                 var existingNumbers = await PhoneNumber.GetAllNumbersAsync(connectionString.ToString());
-                var dict = existingNumbers.ToDictionary(x => x, x => x);
+                var dict = existingNumbers.AsValueEnumerable().ToDictionary(x => x, x => x);
                 // Submit the batch to the remote database.
                 foreach (var number in numbers)
                 {
@@ -133,13 +135,8 @@ namespace NumberSearch.Ingest
 
             if (updates is not null && updates.Count != 0)
             {
-                ParallelOptions options = new()
-                {
-                    MaxDegreeOfParallelism = Environment.ProcessorCount * 2,
-                };
-
                 // Execute these API requests in parallel.
-                await Parallel.ForEachAsync([..updates.Values], options, async (update, token) =>
+                await Parallel.ForEachAsync([..updates.Values], async (update, token) =>
                 {
                     if (count % 100 == 0 && count != 0)
                     {
@@ -147,7 +144,7 @@ namespace NumberSearch.Ingest
                     }
                     try
                     {
-                        var result = await update.PutAsync(connectionString.ToString()).ConfigureAwait(false);
+                        var result = await update.PutAsync(connectionString.ToString());
                     }
                     catch (Exception ex)
                     {
@@ -160,15 +157,15 @@ namespace NumberSearch.Ingest
                 Log.Information("Updated {Count} Phone Numbers", updates?.Count);
             }
 
-            var listInserts = inserts?.Values.ToList();
+            var listInserts = inserts?.Values.AsValueEnumerable().ToList();
 
             var groups = SplitList(listInserts ?? []);
 
-            foreach (var group in groups.ToArray())
+            foreach (var group in groups.AsValueEnumerable().ToArray())
             {
                 try
                 {
-                    var check = await PhoneNumber.BulkPostAsync(group, connectionString.ToString()).ConfigureAwait(false);
+                    var check = await PhoneNumber.BulkPostAsync(group, connectionString.ToString());
 
                     if (check) { stats!.IngestedNew += group.Count; };
 

@@ -171,6 +171,7 @@ namespace FirstCom.Models
 
             using var client = new DIDManagementSoapClient(DIDManagementSoapClient.EndpointConfiguration.DIDManagementSoap);
             DIDOrderInfoArray result = await client.DIDInventorySearchAsync(Auth, DIDSearch, ReturnAmount);
+            // TODO: add retry logic for request timeouts.
 
             // Supply a default capacity to the list to skip resizing it.
             List<PhoneNumber> list = new(result.DIDOrder.Length);

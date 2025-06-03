@@ -69,7 +69,7 @@ namespace NumberSearch.Ingest
 
             Log.Logger = new LoggerConfiguration()
                 // Enable when debugging otherwise the linux system logs will duplicate all the log lines produced.
-                //.WriteTo.Console()
+                .WriteTo.Console()
                 .WriteTo.File(
                     $"log.txt",
                     rollingInterval: RollingInterval.Day,

@@ -169,7 +169,7 @@ namespace NumberSearch.Tests
             // Assert        
             Assert.False(string.IsNullOrWhiteSpace(result.id));
             Assert.Equal("oQeZZ5vepZ", result.id);
-            Assert.True(result.balance == 0);
+            Assert.Equal(0,result.balance);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
@@ -2277,7 +2277,7 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
-        public async void GetInvoiceItemsTest()
+        public async Task GetInvoiceItemsTest()
         {
             var order = new Order() { OrderId = Guid.NewGuid() };
             var cart = new Cart();
