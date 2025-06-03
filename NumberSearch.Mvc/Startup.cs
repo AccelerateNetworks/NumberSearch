@@ -161,7 +161,6 @@ namespace NumberSearch.Mvc
             app.UseSerilogRequestLogging();
 
             app.UseHttpsRedirection();
-            app.UseHsts();
 
             // Set cache headers on static files.
             // Disable to prevent caching.
@@ -176,16 +175,18 @@ namespace NumberSearch.Mvc
             });
             app.UseRateLimiter();
 
-            // Requried to get the embedded YouTube videos to load.
             app.UseSecurityHeaders(policy => policy
                 .AddDefaultSecurityHeaders()
+                // Requried to get the embedded YouTube videos to load.
                 .AddCrossOriginEmbedderPolicy(x => x.UnsafeNone())
                 .AddPermissionsPolicy(builder =>
                 {
                     // add all the default versions
                     builder.AddDefaultSecureDirectives();
-                    // Allow the autoplay banner to work
+                    // Allow the autoplay video banner on the homepage to work.
                     builder.AddAutoplay().Self();
+                    // Allow the Fullscreen button in the YouTube embedded videos to work.
+                    builder.AddFullscreen().Self();
                 }));
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
