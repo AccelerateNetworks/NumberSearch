@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
-using NumberSearch.DataAccess.CallWithUs;
 using NumberSearch.DataAccess.FusionPBX;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.LCGuide;
@@ -36,10 +35,6 @@ namespace NumberSearch.Tests
         private readonly string invoiceNinjaToken;
         private readonly string _teleDynamicsUsername;
         private readonly string _teleDynamicsPassword;
-        //private readonly string _call48Username;
-        //private readonly string _call48Password;
-        //private readonly string _callWithUsAPIkey;
-        //private readonly string _peerlessApiKey;
         private readonly MvcConfiguration _configuration;
 
         public Integration(ITestOutputHelper output)
