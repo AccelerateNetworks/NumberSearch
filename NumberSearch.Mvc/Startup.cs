@@ -161,6 +161,7 @@ namespace NumberSearch.Mvc
             app.UseSerilogRequestLogging();
 
             app.UseHttpsRedirection();
+            app.UseHsts();
 
             // Set cache headers on static files.
             // Disable to prevent caching.
@@ -178,7 +179,8 @@ namespace NumberSearch.Mvc
             // Requried to get the embedded YouTube videos to load.
             app.UseSecurityHeaders(policy => policy
                 .AddDefaultSecurityHeaders()
-                .AddCrossOriginEmbedderPolicy(x => x.UnsafeNone()));
+                .AddCrossOriginEmbedderPolicy(x => x.UnsafeNone())
+                .AddPermissionsPolicyWithDefaultSecureDirectives());
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
