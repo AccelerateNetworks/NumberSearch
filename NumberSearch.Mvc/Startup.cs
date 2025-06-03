@@ -180,7 +180,13 @@ namespace NumberSearch.Mvc
             app.UseSecurityHeaders(policy => policy
                 .AddDefaultSecurityHeaders()
                 .AddCrossOriginEmbedderPolicy(x => x.UnsafeNone())
-                .AddPermissionsPolicyWithDefaultSecureDirectives());
+                .AddPermissionsPolicy(builder =>
+                {
+                    // add all the default versions
+                    builder.AddDefaultSecureDirectives();
+                    // Allow the autoplay banner to work
+                    builder.AddAutoplay().Self();
+                }));
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
