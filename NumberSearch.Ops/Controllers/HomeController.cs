@@ -14,6 +14,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
+using ZLinq;
+
 namespace NumberSearch.Ops.Controllers;
 [ApiExplorerSettings(IgnoreApi = true)]
 
@@ -144,7 +146,7 @@ public class HomeController : Controller
             {
                 if (string.IsNullOrWhiteSpace(shipment.Name))
                 {
-                    shipment.Name = products.Where(x => x.ProductId == shipment.ProductId).FirstOrDefault()?.Name;
+                    shipment.Name = products.AsValueEnumerable().Where(x => x.ProductId == shipment.ProductId).FirstOrDefault()?.Name;
                 }
                 _context.ProductShipments.Add(shipment);
                 await _context.SaveChangesAsync();
@@ -153,7 +155,7 @@ public class HomeController : Controller
             {
                 if (string.IsNullOrWhiteSpace(shipment.Name))
                 {
-                    shipment.Name = products.Where(x => x.ProductId == shipment.ProductId).FirstOrDefault()?.Name;
+                    shipment.Name = products.AsValueEnumerable().Where(x => x.ProductId == shipment.ProductId).FirstOrDefault()?.Name;
                 }
                 _context.ProductShipments.Add(checkExists);
                 await _context.SaveChangesAsync();
@@ -164,7 +166,7 @@ public class HomeController : Controller
             // Update all product inventory counts when a shipment is added or updated.
             foreach (var product in products)
             {
-                var relatedShipments = shipments.Where(x => x.ProductId == product.ProductId);
+                var relatedShipments = shipments.AsValueEnumerable().Where(x => x.ProductId == product.ProductId);
                 var instockItems = relatedShipments.Where(x => x.ShipmentType == "Instock").Sum(x => x.Quantity);
                 var assignedItems = relatedShipments.Where(x => x.ShipmentType == "Assigned").Sum(x => x.Quantity);
                 product.QuantityAvailable = instockItems - assignedItems;
@@ -517,16 +519,16 @@ public class HomeController : Controller
             converted.Remove('1');
         }
 
-        var count = await DataAccess.Models.PhoneNumber.NumberOfResultsInQuery(new string(converted.ToArray()), _postgresql).ConfigureAwait(false);
+        var count = await DataAccess.Models.PhoneNumber.NumberOfResultsInQuery(new string([.. converted]), _postgresql);
 
-        var results = await DataAccess.Models.PhoneNumber.RecommendedPaginatedSearchAsync(new string(converted.ToArray()), page, _postgresql).ConfigureAwait(false);
+        var results = await DataAccess.Models.PhoneNumber.RecommendedPaginatedSearchAsync(new string([.. converted]), page, _postgresql);
 
         return View("Numbers", new SearchResults
         {
-            CleanQuery = new string(converted.ToArray()),
+            CleanQuery = new string([.. converted]),
             NumberOfResults = count,
             Page = page,
-            PhoneNumbers = results.ToArray(),
+            PhoneNumbers = [.. results],
             Query = query
         });
     }

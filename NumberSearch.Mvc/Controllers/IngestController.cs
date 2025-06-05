@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using ZLinq;
+
 namespace NumberSearch.Mvc.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
@@ -36,7 +38,7 @@ namespace NumberSearch.Mvc.Controllers
             List<PhoneNumber.CountNPA> priority = [];
             foreach (var code in AreaCode.Priority)
             {
-                var match = numbersByAreaCode.FirstOrDefault(x => x.NPA == $"{code}");
+                var match = numbersByAreaCode.AsValueEnumerable().FirstOrDefault(x => x.NPA == $"{code}");
                 priority.Add(new PhoneNumber.CountNPA { NPA = $"{code}", Count = match?.Count ?? 0 });
             }
 
@@ -60,10 +62,10 @@ namespace NumberSearch.Mvc.Controllers
                 BulkVSAreaCodes = [.. npasBulkVS],
                 FirstPointComAreaCodes = [.. npasFPC],
                 TotalPhoneNumbers = total,
-                TotalExecutiveNumbers = numberTypeCounts.Where(x => x.NumberType == "Executive").Select(x => x.Count).FirstOrDefault(),
-                TotalPremiumNumbers = numberTypeCounts.Where(x => x.NumberType == "Premium").Select(x => x.Count).FirstOrDefault(),
-                TotalStandardNumbers = numberTypeCounts.Where(x => x.NumberType == "Standard").Select(x => x.Count).FirstOrDefault(),
-                TotalTollFreeNumbers = numberTypeCounts.Where(x => x.NumberType == "Tollfree").Select(x => x.Count).FirstOrDefault(),
+                TotalExecutiveNumbers = numberTypeCounts.AsValueEnumerable().Where(x => x.NumberType == "Executive").Select(x => x.Count).FirstOrDefault(),
+                TotalPremiumNumbers = numberTypeCounts.AsValueEnumerable().Where(x => x.NumberType == "Premium").Select(x => x.Count).FirstOrDefault(),
+                TotalStandardNumbers = numberTypeCounts.AsValueEnumerable().Where(x => x.NumberType == "Standard").Select(x => x.Count).FirstOrDefault(),
+                TotalTollFreeNumbers = numberTypeCounts.AsValueEnumerable().Where(x => x.NumberType == "Tollfree").Select(x => x.Count).FirstOrDefault(),
             });
         }
 
@@ -76,7 +78,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return View("Sales", new SalesDashboard
             {
-                Orders = orders.ToArray(),
+                Orders = [.. orders],
             });
         }
     }

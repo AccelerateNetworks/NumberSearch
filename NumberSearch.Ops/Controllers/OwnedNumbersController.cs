@@ -24,6 +24,8 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
+using ZLinq;
+
 namespace NumberSearch.Ops.Controllers;
 
 [ApiExplorerSettings(IgnoreApi = true)]
@@ -116,11 +118,11 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
         {
             viewOrders.Add(new OwnedNumberResult
             {
-                EmergencyInformation = e911s.FirstOrDefault(x => x.DialedNumber == ownedNumber.DialedNumber) ?? new(),
+                EmergencyInformation = e911s.AsValueEnumerable().FirstOrDefault(x => x.DialedNumber == ownedNumber.DialedNumber) ?? new(),
                 Owned = ownedNumber,
-                PortedPhoneNumbers = portedNumbers.Where(x => x.PortedDialedNumber == ownedNumber.DialedNumber).ToArray(),
-                PurchasedPhoneNumbers = purchasedNumbers.Where(x => x.DialedNumber == ownedNumber.DialedNumber).ToArray(),
-                ClientRegistration = registeredNumbers.FirstOrDefault(x => x.AsDialed == ownedNumber.DialedNumber) ?? new()
+                PortedPhoneNumbers = portedNumbers.AsValueEnumerable().Where(x => x.PortedDialedNumber == ownedNumber.DialedNumber).ToArray(),
+                PurchasedPhoneNumbers = purchasedNumbers.AsValueEnumerable().Where(x => x.DialedNumber == ownedNumber.DialedNumber).ToArray(),
+                ClientRegistration = registeredNumbers.AsValueEnumerable().FirstOrDefault(x => x.AsDialed == ownedNumber.DialedNumber) ?? new()
             });
         }
 
@@ -353,9 +355,9 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
             localPurchasedNumbers = await context.PurchasedPhoneNumbers.Where(x => x.DialedNumber == existing.DialedNumber).ToArrayAsync();
 
             // Get the orderIds for all the related orders.
-            var portedOrders = localPortedNumbers.Where(x => x.OrderId.HasValue && x.OrderId != Guid.Empty).Select(x => x.OrderId.GetValueOrDefault()).ToList();
+            var portedOrders = localPortedNumbers.AsValueEnumerable().Where(x => x.OrderId.HasValue && x.OrderId != Guid.Empty).Select(x => x.OrderId.GetValueOrDefault()).ToList();
             orderIds.AddRange(portedOrders);
-            var purchasedOrders = localPurchasedNumbers.Where(x => x.OrderId != Guid.Empty).Select(x => x.OrderId).ToList();
+            var purchasedOrders = localPurchasedNumbers.AsValueEnumerable().Where(x => x.OrderId != Guid.Empty).Select(x => x.OrderId).ToList();
             orderIds.AddRange(purchasedOrders);
         }
 
@@ -392,7 +394,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
 
             using var writer = new StreamWriter(completePath);
             using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-            await csv.WriteRecordsAsync(ownedNumbers).ConfigureAwait(false);
+            await csv.WriteRecordsAsync(ownedNumbers);
             var file = new FileInfo(completePath);
 
             if (file.Exists)

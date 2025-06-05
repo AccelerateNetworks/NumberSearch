@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using NuGet.Packaging;
+
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.TeleDynamics;
@@ -23,6 +25,8 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+
+using ZLinq;
 
 namespace NumberSearch.Ops.Controllers;
 [ApiExplorerSettings(IgnoreApi = true)]
@@ -77,12 +81,12 @@ public class OrdersController(OpsConfig opsConfig,
             // Handle GUIDs
             if (query.Length is 36 && Guid.TryParse(query, out var guidOutput))
             {
-                orders = orders.Where(x => x.OrderId == guidOutput).ToList();
+                orders = [.. orders.AsValueEnumerable().Where(x => x.OrderId == guidOutput)];
             }
 
             if (orders.Count > 1)
             {
-                var searchResults = orders.Where(x => x.BusinessName != null
+                var searchResults = orders.AsValueEnumerable().Where(x => x.BusinessName != null
                 && x.BusinessName.Contains(query, StringComparison.InvariantCultureIgnoreCase)).ToList();
 
                 // First and Last Name
@@ -98,7 +102,7 @@ public class OrdersController(OpsConfig opsConfig,
             }
         }
 
-        return new JsonResult(orders.Select(x => x?.BusinessName ?? $"{x?.FirstName} {x?.LastName}").Distinct().Take(5).ToArray());
+        return new JsonResult(orders.AsValueEnumerable().Select(x => x?.BusinessName ?? $"{x?.FirstName} {x?.LastName}").Distinct().Take(5).ToArray());
     }
 
     [Authorize]
@@ -152,8 +156,8 @@ public class OrdersController(OpsConfig opsConfig,
 
             foreach (var order in orders)
             {
-                var orderProductOrders = productOrders.Where(x => x.OrderId == order.OrderId).ToArray();
-                var portRequest = portRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefault();
+                var orderProductOrders = productOrders.AsValueEnumerable().Where(x => x.OrderId == order.OrderId).ToArray();
+                var portRequest = portRequests.AsValueEnumerable().Where(x => x.OrderId == order.OrderId).FirstOrDefault();
 
                 pairs.Add(new OrderProducts
                 {
@@ -211,7 +215,7 @@ public class OrdersController(OpsConfig opsConfig,
                     }
                 }
 
-                var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
+                var productsToGet = productOrders.AsValueEnumerable().Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
                 var products = new List<Product>();
                 foreach (var productId in productsToGet)
                 {
@@ -222,7 +226,7 @@ public class OrdersController(OpsConfig opsConfig,
                     }
                 }
 
-                var servicesToGet = productOrders.Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
+                var servicesToGet = productOrders.AsValueEnumerable().Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
                 var services = new List<Service>();
                 foreach (var serviceId in servicesToGet)
                 {
@@ -233,13 +237,13 @@ public class OrdersController(OpsConfig opsConfig,
                     }
                 }
 
-                var couponsToGet = productOrders.Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
+                var couponsToGet = productOrders.AsValueEnumerable().Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
                 var allCoupons = await _context.Coupons.AsNoTracking().ToArrayAsync();
                 var coupons = new List<Coupon>();
 
                 foreach (var couponId in couponsToGet)
                 {
-                    var coupon = allCoupons.FirstOrDefault(x => x.CouponId == couponId);
+                    var coupon = allCoupons.AsValueEnumerable().FirstOrDefault(x => x.CouponId == couponId);
                     if (coupon is not null)
                     {
                         coupons.Add(coupon);
@@ -310,8 +314,8 @@ public class OrdersController(OpsConfig opsConfig,
 
         foreach (var order in orders)
         {
-            var orderProductOrders = productOrders.Where(x => x.OrderId == order.OrderId).ToArray();
-            var portRequest = portRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefault();
+            var orderProductOrders = productOrders.AsValueEnumerable().Where(x => x.OrderId == order.OrderId).ToArray();
+            var portRequest = portRequests.AsValueEnumerable().Where(x => x.OrderId == order.OrderId).FirstOrDefault();
 
             pairs.Add(new OrderProducts
             {
@@ -550,7 +554,7 @@ public class OrdersController(OpsConfig opsConfig,
         var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
         var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
 
-        var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
+        var productsToGet = productOrders.AsValueEnumerable().Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
         var products = new List<Product>();
         foreach (var productId in productsToGet)
         {
@@ -561,7 +565,7 @@ public class OrdersController(OpsConfig opsConfig,
             }
         }
 
-        var servicesToGet = productOrders.Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
+        var servicesToGet = productOrders.AsValueEnumerable().Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
         var services = new List<Service>();
         foreach (var serviceId in servicesToGet)
         {
@@ -572,7 +576,7 @@ public class OrdersController(OpsConfig opsConfig,
             }
         }
 
-        var couponsToGet = productOrders.Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
+        var couponsToGet = productOrders.AsValueEnumerable().Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
         var coupons = new List<Coupon>();
         foreach (var couponId in couponsToGet)
         {
@@ -778,7 +782,7 @@ public class OrdersController(OpsConfig opsConfig,
         var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
         var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
 
-        var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
+        var productsToGet = productOrders.AsValueEnumerable().Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
         var products = new List<Product>();
         foreach (var productId in productsToGet)
         {
@@ -789,7 +793,7 @@ public class OrdersController(OpsConfig opsConfig,
             }
         }
 
-        var servicesToGet = productOrders.Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
+        var servicesToGet = productOrders.AsValueEnumerable().Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
         var services = new List<Service>();
         foreach (var serviceId in servicesToGet)
         {
@@ -800,7 +804,7 @@ public class OrdersController(OpsConfig opsConfig,
             }
         }
 
-        var couponsToGet = productOrders.Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
+        var couponsToGet = productOrders.AsValueEnumerable().Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
         var coupons = new List<Coupon>();
         foreach (var couponId in couponsToGet)
         {
@@ -858,7 +862,7 @@ public class OrdersController(OpsConfig opsConfig,
 
                     foreach (var item in purchasedPhoneNumbers)
                     {
-                        var duplicate = parentPurchasedPhoneNumbers?.Where(x => x?.DialedNumber == item?.DialedNumber).FirstOrDefault();
+                        var duplicate = parentPurchasedPhoneNumbers?.AsValueEnumerable().Where(x => x?.DialedNumber == item?.DialedNumber).FirstOrDefault();
                         if (duplicate is null)
                         {
                             item.OrderId = parent.OrderId;
@@ -868,13 +872,13 @@ public class OrdersController(OpsConfig opsConfig,
                         else
                         {
                             // Remove duplicate product orders.
-                            productOrders = productOrders.Where(x => x?.DialedNumber != item?.DialedNumber).ToList();
+                            productOrders = [.. productOrders.AsValueEnumerable().Where(x => x?.DialedNumber != item?.DialedNumber)];
                         }
                     }
 
                     foreach (var item in verifiedPhoneNumbers)
                     {
-                        var duplicate = parentVerifiedPhoneNumbers.Where(x => x?.VerifiedDialedNumber == item?.VerifiedDialedNumber).FirstOrDefault();
+                        var duplicate = parentVerifiedPhoneNumbers.AsValueEnumerable().Where(x => x?.VerifiedDialedNumber == item?.VerifiedDialedNumber).FirstOrDefault();
                         if (duplicate is null)
                         {
                             item.OrderId = parent.OrderId;
@@ -885,7 +889,7 @@ public class OrdersController(OpsConfig opsConfig,
 
                     foreach (var item in portedPhoneNumbers)
                     {
-                        var duplicate = portedPhoneNumbers.Where(x => x?.PortedDialedNumber == item?.PortedDialedNumber).FirstOrDefault();
+                        var duplicate = portedPhoneNumbers.AsValueEnumerable().Where(x => x?.PortedDialedNumber == item?.PortedDialedNumber).FirstOrDefault();
                         if (duplicate is null)
                         {
                             item.OrderId = parent.OrderId;
@@ -895,7 +899,7 @@ public class OrdersController(OpsConfig opsConfig,
                         else
                         {
                             // Remove duplicate product orders.
-                            productOrders = productOrders.Where(x => x?.PortedDialedNumber != item?.PortedDialedNumber).ToList();
+                            productOrders = [.. productOrders.AsValueEnumerable().Where(x => x?.PortedDialedNumber != item?.PortedDialedNumber)];
                         }
                     }
 
@@ -923,7 +927,7 @@ public class OrdersController(OpsConfig opsConfig,
                     verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == parent.OrderId).AsNoTracking().ToListAsync();
                     portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == parent.OrderId).AsNoTracking().ToListAsync();
 
-                    var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
+                    var productsToGet = productOrders.AsValueEnumerable().Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
                     var products = new List<Product>();
                     foreach (var productId in productsToGet)
                     {
@@ -934,7 +938,7 @@ public class OrdersController(OpsConfig opsConfig,
                         }
                     }
 
-                    var servicesToGet = productOrders.Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
+                    var servicesToGet = productOrders.AsValueEnumerable().Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
                     var services = new List<Service>();
                     foreach (var serviceId in servicesToGet)
                     {
@@ -945,7 +949,7 @@ public class OrdersController(OpsConfig opsConfig,
                         }
                     }
 
-                    var couponsToGet = productOrders.Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
+                    var couponsToGet = productOrders.AsValueEnumerable().Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
                     var coupons = new List<Coupon>();
                     foreach (var couponId in couponsToGet)
                     {
@@ -978,7 +982,7 @@ public class OrdersController(OpsConfig opsConfig,
                     var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == parent.OrderId).AsNoTracking().ToListAsync();
                     var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == parent.OrderId).AsNoTracking().ToListAsync();
 
-                    var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
+                    var productsToGet = productOrders.AsValueEnumerable().Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
                     var products = new List<Product>();
                     foreach (var productId in productsToGet)
                     {
@@ -989,7 +993,7 @@ public class OrdersController(OpsConfig opsConfig,
                         }
                     }
 
-                    var servicesToGet = productOrders.Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
+                    var servicesToGet = productOrders.AsValueEnumerable().Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
                     var services = new List<Service>();
                     foreach (var serviceId in servicesToGet)
                     {
@@ -1000,7 +1004,7 @@ public class OrdersController(OpsConfig opsConfig,
                         }
                     }
 
-                    var couponsToGet = productOrders.Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
+                    var couponsToGet = productOrders.AsValueEnumerable().Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
                     var coupons = new List<Coupon>();
                     foreach (var couponId in couponsToGet)
                     {
@@ -1034,7 +1038,7 @@ public class OrdersController(OpsConfig opsConfig,
                 var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == orderId).AsNoTracking().ToListAsync();
                 var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == orderId).AsNoTracking().ToListAsync();
 
-                var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
+                var productsToGet = productOrders.AsValueEnumerable().Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
                 var products = new List<Product>();
                 foreach (var productId in productsToGet)
                 {
@@ -1045,7 +1049,7 @@ public class OrdersController(OpsConfig opsConfig,
                     }
                 }
 
-                var servicesToGet = productOrders.Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
+                var servicesToGet = productOrders.AsValueEnumerable().Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
                 var services = new List<Service>();
                 foreach (var serviceId in servicesToGet)
                 {
@@ -1056,7 +1060,7 @@ public class OrdersController(OpsConfig opsConfig,
                     }
                 }
 
-                var couponsToGet = productOrders.Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
+                var couponsToGet = productOrders.AsValueEnumerable().Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
                 var coupons = new List<Coupon>();
                 foreach (var couponId in couponsToGet)
                 {
@@ -1118,7 +1122,7 @@ public class OrdersController(OpsConfig opsConfig,
                     var teleDynamicsOrders = await HardwareOrder.SearchByPONumberAsync(teleDynamicsOrderNumber, _config.TeleDynamicsUsername, _config.TeleDynamicsPassword);
                     if (teleDynamicsOrders is not null && teleDynamicsOrders.Length > 0)
                     {
-                        var matchingOrder = teleDynamicsOrders.FirstOrDefault(x => x.OrderNumber == teleDynamicsOrderNumber);
+                        var matchingOrder = teleDynamicsOrders.AsValueEnumerable().FirstOrDefault(x => x.OrderNumber == teleDynamicsOrderNumber);
                         if (matchingOrder is not null && matchingOrder.OrderNumber == teleDynamicsOrderNumber)
                         {
                             if (!string.IsNullOrWhiteSpace(matchingOrder.PONumber))
@@ -1126,11 +1130,11 @@ public class OrdersController(OpsConfig opsConfig,
                                 var fullOrders = await HardwareOrder.GetByPONumberAsync(matchingOrder.PONumber.Trim(), _config.TeleDynamicsUsername, _config.TeleDynamicsPassword);
                                 if (fullOrders is not null && fullOrders.Length > 0)
                                 {
-                                    var matchingFullOrder = fullOrders.FirstOrDefault(x => x.OrderNumber == teleDynamicsOrderNumber);
+                                    var matchingFullOrder = fullOrders.AsValueEnumerable().FirstOrDefault(x => x.OrderNumber == teleDynamicsOrderNumber);
                                     if (matchingFullOrder is not null && matchingFullOrder.OrderNumber == teleDynamicsOrderNumber)
                                     {
                                         carrier = matchingFullOrder.Shipping.Carrier;
-                                        trackingNumber = matchingFullOrder.TrackingInformation.FirstOrDefault()?.TrackingNumber ?? string.Empty;
+                                        trackingNumber = matchingFullOrder.TrackingInformation.AsValueEnumerable().FirstOrDefault()?.TrackingNumber ?? string.Empty;
                                         orderLines = matchingFullOrder.OrderLines;
                                     }
                                 }
@@ -1153,7 +1157,7 @@ public class OrdersController(OpsConfig opsConfig,
                             // If items already exist, do not create them twice.
                             if (productItems.Length == 0 && item?.Quantity is not null && item.Quantity > 0)
                             {
-                                var matches = orderLines.FirstOrDefault(x => x.PartNumber.Contains(product.VendorPartNumber))?.SerializationInformation;
+                                var matches = orderLines.AsValueEnumerable().FirstOrDefault(x => x.PartNumber.Contains(product.VendorPartNumber))?.SerializationInformation;
 
                                 // Create the product items here to track the serial numbers and condition of the hardware.
                                 for (var i = 0; i < item.Quantity; i++)
@@ -1217,8 +1221,8 @@ public class OrdersController(OpsConfig opsConfig,
 
                                 foreach (var unit in productItems)
                                 {
-                                    var match = devices?.Where(x => !string.IsNullOrWhiteSpace(x.MAC) && x.MAC == unit.MACAddress).FirstOrDefault();
-                                    match ??= devices?.Where(x => !string.IsNullOrWhiteSpace(x.SerialNumber) && x.SerialNumber == unit.SerialNumber).FirstOrDefault();
+                                    var match = devices?.AsValueEnumerable().Where(x => !string.IsNullOrWhiteSpace(x.MAC) && x.MAC == unit.MACAddress).FirstOrDefault();
+                                    match ??= devices?.AsValueEnumerable().Where(x => !string.IsNullOrWhiteSpace(x.SerialNumber) && x.SerialNumber == unit.SerialNumber).FirstOrDefault();
                                     if (match is not null)
                                     {
                                         string trackingLink = string.Empty;
@@ -1247,7 +1251,7 @@ public class OrdersController(OpsConfig opsConfig,
                     }
                 }
 
-                var servicesToGet = productOrders.Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
+                var servicesToGet = productOrders.AsValueEnumerable().Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
                 var services = new List<Service>();
                 foreach (var serviceId in servicesToGet)
                 {
@@ -1258,7 +1262,7 @@ public class OrdersController(OpsConfig opsConfig,
                     }
                 }
 
-                var couponsToGet = productOrders.Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
+                var couponsToGet = productOrders.AsValueEnumerable().Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
                 var coupons = new List<Coupon>();
                 foreach (var couponId in couponsToGet)
                 {
@@ -1317,8 +1321,8 @@ public class OrdersController(OpsConfig opsConfig,
                     if (matchingCoupon is not null)
                     {
                         var productOrder = new ProductOrder { CouponId = matchingCoupon?.CouponId, OrderId = order.OrderId, Quantity = 1, CreateDate = DateTime.Now, ProductOrderId = Guid.NewGuid() };
-                        var checkAdd = cart.AddCoupon(matchingCoupon, productOrder);
-                      
+                        var checkAdd = cart.AddCoupon(matchingCoupon ?? new(), productOrder);
+
                         _context.ProductOrders.Add(productOrder);
                         await _context.SaveChangesAsync();
                     }
@@ -1370,7 +1374,7 @@ public class OrdersController(OpsConfig opsConfig,
                 var verifiedPhoneNumbers = await _context.VerifiedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
                 var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
 
-                var productsToGet = productOrders.Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
+                var productsToGet = productOrders.AsValueEnumerable().Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
                 var products = new List<Product>();
                 foreach (var productId in productsToGet)
                 {
@@ -1381,7 +1385,7 @@ public class OrdersController(OpsConfig opsConfig,
                     }
                 }
 
-                var servicesToGet = productOrders.Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
+                var servicesToGet = productOrders.AsValueEnumerable().Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
                 var services = new List<Service>();
                 foreach (var serviceId in servicesToGet)
                 {
@@ -1392,7 +1396,7 @@ public class OrdersController(OpsConfig opsConfig,
                     }
                 }
 
-                var couponsToGet = productOrders.Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
+                var couponsToGet = productOrders.AsValueEnumerable().Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
                 var coupons = new List<Coupon>();
                 foreach (var couponId in couponsToGet)
                 {
@@ -1450,7 +1454,7 @@ public class OrdersController(OpsConfig opsConfig,
 
                             if (productOrder.PortedPhoneNumberId is not null)
                             {
-                                var ported = cart.PortedPhoneNumbers.Where(x => x.PortedPhoneNumberId == productOrder.PortedPhoneNumberId).FirstOrDefault();
+                                var ported = cart?.PortedPhoneNumbers.AsValueEnumerable().Where(x => x.PortedPhoneNumberId == productOrder.PortedPhoneNumberId).FirstOrDefault();
 
                                 var calculatedCost = 20;
 
@@ -1471,7 +1475,7 @@ public class OrdersController(OpsConfig opsConfig,
 
                             if (productOrder.VerifiedPhoneNumberId is not null && productOrder.VerifiedPhoneNumberId != Guid.Empty)
                             {
-                                var verified = cart.VerifiedPhoneNumbers.Where(x => x.VerifiedPhoneNumberId == productOrder.VerifiedPhoneNumberId).FirstOrDefault();
+                                var verified = cart?.VerifiedPhoneNumbers.AsValueEnumerable().Where(x => x.VerifiedPhoneNumberId == productOrder.VerifiedPhoneNumberId).FirstOrDefault();
 
                                 if (verified != null)
                                 {
@@ -1488,7 +1492,7 @@ public class OrdersController(OpsConfig opsConfig,
 
                             if (productOrder.ProductId is not null && productOrder.ProductId != Guid.Empty)
                             {
-                                var product = cart.Products.Where(x => x.ProductId == productOrder.ProductId).FirstOrDefault();
+                                var product = cart?.Products.AsValueEnumerable().Where(x => x.ProductId == productOrder.ProductId).FirstOrDefault();
 
                                 if (product != null)
                                 {
@@ -1506,7 +1510,7 @@ public class OrdersController(OpsConfig opsConfig,
 
                             if (productOrder.ServiceId is not null && productOrder.ServiceId != Guid.Empty)
                             {
-                                var service = cart.Services.Where(x => x.ServiceId == productOrder.ServiceId).FirstOrDefault();
+                                var service = cart?.Services.AsValueEnumerable().Where(x => x.ServiceId == productOrder.ServiceId).FirstOrDefault();
 
                                 if (service != null)
                                 {
@@ -1525,7 +1529,7 @@ public class OrdersController(OpsConfig opsConfig,
                             // Apply coupon discounts
                             if (productOrder.CouponId is not null && productOrder.CouponId != Guid.Empty)
                             {
-                                var coupon = cart.Coupons.Where(x => x.CouponId == productOrder.CouponId).FirstOrDefault();
+                                var coupon = cart?.Coupons.AsValueEnumerable().Where(x => x.CouponId == productOrder.CouponId).FirstOrDefault();
 
                                 if (coupon is not null)
                                 {
@@ -1549,7 +1553,7 @@ public class OrdersController(OpsConfig opsConfig,
                                             onetimeItems.Add(new Line_Items
                                             {
                                                 product_key = coupon.Name,
-                                                notes = coupon.Description,
+                                                notes = coupon.Description ?? string.Empty,
                                                 cost = 75 * -1,
                                                 quantity = 1
                                             });
@@ -1559,7 +1563,7 @@ public class OrdersController(OpsConfig opsConfig,
                                             onetimeItems.Add(new Line_Items
                                             {
                                                 product_key = coupon.Name,
-                                                notes = coupon.Description,
+                                                notes = coupon.Description ?? string.Empty,
                                                 cost = 0,
                                                 quantity = 1
                                             });
@@ -1567,7 +1571,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     }
                                     else if (coupon.Type == "Number")
                                     {
-                                        if (coupon.Name.Contains("20"))
+                                        if (!string.IsNullOrWhiteSpace(coupon.Name) && coupon.Name.Contains("20"))
                                         {
                                             var discountTo20 = cart?.PhoneNumbers is not null && cart.PhoneNumbers.Count != 0 ? cart.PhoneNumbers.Count * 20 :
                                             cart?.PurchasedPhoneNumbers is not null && cart.PurchasedPhoneNumbers.Count != 0 ? cart.PurchasedPhoneNumbers.Count * 20 : 0;
@@ -1575,7 +1579,7 @@ public class OrdersController(OpsConfig opsConfig,
                                             onetimeItems.Add(new Line_Items
                                             {
                                                 product_key = coupon.Name,
-                                                notes = coupon.Description,
+                                                notes = coupon.Description ?? string.Empty,
                                                 cost = (totalNumberPurchasingCost - discountTo20) * -1,
                                                 quantity = 1
                                             });
@@ -1585,8 +1589,8 @@ public class OrdersController(OpsConfig opsConfig,
                                             totalCost -= totalNumberPurchasingCost;
                                             onetimeItems.Add(new Line_Items
                                             {
-                                                product_key = coupon.Name,
-                                                notes = coupon.Description,
+                                                product_key = coupon.Name ?? string.Empty,
+                                                notes = coupon.Description ?? string.Empty,
                                                 cost = totalNumberPurchasingCost * -1,
                                                 quantity = 1
                                             });
@@ -1607,7 +1611,7 @@ public class OrdersController(OpsConfig opsConfig,
                         }
 
                         // Handle hardware installation scenarios, if hardware is in the order.
-                        if (cart.Products.Count != 0)
+                        if (cart is not null && cart.Products.Count != 0)
                         {
                             // Add the call out charge and install estimate to the Cart.
                             var onsite = await _context.Products.FirstOrDefaultAsync(x => x.ProductId == Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"));
@@ -1617,7 +1621,7 @@ public class OrdersController(OpsConfig opsConfig,
                             decimal totalInstallTime = 0m;
                             foreach (var item in cart.Products)
                             {
-                                var quantity = cart.ProductOrders?.Where(x => x.ProductId == item.ProductId).FirstOrDefault();
+                                var quantity = cart.ProductOrders?.AsValueEnumerable().Where(x => x.ProductId == item.ProductId).FirstOrDefault();
 
                                 if (item.InstallTime > 0m && quantity is not null)
                                 {
@@ -1644,8 +1648,8 @@ public class OrdersController(OpsConfig opsConfig,
                                 if (order.OnsiteInstallation)
                                 {
                                     // Add the install charges if they're not already in the Cart.
-                                    var checkOnsiteExists = cart.Products.FirstOrDefault(x => x.ProductId == Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"));
-                                    var checkEstimateExists = cart.Products.FirstOrDefault(x => x.ProductId == Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"));
+                                    var checkOnsiteExists = cart.Products.AsValueEnumerable().FirstOrDefault(x => x.ProductId == Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"));
+                                    var checkEstimateExists = cart.Products.AsValueEnumerable().FirstOrDefault(x => x.ProductId == Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"));
 
                                     if (checkOnsiteExists is null && checkEstimateExists is null)
                                     {
@@ -1708,7 +1712,7 @@ public class OrdersController(OpsConfig opsConfig,
                             var taxRateValue = specificTaxRate.rate * 100M;
 
                             var existingTaxRates = await DataAccess.InvoiceNinja.TaxRate.GetAllAsync(_invoiceNinjaToken.AsMemory());
-                            billingTaxRate = existingTaxRates.data.Where(x => x.name == taxRateName).FirstOrDefault();
+                            billingTaxRate = existingTaxRates.data.AsValueEnumerable().Where(x => x.name == taxRateName).FirstOrDefault();
                             if (string.IsNullOrWhiteSpace(billingTaxRate.name))
                             {
                                 billingTaxRate = new TaxRateDatum
@@ -1735,7 +1739,7 @@ public class OrdersController(OpsConfig opsConfig,
 
                         // Create a billing client and send out an invoice.
                         var billingClients = await Client.GetByEmailAsync(order.Email ?? string.Empty, _invoiceNinjaToken);
-                        var billingClient = billingClients.data.FirstOrDefault();
+                        var billingClient = billingClients.data.AsValueEnumerable().FirstOrDefault();
 
                         if (string.IsNullOrWhiteSpace(billingClient.id))
                         {
@@ -1759,8 +1763,8 @@ public class OrdersController(OpsConfig opsConfig,
 
                             var newClient = await newBillingClient.PostAsync(_invoiceNinjaToken.AsMemory());
                             newBillingClient = newBillingClient with { id = newClient.id };
-                            var billingClientContact = newBillingClient.contacts.FirstOrDefault();
-                            var newClientContact = newClient.contacts.FirstOrDefault();
+                            var billingClientContact = newBillingClient.contacts.AsValueEnumerable().FirstOrDefault();
+                            var newClientContact = newClient.contacts.AsValueEnumerable().FirstOrDefault();
                             if (!string.IsNullOrWhiteSpace(newClientContact.id))
                             {
                                 billingClientContact = billingClientContact with { id = newClientContact.id };
@@ -1854,7 +1858,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         Log.Fatal("[Checkout] Failed to create the invoices in the billing system.");
                                         Log.Error(error);
                                         Log.Fatal("{@upfrontInvoice}", upfrontInvoice);
-                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
                                 else
@@ -1876,7 +1880,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         Log.Fatal("[Checkout] Failed to update the existing invoices in the billing system.");
                                         Log.Error(error);
                                         Log.Fatal("{@upfrontInvoice}", upfrontInvoice);
-                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update the existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to update the existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
 
@@ -1894,7 +1898,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     var error = await ex.GetResponseStringAsync();
                                     Log.Error(error);
                                     Log.Fatal("{@upfrontInvoice}", upfrontInvoice);
-                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find the existing  reoccurring invoice in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to find the existing  reoccurring invoice in the billing system 😡 {error}", AlertType = "alert-danger" });
 
                                 }
 
@@ -1915,7 +1919,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         Log.Fatal("[Checkout] Failed to create new invoices in the billing system.");
                                         Log.Error(error);
                                         Log.Fatal("{@upfrontInvoice}", upfrontInvoice);
-                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create new invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to create new invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
                                 else
@@ -1937,7 +1941,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         Log.Fatal("[Checkout] Failed to update the existing invoices in the billing system.");
                                         Log.Error(error);
                                         Log.Fatal("{@upfrontInvoice}", upfrontInvoice);
-                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update the existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to update the existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
 
@@ -1952,8 +1956,8 @@ public class OrdersController(OpsConfig opsConfig,
                                     await _context.SaveChangesAsync();
 
                                     InvoiceDatum[] invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(BillingClientId ?? string.Empty, _invoiceNinjaToken, order.Quote);
-                                    string oneTimeLink = invoiceLinks.Where(x => x.id == BillingInvoiceId).FirstOrDefault().invitations.FirstOrDefault().link;
-                                    string reoccurringLink = invoiceLinks.Where(x => x.id == BillingInvoiceReoccuringId).FirstOrDefault().invitations.FirstOrDefault().link;
+                                    string oneTimeLink = invoiceLinks.AsValueEnumerable().Where(x => x.id == BillingInvoiceId).FirstOrDefault().invitations.FirstOrDefault().link;
+                                    string reoccurringLink = invoiceLinks.AsValueEnumerable().Where(x => x.id == BillingInvoiceReoccuringId).FirstOrDefault().invitations.FirstOrDefault().link;
 
                                     if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                     {
@@ -1968,7 +1972,7 @@ public class OrdersController(OpsConfig opsConfig,
                                 catch (Exception ex)
                                 {
                                     Log.Error(ex.Message);
-                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update the order with the new invoices. 😡 {ex.Message}", AlertType = "alert-danger" });
+                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to update the order with the new invoices. 😡 {ex.Message}", AlertType = "alert-danger" });
                                 }
 
                             }
@@ -2004,7 +2008,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         Log.Fatal("{@createNewReoccurringInvoice}", createNewReoccurringInvoice);
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
-                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
                                 else
@@ -2022,7 +2026,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         Log.Fatal("{@createNewReoccurringInvoice}", createNewReoccurringInvoice);
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
-                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
 
@@ -2036,7 +2040,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     await _context.SaveChangesAsync();
 
                                     InvoiceDatum[] invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccurringInvoice.client_id, _invoiceNinjaToken, order.Quote);
-                                    string reoccurringLink = invoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
+                                    string reoccurringLink = invoiceLinks.AsValueEnumerable().Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                                     if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                     {
@@ -2046,7 +2050,7 @@ public class OrdersController(OpsConfig opsConfig,
                                 catch (Exception ex)
                                 {
                                     Log.Fatal(ex.Message ?? "No message found.");
-                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update order with the new invoices. 😡 {ex.Message}", AlertType = "alert-danger" });
+                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to update order with the new invoices. 😡 {ex.Message}", AlertType = "alert-danger" });
                                 }
                             }
                             else if (upfrontInvoice.line_items.Length != 0)
@@ -2084,7 +2088,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         var message = await ex.GetResponseStringAsync();
                                         Log.Fatal(message);
                                         Log.Fatal("{@upfrontInvoice}", upfrontInvoice);
-                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create new invoices in the billing system 😡 {message}", AlertType = "alert-danger" });
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to create new invoices in the billing system 😡 {message}", AlertType = "alert-danger" });
                                     }
                                 }
                                 else
@@ -2101,7 +2105,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         var message = await ex.GetResponseStringAsync();
                                         Log.Fatal(message);
                                         Log.Fatal("{@upfrontInvoice}", upfrontInvoice);
-                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update existing invoices in the billing system 😡 {message}", AlertType = "alert-danger" });
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to update existing invoices in the billing system 😡 {message}", AlertType = "alert-danger" });
                                     }
                                 }
 
@@ -2128,14 +2132,14 @@ public class OrdersController(OpsConfig opsConfig,
                                 {
                                     // TODO add failure message for better UX.
                                     Log.Fatal(ex.Message);
-                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update the order with the new invoices. 😡 {ex.Message}", AlertType = "alert-danger" });
+                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to update the order with the new invoices. 😡 {ex.Message}", AlertType = "alert-danger" });
                                 }
                             }
 
                             _context.Entry(orderToUpdate!).CurrentValues.SetValues(order);
                             await _context.SaveChangesAsync();
 
-                            return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Generated the invoices for this quote! 🥳 {partialMessage}", AlertType = "alert-success" });
+                            return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Generated the invoices for this quote! 🥳 {partialMessage}", AlertType = "alert-success" });
                         }
                         else
                         {
@@ -2190,7 +2194,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         Log.Fatal("{@createNewOneTimeInvoice}", createNewOneTimeInvoice);
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
-                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
                                 else
@@ -2210,7 +2214,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         Log.Fatal("{@createNewOneTimeInvoice}", createNewOneTimeInvoice);
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
-                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
 
@@ -2227,7 +2231,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         Log.Fatal("{@createNewReoccurringInvoice}", createNewReoccurringInvoice);
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
-                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
                                 else
@@ -2248,7 +2252,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         Log.Fatal("{@createNewReoccurringInvoice}", createNewReoccurringInvoice);
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
-                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
 
@@ -2264,8 +2268,8 @@ public class OrdersController(OpsConfig opsConfig,
 
                                     var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, order.Quote);
                                     var recurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken);
-                                    var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
-                                    var reoccurringLink = recurringInvoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
+                                    var oneTimeLink = invoiceLinks.AsValueEnumerable().Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
+                                    var reoccurringLink = recurringInvoiceLinks.AsValueEnumerable().Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                                     if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                     {
@@ -2280,7 +2284,7 @@ public class OrdersController(OpsConfig opsConfig,
                                 catch (Exception ex)
                                 {
                                     Log.Fatal(ex.Message);
-                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update the order with the new invoices. 😡 {ex.Message}", AlertType = "alert-danger" });
+                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to update the order with the new invoices. 😡 {ex.Message}", AlertType = "alert-danger" });
                                 }
                             }
                             else if (reoccurringInvoice.line_items.Length != 0 && order is not null)
@@ -2316,7 +2320,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         Log.Fatal("{@createNewReoccurringInvoice}", createNewReoccurringInvoice);
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
-                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to create invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
                                 else
@@ -2332,7 +2336,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         Log.Fatal("{@createNewReoccurringInvoice}", createNewReoccurringInvoice);
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
-                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to update existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
 
@@ -2346,7 +2350,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     await _context.SaveChangesAsync();
 
                                     var invoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewReoccurringInvoice.client_id, _invoiceNinjaToken);
-                                    var reoccurringLink = invoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
+                                    var reoccurringLink = invoiceLinks.AsValueEnumerable().Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                                     if (!string.IsNullOrWhiteSpace(reoccurringLink))
                                     {
@@ -2356,7 +2360,7 @@ public class OrdersController(OpsConfig opsConfig,
                                 catch (Exception ex)
                                 {
                                     Log.Fatal(ex.Message);
-                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update order with new invoices. 😡 {ex.Message}", AlertType = "alert-danger" });
+                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to update order with new invoices. 😡 {ex.Message}", AlertType = "alert-danger" });
                                 }
 
                             }
@@ -2393,7 +2397,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         Log.Fatal("{@createNewOneTimeInvoice}", createNewOneTimeInvoice);
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
-                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
                                 else
@@ -2409,7 +2413,7 @@ public class OrdersController(OpsConfig opsConfig,
                                         Log.Fatal("{@createNewOneTimeInvoice}", createNewOneTimeInvoice);
                                         var error = await ex.GetResponseStringAsync();
                                         Log.Fatal(error);
-                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
+                                        return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to find existing invoices in the billing system 😡 {error}", AlertType = "alert-danger" });
                                     }
                                 }
 
@@ -2423,7 +2427,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     await _context.SaveChangesAsync();
 
                                     var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken, order.Quote);
-                                    var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
+                                    var oneTimeLink = invoiceLinks.AsValueEnumerable().Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                                     if (!string.IsNullOrWhiteSpace(oneTimeLink))
                                     {
@@ -2433,7 +2437,7 @@ public class OrdersController(OpsConfig opsConfig,
                                 catch (Exception ex)
                                 {
                                     Log.Fatal(ex.Message);
-                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart, Message = $"Failed to update order with new invoices. 😡 {ex.Message}", AlertType = "alert-danger" });
+                                    return View("OrderEdit", new EditOrderResult { Order = order, Cart = cart ?? new(), Message = $"Failed to update order with new invoices. 😡 {ex.Message}", AlertType = "alert-danger" });
                                 }
                             }
 
@@ -2443,7 +2447,7 @@ public class OrdersController(OpsConfig opsConfig,
                                 await _context.SaveChangesAsync();
                             }
 
-                            return View("OrderEdit", new EditOrderResult { Order = order ?? new(), Cart = cart, Message = $"Generated the invoices for this order! 🥳 {partialMessage}", AlertType = "alert-success" });
+                            return View("OrderEdit", new EditOrderResult { Order = order ?? new(), Cart = cart ?? new(), Message = $"Generated the invoices for this order! 🥳 {partialMessage}", AlertType = "alert-success" });
                         }
                     }
                     catch (Exception ex)
@@ -2544,8 +2548,8 @@ public class OrdersController(OpsConfig opsConfig,
 
         foreach (var order in orders)
         {
-            var orderProductOrders = productOrders.Where(x => x.OrderId == order.OrderId).ToArray();
-            var portRequest = portRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefault();
+            var orderProductOrders = productOrders.AsValueEnumerable().Where(x => x.OrderId == order.OrderId).ToArray();
+            var portRequest = portRequests.AsValueEnumerable().Where(x => x.OrderId == order.OrderId).FirstOrDefault();
 
             pairs.Add(new OrderProducts
             {

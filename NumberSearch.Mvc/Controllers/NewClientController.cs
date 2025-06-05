@@ -12,6 +12,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
+using ZLinq;
+
 namespace NumberSearch.Mvc.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
@@ -28,7 +30,7 @@ namespace NumberSearch.Mvc.Controllers
             var productOrders = await ProductOrder.GetAsync(orderId, _postgresql).ConfigureAwait(false);
             var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
             NewClient newClient = await NewClient.GetByOrderIdAsync(order?.OrderId ?? new(), _postgresql).ConfigureAwait(false) ?? new();
-            var phoneNumbers = productOrders.Where(x => !string.IsNullOrWhiteSpace(x.DialedNumber))?.Select(x => x.DialedNumber)?.ToArray();
+            var phoneNumbers = productOrders?.AsValueEnumerable().Where(x => !string.IsNullOrWhiteSpace(x.DialedNumber)).Select(x => x.DialedNumber).ToArray();
             var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(orderId, _postgresql).ConfigureAwait(false);
             var portedStrippedNumbers = portedNumbers?.Select(x => x.PortedDialedNumber).ToArray();
             var allNumbers = phoneNumbers?.Concat(portedStrippedNumbers ?? [])?.ToArray();
@@ -90,7 +92,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 Order = order ?? new(),
                 NewClient = newClient ?? new(),
-                ProductOrders = [.. productOrders],
+                ProductOrders = [.. productOrders ?? []],
                 Products = [.. products],
                 PhoneNumbers = allNumbers ?? [],
             };
@@ -212,12 +214,12 @@ namespace NumberSearch.Mvc.Controllers
 
                 var productOrders = await ProductOrder.GetAsync(newClient.OrderId, _postgresql).ConfigureAwait(false);
                 var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
-                var phoneNumbers = productOrders.Where(x => !string.IsNullOrWhiteSpace(x.DialedNumber))?.Select(x => x.DialedNumber)?.ToArray();
-                var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(newClient.OrderId, _postgresql).ConfigureAwait(false);
-                var portedStrippedNumbers = portedNumbers?.Select(x => x.PortedDialedNumber).ToArray();
+                var phoneNumbers = productOrders?.AsValueEnumerable().Where(x => !string.IsNullOrWhiteSpace(x.DialedNumber)).Select(x => x.DialedNumber).ToArray();
+                var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(newClient.OrderId, _postgresql);
+                var portedStrippedNumbers = portedNumbers?.AsValueEnumerable().Select(x => x.PortedDialedNumber).ToArray();
                 var allNumbers = phoneNumbers?.Concat(portedStrippedNumbers ?? [])?.ToArray();
 
-                return View("Index", new NewClientResult { NewClient = newClient, Order = order, Products = [.. products], ProductOrders = [.. productOrders], PhoneNumbers = allNumbers ?? [] });
+                return View("Index", new NewClientResult { NewClient = newClient, Order = order, Products = [.. products], ProductOrders = [.. productOrders ?? []], PhoneNumbers = allNumbers ?? [] });
             }
 
             return View("Index");

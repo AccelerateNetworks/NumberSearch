@@ -19,11 +19,8 @@ namespace NumberSearch.Mvc.Controllers
     [ApiExplorerSettings(IgnoreApi = true)]
     public class PortingController(MvcConfiguration mvcConfiguration) : Controller
     {
-        private readonly string _postgresql = mvcConfiguration.PostgresqlProd;
         private readonly string _bulkVSAPIUsername = mvcConfiguration.BulkVSUsername;
         private readonly string _bulkVSAPIPassword = mvcConfiguration.BulkVSPassword;
-        private readonly string _azureStorage = mvcConfiguration.AzureStorageAccount;
-        private readonly string _SmtpUsername = mvcConfiguration.SmtpUsername;
 
         [HttpGet]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]

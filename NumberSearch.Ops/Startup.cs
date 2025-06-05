@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,7 @@ using NumberSearch.Ops.Services;
 using Prometheus;
 
 using System;
+using System.Globalization;
 
 namespace NumberSearch.Ops
 {
@@ -120,7 +122,31 @@ namespace NumberSearch.Ops
                 app.UseHsts();
             }
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
+            // Set cache headers on static files.
+            // Disable to prevent caching.
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                OnPrepareResponse = ctx =>
+                {
+                    // Cache static files for 30 days
+                    ctx.Context.Response.Headers.Append("Cache-Control", "public, max-age=31536000");
+                    ctx.Context.Response.Headers.Append("Expires", DateTime.UtcNow.AddDays(1).ToString("R", CultureInfo.InvariantCulture));
+                }
+            });
+
+            app.UseSecurityHeaders(policy => policy
+                .AddDefaultSecurityHeaders()
+                // Requried to get the embedded YouTube videos to load.
+                .AddCrossOriginEmbedderPolicy(x => x.UnsafeNone())
+                .AddPermissionsPolicy(builder =>
+                {
+                    // add all the default versions
+                    builder.AddDefaultSecureDirectives();
+                    // Allow the autoplay video banner on the homepage to work.
+                    builder.AddAutoplay().Self();
+                    // Allow the Fullscreen button in the YouTube embedded videos to work.
+                    builder.AddFullscreen().Self();
+                }));
 
             app.UseRouting();
             // https://github.com/prometheus-net/prometheus-net

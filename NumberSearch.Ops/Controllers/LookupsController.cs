@@ -10,6 +10,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
+using ZLinq;
+
 namespace NumberSearch.Ops.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
@@ -79,7 +81,7 @@ namespace NumberSearch.Ops.Controllers
 
             foreach (var item in carriers)
             {
-                var lookups = lookupsWithoutCarriers.Where(x => x.Ocn == item.Ocn && x.CarrierId != item.CarrierId);
+                var lookups = lookupsWithoutCarriers.AsValueEnumerable().Where(x => x.Ocn == item.Ocn && x.CarrierId != item.CarrierId);
 
                 foreach (var look in lookups)
                 {
@@ -110,7 +112,7 @@ namespace NumberSearch.Ops.Controllers
                     lookup.CarrierId = null;
 
                     // Let find the right Carrier based on the OCN of the lookup, if we can.
-                    var ocnMatch = carriers.FirstOrDefault(x => x.Ocn == lookup.Ocn);
+                    var ocnMatch = carriers.AsValueEnumerable().FirstOrDefault(x => x.Ocn == lookup.Ocn);
 
                     if (ocnMatch is not null && ocnMatch.Ocn == lookup.Ocn)
                     {

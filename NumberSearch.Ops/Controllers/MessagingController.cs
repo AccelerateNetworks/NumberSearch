@@ -2,7 +2,6 @@
 
 using CsvHelper;
 
-using FirstCom;
 using FirstCom.Models;
 
 using Flurl.Http;
@@ -26,6 +25,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+
+using ZLinq;
 
 namespace NumberSearch.Ops.Controllers
 {
@@ -78,7 +79,7 @@ namespace NumberSearch.Ops.Controllers
                 message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
             }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            return View(new MessagingResult { ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)], Owned = ownedNumbers, Message = message });
+            return View(new MessagingResult { ClientRegistrations = [.. stats.AsValueEnumerable().OrderByDescending(x => x.DateRegistered)], Owned = ownedNumbers, Message = message });
         }
 
         [Authorize]
@@ -88,7 +89,7 @@ namespace NumberSearch.Ops.Controllers
             var token = await GetTokenAsync();
             var failures = await $"{_baseUrl}message/all/failed?start={DateTime.Now.AddDays(-3).ToShortDateString()}&end={DateTime.Now.AddDays(1).ToShortDateString()}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<MessageRecord[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            return View("Failed", new MessagingResult { FailedMessages = [.. failures.OrderByDescending(x => x.DateReceivedUTC)], Owned = ownedNumbers });
+            return View("Failed", new MessagingResult { FailedMessages = [.. failures.AsValueEnumerable().OrderByDescending(x => x.DateReceivedUTC)], Owned = ownedNumbers });
         }
 
         [Authorize]
@@ -127,7 +128,7 @@ namespace NumberSearch.Ops.Controllers
             }
 
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            return View("Index", new MessagingResult { ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)], Owned = ownedNumbers, Message = message, AlertType = alertType });
+            return View("Index", new MessagingResult { ClientRegistrations = [.. stats.AsValueEnumerable().OrderByDescending(x => x.DateRegistered)], Owned = ownedNumbers, Message = message, AlertType = alertType });
         }
 
         [Authorize]
@@ -193,7 +194,7 @@ namespace NumberSearch.Ops.Controllers
                 result.Message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
             }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            result.ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)];
+            result.ClientRegistrations = [.. stats.AsValueEnumerable().OrderByDescending(x => x.DateRegistered)];
             result.Owned = ownedNumbers;
             return View("Index", result);
         }
@@ -214,7 +215,7 @@ namespace NumberSearch.Ops.Controllers
 
                 var stats1 = await $"{_baseUrl}client/all".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<ClientRegistration[]>();
                 var ownedNumbers1 = await _context.OwnedPhoneNumbers.ToArrayAsync();
-                result.ClientRegistrations = [.. stats1.OrderByDescending(x => x.DateRegistered)];
+                result.ClientRegistrations = [.. stats1.AsValueEnumerable().OrderByDescending(x => x.DateRegistered)];
                 result.Owned = ownedNumbers1;
                 return View("Index", result);
             }
@@ -293,7 +294,7 @@ namespace NumberSearch.Ops.Controllers
                         result.Message = "❌ Failed to get client registration data from sms.callpipe.com.";
                     }
                     var ownedNumbers2 = await _context.OwnedPhoneNumbers.ToArrayAsync();
-                    result.ClientRegistrations = [.. stats2.OrderByDescending(x => x.DateRegistered)];
+                    result.ClientRegistrations = [.. stats2.AsValueEnumerable().OrderByDescending(x => x.DateRegistered)];
                     result.Owned = ownedNumbers2;
                     return View("Index", result);
                 }
@@ -331,7 +332,7 @@ namespace NumberSearch.Ops.Controllers
                 result.Message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
             }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            result.ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)];
+            result.ClientRegistrations = [.. stats.AsValueEnumerable().OrderByDescending(x => x.DateRegistered)];
             result.Owned = ownedNumbers;
             return View("Index", result);
         }
@@ -379,7 +380,7 @@ namespace NumberSearch.Ops.Controllers
                 message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
             }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            return View("Index", new MessagingResult { ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)], Owned = ownedNumbers, Message = message, AlertType = alertType });
+            return View("Index", new MessagingResult { ClientRegistrations = [.. stats.AsValueEnumerable().OrderByDescending(x => x.DateRegistered)], Owned = ownedNumbers, Message = message, AlertType = alertType });
         }
 
         [Authorize]
@@ -430,7 +431,7 @@ namespace NumberSearch.Ops.Controllers
                 result.Message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
             }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            result.ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)];
+            result.ClientRegistrations = [.. stats.AsValueEnumerable().OrderByDescending(x => x.DateRegistered)];
             result.Owned = ownedNumbers;
             return View("Index", result);
         }
@@ -553,7 +554,7 @@ namespace NumberSearch.Ops.Controllers
                 result.Message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
             }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            result.ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)];
+            result.ClientRegistrations = [.. stats.AsValueEnumerable().OrderByDescending(x => x.DateRegistered)];
             result.Owned = ownedNumbers;
             return View("Index", result);
         }
@@ -594,7 +595,7 @@ namespace NumberSearch.Ops.Controllers
                 foreach (var number in stats)
                 {
                     var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number.AsDialed, out var phoneNumber);
-                    var ownedPhoneNumber = ownedNumbers.FirstOrDefault(x => x.DialedNumber == phoneNumber.DialedNumber);
+                    var ownedPhoneNumber = ownedNumbers.AsValueEnumerable().FirstOrDefault(x => x.DialedNumber == phoneNumber.DialedNumber);
                     exportReady.Add(new CSVExport(number.AsDialed, number.RegisteredUpstream, number.UpstreamStatusDescription, ownedPhoneNumber?.TwilioCarrierName ?? string.Empty));
                 }
 
@@ -604,7 +605,7 @@ namespace NumberSearch.Ops.Controllers
 
                 using var writer = new StreamWriter(completePath);
                 using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-                await csv.WriteRecordsAsync(exportReady).ConfigureAwait(false);
+                await csv.WriteRecordsAsync(exportReady);
                 var file = new FileInfo(completePath);
 
                 if (file.Exists)
@@ -615,7 +616,7 @@ namespace NumberSearch.Ops.Controllers
                 {
                     result.Message = $"❓Failed to export this CSV.";
                     result.AlertType = "alert-warning";
-                    result.ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)];
+                    result.ClientRegistrations = [.. stats.AsValueEnumerable().OrderByDescending(x => x.DateRegistered)];
                     result.Owned = ownedNumbers;
                     return View("Index", result);
                 }
@@ -628,7 +629,7 @@ namespace NumberSearch.Ops.Controllers
 
             result.Message = $"❓Failed to export this CSV.";
             result.AlertType = "alert-warning";
-            result.ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)];
+            result.ClientRegistrations = [.. stats.AsValueEnumerable().OrderByDescending(x => x.DateRegistered)];
             result.Owned = ownedNumbers;
             return View("Index", result);
         }
@@ -704,7 +705,7 @@ namespace NumberSearch.Ops.Controllers
                 result.Message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
             }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
-            result.ClientRegistrations = [.. stats.OrderByDescending(x => x.DateRegistered)];
+            result.ClientRegistrations = [.. stats.AsValueEnumerable().OrderByDescending(x => x.DateRegistered)];
             result.Owned = ownedNumbers;
             result.Message = string.IsNullOrWhiteSpace(result.Message) ? $"❓Failed to query Twilio for {carrierName}" : result.Message;
             return View("Index", result);

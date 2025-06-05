@@ -23,6 +23,8 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
+using ZLinq;
+
 namespace NumberSearch.Ops.Controllers;
 
 [ApiExplorerSettings(IgnoreApi = true)]
@@ -185,7 +187,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
             files.Add(item);
         }
 
-        var billImage = files.FirstOrDefault(x => x.Name == fileName);
+        var billImage = files.AsValueEnumerable().FirstOrDefault(x => x.Name == fileName);
 
         if (billImage is null)
         {
@@ -498,7 +500,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                             lookups.Add(spidCheck);
                         }
 
-                        var checkSameSpid = lookups.Select(x => x.spid).Distinct().ToList();
+                        var checkSameSpid = lookups.AsValueEnumerable().Select(x => x.spid).Distinct().ToList();
 
                         // If there's more than one SPID for these numbers then we need to break up the list into multiple separate port requests for BulkVS.
                         if (checkSameSpid.Count > 1)
@@ -507,7 +509,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
 
                             foreach (var spid in checkSameSpid)
                             {
-                                var localTNs = lookups.Where(x => x.spid == spid).Select(x => x.tn).ToArray();
+                                var localTNs = lookups.AsValueEnumerable().Where(x => x.spid == spid).Select(x => x.tn).ToArray();
 
                                 var bulkVSPortRequest = new PortTnRequest
                                 {
@@ -549,7 +551,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
 
                                         foreach (var number in localTNs)
                                         {
-                                            var updatedNumber = numbers.Where(x => $"1{x.PortedDialedNumber}" == number).FirstOrDefault();
+                                            var updatedNumber = numbers.AsValueEnumerable().Where(x => $"1{x.PortedDialedNumber}" == number).FirstOrDefault();
                                             if (updatedNumber is not null)
                                             {
                                                 updatedNumber.ExternalPortRequestId = bulkResponse.OrderId ?? "No Id Provided by BulkVS";
@@ -610,7 +612,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                         else
                         {
                             // When there's just a single SPID for this port request.
-                            var TNs = lookups.Select(x => x.tn).ToArray();
+                            var TNs = lookups.AsValueEnumerable().Select(x => x.tn).ToArray();
 
                             var bulkVSPortRequest = new PortTnRequest
                             {
@@ -641,7 +643,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                             try
                             {
 
-                                var bulkResponse = await bulkVSPortRequest.PutAsync(_bulkVSusername, _bulkVSpassword).ConfigureAwait(false);
+                                var bulkResponse = await bulkVSPortRequest.PutAsync(_bulkVSusername, _bulkVSpassword);
                                 Log.Information("[PortRequest] {@bulkResponse}", bulkResponse);
 
                                 if (portRequest is not null && !string.IsNullOrWhiteSpace(bulkResponse.OrderId))

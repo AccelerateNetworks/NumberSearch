@@ -8,6 +8,8 @@ using NumberSearch.Mvc.Models;
 using System.Linq;
 using System.Threading.Tasks;
 
+using ZLinq;
+
 namespace NumberSearch.Mvc.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
@@ -21,24 +23,24 @@ namespace NumberSearch.Mvc.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> IndexAsync()
         {
-            var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var products = await Product.GetAllAsync(_postgresql);
 
-            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
+            await HttpContext.Session.LoadAsync();
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            return View("Index", new HardwareResult { Cart = cart, Phones = products.Where(x => x.Type is not "Accessory").ToArray() });
+            return View("Index", new HardwareResult { Cart = cart, Phones = [.. products.AsValueEnumerable().Where(x => x.Type is not "Accessory")] });
         }
 
         [HttpGet("Accessories")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> IndexAlternateAsync()
         {
-            var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var products = await Product.GetAllAsync(_postgresql);
 
-            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
+            await HttpContext.Session.LoadAsync();
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            return View("Index", new HardwareResult { Cart = cart, Accessories = products.Where(x => x.Type is "Accessory").ToArray() });
+            return View("Index", new HardwareResult { Cart = cart, Accessories = [.. products.AsValueEnumerable().Where(x => x.Type is "Accessory")] });
         }
 
         [HttpGet("Hardware/{product}")]
@@ -46,7 +48,7 @@ namespace NumberSearch.Mvc.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> SpecificProductAsync(string product)
         {
-            var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var products = await Product.GetAllAsync(_postgresql);
             var productItems = products.Where(x => x.Name.ToLowerInvariant().Replace(" ", string.Empty) == product.ToLowerInvariant().Replace(" ", string.Empty));
 
             // If no matching products are found bump them back to the list of all hardware.
@@ -55,10 +57,10 @@ namespace NumberSearch.Mvc.Controllers
                 return Redirect($"/Hardware/");
             }
 
-            await HttpContext.Session.LoadAsync().ConfigureAwait(false);
+            await HttpContext.Session.LoadAsync();
             var cart = Cart.GetFromSession(HttpContext.Session);
 
-            return View("Item", new HardwareResult { Cart = cart, Product = productItems.FirstOrDefault() ?? new() });
+            return View("Item", new HardwareResult { Cart = cart, Product = productItems.AsValueEnumerable().FirstOrDefault() ?? new() });
         }
 
         [HttpGet("Hardware/PartnerPriceList")]
@@ -67,9 +69,9 @@ namespace NumberSearch.Mvc.Controllers
         public async Task<IActionResult> PartnerPriceListAsync()
         {
 
-            var products = await Product.GetAllAsync(_postgresql).ConfigureAwait(false);
+            var products = await Product.GetAllAsync(_postgresql);
             // If this throws an exception we want it to break the page so a bug can get filed and we can investigate.
-            var lookup = await VendorProduct.GetAllAsync(_teleDynamicsUsername, _teleDynamicsPassword).ConfigureAwait(false);
+            var lookup = await VendorProduct.GetAllAsync(_teleDynamicsUsername, _teleDynamicsPassword);
 
             foreach (var product in products)
             {
@@ -83,7 +85,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
             }
 
-            return View("PartnerPriceList", new HardwareResult { Phones = [.. products.Where(x => !string.IsNullOrWhiteSpace(x.VendorPartNumber)).OrderBy(x => x.VendorPartNumber)] });
+            return View("PartnerPriceList", new HardwareResult { Phones = [.. products.AsValueEnumerable().Where(x => !string.IsNullOrWhiteSpace(x.VendorPartNumber)).OrderBy(x => x.VendorPartNumber)] });
         }
     }
 }

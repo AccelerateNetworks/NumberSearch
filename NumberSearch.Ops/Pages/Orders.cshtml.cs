@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using ZLinq;
+
 namespace NumberSearch.Ops.Pages
 {
     [Authorize]
@@ -70,12 +72,12 @@ namespace NumberSearch.Ops.Pages
                 // Handle GUIDs
                 if (Query.Length is 36 && Guid.TryParse(Query, out var guidOutput))
                 {
-                    orders = orders.Where(x => x.OrderId == guidOutput).ToList();
+                    orders = [.. orders.AsValueEnumerable().Where(x => x.OrderId == guidOutput)];
                 }
 
                 if (orders.Count > 1)
                 {
-                    var searchResults = orders.Where(x => x.BusinessName != null
+                    var searchResults = orders.AsValueEnumerable().Where(x => x.BusinessName != null
                     && x.BusinessName.Contains(Query, StringComparison.InvariantCultureIgnoreCase))
                         .ToList();
 
@@ -94,7 +96,7 @@ namespace NumberSearch.Ops.Pages
                     searchResults.AddRange(orders.Where(x => !string.IsNullOrWhiteSpace(x.ContactPhoneNumber)
                                     && x.ContactPhoneNumber.Contains(query, StringComparison.InvariantCultureIgnoreCase)));
 
-                    orders = searchResults.Distinct().ToList();
+                    orders = [.. searchResults.AsValueEnumerable().Distinct()];
                 }
             }
 
@@ -109,8 +111,8 @@ namespace NumberSearch.Ops.Pages
 
             foreach (var order in orders.OrderByDescending(x => x.DateSubmitted))
             {
-                var orderProductOrders = productOrders.Where(x => x.OrderId == order.OrderId).ToArray();
-                var portRequest = portRequests.Where(x => x.OrderId == order.OrderId).FirstOrDefault();
+                var orderProductOrders = productOrders.AsValueEnumerable().Where(x => x.OrderId == order.OrderId).ToArray();
+                var portRequest = portRequests.AsValueEnumerable().Where(x => x.OrderId == order.OrderId).FirstOrDefault();
 
                 pairs.Add(new OrderProducts
                 {

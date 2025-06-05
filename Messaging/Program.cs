@@ -37,7 +37,6 @@ using Serilog.Events;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
-using System.Net.Http;
 using System.Net.Mail;
 using System.Text;
 using System.Text.Json;
@@ -243,7 +242,7 @@ try
     });
 
     app.UseSerilogRequestLogging();
-    app.UseSecurityHeaders();
+    app.UseSecurityHeaders(policy => policy.AddDefaultApiSecurityHeaders());
     app.UseHttpMetrics();
     app.MapMetrics();
 
@@ -447,7 +446,7 @@ try
                 {
                     toForward.To = numbers.FirstOrDefault() ?? string.Empty;
                     // Dump any extra numbers in the full rec.
-                    toForward.AdditionalRecipients = numbers.Where(x => x != toForward.To).ToArray();
+                    toForward.AdditionalRecipients = [.. numbers.Where(x => x != toForward.To)];
                 }
                 else
                 {
@@ -1094,7 +1093,7 @@ public static class Endpoints
             inboundMMS.AddRange(inboundSMS);
 
             // Cap the replaying of messages to 10 messages or messages received in the last 2 weeks.
-            inboundMMS = inboundMMS.Where(x => x.DateReceivedUTC > DateTime.UtcNow.AddDays(-14)).Take(30).ToList();
+            inboundMMS = [.. inboundMMS.Where(x => x.DateReceivedUTC > DateTime.UtcNow.AddDays(-14)).Take(30)];
             foreach (var failedMessage in inboundMMS)
             {
                 try
@@ -1948,7 +1947,7 @@ public static class Endpoints
                 {
                     toForward.To = numbers.FirstOrDefault() ?? string.Empty;
                     // Dump any extra numbers in the full rec.
-                    toForward.AdditionalRecipients = numbers.Where(x => x != toForward.To).ToArray();
+                    toForward.AdditionalRecipients = [.. numbers.Where(x => x != toForward.To)];
                 }
                 else
                 {

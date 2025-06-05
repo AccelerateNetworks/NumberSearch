@@ -16,6 +16,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using ZLinq;
+
 namespace NumberSearch.Mvc.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
@@ -77,16 +79,16 @@ namespace NumberSearch.Mvc.Controllers
                     results.Add(result);
                 });
 
-                var portableNumbers = results.Where(x => x.Portable && x.Wireless is false).ToArray();
-                var notPortable = results.Where(x => x.Portable is false).Select(x => x.PortedDialedNumber).ToArray();
+                var portableNumbers = results.AsValueEnumerable().Where(x => x.Portable && x.Wireless is false).ToArray();
+                var notPortable = results.AsValueEnumerable().Where(x => x.Portable is false).Select(x => x.PortedDialedNumber).ToArray();
 
                 // Separate wireless numbers out from the rest.
-                var wirelessPortable = results.Where(x => x.Wireless && x.Portable).ToArray();
+                var wirelessPortable = results.AsValueEnumerable().Where(x => x.Wireless && x.Portable).ToArray();
 
                 // Add all the numbers to the cart.
                 foreach (var portableNumber in portableNumbers)
                 {
-                    var portedNumber = cart.PortedPhoneNumbers?.Where(x => x.PortedDialedNumber == portableNumber.PortedDialedNumber).FirstOrDefault();
+                    var portedNumber = cart.PortedPhoneNumbers?.AsValueEnumerable().Where(x => x.PortedDialedNumber == portableNumber.PortedDialedNumber).FirstOrDefault();
 
                     if (portedNumber is null)
                     {
@@ -98,7 +100,7 @@ namespace NumberSearch.Mvc.Controllers
 
                 foreach (var wirelessNumber in wirelessPortable)
                 {
-                    var portedNumber = cart.PortedPhoneNumbers?.Where(x => x.PortedDialedNumber == wirelessNumber.PortedDialedNumber).FirstOrDefault();
+                    var portedNumber = cart.PortedPhoneNumbers?.AsValueEnumerable().Where(x => x.PortedDialedNumber == wirelessNumber.PortedDialedNumber).FirstOrDefault();
 
                     if (portedNumber is null)
                     {
@@ -159,11 +161,11 @@ namespace NumberSearch.Mvc.Controllers
                     results.Add(result);
                 });
 
-                var portableNumbers = results.Where(x => x.Portable && x.Wireless is false).ToArray();
-                var notPortable = results.Where(x => x.Portable is false).Select(x => x.PortedDialedNumber).ToArray();
+                var portableNumbers = results.AsValueEnumerable().Where(x => x.Portable && x.Wireless is false).ToArray();
+                var notPortable = results.AsValueEnumerable().Where(x => x.Portable is false).Select(x => x.PortedDialedNumber).ToArray();
 
                 // Separate wireless numbers out from the rest.
-                var wirelessPortable = results.Where(x => x.Wireless && x.Portable).ToArray();
+                var wirelessPortable = results.AsValueEnumerable().Where(x => x.Wireless && x.Portable).ToArray();
 
                 var builder = new StringBuilder();
                 builder.AppendLine("DialedNumber,City,State,DateIngested,Wireless,Portable," +
@@ -289,7 +291,7 @@ namespace NumberSearch.Mvc.Controllers
                     }
 
                     // Find the carrier info
-                    var carrier = await Carrier.GetByOCNAsync(checkNumber.OCN, _postgresql).ConfigureAwait(false);
+                    var carrier = await Carrier.GetByOCNAsync(checkNumber.OCN, _postgresql);
                     if (carrier is not null)
                     {
                         checkNumber.CarrierId = carrier.CarrierId;
@@ -298,7 +300,7 @@ namespace NumberSearch.Mvc.Controllers
                     // Log the lookup to the db if it's new.
                     if (freshQuery)
                     {
-                        var checkLog = await checkNumber.PostAsync(_postgresql).ConfigureAwait(false);
+                        var checkLog = await checkNumber.PostAsync(_postgresql);
                     }
 
                     Log.Information("[Portability] {DialedNumber} is Portable.", phoneNumber.DialedNumber);

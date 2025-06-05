@@ -22,6 +22,8 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Threading.RateLimiting;
 
+using ZLinq;
+
 namespace NumberSearch.Mvc
 {
     public class Startup
@@ -42,6 +44,7 @@ namespace NumberSearch.Mvc
         }
 
         public IConfiguration Configuration { get; }
+        private static readonly string[] middleware = ["Accept-Encoding"];
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -124,7 +127,7 @@ namespace NumberSearch.Mvc
             if (!string.IsNullOrEmpty(forwardedFor))
             {
                 var ips = forwardedFor.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                                      .Select(s => s.Trim());
+                                      .AsValueEnumerable().Select(s => s.Trim());
 
                 foreach (var ip in ips)
                 {
@@ -169,7 +172,7 @@ namespace NumberSearch.Mvc
                 OnPrepareResponse = ctx =>
                 {
                     // Cache static files for 30 days
-                    ctx.Context.Response.Headers.Append("Cache-Control", "public, max-age=86400");
+                    ctx.Context.Response.Headers.Append("Cache-Control", "public, max-age=31536000");
                     ctx.Context.Response.Headers.Append("Expires", DateTime.UtcNow.AddDays(1).ToString("R", CultureInfo.InvariantCulture));
                 }
             });
@@ -209,7 +212,7 @@ namespace NumberSearch.Mvc
             app.UseResponseCaching();
             app.UseOutputCache();
 
-            app.Use(async (context, next) =>
+            app.Use(static async (context, next) =>
             {
                 context.Response.GetTypedHeaders().CacheControl =
                     new Microsoft.Net.Http.Headers.CacheControlHeaderValue()
@@ -217,9 +220,7 @@ namespace NumberSearch.Mvc
                         Public = true,
                         MaxAge = TimeSpan.FromSeconds(10)
                     };
-                context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Vary] =
-                    new string[] { "Accept-Encoding" };
-
+                context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Vary] = middleware;
                 await next();
             });
 

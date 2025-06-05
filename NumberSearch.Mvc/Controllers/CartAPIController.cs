@@ -1,5 +1,4 @@
-﻿using FirstCom;
-using FirstCom.Models;
+﻿using FirstCom.Models;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,9 +15,10 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+
+using ZLinq;
 
 namespace NumberSearch.Mvc.Controllers
 {
@@ -48,7 +48,7 @@ namespace NumberSearch.Mvc.Controllers
         /// <param name="CarrierLogoLink"></param>
         /// <param name="CarrierColor"></param>
         /// <param name="CarrierType"></param>
-        public record BulkLookupResult(string DialedNumber, string City, string State, DateTime DateIngested, bool Wireless, bool Portable, DateTime LastPorted, string SPID, string LATA, string LEC, string LECType, string LIDBName, string LRN, string OCN, string CarrierName, string CarrierLogoLink, string CarrierColor, string CarrierType);
+        public readonly record struct BulkLookupResult(string DialedNumber, string City, string State, DateTime DateIngested, bool Wireless, bool Portable, DateTime LastPorted, string SPID, string LATA, string LEC, string LECType, string LIDBName, string LRN, string OCN, string CarrierName, string CarrierLogoLink, string CarrierColor, string CarrierType);
 
         /// <summary>
         /// Get detailed information about a list of North American phone numbers.
@@ -62,7 +62,7 @@ namespace NumberSearch.Mvc.Controllers
         [HttpGet("Number/Search/Bulk")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         [OutputCache(Duration = 0)]
-        [Produces<List<BulkLookupResult>>]
+        [Produces<BulkLookupResult[]>]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> NumberSearchBulkAsync([Required] string token, [Required] string dialedNumber)
         {
@@ -92,7 +92,7 @@ namespace NumberSearch.Mvc.Controllers
                         lookups.Add(new BulkLookupResult(number.PortedDialedNumber, number.City, number.State, number.DateIngested, number.Wireless, number.Portable, number.LrnLookup.LastPorted, number.LrnLookup.SPID, number.LrnLookup.LATA, number.LrnLookup.LEC, number.LrnLookup.LECType, number.LrnLookup.LIDBName, number.LrnLookup.LRN, number.LrnLookup.OCN, number.Carrier.Name, number.Carrier.LogoLink, number.Carrier.Color, number.Carrier.Type));
                     }
 
-                    return Ok(lookups);
+                    return Ok(lookups.ToArray());
                 }
                 else
                 {
@@ -110,13 +110,13 @@ namespace NumberSearch.Mvc.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddNewClientExtensionRegistrationAsync([FromRoute] Guid id, [FromBody] ExtensionRegistration registration)
         {
-            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+            var newClient = await NewClient.GetAsync(id, _postgresql);
 
             if (newClient is not null && newClient.NewClientId != Guid.Empty)
             {
-                var extregs = await ExtensionRegistration.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+                var extregs = await ExtensionRegistration.GetByNewClientAsync(id, _postgresql);
 
-                var existing = extregs?.Where(x => x.ExtensionRegistrationId == registration.ExtensionRegistrationId).FirstOrDefault();
+                var existing = extregs?.AsValueEnumerable().Where(x => x.ExtensionRegistrationId == registration.ExtensionRegistrationId).FirstOrDefault();
 
                 if (existing is null)
                 {
@@ -124,7 +124,7 @@ namespace NumberSearch.Mvc.Controllers
                     registration.DateUpdated = DateTime.Now;
                     registration.NewClientId = id;
 
-                    var checkSubmit = await registration.PostAsync(_postgresql).ConfigureAwait(false);
+                    var checkSubmit = await registration.PostAsync(_postgresql);
 
                     if (checkSubmit)
                     {
@@ -148,13 +148,13 @@ namespace NumberSearch.Mvc.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> RemoveNewClientExtensionRegistrationAsync([FromRoute] Guid id, [FromRoute] Guid extRegId)
         {
-            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+            var newClient = await NewClient.GetAsync(id, _postgresql);
 
             if (newClient is not null && newClient.NewClientId != Guid.Empty)
             {
-                var extregs = await ExtensionRegistration.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+                var extregs = await ExtensionRegistration.GetByNewClientAsync(id, _postgresql);
 
-                var existing = extregs?.Where(x => x.ExtensionRegistrationId == extRegId).FirstOrDefault();
+                var existing = extregs?.AsValueEnumerable().Where(x => x.ExtensionRegistrationId == extRegId).FirstOrDefault();
 
                 if (existing is null)
                 {
@@ -162,7 +162,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
                 else
                 {
-                    var checkDelete = await existing.DeleteAsync(_postgresql).ConfigureAwait(false);
+                    var checkDelete = await existing.DeleteAsync(_postgresql);
 
                     if (checkDelete)
                     {
@@ -182,13 +182,13 @@ namespace NumberSearch.Mvc.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddNewClientNumberDescriptionAsync([FromRoute] Guid id, [FromBody] NumberDescription description)
         {
-            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+            var newClient = await NewClient.GetAsync(id, _postgresql);
 
             if (newClient is not null && newClient.NewClientId != Guid.Empty)
             {
-                var extregs = await NumberDescription.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+                var extregs = await NumberDescription.GetByNewClientAsync(id, _postgresql);
 
-                var existing = extregs?.Where(x => x.NumberDescriptionId == description.NumberDescriptionId).FirstOrDefault();
+                var existing = extregs?.AsValueEnumerable().Where(x => x.NumberDescriptionId == description.NumberDescriptionId).FirstOrDefault();
 
                 if (existing is null)
                 {
@@ -196,7 +196,7 @@ namespace NumberSearch.Mvc.Controllers
                     description.DateUpdated = DateTime.Now;
                     description.NewClientId = id;
 
-                    var checkSubmit = await description.PostAsync(_postgresql).ConfigureAwait(false);
+                    var checkSubmit = await description.PostAsync(_postgresql);
 
                     if (checkSubmit)
                     {
@@ -220,13 +220,13 @@ namespace NumberSearch.Mvc.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> RemoveNewClientNumberDescriptionAsync([FromRoute] Guid id, [FromRoute] Guid numDesId)
         {
-            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+            var newClient = await NewClient.GetAsync(id, _postgresql);
 
             if (newClient is not null && newClient.NewClientId != Guid.Empty)
             {
-                var extregs = await NumberDescription.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+                var extregs = await NumberDescription.GetByNewClientAsync(id, _postgresql);
 
-                var existing = extregs?.Where(x => x.NumberDescriptionId == numDesId).FirstOrDefault();
+                var existing = extregs?.AsValueEnumerable().Where(x => x.NumberDescriptionId == numDesId).FirstOrDefault();
 
                 if (existing is null)
                 {
@@ -234,7 +234,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
                 else
                 {
-                    var checkDelete = await existing.DeleteAsync(_postgresql).ConfigureAwait(false);
+                    var checkDelete = await existing.DeleteAsync(_postgresql);
 
                     if (checkDelete)
                     {
@@ -254,13 +254,13 @@ namespace NumberSearch.Mvc.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddNewClientIntercomRegistrationAsync([FromRoute] Guid id, [FromBody] IntercomRegistration description)
         {
-            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+            var newClient = await NewClient.GetAsync(id, _postgresql);
 
             if (newClient is not null && newClient.NewClientId != Guid.Empty)
             {
-                var extregs = await IntercomRegistration.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+                var extregs = await IntercomRegistration.GetByNewClientAsync(id, _postgresql);
 
-                var existing = extregs?.Where(x => x.IntercomRegistrationId == description.IntercomRegistrationId).FirstOrDefault();
+                var existing = extregs?.AsValueEnumerable().Where(x => x.IntercomRegistrationId == description.IntercomRegistrationId).FirstOrDefault();
 
                 if (existing is null)
                 {
@@ -268,7 +268,7 @@ namespace NumberSearch.Mvc.Controllers
                     description.DateUpdated = DateTime.Now;
                     description.NewClientId = id;
 
-                    var checkSubmit = await description.PostAsync(_postgresql).ConfigureAwait(false);
+                    var checkSubmit = await description.PostAsync(_postgresql);
 
                     if (checkSubmit)
                     {
@@ -292,13 +292,13 @@ namespace NumberSearch.Mvc.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> RemoveNewClientIntercomRegistrationAsync([FromRoute] Guid id, [FromRoute] Guid numDesId)
         {
-            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+            var newClient = await NewClient.GetAsync(id, _postgresql);
 
             if (newClient is not null && newClient.NewClientId != Guid.Empty)
             {
-                var extregs = await IntercomRegistration.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+                var extregs = await IntercomRegistration.GetByNewClientAsync(id, _postgresql);
 
-                var existing = extregs?.Where(x => x.IntercomRegistrationId == numDesId).FirstOrDefault();
+                var existing = extregs?.AsValueEnumerable().Where(x => x.IntercomRegistrationId == numDesId).FirstOrDefault();
 
                 if (existing is null)
                 {
@@ -306,7 +306,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
                 else
                 {
-                    var checkDelete = await existing.DeleteAsync(_postgresql).ConfigureAwait(false);
+                    var checkDelete = await existing.DeleteAsync(_postgresql);
 
                     if (checkDelete)
                     {
@@ -326,13 +326,13 @@ namespace NumberSearch.Mvc.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddNewClientSpeedDialKeyAsync([FromRoute] Guid id, [FromBody] SpeedDialKey description)
         {
-            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+            var newClient = await NewClient.GetAsync(id, _postgresql);
 
             if (newClient is not null && newClient.NewClientId != Guid.Empty)
             {
-                var extregs = await SpeedDialKey.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+                var extregs = await SpeedDialKey.GetByNewClientAsync(id, _postgresql);
 
-                var existing = extregs?.Where(x => x.SpeedDialKeyId == description.SpeedDialKeyId).FirstOrDefault();
+                var existing = extregs?.AsValueEnumerable().Where(x => x.SpeedDialKeyId == description.SpeedDialKeyId).FirstOrDefault();
 
                 if (existing is null)
                 {
@@ -340,7 +340,7 @@ namespace NumberSearch.Mvc.Controllers
                     description.DateUpdated = DateTime.Now;
                     description.NewClientId = id;
 
-                    var checkSubmit = await description.PostAsync(_postgresql).ConfigureAwait(false);
+                    var checkSubmit = await description.PostAsync(_postgresql);
 
                     if (checkSubmit)
                     {
@@ -364,13 +364,13 @@ namespace NumberSearch.Mvc.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> RemoveNewClientSpeedDialKeyAsync([FromRoute] Guid id, [FromRoute] Guid numDesId)
         {
-            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+            var newClient = await NewClient.GetAsync(id, _postgresql);
 
             if (newClient is not null && newClient.NewClientId != Guid.Empty)
             {
-                var extregs = await SpeedDialKey.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+                var extregs = await SpeedDialKey.GetByNewClientAsync(id, _postgresql);
 
-                var existing = extregs?.Where(x => x.SpeedDialKeyId == numDesId).FirstOrDefault();
+                var existing = extregs?.AsValueEnumerable().Where(x => x.SpeedDialKeyId == numDesId).FirstOrDefault();
 
                 if (existing is null)
                 {
@@ -378,7 +378,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
                 else
                 {
-                    var checkDelete = await existing.DeleteAsync(_postgresql).ConfigureAwait(false);
+                    var checkDelete = await existing.DeleteAsync(_postgresql);
 
                     if (checkDelete)
                     {
@@ -398,13 +398,13 @@ namespace NumberSearch.Mvc.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddNewClientFollowMeRegistrationAsync([FromRoute] Guid id, [FromBody] FollowMeRegistration description)
         {
-            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+            var newClient = await NewClient.GetAsync(id, _postgresql);
 
             if (newClient is not null && newClient.NewClientId != Guid.Empty)
             {
-                var extregs = await FollowMeRegistration.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+                var extregs = await FollowMeRegistration.GetByNewClientAsync(id, _postgresql);
 
-                var existing = extregs?.Where(x => x.FollowMeRegistrationId == description.FollowMeRegistrationId).FirstOrDefault();
+                var existing = extregs?.AsValueEnumerable().Where(x => x.FollowMeRegistrationId == description.FollowMeRegistrationId).FirstOrDefault();
 
                 if (existing is null)
                 {
@@ -412,7 +412,7 @@ namespace NumberSearch.Mvc.Controllers
                     description.DateUpdated = DateTime.Now;
                     description.NewClientId = id;
 
-                    var checkSubmit = await description.PostAsync(_postgresql).ConfigureAwait(false);
+                    var checkSubmit = await description.PostAsync(_postgresql);
 
                     if (checkSubmit)
                     {
@@ -436,13 +436,13 @@ namespace NumberSearch.Mvc.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> RemoveNewClientFollowMeRegistrationAsync([FromRoute] Guid id, [FromRoute] Guid numDesId)
         {
-            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+            var newClient = await NewClient.GetAsync(id, _postgresql);
 
             if (newClient is not null && newClient.NewClientId != Guid.Empty)
             {
-                var extregs = await FollowMeRegistration.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+                var extregs = await FollowMeRegistration.GetByNewClientAsync(id, _postgresql);
 
-                var existing = extregs?.Where(x => x.FollowMeRegistrationId == numDesId).FirstOrDefault();
+                var existing = extregs?.AsValueEnumerable().Where(x => x.FollowMeRegistrationId == numDesId).FirstOrDefault();
 
                 if (existing is null)
                 {
@@ -450,7 +450,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
                 else
                 {
-                    var checkDelete = await existing.DeleteAsync(_postgresql).ConfigureAwait(false);
+                    var checkDelete = await existing.DeleteAsync(_postgresql);
 
                     if (checkDelete)
                     {
@@ -470,13 +470,13 @@ namespace NumberSearch.Mvc.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddNewClientPhoneMenuOptionAsync([FromRoute] Guid id, [FromBody] PhoneMenuOption option)
         {
-            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+            var newClient = await NewClient.GetAsync(id, _postgresql);
 
             if (newClient is not null && newClient.NewClientId != Guid.Empty)
             {
-                var extregs = await PhoneMenuOption.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+                var extregs = await PhoneMenuOption.GetByNewClientAsync(id, _postgresql);
 
-                var existing = extregs?.Where(x => x.PhoneMenuOptionId == option.PhoneMenuOptionId).FirstOrDefault();
+                var existing = extregs?.AsValueEnumerable().Where(x => x.PhoneMenuOptionId == option.PhoneMenuOptionId).FirstOrDefault();
 
                 if (existing is null)
                 {
@@ -484,7 +484,7 @@ namespace NumberSearch.Mvc.Controllers
                     option.DateUpdated = DateTime.Now;
                     option.NewClientId = id;
 
-                    var checkSubmit = await option.PostAsync(_postgresql).ConfigureAwait(false);
+                    var checkSubmit = await option.PostAsync(_postgresql);
 
                     if (checkSubmit)
                     {
@@ -508,13 +508,13 @@ namespace NumberSearch.Mvc.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> RemoveNewClientPhoneMenuOptionAsync([FromRoute] Guid id, [FromRoute] Guid menuOptId)
         {
-            var newClient = await NewClient.GetAsync(id, _postgresql).ConfigureAwait(false);
+            var newClient = await NewClient.GetAsync(id, _postgresql);
 
             if (newClient is not null && newClient.NewClientId != Guid.Empty)
             {
-                var extregs = await PhoneMenuOption.GetByNewClientAsync(id, _postgresql).ConfigureAwait(false);
+                var extregs = await PhoneMenuOption.GetByNewClientAsync(id, _postgresql);
 
-                var existing = extregs?.Where(x => x.PhoneMenuOptionId == menuOptId).FirstOrDefault();
+                var existing = extregs?.AsValueEnumerable().Where(x => x.PhoneMenuOptionId == menuOptId).FirstOrDefault();
 
                 if (existing is null)
                 {
@@ -522,7 +522,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
                 else
                 {
-                    var checkDelete = await existing.DeleteAsync(_postgresql).ConfigureAwait(false);
+                    var checkDelete = await existing.DeleteAsync(_postgresql);
 
                     if (checkDelete)
                     {
@@ -557,16 +557,16 @@ namespace NumberSearch.Mvc.Controllers
             switch (type)
             {
                 case "PhoneNumber":
-                    return await cart.BuyPhoneNumberAsync(id).ConfigureAwait(false);
+                    return await cart.BuyPhoneNumberAsync(id);
                 case "PortedPhoneNumber":
-                    return await cart.PortPhoneNumberAsync(id).ConfigureAwait(false);
+                    return await cart.PortPhoneNumberAsync(id);
                 case "VerifiedPhoneNumber":
-                    return await cart.VerifyPhoneNumberAsync(id).ConfigureAwait(false);
+                    return await cart.VerifyPhoneNumberAsync(id);
                 case "Product":
                     var checkProduct = Guid.TryParse(id, out var productId);
                     if (checkProduct)
                     {
-                        return await cart.BuyProductAsync(productId, quantity).ConfigureAwait(false);
+                        return await cart.BuyProductAsync(productId, quantity);
                     }
                     else
                     {
@@ -576,14 +576,14 @@ namespace NumberSearch.Mvc.Controllers
                     var checkService = Guid.TryParse(id, out var serviceId);
                     if (checkService)
                     {
-                        return await cart.BuyServiceAsync(serviceId, quantity).ConfigureAwait(false);
+                        return await cart.BuyServiceAsync(serviceId, quantity);
                     }
                     else
                     {
                         return BadRequest($"Service Id {id} can't be parsed as a GUID.");
                     }
                 case "Coupon":
-                    return await cart.AddCouponAsync(id, quantity).ConfigureAwait(false);
+                    return await cart.AddCouponAsync(id, quantity);
                 default:
                     return NotFound(ModelState);
             }
@@ -608,16 +608,16 @@ namespace NumberSearch.Mvc.Controllers
             switch (type)
             {
                 case "PhoneNumber":
-                    return await cart.RemovePhoneNumberAsync(id).ConfigureAwait(false);
+                    return await cart.RemovePhoneNumberAsync(id);
                 case "PortedPhoneNumber":
-                    return await cart.RemovePortedPhoneNumberAsync(id).ConfigureAwait(false);
+                    return await cart.RemovePortedPhoneNumberAsync(id);
                 case "VerifiedPhoneNumber":
-                    return await cart.RemoveVerifiedPhoneNumberAsync(id).ConfigureAwait(false);
+                    return await cart.RemoveVerifiedPhoneNumberAsync(id);
                 case "Product":
                     var checkProduct = Guid.TryParse(id, out var productId);
                     if (checkProduct)
                     {
-                        return await cart.RemoveProductAsync(productId).ConfigureAwait(false);
+                        return await cart.RemoveProductAsync(productId);
                     }
                     else
                     {
@@ -627,7 +627,7 @@ namespace NumberSearch.Mvc.Controllers
                     var checkService = Guid.TryParse(id, out var serviceId);
                     if (checkService)
                     {
-                        return await cart.RemoveServiceAsync(serviceId).ConfigureAwait(false);
+                        return await cart.RemoveServiceAsync(serviceId);
                     }
                     else
                     {
@@ -637,7 +637,7 @@ namespace NumberSearch.Mvc.Controllers
                     var checkCoupon = Guid.TryParse(id, out var couponId);
                     if (checkCoupon)
                     {
-                        return await cart.RemoveCouponAsync(couponId).ConfigureAwait(false);
+                        return await cart.RemoveCouponAsync(couponId);
                     }
                     else
                     {
@@ -674,7 +674,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 var npanxx = $"{phoneNumber.NPA}{phoneNumber.NXX}";
                 var doesItStillExist = await OrderTn.GetAsync(phoneNumber.NPA, phoneNumber.NXX, 0, _bulkVSusername.AsMemory(), _bulkVSpassword.AsMemory());
-                var checkIfExists = doesItStillExist.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
+                var checkIfExists = doesItStillExist.AsValueEnumerable().Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
                 if (checkIfExists != null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
                 {
                     Log.Information("[BulkVS] Found {DialedNumber} in {Length} results returned for {npanxx}.", phoneNumber.DialedNumber, doesItStillExist.Length, npanxx);
@@ -714,7 +714,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 // Verify that tele has the number.
                 var results = await FirstPointCom.GetPhoneNumbersByNpaNxxAsync(phoneNumber.NPA, phoneNumber.NXX, string.Empty.AsMemory(), _fpcusername.AsMemory(), _fpcpassword.AsMemory());
-                var matchingNumber = results.Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
+                var matchingNumber = results.AsValueEnumerable().Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
                 if (matchingNumber != null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
                 {
                     Log.Information("[FirstPointCom] Found {DialedNumber} in {Length} results returned for {NPA}, {NXX}.", phoneNumber.DialedNumber, results.Length, phoneNumber.NPA, phoneNumber.NXX);
@@ -894,7 +894,7 @@ namespace NumberSearch.Mvc.Controllers
                 return BadRequest($"Failed to add {dialedPhoneNumber} to your cart.");
             }
 
-            await httpContext.Session.LoadAsync().ConfigureAwait(false);
+            await httpContext.Session.LoadAsync();
             var cart = Cart.GetFromSession(httpContext.Session);
 
             // Prevent the user from adding ported numbers that are both wireless and not wireless to the same order.
@@ -1003,7 +1003,7 @@ namespace NumberSearch.Mvc.Controllers
 
                     var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), VerifiedPhoneNumberId = verifiedPhoneNumber.VerifiedPhoneNumberId, Quantity = 1 };
 
-                    await httpContext.Session.LoadAsync().ConfigureAwait(false);
+                    await httpContext.Session.LoadAsync();
                     var cart = Cart.GetFromSession(httpContext.Session);
                     var checkAdd = cart.AddVerifiedPhoneNumber(ref verifiedPhoneNumber, ref productOrder);
                     var checkSet = cart.SetToSession(httpContext.Session);
@@ -1064,7 +1064,7 @@ namespace NumberSearch.Mvc.Controllers
                 return BadRequest(ModelState);
             }
 
-            var service = await Service.GetAsync(serviceId, _postgresql).ConfigureAwait(false);
+            var service = await Service.GetAsync(serviceId, _postgresql);
             if (service is not null)
             {
                 var productOrder = new ProductOrder
@@ -1074,7 +1074,7 @@ namespace NumberSearch.Mvc.Controllers
                     Quantity = Quantity > 0 ? Quantity : 1
                 };
 
-                await httpContext.Session.LoadAsync().ConfigureAwait(false);
+                await httpContext.Session.LoadAsync();
                 var cart = Cart.GetFromSession(httpContext.Session);
                 var checkAdd = cart.AddService(ref service, ref productOrder);
 
@@ -1085,10 +1085,10 @@ namespace NumberSearch.Mvc.Controllers
                 if (service.ServiceId == concurrentSeat || service.ServiceId == stdSeat)
                 {
                     var e911Id = new Guid("1b3ae0e0-e308-4f99-88e1-b9c220bc02d5");
-                    var e911fee = await Service.GetAsync(e911Id, _postgresql).ConfigureAwait(false);
+                    var e911fee = await Service.GetAsync(e911Id, _postgresql);
                     if (e911fee is not null)
                     {
-                        var e911ProductOrder = cart.ProductOrders?.Where(x => x.ServiceId == e911Id).FirstOrDefault();
+                        var e911ProductOrder = cart.ProductOrders?.AsValueEnumerable().Where(x => x.ServiceId == e911Id).FirstOrDefault();
                         // If there are already E911 fees in the cart.
                         if (e911ProductOrder is not null)
                         {
@@ -1097,19 +1097,19 @@ namespace NumberSearch.Mvc.Controllers
                             {
                                 var totalE911FeeItems = 0;
 
-                                var lines = cart.Services?.Where(x => x.ServiceId == stdSeat).FirstOrDefault();
+                                var lines = cart.Services?.AsValueEnumerable().Where(x => x.ServiceId == stdSeat).FirstOrDefault();
 
                                 if (lines is not null)
                                 {
-                                    var lineQuantity = cart.ProductOrders?.Where(x => x.ServiceId == lines.ServiceId).FirstOrDefault();
+                                    var lineQuantity = cart.ProductOrders?.AsValueEnumerable().Where(x => x.ServiceId == lines.ServiceId).FirstOrDefault();
                                     totalE911FeeItems += lineQuantity?.Quantity ?? 0;
                                 }
 
-                                var seats = cart.Services?.Where(x => x.ServiceId == concurrentSeat).FirstOrDefault();
+                                var seats = cart.Services?.AsValueEnumerable().Where(x => x.ServiceId == concurrentSeat).FirstOrDefault();
 
                                 if (seats is not null)
                                 {
-                                    var seatsQuantity = cart.ProductOrders?.Where(x => x.ServiceId == seats.ServiceId).FirstOrDefault();
+                                    var seatsQuantity = cart.ProductOrders?.AsValueEnumerable().Where(x => x.ServiceId == seats.ServiceId).FirstOrDefault();
                                     totalE911FeeItems += seatsQuantity?.Quantity ?? 0;
                                 }
 
@@ -1152,7 +1152,7 @@ namespace NumberSearch.Mvc.Controllers
             var input = couponName.Trim().ToLowerInvariant();
 
             // Drop everything that's not a letter or number.
-            input = new string([.. input.Where(c => char.IsLetterOrDigit(c))]);
+            input = new string([.. input.AsValueEnumerable().Where(c => char.IsLetterOrDigit(c))]);
 
             var coupons = await Coupon.GetAllAsync(_postgresql).ConfigureAwait(false);
 
@@ -1171,7 +1171,7 @@ namespace NumberSearch.Mvc.Controllers
                     Quantity = Quantity > 0 ? Quantity : 1
                 };
 
-                await httpContext.Session.LoadAsync().ConfigureAwait(false);
+                await httpContext.Session.LoadAsync();
                 var cart = Cart.GetFromSession(httpContext.Session);
 
                 if (coupon.Type == "Install" && cart.Products is not null && cart.Products.Count != 0)
@@ -1219,7 +1219,7 @@ namespace NumberSearch.Mvc.Controllers
             var phoneNumber = new DataAccess.Models.PhoneNumber { DialedNumber = dialedPhoneNumber };
             var productOrder = new ProductOrder { DialedNumber = dialedPhoneNumber };
 
-            await httpContext.Session.LoadAsync().ConfigureAwait(false);
+            await httpContext.Session.LoadAsync();
             var cart = Cart.GetFromSession(httpContext.Session);
             var checkRemove = cart.RemovePhoneNumber(ref phoneNumber, ref productOrder);
             var checkSet = cart.SetToSession(httpContext.Session);
@@ -1241,14 +1241,14 @@ namespace NumberSearch.Mvc.Controllers
                 return BadRequest(ModelState);
             }
 
-            await httpContext.Session.LoadAsync().ConfigureAwait(false);
+            await httpContext.Session.LoadAsync();
             var cart = Cart.GetFromSession(httpContext.Session);
 
-            var portedPhoneNumber = cart.PortedPhoneNumbers?.Where(x => x.PortedDialedNumber == dialedPhoneNumber).FirstOrDefault();
+            var portedPhoneNumber = cart.PortedPhoneNumbers?.AsValueEnumerable().Where(x => x.PortedDialedNumber == dialedPhoneNumber).FirstOrDefault();
 
             if (portedPhoneNumber is not null)
             {
-                var productOrder = cart.ProductOrders?.Where(x => x.PortedPhoneNumberId == portedPhoneNumber.PortedPhoneNumberId).FirstOrDefault();
+                var productOrder = cart.ProductOrders?.AsValueEnumerable().Where(x => x.PortedPhoneNumberId == portedPhoneNumber.PortedPhoneNumberId).FirstOrDefault();
 
                 productOrder ??= new ProductOrder { PortedDialedNumber = portedPhoneNumber.PortedDialedNumber ?? string.Empty, PortedPhoneNumberId = portedPhoneNumber?.PortedPhoneNumberId, Quantity = 1 };
 
@@ -1279,13 +1279,13 @@ namespace NumberSearch.Mvc.Controllers
                 return BadRequest(ModelState);
             }
 
-            await httpContext.Session.LoadAsync().ConfigureAwait(false);
+            await httpContext.Session.LoadAsync();
             var cart = Cart.GetFromSession(httpContext.Session);
 
-            var verifedPhoneNumber = cart.VerifiedPhoneNumbers?.Where(x => x.VerifiedDialedNumber == dialedPhoneNumber).FirstOrDefault();
+            var verifedPhoneNumber = cart.VerifiedPhoneNumbers?.AsValueEnumerable().Where(x => x.VerifiedDialedNumber == dialedPhoneNumber).FirstOrDefault();
             if (verifedPhoneNumber is not null)
             {
-                var productOrder = cart.ProductOrders?.Where(x => x.VerifiedPhoneNumberId == verifedPhoneNumber.VerifiedPhoneNumberId).FirstOrDefault();
+                var productOrder = cart.ProductOrders?.AsValueEnumerable().Where(x => x.VerifiedPhoneNumberId == verifedPhoneNumber.VerifiedPhoneNumberId).FirstOrDefault();
                 productOrder ??= new ProductOrder { VerifiedPhoneNumberId = verifedPhoneNumber.VerifiedPhoneNumberId, Quantity = 1 };
 
                 var checkRemove = cart.RemoveVerifiedPhoneNumber(ref verifedPhoneNumber, ref productOrder);
@@ -1341,7 +1341,7 @@ namespace NumberSearch.Mvc.Controllers
             var service = new Service { ServiceId = serviceId };
             var productOrder = new ProductOrder { ServiceId = serviceId };
 
-            await httpContext.Session.LoadAsync().ConfigureAwait(false);
+            await httpContext.Session.LoadAsync();
             var cart = Cart.GetFromSession(httpContext.Session);
             var checkRemove = cart.RemoveService(ref service, ref productOrder);
             var checkSet = cart.SetToSession(httpContext.Session);
@@ -1366,7 +1366,7 @@ namespace NumberSearch.Mvc.Controllers
             var coupon = new Coupon { CouponId = couponId };
             var productOrder = new ProductOrder { CouponId = couponId };
 
-            await httpContext.Session.LoadAsync().ConfigureAwait(false);
+            await httpContext.Session.LoadAsync();
             var cart = Cart.GetFromSession(httpContext.Session);
             var checkRemove = cart.RemoveCoupon(ref coupon, ref productOrder);
             var checkSet = cart.SetToSession(httpContext.Session);

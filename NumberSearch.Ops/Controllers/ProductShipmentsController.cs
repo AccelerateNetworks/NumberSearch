@@ -10,6 +10,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
+using ZLinq;
+
 namespace NumberSearch.Ops.Controllers;
 
 [ApiExplorerSettings(IgnoreApi = true)]
@@ -96,15 +98,15 @@ public class ProductShipmentsController(numberSearchContext context) : Controlle
 
                 if (string.IsNullOrWhiteSpace(productShipment.Name))
                 {
-                    productShipment.Name = products.Where(x => x.ProductId == productShipment.ProductId).FirstOrDefault()?.Name;
+                    productShipment.Name = products.AsValueEnumerable().Where(x => x.ProductId == productShipment.ProductId).FirstOrDefault()?.Name;
                 }
 
                 // Update all product inventory counts when a shipment is added or updated.
                 foreach (var product in products)
                 {
                     var relatedShipments = await context.ProductShipments.Where(x => x.ProductId == product.ProductId).ToListAsync();
-                    var instockItems = relatedShipments.Where(x => x.ShipmentType == "Instock").Sum(x => x.Quantity);
-                    var assignedItems = relatedShipments.Where(x => x.ShipmentType == "Assigned").Sum(x => x.Quantity);
+                    var instockItems = relatedShipments.AsValueEnumerable().Where(x => x.ShipmentType == "Instock").Sum(x => x.Quantity);
+                    var assignedItems = relatedShipments.AsValueEnumerable().Where(x => x.ShipmentType == "Assigned").Sum(x => x.Quantity);
                     product.QuantityAvailable = instockItems - assignedItems;
                     context.Update(product);
                 }
@@ -162,15 +164,15 @@ public class ProductShipmentsController(numberSearchContext context) : Controlle
 
                 if (string.IsNullOrWhiteSpace(productShipment.Name))
                 {
-                    productShipment.Name = products.Where(x => x.ProductId == productShipment.ProductId).FirstOrDefault()?.Name;
+                    productShipment.Name = products.AsValueEnumerable().Where(x => x.ProductId == productShipment.ProductId).FirstOrDefault()?.Name;
                 }
 
                 // Update all product inventory counts when a shipment is added or updated.
                 foreach (var product in products)
                 {
                     var relatedShipments = await context.ProductShipments.Where(x => x.ProductId == product.ProductId).ToListAsync();
-                    var instockItems = relatedShipments.Where(x => x.ShipmentType == "Instock").Sum(x => x.Quantity);
-                    var assignedItems = relatedShipments.Where(x => x.ShipmentType == "Assigned").Sum(x => x.Quantity);
+                    var instockItems = relatedShipments.AsValueEnumerable().Where(x => x.ShipmentType == "Instock").Sum(x => x.Quantity);
+                    var assignedItems = relatedShipments.AsValueEnumerable().Where(x => x.ShipmentType == "Assigned").Sum(x => x.Quantity);
                     product.QuantityAvailable = instockItems - assignedItems;
                     context.Update(product);
                 }
@@ -235,8 +237,8 @@ public class ProductShipmentsController(numberSearchContext context) : Controlle
         foreach (var product in products)
         {
             var relatedShipments = await context.ProductShipments.Where(x => x.ProductId == product.ProductId).ToListAsync();
-            var instockItems = relatedShipments.Where(x => x.ShipmentType == "Instock").Sum(x => x.Quantity);
-            var assignedItems = relatedShipments.Where(x => x.ShipmentType == "Assigned").Sum(x => x.Quantity);
+            var instockItems = relatedShipments.AsValueEnumerable().Where(x => x.ShipmentType == "Instock").Sum(x => x.Quantity);
+            var assignedItems = relatedShipments.AsValueEnumerable().Where(x => x.ShipmentType == "Assigned").Sum(x => x.Quantity);
             product.QuantityAvailable = instockItems - assignedItems;
             context.Update(product);
         }

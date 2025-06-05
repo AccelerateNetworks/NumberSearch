@@ -26,6 +26,8 @@ using System.Linq;
 using System.Net.Mail;
 using System.Threading.Tasks;
 
+using ZLinq;
+
 namespace NumberSearch.Mvc.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
@@ -60,11 +62,11 @@ namespace NumberSearch.Mvc.Controllers
             else if (!string.IsNullOrWhiteSpace(product) && quantity is not null & quantity > 0)
             {
                 var products = await Product.GetAllAsync(_postgresql);
-                var productToUpdate = products.FirstOrDefault(x => x.Name == product);
+                var productToUpdate = products.AsValueEnumerable().FirstOrDefault(x => x.Name == product);
 
                 if (productToUpdate is not null && cart.ProductOrders is not null)
                 {
-                    var toRemove = cart.ProductOrders.Where(x => x.ProductId == productToUpdate.ProductId).FirstOrDefault();
+                    var toRemove = cart.ProductOrders.AsValueEnumerable().Where(x => x.ProductId == productToUpdate.ProductId).FirstOrDefault();
 
                     if (toRemove is not null)
                     {
@@ -81,13 +83,13 @@ namespace NumberSearch.Mvc.Controllers
             }
 
             // Check cordless phone to base station ratio
-            var cordless = cart.Products.Where(x => x.Name.Contains("DP")).ToArray();
+            var cordless = cart.Products.AsValueEnumerable().Where(x => x.Name.Contains("DP")).ToArray();
             int handsets = 0;
             int basestations = 0;
 
             foreach (var item in cordless)
             {
-                var productOrder = cart?.ProductOrders?.FirstOrDefault(x => x.ProductId == item.ProductId);
+                var productOrder = cart?.ProductOrders?.AsValueEnumerable().FirstOrDefault(x => x.ProductId == item.ProductId);
                 if (productOrder is not null)
                 {
                     if (item.Name.Contains("DP750"))
@@ -188,7 +190,7 @@ namespace NumberSearch.Mvc.Controllers
             decimal totalInstallTime = 0m;
             foreach (var item in cart.Products)
             {
-                var quantity = cart.ProductOrders?.Where(x => x.ProductId == item.ProductId).FirstOrDefault();
+                var quantity = cart.ProductOrders?.AsValueEnumerable().Where(x => x.ProductId == item.ProductId).FirstOrDefault();
 
                 if (item.InstallTime > 0m && quantity is not null)
                 {
@@ -307,13 +309,13 @@ namespace NumberSearch.Mvc.Controllers
             {
                 Order = order,
                 PhoneNumbers = [],
-                ProductOrders = productOrders.ToList(),
+                ProductOrders = [.. productOrders],
                 Products = products,
                 Services = services,
                 Coupons = coupons,
-                PortedPhoneNumbers = portedPhoneNumbers.ToList(),
-                VerifiedPhoneNumbers = verifiedPhoneNumbers.ToList(),
-                PurchasedPhoneNumbers = purchasedPhoneNumbers.ToList(),
+                PortedPhoneNumbers = [.. portedPhoneNumbers],
+                VerifiedPhoneNumbers = [.. verifiedPhoneNumbers],
+                PurchasedPhoneNumbers = [.. purchasedPhoneNumbers],
                 Shipment = shipment?.FirstOrDefault() ?? new()
             };
         }
@@ -343,7 +345,7 @@ namespace NumberSearch.Mvc.Controllers
                         {
                             Order = order,
                             PortRequest = portRequest ?? new(),
-                            PhoneNumbers = portedPhoneNumbers.ToArray()
+                            PhoneNumbers = [.. portedPhoneNumbers]
                         });
                     }
                 }
@@ -373,7 +375,7 @@ namespace NumberSearch.Mvc.Controllers
             // Prevent duplicate submissions of port requests.
             if (order is not null && order.OrderId != Guid.Empty)
             {
-                var existing = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql).ConfigureAwait(false);
+                var existing = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql);
 
                 if (existing is not null && existing.OrderId != Guid.Empty && existing.OrderId == order.OrderId)
                 {
@@ -383,7 +385,7 @@ namespace NumberSearch.Mvc.Controllers
                         try
                         {
                             using var stream = new System.IO.MemoryStream();
-                            await portRequest.BillImage.CopyToAsync(stream).ConfigureAwait(false);
+                            await portRequest.BillImage.CopyToAsync(stream);
 
                             var fileExtension = Path.GetExtension(portRequest.BillImage.FileName);
                             var fileName = $"{Guid.NewGuid()}{fileExtension}";
@@ -851,8 +853,8 @@ Accelerate Networks
                                 if (order.OnsiteInstallation)
                                 {
                                     // Add the install charges if they're not already in the Cart.
-                                    var checkOnsiteExists = cart.Products.FirstOrDefault(x => x.ProductId == Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"));
-                                    var checkEstimateExists = cart.Products.FirstOrDefault(x => x.ProductId == Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"));
+                                    var checkOnsiteExists = cart.Products.AsValueEnumerable().FirstOrDefault(x => x.ProductId == Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"));
+                                    var checkEstimateExists = cart.Products.AsValueEnumerable().FirstOrDefault(x => x.ProductId == Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"));
 
                                     if (checkOnsiteExists is null && checkEstimateExists is null)
                                     {
@@ -967,7 +969,7 @@ Accelerate Networks
                             }
                             else
                             {
-                                await CreateAndSendInvoicesAsync(billingClient, onetimeItems, reoccuringItems, billingTaxRate, confirmationEmail, pin, cart, order, _invoiceNinjaToken.AsMemory(), _postgresql.AsMemory());
+                                await CreateAndSendInvoicesAsync(billingClient, onetimeItems, reoccuringItems, billingTaxRate, confirmationEmail, pin, cart ?? new(), order, _invoiceNinjaToken.AsMemory(), _postgresql.AsMemory());
                             }
 
                             // Create a calendar invite for the install date.
@@ -1081,8 +1083,8 @@ Accelerate Networks
 
             foreach (var nto in cart.PhoneNumbers)
             {
-                var productOrder = cart.ProductOrders.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
-                var numberToBePurchased = cart.PhoneNumbers.Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
+                var productOrder = cart.ProductOrders.AsValueEnumerable().Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
+                var numberToBePurchased = cart.PhoneNumbers.AsValueEnumerable().Where(x => x.DialedNumber == nto.DialedNumber).FirstOrDefault();
 
                 if (productOrder is not null && numberToBePurchased is not null)
                 {
@@ -1162,7 +1164,7 @@ Accelerate Networks
 
                 if (productOrder.VerifiedPhoneNumberId is not null)
                 {
-                    var verfied = cart?.VerifiedPhoneNumbers?.Where(x => x.VerifiedPhoneNumberId == productOrder.VerifiedPhoneNumberId).FirstOrDefault();
+                    var verfied = cart?.VerifiedPhoneNumbers?.AsValueEnumerable().Where(x => x.VerifiedPhoneNumberId == productOrder.VerifiedPhoneNumberId).FirstOrDefault();
 
                     if (verfied is not null)
                     {
@@ -1176,14 +1178,14 @@ Accelerate Networks
                         });
                     }
 
-                    emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? verfied?.VerifiedDialedNumber : emailSubject;
+                    emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? verfied?.VerifiedDialedNumber ?? string.Empty : emailSubject;
 
                     //var checkSubmitted = await productOrder.PostAsync(_postgresql);
                 }
 
                 if (productOrder.ProductId != Guid.Empty)
                 {
-                    var product = cart?.Products?.Where(x => x.ProductId == productOrder.ProductId).FirstOrDefault();
+                    var product = cart?.Products?.AsValueEnumerable().Where(x => x.ProductId == productOrder.ProductId).FirstOrDefault();
 
                     if (product is not null)
                     {
@@ -1197,14 +1199,14 @@ Accelerate Networks
                         });
                     }
 
-                    emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? product?.Name : emailSubject;
+                    emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? product?.Name ?? string.Empty : emailSubject;
 
                     //var checkSubmitted = await productOrder.PostAsync(_postgresql);
                 }
 
                 if (productOrder.ServiceId != Guid.Empty)
                 {
-                    var service = cart?.Services?.Where(x => x.ServiceId == productOrder.ServiceId).FirstOrDefault();
+                    var service = cart?.Services?.AsValueEnumerable().Where(x => x.ServiceId == productOrder.ServiceId).FirstOrDefault();
 
                     if (service is not null)
                     {
@@ -1218,7 +1220,7 @@ Accelerate Networks
                         });
                     }
 
-                    emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? service?.Name : emailSubject;
+                    emailSubject = string.IsNullOrWhiteSpace(emailSubject) ? service?.Name ?? string.Empty : emailSubject;
 
                     //var checkSubmitted = await productOrder.PostAsync(_postgresql);
                 }
@@ -1226,7 +1228,7 @@ Accelerate Networks
                 // Apply coupon discounts
                 if (productOrder.CouponId is not null)
                 {
-                    var coupon = cart?.Coupons?.Where(x => x.CouponId == productOrder.CouponId).FirstOrDefault();
+                    var coupon = cart?.Coupons?.AsValueEnumerable().Where(x => x.CouponId == productOrder.CouponId).FirstOrDefault();
 
                     if (coupon is not null)
                     {
@@ -1294,13 +1296,13 @@ Accelerate Networks
                         }
                         else if (coupon.Type == "Service")
                         {
-                            var servicesToDiscount = cart?.Services is not null && cart.Services.Count != 0 ? cart?.Services?.Where(x => x.Name.Contains("5G")).ToArray() : null;
+                            var servicesToDiscount = cart?.Services is not null && cart.Services.Count != 0 ? cart?.Services?.AsValueEnumerable().Where(x => x.Name.Contains("5G")).ToArray() : null;
                             if (servicesToDiscount is not null)
                             {
                                 var partnerDiscount = 0;
                                 foreach (var service in servicesToDiscount)
                                 {
-                                    var productOrderToDiscount = cart?.ProductOrders?.FirstOrDefault(x => x.ServiceId == service.ServiceId);
+                                    var productOrderToDiscount = cart?.ProductOrders?.AsValueEnumerable().FirstOrDefault(x => x.ServiceId == service.ServiceId);
                                     if (productOrderToDiscount is not null)
                                     {
                                         partnerDiscount += productOrderToDiscount.Quantity * 10;
@@ -1339,8 +1341,7 @@ Accelerate Networks
         {
             // Create a single PIN for this order.
             Random random = new();
-            int pin = random.Next(100000, 99999999);
-            return pin;
+            return random.Next(100000, 99999999);
         }
 
         public static async Task<TaxRateDatum> GetBillingTaxRateAsync(Order order, ReadOnlyMemory<char> _invoiceNinjaToken)
@@ -1368,7 +1369,7 @@ Accelerate Networks
                         var taxRateValue = specificTaxRate.rate * 100M;
 
                         var existingTaxRates = await DataAccess.InvoiceNinja.TaxRate.GetAllAsync(_invoiceNinjaToken);
-                        billingTaxRate = existingTaxRates.data.Where(x => x.name == taxRateName).FirstOrDefault();
+                        billingTaxRate = existingTaxRates.data.AsValueEnumerable().Where(x => x.name == taxRateName).FirstOrDefault();
                         if (string.IsNullOrWhiteSpace(billingTaxRate.name))
                         {
                             billingTaxRate = new TaxRateDatum
@@ -1408,7 +1409,7 @@ Accelerate Networks
         {
             // Create a billing client and send out an invoice.
             var billingClients = await Client.GetByEmailAsync(order.Email, _invoiceNinjaToken.ToString());
-            var billingClient = billingClients.data.FirstOrDefault();
+            var billingClient = billingClients.data.AsValueEnumerable().FirstOrDefault();
 
             // To get the right data into invoice ninja 5 we must first create the billing client using a unique name,
             // and then update that billing client with the rest of the address and contact data once we have its id.
@@ -1435,8 +1436,8 @@ Accelerate Networks
                 // Create the client and get its id.
                 var newClient = await newBillingClient.PostAsync(_invoiceNinjaToken);
                 newBillingClient = newBillingClient with { id = newClient.id };
-                var billingClientContact = newBillingClient.contacts.FirstOrDefault();
-                var clientContact = newClient.contacts.FirstOrDefault();
+                var billingClientContact = newBillingClient.contacts.AsValueEnumerable().FirstOrDefault();
+                var clientContact = newClient.contacts.AsValueEnumerable().FirstOrDefault();
                 if (!string.IsNullOrWhiteSpace(clientContact.id))
                 {
                     billingClientContact = billingClientContact with { id = clientContact.id };
@@ -1506,8 +1507,8 @@ Accelerate Networks
                         var checkQuoteUpdate = await order.PutAsync(_postgresql.ToString());
 
                         var oneTimeInvoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken.ToString(), true);
-                        var oneTimeLink = oneTimeInvoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
-                        var reoccurringLink = oneTimeInvoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
+                        var oneTimeLink = oneTimeInvoiceLinks.AsValueEnumerable().Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
+                        var reoccurringLink = oneTimeInvoiceLinks.AsValueEnumerable().Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                         if (!string.IsNullOrWhiteSpace(reoccurringLink))
                         {
@@ -1569,7 +1570,7 @@ Accelerate Networks
                         var checkQuoteUpdate = await order.PutAsync(_postgresql.ToString());
 
                         var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewReoccurringInvoice.client_id, _invoiceNinjaToken.ToString(), true);
-                        var reoccurringLink = invoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
+                        var reoccurringLink = invoiceLinks.AsValueEnumerable().Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                         if (!string.IsNullOrWhiteSpace(reoccurringLink))
                         {
@@ -1623,7 +1624,7 @@ Accelerate Networks
                         var checkQuoteUpdate = await order.PutAsync(_postgresql.ToString());
 
                         var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken.ToString(), true);
-                        var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
+                        var oneTimeLink = invoiceLinks.AsValueEnumerable().Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                         if (!string.IsNullOrWhiteSpace(oneTimeLink))
                         {
@@ -1708,8 +1709,8 @@ Accelerate Networks
 
                         var oneTimeInvoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken.ToString(), false);
                         var recurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken.ToString());
-                        var oneTimeLink = oneTimeInvoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
-                        var reoccurringLink = recurringInvoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
+                        var oneTimeLink = oneTimeInvoiceLinks.AsValueEnumerable().Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
+                        var reoccurringLink = recurringInvoiceLinks.AsValueEnumerable().Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                         if (!string.IsNullOrWhiteSpace(reoccurringLink))
                         {
@@ -1775,8 +1776,8 @@ Accelerate Networks
 
                         var oneTimeInvoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken.ToString(), false);
                         var recurringInvoiceLinks = await ReccurringInvoice.GetByClientIdWithLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken.ToString());
-                        var oneTimeLink = oneTimeInvoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
-                        var reoccurringLink = recurringInvoiceLinks.Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
+                        var oneTimeLink = oneTimeInvoiceLinks.AsValueEnumerable().Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
+                        var reoccurringLink = recurringInvoiceLinks.AsValueEnumerable().Where(x => x.id == createNewReoccurringInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                         if (!string.IsNullOrWhiteSpace(reoccurringLink))
                         {
@@ -1835,7 +1836,7 @@ Accelerate Networks
                         var checkQuoteUpdate = await order.PutAsync(_postgresql.ToString());
 
                         var invoiceLinks = await Invoice.GetByClientIdWithInoviceLinksAsync(createNewOneTimeInvoice.client_id, _invoiceNinjaToken.ToString(), false);
-                        var oneTimeLink = invoiceLinks.Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
+                        var oneTimeLink = invoiceLinks.AsValueEnumerable().Where(x => x.id == createNewOneTimeInvoice.id).FirstOrDefault().invitations.FirstOrDefault().link;
 
                         if (!string.IsNullOrWhiteSpace(oneTimeLink))
                         {
@@ -1868,29 +1869,22 @@ Accelerate Networks
 
                             foreach (var item in cart.PhoneNumbers)
                             {
-                                if (item.IngestedFrom == "BulkVS")
-                                {
-                                    formattedNumbers += $"{item.DialedNumber} <strong>PIN: {pin}</strong><br />";
-                                }
-                                else
-                                {
-                                    formattedNumbers += $"{item.DialedNumber}<br />";
-                                }
+                                formattedNumbers += item.IngestedFrom is "BulkVS" ? $"{item.DialedNumber} <strong>PIN: {pin}</strong><br />" : $"{item.DialedNumber}<br />";
                             }
 
                             if (cart.PhoneNumbers.Count > 1)
                             {
-                                confirmationEmail.Subject = $"Order for {cart.PhoneNumbers.FirstOrDefault()?.DialedNumber} is complete!";
+                                confirmationEmail.Subject = $"Order for {cart.PhoneNumbers.AsValueEnumerable().FirstOrDefault()?.DialedNumber} is complete!";
                                 confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />  
-The order for {cart.PhoneNumbers.FirstOrDefault()?.DialedNumber} is ready, let us know if you would like this number to forward to another phone number immediately.
+The order for {cart.PhoneNumbers.AsValueEnumerable().FirstOrDefault()?.DialedNumber} is ready, let us know if you would like this number to forward to another phone number immediately.
 <br />
 <br />  
 To port these numbers to another provider, please pay <a href='{oneTimeLink}'>this invoice</a> and submit a port out request with your new provider using the following information:
 <br />
 <br />  
-Account number: {cart.PhoneNumbers.FirstOrDefault()?.DialedNumber}
+Account number: {cart.PhoneNumbers.AsValueEnumerable().FirstOrDefault()?.DialedNumber}
 <br />  
 Business Name: {order.BusinessName}
 <br />  
@@ -1916,17 +1910,17 @@ Accelerate Networks
                             else
                             {
 
-                                confirmationEmail.Subject = $"Order for {cart.PhoneNumbers.FirstOrDefault()?.DialedNumber} is complete!";
+                                confirmationEmail.Subject = $"Order for {cart.PhoneNumbers.AsValueEnumerable().FirstOrDefault()?.DialedNumber} is complete!";
                                 confirmationEmail.MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />  
-The order for {cart.PhoneNumbers.FirstOrDefault()?.DialedNumber} is ready, let us know if you would like this number to forward to another phone number immediately.
+The order for {cart.PhoneNumbers.AsValueEnumerable().FirstOrDefault()?.DialedNumber} is ready, let us know if you would like this number to forward to another phone number immediately.
 <br />
 <br />  
 To port this number to another provider, please pay <a href='{oneTimeLink}'>this invoice</a> and submit a port out request with your new provider using the following information:
 <br />
 <br />  
-Account number: {cart.PhoneNumbers.FirstOrDefault()?.DialedNumber}
+Account number: {cart.PhoneNumbers.AsValueEnumerable().FirstOrDefault()?.DialedNumber}
 <br />  
 Business Name: {order.BusinessName}
 <br />  
@@ -1971,7 +1965,7 @@ Accelerate Networks
             var emailDomain = new MailAddress(email.ToString());
             var lookup = new LookupClient();
             var result = await lookup.QueryAsync(emailDomain.Host, QueryType.MX);
-            var record = result.Answers.MxRecords().FirstOrDefault();
+            var record = result.Answers.MxRecords().AsValueEnumerable().FirstOrDefault();
             return new ValidEmail(emailDomain, record is not null);
         }
 

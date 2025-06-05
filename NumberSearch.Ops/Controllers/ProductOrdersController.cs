@@ -11,6 +11,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
+using ZLinq;
+
 namespace NumberSearch.Ops.Controllers;
 
 [ApiExplorerSettings(IgnoreApi = true)]
@@ -316,7 +318,7 @@ public class ProductOrdersController : Controller
         else if (productOrder is not null && !string.IsNullOrWhiteSpace(productOrder.PortedDialedNumber))
         {
             var portedNumbers = await DataAccess.PortedPhoneNumber.GetByOrderIdAsync(productOrder.OrderId, _postgresql);
-            var portedNumber = portedNumbers.Where(x => x.PortedDialedNumber == productOrder.PortedDialedNumber).FirstOrDefault();
+            var portedNumber = portedNumbers.AsValueEnumerable().Where(x => x.PortedDialedNumber == productOrder.PortedDialedNumber).FirstOrDefault();
 
             if (portedNumber is not null)
             {

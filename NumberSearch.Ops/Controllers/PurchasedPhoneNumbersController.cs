@@ -65,7 +65,7 @@ public class PurchasedPhoneNumbersController(numberSearchContext context) : Cont
 
         using var writer = new StreamWriter(completePath);
         using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-        await csv.WriteRecordsAsync(orders).ConfigureAwait(false);
+        await csv.WriteRecordsAsync(orders);
         var file = new FileInfo(completePath);
 
         if (file.Exists)

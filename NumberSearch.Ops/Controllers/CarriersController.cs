@@ -10,6 +10,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
+using ZLinq;
+
 namespace NumberSearch.Ops.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
@@ -82,7 +84,7 @@ namespace NumberSearch.Ops.Controllers
                     string[] carrierQuery = lookup.Lec.Split(' ');
                     string query = carrierQuery[0].ToLowerInvariant();
                     var relatedCarriers = await _context.Carriers.ToArrayAsync();
-                    relatedCarriers = relatedCarriers.Where(x => x.Lec != null && x.Lec.Contains(query, StringComparison.InvariantCultureIgnoreCase)).ToArray();
+                    relatedCarriers = [.. relatedCarriers.AsValueEnumerable().Where(x => x.Lec != null && x.Lec.Contains(query, StringComparison.InvariantCultureIgnoreCase))];
                     if (relatedCarriers.Length != 0)
                     {
                         return View("Create", new CreateCarrier
@@ -95,10 +97,10 @@ namespace NumberSearch.Ops.Controllers
                                 Spid = lookup.Spid,
                                 Lectype = lookup.Lectype,
                                 Ocn = lookup.Ocn,
-                                Color = relatedCarriers.FirstOrDefault()?.Color,
-                                LogoLink = relatedCarriers.FirstOrDefault()?.LogoLink,
-                                Name = relatedCarriers.FirstOrDefault()?.Name,
-                                Type = relatedCarriers.FirstOrDefault()?.Type,
+                                Color = relatedCarriers?.AsValueEnumerable().FirstOrDefault()?.Color,
+                                LogoLink = relatedCarriers?.AsValueEnumerable().FirstOrDefault()?.LogoLink,
+                                Name = relatedCarriers?.AsValueEnumerable().FirstOrDefault()?.Name,
+                                Type = relatedCarriers?.AsValueEnumerable().FirstOrDefault()?.Type,
                             }
                         });
                     }

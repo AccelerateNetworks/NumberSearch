@@ -20,6 +20,10 @@ namespace NumberSearch.Mvc.Controllers
         /// This is the default route in this app. It's a search page that allows you to query the TeleAPI for phone numbers.
         /// </summary>
         /// <param name="query"> A complete or partial phone number. </param>
+        /// <param name="city"></param>
+        /// <param name="failed"></param>
+        /// <param name="view"></param>
+        /// <param name="page"></param>
         /// <returns> A view of nothing, or the result of the query. </returns>
         [HttpGet("Search")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -63,7 +67,7 @@ namespace NumberSearch.Mvc.Controllers
                 converted.Remove('1');
             }
 
-            var cleanedQuery = new string(converted.ToArray());
+            var cleanedQuery = new string([.. converted]);
 
             // Short circuit area code searches.
             if (cleanedQuery.Length == 3 && cleanedQuery.Equals(query, System.StringComparison.InvariantCultureIgnoreCase))
@@ -148,7 +152,7 @@ namespace NumberSearch.Mvc.Controllers
 
             if (!string.IsNullOrWhiteSpace(view) && view == "Location")
             {
-                var cities = await PhoneNumber.CitiesInQueryAsync(cleanedQuery, _postgresql).ConfigureAwait(false);
+                var cities = await PhoneNumber.CitiesInQueryAsync(cleanedQuery, _postgresql);
 
                 return View("Index", new SearchResults
                 {
@@ -159,8 +163,8 @@ namespace NumberSearch.Mvc.Controllers
                     Message = !string.IsNullOrWhiteSpace(failed) ? $"{failed} is not purchasable at this time." : string.Empty,
                     AlertType = "alert-warning",
                     City = city,
-                    Cities = cities.ToArray(),
-                    PhoneNumbers = results.ToArray(),
+                    Cities = [.. cities],
+                    PhoneNumbers = [.. results],
                     Query = query,
                     Cart = cart
                 });
@@ -173,7 +177,7 @@ namespace NumberSearch.Mvc.Controllers
                 Page = page,
                 View = !string.IsNullOrWhiteSpace(view) ? view : "Recommended",
                 Message = !string.IsNullOrWhiteSpace(failed) ? $"{failed} is not purchasable at this time." : string.Empty,
-                PhoneNumbers = results.ToArray(),
+                PhoneNumbers = [.. results],
                 City = city,
                 Query = query,
                 Cart = cart
