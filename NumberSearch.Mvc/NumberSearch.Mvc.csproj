@@ -27,7 +27,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Azure.Storage.Blobs" Version="12.24.1" />
+		<PackageReference Include="Azure.Storage.Blobs" Version="12.25.0" />
 		<PackageReference Include="DnsClient" Version="1.8.0" />
 		<PackageReference Include="Ical.Net" Version="5.0.0" />
 		<PackageReference Include="Markdig" Version="0.41.3" />
@@ -45,7 +45,7 @@
 		<PackageReference Include="Serilog.Sinks.Postgresql.Alternative" Version="4.2.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" />
 		<PackageReference Include="WriteAs.NET" Version="1.2.1" />
-		<PackageReference Include="ZLinq" Version="1.5.0" />
+		<PackageReference Include="ZLinq" Version="1.5.1" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\FirstCom\FirstCom.csproj" />
