@@ -123,6 +123,7 @@
                 {
                     <li>
                         @number has @failed.Count() failed messages. File a GitHub issue for these so Tom can figure out why we're not recording a To number.
+                        <p>@System.Text.Json.JsonSerializer.Serialize(failed)</p>
                     </li>
                 }
             }
