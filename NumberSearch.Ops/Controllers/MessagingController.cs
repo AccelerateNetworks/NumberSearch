@@ -76,7 +76,10 @@ namespace NumberSearch.Ops.Controllers
             }
             catch (FlurlHttpException ex)
             {
-                message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
+                if (ex.StatusCode is not 404)
+                {
+                    message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
+                }
             }
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             return View(new MessagingResult { ClientRegistrations = [.. stats.AsValueEnumerable().OrderByDescending(x => x.DateRegistered)], Owned = ownedNumbers, Message = message });
