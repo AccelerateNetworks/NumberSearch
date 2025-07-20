@@ -1,4 +1,5 @@
 ﻿@using AccelerateNetworks.Operations
+@using ZLinq
 @model OwnedNumberResult
 @{
     ViewData["Title"] = "Owned Phone Number";
@@ -244,7 +245,7 @@ else
 <form action="/Home/OwnedNumbers/@Model?.Owned.DialedNumber/RegisterE911" method="post">
     @Html.AntiForgeryToken()
     @{
-        var latestOrder = Model?.RelatedOrders.OrderByDescending(x => x.DateSubmitted).FirstOrDefault();
+        var latestOrder = Model?.RelatedOrders.AsValueEnumerable().OrderByDescending(x => x.DateSubmitted).FirstOrDefault();
         string callerName = string.IsNullOrWhiteSpace(latestOrder?.BusinessName) ? $"{latestOrder?.FirstName?.Trim()} {latestOrder?.LastName?.Trim()}" : latestOrder.BusinessName;
         string address = latestOrder?.UnparsedAddress ?? string.Empty;
     }
@@ -360,7 +361,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var product in Model.PortedPhoneNumbers.OrderByDescending(x => x?.DateIngested))
+                @foreach (var product in Model.PortedPhoneNumbers.AsValueEnumerable().OrderByDescending(x => x?.DateIngested))
                 {
                     <tr>
                         <td>
@@ -432,7 +433,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var product in Model.PurchasedPhoneNumbers.OrderByDescending(x => x?.DateIngested))
+                @foreach (var product in Model.PurchasedPhoneNumbers.AsValueEnumerable().OrderByDescending(x => x?.DateIngested))
                 {
                     <tr>
                         <td>
@@ -484,7 +485,7 @@ else
             </thead>
             <tbody>
                 @* Hide merged orders *@
-                @foreach (var order in Model.RelatedOrders.Where(x => x.MergedOrderId is null).OrderByDescending(x => x.DateSubmitted))
+                @foreach (var order in Model.RelatedOrders.AsValueEnumerable().Where(x => x.MergedOrderId is null).OrderByDescending(x => x.DateSubmitted))
                 {
                     var businessName = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order?.LastName}" : order.BusinessName;
                     <tr>

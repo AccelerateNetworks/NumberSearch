@@ -4,6 +4,7 @@
     ViewData["Title"] = "Orders";
 }
 @using AccelerateNetworks.Operations;
+@using ZLinq
 @model NumberSearch.Ops.Pages.OrdersModel
 <script type="text/javascript">
     function handleSearchQuery(textBox) {
@@ -113,7 +114,7 @@
                                 nextStep = $"❌ Unpaid";
                                 pillColor = "danger";
                             }
-                            else if (order?.PortRequest is null && order?.ProductOrders is not null && order.ProductOrders.Where(x => x.PortedPhoneNumberId.HasValue is true).Any())
+                            else if (order?.PortRequest is null && order?.ProductOrders is not null && order.ProductOrders.AsValueEnumerable().Where(x => x.PortedPhoneNumberId.HasValue is true).Any())
                             {
                                 nextStep = $"⭕ Need Port";
                                 pillColor = "danger";
@@ -200,7 +201,7 @@
                                         </div>
                                     </p>
                                 }
-                                else if (order?.ProductOrders is not null && order.ProductOrders.Where(x => x.PortedPhoneNumberId.HasValue).Any())
+                                else if (order?.ProductOrders is not null && order.ProductOrders.AsValueEnumerable().Where(x => x.PortedPhoneNumberId.HasValue).Any())
                                 {
                                     <p>
                                         <div class="btn-group" role="group" aria-label="Basic example">
@@ -294,7 +295,7 @@
                                             @{
                                                 foreach (var product in purchased)
                                                 {
-                                                    var matchingPurchasedPhoneNumber = Model?.PurchasedPhoneNumbers?.Where(x => x?.DialedNumber == product?.DialedNumber).FirstOrDefault();
+                                                    var matchingPurchasedPhoneNumber = Model?.PurchasedPhoneNumbers?.AsValueEnumerable().Where(x => x?.DialedNumber == product?.DialedNumber).FirstOrDefault();
                                                     if (matchingPurchasedPhoneNumber is null)
                                                     {
                                                         <a class="btn btn-outline-primary mt-1" href="/Home/NumberOrders/@product.DialedNumber">@product.DialedNumber ❓</a>
@@ -314,7 +315,7 @@
                                             @{
                                                 foreach (var product in ported)
                                                 {
-                                                    var matchingPortedPhoneNumber = Model?.PortedPhoneNumbers?.Where(x => x.OrderId == order?.Order?.OrderId && x?.PortedDialedNumber == product?.PortedDialedNumber || x?.PortedPhoneNumberId == product?.PortedPhoneNumberId).FirstOrDefault();
+                                                    var matchingPortedPhoneNumber = Model?.PortedPhoneNumbers?.AsValueEnumerable().Where(x => x.OrderId == order?.Order?.OrderId && x?.PortedDialedNumber == product?.PortedDialedNumber || x?.PortedPhoneNumberId == product?.PortedPhoneNumberId).FirstOrDefault();
                                                     if (matchingPortedPhoneNumber is not null && matchingPortedPhoneNumber.Completed)
                                                     {
                                                         <a class="btn btn-outline-primary mt-1" href="/Home/PortRequests/@product.OrderId">@product.PortedDialedNumber ✔️</a>
@@ -334,7 +335,7 @@
                                             @{
                                                 foreach (var product in verified)
                                                 {
-                                                    <a class="btn btn-outline-primary mt-1" href="/Home/NumbersToVerify/@product.OrderId">@Model?.VerifiedPhoneNumbers?.Where(x => x.VerifiedPhoneNumberId == product.VerifiedPhoneNumberId).FirstOrDefault()?.VerifiedDialedNumber</a>
+                                                    <a class="btn btn-outline-primary mt-1" href="/Home/NumbersToVerify/@product.OrderId">@Model?.VerifiedPhoneNumbers?.AsValueEnumerable().Where(x => x.VerifiedPhoneNumberId == product.VerifiedPhoneNumberId).FirstOrDefault()?.VerifiedDialedNumber</a>
                                                 }
                                             }
                                         </p>
@@ -346,7 +347,7 @@
                                             @{
                                                 foreach (var product in services)
                                                 {
-                                                    var serviceOutput = $"<li>{product.Quantity} x {Model?.Services?.Where(x => x.ServiceId == product.ServiceId).FirstOrDefault()?.Name}</li>";
+                                                    var serviceOutput = $"<li>{product.Quantity} x {Model?.Services?.AsValueEnumerable().Where(x => x.ServiceId == product.ServiceId).FirstOrDefault()?.Name}</li>";
                                                     @Html.Raw(serviceOutput)
                                                 }
                                             }
@@ -410,7 +411,7 @@
                                 nextStep = $"⭕ Pending Quote";
                                 pillColor = "warning";
                             }
-                            else if (order?.PortRequest is null && order?.ProductOrders is not null && order.ProductOrders.Where(x => x.PortedPhoneNumberId.HasValue is true).Any())
+                            else if (order?.PortRequest is null && order?.ProductOrders is not null && order.ProductOrders.AsValueEnumerable().Where(x => x.PortedPhoneNumberId.HasValue is true).Any())
                             {
                                 nextStep = $"⭕ Need Port";
                                 pillColor = "danger";

@@ -110,7 +110,10 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
         }
         catch (FlurlHttpException ex)
         {
-            message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
+            if (ex.StatusCode is not 404)
+            {
+                message = $"❌ Failed to get client registration data from sms.callpipe.com. {ex.Message}";
+            }
         }
 
         var viewOrders = new List<OwnedNumberResult>();

@@ -6,6 +6,8 @@ using NumberSearch.DataAccess.Models;
 using System.Collections.Generic;
 using System.Linq;
 
+using ZLinq;
+
 namespace NumberSearch.Mvc.Models
 {
     public class Cart
@@ -80,7 +82,7 @@ namespace NumberSearch.Mvc.Models
             var productOrders = ProductOrdersToDictionary();
 
             // If it's a valid phone number make sure the keys match.
-            if (phoneNumber?.DialedNumber?.Length == 10 && phoneNumber.DialedNumber == productOrder?.DialedNumber)
+            if (phoneNumber?.DialedNumber?.Length is 10 && phoneNumber.DialedNumber == productOrder?.DialedNumber)
             {
                 phoneNumbers[phoneNumber.DialedNumber] = phoneNumber;
                 PhoneNumbers = [.. phoneNumbers.Values];
@@ -499,37 +501,37 @@ namespace NumberSearch.Mvc.Models
 
         public Dictionary<string, PhoneNumber> PhoneNumbersToDictionary()
         {
-            return PhoneNumbers is not null ? PhoneNumbers.ToDictionary(x => x.DialedNumber, x => x) : [];
+            return PhoneNumbers is not null ? PhoneNumbers.AsValueEnumerable().ToDictionary(x => x.DialedNumber, x => x) : [];
         }
 
         public Dictionary<string, PortedPhoneNumber> PortedPhoneNumbersToDictionary()
         {
-            return PortedPhoneNumbers is not null ? PortedPhoneNumbers.ToDictionary(x => x.PortedPhoneNumberId.ToString(), x => x) : [];
+            return PortedPhoneNumbers is not null ? PortedPhoneNumbers.AsValueEnumerable().ToDictionary(x => x.PortedPhoneNumberId.ToString(), x => x) : [];
         }
 
         public Dictionary<string, VerifiedPhoneNumber> VerifiedPhoneNumbersToDictionary()
         {
-            return VerifiedPhoneNumbers is not null ? VerifiedPhoneNumbers.ToDictionary(x => x.VerifiedPhoneNumberId.ToString(), x => x) : [];
+            return VerifiedPhoneNumbers is not null ? VerifiedPhoneNumbers.AsValueEnumerable().ToDictionary(x => x.VerifiedPhoneNumberId.ToString(), x => x) : [];
         }
 
         public Dictionary<string, PurchasedPhoneNumber> PurchasedPhoneNumbersToDictionary()
         {
-            return PurchasedPhoneNumbers is not null ? PurchasedPhoneNumbers.ToDictionary(x => x.DialedNumber, x => x) : [];
+            return PurchasedPhoneNumbers is not null ? PurchasedPhoneNumbers.AsValueEnumerable().ToDictionary(x => x.DialedNumber, x => x) : [];
         }
 
         public Dictionary<string, Product> ProductsToDictionary()
         {
-            return Products is not null ? Products.ToDictionary(x => x.ProductId.ToString(), x => x) : [];
+            return Products is not null ? Products.AsValueEnumerable().ToDictionary(x => x.ProductId.ToString(), x => x) : [];
         }
 
         public Dictionary<string, Service> ServicesToDictionary()
         {
-            return Services is not null ? Services.ToDictionary(x => x.ServiceId.ToString(), x => x) : [];
+            return Services is not null ? Services.AsValueEnumerable().ToDictionary(x => x.ServiceId.ToString(), x => x) : [];
         }
 
         public Dictionary<string, Coupon> CouponsToDictionary()
         {
-            return Coupons is not null ? Coupons.ToDictionary(x => x.CouponId.ToString(), x => x) : [];
+            return Coupons is not null ? Coupons.AsValueEnumerable().ToDictionary(x => x.CouponId.ToString(), x => x) : [];
         }
     }
 }

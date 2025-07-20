@@ -1,4 +1,5 @@
 ﻿@using AccelerateNetworks.Operations
+@using ZLinq
 @model OwnedNumberResultForm
 @{
     ViewData["Title"] = "Owned Phone Numbers";
@@ -37,10 +38,10 @@
                     <tbody>
                         <tr>
                             <td>@Model?.Results.Length</td>
-                            <td>@Model?.Results.Where(x => x.Owned.Status is "Active").Count()</td>
-                            <td>@Model?.Results.Where(x => x.Owned.Status is "Cancelled").Count()</td>
-                            <td>@Model?.Results.Where(x => x.Owned.Status is "Porting In").Count()</td>
-                            <td>@Model?.Results.Where(x => x.Owned.Status is "Porting Out").Count()</td>
+                            <td>@Model?.Results.AsValueEnumerable().Where(x => x.Owned.Status is "Active").Count()</td>
+                            <td>@Model?.Results.AsValueEnumerable().Where(x => x.Owned.Status is "Cancelled").Count()</td>
+                            <td>@Model?.Results.AsValueEnumerable().Where(x => x.Owned.Status is "Porting In").Count()</td>
+                            <td>@Model?.Results.AsValueEnumerable().Where(x => x.Owned.Status is "Porting Out").Count()</td>
                         </tr>
                     </tbody>
                 </table>
@@ -61,11 +62,11 @@
                     <tbody>
                         @if (Model?.Results is not null && Model.Results.Length != 0)
                         {
-                            foreach (string provider in Model.Results.Select(x => x.Owned.IngestedFrom).Distinct())
+                            foreach (string provider in Model.Results.AsValueEnumerable().Select(x => x.Owned.IngestedFrom).Distinct())
                             {
                                 <tr>
                                     <td>@provider</td>
-                                    <td>@Model.Results.Where(x => x.Owned.IngestedFrom == provider).Count()</td>
+                                    <td>@Model.Results.AsValueEnumerable().Where(x => x.Owned.IngestedFrom == provider).Count()</td>
                                 </tr>
                             }
                         }
@@ -91,7 +92,7 @@
         <tbody>
             @if (Model?.Results is not null && Model.Results.Length != 0)
             {
-                foreach (var number in Model.Results.Where(x => x.Owned.IngestedFrom != "Test"))
+                foreach (var number in Model.Results.AsValueEnumerable().Where(x => x.Owned.IngestedFrom != "Test"))
                 {
                     var ingestedBadge = number.Owned.IngestedFrom;
                     switch (number.Owned.IngestedFrom)

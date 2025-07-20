@@ -1,4 +1,5 @@
-﻿@model NumberSearch.Ops.Models.EditOrderResult
+﻿@using ZLinq
+@model NumberSearch.Ops.Models.EditOrderResult
 @{
     ViewData["Title"] = "Order";
 }
@@ -569,7 +570,7 @@
                                     foreach (var item in Model.Cart.PurchasedPhoneNumbers)
                                     {
                                         var checkFind = productOrders.TryGetValue(item.DialedNumber!.ToString(), out var productOrder);
-                                        var registered = Model?.EmergencyInformation.FirstOrDefault(x => x.DialedNumber == item.DialedNumber);
+                                        var registered = Model?.EmergencyInformation.AsValueEnumerable().FirstOrDefault(x => x.DialedNumber == item.DialedNumber);
                                         if (checkFind)
                                         {
                                             var formattedNumber = $"({item.NPA}) {item.NXX}-{item.XXXX?.ToString("0000")}";
@@ -634,14 +635,14 @@
                             }
                             @if (Model?.Cart?.PortedPhoneNumbers is not null)
                             {
-                                var freePortedNumbers = Model?.Cart?.Services?.Count();
+                                var freePortedNumbers = Model?.Cart?.Services?.AsValueEnumerable().Count();
 
-                                foreach (var item in Model!.Cart.PortedPhoneNumbers.ToArray())
+                                foreach (var item in Model!.Cart.PortedPhoneNumbers.AsValueEnumerable().ToArray())
                                 {
                                     var calculatedCost = 20;
 
-                                    var productOrder = Model!.Cart.ProductOrders?.Where(x => x.PortedDialedNumber == item.PortedDialedNumber).FirstOrDefault();
-                                    var registered = Model?.EmergencyInformation.FirstOrDefault(x => x.DialedNumber == item.PortedDialedNumber);
+                                    var productOrder = Model!.Cart.ProductOrders?.AsValueEnumerable().Where(x => x.PortedDialedNumber == item.PortedDialedNumber).FirstOrDefault();
+                                    var registered = Model?.EmergencyInformation.AsValueEnumerable().FirstOrDefault(x => x.DialedNumber == item.PortedDialedNumber);
 
                                     var location = $"{item?.City ?? "Unknown City"}, {item?.State ?? "Unknown State"}";
                                     var formattedNumber = $"({item?.NPA}) {item?.NXX}-{item?.XXXX.ToString("0000")}";
@@ -881,7 +882,7 @@
                                 {
                                     foreach (var item in Model.ProductItems)
                                     {
-                                        var productName = Model?.Cart?.Products?.Where(x => x.ProductId == item?.ProductId).FirstOrDefault();
+                                        var productName = Model?.Cart?.Products?.AsValueEnumerable().Where(x => x.ProductId == item?.ProductId).FirstOrDefault();
                                         <tr>
                                             <td><h4>@productName?.Name</h4></td>
                                             <td>@item?.SerialNumber</td>

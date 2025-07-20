@@ -1,4 +1,5 @@
 ﻿@using System.Web;
+@using ZLinq
 @*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
@@ -28,19 +29,19 @@
 }
 <h3>Failed Inbound Messages in the Last 3 Days</h3>
 @{
-    var inbound = Model?.FailedMessages.Where(x => x.MessageSource is Models.MessageSource.Incoming).GroupBy(x => x.To).OrderByDescending(x => x.Count());
-    if (inbound is not null && inbound.Count() > 0)
+    var inbound = Model.FailedMessages.AsValueEnumerable().Where(x => x.MessageSource is Models.MessageSource.Incoming).GroupBy(x => x.To).OrderByDescending(x => x.Count());
+    if (inbound.Count() > 0)
     {
         <ul>
             @foreach (var failed in inbound)
             {
-                var number = failed.FirstOrDefault()?.To;
+                var number = failed.AsValueEnumerable().FirstOrDefault()?.To;
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number ?? string.Empty, out var phoneNumber);
                 if (checkParse && !string.IsNullOrWhiteSpace(number) && Model is not null)
                 {
-                    var ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == phoneNumber.DialedNumber);
+                    var ownedPhoneNumber = Model.Owned.AsValueEnumerable().FirstOrDefault(x => x.DialedNumber == phoneNumber.DialedNumber);
                     string AsDialedLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{number}</a>" : number;
-                    var usage = Model.ClientRegistrations.FirstOrDefault(x => x.AsDialed == number);
+                    var usage = Model.ClientRegistrations.AsValueEnumerable().FirstOrDefault(x => x.AsDialed == number);
                     string newLine = HttpUtility.UrlEncode(System.Environment.NewLine);
                     string email = "support@acceleratenetworks.com";
                     string subject = $"{failed.Count()} Messages received for {number}";
@@ -57,7 +58,7 @@
                     @if (usage is not null)
                     {
                         <li>
-                            @Html.Raw(AsDialedLink) has @failed.Count() failed messages.
+                            @Html.Raw(AsDialedLink) has @failed.AsValueEnumerable().Count() failed messages.
                             Registered with sms.callpipe.com. @usage.RegisteredUpstream
                             Upstream Status: @usage.UpstreamStatusDescription
                             <a href='./Register?dialedNumber={@phoneNumber.DialedNumber}'>Reregister</a>
@@ -66,7 +67,7 @@
                     else
                     {
                         <li>
-                            @Html.Raw(AsDialedLink) has @failed.Count() failed messages.
+                            @Html.Raw(AsDialedLink) has @failed.AsValueEnumerable().Count() failed messages.
                             Not registered with sms.callpipe.com.
                             <a href="mailto:@email?subject=@subject&body=@body&cc=support@acceleratenetworks.com">Upsell them with this email.</a>
                         </li>
@@ -75,7 +76,7 @@
                 else
                 {
                     <li>
-                        @number has @failed.Count() failed messages. File a GitHub issue for these so Tom can figure out why we're not recording a To number.
+                        @number has @failed.AsValueEnumerable().Count() failed messages. File a GitHub issue for these so Tom can figure out why we're not recording a To number.
                     </li>
                 }
             }
@@ -88,24 +89,24 @@
 }
 <h3>Failed Outbound Messages in the Last 3 Days</h3>
 @{
-    var outbound = Model?.FailedMessages.Where(x => x.MessageSource is Models.MessageSource.Outgoing).GroupBy(x => x.To).OrderByDescending(x => x.Count());
-    if (outbound is not null && outbound.Count() > 0)
+    var outbound = Model.FailedMessages.AsValueEnumerable().Where(x => x.MessageSource is Models.MessageSource.Outgoing).GroupBy(x => x.To).OrderByDescending(x => x.Count());
+    if (outbound.Count() > 0)
     {
         <ul>
             @foreach (var failed in outbound)
             {
-                var number = failed.FirstOrDefault()?.To;
+                var number = failed.AsValueEnumerable().FirstOrDefault()?.To;
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number ?? string.Empty, out var phoneNumber);
                 if (checkParse && !string.IsNullOrWhiteSpace(number) && Model is not null)
                 {
-                    var ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == phoneNumber.DialedNumber);
+                    var ownedPhoneNumber = Model.Owned.AsValueEnumerable().FirstOrDefault(x => x.DialedNumber == phoneNumber.DialedNumber);
                     string AsDialedLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{number}</a>" : number;
-                    var usage = Model.ClientRegistrations.FirstOrDefault(x => x.AsDialed == number);
+                    var usage = Model.ClientRegistrations.AsValueEnumerable().FirstOrDefault(x => x.AsDialed == number);
 
                     @if (usage is not null)
                     {
                         <li>
-                            @Html.Raw(AsDialedLink) has @failed.Count() failed messages.
+                            @Html.Raw(AsDialedLink) has @failed.AsValueEnumerable().Count() failed messages.
                             Registered with sms.callpipe.com. @usage.RegisteredUpstream
                             Upstream Status: @usage.UpstreamStatusDescription
                             <a href='./Register?dialedNumber={@phoneNumber.DialedNumber}'>Reregister</a>
@@ -114,7 +115,7 @@
                     else
                     {
                         <li>
-                            @Html.Raw(AsDialedLink) has @failed.Count() failed messages.
+                            @Html.Raw(AsDialedLink) has @failed.AsValueEnumerable().Count() failed messages.
                             Not registered with sms.callpipe.com.
                         </li>
                     }
@@ -122,7 +123,7 @@
                 else
                 {
                     <li>
-                        @number has @failed.Count() failed messages. File a GitHub issue for these so Tom can figure out why we're not recording a To number.
+                        @number has @failed.AsValueEnumerable().Count() failed messages. File a GitHub issue for these so Tom can figure out why we're not recording a To number.
                         <p>@System.Text.Json.JsonSerializer.Serialize(failed)</p>
                     </li>
                 }
@@ -158,10 +159,10 @@
                 foreach (var result in Model.FailedMessages)
                 {
                     var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(result.From, out var fromPhoneNumber);
-                    var ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == fromPhoneNumber.DialedNumber);
+                    var ownedPhoneNumber = Model.Owned.AsValueEnumerable().FirstOrDefault(x => x.DialedNumber == fromPhoneNumber.DialedNumber);
                     string FromLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{result.From}</a>" : result.From;
                     checkParse = PhoneNumbersNA.PhoneNumber.TryParse(result.To, out var toPhoneNumber);
-                    ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == toPhoneNumber.DialedNumber);
+                    ownedPhoneNumber = Model.Owned.AsValueEnumerable().FirstOrDefault(x => x.DialedNumber == toPhoneNumber.DialedNumber);
                     string ToLink = checkParse && ownedPhoneNumber is not null ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{result.To}</a>" : result.To;
 
                     <tr>
