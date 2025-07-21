@@ -164,7 +164,7 @@ namespace NumberSearch.Tests
             // Assert        
             Assert.False(string.IsNullOrWhiteSpace(result.id));
             Assert.Equal("oQeZZ5vepZ", result.id);
-            Assert.Equal(0,result.balance);
+            Assert.Equal(0, result.balance);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 
@@ -544,18 +544,18 @@ namespace NumberSearch.Tests
 
         }
 
+
         [Fact]
         public async Task GetDestinationDetailsAsync()
         {
             // Arrange
 
             // Act
-            var result = await DestinationDetails.GetByDialedNumberAsync("4254541206".AsMemory(), _configuration.FusionPBXUsername.AsMemory(), _configuration.FusionPBXPassword.AsMemory());
+            var result = await DestinationDetails.GetByDialedNumberAsync("4254541206".AsMemory(), _configuration.FusionPBXConnectionString.AsMemory());
 
             // Assert        
             Assert.True(result.destination_enabled);
             output.WriteLine(JsonSerializer.Serialize(result));
-
         }
 
         [Fact]
@@ -564,7 +564,7 @@ namespace NumberSearch.Tests
             // Arrange
 
             // Act
-            var result = await DomainDetails.GetByDomainIdAsync("f86cace8-9d5c-47df-b084-48e6cb58a95d".AsMemory(), _configuration.FusionPBXUsername.AsMemory(), _configuration.FusionPBXPassword.AsMemory());
+            var result = await DomainDetails.GetByDomainIdAsync(new Guid("f86cace8-9d5c-47df-b084-48e6cb58a95d"), _configuration.FusionPBXConnectionString.AsMemory());
 
             // Assert        
             Assert.False(string.IsNullOrWhiteSpace(result.domain_name));

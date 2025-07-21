@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.Models;
 
 using Serilog;
@@ -31,11 +30,10 @@ namespace NumberSearch.Ingest
             ReadOnlyMemory<char> EmailOrders,
             ReadOnlyMemory<char> EmailDan,
             ReadOnlyMemory<char> EmailTom,
-            ReadOnlyMemory<char> FusionPBXUsername,
-            ReadOnlyMemory<char> FusionPBXPassword,
             ReadOnlyMemory<char> MessagingUsername,
             ReadOnlyMemory<char> MessagingPassword,
-            ReadOnlyMemory<char> MessagingURL
+            ReadOnlyMemory<char> MessagingURL,
+            ReadOnlyMemory<char> FusionPBXConnectionString
         );
 
         public static async Task Main()
@@ -60,8 +58,6 @@ namespace NumberSearch.Ingest
                 EmailOrders = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailOrders")) ? throw new Exception("EmailOrders config key is blank.") : config.GetConnectionString("EmailOrders").AsMemory(),
                 EmailDan = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailDan")) ? throw new Exception("EmailDan config key is blank.") : config.GetConnectionString("EmailDan").AsMemory(),
                 EmailTom = string.IsNullOrWhiteSpace(config.GetConnectionString("EmailTom")) ? throw new Exception("EmailTom config key is blank.") : config.GetConnectionString("EmailTom").AsMemory(),
-                FusionPBXUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("FusionPBXUsername")) ? throw new Exception("FusionPBXUsername config key is blank.") : config.GetConnectionString("FusionPBXUsername").AsMemory(),
-                FusionPBXPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("FusionPBXPassword")) ? throw new Exception("FusionPBXPassword config key is blank.") : config.GetConnectionString("FusionPBXPassword").AsMemory(),
                 MessagingUsername = string.IsNullOrWhiteSpace(config.GetConnectionString("MessagingUsername")) ? throw new Exception("MessagingUsername config key is blank.") : config.GetConnectionString("MessagingUsername").AsMemory(),
                 MessagingPassword = string.IsNullOrWhiteSpace(config.GetConnectionString("MessagingPassword")) ? throw new Exception("MessagingPassword config key is blank.") : config.GetConnectionString("MessagingPassword").AsMemory(),
                 MessagingURL = string.IsNullOrWhiteSpace(config.GetConnectionString("MessagingURL")) ? throw new Exception("MessagingURL config key is blank.") : config.GetConnectionString("MessagingURL").AsMemory()
@@ -127,7 +123,7 @@ namespace NumberSearch.Ingest
                         // Verify that all the Executive numbers are still purchasable for the priority area codes.
                         await Provider.VerifyAddToCartAsync(AreaCode.Priority, "Executive".AsMemory(), appConfig.Postgresql, appConfig.BulkVSUsername, appConfig.BulkVSPassword,
                             appConfig.PComNetUsername, appConfig.PComNetPassword);
-                        await Owned.MatchOwnedNumbersToFusionPBXAsync(appConfig.Postgresql, appConfig.FusionPBXUsername, appConfig.FusionPBXPassword);
+                        await Owned.MatchOwnedNumbersToFusionPBXAsync(appConfig.Postgresql, appConfig.FusionPBXConnectionString);
                         await Orders.CheckForQuoteConversionsAsync(appConfig.Postgresql, appConfig.InvoiceNinjaToken, appConfig.SmtpUsername, appConfig.SmtpPassword);
                         await Orders.CheckForInvoicePaymentAsync(appConfig.Postgresql, appConfig.InvoiceNinjaToken, appConfig.SmtpUsername, appConfig.SmtpPassword);
                     }

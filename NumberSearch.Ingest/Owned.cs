@@ -145,7 +145,7 @@ namespace NumberSearch.Ingest
             await VerifyEmergencyInformationAsync(configuration.Postgresql, configuration.BulkVSUsername, configuration.BulkVSPassword);
 
             // Match numbers to destinations and domains in FusionPBX.
-            await MatchOwnedNumbersToFusionPBXAsync(configuration.Postgresql, configuration.FusionPBXUsername, configuration.FusionPBXPassword);
+            await MatchOwnedNumbersToFusionPBXAsync(configuration.Postgresql, configuration.FusionPBXConnectionString);
 
             // Update the statuses on old or orphaned port requests and ported numbers.
             await PortRequests.UpdatePortRequestsAndNumbersByExternalIdAsync(configuration);
@@ -240,7 +240,7 @@ namespace NumberSearch.Ingest
             return [.. changes];
         }
 
-        public static async Task MatchOwnedNumbersToFusionPBXAsync(ReadOnlyMemory<char> connectionString, ReadOnlyMemory<char> fusionPBXUsername, ReadOnlyMemory<char> fusionPBXPassword)
+        public static async Task MatchOwnedNumbersToFusionPBXAsync(ReadOnlyMemory<char> connectionString, ReadOnlyMemory<char> fusionpbxConnectionString)
         {
             Log.Information($"[OwnedNumbers] Matching FusionPBX data for Owned Phone numbers.");
 
@@ -248,10 +248,10 @@ namespace NumberSearch.Ingest
 
             try
             {
-                DestinationDetails destination = await DestinationDetails.GetByDialedNumberAsync("2068588757".AsMemory(), fusionPBXUsername, fusionPBXPassword);
+                DestinationDetails destination = await DestinationDetails.GetByDialedNumberAsync("2068588757".AsMemory(), fusionpbxConnectionString);
 
                 // If we aren't getting good data back from FusionPBX then skip this updating process.
-                if (!string.IsNullOrWhiteSpace(destination.domain_uuid))
+                if (destination.domain_uuid is not null && destination.domain_uuid != Guid.Empty)
                 {
                     foreach (var ownedNumber in ownedNumbers.Where(x => x.Active))
                     {
@@ -259,19 +259,17 @@ namespace NumberSearch.Ingest
 
                         try
                         {
-                            destination = await DestinationDetails.GetByDialedNumberAsync(ownedNumber.DialedNumber.AsMemory(), fusionPBXUsername, fusionPBXPassword);
+                            destination = await DestinationDetails.GetByDialedNumberAsync(ownedNumber.DialedNumber.AsMemory(), fusionpbxConnectionString);
 
-                            if (!string.IsNullOrWhiteSpace(destination.domain_uuid))
+                            if (destination.domain_uuid is not null && destination.domain_uuid != Guid.Empty)
                             {
-                                var checkDestinationuuid = Guid.TryParse(destination.destination_uuid, out var parsedDestionationId);
-
-                                if (ownedNumber.FPBXDestinationId != parsedDestionationId)
+                                if (ownedNumber.FPBXDestinationId != destination.destination_uuid)
                                 {
-                                    ownedNumber.FPBXDestinationId = parsedDestionationId;
+                                    ownedNumber.FPBXDestinationId = destination.destination_uuid;
                                     updated = true;
                                 }
 
-                                var domain = await DomainDetails.GetByDomainIdAsync(destination.domain_uuid.AsMemory(), fusionPBXUsername, fusionPBXPassword);
+                                var domain = await DomainDetails.GetByDomainIdAsync(destination.domain_uuid ?? Guid.Empty, fusionpbxConnectionString);
 
                                 if (!string.IsNullOrWhiteSpace(domain.domain_name))
                                 {
@@ -287,11 +285,9 @@ namespace NumberSearch.Ingest
                                         updated = true;
                                     }
 
-                                    var checkDomainuuid = Guid.TryParse(domain.domain_uuid, out var parsedDomainId);
-
-                                    if (checkDomainuuid && ownedNumber.FPBXDomainId != parsedDomainId)
+                                    if (domain.domain_uuid != Guid.Empty && ownedNumber.FPBXDomainId != domain.domain_uuid)
                                     {
-                                        ownedNumber.FPBXDomainId = parsedDomainId;
+                                        ownedNumber.FPBXDomainId = domain.domain_uuid;
                                         updated = true;
                                     }
                                 }
@@ -322,10 +318,10 @@ namespace NumberSearch.Ingest
                     }
                 }
             }
-            catch (FlurlHttpException ex)
+            catch (Exception ex)
             {
-                var message = await ex.GetResponseStringAsync();
-                Log.Warning("[OwnedNumbers] Failed to find destination and domain information for known good owned number {FailureMessage} : {StatusCode}", message, ex.StatusCode);
+                var message = ex.Message;
+                Log.Warning("[OwnedNumbers] Failed to find destination and domain information for known good owned number {FailureMessage} : {StatusCode}", message, ex.InnerException);
             }
 
             Log.Information($"[OwnedNumbers] Updated FusionPBX data for Owned Phone numbers.");
