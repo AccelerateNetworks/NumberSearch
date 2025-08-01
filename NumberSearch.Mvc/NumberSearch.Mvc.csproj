@@ -45,7 +45,7 @@
 		<PackageReference Include="Serilog.Sinks.Postgresql.Alternative" Version="4.2.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" />
 		<PackageReference Include="WriteAs.NET" Version="1.2.1" />
-		<PackageReference Include="ZLinq" Version="1.5.1" />
+		<PackageReference Include="ZLinq" Version="1.5.2" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\FirstCom\FirstCom.csproj" />
