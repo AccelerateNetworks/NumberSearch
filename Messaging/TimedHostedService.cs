@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 
 using System.Runtime.InteropServices;
+using System.Text.Json;
 
 namespace Messaging
 {
@@ -81,6 +82,15 @@ namespace Messaging
             _logger.LogInformation("[Background Worker] Send Message Request: {message}", System.Text.Json.JsonSerializer.Serialize(message));
             var response = await Endpoints.SendMessageAsync(message, false, appSettings, messagingContext);
             var text = System.Text.Json.JsonSerializer.Serialize(response.Result as Ok<SendMessageResponse>);
+
+            // Get the message record and then add the incoming email info to it?!? This will make it easier to debug.
+            var messageRecord = await messagingContext.Messages.Where(x => x.From == email.From && x.MessageSource == MessageSource.Outgoing).OrderByDescending(x => x.DateReceivedUTC).FirstOrDefaultAsync();
+            if (messageRecord is not null && messageRecord.Id != Guid.Empty)
+            {
+                messageRecord.EmailMessage = JsonSerializer.Serialize(email);
+                messageRecord.ForwardedToEmail = true;
+                await messagingContext.SaveChangesAsync();
+            }
             text = string.IsNullOrWhiteSpace(text) ? System.Text.Json.JsonSerializer.Serialize(response.Result as BadRequest<SendMessageResponse>) : text;
             _logger.LogInformation("[Background Worker] Send Message Response: {text}", text);
         }

@@ -596,7 +596,8 @@ try
                     var myUri = new Uri(client.CallbackUrl);
                     string fbxClientDomain = myUri.GetLeftPart(System.UriPartial.Authority);
                     string messageLink = $"<hr/><p>Reply in <a href='{fbxClientDomain}' target='_blank'>Web Texting</a> from <a href='https://acceleratenetworks.com/Phones/WebTexting' target='_blank'>Accelerate Networks</a> 🚀</p>";
-                    string messageContext = $"<p>You've received a new text message from {toForward.From} to {client.AsDialed} at {toForward.DateReceivedUTC} UTC.</p>";
+                    var localTime = DateTime.SpecifyKind(toForward.DateReceivedUTC, DateTimeKind.Utc).ToLocalTime();
+                    string messageContext = $"<p>You've received a new text message from {toForward.From} to {client.AsDialed} at {localTime}.</p>";
 
                     var email = new EmailMessage
                     {
@@ -606,6 +607,12 @@ try
                     };
 
                     var checkSend = await email.SendEmailAsync(appSettings.ConnectionStrings.EmailUsername, appSettings.ConnectionStrings.EmailPassword, $"{toForward.From}@texts.acceleratenetworks.com", [.. attachmentPaths]);
+                    if (checkSend)
+                    {
+                        messageRecord.EmailMessage = JsonSerializer.Serialize(email);
+                        messageRecord.ForwardedToEmail = true;
+                        await db.SaveChangesAsync();
+                    }
                 }
 
                 Log.Information("{@messageRecord}", messageRecord);
@@ -2024,7 +2031,8 @@ public static class Endpoints
                     var myUri = new Uri(client.CallbackUrl);
                     string fbxClientDomain = myUri.GetLeftPart(System.UriPartial.Authority);
                     string messageLink = $"<hr/><p>Reply in <a href='{fbxClientDomain}' target='_blank'>Web Texting</a> from <a href='https://acceleratenetworks.com/Phones/WebTexting' target='_blank'>Accelerate Networks</a> 🚀</p>";
-                    string messageContext = $"<p>You've received a new text message from {toForward.From} to {client.AsDialed} at {toForward.DateReceivedUTC.ToLocalTime()}.</p>";
+                    var localTime = DateTime.SpecifyKind(toForward.DateReceivedUTC, DateTimeKind.Utc).ToLocalTime();
+                    string messageContext = $"<p>You've received a new text message from {toForward.From} to {client.AsDialed} at {localTime}.</p>";
 
                     var email = new EmailMessage
                     {
@@ -2034,6 +2042,12 @@ public static class Endpoints
                     };
 
                     var checkSend = await email.SendEmailAsync(appSettings.ConnectionStrings.EmailUsername, appSettings.ConnectionStrings.EmailPassword, $"{toForward.From}@texts.acceleratenetworks.com", null);
+                    if (checkSend)
+                    {
+                        messageRecord.EmailMessage = JsonSerializer.Serialize(email);
+                        messageRecord.ForwardedToEmail = true;
+                        await db.SaveChangesAsync();
+                    }
                 }
 
                 Log.Information("{@messageRecord}", messageRecord);
@@ -2423,6 +2437,8 @@ namespace Models
         public string RawResponse { get; set; } = string.Empty;
         public bool Succeeded { get; set; } = false;
         public string ToForward { get; set; } = string.Empty;
+        public bool ForwardedToEmail { get; set; } = false;
+        public string EmailMessage { get; set; } = string.Empty;
     }
 
     // Format forward to client apps as JSON.
@@ -2482,6 +2498,8 @@ namespace Models
     public enum MessageType { SMS, MMS };
     public enum MessageSource { Incoming, Outgoing };
 
+    // Use this string as a template to create Db migrations in the VS2022 Package Manager Console
+    // Add-Migration replaceTHISname -Project Messaging -Context MessagingContext
     public class MessagingContext : DbContext
     {
         public MessagingContext(DbContextOptions<MessagingContext> options) : base(options)
