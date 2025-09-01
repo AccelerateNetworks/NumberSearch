@@ -1,4 +1,5 @@
 ﻿@using System.Web;
+@using System.Text.Json
 @using ZLinq
 @*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -8,6 +9,7 @@
 @{
     ViewData["Title"] = "Messaging";
 }
+
 <div class="d-flex justify-content-between align-items-center">
     <h1 class="display-4 p-3">✉️ Messaging</h1>
 </div>
@@ -127,7 +129,7 @@
         </tbody>
     </table>
 </div>
-<div class="row">
+<div class="row mb-3">
     <form method="post" action="/Messaging/RefreshCarrier">
         <div class="col-6">
             <div class="input-group mb-3">
@@ -152,4 +154,41 @@
             *@        <a class="btn btn-primary" href="/Messaging/ExportToCSV">Export to CSV</a>
         </div>
     </form>
+</div>
+@{
+    var urls = Model?.ClientRegistrations.Select(x => x.CallbackUrl).Distinct();
+    List<(string, int)> pairs = new();
+    @foreach (string url in urls)
+    {
+        int x = Model?.ClientRegistrations.Count(x => x.CallbackUrl == url) ?? 0;
+        pairs.Add(new(url, x));
+    }
+
+    var last = Model.ClientRegistrations.MaxBy(x => x.DateRegistered);
+}
+<div class="row">
+    <div class="col">
+        <h4>Registrations By CallbackURL</h4>
+        <p class="m-0">@Model.ClientRegistrations.Length Total Registrations</p>
+        <p>Most recent registration by @last?.AsDialed to @last?.CallbackUrl at @last?.DateRegistered</p>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>CallbackURL</th>
+                        <th>Count of Numbers</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var url in pairs.OrderByDescending(x => x.Item2))
+                    {
+                        <tr>
+                            <td><a target="_blank" href="@url.Item1">@url.Item1</a></td>
+                            <td>@url.Item2</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
