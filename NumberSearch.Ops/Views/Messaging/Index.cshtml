@@ -31,7 +31,7 @@
 }
 <form action="/Messaging/Register" method="post" class="needs-validation">
     @Html.AntiForgeryToken()
-    <h4 class="mb-3">Register a Phone Number for Messaging Service</h4>
+    <h4 class="mb-3">Register a Phone Number for Messaging Service (WebTexting)</h4>
     <div class="row">
         <div class="col">
             <p>Phone Numbers registered for messaging service using this method are registered against sms.callpipe.com. After being received from the upstream vendor they will be forwarded along with the Client Secret to the Callback URL you set here. The client app can then use the Client Secret to verify that the incoming messages are legitimate.</p>
@@ -51,6 +51,10 @@
                 <input asp-for="RegistrationRequest.ClientSecret" type="text" class="form-control" placeholder="The secret that will be required for validating messages to and from the registered client.">
                 <label for="clientSecret">Client Secret</label>
             </div>
+            <div class="form-floating mb-3">
+                <input asp-for="RegistrationRequest.Email" type="text" class="form-control" placeholder="Provide an email to enable text to email forwarding.">
+                <label for="clientSecret">Email Address to Forward Messages To</label>
+            </div>
             <div class="col">
                 <div class="d-grid gap-2">
                     <button type="submit" class="btn btn-outline-danger btn-block">Register</button>
@@ -62,7 +66,7 @@
 </form>
 <form action="/Messaging/ToEmail" method="post" class="needs-validation">
     @Html.AntiForgeryToken()
-    <h4 class="mb-3">Register a Phone Number for Messaging to Email Service</h4>
+    <h4 class="mb-3">Register a Phone Number for Messaging to Email Service (Endstream)</h4>
     <div class="row">
         <div class="col">
             <p>Phone Numbers that are registered for service using this method will be enabled for SMS service and routed to our EPID with our upstream vendor. Messaging to email routed numbers will not show up in the list of active users below nor will messages show up in FusionPBX or *.sms.callpipe.com.</p>
@@ -96,6 +100,7 @@
                 <th>Upstream Status Description</th>
                 <th>Carrier Name</th>
                 <th>Trunk Group</th>
+                <th>Email Forwarding</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -109,19 +114,22 @@
                     string AsDialedLink = checkParse && ownedPhoneNumber is not null && ownedPhoneNumber.Active ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{result.AsDialed}</a>" : $"<a class='btn btn-danger' href='/Messaging/Remove?dialedNumber={result.AsDialed}' target='_blank'> Remove {result.AsDialed}</a>";
                     string Carrier = checkParse && ownedPhoneNumber is not null ? ownedPhoneNumber?.TwilioCarrierName ?? "No Data" : "No Data";
                     string TrunkGroup = checkParse && ownedPhoneNumber is not null ? ownedPhoneNumber?.TrunkGroup ?? "No Data" : "No Data";
+                    string Email = checkParse && !string.IsNullOrWhiteSpace(result.Email) ? $"{result.Email}" : $"<a href='/Messaging/AddEmail?dialedNumber={result.AsDialed}'>Add Email</a>";
+
                     <tr>
                         <td>@Html.Raw(AsDialedLink)</td>
                         <td>@result.RegisteredUpstream</td>
                         <td>@result.UpstreamStatusDescription</td>
                         <td>@Carrier</td>
                         <td>@TrunkGroup</td>
+                        <td>@Html.Raw(Email)</td>
                         <td>
                             <div class="btn-group">
                                 <a class="btn btn-primary" href="/Messaging/RefreshStatus?dialedNumber=@result.AsDialed">Refresh Upstream</a>
                                 <a class="btn btn-primary" href="/Messaging/Reregister?dialedNumber=@result.AsDialed">Reregister</a>
                                 <a class="btn btn-primary" href="/Messaging/TwilioCarrier?dialedNumber=@result.AsDialed">Refresh Carrier</a>
+                                <a class="btn btn-danger" href="/Messaging/ToEmail/Unregister?dialedNumber=@result.AsDialed">Unregister Email</a>
                             </div>
-
                         </td>
                     </tr>
                 }
