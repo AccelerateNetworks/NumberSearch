@@ -25,7 +25,7 @@
 		<PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
 		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
 		<PackageReference Include="Serilog.Sinks.Postgresql.Alternative" Version="4.2.0" />
-		<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.5" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
 		<PackageReference Include="ZLinq" Version="1.5.3" />
 	</ItemGroup>
 
