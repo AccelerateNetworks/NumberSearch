@@ -1001,7 +1001,7 @@ Accelerate Networks
                                 var serializer = new CalendarSerializer();
                                 var icalString = serializer.SerializeToString(calendar);
 
-                                confirmationEmail.CalendarInvite = icalString;
+                                confirmationEmail.CalendarInvite = icalString ?? string.Empty;
                             }
 
                             // Suppress the confirmation emails.

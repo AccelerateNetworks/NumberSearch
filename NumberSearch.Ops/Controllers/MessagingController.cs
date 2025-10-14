@@ -73,6 +73,8 @@ namespace NumberSearch.Ops.Controllers
                         .WithOAuthBearerToken(token.AccessToken)
                         .GetJsonAsync<ClientRegistration[]>();
                 }
+
+                stats.AddRange(pageResult);
             }
             catch (FlurlHttpException ex)
             {
@@ -124,6 +126,7 @@ namespace NumberSearch.Ops.Controllers
                         .WithOAuthBearerToken(token.AccessToken)
                         .GetJsonAsync<ClientRegistration[]>();
                 }
+                stats.AddRange(pageResult);
             }
             catch (FlurlHttpException ex)
             {
@@ -192,6 +195,7 @@ namespace NumberSearch.Ops.Controllers
                         .WithOAuthBearerToken(token.AccessToken)
                         .GetJsonAsync<ClientRegistration[]>();
                 }
+                stats.AddRange(pageResult);
             }
             catch (FlurlHttpException ex)
             {
@@ -262,6 +266,7 @@ namespace NumberSearch.Ops.Controllers
                         .WithOAuthBearerToken(token.AccessToken)
                         .GetJsonAsync<ClientRegistration[]>();
                 }
+                stats.AddRange(pageResult);
             }
             catch (FlurlHttpException ex)
             {
@@ -362,6 +367,7 @@ namespace NumberSearch.Ops.Controllers
                                 .WithOAuthBearerToken(token.AccessToken)
                                 .GetJsonAsync<ClientRegistration[]>();
                         }
+                        stats2.AddRange(pageResult);
                     }
                     catch
                     {
@@ -400,6 +406,7 @@ namespace NumberSearch.Ops.Controllers
                         .WithOAuthBearerToken(token.AccessToken)
                         .GetJsonAsync<ClientRegistration[]>();
                 }
+                stats.AddRange(pageResult);
             }
             catch (FlurlHttpException ex)
             {
@@ -448,6 +455,7 @@ namespace NumberSearch.Ops.Controllers
                         .WithOAuthBearerToken(token.AccessToken)
                         .GetJsonAsync<ClientRegistration[]>();
                 }
+                stats.AddRange(pageResult);
             }
             catch (FlurlHttpException ex)
             {
@@ -504,6 +512,7 @@ namespace NumberSearch.Ops.Controllers
                         .WithOAuthBearerToken(token.AccessToken)
                         .GetJsonAsync<ClientRegistration[]>();
                 }
+                stats.AddRange(pageResult);
             }
             catch (FlurlHttpException ex)
             {
@@ -557,6 +566,7 @@ namespace NumberSearch.Ops.Controllers
                         .WithOAuthBearerToken(token.AccessToken)
                         .GetJsonAsync<ClientRegistration[]>();
                 }
+                stats.AddRange(pageResult);
             }
             catch (FlurlHttpException ex)
             {
@@ -680,6 +690,7 @@ namespace NumberSearch.Ops.Controllers
                         .WithOAuthBearerToken(token.AccessToken)
                         .GetJsonAsync<ClientRegistration[]>();
                 }
+                stats.AddRange(pageResult);
             }
             catch (FlurlHttpException ex)
             {
@@ -715,6 +726,7 @@ namespace NumberSearch.Ops.Controllers
                         .WithOAuthBearerToken(token.AccessToken)
                         .GetJsonAsync<ClientRegistration[]>();
                 }
+                stats.AddRange(pageResult);
             }
             catch (FlurlHttpException ex)
             {
@@ -831,6 +843,7 @@ namespace NumberSearch.Ops.Controllers
                         .WithOAuthBearerToken(token.AccessToken)
                         .GetJsonAsync<ClientRegistration[]>();
                 }
+                stats.AddRange(pageResult);
             }
             catch (FlurlHttpException ex)
             {

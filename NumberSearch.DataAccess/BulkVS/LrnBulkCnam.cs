@@ -47,6 +47,8 @@ namespace NumberSearch.DataAccess.BulkVS
             {
                 var resultData = await route.GetStringAsync();
 
+                if (string.IsNullOrWhiteSpace(resultData)) return new();
+
                 // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/invalid-json
                 // https://github.com/AccelerateNetworks/NumberSearch/issues/449
                 JsonSerializerOptions options = new()

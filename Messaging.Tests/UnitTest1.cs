@@ -165,6 +165,40 @@ namespace Messaging.Tests
             Assert.True(details.MessageSent);
         }
 
+        public record TokenResponse(string access_token, string token_type, int expires_in, string scope);
+
+        //[Fact]
+        //public async Task LoginToIntelliquentAsync()
+        //{
+        //    // Inteliquent API guide page 12
+        //    string route = "https://services-token.inteliquent.com/oauth2/token";
+        //    string client_id = "";
+        //    string client_secret = "";
+        //    string grant_type = "client_credentials";
+
+        //    var response = await route.PostUrlEncodedAsync(new
+        //    {
+        //        client_id = client_id,
+        //        client_secret = client_secret,
+        //        grant_type = grant_type
+        //    });
+        //    _output.WriteLine(await response.GetStringAsync());
+        //    Assert.True(response.StatusCode is 200);
+        //    var content = await response.GetJsonAsync<TokenResponse>();
+
+        //    route = "https://services.inteliquent.com/Services/1.0.0/tnAssignedList";
+
+        //    try
+        //    {
+        //        response = await route.WithOAuthBearerToken(content.access_token).PostJsonAsync(new { privateKey = client_id });
+        //        _output.WriteLine(await response.GetStringAsync());
+        //    }
+        //    catch (FlurlHttpException ex)
+        //    {
+        //        _output.WriteLine(await ex.GetResponseStringAsync());
+        //    }
+        }
+
         //[Fact]
         //public async Task SendMMSMessageAsync()
         //{

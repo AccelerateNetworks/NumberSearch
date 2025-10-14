@@ -34,6 +34,13 @@ namespace NumberSearch.DataAccess.BulkVS
             catch (FlurlHttpException ex)
             {
                 Log.Error("Failed to parse response from BulkVS for {dialedNumber}", dialedNumber);
+
+                // Contact support ask them to top up the BulkVS account
+                if (ex.StatusCode is 402)
+                {
+                    Log.Error("The BulkVS account is out of money. Please add more money to it >:(");
+                }
+
                 Log.Error(await ex.GetResponseStringAsync());
                 return new();
             }
