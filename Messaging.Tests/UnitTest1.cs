@@ -197,7 +197,7 @@ namespace Messaging.Tests
         //    {
         //        _output.WriteLine(await ex.GetResponseStringAsync());
         //    }
-        }
+        //}
 
         //[Fact]
         //public async Task SendMMSMessageAsync()
