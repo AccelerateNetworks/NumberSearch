@@ -34,9 +34,9 @@
                                 ingestedBadge = "<h4><span class='badge bg-warning'>TeleMessage</span></h4>";
                                 break;
                         }
-                        var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(order.DialedNumber, out var phoneNumber);
+                        var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(order?.DialedNumber ?? string.Empty, out var phoneNumber);
                         var ownedPhoneNumber = Model.Owned.FirstOrDefault(x => x.DialedNumber == phoneNumber.DialedNumber);
-                        string AsDialedLink = checkParse && ownedPhoneNumber is not null && ownedPhoneNumber.Active ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{order.DialedNumber}</a>" : $"{order.DialedNumber}";
+                        string AsDialedLink = checkParse && ownedPhoneNumber is not null && ownedPhoneNumber.Active ? $"<a href='/Home/OwnedNumbers/{ownedPhoneNumber.DialedNumber}' target='_blank'>{order?.DialedNumber}</a>" : $"{order?.DialedNumber}";
                         <tr>
                             <td data-order="@order?.DateOrdered.Ticks">
                                 @{

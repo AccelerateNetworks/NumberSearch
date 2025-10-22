@@ -33,13 +33,6 @@ namespace NumberSearch.Mvc.Controllers
     [ApiExplorerSettings(IgnoreApi = true)]
     public class CartController(MvcConfiguration mvcConfiguration) : Controller
     {
-        private readonly string _postgresql = mvcConfiguration.PostgresqlProd;
-        private readonly string _invoiceNinjaToken = mvcConfiguration.InvoiceNinjaToken;
-        private readonly string _emailOrders = mvcConfiguration.EmailOrders;
-        private readonly string _azureStorage = mvcConfiguration.AzureStorageAccount;
-        private readonly string _SmtpUsername = mvcConfiguration.SmtpUsername;
-        private readonly MvcConfiguration _configuration = mvcConfiguration;
-
         [HttpGet]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> IndexAsync(bool? emptyCart, string product, int? quantity)
@@ -61,7 +54,7 @@ namespace NumberSearch.Mvc.Controllers
             }
             else if (!string.IsNullOrWhiteSpace(product) && quantity is not null & quantity > 0)
             {
-                var products = await Product.GetAllAsync(_postgresql);
+                var products = await Product.GetAllAsync(mvcConfiguration.PostgresqlProd);
                 var productToUpdate = products.AsValueEnumerable().FirstOrDefault(x => x.Name == product);
 
                 if (productToUpdate is not null && cart.ProductOrders is not null)
@@ -164,14 +157,14 @@ namespace NumberSearch.Mvc.Controllers
                     cart.Order.OnsiteInstallation = true;
 
                     // Add the call out charge and install estimate to the Cart
-                    Product onsite = await Product.GetByIdAsync(Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"), _postgresql) ?? new();
-                    Product estimate = await Product.GetByIdAsync(Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"), _postgresql) ?? new();
+                    Product onsite = await Product.GetByIdAsync(Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"), mvcConfiguration.PostgresqlProd) ?? new();
+                    Product estimate = await Product.GetByIdAsync(Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"), mvcConfiguration.PostgresqlProd) ?? new();
 
                     // Sum all of the install time estimates.
                     var installation = GetInstallTimes(ref cart, ref onsite, ref estimate);
 
-                    ProductOrder onsiteProduct = installation.productOrderOnsite;
-                    ProductOrder estimateProduct = installation.productOrderEstimate;
+                    ProductOrder onsiteProduct = installation.ProductOrderOnsite;
+                    ProductOrder estimateProduct = installation.ProductOrderEstimate;
                     _ = cart.AddProduct(ref onsite, ref onsiteProduct);
                     _ = cart.AddProduct(ref estimate, ref estimateProduct);
                 }
@@ -182,7 +175,7 @@ namespace NumberSearch.Mvc.Controllers
             return View("Order", new CartResult { Cart = cart ?? new() });
         }
 
-        public readonly record struct InstallationProductItems(ProductOrder productOrderOnsite, ProductOrder productOrderEstimate);
+        public readonly record struct InstallationProductItems(ProductOrder ProductOrderOnsite, ProductOrder ProductOrderEstimate);
 
         public static InstallationProductItems GetInstallTimes(ref Cart cart, ref Product onsite, ref Product estimate)
         {
@@ -222,7 +215,7 @@ namespace NumberSearch.Mvc.Controllers
         {
             if (Id != Guid.Empty)
             {
-                var order = await Order.GetByIdAsync(Id, _postgresql);
+                var order = await Order.GetByIdAsync(Id, mvcConfiguration.PostgresqlProd);
                 if (order == null || string.IsNullOrWhiteSpace(order.Email))
                 {
                     return View("Index", new CartResult
@@ -236,11 +229,11 @@ namespace NumberSearch.Mvc.Controllers
                     return Redirect($"/Cart/Order/{order?.MergedOrderId}");
                 }
 
-                var cart = await GetCartByOrderIdAsync(order, _postgresql);
+                var cart = await GetCartByOrderIdAsync(order, mvcConfiguration.PostgresqlProd);
 
                 if (AddPortingInfo is not null)
                 {
-                    var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql);
+                    var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, mvcConfiguration.PostgresqlProd);
 
                     _ = cart.SetToSession(HttpContext.Session);
 
@@ -327,11 +320,11 @@ namespace NumberSearch.Mvc.Controllers
         {
             if (Id != Guid.Empty)
             {
-                var order = await Order.GetByIdAsync(Id, _postgresql);
+                var order = await Order.GetByIdAsync(Id, mvcConfiguration.PostgresqlProd);
                 if (order is not null)
                 {
-                    var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql);
-                    var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, _postgresql);
+                    var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, mvcConfiguration.PostgresqlProd);
+                    var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, mvcConfiguration.PostgresqlProd);
 
                     foreach (var phoneNumber in portedPhoneNumbers)
                     {
@@ -362,8 +355,8 @@ namespace NumberSearch.Mvc.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddPortingInformationAsync(PortRequest portRequest)
         {
-            var order = await Order.GetByIdAsync(portRequest.OrderId, _postgresql).ConfigureAwait(false);
-            var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, _postgresql);
+            var order = await Order.GetByIdAsync(portRequest.OrderId, mvcConfiguration.PostgresqlProd).ConfigureAwait(false);
+            var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, mvcConfiguration.PostgresqlProd);
             foreach (var phoneNumber in portedNumbers)
             {
                 var numberName = await CnamBulkVs.GetAsync(phoneNumber.PortedDialedNumber.AsMemory(), mvcConfiguration.BulkVSAPIKEY.AsMemory());
@@ -375,7 +368,7 @@ namespace NumberSearch.Mvc.Controllers
             // Prevent duplicate submissions of port requests.
             if (order is not null && order.OrderId != Guid.Empty)
             {
-                var existing = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql);
+                var existing = await PortRequest.GetByOrderIdAsync(order.OrderId, mvcConfiguration.PostgresqlProd);
 
                 if (existing is not null && existing.OrderId != Guid.Empty && existing.OrderId == order.OrderId)
                 {
@@ -391,7 +384,7 @@ namespace NumberSearch.Mvc.Controllers
                             var fileName = $"{Guid.NewGuid()}{fileExtension}";
 
                             // Create a BlobServiceClient object which will be used to create a container client
-                            BlobServiceClient blobServiceClient = new(_azureStorage);
+                            BlobServiceClient blobServiceClient = new(mvcConfiguration.AzureStorageAccount);
 
                             //Create a unique name for the container
                             string containerName = existing.OrderId.ToString();
@@ -489,17 +482,17 @@ namespace NumberSearch.Mvc.Controllers
                     existing.DateUpdated = DateTime.Now;
 
                     // Save the rest of the data to the DB.
-                    var checkExisting = await existing.PutAsync(_postgresql);
+                    var checkExisting = await existing.PutAsync(mvcConfiguration.PostgresqlProd);
 
                     if (checkExisting && order is not null)
                     {
                         // Associate the ported numbers with their porting information.
-                        portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql) ?? new();
+                        portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, mvcConfiguration.PostgresqlProd) ?? new();
 
                         foreach (var number in portedNumbers)
                         {
                             number.PortRequestId = portRequest.PortRequestId;
-                            _ = await number.PutAsync(_postgresql);
+                            _ = await number.PutAsync(mvcConfiguration.PostgresqlProd);
                         }
                     }
 
@@ -529,7 +522,7 @@ namespace NumberSearch.Mvc.Controllers
                     var fileName = $"{Guid.NewGuid()}{fileExtension}";
 
                     // Create a BlobServiceClient object which will be used to create a container client
-                    BlobServiceClient blobServiceClient = new(_azureStorage);
+                    BlobServiceClient blobServiceClient = new(mvcConfiguration.AzureStorageAccount);
 
                     //Create a unique name for the container
                     string containerName = portRequest.OrderId.ToString();
@@ -616,19 +609,19 @@ namespace NumberSearch.Mvc.Controllers
             }
 
             // Save the rest of the data to the DB.
-            var checkPortRequest = await portRequest.PostAsync(_postgresql);
+            var checkPortRequest = await portRequest.PostAsync(mvcConfiguration.PostgresqlProd);
 
             if (checkPortRequest && order is not null)
             {
                 // Associate the ported numbers with their porting information.
-                portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, _postgresql) ?? new();
+                portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, mvcConfiguration.PostgresqlProd) ?? new();
 
                 string formattedNumbers = string.Empty;
 
                 foreach (var number in portedNumbers)
                 {
                     number.PortRequestId = portRequest.PortRequestId;
-                    var checkPortUpdate = await number.PutAsync(_postgresql);
+                    var checkPortUpdate = await number.PutAsync(mvcConfiguration.PostgresqlProd);
                     formattedNumbers += $"<br />{number?.PortedDialedNumber}";
                 }
 
@@ -636,7 +629,7 @@ namespace NumberSearch.Mvc.Controllers
                 var confirmationEmail = new DataAccess.Models.Email
                 {
                     PrimaryEmailAddress = order.Email,
-                    CarbonCopy = _SmtpUsername,
+                    CarbonCopy = mvcConfiguration.SmtpUsername,
                     MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />
@@ -658,11 +651,11 @@ Accelerate Networks
                     OrderId = order.OrderId,
                     Subject = $"Porting information added for {portedNumbers.FirstOrDefault()?.PortedDialedNumber}"
                 };
-                _ = await confirmationEmail.PostAsync(_postgresql);
+                _ = await confirmationEmail.PostAsync(mvcConfiguration.PostgresqlProd);
 
                 // Trigger the backwork process to run again and send this email.
                 order.BackgroundWorkCompleted = false;
-                _ = await order.PutAsync(_postgresql);
+                _ = await order.PutAsync(mvcConfiguration.PostgresqlProd);
 
                 // Reset the session and clear the Cart.
                 HttpContext.Session.Clear();
@@ -775,7 +768,7 @@ Accelerate Networks
                 {
                     try
                     {
-                        var checkPortable = await ValidatePortability.GetAsync(contact.DialedNumber.AsMemory(), _configuration.BulkVSUsername.AsMemory(), _configuration.BulkVSPassword.AsMemory());
+                        var checkPortable = await ValidatePortability.GetAsync(contact.DialedNumber.AsMemory(), mvcConfiguration.BulkVSUsername.AsMemory(), mvcConfiguration.BulkVSPassword.AsMemory());
                         if (string.IsNullOrWhiteSpace(checkPortable.TN) || checkPortable.Portable is false)
                         {
                             order.ContactPhoneNumber = string.Empty;
@@ -810,7 +803,7 @@ Accelerate Networks
 
                 if (order.OrderId != Guid.Empty)
                 {
-                    var orderExists = await Order.GetByIdAsync(order.OrderId, _postgresql);
+                    var orderExists = await Order.GetByIdAsync(order.OrderId, mvcConfiguration.PostgresqlProd);
 
                     // Create a new order.
                     if (orderExists is null)
@@ -821,13 +814,13 @@ Accelerate Networks
                         order = ParseAddress(ref order);
 
                         // Save to db.
-                        var submittedOrder = await order.PostAsync(_postgresql);
+                        var submittedOrder = await order.PostAsync(mvcConfiguration.PostgresqlProd);
 
                         // Send a confirmation email.
                         if (submittedOrder)
                         {
                             bool NoEmail = order.NoEmail;
-                            order = await Order.GetByIdAsync(order.OrderId, _postgresql) ?? new();
+                            order = await Order.GetByIdAsync(order.OrderId, mvcConfiguration.PostgresqlProd) ?? new();
                             order.NoEmail = NoEmail;
 
                             // Submit the number orders and track the total cost.
@@ -845,8 +838,8 @@ Accelerate Networks
                             if (cart.Products is not null && cart.Products.Count > 0)
                             {
                                 // Add the call out charge and install estimate to the Cart
-                                Product onsite = await Product.GetByIdAsync(Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"), _postgresql) ?? new();
-                                Product estimate = await Product.GetByIdAsync(Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"), _postgresql) ?? new();
+                                Product onsite = await Product.GetByIdAsync(Guid.Parse("b174c76a-e067-4a6a-abcf-53b6d3a848e4"), mvcConfiguration.PostgresqlProd) ?? new();
+                                Product estimate = await Product.GetByIdAsync(Guid.Parse("a032b3ba-da57-4ad3-90ec-c59a3505b075"), mvcConfiguration.PostgresqlProd) ?? new();
 
                                 var installation = GetInstallTimes(ref cart, ref onsite, ref estimate);
 
@@ -858,8 +851,8 @@ Accelerate Networks
 
                                     if (checkOnsiteExists is null && checkEstimateExists is null)
                                     {
-                                        ProductOrder onsiteProductOrder = installation.productOrderOnsite;
-                                        ProductOrder estimateProductOrder = installation.productOrderEstimate;
+                                        ProductOrder onsiteProductOrder = installation.ProductOrderOnsite;
+                                        ProductOrder estimateProductOrder = installation.ProductOrderEstimate;
                                         _ = cart.AddProduct(ref onsite, ref onsiteProductOrder);
                                         _ = cart.AddProduct(ref estimate, ref estimateProductOrder);
                                     }
@@ -867,8 +860,8 @@ Accelerate Networks
                                 else
                                 {
                                     // Remove the install charges as this is now a remote install.
-                                    var onsiteProduct = installation.productOrderOnsite;
-                                    var estimateProduct = installation.productOrderEstimate;
+                                    var onsiteProduct = installation.ProductOrderOnsite;
+                                    var estimateProduct = installation.ProductOrderEstimate;
                                     _ = cart.RemoveProduct(ref onsite, ref onsiteProduct);
                                     _ = cart.RemoveProduct(ref estimate, ref estimateProduct);
                                 }
@@ -884,13 +877,13 @@ Accelerate Networks
                             // Save all the product orders to the DB.
                             foreach (var productOrder in cart.ProductOrders)
                             {
-                                _ = await productOrder.PostAsync(_postgresql);
+                                _ = await productOrder.PostAsync(mvcConfiguration.PostgresqlProd);
                             }
 
                             // Save the phone numbers so that the background task can pick them up.
                             foreach (var item in purchasedPhoneNumbers)
                             {
-                                _ = await item.PostAsync(_postgresql);
+                                _ = await item.PostAsync(mvcConfiguration.PostgresqlProd);
                             }
 
                             // Handle hardware installation scenarios, if hardware is in the order.
@@ -915,7 +908,7 @@ Accelerate Networks
                                 {
                                     portedNumber.OrderId = order.OrderId;
 
-                                    var checkPort = await portedNumber.PostAsync(_postgresql);
+                                    var checkPort = await portedNumber.PostAsync(mvcConfiguration.PostgresqlProd);
 
                                     Log.Information("[Checkout] Saved port request for number {PortedDialedNumber}.", portedNumber.PortedDialedNumber);
                                 }
@@ -928,20 +921,20 @@ Accelerate Networks
                                 {
                                     verifiedNumber.OrderId = order.OrderId;
 
-                                    var checkVerified = await verifiedNumber.PostAsync(_postgresql);
+                                    var checkVerified = await verifiedNumber.PostAsync(mvcConfiguration.PostgresqlProd);
 
                                     Log.Information("[Checkout] Saved Verified Number {VerifiedDialedNumber} to the Database.", verifiedNumber.VerifiedDialedNumber);
                                 }
                             }
 
-                            var billingTaxRate = await GetBillingTaxRateAsync(order, _invoiceNinjaToken.AsMemory());
+                            var billingTaxRate = await GetBillingTaxRateAsync(order, mvcConfiguration.InvoiceNinjaToken.AsMemory());
 
                             // Create the confirmation email.
                             var confirmationEmail = new DataAccess.Models.Email
                             {
                                 PrimaryEmailAddress = order.Email,
                                 SalesEmailAddress = string.IsNullOrWhiteSpace(order.SalesEmail) ? string.Empty : order.SalesEmail,
-                                CarbonCopy = _emailOrders,
+                                CarbonCopy = mvcConfiguration.EmailOrders,
                                 MessageBody = $@"Hi {order.FirstName},
 <br />
 <br />                                                                            
@@ -960,16 +953,16 @@ Accelerate Networks
                                 Subject = $"Order confirmation for {emailSubject}"
                             };
 
-                            var billingClient = await GetBillingClientForOrderAsync(order, _invoiceNinjaToken.AsMemory());
+                            var billingClient = await GetBillingClientForOrderAsync(order, mvcConfiguration.InvoiceNinjaToken.AsMemory());
 
                             // If they want just a Quote, create a quote in the billing system, not an invoice.
                             if (order.Quote)
                             {
-                                await CreateAndSendQuotesAsync(billingClient, onetimeItems, reoccuringItems, billingTaxRate, confirmationEmail, order, _invoiceNinjaToken.AsMemory(), _postgresql.AsMemory());
+                                await CreateAndSendQuotesAsync(billingClient, onetimeItems, reoccuringItems, billingTaxRate, confirmationEmail, order, mvcConfiguration.InvoiceNinjaToken.AsMemory(), mvcConfiguration.PostgresqlProd.AsMemory());
                             }
                             else
                             {
-                                await CreateAndSendInvoicesAsync(billingClient, onetimeItems, reoccuringItems, billingTaxRate, confirmationEmail, pin, cart ?? new(), order, _invoiceNinjaToken.AsMemory(), _postgresql.AsMemory());
+                                await CreateAndSendInvoicesAsync(billingClient, onetimeItems, reoccuringItems, billingTaxRate, confirmationEmail, pin, cart ?? new(), order, mvcConfiguration.InvoiceNinjaToken.AsMemory(), mvcConfiguration.PostgresqlProd.AsMemory());
                             }
 
                             // Create a calendar invite for the install date.
@@ -984,7 +977,7 @@ Accelerate Networks
                                     Value = new Uri($"mailto:{order.Email}")
                                 };
 
-                                var ourRep = string.IsNullOrWhiteSpace(order.SalesEmail) ? new Uri($"mailto:{_emailOrders}") : new Uri($"mailto:{order.SalesEmail}");
+                                var ourRep = string.IsNullOrWhiteSpace(order.SalesEmail) ? new Uri($"mailto:{mvcConfiguration.EmailOrders}") : new Uri($"mailto:{order.SalesEmail}");
 
                                 var e = new CalendarEvent
                                 {
@@ -992,7 +985,7 @@ Accelerate Networks
                                     End = new CalDateTime(end),
                                     Summary = "Accelerate Networks Phone Install",
                                     Attendees = [attendee, new() { CommonName = "Accelerate Networks", Rsvp = true, Value = ourRep }],
-                                    Organizer = new Organizer { CommonName = "Accelerate Networks", Value = new Uri($"mailto:{_emailOrders}") },
+                                    Organizer = new Organizer { CommonName = "Accelerate Networks", Value = new Uri($"mailto:{mvcConfiguration.EmailOrders}") },
                                 };
 
                                 var calendar = new Ical.Net.Calendar();
@@ -1008,21 +1001,21 @@ Accelerate Networks
                             if (order.NoEmail)
                             {
                                 confirmationEmail.Completed = false;
-                                confirmationEmail.PrimaryEmailAddress = string.IsNullOrWhiteSpace(order.SalesEmail) ? _emailOrders : order.SalesEmail;
-                                var checkSave = await confirmationEmail.PostAsync(_postgresql);
+                                confirmationEmail.PrimaryEmailAddress = string.IsNullOrWhiteSpace(order.SalesEmail) ? mvcConfiguration.EmailOrders : order.SalesEmail;
+                                var checkSave = await confirmationEmail.PostAsync(mvcConfiguration.PostgresqlProd);
                                 Log.Information("Suppressed sending out the confirmation emails for {OrderId}.", order.OrderId);
                             }
                             else
                             {
                                 // Queue up the confirmation email.
                                 confirmationEmail.Completed = false;
-                                var checkSave = await confirmationEmail.PostAsync(_postgresql);
+                                var checkSave = await confirmationEmail.PostAsync(mvcConfiguration.PostgresqlProd);
                                 Log.Information("Sent out the confirmation emails for {OrderId}.", order.OrderId);
                             }
 
                             // Allow the background work to commence.
                             order.BackgroundWorkCompleted = false;
-                            var checkOrderUpdate = order.PutAsync(_postgresql);
+                            var checkOrderUpdate = order.PutAsync(mvcConfiguration.PostgresqlProd);
 
                             if (cart is not null && cart.PortedPhoneNumbers is not null && cart.PortedPhoneNumbers.Count != 0)
                             {
@@ -1436,12 +1429,12 @@ Accelerate Networks
                 // Create the client and get its id.
                 var newClient = await newBillingClient.PostAsync(_invoiceNinjaToken);
                 newBillingClient = newBillingClient with { id = newClient.id };
-                var billingClientContact = newBillingClient.contacts.AsValueEnumerable().FirstOrDefault();
-                var clientContact = newClient.contacts.AsValueEnumerable().FirstOrDefault();
-                if (!string.IsNullOrWhiteSpace(clientContact.id))
-                {
-                    billingClientContact = billingClientContact with { id = clientContact.id };
-                }
+                //var billingClientContact = newBillingClient.contacts.AsValueEnumerable().FirstOrDefault();
+                //var clientContact = newClient.contacts.AsValueEnumerable().FirstOrDefault();
+                //if (!string.IsNullOrWhiteSpace(clientContact.id))
+                //{
+                //    billingClientContact = billingClientContact with { id = clientContact.id };
+                //}
                 billingClient = await newBillingClient.PutAsync(_invoiceNinjaToken);
                 Log.Information("[Checkout] Created billing client {Name}, {Id}.", billingClient.name, billingClient.id);
                 return billingClient;

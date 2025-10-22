@@ -290,7 +290,7 @@ namespace NumberSearch.DataAccess.Models
             .QueryAsync<CountByProvider>("SELECT \"IngestedFrom\", COUNT(*) AS Count FROM public.\"PhoneNumbers\" GROUP BY \"IngestedFrom\"", new { })
             .ConfigureAwait(false);
 
-        return result.ToArray();
+        return [.. result];
     }
 
     public class CountNumberType
@@ -308,7 +308,7 @@ namespace NumberSearch.DataAccess.Models
             new { })
             .ConfigureAwait(false);
 
-        return result.ToArray();
+        return [.. result];
     }
 
     public class CountNPA
@@ -327,7 +327,7 @@ namespace NumberSearch.DataAccess.Models
             new { })
             .ConfigureAwait(false);
 
-        return result.ToArray();
+        return [.. result];
     }
 
     public static async Task<CountNPA[]> GetCountAllAreaCodeOwnedNumber(string connectionString)
@@ -339,7 +339,7 @@ namespace NumberSearch.DataAccess.Models
             new { })
             .ConfigureAwait(false);
 
-        return result.ToArray();
+        return [.. result];
     }
 
     public static async Task<CountNPA[]> GetCountAllAreaCodeBulkVS(string connectionString)
@@ -351,7 +351,7 @@ namespace NumberSearch.DataAccess.Models
             new { })
             .ConfigureAwait(false);
 
-        return result.ToArray();
+        return [.. result];
     }
 
     public static async Task<CountNPA[]> GetCountAllAreaCodeFPC(string connectionString)
@@ -363,7 +363,7 @@ namespace NumberSearch.DataAccess.Models
             new { })
             .ConfigureAwait(false);
 
-        return result.ToArray();
+        return [.. result];
     }
 
     public static async Task<int> GetTotal(string connectionString)

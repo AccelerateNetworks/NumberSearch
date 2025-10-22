@@ -10,17 +10,8 @@ using System.Threading.Tasks;
 namespace NumberSearch.Ops.Areas.Identity.Pages.Account
 {
     [AllowAnonymous]
-    public class ConfirmEmailChangeModel : PageModel
+    public class ConfirmEmailChangeModel(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager) : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
-
-        public ConfirmEmailChangeModel(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
-        {
-            _userManager = userManager;
-            _signInManager = signInManager;
-        }
-
         [TempData]
         public string StatusMessage { get; set; } = null!;
 
@@ -31,14 +22,14 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account
                 return RedirectToPage("/Index");
             }
 
-            var user = await _userManager.FindByIdAsync(userId).ConfigureAwait(false);
+            var user = await userManager.FindByIdAsync(userId).ConfigureAwait(false);
             if (user == null)
             {
                 return NotFound($"Unable to load user with ID '{userId}'.");
             }
 
             code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
-            var result = await _userManager.ChangeEmailAsync(user, email, code).ConfigureAwait(false);
+            var result = await userManager.ChangeEmailAsync(user, email, code).ConfigureAwait(false);
             if (!result.Succeeded)
             {
                 StatusMessage = "Error changing email.";
@@ -47,14 +38,14 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account
 
             // In our UI email and user name are one and the same, so when we update the email
             // we need to update the user name.
-            var setUserNameResult = await _userManager.SetUserNameAsync(user, email).ConfigureAwait(false);
+            var setUserNameResult = await userManager.SetUserNameAsync(user, email).ConfigureAwait(false);
             if (!setUserNameResult.Succeeded)
             {
                 StatusMessage = "Error changing user name.";
                 return Page();
             }
 
-            await _signInManager.RefreshSignInAsync(user).ConfigureAwait(false);
+            await signInManager.RefreshSignInAsync(user).ConfigureAwait(false);
             StatusMessage = "Thank you for confirming your email change.";
             return Page();
         }

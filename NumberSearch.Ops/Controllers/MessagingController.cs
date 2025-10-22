@@ -92,7 +92,7 @@ namespace NumberSearch.Ops.Controllers
         public async Task<IActionResult> FailedMessagesAsync()
         {
             var token = await GetTokenAsync();
-            var failures = await $"{_baseUrl}message/all/failed?start={DateTime.Now.AddDays(-3).ToShortDateString()}&end={DateTime.Now.AddDays(1).ToShortDateString()}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<MessageRecord[]>();
+            var failures = await $"{_baseUrl}message/all/failed?start={DateTime.Now.AddDays(-3):d}&end={DateTime.Now.AddDays(1):d}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<MessageRecord[]>();
             var ownedNumbers = await _context.OwnedPhoneNumbers.ToArrayAsync();
             return View("Failed", new MessagingResult { FailedMessages = [.. failures.AsValueEnumerable().OrderByDescending(x => x.DateReceivedUTC)], Owned = ownedNumbers });
         }

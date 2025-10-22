@@ -2180,7 +2180,7 @@ public static class Endpoints
         {
             PrimaryEmailAddress = ToEmailAddress,
             Subject = Subject,
-            MessageBody = $"This is a test message sent at {DateTime.Now.ToShortDateString()} {DateTime.Now.ToShortTimeString()}. {Message}"
+            MessageBody = $"This is a test message sent at {DateTime.Now:d} {DateTime.Now:t}. {Message}"
         };
 
         var checkSend = await email.SendEmailAsync(appSettings.ConnectionStrings.EmailUsername, appSettings.ConnectionStrings.EmailPassword, "test@texts.acceleratenetworks.com", null);

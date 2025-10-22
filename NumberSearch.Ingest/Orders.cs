@@ -113,7 +113,7 @@ namespace NumberSearch.Ingest
             var failedMessages = Array.Empty<MessageRecord>();
 
             var token = await GetTokenAsync(appConfig);
-            var messages = await $"{appConfig.MessagingURL}message/all/failed?start={DateTime.Now.AddDays(-3).ToShortDateString()}&end={DateTime.Now.AddDays(1).ToShortDateString()}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<MessageRecord[]>();
+            var messages = await $"{appConfig.MessagingURL}message/all/failed?start={DateTime.Now.AddDays(-3):d}&end={DateTime.Now.AddDays(1):d}".WithOAuthBearerToken(token.AccessToken).GetJsonAsync<MessageRecord[]>();
             failedMessages = messages.AsValueEnumerable().Where(x => x.MessageSource is MessageSource.Outgoing).ToArray();
             foreach (var order in orders)
             {
@@ -191,7 +191,7 @@ namespace NumberSearch.Ingest
                 {
                     var orderName = string.IsNullOrWhiteSpace(item.BusinessName) ? $"{item.FirstName} {item.LastName}" : item.BusinessName;
                     var installDate = item?.InstallDate is not null ? item?.InstallDate.GetValueOrDefault().ToShortDateString() : "No install date set";
-                    var paid = item?.DateUpfrontInvoicePaid is not null && item.DateUpfrontInvoicePaid.Value > item.DateSubmitted ? $"Paid {item.DateUpfrontInvoicePaid.Value.ToShortDateString()}" : "Unpaid";
+                    var paid = item?.DateUpfrontInvoicePaid is not null && item.DateUpfrontInvoicePaid.Value > item.DateSubmitted ? $"Paid {item.DateUpfrontInvoicePaid.Value:d}" : "Unpaid";
                     output.Append($"<li><a href='https://ops.acceleratenetworks.com/Home/Order/{item?.OrderId}' target='_blank' rel='noopener noreferrer'>{orderName} - Install Date {installDate} - <strong>{paid}</strong></li>");
                 }
                 output.Append("</ul>");

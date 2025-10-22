@@ -164,7 +164,7 @@
     </form>
 </div>
 @{
-    var urls = Model?.ClientRegistrations.Select(x => x.CallbackUrl).Distinct();
+    var urls = Model?.ClientRegistrations.Select(x => x.CallbackUrl).Distinct() ?? [];
     List<(string, int)> pairs = new();
     @foreach (string url in urls)
     {
@@ -172,12 +172,12 @@
         pairs.Add(new(url, x));
     }
 
-    var last = Model.ClientRegistrations.MaxBy(x => x.DateRegistered);
+    var last = Model?.ClientRegistrations.MaxBy(x => x.DateRegistered);
 }
 <div class="row">
     <div class="col">
         <h4>Registrations By CallbackURL</h4>
-        <p class="m-0">@Model.ClientRegistrations.Length Total Registrations</p>
+        <p class="m-0">@Model?.ClientRegistrations.Length Total Registrations</p>
         <p>Most recent registration by @last?.AsDialed to @last?.CallbackUrl at @last?.DateRegistered</p>
         <div class="table-responsive">
             <table class="table table-striped table-bordered table-hover">

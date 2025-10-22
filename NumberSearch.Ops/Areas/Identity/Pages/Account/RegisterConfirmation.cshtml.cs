@@ -10,15 +10,8 @@ using System.Threading.Tasks;
 namespace NumberSearch.Ops.Areas.Identity.Pages.Account
 {
     [AllowAnonymous]
-    public class RegisterConfirmationModel : PageModel
+    public class RegisterConfirmationModel(UserManager<IdentityUser> userManager) : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-
-        public RegisterConfirmationModel(UserManager<IdentityUser> userManager)
-        {
-            _userManager = userManager;
-        }
-
         public string Email { get; set; } = null!;
 
         public bool DisplayConfirmAccountLink { get; set; }
@@ -32,7 +25,7 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account
                 return RedirectToPage("/Index");
             }
 
-            var user = await _userManager.FindByEmailAsync(email).ConfigureAwait(false);
+            var user = await userManager.FindByEmailAsync(email).ConfigureAwait(false);
             if (user == null)
             {
                 return NotFound($"Unable to load user with email '{email}'.");
@@ -43,8 +36,8 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account
             DisplayConfirmAccountLink = false;
             if (DisplayConfirmAccountLink)
             {
-                var userId = await _userManager.GetUserIdAsync(user).ConfigureAwait(false);
-                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user).ConfigureAwait(false);
+                var userId = await userManager.GetUserIdAsync(user).ConfigureAwait(false);
+                var code = await userManager.GenerateEmailConfirmationTokenAsync(user).ConfigureAwait(false);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                 EmailConfirmationUrl = Url.Page(
                     "/Account/ConfirmEmail",

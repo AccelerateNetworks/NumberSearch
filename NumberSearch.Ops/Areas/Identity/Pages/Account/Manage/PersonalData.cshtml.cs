@@ -7,25 +7,16 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
 {
-    public class PersonalDataModel : PageModel
+    public class PersonalDataModel(
+        UserManager<IdentityUser> userManager,
+        ILogger<PersonalDataModel> logger) : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly ILogger<PersonalDataModel> _logger;
-
-        public PersonalDataModel(
-            UserManager<IdentityUser> userManager,
-            ILogger<PersonalDataModel> logger)
-        {
-            _userManager = userManager;
-            _logger = logger;
-        }
-
         public async Task<IActionResult> OnGet()
         {
-            var user = await _userManager.GetUserAsync(User).ConfigureAwait(false);
+            var user = await userManager.GetUserAsync(User).ConfigureAwait(false);
             if (user == null)
             {
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+                return NotFound($"Unable to load user with ID '{userManager.GetUserId(User)}'.");
             }
 
             return Page();

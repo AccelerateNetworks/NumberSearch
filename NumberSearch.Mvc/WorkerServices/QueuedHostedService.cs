@@ -14,10 +14,7 @@ namespace NumberSearch.Mvc.WorkerServices
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            logger.LogInformation(
-                $"Queued Hosted Service is running.{Environment.NewLine}" +
-                $"{Environment.NewLine}Tap W to add a work item to the " +
-                $"background queue.{Environment.NewLine}");
+            logger.LogInformation($"Queued Hosted Service is running. Tap W to add a work item to the background queue.");
 
             return BackgroundProcessingAsync(stoppingToken);
         }

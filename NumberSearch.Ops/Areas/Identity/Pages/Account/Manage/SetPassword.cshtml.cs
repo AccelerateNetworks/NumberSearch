@@ -7,19 +7,10 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
 {
-    public class SetPasswordModel : PageModel
+    public class SetPasswordModel(
+        UserManager<IdentityUser> userManager,
+        SignInManager<IdentityUser> signInManager) : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
-
-        public SetPasswordModel(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager)
-        {
-            _userManager = userManager;
-            _signInManager = signInManager;
-        }
-
         [BindProperty]
         public InputModel Input { get; set; } = null!;
 
@@ -42,13 +33,13 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
 
         public async Task<IActionResult> OnGetAsync()
         {
-            var user = await _userManager.GetUserAsync(User).ConfigureAwait(false);
+            var user = await userManager.GetUserAsync(User).ConfigureAwait(false);
             if (user == null)
             {
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+                return NotFound($"Unable to load user with ID '{userManager.GetUserId(User)}'.");
             }
 
-            var hasPassword = await _userManager.HasPasswordAsync(user).ConfigureAwait(false);
+            var hasPassword = await userManager.HasPasswordAsync(user).ConfigureAwait(false);
 
             if (hasPassword)
             {
@@ -65,13 +56,13 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
                 return Page();
             }
 
-            var user = await _userManager.GetUserAsync(User).ConfigureAwait(false);
+            var user = await userManager.GetUserAsync(User).ConfigureAwait(false);
             if (user == null)
             {
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+                return NotFound($"Unable to load user with ID '{userManager.GetUserId(User)}'.");
             }
 
-            var addPasswordResult = await _userManager.AddPasswordAsync(user, Input.NewPassword).ConfigureAwait(false);
+            var addPasswordResult = await userManager.AddPasswordAsync(user, Input.NewPassword).ConfigureAwait(false);
             if (!addPasswordResult.Succeeded)
             {
                 foreach (var error in addPasswordResult.Errors)
@@ -81,7 +72,7 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
                 return Page();
             }
 
-            await _signInManager.RefreshSignInAsync(user).ConfigureAwait(false);
+            await signInManager.RefreshSignInAsync(user).ConfigureAwait(false);
             StatusMessage = "Your password has been set.";
 
             return RedirectToPage();

@@ -35,7 +35,7 @@ namespace AccelerateNetworks.Operations
             Ratecenter = source.ratecenter;
             State = source.province;
             Jurisdiction = source.jurisdiction;
-            Local = source.local == "Y" ? true : false;
+            Local = source.local == "Y";
             Lec = source.lec;
             Lectype = source.lectype;
             Spid = source.spid;

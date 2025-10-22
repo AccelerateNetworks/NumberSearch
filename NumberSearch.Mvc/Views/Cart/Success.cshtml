@@ -151,7 +151,7 @@
         if (Model?.Order.DateSubmitted < Model?.PortRequest.DateSubmitted && string.IsNullOrWhiteSpace(Model?.Message))
         {
             <div class="alert alert-success" role="alert">
-                ✔️ Your porting information was submitted on @Model.PortRequest.DateSubmitted.ToShortDateString() at @Model.PortRequest.DateSubmitted.ToShortTimeString(). Review your <a href="https://acceleratenetworks.com/cart/order/@Model?.Order?.OrderId">Order here</a>.
+                ✔️ Your porting information was submitted on @Model?.PortRequest.DateSubmitted.ToShortDateString() at @Model?.PortRequest.DateSubmitted.ToShortTimeString(). Review your <a href="https://acceleratenetworks.com/cart/order/@Model?.Order?.OrderId">Order here</a>.
             </div>
         }
         <div class="row">
@@ -161,7 +161,7 @@
             </div>
             <div class="col-md-4">
                 <div class="col-md-6 mb-3">
-                    <label for="locationType">@Model.PhoneNumbers.Count() Numbers to Port</label>
+                    <label for="locationType">@Model?.PhoneNumbers.Count() Numbers to Port</label>
                     @if (Model?.PhoneNumbers is not null)
                     {
                         foreach (var number in Model.PhoneNumbers)

@@ -11,15 +11,8 @@ using System.Threading.Tasks;
 namespace NumberSearch.Ops.Areas.Identity.Pages.Account
 {
     [AllowAnonymous]
-    public class ResetPasswordModel : PageModel
+    public class ResetPasswordModel(UserManager<IdentityUser> userManager) : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-
-        public ResetPasswordModel(UserManager<IdentityUser> userManager)
-        {
-            _userManager = userManager;
-        }
-
         [BindProperty]
         public InputModel Input { get; set; } = null!;
 
@@ -65,14 +58,14 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account
                 return Page();
             }
 
-            var user = await _userManager.FindByEmailAsync(Input.Email).ConfigureAwait(false);
+            var user = await userManager.FindByEmailAsync(Input.Email).ConfigureAwait(false);
             if (user == null)
             {
                 // Don't reveal that the user does not exist
                 return RedirectToPage("./ResetPasswordConfirmation");
             }
 
-            var result = await _userManager.ResetPasswordAsync(user, Input.Code, Input.Password).ConfigureAwait(false);
+            var result = await userManager.ResetPasswordAsync(user, Input.Code, Input.Password).ConfigureAwait(false);
             if (result.Succeeded)
             {
                 return RedirectToPage("./ResetPasswordConfirmation");

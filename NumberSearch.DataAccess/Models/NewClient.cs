@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 using Npgsql;
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess
@@ -134,7 +133,7 @@ namespace NumberSearch.DataAccess
                 "WHERE \"NewClientId\" = @newClientId", new { newClientId })
                 .ConfigureAwait(false);
 
-            return result.ToArray();
+            return [.. result];
         }
 
         public async Task<bool> PostAsync(string connectionString)
@@ -195,7 +194,7 @@ namespace NumberSearch.DataAccess
                 "WHERE \"NewClientId\" = @newClientId", new { newClientId })
                 .ConfigureAwait(false);
 
-            return result.ToArray();
+            return [.. result];
         }
 
         public async Task<bool> PostAsync(string connectionString)
@@ -255,7 +254,7 @@ namespace NumberSearch.DataAccess
                 "WHERE \"NewClientId\" = @newClientId", new { newClientId })
                 .ConfigureAwait(false);
 
-            return result.ToArray();
+            return [.. result];
         }
 
         public async Task<bool> PostAsync(string connectionString)
@@ -315,7 +314,7 @@ namespace NumberSearch.DataAccess
                 "WHERE \"NewClientId\" = @newClientId", new { newClientId })
                 .ConfigureAwait(false);
 
-            return result.ToArray();
+            return [.. result];
         }
 
         public async Task<bool> PostAsync(string connectionString)
@@ -376,7 +375,7 @@ namespace NumberSearch.DataAccess
                 "WHERE \"NewClientId\" = @newClientId", new { newClientId })
                 .ConfigureAwait(false);
 
-            return result.ToArray();
+            return [.. result];
         }
 
         public async Task<bool> PostAsync(string connectionString)
@@ -437,7 +436,7 @@ namespace NumberSearch.DataAccess
                 "WHERE \"NewClientId\" = @newClientId", new { newClientId })
                 .ConfigureAwait(false);
 
-            return result.ToArray();
+            return [.. result];
         }
 
         public async Task<bool> PostAsync(string connectionString)

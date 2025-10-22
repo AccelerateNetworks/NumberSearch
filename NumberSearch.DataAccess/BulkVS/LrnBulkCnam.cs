@@ -34,6 +34,7 @@ namespace NumberSearch.DataAccess.BulkVS
         /// <param name="dialedNumber"></param>
         /// <param name="apiKey"></param>
         /// <returns></returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1869:Cache and reuse 'JsonSerializerOptions' instances", Justification = "<Pending>")]
         public static async Task<LrnBulkCnam> GetAsync(ReadOnlyMemory<char> dialedNumber, ReadOnlyMemory<char> apiKey)
         {
             string baseUrl = "https://lrn.bulkCNAM.com/";

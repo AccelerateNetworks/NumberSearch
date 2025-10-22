@@ -7,19 +7,10 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
 {
-    public partial class IndexModel : PageModel
+    public partial class IndexModel(
+        UserManager<IdentityUser> userManager,
+        SignInManager<IdentityUser> signInManager) : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
-
-        public IndexModel(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager)
-        {
-            _userManager = userManager;
-            _signInManager = signInManager;
-        }
-
         public string Username { get; set; } = null!;
 
         [TempData]
@@ -37,8 +28,8 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
 
         private async Task LoadAsync(IdentityUser user)
         {
-            var userName = await _userManager.GetUserNameAsync(user).ConfigureAwait(false);
-            var phoneNumber = await _userManager.GetPhoneNumberAsync(user).ConfigureAwait(false);
+            var userName = await userManager.GetUserNameAsync(user).ConfigureAwait(false);
+            var phoneNumber = await userManager.GetPhoneNumberAsync(user).ConfigureAwait(false);
 
             Username = userName ?? string.Empty;
 
@@ -50,10 +41,10 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
 
         public async Task<IActionResult> OnGetAsync()
         {
-            var user = await _userManager.GetUserAsync(User).ConfigureAwait(false);
+            var user = await userManager.GetUserAsync(User).ConfigureAwait(false);
             if (user == null)
             {
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+                return NotFound($"Unable to load user with ID '{userManager.GetUserId(User)}'.");
             }
 
             await LoadAsync(user).ConfigureAwait(false);
@@ -62,10 +53,10 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
 
         public async Task<IActionResult> OnPostAsync()
         {
-            var user = await _userManager.GetUserAsync(User).ConfigureAwait(false);
+            var user = await userManager.GetUserAsync(User).ConfigureAwait(false);
             if (user == null)
             {
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+                return NotFound($"Unable to load user with ID '{userManager.GetUserId(User)}'.");
             }
 
             if (!ModelState.IsValid)
@@ -74,10 +65,10 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
                 return Page();
             }
 
-            var phoneNumber = await _userManager.GetPhoneNumberAsync(user).ConfigureAwait(false);
+            var phoneNumber = await userManager.GetPhoneNumberAsync(user).ConfigureAwait(false);
             if (Input.PhoneNumber != phoneNumber)
             {
-                var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, Input.PhoneNumber).ConfigureAwait(false);
+                var setPhoneResult = await userManager.SetPhoneNumberAsync(user, Input.PhoneNumber).ConfigureAwait(false);
                 if (!setPhoneResult.Succeeded)
                 {
                     StatusMessage = "Unexpected error when trying to set phone number.";
@@ -85,7 +76,7 @@ namespace NumberSearch.Ops.Areas.Identity.Pages.Account.Manage
                 }
             }
 
-            await _signInManager.RefreshSignInAsync(user).ConfigureAwait(false);
+            await signInManager.RefreshSignInAsync(user).ConfigureAwait(false);
             StatusMessage = "Your profile has been updated";
             return RedirectToPage();
         }

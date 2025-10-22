@@ -73,7 +73,8 @@ namespace NumberSearch.Mvc.Models
         /// <summary>
         /// Add a PhoneNumber to the Cart.
         /// </summary>
-        /// <param name="newPhoneNumber"></param>
+        /// <param name="phoneNumber"></param>
+        /// <param name="productOrder"></param>
         /// <returns></returns>
         public bool AddPhoneNumber(ref PhoneNumber phoneNumber, ref ProductOrder productOrder)
         {
@@ -101,7 +102,8 @@ namespace NumberSearch.Mvc.Models
         /// <summary>
         /// Add a PhoneNumber to the Cart.
         /// </summary>
-        /// <param name="newPhoneNumber"></param>
+        /// <param name="portedPhoneNumber"></param>
+        /// <param name="productOrder"></param>
         /// <returns></returns>
         public bool AddPortedPhoneNumber(ref PortedPhoneNumber portedPhoneNumber, ref ProductOrder productOrder)
         {
@@ -273,7 +275,7 @@ namespace NumberSearch.Mvc.Models
         /// <summary>
         /// Remove a phone number from the Cart.
         /// </summary>
-        /// <param name="phoneNumber"></param>
+        /// <param name="portedPhoneNumber"></param>
         /// <param name="productOrder"></param>
         /// <returns></returns>
         public bool RemovePortedPhoneNumber(ref PortedPhoneNumber portedPhoneNumber, ref ProductOrder productOrder)

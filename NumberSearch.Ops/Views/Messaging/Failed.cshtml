@@ -29,11 +29,11 @@
 }
 <h3>Failed Inbound Messages in the Last 3 Days</h3>
 @{
-    var inbound = Model.FailedMessages.AsValueEnumerable().Where(x => x.MessageSource is Models.MessageSource.Incoming).GroupBy(x => x.To).OrderByDescending(x => x.Count());
-    if (inbound.Count() > 0)
+    var inbound = Model?.FailedMessages.Where(x => x.MessageSource is Models.MessageSource.Incoming).GroupBy(x => x.To).OrderByDescending(x => x.Count());
+    if (inbound is not null && inbound.Count() > 0)
     {
         <ul>
-            @foreach (var failed in inbound)
+            @foreach (var failed in inbound.AsValueEnumerable())
             {
                 var number = failed.AsValueEnumerable().FirstOrDefault()?.To;
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number ?? string.Empty, out var phoneNumber);
@@ -89,11 +89,11 @@
 }
 <h3>Failed Outbound Messages in the Last 3 Days</h3>
 @{
-    var outbound = Model.FailedMessages.AsValueEnumerable().Where(x => x.MessageSource is Models.MessageSource.Outgoing).GroupBy(x => x.To).OrderByDescending(x => x.Count());
-    if (outbound.Count() > 0)
+    var outbound = Model?.FailedMessages.Where(x => x.MessageSource is Models.MessageSource.Outgoing).GroupBy(x => x.To).OrderByDescending(x => x.Count());
+    if (outbound is not null && outbound.Count() > 0)
     {
         <ul>
-            @foreach (var failed in outbound)
+            @foreach (var failed in outbound.AsValueEnumerable())
             {
                 var number = failed.AsValueEnumerable().FirstOrDefault()?.To;
                 var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(number ?? string.Empty, out var phoneNumber);
