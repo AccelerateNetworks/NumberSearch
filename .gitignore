@@ -43,3 +43,4 @@
 *.SMIL
 *.jpg
 /Messaging.Tests/bin/Debug/net9.0
+/Messaging.Tests/bin/Release/net9.0
