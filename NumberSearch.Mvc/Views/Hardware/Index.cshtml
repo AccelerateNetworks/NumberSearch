@@ -4,6 +4,26 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.dataTables.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.bootstrap4.min.css">
+<script src="https://cdn.datatables.net/2.3.4/js/dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/2.3.4/js/dataTables.bootstrap4.min.js"></script>
+
+<script type="text/javascript">
+    $(document).ready( function () {
+        $('#myTable').DataTable({
+            paging: false,
+            columns: [{ orderable: false }, { orderable: false }, null, { orderable: false } ],
+            layout: {
+                topStart: 'info',
+                topEnd: 'search',
+                bottomStart: null,
+                bottomEnd: null
+            }
+        });
+    } );
+</script>
+
 <section class="text-light" style="background-color: #3279B2">
     <div class="container py-5 py-md-6 py-lg-7 mb-7 text-center">
         <div class="row justify-content-center">
@@ -15,6 +35,7 @@
         </div>
     </div>
 </section>
+
 <div class="pt-3">
     <div class="container">
         <ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -91,7 +112,7 @@
                                                         {
                                                             <input id="@product.ProductId" type="number" min="0" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@quantity">
                                                             <div class="input-group-append">
-                                                                <button onclick="RemoveFromCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)" class="btn btn-outline-danger">
+                                                                <button type="button" onclick="RemoveFromCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)" class="btn btn-outline-danger">
                                                                     <span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>
                                                                     Remove
                                                                 </button>
@@ -122,81 +143,85 @@
             }
             else
             {
-                <div class="tab-pane fade show active" id="phonescontent" role="tabpanel" aria-labelledby="phones-tab">
-                    <div class="row row-cols-1 row-cols-md-3">
-                        @if (Model?.Cart?.ProductOrders is not null && Model?.Phones is not null)
-                        {
-                            var inCart = Model.Cart.ProductOrders;
-                            var products = Model.Phones;
-                            foreach (var product in products.Where(x => x.Public is true).OrderBy(x => x.DisplayPriority))
-                            {
-                                var quantity = 0;
-                                var quantityCount = inCart?.Where(x => x.ProductId == product.ProductId).FirstOrDefault();
-                                if ((quantityCount is not null) && (quantityCount.Quantity > 0))
-                                {
-                                    quantity = quantityCount.Quantity;
-                                }
+                <div class="tab-pane fade show active mb-3" id="phonescontent" role="tabpanel" aria-labelledby="phones-tab">
+                    <div class="row">
+                            <div class="table-responsive pt-1">
+                                <table class="table table-striped table-borderless table-hover" id="myTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Image</th>
+                                            <th>Product</th>
+                                            <th>Price</th>
+                                            <th>Cart</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model?.Cart?.ProductOrders is not null && Model?.Phones is not null)
+                                        {
+                                            var inCart = Model.Cart.ProductOrders;
+                                            var products = Model.Phones;
+                                            foreach (var product in products.Where(x => x.Public is true).OrderBy(x => x.DisplayPriority))
+                                            {
+                                                var quantity = 0;
+                                                var quantityCount = inCart?.Where(x => x.ProductId == product.ProductId).FirstOrDefault();
+                                                if ((quantityCount is not null) && (quantityCount.Quantity > 0))
+                                                {
+                                                    quantity = quantityCount.Quantity;
+                                                }
 
-                                <div class="col mb-4" id="@product.Name">
-                                    <div class="card h-100 shadow">
-                                        @if (string.IsNullOrWhiteSpace(product.VendorFeatures))
-                                        {
-                                            <img class="card-img-top" src="@product.Image" title="@product.Name" loading="lazy" />
-                                        }
-                                        else
-                                        {
-                                            <a href="Hardware/@product.Name">
-                                                <img class="card-img-top" src="@product.Image" title="@product.Name" loading="lazy" />
-                                            </a>
-                                        }
-                                        <div class="card-body">
-                                            <div class="card-title">
-                                                <h4 class="display-4">
-                                                    @product.Name
-                                                    @if (!string.IsNullOrWhiteSpace(product.VendorFeatures))
-                                                    {
-                                                        <a class="btn btn-outline-info float-right" href="/Hardware/@product.Name">About</a>
-                                                    }
-                                                </h4>
-                                            </div>
-                                            <p class="card-text">@product.Description</p>
-                                        </div>
-                                        <div class="card-footer">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <large class="text-primary pr-4">
-                                                    $@product.Price
-                                                </large>
-                                                <div class="btn-group">
-                                                    <div class="input-group">
-                                                        @if (quantity > 0)
+                                                <tr>
+                                                    <td class="col-3">
+                                                        <img class="img-thumbnail shadow-sm" alt="@product.Description" src="@product.Image" title="@product.Name" loading="lazy" onclick="window.location='Hardware/@product.Name';" />
+                                                    </td>
+                                                    <td class="col-6">
+                                                        <h4 class="display-4">
+                                                            @product.Name
+                                                        </h4>
+                                                        <p>@product.Description</p>
+                                                        @if (!string.IsNullOrWhiteSpace(product.VendorFeatures))
                                                         {
-                                                            <input id="@product.ProductId" type="number" min="0" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@quantity">
-                                                            <div class="input-group-append">
-                                                                <button onclick="RemoveFromCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)" class="btn btn-outline-danger">
-                                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>
-                                                                    Remove
-                                                                </button>
-                                                            </div>
+                                                            <a class="btn btn-outline-info" href="/Hardware/@product.Name">Learn more...</a>
                                                         }
-                                                        else
-                                                        {
-                                                            <input id="@product.ProductId" type="number" min="0" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
-                                                            <div class="input-group-append">
-                                                                <button type="submit" class="btn btn-outline-primary" onclick="AddToCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)">
-                                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
-                                                                    Add To Cart
-                                                                </button>
+                                                    </td>
+                                                    <td class="1">
+                                                        <large class="text-primary pr-4">
+                                                            $@product.Price
+                                                        </large>
+                                                    </td>
+                                                    <td class="col-3">
+                                                        <div class="d-flex justify-content-between">
+                                                            <div class="btn-group">
+                                                                <div class="input-group">
+                                                                    @if (quantity > 0)
+                                                                    {
+                                                                        <input id="@product.ProductId" type="number" min="0" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@quantity">
+                                                                        <div class="input-group-append">
+                                                                            <button onclick="RemoveFromCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)" class="btn btn-outline-danger">
+                                                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>
+                                                                                Remove
+                                                                            </button>
+                                                                        </div>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <input id="@product.ProductId" type="number" min="0" class="form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                                                        <div class="input-group-append">
+                                                                            <button type="submit" class="btn btn-outline-primary" onclick="AddToCart('Product', '@product.ProductId', $('#@product.ProductId').val(), this)">
+                                                                                <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                                                Add To Cart
+                                                                            </button>
+                                                                        </div>
+                                                                    }
+                                                                </div>
                                                             </div>
-                                                        }
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        }
-                        <br />
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>       
                     </div>
                 </div>
             }

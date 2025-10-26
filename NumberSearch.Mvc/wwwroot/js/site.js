@@ -19,103 +19,142 @@ $(document).on('submit', 'form', function () {
 });
 
 $('input[type="file"]').change(function (e) {
-    var fileName = e.target.files[0].name;
+    let fileName = e.target.files[0].name;
     $('.custom-file-label').html(fileName);
 });
 
-var cartCounter = 0;
+let cartCounter = 0;
 
 function AddToCart(type, id, quantity, element) {
     // Default to 1 unit if the "Add to Cart" button is pressed.
-    if (quantity.length === 0) {
+    const quantityDisplay = document.getElementById(id);
+    if (quantityDisplay == null || quantityDisplay.value == null || quantityDisplay.value.length == 0) {
         quantity = 1;
+        if (quantityDisplay != null) {
+            quantityDisplay.value = quantity;
+        }
+    } else {
+        quantity = quantityDisplay.value;
+    }
+    if (quantityDisplay != null) {
+        quantityDisplay.disabled = true;
     }
     id = `${id}`.trim();
-    var removeButton = `<button onclick="RemoveFromCart('${type}', '${id}', ${quantity}, this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>`;
-    var cart = $('#headerCart');
-    var cartButton = $('#cartButton');
-    var contactButton = $('#contactButton');
+    let removeButton = `<button type="button" onclick="RemoveFromCart('${type}', '${id}', ${quantity}, this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>`;
+    let cart = $('#headerCart');
+    let cartButton = $('#cartButton');
+    let contactButton = $('#contactButton');
     let spinner = $(element).find('span');
     spinner.removeClass('d-none');
-    var request = new XMLHttpRequest();
-    var route = `/Cart/Add/${type}/${id}/${quantity}`;
-    request.open('GET', route, true);
-    request.onload = function () {
-        if (this.response == id) {
-            console.log(`Added ${type} ${id} to cart.`)
-            spinner.addClass('d-none');
-            $(element).replaceWith(removeButton);
-            cartCounter = parseInt($('#cartCounter').text());
-            cartCounter = cartCounter + parseInt(quantity);
-            $(contactButton).addClass('d-none');
-            $(cartButton).removeClass('d-none');
-            $('#cartCounter').text(cartCounter).removeClass('d-none');
-            if (type == 'Coupon') {
-                location.reload();
+    let route = `/Cart/Add/${type}/${id}/${quantity}`;
+    fetch(route)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+                console.log(`Failed to add ${type} ${id} to cart.`)
+                alert(`Failed to add ${type} ${id} to cart.`);
+                spinner.addClass('d-none')
             }
-        } else {
+            return response.text(); // or .text(), .blob(), etc.
+        })
+        .then(data => {
+            console.log(data);
+            if (data == id) {
+                console.log(`Added ${type} ${id} to cart.`)
+                spinner.addClass('d-none');
+                $(element).replaceWith(removeButton);
+                cartCounter = parseInt($('#cartCounter').text());
+                cartCounter = cartCounter + parseInt(quantity);
+                $(contactButton).addClass('d-none');
+                $(cartButton).removeClass('d-none');
+                $('#cartCounter').text(cartCounter).removeClass('d-none');
+                if (type == 'Coupon') {
+                    location.reload();
+                }
+            } else {
+                console.log(`Failed to add ${type} ${id} to cart.`)
+                alert(`Failed to add ${type} ${id} to cart.`);
+                spinner.addClass('d-none')
+            }
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
             console.log(`Failed to add ${type} ${id} to cart.`)
             alert(`Failed to add ${type} ${id} to cart.`);
             spinner.addClass('d-none')
-        }
-    };
-    request.send();
+        });
 }
 
 function RemoveFromCart(type, id, quantity, element) {
-    var addButton = `<button onclick="AddToCart('${type}', '${id}', ${quantity}, this)" class="btn btn-outline-primary"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Add to Cart</button>`;
+    const quantityDisplay = document.getElementById(id);
+    if (quantityDisplay != null) {
+        quantityDisplay.value = null;
+        quantityDisplay.disabled = false;
+    }
+    let addButton = `<button type="submit" onclick="AddToCart('${type}', '${id}', null, this)" class="btn btn-outline-primary"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Add to Cart</button>`;
     let spinner = $(element).find('span');
     spinner.removeClass('d-none');
-    var request = new XMLHttpRequest();
-    var route = `/Cart/Remove/${type}/${id}/${quantity}`;
-    request.open('GET', route, true);
-    request.onload = function () {
-        if (this.response == id) {
-            console.log(`Removed ${type} ${id} from cart.`)
-            spinner.addClass('d-none');
-            $(element).replaceWith(addButton);
-            cartCounter = parseInt($('#cartCounter').text());
-            cartCounter = cartCounter - parseInt(quantity);
-            $('#cartCounter').text(cartCounter).removeClass('d-none');
-        } else {
+    let route = `/Cart/Remove/${type}/${id}/${quantity}`;
+    fetch(route)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+                console.log(`Failed to add ${type} ${id} to cart.`)
+                alert(`Failed to add ${type} ${id} to cart.`);
+                spinner.addClass('d-none')
+            }
+            return response.text(); // or .text(), .blob(), etc.
+        })
+        .then(data => {
+            if (data == id) {
+                console.log(`Removed ${type} ${id} from cart.`)
+                spinner.addClass('d-none');
+                $(element).replaceWith(addButton);
+                cartCounter = parseInt($('#cartCounter').text());
+                cartCounter = cartCounter - parseInt(quantity);
+                $('#cartCounter').text(cartCounter).removeClass('d-none');
+            } else {
+                console.log(`Failed to remove ${type} ${id} from cart.`)
+                spinner.addClass('d-none')
+            }
+        }).catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
             console.log(`Failed to remove ${type} ${id} from cart.`)
             spinner.addClass('d-none')
-        }
-    };
-    request.send();
+        });
 }
 
 window.addEventListener('scroll', moveScrollIndicator);
 
 function moveScrollIndicator() {
-    var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-    var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-    var scrolled = (winScroll / height) * 100;
+    let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+    let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    let scrolled = (winScroll / height) * 100;
     document.getElementById("scrollIndicator").style.width = scrolled + "%";
 }
 
 function AddExtensionRegistration(newClientId, ext, nameOrLocation, email, model, callerId, element) {
-    var request = new XMLHttpRequest();
-    var route = `/Add/NewClient/${newClientId}/ExtensionRegistration`;
+    let request = new XMLHttpRequest();
+    let route = `/Add/NewClient/${newClientId}/ExtensionRegistration`;
     request.open('POST', route, true);
     request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     request.onload = function () {
         if (this.response != null) {
             console.log(`Added ${ext} to the NewClient.`)
-            var table = document.getElementById('regextstable');
-            var row = table.insertRow(0);
-            var extCell = row.insertCell(0);
+            let table = document.getElementById('regextstable');
+            let row = table.insertRow(0);
+            let extCell = row.insertCell(0);
             extCell.innerHTML = ext;
-            var nameCell = row.insertCell(1);
+            let nameCell = row.insertCell(1);
             nameCell.innerHTML = nameOrLocation;
-            var emailCell = row.insertCell(2);
+            let emailCell = row.insertCell(2);
             emailCell.innerHTML = email;
-            var modelCell = row.insertCell(3);
+            let modelCell = row.insertCell(3);
             modelCell.innerHTML = model;
-            var callerIdCell = row.insertCell(4);
+            let callerIdCell = row.insertCell(4);
             callerIdCell.innerHTML = callerId;
-            var removeButton = `<button type='button' onclick='RemoveExtensionRegistration("${newClientId}", ${this.response}, this)' class="btn btn-outline-danger"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>Remove</button>`;
-            var removeCell = row.insertCell(5);
+            let removeButton = `<button type='button' onclick='RemoveExtensionRegistration("${newClientId}", ${this.response}, this)' class="btn btn-outline-danger"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>Remove</button>`;
+            let removeCell = row.insertCell(5);
             removeCell.innerHTML = removeButton;
         } else {
             console.log(`Failed to add ${ext} to cart.`)
@@ -134,13 +173,13 @@ function AddExtensionRegistration(newClientId, ext, nameOrLocation, email, model
 }
 
 function RemoveExtensionRegistration(newClientId, extRegId, element) {
-    var request = new XMLHttpRequest();
-    var route = `/Remove/NewClient/${newClientId}/ExtensionRegistration/${extRegId}`;
+    let request = new XMLHttpRequest();
+    let route = `/Remove/NewClient/${newClientId}/ExtensionRegistration/${extRegId}`;
     request.open('GET', route, true);
     request.onload = function () {
         if (this.response != null) {
             console.log(`Removed ${extRegId} from NewClient ${newClientId}.`)
-            var row = element.parentNode.parentNode;
+            let row = element.parentNode.parentNode;
             row.parentNode.removeChild(row);
         } else {
             console.log(`Failed to remove ${extRegId} from NewClient ${newClientId}.`)
@@ -150,23 +189,23 @@ function RemoveExtensionRegistration(newClientId, extRegId, element) {
 }
 
 function AddNumberDescription(newClientId, phoneNumber, description, prefix, element) {
-    var request = new XMLHttpRequest();
-    var route = `/Add/NewClient/${newClientId}/NumberDescription`;
+    let request = new XMLHttpRequest();
+    let route = `/Add/NewClient/${newClientId}/NumberDescription`;
     request.open('POST', route, true);
     request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     request.onload = function () {
         if (this.response != null) {
             console.log(`Added ${phoneNumber} to the NewClient.`)
-            var table = document.getElementById('numdestable');
-            var row = table.insertRow(0);
-            var phoneNumberCell = row.insertCell(0);
+            let table = document.getElementById('numdestable');
+            let row = table.insertRow(0);
+            let phoneNumberCell = row.insertCell(0);
             phoneNumberCell.innerHTML = phoneNumber;
-            var descriptionCell = row.insertCell(1);
+            let descriptionCell = row.insertCell(1);
             descriptionCell.innerHTML = description;
-            var prefixCell = row.insertCell(2);
+            let prefixCell = row.insertCell(2);
             prefixCell.innerHTML = prefix;
-            var removeButton = `<button type='button' onclick='RemoveNumberDescription("${newClientId}", ${this.response}, this)' class="btn btn-outline-danger"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>Remove</button>`;
-            var removeCell = row.insertCell(3);
+            let removeButton = `<button type='button' onclick='RemoveNumberDescription("${newClientId}", ${this.response}, this)' class="btn btn-outline-danger"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>Remove</button>`;
+            let removeCell = row.insertCell(3);
             removeCell.innerHTML = removeButton;
         } else {
             console.log(`Failed to add ${phoneNumber} to cart.`)
@@ -183,13 +222,13 @@ function AddNumberDescription(newClientId, phoneNumber, description, prefix, ele
 }
 
 function RemoveNumberDescription(newClientId, extRegId, element) {
-    var request = new XMLHttpRequest();
-    var route = `/Remove/NewClient/${newClientId}/NumberDescription/${extRegId}`;
+    let request = new XMLHttpRequest();
+    let route = `/Remove/NewClient/${newClientId}/NumberDescription/${extRegId}`;
     request.open('GET', route, true);
     request.onload = function () {
         if (this.response != null) {
             console.log(`Removed ${extRegId} from NewClient ${newClientId}.`)
-            var row = element.parentNode.parentNode;
+            let row = element.parentNode.parentNode;
             row.parentNode.removeChild(row);
         } else {
             console.log(`Failed to remove ${extRegId} from NewClient ${newClientId}.`)
@@ -199,23 +238,23 @@ function RemoveNumberDescription(newClientId, extRegId, element) {
 }
 
 function AddPhoneMenuOption(newClientId, menuOption, destination, description, element) {
-    var request = new XMLHttpRequest();
-    var route = `/Add/NewClient/${newClientId}/PhoneMenuOption`;
+    let request = new XMLHttpRequest();
+    let route = `/Add/NewClient/${newClientId}/PhoneMenuOption`;
     request.open('POST', route, true);
     request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     request.onload = function () {
         if (this.response != null) {
             console.log(`Added ${phoneNumber} to the NewClient.`)
-            var table = document.getElementById('menuopttable');
-            var row = table.insertRow(0);
-            var menuOptionCell = row.insertCell(0);
+            let table = document.getElementById('menuopttable');
+            let row = table.insertRow(0);
+            let menuOptionCell = row.insertCell(0);
             menuOptionCell.innerHTML = menuOption;
-            var destinationCell = row.insertCell(1);
+            let destinationCell = row.insertCell(1);
             destinationCell.innerHTML = destination;
-            var descriptionCell = row.insertCell(2);
+            let descriptionCell = row.insertCell(2);
             descriptionCell.innerHTML = description;
-            var removeButton = `<button type='button' onclick='RemovePhoneMenuOption("${newClientId}", ${this.response}, this)' class="btn btn-outline-danger"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>Remove</button>`;
-            var removeCell = row.insertCell(3);
+            let removeButton = `<button type='button' onclick='RemovePhoneMenuOption("${newClientId}", ${this.response}, this)' class="btn btn-outline-danger"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>Remove</button>`;
+            let removeCell = row.insertCell(3);
             removeCell.innerHTML = removeButton;
         } else {
             console.log(`Failed to add ${menuOption} to cart.`)
@@ -232,13 +271,13 @@ function AddPhoneMenuOption(newClientId, menuOption, destination, description, e
 }
 
 function RemovePhoneMenuOption(newClientId, extRegId, element) {
-    var request = new XMLHttpRequest();
-    var route = `/Remove/NewClient/${newClientId}/PhoneMenuOption/${extRegId}`;
+    let request = new XMLHttpRequest();
+    let route = `/Remove/NewClient/${newClientId}/PhoneMenuOption/${extRegId}`;
     request.open('GET', route, true);
     request.onload = function () {
         if (this.response != null) {
             console.log(`Removed ${extRegId} from NewClient ${newClientId}.`)
-            var row = element.parentNode.parentNode;
+            let row = element.parentNode.parentNode;
             row.parentNode.removeChild(row);
         } else {
             console.log(`Failed to remove ${extRegId} from NewClient ${newClientId}.`)
@@ -248,21 +287,21 @@ function RemovePhoneMenuOption(newClientId, extRegId, element) {
 }
 
 function AddIntercomRegistration(newClientId, outgoing, incoming, element) {
-    var request = new XMLHttpRequest();
-    var route = `/Add/NewClient/${newClientId}/IntercomRegistration`;
+    let request = new XMLHttpRequest();
+    let route = `/Add/NewClient/${newClientId}/IntercomRegistration`;
     request.open('POST', route, true);
     request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     request.onload = function () {
         if (this.response != null) {
             console.log(`Added ${phoneNumber} to the NewClient.`)
-            var table = document.getElementById('intercomtable');
-            var row = table.insertRow(0);
-            var outgoingCell = row.insertCell(0);
+            let table = document.getElementById('intercomtable');
+            let row = table.insertRow(0);
+            let outgoingCell = row.insertCell(0);
             outgoingCell.innerHTML = outgoing;
-            var incomingCell = row.insertCell(1);
+            let incomingCell = row.insertCell(1);
             incomingCell.innerHTML = incoming;
-            var removeButton = `<button type='button' onclick='RemoveIntercomRegistration("${newClientId}", ${this.response}, this)' class="btn btn-outline-danger"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>Remove</button>`;
-            var removeCell = row.insertCell(2);
+            let removeButton = `<button type='button' onclick='RemoveIntercomRegistration("${newClientId}", ${this.response}, this)' class="btn btn-outline-danger"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>Remove</button>`;
+            let removeCell = row.insertCell(2);
             removeCell.innerHTML = removeButton;
         } else {
             console.log(`Failed to add ${phoneNumber} to cart.`)
@@ -278,13 +317,13 @@ function AddIntercomRegistration(newClientId, outgoing, incoming, element) {
 }
 
 function RemoveIntercomRegistration(newClientId, extRegId, element) {
-    var request = new XMLHttpRequest();
-    var route = `/Remove/NewClient/${newClientId}/IntercomRegistration/${extRegId}`;
+    let request = new XMLHttpRequest();
+    let route = `/Remove/NewClient/${newClientId}/IntercomRegistration/${extRegId}`;
     request.open('GET', route, true);
     request.onload = function () {
         if (this.response != null) {
             console.log(`Removed ${extRegId} from NewClient ${newClientId}.`)
-            var row = element.parentNode.parentNode;
+            let row = element.parentNode.parentNode;
             row.parentNode.removeChild(row);
         } else {
             console.log(`Failed to remove ${extRegId} from NewClient ${newClientId}.`)
@@ -294,21 +333,21 @@ function RemoveIntercomRegistration(newClientId, extRegId, element) {
 }
 
 function AddSpeedDialKey(newClientId, numberOrExt, labelOrName, element) {
-    var request = new XMLHttpRequest();
-    var route = `/Add/NewClient/${newClientId}/SpeedDialKey`;
+    let request = new XMLHttpRequest();
+    let route = `/Add/NewClient/${newClientId}/SpeedDialKey`;
     request.open('POST', route, true);
     request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     request.onload = function () {
         if (this.response != null) {
             console.log(`Added ${phoneNumber} to the NewClient.`)
-            var table = document.getElementById('speeddialtable');
-            var row = table.insertRow(0);
-            var numberOrExtCell = row.insertCell(0);
+            let table = document.getElementById('speeddialtable');
+            let row = table.insertRow(0);
+            let numberOrExtCell = row.insertCell(0);
             numberOrExtCell.innerHTML = numberOrExt;
-            var incomingCell = row.insertCell(1);
+            let incomingCell = row.insertCell(1);
             incomingCell.innerHTML = labelOrName;
-            var removeButton = `<button type='button' onclick='RemoveSpeedDialKey("${newClientId}", ${this.response}, this)' class="btn btn-outline-danger"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>Remove</button>`;
-            var removeCell = row.insertCell(2);
+            let removeButton = `<button type='button' onclick='RemoveSpeedDialKey("${newClientId}", ${this.response}, this)' class="btn btn-outline-danger"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>Remove</button>`;
+            let removeCell = row.insertCell(2);
             removeCell.innerHTML = removeButton;
         } else {
             console.log(`Failed to add ${phoneNumber} to cart.`)
@@ -324,13 +363,13 @@ function AddSpeedDialKey(newClientId, numberOrExt, labelOrName, element) {
 }
 
 function RemoveSpeedDialKey(newClientId, extRegId, element) {
-    var request = new XMLHttpRequest();
-    var route = `/Remove/NewClient/${newClientId}/SpeedDialKey/${extRegId}`;
+    let request = new XMLHttpRequest();
+    let route = `/Remove/NewClient/${newClientId}/SpeedDialKey/${extRegId}`;
     request.open('GET', route, true);
     request.onload = function () {
         if (this.response != null) {
             console.log(`Removed ${extRegId} from NewClient ${newClientId}.`)
-            var row = element.parentNode.parentNode;
+            let row = element.parentNode.parentNode;
             row.parentNode.removeChild(row);
         } else {
             console.log(`Failed to remove ${extRegId} from NewClient ${newClientId}.`)
@@ -340,23 +379,23 @@ function RemoveSpeedDialKey(newClientId, extRegId, element) {
 }
 
 function AddFollowMeRegistration(newClientId, extNum, cellPhone, forwardTo, element) {
-    var request = new XMLHttpRequest();
-    var route = `/Add/NewClient/${newClientId}/FollowMeRegistration`;
+    let request = new XMLHttpRequest();
+    let route = `/Add/NewClient/${newClientId}/FollowMeRegistration`;
     request.open('POST', route, true);
     request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     request.onload = function () {
         if (this.response != null) {
             console.log(`Added ${phoneNumber} to the NewClient.`)
-            var table = document.getElementById('followMeTable');
-            var row = table.insertRow(0);
-            var extNumCell = row.insertCell(0);
+            let table = document.getElementById('followMeTable');
+            let row = table.insertRow(0);
+            let extNumCell = row.insertCell(0);
             extNumCell.innerHTML = extNum;
-            var cellPhoneCell = row.insertCell(1);
+            let cellPhoneCell = row.insertCell(1);
             cellPhoneCell.innerHTML = cellPhone;
-            var forwardToCell = row.insertCell(2);
+            let forwardToCell = row.insertCell(2);
             forwardToCell.innerHTML = forwardTo;
-            var removeButton = `<button type='button' onclick='RemoveFollowMeRegistration("${newClientId}", ${this.response}, this)' class="btn btn-outline-danger"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>Remove</button>`;
-            var removeCell = row.insertCell(3);
+            let removeButton = `<button type='button' onclick='RemoveFollowMeRegistration("${newClientId}", ${this.response}, this)' class="btn btn-outline-danger"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>Remove</button>`;
+            let removeCell = row.insertCell(3);
             removeCell.innerHTML = removeButton;
         } else {
             console.log(`Failed to add ${phoneNumber} to cart.`)
@@ -373,13 +412,13 @@ function AddFollowMeRegistration(newClientId, extNum, cellPhone, forwardTo, elem
 }
 
 function RemoveFollowMeRegistration(newClientId, extRegId, element) {
-    var request = new XMLHttpRequest();
-    var route = `/Remove/NewClient/${newClientId}/FollowMeRegistration/${extRegId}`;
+    let request = new XMLHttpRequest();
+    let route = `/Remove/NewClient/${newClientId}/FollowMeRegistration/${extRegId}`;
     request.open('GET', route, true);
     request.onload = function () {
         if (this.response != null) {
             console.log(`Removed ${extRegId} from NewClient ${newClientId}.`)
-            var row = element.parentNode.parentNode;
+            let row = element.parentNode.parentNode;
             row.parentNode.removeChild(row);
         } else {
             console.log(`Failed to remove ${extRegId} from NewClient ${newClientId}.`)

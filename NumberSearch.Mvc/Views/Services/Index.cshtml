@@ -79,16 +79,16 @@
                                         var lines = Model?.Cart?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("16e2c639-445b-4ae6-9925-07300318206b")).FirstOrDefault();
                                         if (lines is not null && lines.Quantity > 0)
                                         {
-                                            <input id="lines" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@lines?.Quantity">
+                                            <input id="16e2c639-445b-4ae6-9925-07300318206b" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@lines?.Quantity">
                                             <div class="input-group-append">
-                                                <button onclick="RemoveFromCart('Service','16e2c639-445b-4ae6-9925-07300318206b', $('#lines').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
+                                                <button onclick="RemoveFromCart('Service','16e2c639-445b-4ae6-9925-07300318206b', $('#16e2c639-445b-4ae6-9925-07300318206b').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
                                             </div>
                                         }
                                         else
                                         {
-                                            <input id="lines" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                            <input id="16e2c639-445b-4ae6-9925-07300318206b" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
                                             <div class="input-group-append">
-                                                <button onclick="AddToCart('Service','16e2c639-445b-4ae6-9925-07300318206b', $('#lines').val(), this)" class="btn btn-outline-primary">
+                                                <button onclick="AddToCart('Service','16e2c639-445b-4ae6-9925-07300318206b', $('#16e2c639-445b-4ae6-9925-07300318206b').val(), this)" class="btn btn-outline-primary">
                                                     <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                     Add to Cart
                                                 </button>
@@ -120,16 +120,16 @@
                                         var seats = Model?.Cart?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("48eb4627-8692-4a3b-8be1-be64bbeea534")).FirstOrDefault();
                                         if (seats is not null && seats.Quantity > 0)
                                         {
-                                            <input id="seats" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@seats?.Quantity">
+                                            <input id="48eb4627-8692-4a3b-8be1-be64bbeea534" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@seats?.Quantity">
                                             <div class="input-group-append">
-                                                <button onclick="RemoveFromCart('Service', '48eb4627-8692-4a3b-8be1-be64bbeea534', $('#seats').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
+                                                <button onclick="RemoveFromCart('Service', '48eb4627-8692-4a3b-8be1-be64bbeea534', $('#48eb4627-8692-4a3b-8be1-be64bbeea534').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
                                             </div>
                                         }
                                         else
                                         {
-                                            <input id="seats" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                            <input id="48eb4627-8692-4a3b-8be1-be64bbeea534" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
                                             <div class="input-group-append">
-                                                <button onclick="AddToCart('Service', '48eb4627-8692-4a3b-8be1-be64bbeea534', $('#seats').val(), this)" class="btn btn-outline-primary">
+                                                <button onclick="AddToCart('Service', '48eb4627-8692-4a3b-8be1-be64bbeea534', $('#48eb4627-8692-4a3b-8be1-be64bbeea534').val(), this)" class="btn btn-outline-primary">
                                                     <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                     Add to Cart
                                                 </button>
@@ -173,16 +173,16 @@
                                         var fiveginternet = Model?.Cart?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("aa8f21df-6562-4c9c-a75b-ca747ade1f2d")).FirstOrDefault();
                                         if (fiveginternet is not null && fiveginternet.Quantity > 0)
                                         {
-                                            <input id="fiveginternet" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@fiveginternet?.Quantity">
+                                            <input id="aa8f21df-6562-4c9c-a75b-ca747ade1f2d" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@fiveginternet?.Quantity">
                                             <div class="input-group-append">
-                                                <button onclick="RemoveFromCart('Service','aa8f21df-6562-4c9c-a75b-ca747ade1f2d', $('#fiveginternet').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
+                                                <button onclick="RemoveFromCart('Service','aa8f21df-6562-4c9c-a75b-ca747ade1f2d', $('#aa8f21df-6562-4c9c-a75b-ca747ade1f2d').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
                                             </div>
                                         }
                                         else
                                         {
-                                            <input id="fiveginternet" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                            <input id="aa8f21df-6562-4c9c-a75b-ca747ade1f2d" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
                                             <div class="input-group-append">
-                                                <button onclick="AddToCart('Service','aa8f21df-6562-4c9c-a75b-ca747ade1f2d', $('#fiveginternet').val(), this)" class="btn btn-outline-primary">
+                                                <button onclick="AddToCart('Service','aa8f21df-6562-4c9c-a75b-ca747ade1f2d', $('#aa8f21df-6562-4c9c-a75b-ca747ade1f2d').val(), this)" class="btn btn-outline-primary">
                                                     <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                     Add to Cart
                                                 </button>
@@ -213,16 +213,16 @@
                                         var lteinternet = Model?.Cart?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("c236d9af-eee9-4145-9724-44a9ea5e2952")).FirstOrDefault();
                                         if (lteinternet is not null && lteinternet.Quantity > 0)
                                         {
-                                            <input id="lteinternet" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@lteinternet?.Quantity">
+                                            <input id="c236d9af-eee9-4145-9724-44a9ea5e2952" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@lteinternet?.Quantity">
                                             <div class="input-group-append">
-                                                <button onclick="RemoveFromCart('Service','c236d9af-eee9-4145-9724-44a9ea5e2952', $('#lteinternet').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
+                                                <button onclick="RemoveFromCart('Service','c236d9af-eee9-4145-9724-44a9ea5e2952', $('#c236d9af-eee9-4145-9724-44a9ea5e2952').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
                                             </div>
                                         }
                                         else
                                         {
-                                            <input id="lteinternet" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                            <input id="c236d9af-eee9-4145-9724-44a9ea5e2952" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
                                             <div class="input-group-append">
-                                                <button onclick="AddToCart('Service','c236d9af-eee9-4145-9724-44a9ea5e2952', $('#lteinternet').val(), this)" class="btn btn-outline-primary">
+                                                <button onclick="AddToCart('Service','c236d9af-eee9-4145-9724-44a9ea5e2952', $('#c236d9af-eee9-4145-9724-44a9ea5e2952').val(), this)" class="btn btn-outline-primary">
                                                     <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                     Add to Cart
                                                 </button>
@@ -251,16 +251,16 @@
                                         var ltebackup = Model?.Cart?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c")).FirstOrDefault();
                                         if (ltebackup is not null && ltebackup.Quantity > 0)
                                         {
-                                            <input id="ltebackup" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@ltebackup?.Quantity">
+                                            <input id="c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@ltebackup?.Quantity">
                                             <div class="input-group-append">
-                                                <button onclick="RemoveFromCart('Service','c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c', $('#ltebackup').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
+                                                <button onclick="RemoveFromCart('Service','c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c', $('#c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
                                             </div>
                                         }
                                         else
                                         {
-                                            <input id="ltebackup" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                            <input id="c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
                                             <div class="input-group-append">
-                                                <button onclick="AddToCart('Service','c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c', $('#ltebackup').val(), this)" class="btn btn-outline-primary">
+                                                <button onclick="AddToCart('Service','c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c', $('#c7c26e73-a4bd-4c4f-9651-1f4cdc598c7c').val(), this)" class="btn btn-outline-primary">
                                                     <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                     Add to Cart
                                                 </button>
@@ -304,16 +304,16 @@
                                         var webtexting = Model?.Cart?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("86a8576f-15e4-4547-8705-7c98dbe5e58d")).FirstOrDefault();
                                         if (webtexting is not null && webtexting.Quantity > 0)
                                         {
-                                            <input id="webtexting" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@webtexting?.Quantity">
+                                            <input id="86a8576f-15e4-4547-8705-7c98dbe5e58d" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@webtexting?.Quantity">
                                             <div class="input-group-append">
-                                                <button onclick="RemoveFromCart('Service','86a8576f-15e4-4547-8705-7c98dbe5e58d', $('#webtexting').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
+                                                <button onclick="RemoveFromCart('Service','86a8576f-15e4-4547-8705-7c98dbe5e58d', $('#86a8576f-15e4-4547-8705-7c98dbe5e58d').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
                                             </div>
                                         }
                                         else
                                         {
-                                            <input id="webtexting" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                            <input id="86a8576f-15e4-4547-8705-7c98dbe5e58d" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
                                             <div class="input-group-append">
-                                                <button onclick="AddToCart('Service','86a8576f-15e4-4547-8705-7c98dbe5e58d', $('#webtexting').val(), this)" class="btn btn-outline-primary">
+                                                <button onclick="AddToCart('Service','86a8576f-15e4-4547-8705-7c98dbe5e58d', $('#86a8576f-15e4-4547-8705-7c98dbe5e58d').val(), this)" class="btn btn-outline-primary">
                                                     <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                     Add to Cart
                                                 </button>
@@ -344,16 +344,16 @@
                                         var tollfree = Model?.Cart?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("07a7ef6b-eb30-4a81-bc86-be193ef03aa0")).FirstOrDefault();
                                         if (tollfree is not null && tollfree.Quantity > 0)
                                         {
-                                            <input id="tollfree" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@tollfree?.Quantity">
+                                            <input id="07a7ef6b-eb30-4a81-bc86-be193ef03aa0" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@tollfree?.Quantity">
                                             <div class="input-group-append">
-                                                <button onclick="RemoveFromCart('Service','07a7ef6b-eb30-4a81-bc86-be193ef03aa0', $('#tollfree').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
+                                                <button onclick="RemoveFromCart('Service','07a7ef6b-eb30-4a81-bc86-be193ef03aa0', $('#07a7ef6b-eb30-4a81-bc86-be193ef03aa0').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
                                             </div>
                                         }
                                         else
                                         {
-                                            <input id="tollfree" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                            <input id="07a7ef6b-eb30-4a81-bc86-be193ef03aa0" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
                                             <div class="input-group-append">
-                                                <button onclick="AddToCart('Service','07a7ef6b-eb30-4a81-bc86-be193ef03aa0', $('#tollfree').val(), this)" class="btn btn-outline-primary">
+                                                <button onclick="AddToCart('Service','07a7ef6b-eb30-4a81-bc86-be193ef03aa0', $('#07a7ef6b-eb30-4a81-bc86-be193ef03aa0').val(), this)" class="btn btn-outline-primary">
                                                     <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                     Add to Cart
                                                 </button>
@@ -382,16 +382,16 @@
                                         var faxserver = Model?.Cart?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("1133e9ab-50f1-4eb6-a756-6b705dcbd6e5")).FirstOrDefault();
                                         if (faxserver is not null && faxserver.Quantity > 0)
                                         {
-                                            <input id="faxserver" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@faxserver?.Quantity">
+                                            <input id="1133e9ab-50f1-4eb6-a756-6b705dcbd6e5" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@faxserver?.Quantity">
                                             <div class="input-group-append">
-                                                <button onclick="RemoveFromCart('Service','1133e9ab-50f1-4eb6-a756-6b705dcbd6e5', $('#faxserver').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
+                                                <button onclick="RemoveFromCart('Service','1133e9ab-50f1-4eb6-a756-6b705dcbd6e5', $('#1133e9ab-50f1-4eb6-a756-6b705dcbd6e5').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
                                             </div>
                                         }
                                         else
                                         {
-                                            <input id="faxserver" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                            <input id="1133e9ab-50f1-4eb6-a756-6b705dcbd6e5" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
                                             <div class="input-group-append">
-                                                <button onclick="AddToCart('Service','1133e9ab-50f1-4eb6-a756-6b705dcbd6e5', $('#faxserver').val(), this)" class="btn btn-outline-primary">
+                                                <button onclick="AddToCart('Service','1133e9ab-50f1-4eb6-a756-6b705dcbd6e5', $('#1133e9ab-50f1-4eb6-a756-6b705dcbd6e5').val(), this)" class="btn btn-outline-primary">
                                                     <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
                                                     Add to Cart
                                                 </button>

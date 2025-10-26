@@ -186,7 +186,7 @@
                                                     <form method="get" asp-controller="Cart" asp-action="Index">
                                                         <div class="input-group">
                                                             <input type="text" value="@item?.Name" class="form-control" name="product" id="product" hidden>
-                                                            <input type="number" value="@productOrder.Quantity" max="999" min="1" class="form-control" name="quantity" id="quantity">
+                                                            <input id="@item?.ProductId" type="number" value="@productOrder.Quantity" max="999" min="1" class="form-control" name="quantity" id="quantity">
                                                             <div class="input-group-append">
                                                                 <button class="btn btn-outline-secondary" name="submit" type="submit">Update</button>
                                                             </div>
@@ -203,7 +203,7 @@
                                                                 <span class="input-group-text d-sm-none" id="basic-addon1">Count</span>
                                                             </div>
                                                             <input type="text" value="@item?.Name" class="form-control" name="product" id="product" hidden>
-                                                            <input type="number" value="@productOrder.Quantity" max="999" min="1" class="form-control" name="quantity" id="quantity">
+                                                            <input id="@item?.ProductId" type="number" value="@productOrder.Quantity" max="999" min="1" class="form-control" name="quantity" id="quantity">
                                                         </div>
                                                         <div class="input-group">
                                                             <div class="pt-1">
@@ -256,7 +256,7 @@
                                                             <span class="input-group-text d-sm-none" id="basic-addon1">Count</span>
                                                         </div>
                                                         <input type="text" value="@item?.Name" class="form-control" name="product" id="product" hidden>
-                                                        <input type="number" value="@productOrder.Quantity" max="999" min="1" class="form-control" name="quantity" id="quantity">
+                                                        <input id="@item?.ServiceId" type="number" value="@productOrder.Quantity" max="999" min="1" class="form-control" name="quantity" id="quantity">
                                                     </div>
                                                     <button onclick="RemoveFromCart('Service', '@item?.ServiceId', @productOrder.Quantity, this)" class="btn btn-outline-danger">
                                                         <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
