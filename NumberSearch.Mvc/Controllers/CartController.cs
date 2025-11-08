@@ -67,9 +67,8 @@ namespace NumberSearch.Mvc.Controllers
 
                         toRemove.Quantity = quantity ?? toRemove.Quantity;
 
-                        var checkAdd = cart.AddProduct(ref productToUpdate, ref toRemove);
-
-                        var checkSet = cart.SetToSession(HttpContext.Session);
+                        _ = cart.AddProduct(ref productToUpdate, ref toRemove);
+                        _ = cart.SetToSession(HttpContext.Session);
                         cart = Cart.GetFromSession(HttpContext.Session);
                     }
                 }
@@ -107,6 +106,7 @@ namespace NumberSearch.Mvc.Controllers
                     }
                 }
             }
+
             // 5 to 1 ratio of handsets per base station cannot be exceeded.
             if (handsets > 0 && basestations > 0 && handsets > (basestations * 5))
             {
@@ -247,7 +247,6 @@ namespace NumberSearch.Mvc.Controllers
                 else
                 {
                     return View("Order", new CartResult { Cart = cart });
-
                 }
             }
             else
@@ -265,10 +264,12 @@ namespace NumberSearch.Mvc.Controllers
 
             // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
             // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
-            var products = new List<Product>();
-            var services = new List<Service>();
-            var coupons = new List<Coupon>();
-            foreach (var item in productOrders)
+            int size = productOrders.Count();
+            var products = new List<Product>(size);
+            var services = new List<Service>(size);
+            var coupons = new List<Coupon>(size);
+
+            await Parallel.ForEachAsync(productOrders, async (item, cls) =>
             {
                 if (item.ProductId != Guid.Empty)
                 {
@@ -294,7 +295,7 @@ namespace NumberSearch.Mvc.Controllers
                         coupons.Add(coupon);
                     }
                 }
-            }
+            });
 
             var shipment = await ProductItem.GetByOrderIdAsync(order.OrderId, _postgresql);
 
@@ -326,11 +327,11 @@ namespace NumberSearch.Mvc.Controllers
                     var portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, mvcConfiguration.PostgresqlProd);
                     var portedPhoneNumbers = await PortedPhoneNumber.GetByOrderIdAsync(order.OrderId, mvcConfiguration.PostgresqlProd);
 
-                    foreach (var phoneNumber in portedPhoneNumbers)
+                    await Parallel.ForEachAsync(portedPhoneNumbers, async (phoneNumber, cls) =>
                     {
                         var numberName = await CnamBulkVs.GetAsync(phoneNumber.PortedDialedNumber.AsMemory(), mvcConfiguration.BulkVSAPIKEY.AsMemory());
                         phoneNumber.LrnLookup.LIDBName = string.IsNullOrWhiteSpace(numberName.name) ? string.Empty : numberName.name ?? string.Empty;
-                    }
+                    });
 
                     if (portedPhoneNumbers.Any())
                     {
@@ -357,11 +358,12 @@ namespace NumberSearch.Mvc.Controllers
         {
             var order = await Order.GetByIdAsync(portRequest.OrderId, mvcConfiguration.PostgresqlProd).ConfigureAwait(false);
             var portedNumbers = await PortedPhoneNumber.GetByOrderIdAsync(portRequest.OrderId, mvcConfiguration.PostgresqlProd);
-            foreach (var phoneNumber in portedNumbers)
+
+            await Parallel.ForEachAsync(portedNumbers, async (phoneNumber, cls) =>
             {
                 var numberName = await CnamBulkVs.GetAsync(phoneNumber.PortedDialedNumber.AsMemory(), mvcConfiguration.BulkVSAPIKEY.AsMemory());
                 phoneNumber.LrnLookup.LIDBName = string.IsNullOrWhiteSpace(numberName.name) ? string.Empty : numberName.name ?? string.Empty;
-            }
+            });
 
             portRequest.PortRequestId = Guid.NewGuid();
 
@@ -489,11 +491,11 @@ namespace NumberSearch.Mvc.Controllers
                         // Associate the ported numbers with their porting information.
                         portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, mvcConfiguration.PostgresqlProd) ?? new();
 
-                        foreach (var number in portedNumbers)
+                        await Parallel.ForEachAsync(portedNumbers, async (number, cls) =>
                         {
                             number.PortRequestId = portRequest.PortRequestId;
                             _ = await number.PutAsync(mvcConfiguration.PostgresqlProd);
-                        }
+                        });
                     }
 
                     // Reset the session and clear the Cart.
@@ -616,14 +618,14 @@ namespace NumberSearch.Mvc.Controllers
                 // Associate the ported numbers with their porting information.
                 portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, mvcConfiguration.PostgresqlProd) ?? new();
 
-                string formattedNumbers = string.Empty;
-
-                foreach (var number in portedNumbers)
+                List<string> unformattedNumbers = new(portedNumbers.Count());
+                await Parallel.ForEachAsync(portedNumbers, async (number, cls) =>
                 {
                     number.PortRequestId = portRequest.PortRequestId;
                     var checkPortUpdate = await number.PutAsync(mvcConfiguration.PostgresqlProd);
-                    formattedNumbers += $"<br />{number?.PortedDialedNumber}";
-                }
+                    unformattedNumbers.Add(number.PortedDialedNumber);
+                });
+                string formattedNumbers = string.Join("<br />", unformattedNumbers);
 
                 // Send out the confirmation email.
                 var confirmationEmail = new DataAccess.Models.Email
@@ -875,16 +877,16 @@ Accelerate Networks
                             totalPortingCost = summary.TotalPortingCost;
 
                             // Save all the product orders to the DB.
-                            foreach (var productOrder in cart.ProductOrders)
+                            await Parallel.ForEachAsync(cart.ProductOrders, async (productOrder, cls) =>
                             {
                                 _ = await productOrder.PostAsync(mvcConfiguration.PostgresqlProd);
-                            }
+                            });
 
                             // Save the phone numbers so that the background task can pick them up.
-                            foreach (var item in purchasedPhoneNumbers)
+                            await Parallel.ForEachAsync(purchasedPhoneNumbers, async (item, cls) =>
                             {
                                 _ = await item.PostAsync(mvcConfiguration.PostgresqlProd);
-                            }
+                            });
 
                             // Handle hardware installation scenarios, if hardware is in the order.
                             if (cart?.Products is not null && cart.Products.Count != 0)
@@ -904,27 +906,24 @@ Accelerate Networks
                             if (cart is not null && cart.PortedPhoneNumbers is not null)
                             {
                                 // Associate the ported numbers with this order.
-                                foreach (var portedNumber in cart.PortedPhoneNumbers)
+                                await Parallel.ForEachAsync(cart.PortedPhoneNumbers, async (portedNumber, cls) =>
                                 {
                                     portedNumber.OrderId = order.OrderId;
-
-                                    var checkPort = await portedNumber.PostAsync(mvcConfiguration.PostgresqlProd);
-
+                                    _ = await portedNumber.PostAsync(mvcConfiguration.PostgresqlProd);
                                     Log.Information("[Checkout] Saved port request for number {PortedDialedNumber}.", portedNumber.PortedDialedNumber);
-                                }
+                                });
                             }
 
                             if (cart is not null && cart.VerifiedPhoneNumbers is not null)
                             {
                                 // Associate the verified numbers with this order.
-                                foreach (var verifiedNumber in cart.VerifiedPhoneNumbers)
+                                await Parallel.ForEachAsync(cart.VerifiedPhoneNumbers, async (verifiedNumber, cls) =>
                                 {
                                     verifiedNumber.OrderId = order.OrderId;
-
-                                    var checkVerified = await verifiedNumber.PostAsync(mvcConfiguration.PostgresqlProd);
-
+                                    _ = await verifiedNumber.PostAsync(mvcConfiguration.PostgresqlProd);
                                     Log.Information("[Checkout] Saved Verified Number {VerifiedDialedNumber} to the Database.", verifiedNumber.VerifiedDialedNumber);
-                                }
+
+                                });
                             }
 
                             var billingTaxRate = await GetBillingTaxRateAsync(order, mvcConfiguration.InvoiceNinjaToken.AsMemory());

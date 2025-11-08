@@ -1,9 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Routing.Patterns;
+
+using nietras.SeparatedValues;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
+using NumberSearch.DataAccess.CallWithUs;
 using NumberSearch.Mvc.Models;
 
 using PhoneNumbersNA;
@@ -167,18 +171,28 @@ namespace NumberSearch.Mvc.Controllers
                 // Separate wireless numbers out from the rest.
                 var wirelessPortable = results.AsValueEnumerable().Where(x => x.Wireless && x.Portable).ToArray();
 
-                var builder = new StringBuilder();
-                builder.AppendLine("DialedNumber,City,State,DateIngested,Wireless,Portable," +
-                    "LastPorted,SPID,LATA,LEC,LECType," +
-                    "LIDBName,LRN,OCN");
-                foreach (var number in results)
+                using var writer = Sep.New(',').Writer().ToText();
+
+                foreach (var item in results)
                 {
-                    builder.AppendLine($"{number.PortedDialedNumber},{number.City},{number.State},{number.DateIngested},{number.Wireless},{number.Portable}," +
-                        $"{number.LrnLookup.LastPorted},{number.LrnLookup.SPID},{number.LrnLookup.LATA},{number.LrnLookup.LEC.Replace(",", " ")},{number.LrnLookup.LECType}," +
-                        $"{number.LrnLookup.LIDBName},{number.LrnLookup.LRN},{number.LrnLookup.OCN}");
+                    using var row = writer.NewRow();
+                    row["DialedNumber"].Set(item.PortedDialedNumber);
+                    row["City"].Set(item.City);
+                    row["State"].Set(item.State);
+                    row["DateIngested"].Set(item.DateIngested.ToString());
+                    row["Wireless"].Set(item.Wireless.ToString());
+                    row["Portable"].Set(item.Portable.ToString());
+                    row["LastPorted"].Set(item.LrnLookup.LastPorted.ToString());
+                    row["SPID"].Set(item.LrnLookup.SPID);
+                    row["LATA"].Set(item.LrnLookup.LATA);
+                    row["LEC"].Set(item.LrnLookup.LEC.Replace(",", " "));
+                    row["LECType"].Set(item.LrnLookup.LECType);
+                    row["LIDBName"].Set(item.LrnLookup.LIDBName);
+                    row["LRN"].Set(item.LrnLookup.LRN);
+                    row["OCN"].Set(item.LrnLookup.OCN);
                 }
 
-                return File(Encoding.UTF8.GetBytes(builder.ToString()), "text/csv", $"AccelerateNetworksPhoneNumbers{DateTime.Now:yyyyMMddTHHmmss}.csv");
+                return File(Encoding.UTF8.GetBytes(writer.ToString()), "text/csv", $"AccelerateNetworksPhoneNumbers{DateTime.Now:yyyyMMddTHHmmss}.csv");
             }
             else
             {

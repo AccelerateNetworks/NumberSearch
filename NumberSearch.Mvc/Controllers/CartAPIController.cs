@@ -86,11 +86,11 @@ namespace NumberSearch.Mvc.Controllers
                         results.Add(result);
                     });
 
-                    var lookups = new List<BulkLookupResult>();
-                    foreach (var number in results)
+                    var lookups = new List<BulkLookupResult>(results.Count);
+                    Parallel.ForEach(results, number =>
                     {
                         lookups.Add(new BulkLookupResult(number.PortedDialedNumber, number.City, number.State, number.DateIngested, number.Wireless, number.Portable, number.LrnLookup.LastPorted, number.LrnLookup.SPID, number.LrnLookup.LATA, number.LrnLookup.LEC, number.LrnLookup.LECType, number.LrnLookup.LIDBName, number.LrnLookup.LRN, number.LrnLookup.OCN, number.Carrier.Name, number.Carrier.LogoLink, number.Carrier.Color, number.Carrier.Type));
-                    }
+                    });
 
                     return Ok(lookups.ToArray());
                 }
@@ -124,9 +124,7 @@ namespace NumberSearch.Mvc.Controllers
                     registration.DateUpdated = DateTime.Now;
                     registration.NewClientId = id;
 
-                    var checkSubmit = await registration.PostAsync(_postgresql);
-
-                    if (checkSubmit)
+                    if (await registration.PostAsync(_postgresql))
                     {
                         return Ok(registration.ExtensionRegistrationId);
                     }
@@ -140,9 +138,9 @@ namespace NumberSearch.Mvc.Controllers
                     return BadRequest("An extension Registration with this Id already exists in the database.");
                 }
             }
-
             return BadRequest("Couldn't find a NewClient with this id.");
         }
+
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("Remove/NewClient/{id}/ExtensionRegistration/{extRegId}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -162,9 +160,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
                 else
                 {
-                    var checkDelete = await existing.DeleteAsync(_postgresql);
-
-                    if (checkDelete)
+                    if (await existing.DeleteAsync(_postgresql))
                     {
                         return Ok($"Deleted extension Registration {extRegId} from the database.");
                     }
@@ -177,6 +173,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return BadRequest("Couldn't find a NewClient with this id.");
         }
+
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("Add/NewClient/{id}/NumberDescription")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -196,9 +193,7 @@ namespace NumberSearch.Mvc.Controllers
                     description.DateUpdated = DateTime.Now;
                     description.NewClientId = id;
 
-                    var checkSubmit = await description.PostAsync(_postgresql);
-
-                    if (checkSubmit)
+                    if (await description.PostAsync(_postgresql))
                     {
                         return Ok(description.NumberDescriptionId);
                     }
@@ -215,6 +210,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return BadRequest("Couldn't find a NewClient with this id.");
         }
+
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("Remove/NewClient/{id}/NumberDescription/{numDesId}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -234,9 +230,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
                 else
                 {
-                    var checkDelete = await existing.DeleteAsync(_postgresql);
-
-                    if (checkDelete)
+                    if (await existing.DeleteAsync(_postgresql))
                     {
                         return Ok($"Deleted number description {numDesId} from the database.");
                     }
@@ -249,6 +243,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return BadRequest("Couldn't find a NewClient with this id.");
         }
+
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("Add/NewClient/{id}/IntercomRegistration")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -268,9 +263,7 @@ namespace NumberSearch.Mvc.Controllers
                     description.DateUpdated = DateTime.Now;
                     description.NewClientId = id;
 
-                    var checkSubmit = await description.PostAsync(_postgresql);
-
-                    if (checkSubmit)
+                    if (await description.PostAsync(_postgresql))
                     {
                         return Ok(description.IntercomRegistrationId);
                     }
@@ -287,6 +280,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return BadRequest("Couldn't find a NewClient with this id.");
         }
+
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("Remove/NewClient/{id}/IntercomRegistration/{numDesId}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -306,9 +300,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
                 else
                 {
-                    var checkDelete = await existing.DeleteAsync(_postgresql);
-
-                    if (checkDelete)
+                    if (await existing.DeleteAsync(_postgresql))
                     {
                         return Ok($"Deleted Intercom Registration {numDesId} from the database.");
                     }
@@ -321,6 +313,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return BadRequest("Couldn't find a NewClient with this id.");
         }
+
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("Add/NewClient/{id}/SpeedDialKey")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -340,9 +333,7 @@ namespace NumberSearch.Mvc.Controllers
                     description.DateUpdated = DateTime.Now;
                     description.NewClientId = id;
 
-                    var checkSubmit = await description.PostAsync(_postgresql);
-
-                    if (checkSubmit)
+                    if (await description.PostAsync(_postgresql))
                     {
                         return Ok(description.SpeedDialKeyId);
                     }
@@ -356,9 +347,9 @@ namespace NumberSearch.Mvc.Controllers
                     return BadRequest("An Speed Dial Key with this Id already exists in the database.");
                 }
             }
-
             return BadRequest("Couldn't find a NewClient with this id.");
         }
+
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("Remove/NewClient/{id}/SpeedDialKey/{numDesId}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -378,9 +369,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
                 else
                 {
-                    var checkDelete = await existing.DeleteAsync(_postgresql);
-
-                    if (checkDelete)
+                    if (await existing.DeleteAsync(_postgresql))
                     {
                         return Ok($"Deleted Speed Dial Key {numDesId} from the database.");
                     }
@@ -390,9 +379,9 @@ namespace NumberSearch.Mvc.Controllers
                     }
                 }
             }
-
             return BadRequest("Couldn't find a NewClient with this id.");
         }
+
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("Add/NewClient/{id}/FollowMeRegistration")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -412,9 +401,7 @@ namespace NumberSearch.Mvc.Controllers
                     description.DateUpdated = DateTime.Now;
                     description.NewClientId = id;
 
-                    var checkSubmit = await description.PostAsync(_postgresql);
-
-                    if (checkSubmit)
+                    if (await description.PostAsync(_postgresql))
                     {
                         return Ok(description.FollowMeRegistrationId);
                     }
@@ -428,9 +415,9 @@ namespace NumberSearch.Mvc.Controllers
                     return BadRequest("An Follow Me Registration with this Id already exists in the database.");
                 }
             }
-
             return BadRequest("Couldn't find a NewClient with this id.");
         }
+
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("Remove/NewClient/{id}/FollowMeRegistration/{numDesId}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -450,9 +437,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
                 else
                 {
-                    var checkDelete = await existing.DeleteAsync(_postgresql);
-
-                    if (checkDelete)
+                    if (await existing.DeleteAsync(_postgresql))
                     {
                         return Ok($"Deleted Follow Me Registration {numDesId} from the database.");
                     }
@@ -462,9 +447,9 @@ namespace NumberSearch.Mvc.Controllers
                     }
                 }
             }
-
             return BadRequest("Couldn't find a NewClient with this id.");
         }
+
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("Add/NewClient/{id}/PhoneMenuOption")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -484,9 +469,7 @@ namespace NumberSearch.Mvc.Controllers
                     option.DateUpdated = DateTime.Now;
                     option.NewClientId = id;
 
-                    var checkSubmit = await option.PostAsync(_postgresql);
-
-                    if (checkSubmit)
+                    if (await option.PostAsync(_postgresql))
                     {
                         return Ok(option.PhoneMenuOptionId);
                     }
@@ -503,6 +486,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return BadRequest("Couldn't find a NewClient with this id.");
         }
+
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("Remove/NewClient/{id}/PhoneMenuOption/{menuOptId}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -522,9 +506,7 @@ namespace NumberSearch.Mvc.Controllers
                 }
                 else
                 {
-                    var checkDelete = await existing.DeleteAsync(_postgresql);
-
-                    if (checkDelete)
+                    if (await existing.DeleteAsync(_postgresql))
                     {
                         return Ok($"Deleted Phone Menu Option {menuOptId} from the database.");
                     }
@@ -537,6 +519,7 @@ namespace NumberSearch.Mvc.Controllers
 
             return BadRequest("Couldn't find a NewClient with this id.");
         }
+
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("Cart/Add/{type}/{id}/{quantity}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -588,6 +571,7 @@ namespace NumberSearch.Mvc.Controllers
                     return NotFound(ModelState);
             }
         }
+
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("Cart/Remove/{type}/{id}/{quantity}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -703,7 +687,7 @@ namespace NumberSearch.Mvc.Controllers
                     _ = purchaseOrder.PostAsync(_postgresql);
 
                     // Remove numbers that are unpurchasable.
-                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql);
+                    _ = await phoneNumber.DeleteAsync(_postgresql);
 
                     // Sadly its gone. And the user needs to pick a different number.
                     return BadRequest($"{dialedPhoneNumber} is no longer available.");
@@ -743,7 +727,7 @@ namespace NumberSearch.Mvc.Controllers
                     _ = purchaseOrder.PostAsync(_postgresql);
 
                     // Remove numbers that are unpurchasable.
-                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql);
+                    _ = await phoneNumber.DeleteAsync(_postgresql);
 
                     // Sadly its gone. And the user needs to pick a different number.
                     return BadRequest($"{dialedPhoneNumber} is no longer available.");
@@ -781,7 +765,7 @@ namespace NumberSearch.Mvc.Controllers
                     _ = purchaseOrder.PostAsync(_postgresql);
 
                     // Remove numbers that are unpurchasable.
-                    var checkRemove = await phoneNumber.DeleteAsync(_postgresql);
+                    _ = await phoneNumber.DeleteAsync(_postgresql);
 
                     // Sadly its gone. And the user needs to pick a different number.
                     return BadRequest($"{dialedPhoneNumber} is no longer available.");
@@ -809,7 +793,7 @@ namespace NumberSearch.Mvc.Controllers
                 _ = purchaseOrder.PostAsync(_postgresql);
 
                 // Remove numbers that are unpurchasable.
-                var checkRemove = await phoneNumber.DeleteAsync(_postgresql);
+                _ = await phoneNumber.DeleteAsync(_postgresql);
 
                 // Sadly its gone. And the user needs to pick a different number.
                 return BadRequest($"{dialedPhoneNumber} is no longer available.");
@@ -819,7 +803,7 @@ namespace NumberSearch.Mvc.Controllers
             if (phoneNumber.Purchased)
             {
                 // Remove numbers that are unpurchasable.
-                var checkRemove = await phoneNumber.DeleteAsync(_postgresql);
+                _ = await phoneNumber.DeleteAsync(_postgresql);
 
                 // Sadly its gone. And the user needs to pick a different number.
                 return BadRequest($"{dialedPhoneNumber} is no longer available.");
@@ -842,9 +826,7 @@ namespace NumberSearch.Mvc.Controllers
 
             var portedPhoneNumber = new PortedPhoneNumber();
 
-            var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedPhoneNumber, out var phoneNumber);
-
-            if (checkParse)
+            if (PhoneNumbersNA.PhoneNumber.TryParse(dialedPhoneNumber, out var phoneNumber))
             {
                 // Determine if the number is a wireless number.
                 var lrnLookup = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber.AsMemory(), _apiKey.AsMemory());
@@ -918,10 +900,7 @@ namespace NumberSearch.Mvc.Controllers
 
             var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), PortedDialedNumber = portedPhoneNumber.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber?.PortedPhoneNumberId, Quantity = 1 };
 
-            var checkAdd = cart.AddPortedPhoneNumber(ref portedPhoneNumber!, ref productOrder);
-            var checkSet = cart.SetToSession(httpContext.Session);
-
-            if (checkAdd && checkSet)
+            if (cart.AddPortedPhoneNumber(ref portedPhoneNumber!, ref productOrder) && cart.SetToSession(httpContext.Session))
             {
                 return Ok(portedPhoneNumber!.PortedDialedNumber);
             }
@@ -938,9 +917,7 @@ namespace NumberSearch.Mvc.Controllers
                 return BadRequest(ModelState);
             }
 
-            var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(dialedPhoneNumber, out var phoneNumber);
-
-            if (checkParse)
+            if (PhoneNumbersNA.PhoneNumber.TryParse(dialedPhoneNumber, out var phoneNumber))
             {
                 try
                 {
@@ -1005,10 +982,8 @@ namespace NumberSearch.Mvc.Controllers
 
                     await httpContext.Session.LoadAsync();
                     var cart = Cart.GetFromSession(httpContext.Session);
-                    var checkAdd = cart.AddVerifiedPhoneNumber(ref verifiedPhoneNumber, ref productOrder);
-                    var checkSet = cart.SetToSession(httpContext.Session);
 
-                    if (checkAdd && checkSet)
+                    if (cart.AddVerifiedPhoneNumber(ref verifiedPhoneNumber, ref productOrder) && cart.SetToSession(httpContext.Session))
                     {
                         return Ok(dialedPhoneNumber);
                     }
@@ -1035,7 +1010,7 @@ namespace NumberSearch.Mvc.Controllers
                 return BadRequest(ModelState);
             }
 
-            var product = await Product.GetByIdAsync(productId, _postgresql).ConfigureAwait(false);
+            var product = await Product.GetByIdAsync(productId, _postgresql);
             if (product is not null)
             {
                 var productOrder = new ProductOrder
@@ -1047,9 +1022,7 @@ namespace NumberSearch.Mvc.Controllers
 
                 await httpContext.Session.LoadAsync();
                 var cart = Cart.GetFromSession(httpContext.Session);
-                var checkAdd = cart.AddProduct(ref product, ref productOrder);
-                var checkSet = cart.SetToSession(httpContext.Session);
-                if (checkAdd && checkSet)
+                if (cart.AddProduct(ref product, ref productOrder) && cart.SetToSession(httpContext.Session))
                 {
                     return Ok(productId.ToString());
                 }
@@ -1135,7 +1108,7 @@ namespace NumberSearch.Mvc.Controllers
                     }
 
                 }
-                var checkSet = cart.SetToSession(httpContext.Session);
+                _ = cart.SetToSession(httpContext.Session);
             }
 
             return Ok(serviceId.ToString());
@@ -1176,29 +1149,29 @@ namespace NumberSearch.Mvc.Controllers
 
                 if (coupon.Type == "Install" && cart.Products is not null && cart.Products.Count != 0)
                 {
-                    var checkAdd = cart.AddCoupon(ref coupon, ref productOrder);
-                    var checkSet = cart.SetToSession(httpContext.Session);
+                    _ = cart.AddCoupon(ref coupon, ref productOrder);
+                    _ = cart.SetToSession(httpContext.Session);
 
                     return Ok(couponName.ToString());
                 }
                 else if (coupon.Type == "Port" && cart.PortedPhoneNumbers is not null && cart.PortedPhoneNumbers.Count != 0)
                 {
-                    var checkAdd = cart.AddCoupon(ref coupon, ref productOrder);
-                    var checkSet = cart.SetToSession(httpContext.Session);
+                    _ = cart.AddCoupon(ref coupon, ref productOrder);
+                    _ = cart.SetToSession(httpContext.Session);
 
                     return Ok(couponName.ToString());
                 }
                 else if (coupon.Type == "Number" && cart.PhoneNumbers is not null && cart.PhoneNumbers.Count != 0)
                 {
-                    var checkAdd = cart.AddCoupon(ref coupon, ref productOrder);
-                    var checkSet = cart.SetToSession(httpContext.Session);
+                    _ = cart.AddCoupon(ref coupon, ref productOrder);
+                    _ = cart.SetToSession(httpContext.Session);
 
                     return Ok(couponName.ToString());
                 }
                 else if (coupon.Type == "Service" && cart.Services is not null && cart.Services.Count != 0)
                 {
-                    var checkAdd = cart.AddCoupon(ref coupon, ref productOrder);
-                    var checkSet = cart.SetToSession(httpContext.Session);
+                    _ = cart.AddCoupon(ref coupon, ref productOrder);
+                    _ = cart.SetToSession(httpContext.Session);
 
                     return Ok(couponName.ToString());
                 }
@@ -1221,10 +1194,8 @@ namespace NumberSearch.Mvc.Controllers
 
             await httpContext.Session.LoadAsync();
             var cart = Cart.GetFromSession(httpContext.Session);
-            var checkRemove = cart.RemovePhoneNumber(ref phoneNumber, ref productOrder);
-            var checkSet = cart.SetToSession(httpContext.Session);
 
-            if (checkRemove && checkSet)
+            if (cart.RemovePhoneNumber(ref phoneNumber, ref productOrder) && cart.SetToSession(httpContext.Session))
             {
                 return Ok(dialedPhoneNumber);
             }
@@ -1252,10 +1223,7 @@ namespace NumberSearch.Mvc.Controllers
 
                 productOrder ??= new ProductOrder { PortedDialedNumber = portedPhoneNumber.PortedDialedNumber ?? string.Empty, PortedPhoneNumberId = portedPhoneNumber?.PortedPhoneNumberId, Quantity = 1 };
 
-                var checkRemove = cart.RemovePortedPhoneNumber(ref portedPhoneNumber!, ref productOrder);
-                var checkSet = cart.SetToSession(httpContext.Session);
-
-                if (checkRemove && checkSet)
+                if (cart.RemovePortedPhoneNumber(ref portedPhoneNumber!, ref productOrder) && cart.SetToSession(httpContext.Session))
                 {
                     return Ok(dialedPhoneNumber);
                 }
@@ -1288,10 +1256,7 @@ namespace NumberSearch.Mvc.Controllers
                 var productOrder = cart.ProductOrders?.AsValueEnumerable().Where(x => x.VerifiedPhoneNumberId == verifedPhoneNumber.VerifiedPhoneNumberId).FirstOrDefault();
                 productOrder ??= new ProductOrder { VerifiedPhoneNumberId = verifedPhoneNumber.VerifiedPhoneNumberId, Quantity = 1 };
 
-                var checkRemove = cart.RemoveVerifiedPhoneNumber(ref verifedPhoneNumber, ref productOrder);
-                var checkSet = cart.SetToSession(httpContext.Session);
-
-                if (checkRemove && checkSet)
+                if (cart.RemoveVerifiedPhoneNumber(ref verifedPhoneNumber, ref productOrder) && cart.SetToSession(httpContext.Session))
                 {
                     return Ok(dialedPhoneNumber);
                 }
@@ -1318,10 +1283,8 @@ namespace NumberSearch.Mvc.Controllers
 
             await httpContext.Session.LoadAsync().ConfigureAwait(false);
             var cart = Cart.GetFromSession(httpContext.Session);
-            var checkRemove = cart.RemoveProduct(ref product, ref productOrder);
-            var checkSet = cart.SetToSession(httpContext.Session);
 
-            if (checkRemove && checkSet)
+            if (cart.RemoveProduct(ref product, ref productOrder) && cart.SetToSession(httpContext.Session))
             {
                 return Ok(productId.ToString());
             }
@@ -1343,10 +1306,8 @@ namespace NumberSearch.Mvc.Controllers
 
             await httpContext.Session.LoadAsync();
             var cart = Cart.GetFromSession(httpContext.Session);
-            var checkRemove = cart.RemoveService(ref service, ref productOrder);
-            var checkSet = cart.SetToSession(httpContext.Session);
 
-            if (checkRemove && checkSet)
+            if (cart.RemoveService(ref service, ref productOrder) && cart.SetToSession(httpContext.Session))
             {
                 return Ok(serviceId.ToString());
             }
@@ -1368,10 +1329,8 @@ namespace NumberSearch.Mvc.Controllers
 
             await httpContext.Session.LoadAsync();
             var cart = Cart.GetFromSession(httpContext.Session);
-            var checkRemove = cart.RemoveCoupon(ref coupon, ref productOrder);
-            var checkSet = cart.SetToSession(httpContext.Session);
 
-            if (checkRemove && checkSet)
+            if (cart.RemoveCoupon(ref coupon, ref productOrder) && cart.SetToSession(httpContext.Session))
             {
                 return Ok(couponId.ToString());
             }

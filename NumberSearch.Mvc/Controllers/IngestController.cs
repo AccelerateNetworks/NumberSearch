@@ -35,12 +35,12 @@ namespace NumberSearch.Mvc.Controllers
             var npasBulkVS = await PhoneNumber.GetCountAllAreaCodeBulkVS(_postgresql);
             var npasFPC = await PhoneNumber.GetCountAllAreaCodeFPC(_postgresql);
 
-            List<PhoneNumber.CountNPA> priority = [];
-            foreach (var code in AreaCode.Priority)
+            List<PhoneNumber.CountNPA> priority = new(AreaCode.Priority.Length);
+            Parallel.ForEach(AreaCode.Priority, code =>
             {
                 var match = numbersByAreaCode.AsValueEnumerable().FirstOrDefault(x => x.NPA == $"{code}");
                 priority.Add(new PhoneNumber.CountNPA { NPA = $"{code}", Count = match?.Count ?? 0 });
-            }
+            });
 
             var total = 0;
             foreach (var item in numberTypeCounts)
@@ -50,11 +50,11 @@ namespace NumberSearch.Mvc.Controllers
 
             return View("Index", new IngestResults
             {
-                Ingests = [..ingests],
-                FirstPointComIngest = [..fpc],
-                FirstPointComPriorityIngest = [..fpcPriority],
-                BulkVSIngest = [..bulkVS],
-                BulkVSPriorityIngest = [..bulkVSPriority],
+                Ingests = [.. ingests],
+                FirstPointComIngest = [.. fpc],
+                FirstPointComPriorityIngest = [.. fpcPriority],
+                BulkVSIngest = [.. bulkVS],
+                BulkVSPriorityIngest = [.. bulkVSPriority],
                 CurrentState = currentState,
                 AreaCodes = numbersByAreaCode,
                 PriorityAreaCodes = [.. priority],
