@@ -1,7 +1,5 @@
 ﻿using AccelerateNetworks.Operations;
 
-using CsvHelper;
-
 using Flurl.Http;
 
 using Microsoft.AspNetCore.Authentication.BearerToken;
@@ -9,6 +7,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+
+using nietras.SeparatedValues;
 
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.Ops.Models;
@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -395,19 +396,36 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
             var fileName = $"OwnedNumbers{DateTime.Now:yyyyMMdd}.csv";
             var completePath = Path.Combine(filePath, fileName);
 
-            using var writer = new StreamWriter(completePath);
-            using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-            await csv.WriteRecordsAsync(ownedNumbers);
-            var file = new FileInfo(completePath);
+            using var writer = Sep.New(',').Writer().ToText();
 
-            if (file.Exists)
+            foreach (var item in ownedNumbers)
             {
-                return Redirect($"../csv/{file.Name}");
+                using var row = writer.NewRow();
+                row["OwnedPhoneNumberId"].Set(item.OwnedPhoneNumberId.ToString());
+                row["DialedNumber"].Set(item.DialedNumber);
+                row["IngestedFrom"].Set(item.IngestedFrom);
+                row["DateIngested"].Set(item.DateIngested.ToString());
+                row["Active"].Set(item.Active.ToString());
+                row["BillingClientId"].Set(item.BillingClientId);
+                row["OwnedBy"].Set(item.OwnedBy);
+                row["Notes"].Set(item.Notes);
+                row["SPID"].Set(item.SPID);
+                row["SPIDName"].Set(item.SPIDName);
+                row["LIDBCNAM"].Set(item.LIDBCNAM);
+                row["EmergencyInformationId"].Set(item.EmergencyInformationId.ToString());
+                row["DateUpdated"].Set(item.DateUpdated.ToString());
+                row["Status"].Set(item.Status);
+                row["FusionPBXClientId"].Set(item.FusionPBXClientId);
+                row["FPBXDomainId"].Set(item.FPBXDomainId.ToString());
+                row["FPBXDestinationId"].Set(item.FPBXDestinationId.ToString());
+                row["FPBXDomainName"].Set(item.FPBXDomainName);
+                row["FPBXDomainDescription"].Set(item.FPBXDomainDescription);
+                row["SMSRoute"].Set(item.SMSRoute);
+                row["TwilioCarrierName"].Set(item.TwilioCarrierName);
+                row["TrunkGroup"].Set(item.TrunkGroup);
             }
-            else
-            {
-                return View("OwnedNumbers", result);
-            }
+
+            return File(Encoding.UTF8.GetBytes(writer.ToString()), "text/csv", $"OwnedNumbers{DateTime.UtcNow}.csv");
         }
         catch (Exception ex)
         {

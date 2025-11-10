@@ -1,10 +1,10 @@
 ﻿using AccelerateNetworks.Operations;
 
-using CsvHelper;
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+
+using nietras.SeparatedValues;
 
 using NumberSearch.Ops.Models;
 
@@ -12,6 +12,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Ops.Controllers;
@@ -63,19 +64,26 @@ public class PurchasedPhoneNumbersController(numberSearchContext context) : Cont
         var fileName = $"PurchasedNumbers{DateTime.Now:yyyyMMdd}.csv";
         var completePath = Path.Combine(filePath, fileName);
 
-        using var writer = new StreamWriter(completePath);
-        using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-        await csv.WriteRecordsAsync(orders);
-        var file = new FileInfo(completePath);
+        using var writer = Sep.New(',').Writer().ToText();
 
-        if (file.Exists)
+        foreach (var item in orders)
         {
-            return Redirect($"../csv/{file.Name}");
+            using var row = writer.NewRow();
+            row["PurchasedPhoneNumberId"].Set(item.PurchasedPhoneNumberId.ToString());
+            row["OrderId"].Set(item.OrderId.ToString());
+            row["DialedNumber"].Set(item.DialedNumber);
+            row["IngestedFrom"].Set(item.IngestedFrom);
+            row["DateIngested"].Set(item.DateIngested.ToString());
+            row["DateOrdered"].Set(item.DateOrdered.ToString());
+            row["OrderResponse"].Set(item.OrderResponse);
+            row["Completed"].Set(item.Completed.ToString());
+            row["NPA"].Set(item.NPA.ToString());
+            row["NXX"].Set(item.NXX.ToString());
+            row["XXXX"].Set(item.XXXX.ToString());
+            row["NumberType"].Set(item.NumberType);
+            row["Pin"].Set(item.Pin);
         }
-        else
-        {
-            return View("NumberOrders", orders);
-        }
+
+        return File(Encoding.UTF8.GetBytes(writer.ToString()), "text/csv", $"PurchasedPhoneNumbers{DateTime.UtcNow}.csv");
     }
-
 }

@@ -1,13 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.AspNetCore.Routing.Patterns;
 
 using nietras.SeparatedValues;
 
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
-using NumberSearch.DataAccess.CallWithUs;
 using NumberSearch.Mvc.Models;
 
 using PhoneNumbersNA;

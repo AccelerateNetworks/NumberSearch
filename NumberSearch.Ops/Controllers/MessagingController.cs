@@ -1,7 +1,5 @@
 ﻿using AccelerateNetworks.Operations;
 
-using CsvHelper;
-
 using FirstCom.Models;
 
 using Flurl.Http;
@@ -14,6 +12,8 @@ using Microsoft.EntityFrameworkCore;
 
 using Models;
 
+using nietras.SeparatedValues;
+
 using NumberSearch.DataAccess.Twilio;
 using NumberSearch.Ops.Models;
 
@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 using ZLinq;
@@ -702,7 +703,7 @@ namespace NumberSearch.Ops.Controllers
             return View("Index", result);
         }
 
-        public record CSVExport(string DialedNumber, bool RegisteredUpstream, string UpstreamStatusDescription, string Carrier);
+        public readonly record struct CSVExport(string DialedNumber, bool RegisteredUpstream, string UpstreamStatusDescription, string Carrier);
 
         [Authorize]
         [Route("/Messaging/ExportToCSV")]
@@ -747,23 +748,18 @@ namespace NumberSearch.Ops.Controllers
                 var fileName = $"MessagingUsers{DateTime.Now:yyyyMMdd}.csv";
                 var completePath = Path.Combine(filePath, fileName);
 
-                using var writer = new StreamWriter(completePath);
-                using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-                await csv.WriteRecordsAsync(exportReady);
-                var file = new FileInfo(completePath);
+                using var writer = Sep.New(',').Writer().ToText();
 
-                if (file.Exists)
+                foreach (var item in exportReady)
                 {
-                    return Redirect($"../csv/{file.Name}");
+                    using var row = writer.NewRow();
+                    row["DialedNumber"].Set(item.DialedNumber);
+                    row["RegisteredUpstream"].Set(item.RegisteredUpstream.ToString());
+                    row["StaUpstreamStatusDescriptionte"].Set(item.UpstreamStatusDescription);
+                    row["Carrier"].Set(item.Carrier);
                 }
-                else
-                {
-                    result.Message = $"❓Failed to export this CSV.";
-                    result.AlertType = "alert-warning";
-                    result.ClientRegistrations = [.. stats.AsValueEnumerable().OrderByDescending(x => x.DateRegistered)];
-                    result.Owned = ownedNumbers;
-                    return View("Index", result);
-                }
+
+                return File(Encoding.UTF8.GetBytes(writer.ToString()), "text/csv", $"Messaging{DateTime.UtcNow}.csv");
             }
             catch (Exception ex)
             {
