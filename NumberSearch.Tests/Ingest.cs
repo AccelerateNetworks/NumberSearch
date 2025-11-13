@@ -192,27 +192,6 @@ namespace NumberSearch.Tests
             }
         }
 
-        [Fact]
-        public void SplitList()
-        {
-            // Arrange
-            var list = new List<int>();
-            for (var i = 0; i < 1000; i++)
-            {
-                list.Add(i);
-            }
-
-            // Act
-            var results = Services.SplitList(list);
-
-            // Assert
-            Assert.NotNull(results);
-            Assert.True(results.Any());
-            output.WriteLine(list.Count.ToString());
-            output.WriteLine(results.Count().ToString());
-            Assert.Equal(0, list.Count % results.Count());
-        }
-
         //This takes 3 minutes to run.
 
         //[Fact]

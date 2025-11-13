@@ -36,6 +36,7 @@ namespace NumberSearch.DataAccess.BulkVS
             object CallForward);
 
 
+        // bool Sms is TRUE, FALSE, or sometimes 1?
         public readonly record struct TnRecordMessaging(bool Sms, bool Mms);
 
         public readonly record struct TnRecordTNDetails(
@@ -58,8 +59,9 @@ namespace NumberSearch.DataAccess.BulkVS
             }
             catch (FlurlHttpException ex)
             {
-                Log.Warning("[Ingest] [OwnedNumbers] [BulkVS] No results found.");
-                Log.Warning(await ex.GetResponseStringAsync());
+               Log.Warning("[Ingest] [OwnedNumbers] [BulkVS] No results found.");
+                var x = await ex.GetResponseStringAsync();
+                Log.Warning(x);
                 return [];
             }
         }

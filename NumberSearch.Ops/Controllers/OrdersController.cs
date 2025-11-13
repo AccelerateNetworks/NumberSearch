@@ -7,10 +7,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-using nietras.SeparatedValues;
-
-using NuGet.Packaging;
-
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.TeleDynamics;
@@ -21,15 +17,14 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
 using ZLinq;
 
 namespace NumberSearch.Ops.Controllers;
+
 [ApiExplorerSettings(IgnoreApi = true)]
 public class OrdersController(OpsConfig opsConfig,
     numberSearchContext context,
@@ -122,7 +117,6 @@ public class OrdersController(OpsConfig opsConfig,
             var portedPhoneNumbers = await _context.PortedPhoneNumbers.AsNoTracking().ToArrayAsync();
             var products = await _context.Products.AsNoTracking().ToArrayAsync();
             var services = await _context.Services.AsNoTracking().ToArrayAsync();
-            var pairs = new List<OrderProducts>();
 
             // Show only the relevant Orders to a Sales rep.
             if (User.IsInRole("Sales") && !User.IsInRole("Support"))
@@ -155,7 +149,9 @@ public class OrdersController(OpsConfig opsConfig,
                     .ToListAsync();
             }
 
-            foreach (var order in orders)
+            var pairs = new List<OrderProducts>(orders.Count);
+
+            Parallel.ForEach(orders, order =>
             {
                 var orderProductOrders = productOrders.AsValueEnumerable().Where(x => x.OrderId == order.OrderId).ToArray();
                 var portRequest = portRequests.AsValueEnumerable().Where(x => x.OrderId == order.OrderId).FirstOrDefault();
@@ -166,7 +162,7 @@ public class OrdersController(OpsConfig opsConfig,
                     PortRequest = portRequest ?? new PortRequest(),
                     ProductOrders = orderProductOrders
                 });
-            }
+            });
 
             return View("Orders", new OrderResult
             {
@@ -216,40 +212,42 @@ public class OrdersController(OpsConfig opsConfig,
                     }
                 }
 
+                var allProducts = await _context.Products.AsNoTracking().ToArrayAsync();
                 var productsToGet = productOrders.AsValueEnumerable().Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
-                var products = new List<Product>();
-                foreach (var productId in productsToGet)
+                var products = new List<Product>(productsToGet.Length);
+                Parallel.ForEach(productsToGet, productId =>
                 {
-                    var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == productId);
+                    var product = allProducts.AsValueEnumerable().FirstOrDefault(x => x.ProductId == productId);
                     if (product is not null)
                     {
                         products.Add(product);
                     }
-                }
+                });
 
+                var allServices = await _context.Services.AsNoTracking().ToArrayAsync();
                 var servicesToGet = productOrders.AsValueEnumerable().Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
-                var services = new List<Service>();
-                foreach (var serviceId in servicesToGet)
+                var services = new List<Service>(servicesToGet.Length);
+                Parallel.ForEach(servicesToGet, serviceId =>
                 {
-                    var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == serviceId);
+                    var service = allServices.FirstOrDefault(x => x.ServiceId == serviceId);
                     if (service is not null)
                     {
                         services.Add(service);
                     }
-                }
+                });
 
                 var couponsToGet = productOrders.AsValueEnumerable().Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
                 var allCoupons = await _context.Coupons.AsNoTracking().ToArrayAsync();
-                var coupons = new List<Coupon>();
+                var coupons = new List<Coupon>(couponsToGet.Length);
 
-                foreach (var couponId in couponsToGet)
+                Parallel.ForEach(couponsToGet, couponId =>
                 {
                     var coupon = allCoupons.AsValueEnumerable().FirstOrDefault(x => x.CouponId == couponId);
                     if (coupon is not null)
                     {
                         coupons.Add(coupon);
                     }
-                }
+                });
 
                 var cart = new Cart
                 {
@@ -282,7 +280,6 @@ public class OrdersController(OpsConfig opsConfig,
         var portedPhoneNumbers = await _context.PortedPhoneNumbers.AsNoTracking().ToArrayAsync();
         var products = await _context.Products.AsNoTracking().ToArrayAsync();
         var services = await _context.Services.AsNoTracking().ToArrayAsync();
-        var pairs = new List<OrderProducts>();
 
         // Show only the relevant Orders to a Sales rep.
         if (User.IsInRole("Sales") && !User.IsInRole("Support"))
@@ -313,7 +310,9 @@ public class OrdersController(OpsConfig opsConfig,
                     .ToListAsync();
         }
 
-        foreach (var order in orders)
+        var pairs = new List<OrderProducts>(orders.Count);
+
+        Parallel.ForEach(orders, order =>
         {
             var orderProductOrders = productOrders.AsValueEnumerable().Where(x => x.OrderId == order.OrderId).ToArray();
             var portRequest = portRequests.AsValueEnumerable().Where(x => x.OrderId == order.OrderId).FirstOrDefault();
@@ -324,7 +323,7 @@ public class OrdersController(OpsConfig opsConfig,
                 PortRequest = portRequest ?? new PortRequest(),
                 ProductOrders = orderProductOrders
             });
-        }
+        });
 
         return View("Quotes", new OrderResult
         {
@@ -483,7 +482,7 @@ public class OrdersController(OpsConfig opsConfig,
                     decimal totalInstallTime = 0m;
                     foreach (var item in products)
                     {
-                        var quantity = productOrders?.Where(x => x.ProductId == item.ProductId).FirstOrDefault();
+                        var quantity = productOrders.AsValueEnumerable().Where(x => x.ProductId == item.ProductId).FirstOrDefault();
 
                         if (item.InstallTime > 0m && quantity is not null)
                         {
@@ -556,37 +555,40 @@ public class OrdersController(OpsConfig opsConfig,
         var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
 
         var productsToGet = productOrders.AsValueEnumerable().Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
-        var products = new List<Product>();
-        foreach (var productId in productsToGet)
+        var allProducts = await _context.Products.AsNoTracking().ToArrayAsync();
+        var products = new List<Product>(productsToGet.Length);
+        Parallel.ForEach(productsToGet, productId =>
         {
-            var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == productId);
+            var product = allProducts.AsValueEnumerable().FirstOrDefault(x => x.ProductId == productId);
             if (product is not null)
             {
                 products.Add(product);
             }
-        }
+        });
 
         var servicesToGet = productOrders.AsValueEnumerable().Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
-        var services = new List<Service>();
-        foreach (var serviceId in servicesToGet)
+        var allServices = await _context.Services.AsNoTracking().ToArrayAsync();
+        var services = new List<Service>(servicesToGet.Length);
+        Parallel.ForEach(servicesToGet, serviceId =>
         {
-            var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == serviceId);
+            var service = allServices.AsValueEnumerable().FirstOrDefault(x => x.ServiceId == serviceId);
             if (service is not null)
             {
                 services.Add(service);
             }
-        }
+        });
 
         var couponsToGet = productOrders.AsValueEnumerable().Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
-        var coupons = new List<Coupon>();
-        foreach (var couponId in couponsToGet)
+        var allCoupons = await _context.Coupons.AsNoTracking().ToArrayAsync();
+        var coupons = new List<Coupon>(couponsToGet.Length);
+        Parallel.ForEach(couponsToGet, couponId =>
         {
-            var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == couponId);
+            var coupon = allCoupons.AsValueEnumerable().FirstOrDefault(x => x.CouponId == couponId);
             if (coupon is not null)
             {
                 coupons.Add(coupon);
             }
-        }
+        });
 
         return new Cart
         {
@@ -784,37 +786,40 @@ public class OrdersController(OpsConfig opsConfig,
         var portedPhoneNumbers = await _context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).AsNoTracking().ToListAsync();
 
         var productsToGet = productOrders.AsValueEnumerable().Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
-        var products = new List<Product>();
-        foreach (var productId in productsToGet)
+        var allProducts = await _context.Products.AsNoTracking().ToArrayAsync();
+        var products = new List<Product>(productsToGet.Length);
+        Parallel.ForEach(productsToGet, productId =>
         {
-            var product = await _context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == productId);
+            var product = allProducts.AsValueEnumerable().FirstOrDefault(x => x.ProductId == productId);
             if (product is not null)
             {
                 products.Add(product);
             }
-        }
+        });
 
         var servicesToGet = productOrders.AsValueEnumerable().Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
+        var allServices = await _context.Services.AsNoTracking().ToArrayAsync();
         var services = new List<Service>();
-        foreach (var serviceId in servicesToGet)
+        Parallel.ForEach(servicesToGet, serviceId =>
         {
-            var service = await _context.Services.AsNoTracking().FirstOrDefaultAsync(x => x.ServiceId == serviceId);
+            var service = allServices.AsValueEnumerable().FirstOrDefault(x => x.ServiceId == serviceId);
             if (service is not null)
             {
                 services.Add(service);
             }
-        }
+        });
 
         var couponsToGet = productOrders.AsValueEnumerable().Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
+        var allCoupons = await _context.Coupons.AsNoTracking().ToArrayAsync();
         var coupons = new List<Coupon>();
-        foreach (var couponId in couponsToGet)
+        Parallel.ForEach(couponsToGet, couponId =>
         {
-            var coupon = await _context.Coupons.AsNoTracking().FirstOrDefaultAsync(x => x.CouponId == couponId);
+            var coupon = allCoupons.AsValueEnumerable().FirstOrDefault(x => x.CouponId == couponId);
             if (coupon is not null)
             {
                 coupons.Add(coupon);
             }
-        }
+        });
 
         return new Cart
         {

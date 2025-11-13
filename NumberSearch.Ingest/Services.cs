@@ -29,7 +29,7 @@ namespace NumberSearch.Ingest
             string Tollfree = "Tollfree";
 
             // Assign a Type based on number of repeating digits.
-            foreach (var number in numbers)
+            Parallel.ForEach(numbers, number =>
             {
                 // https://stackoverflow.com/questions/39472429/count-all-character-occurrences-in-a-string-c-sharp
                 int count = number.DialedNumber.AsValueEnumerable().GroupBy(static c => c).Select(c => c.Count()).Max();
@@ -48,27 +48,12 @@ namespace NumberSearch.Ingest
                 if (checkTollfree)
                 {
                     number.NumberType = Tollfree;
-                    number.City = "Tollfree";
+                    number.City = Tollfree;
                     number.State = string.Empty;
                 }
-            }
+            });
 
             return ref numbers;
-        }
-
-        /// <summary>
-        /// Split the list of accounts in insert into smaller lists so that they can be submitted in bulk to the database in reasonably sized chunks.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="locations"></param>
-        /// <param name="nSize"> The maximum number of items in the smaller lists. </param>
-        /// <returns></returns>
-        public static IEnumerable<List<T>> SplitList<T>(List<T> locations, int nSize = 100)
-        {
-            for (int i = 0; i < locations.Count; i += nSize)
-            {
-                yield return locations.GetRange(i, Math.Min(nSize, locations.Count - i));
-            }
         }
 
         /// <summary>
@@ -81,8 +66,8 @@ namespace NumberSearch.Ingest
         {
             IngestStatistics stats = new();
 
-            var inserts = new Dictionary<string, PhoneNumber>();
-            var updates = new Dictionary<string, PhoneNumber>();
+            Dictionary<string, PhoneNumber> inserts = [];
+            Dictionary<string, PhoneNumber> updates = [];
 
             if (numbers.Length > 0)
             {
@@ -127,11 +112,11 @@ namespace NumberSearch.Ingest
                         }
                     }
                 }
-                Log.Information("Found {Count} new Phone Numbers to Insert.", inserts?.Count);
-                Log.Information("Found {Count} existing Phone Numbers to Update.", updates?.Count);
+                Log.Information("Found {Count} new Phone Numbers to Insert.", inserts.Count);
+                Log.Information("Found {Count} existing Phone Numbers to Update.", updates.Count);
             }
 
-            var count = 0;
+            int count = 0;
 
             if (updates is not null && updates.Count != 0)
             {
@@ -157,19 +142,17 @@ namespace NumberSearch.Ingest
                 Log.Information("Updated {Count} Phone Numbers", updates?.Count);
             }
 
-            var listInserts = inserts?.Values.AsValueEnumerable().ToList();
+            PhoneNumber[] listInserts = [.. inserts.Values];
 
-            var groups = SplitList(listInserts ?? []);
-
-            foreach (var group in groups.AsValueEnumerable().ToArray())
+            foreach (var group in inserts.Values.Chunk(100))
             {
                 try
                 {
                     var check = await PhoneNumber.BulkPostAsync(group, connectionString.ToString());
 
-                    if (check) { stats!.IngestedNew += group.Count; };
+                    if (check) { stats!.IngestedNew += group.Length; };
 
-                    Log.Information("{IngestedNew} of {Count} submitted to the database.", stats?.IngestedNew, listInserts?.Count);
+                    Log.Information("{IngestedNew} of {Count} submitted to the database.", stats?.IngestedNew, listInserts.Length);
                 }
                 catch (Exception ex)
                 {
