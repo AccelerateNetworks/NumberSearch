@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 using NumberSearch.Mvc.Models;
 using NumberSearch.Mvc.WorkerServices;
@@ -164,7 +164,7 @@ namespace NumberSearch.Mvc
             app.UseSerilogRequestLogging();
 
             app.UseHttpsRedirection();
-
+            
             // Set cache headers on static files.
             // Disable to prevent caching.
             app.UseStaticFiles(new StaticFileOptions
@@ -211,6 +211,7 @@ namespace NumberSearch.Mvc
             app.UseHttpMetrics();
             app.UseResponseCaching();
             app.UseOutputCache();
+            app.UseStatusCodePagesWithRedirects("/Support");
 
             app.Use(static async (context, next) =>
             {

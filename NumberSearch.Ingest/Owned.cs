@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -67,7 +68,8 @@ namespace NumberSearch.Ingest
                 if (firstComNumbers != null)
                 {
                     allNumbers.AddRange(firstComNumbers);
-                };
+                }
+                ;
             }
             catch (Exception ex)
             {
@@ -82,7 +84,8 @@ namespace NumberSearch.Ingest
                 if (bulkVSNumbers.Length != 0)
                 {
                     allNumbers.AddRange(bulkVSNumbers);
-                };
+                }
+                ;
             }
             catch (Exception ex)
             {
@@ -585,8 +588,9 @@ namespace NumberSearch.Ingest
                 }
             }
 
-            DataAccess.Models.PhoneNumber[] typedNumbers = Services.AssignNumberTypes([.. newUnassigned]);
-            DataAccess.Models.PhoneNumber[] locations = await Services.AssignRatecenterAndRegionAsync(typedNumbers);
+            ReadOnlySpan<DataAccess.Models.PhoneNumber> unassignedSet = newUnassigned.AsValueEnumerable().ToArray().AsSpan();
+            ReadOnlySpan<DataAccess.Models.PhoneNumber> typedNumbers = Services.AssignNumberTypes(ref unassignedSet);
+            ReadOnlyMemory<DataAccess.Models.PhoneNumber> locations = await Services.AssignRatecenterAndRegionAsync(typedNumbers.ToArray().AsMemory());
             _ = await Services.SubmitPhoneNumbersAsync(locations, connectionString);
 
             DateTime end = DateTime.Now;
@@ -618,7 +622,7 @@ namespace NumberSearch.Ingest
             var purchased = await PurchasedPhoneNumber.GetAllAsync(connectionString.ToString());
             var ported = await PortedPhoneNumber.GetAllAsync(connectionString.ToString());
 
-            foreach (var number in numbers)
+            await Parallel.ForEachAsync(numbers, async (number, cls) =>
             {
                 var match = purchased.AsValueEnumerable().Where(x => x.DialedNumber == number.DialedNumber).FirstOrDefault();
 
@@ -626,31 +630,29 @@ namespace NumberSearch.Ingest
                 {
                     var match2 = ported.AsValueEnumerable().Where(x => x.PortedDialedNumber == number.DialedNumber).FirstOrDefault();
 
-                    if (match2 is null)
+                    if (match2 is not null)
                     {
-                        // Do nothing if we can't find a match in our system for this number.
-                        Log.Information("[OwnedNumbers] [ClientMatch] Couldn't associate Owned Number {DialedNumber} with a billing client.", number.DialedNumber);
-                        continue;
-                    }
+                        var order = await Order.GetByIdAsync(match2.OrderId ?? Guid.NewGuid(), connectionString.ToString());
 
-                    var order = await Order.GetByIdAsync(match2.OrderId ?? Guid.NewGuid(), connectionString.ToString());
+                        if (order is not null && !string.IsNullOrWhiteSpace(order?.BillingClientId))
+                        {
+                            number.BillingClientId = order.BillingClientId;
+                            number.OwnedBy = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName;
 
-                    //var badLink = $"https://billing.acceleratenetworks.com/clients/{number.BillingClientId}/edit";
-                    //var checkLink = badLink.GetStringAsync();
+                            var checkUpdate = await number.PutAsync(connectionString.ToString());
+                            updatedExisting++;
 
-                    if (order is not null && !string.IsNullOrWhiteSpace(order?.BillingClientId))
-                    {
-                        number.BillingClientId = order.BillingClientId;
-                        number.OwnedBy = string.IsNullOrWhiteSpace(order.BusinessName) ? $"{order.FirstName} {order.LastName}" : order.BusinessName;
-
-                        var checkUpdate = await number.PutAsync(connectionString.ToString());
-                        updatedExisting++;
-
-                        Log.Information("[OwnedNumbers] [ClientMatch] Associated Owned Number {PortedDialedNumber} with billing client id {BillingClientId}", match2?.PortedDialedNumber, order?.BillingClientId);
+                            Log.Information("[OwnedNumbers] [ClientMatch] Associated Owned Number {PortedDialedNumber} with billing client id {BillingClientId}", match2?.PortedDialedNumber, order?.BillingClientId);
+                        }
+                        else
+                        {
+                            Log.Information("[OwnedNumbers] [ClientMatch] Couldn't associate Owned Number {PortedDialedNumber} with a billing client.", match2?.PortedDialedNumber);
+                        }
                     }
                     else
                     {
-                        Log.Information("[OwnedNumbers] [ClientMatch] Couldn't associate Owned Number {PortedDialedNumber} with a billing client.", match2?.PortedDialedNumber);
+                        // Do nothing if we can't find a match in our system for this number.
+                        Log.Information("[OwnedNumbers] [ClientMatch] Couldn't associate Owned Number {DialedNumber} with a billing client.", number.DialedNumber);
                     }
                 }
                 else
@@ -672,7 +674,7 @@ namespace NumberSearch.Ingest
                         Log.Information("[OwnedNumbers] [ClientMatch] Couldn't associate Owned Number {DialedNumber} with a billing client.", match?.DialedNumber);
                     }
                 }
-            }
+            });
 
             DateTime end = DateTime.Now;
 

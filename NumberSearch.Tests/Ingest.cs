@@ -178,13 +178,14 @@ namespace NumberSearch.Tests
                 new() { DialedNumber = "8754321666" },
                 new() { DialedNumber = "9875432166" },
             ];
+
+            ReadOnlyMemory<PhoneNumber> set = numbers.ToArray().AsMemory();
             // Act
-            var results = Services.AssignNumberTypes([..numbers]);
+            var results = Services.AssignNumberTypes(set);
 
             // Assert
-            Assert.NotNull(results);
-            Assert.NotEmpty(results);
-            foreach (var result in results)
+            Assert.NotEmpty(results.ToArray());
+            foreach (var result in results.ToArray())
             {
                 Assert.False(string.IsNullOrWhiteSpace(result.NumberType));
                 output.WriteLine(result.DialedNumber);

@@ -6,11 +6,6 @@ using NumberSearch.DataAccess.Models;
 
 using Serilog;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 using ZLinq;
 
 using static NumberSearch.Ingest.Program;
@@ -32,11 +27,11 @@ namespace NumberSearch.Ingest
 
             PhoneNumber[] numbers = await FirstPointCom.GetValidNumbersByNPAAsync(username, password, areaCodes);
 
-            PhoneNumber[] locations = await Services.AssignRatecenterAndRegionAsync(numbers);
+            ReadOnlyMemory<PhoneNumber> locations = await Services.AssignRatecenterAndRegionAsync(numbers);
+            ReadOnlySpan<PhoneNumber> locationsSet = locations.Span;
+            ReadOnlySpan<PhoneNumber> typedNumbers = Services.AssignNumberTypes(ref locationsSet);
 
-            PhoneNumber[] typedNumbers = Services.AssignNumberTypes(locations);
-
-            IngestStatistics stats = await Services.SubmitPhoneNumbersAsync(typedNumbers, connectionString);
+            IngestStatistics stats = await Services.SubmitPhoneNumbersAsync(typedNumbers.ToArray().AsMemory(), connectionString);
 
             DateTime end = DateTime.Now;
             stats.StartDate = start;
@@ -88,11 +83,11 @@ namespace NumberSearch.Ingest
                 }
             }
 
-            PhoneNumber[] locations = await Services.AssignRatecenterAndRegionAsync([.. numbers]);
-
-            PhoneNumber[] typedNumbers = Services.AssignNumberTypes(locations);
-
-            IngestStatistics stats = await Services.SubmitPhoneNumbersAsync(typedNumbers, connectionString);
+            ReadOnlyMemory<PhoneNumber> set = numbers.ToArray().AsMemory();
+            ReadOnlyMemory<PhoneNumber> locations = await Services.AssignRatecenterAndRegionAsync(set);
+            ReadOnlySpan<PhoneNumber> locationsSet = locations.Span;
+            ReadOnlySpan<PhoneNumber> typedNumbers = Services.AssignNumberTypes(ref locationsSet);
+            IngestStatistics stats = await Services.SubmitPhoneNumbersAsync(typedNumbers.ToArray().AsMemory(), connectionString);
 
             DateTime end = DateTime.Now;
             stats.StartDate = start;

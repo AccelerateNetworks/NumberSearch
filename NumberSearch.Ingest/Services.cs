@@ -4,11 +4,6 @@ using NumberSearch.DataAccess.Models;
 
 using Serilog;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 using ZLinq;
 
 namespace NumberSearch.Ingest
@@ -20,7 +15,7 @@ namespace NumberSearch.Ingest
         /// </summary>
         /// <param name="numbers"></param>
         /// <returns></returns>
-        public static ref readonly PhoneNumber[] AssignNumberTypes(in PhoneNumber[] numbers)
+        public static ref readonly ReadOnlySpan<PhoneNumber> AssignNumberTypes(ref ReadOnlySpan<PhoneNumber> numbers)
         {
             // NumberTypes
             string Executive = "Executive";
@@ -29,7 +24,7 @@ namespace NumberSearch.Ingest
             string Tollfree = "Tollfree";
 
             // Assign a Type based on number of repeating digits.
-            Parallel.ForEach(numbers, number =>
+            Parallel.ForEach(numbers.ToArray(), number =>
             {
                 // https://stackoverflow.com/questions/39472429/count-all-character-occurrences-in-a-string-c-sharp
                 int count = number.DialedNumber.AsValueEnumerable().GroupBy(static c => c).Select(c => c.Count()).Max();
@@ -62,19 +57,19 @@ namespace NumberSearch.Ingest
         /// <param name="numbers"> A list of phone numbers. </param>
         /// <param name="connectionString"> The connection string for the database. </param>
         /// <returns></returns>
-        public static async Task<IngestStatistics> SubmitPhoneNumbersAsync(PhoneNumber[] numbers, ReadOnlyMemory<char> connectionString)
+        public static async Task<IngestStatistics> SubmitPhoneNumbersAsync(ReadOnlyMemory<PhoneNumber> numbers, ReadOnlyMemory<char> connectionString)
         {
             IngestStatistics stats = new();
 
             Dictionary<string, PhoneNumber> inserts = [];
             Dictionary<string, PhoneNumber> updates = [];
-
             if (numbers.Length > 0)
             {
                 var existingNumbers = await PhoneNumber.GetAllNumbersAsync(connectionString.ToString());
                 var dict = existingNumbers.AsValueEnumerable().ToDictionary(x => x, x => x);
                 // Submit the batch to the remote database.
-                foreach (var number in numbers)
+
+                foreach (var number in numbers.ToArray())
                 {
                     // Check if it already exists.
                     var inDb = dict?.TryGetValue(number.DialedNumber, out var _) ?? false;
@@ -174,14 +169,14 @@ namespace NumberSearch.Ingest
         /// </summary>
         /// <param name="numbers"> A list of phone numbers. </param>
         /// <returns> A list of phone numbers. </returns>
-        public static async Task<PhoneNumber[]> AssignRatecenterAndRegionAsync(PhoneNumber[] numbers)
+        public static async Task<ReadOnlyMemory<PhoneNumber>> AssignRatecenterAndRegionAsync(ReadOnlyMemory<PhoneNumber> numbers)
         {
             Log.Information("Ingesting the Ratecenters and Regions on {Length} phone numbers.", numbers.Length);
 
             // Cache the lookups because API requests are expensive and phone numbers tend to be ingested in groups.
             var npaNxxLookup = new Dictionary<string, RateCenterLookup>();
 
-            foreach (var number in numbers)
+            foreach (var number in numbers.ToArray())
             {
                 var checkTollfree = PhoneNumbersNA.AreaCode.TollFreeFlatLookup[number.NPA];
 

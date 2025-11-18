@@ -19,16 +19,16 @@ namespace NumberSearch.Ingest
         {
             Log.Information("[BulkVS] [PortRequests] Ingesting Port Request statuses.");
 
-            var bulkVSPortRequests = await PortTn.GetAllAsync(configuration.BulkVSUsername, configuration.BulkVSPassword).ConfigureAwait(false);
+            var bulkVSPortRequests = await PortTn.GetAllAsync(configuration.BulkVSUsername, configuration.BulkVSPassword);
 
-            foreach (var request in bulkVSPortRequests.AsValueEnumerable().ToArray())
+            foreach (var request in bulkVSPortRequests)
             {
-                var portedNumbers = await PortedPhoneNumber.GetByExternalIdAsync(request.OrderId, configuration.Postgresql.ToString()).ConfigureAwait(false);
+                var portedNumbers = await PortedPhoneNumber.GetByExternalIdAsync(request.OrderId, configuration.Postgresql.ToString());
 
                 bool focChanged = false;
                 bool portCompleted = false;
 
-                var bulkStatus = await PortTn.GetAsync(request.OrderId.AsMemory(), configuration.BulkVSUsername, configuration.BulkVSPassword).ConfigureAwait(false);
+                var bulkStatus = await PortTn.GetAsync(request.OrderId.AsMemory(), configuration.BulkVSUsername, configuration.BulkVSPassword);
 
                 foreach (var number in portedNumbers)
                 {

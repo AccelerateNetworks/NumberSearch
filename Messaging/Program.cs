@@ -23,7 +23,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 using MimeKit;
 
@@ -38,6 +38,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Net.Mail;
+using System.ServiceModel.Description;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -131,21 +132,17 @@ try
             BearerFormat = "JWT",
             Scheme = "Bearer"
         });
-        option.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
+        option.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
         {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type=ReferenceType.SecurityScheme,
-                    Id="Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
-
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            Description = "JWT Authorization header using the Bearer scheme."
+        });
+        option.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecuritySchemeReference("bearer", document)] = []
+        });
         // Set the comments path for the Swagger JSON and UI.
         //var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
         //var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
@@ -254,82 +251,92 @@ try
 
     app.MapGet("/client", Endpoints.ClientByDialedNumberAsync)
         .RequireAuthorization("api")
-        .WithOpenApi(x => new(x)
+        .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            Summary = "Lookup a specific client registration using the dialed number.",
-            Description = "Use this to see if a dialed number is registered and find out what callback Url its registered to."
+            operation.Summary = "Lookup a specific client registration using the dialed number.";
+            operation.Description = "Use this to see if a dialed number is registered and find out what callback Url its registered to.";
+            return Task.CompletedTask;
         });
 
     app.MapGet("/client/all", Endpoints.AllClientsAsync)
         .RequireAuthorization("api")
-        .WithOpenApi(x => new(x)
+        .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            Summary = "View all registered clients.",
-            Description = "This is intended to be used for debugging client registrations."
+            operation.Summary = "View all registered clients.";
+            operation.Description = "This is intended to be used for debugging client registrations.";
+            return Task.CompletedTask;
         });
 
     app.MapGet("/client/usage", Endpoints.UsageByClientAsync)
         .RequireAuthorization("api")
-        .WithOpenApi(x => new(x)
+        .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            Summary = "View all registered clients.",
-            Description = "This is intended to be used for debugging client registrations."
+            operation.Summary = "View all registered clients.";
+            operation.Description = "This is intended to be used for debugging client registrations.";
+            return Task.CompletedTask;
         });
 
     app.MapPost("/client/register", Endpoints.RegisterClientAsync)
         .RequireAuthorization("api")
-        .WithOpenApi(x => new(x)
+        .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            Summary = "Register a client for message forwarding.",
-            Description = "Boy I wish I had more to say about this, lmao."
+            operation.Summary = "Register a client for message forwarding.";
+            operation.Description = "Boy I wish I had more to say about this, lmao.";
+            return Task.CompletedTask;
         });
 
     app.MapPost("/client/remove", Endpoints.RemoveClientRegistrationAsync)
         .RequireAuthorization("api")
-        .WithOpenApi(x => new(x)
+        .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            Summary = "Register a client for message forwarding.",
-            Description = "Boy I wish I had more to say about this, lmao."
+            operation.Summary = "Register a client for message forwarding.";
+            operation.Description = "Boy I wish I had more to say about this, lmao.";
+            return Task.CompletedTask;
         });
 
     app.MapGet("/client/test", Endpoints.TestClientAsync)
         .RequireAuthorization("api")
-        .WithOpenApi(x => new(x)
+        .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            Summary = "Send a test message to a registered number to verify that it works correctly.",
-            Description = "Because this API is a middleman between the vendor and the client app we can send outbound SMS/MMS messages on behalf of a number that is registered with this app so that the vendor will reply to us with an inbound message matching the outbound message we sent. This allows us to verify that the registered number is routed and configured correctly for messaging service."
+            operation.Summary = "Send a test message to a registered number to verify that it works correctly.";
+            operation.Description = "Because this API is a middleman between the vendor and the client app we can send outbound SMS/MMS messages on behalf of a number that is registered with this app so that the vendor will reply to us with an inbound message matching the outbound message we sent. This allows us to verify that the registered number is routed and configured correctly for messaging service.";
+            return Task.CompletedTask;
         });
 
     app.MapGet("/message/all", Endpoints.AllMessagesAsync)
         .RequireAuthorization("api")
-        .WithOpenApi(x => new(x)
+        .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            Summary = "View all sent and received messages.",
-            Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems."
+            operation.Summary = "View all sent and received messages.";
+            operation.Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems.";
+            return Task.CompletedTask;
         });
 
     app.MapGet("/message/all/failed", Endpoints.AllFailedMessagesAsync)
         .RequireAuthorization("api")
-        .WithOpenApi(x => new(x)
+        .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            Summary = "View all sent and received messages that failed.",
-            Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems."
+            operation.Summary = "View all sent and received messages that failed.";
+            operation.Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems.";
+            return Task.CompletedTask;
         });
 
     app.MapPost("/message/replay", Endpoints.ReplayMessageAsync)
         .RequireAuthorization("api")
-        .WithOpenApi(x => new(x)
+        .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            Summary = "Replay an inbound message.",
-            Description = "This is intended to help you debug problems with message delivery so you can see if it's this API or the client app that is causing problems."
+            operation.Summary = "Replay an inbound message.";
+            operation.Description = "This is intended to help you debug problems with message delivery so you can see if it's this API or the client app that is causing problems.";
+            return Task.CompletedTask;
         });
 
     app.MapPost("/message/send", Endpoints.SendMessageAsync)
         .RequireAuthorization("api")
-        .WithOpenApi(x => new(x)
+        .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            Summary = "Send an SMS or MMS Message.",
-            Description = "Submit outbound messages to this endpoint. The 'to' field is a comma separated list of dialed numbers, or a single dialed number without commas. The 'msisdn' the dialed number of the client that is sending the message. The 'message' field is a string. No validation of the message field occurs before it is forwarded to our upstream vendors. If you include any file paths in the MediaURLs array the message will be sent as an MMS. If the Message field is loner than 160 characters, but less than 1600 characters, the message will be sent as an MMS, not an SMS, even if no MediaURLs are provided."
+            operation.Summary = "Send an SMS or MMS Message.";
+            operation.Description = "Submit outbound messages to this endpoint. The 'to' field is a comma separated list of dialed numbers, or a single dialed number without commas. The 'msisdn' the dialed number of the client that is sending the message. The 'message' field is a string. No validation of the message field occurs before it is forwarded to our upstream vendors. If you include any file paths in the MediaURLs array the message will be sent as an MMS. If the Message field is loner than 160 characters, but less than 1600 characters, the message will be sent as an MMS, not an SMS, even if no MediaURLs are provided.";
+            return Task.CompletedTask;
         });
 
     // Don't move this or it will break multipart form handling.
@@ -640,39 +647,44 @@ try
 
             return TypedResults.BadRequest(ex.Message);
         }
-    }).WithOpenApi(x => new(x)
+    }).AddOpenApiOperationTransformer((operation, context, ct) =>
     {
-        Summary = "Receive an MMS Message.",
-        Description = "Submit inbound messages to this endpoint."
+        operation.Summary = "Receive an MMS Message.";
+        operation.Description = "Submit inbound messages to this endpoint.";
+        return Task.CompletedTask;
     });
 
     // When this issue is resolved we can simplify the way that we are receiving data in this endpoint: https://github.com/dotnet/aspnetcore/issues/39430 and https://stackoverflow.com/questions/71047077/net-6-minimal-api-and-multipart-form-data/71048827#71048827
     app.MapPost("/api/inbound/1pcom", Endpoints.InboundSMSFirstPointComAsync)
-        .WithOpenApi(x => new(x)
+        .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            Summary = "For use by First Point Communications only.",
-            Description = "Receives incoming messages from our upstream provider. Forwards valid SMS messages to clients registered through the /client/register endpoint. Forwarded messages are in the form described by the MessageRecord entry in the Schema's section of this page. The is no request body as the data provided by First Point Communications is UrlEncoded like POSTing form data rather than JSON formatted in body of the POST request. The Token is a secret created and maintained by First Point Communications. This endpoint is not for use by anyone other than First Point Communications. It is documented here to help developers understand how incoming messages are forwarded to the client that they have registered with this API. The Messaging.Tests project is a series of functional tests that verify the behavior of this endpoint, because this method of message passing is so chaotic."
+            operation.Summary = "For use by First Point Communications only.";
+            operation.Description = "Receives incoming messages from our upstream provider. Forwards valid SMS messages to clients registered through the /client/register endpoint. Forwarded messages are in the form described by the MessageRecord entry in the Schema's section of this page. The is no request body as the data provided by First Point Communications is UrlEncoded like POSTing form data rather than JSON formatted in body of the POST request. The Token is a secret created and maintained by First Point Communications. This endpoint is not for use by anyone other than First Point Communications. It is documented here to help developers understand how incoming messages are forwarded to the client that they have registered with this API. The Messaging.Tests project is a series of functional tests that verify the behavior of this endpoint, because this method of message passing is so chaotic.";
+            return Task.CompletedTask;
         });
 
     app.MapPost("/message/forward/test", Endpoints.ForwardTestAsync)
-        .WithOpenApi(x => new(x)
+        .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            Summary = "Endpoint that can be used as the callback URL for a registered client to support functional testing of the message forwarding endpoints.",
-            Description = "For testing purposes only."
+            operation.Summary = "Endpoint that can be used as the callback URL for a registered client to support functional testing of the message forwarding endpoints.";
+            operation.Description = "For testing purposes only.";
+            return Task.CompletedTask;
         });
 
     app.MapPost("/message/send/test", Endpoints.SendTestAsync)
-        .WithOpenApi(x => new(x)
+        .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            Summary = "Endpoint that can be used to support functional testing of the message sending endpoints without actually sending it to the vendor.",
-            Description = "For testing purposes only."
+            operation.Summary = "Endpoint that can be used to support functional testing of the message sending endpoints without actually sending it to the vendor.";
+            operation.Description = "For testing purposes only.";
+            return Task.CompletedTask;
         });
 
     app.MapPost("/message/forward/test/email", Endpoints.ForwardEmailTestAsync)
-        .WithOpenApi(x => new(x)
+        .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            Summary = "Endpoint that can be used as the callback URL for a registered client to support functional testing of the message forwarding endpoints.",
-            Description = "For testing purposes only."
+            operation.Summary = "Endpoint that can be used as the callback URL for a registered client to support functional testing of the message forwarding endpoints.";
+            operation.Description = "For testing purposes only.";
+            return Task.CompletedTask;
         });
 
     app.Run();
@@ -685,10 +697,6 @@ finally
 {
     Log.CloseAndFlush();
 }
-
-// Without this the test suite won't work.
-public partial class Program
-{ }
 
 public static class Endpoints
 {

@@ -98,8 +98,7 @@ namespace NumberSearch.Ops
 
             services.AddControllersWithViews();
 
-            services.AddRazorPages()
-                .AddRazorRuntimeCompilation();
+            services.AddRazorPages();
 
             services.AddAuthorizationBuilder()
                 .SetFallbackPolicy(new AuthorizationPolicyBuilder()

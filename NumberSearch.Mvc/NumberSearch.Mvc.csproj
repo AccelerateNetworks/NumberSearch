@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk.Web">
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<GenerateProgramFile>true</GenerateProgramFile>
 		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
 		<UserSecretsId>328593cf-cbb9-48e9-8938-e38a44c8291d</UserSecretsId>
@@ -10,7 +10,7 @@
 		<ApplicationInsightsResourceId>/subscriptions/dd4e7397-befc-4010-84b2-7a6deffd4709/resourceGroups/NumberSearch.Mvc-1/providers/microsoft.insights/components/NumberSearch</ApplicationInsightsResourceId>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
-		<TieredPGO>true</TieredPGO>
+		<ImplicitUsings>true</ImplicitUsings>	
 	</PropertyGroup>
 	<PropertyGroup>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -23,30 +23,21 @@
 		<None Remove="Services\**" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="AsyncFixer" Version="1.6.0">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
 		<PackageReference Include="Azure.Storage.Blobs" Version="12.26.0" />
 		<PackageReference Include="DnsClient" Version="1.8.0" />
-		<PackageReference Include="Ical.Net" Version="5.1.1" />
+		<PackageReference Include="Ical.Net" Version="5.1.2" />
 		<PackageReference Include="Markdig" Version="0.43.0" />
 		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
-		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-		<PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
 		<PackageReference Include="NetEscapades.AspNetCore.SecurityHeaders" Version="1.2.0" />
 		<PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
-		<PackageReference Include="Sep" Version="0.11.5" />
+		<PackageReference Include="Sep" Version="0.12.0" />
 		<PackageReference Include="Serilog" Version="4.3.0" />
 		<PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
 		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
 		<PackageReference Include="Serilog.Sinks.Postgresql.Alternative" Version="4.2.0" />
-		<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1" />
 		<PackageReference Include="WriteAs.NET" Version="1.2.2" />
-		<PackageReference Include="ZLinq" Version="1.5.3" />
+		<PackageReference Include="ZLinq" Version="1.5.4" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\FirstCom\FirstCom.csproj" />

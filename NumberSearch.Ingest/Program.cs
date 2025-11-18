@@ -4,9 +4,7 @@ using NumberSearch.DataAccess.Models;
 
 using Serilog;
 
-using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
 
 using static NumberSearch.Ingest.Owned;
 
@@ -14,7 +12,6 @@ namespace NumberSearch.Ingest
 {
     public class Program
     {
-
         public readonly record struct IngestConfiguration(
             ReadOnlyMemory<char> PComNetUsername,
             ReadOnlyMemory<char> PComNetPassword,
