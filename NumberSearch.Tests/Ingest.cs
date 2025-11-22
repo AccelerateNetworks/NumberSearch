@@ -179,9 +179,9 @@ namespace NumberSearch.Tests
                 new() { DialedNumber = "9875432166" },
             ];
 
-            ReadOnlyMemory<PhoneNumber> set = numbers.ToArray().AsMemory();
+            ReadOnlySpan<PhoneNumber> set = [.. numbers];
             // Act
-            var results = Services.AssignNumberTypes(set);
+            var results = Services.AssignNumberTypes(ref set);
 
             // Assert
             Assert.NotEmpty(results.ToArray());
