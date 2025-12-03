@@ -5,6 +5,7 @@ using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.Models;
 using NumberSearch.Mvc.Models;
 
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -35,7 +36,7 @@ namespace NumberSearch.Mvc.Controllers
             var npasBulkVS = await PhoneNumber.GetCountAllAreaCodeBulkVS(_postgresql);
             var npasFPC = await PhoneNumber.GetCountAllAreaCodeFPC(_postgresql);
 
-            List<PhoneNumber.CountNPA> priority = new(AreaCode.Priority.Length);
+            ConcurrentBag<PhoneNumber.CountNPA> priority = [];
             Parallel.ForEach(AreaCode.Priority, code =>
             {
                 var match = numbersByAreaCode.AsValueEnumerable().FirstOrDefault(x => x.NPA == $"{code}");

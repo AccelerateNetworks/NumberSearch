@@ -13,6 +13,7 @@ using PhoneNumbersNA;
 using Serilog;
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -74,7 +75,7 @@ namespace NumberSearch.Mvc.Controllers
                     return View("Index");
                 }
 
-                var results = new List<PortedPhoneNumber>();
+                var results = new ConcurrentBag<PortedPhoneNumber>();
                 await Parallel.ForEachAsync(parsedNumbers, async (number, token) =>
                 {
                     var result = await VerifyPortabilityAsync(number);
@@ -156,7 +157,7 @@ namespace NumberSearch.Mvc.Controllers
                     return View("Index");
                 }
 
-                var results = new List<PortedPhoneNumber>();
+                var results = new ConcurrentBag<PortedPhoneNumber>();
                 await Parallel.ForEachAsync(parsedNumbers, async (number, token) =>
                 {
                     var result = await VerifyPortabilityAsync(number);

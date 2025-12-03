@@ -19,6 +19,7 @@ using NumberSearch.Mvc.Models;
 using Serilog;
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -265,9 +266,9 @@ namespace NumberSearch.Mvc.Controllers
             // Rather than using a completely generic concept of a product we have two kind of products: phone number and everything else.
             // This is done for performance because we have 300k phone numbers where the DialedNumber is the primary key and perhaps 20 products where a guid is the key.
             int size = productOrders.Count();
-            var products = new List<Product>(size);
-            var services = new List<Service>(size);
-            var coupons = new List<Coupon>(size);
+            var products = new ConcurrentBag<Product>();
+            var services = new ConcurrentBag<Service>();
+            var coupons = new ConcurrentBag<Coupon>();
 
             await Parallel.ForEachAsync(productOrders, async (item, cls) =>
             {
@@ -304,9 +305,9 @@ namespace NumberSearch.Mvc.Controllers
                 Order = order,
                 PhoneNumbers = [],
                 ProductOrders = [.. productOrders],
-                Products = products,
-                Services = services,
-                Coupons = coupons,
+                Products = [.. products],
+                Services = [.. services],
+                Coupons = [.. coupons],
                 PortedPhoneNumbers = [.. portedPhoneNumbers],
                 VerifiedPhoneNumbers = [.. verifiedPhoneNumbers],
                 PurchasedPhoneNumbers = [.. purchasedPhoneNumbers],
@@ -618,7 +619,7 @@ namespace NumberSearch.Mvc.Controllers
                 // Associate the ported numbers with their porting information.
                 portRequest = await PortRequest.GetByOrderIdAsync(order.OrderId, mvcConfiguration.PostgresqlProd) ?? new();
 
-                List<string> unformattedNumbers = new(portedNumbers.Count());
+                ConcurrentBag<string> unformattedNumbers = [];
                 await Parallel.ForEachAsync(portedNumbers, async (number, cls) =>
                 {
                     number.PortRequestId = portRequest.PortRequestId;

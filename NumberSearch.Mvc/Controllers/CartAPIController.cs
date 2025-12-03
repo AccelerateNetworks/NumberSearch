@@ -13,6 +13,7 @@ using PhoneNumbersNA;
 using Serilog;
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -78,7 +79,7 @@ namespace NumberSearch.Mvc.Controllers
                         return BadRequest("No dialed phone numbers found. Please try a different query. 🥺👉👈");
                     }
 
-                    var results = new List<PortedPhoneNumber>();
+                    var results = new ConcurrentBag<PortedPhoneNumber>();
                     await Parallel.ForEachAsync(parsedNumbers, async (number, token) =>
                     {
                         var lookup = new LookupController(mvcConfiguration);
@@ -87,10 +88,10 @@ namespace NumberSearch.Mvc.Controllers
                     });
 
                     var lookups = new List<BulkLookupResult>(results.Count);
-                    Parallel.ForEach(results, number =>
+                    foreach(var number in results)
                     {
                         lookups.Add(new BulkLookupResult(number.PortedDialedNumber, number.City, number.State, number.DateIngested, number.Wireless, number.Portable, number.LrnLookup.LastPorted, number.LrnLookup.SPID, number.LrnLookup.LATA, number.LrnLookup.LEC, number.LrnLookup.LECType, number.LrnLookup.LIDBName, number.LrnLookup.LRN, number.LrnLookup.OCN, number.Carrier.Name, number.Carrier.LogoLink, number.Carrier.Color, number.Carrier.Type));
-                    });
+                    }
 
                     return Ok(lookups.ToArray());
                 }

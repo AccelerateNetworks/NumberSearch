@@ -15,6 +15,7 @@ using NumberSearch.Ops.Models;
 using Serilog;
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -149,7 +150,7 @@ public class OrdersController(OpsConfig opsConfig,
                     .ToListAsync();
             }
 
-            var pairs = new List<OrderProducts>(orders.Count);
+            var pairs = new ConcurrentBag<OrderProducts>();
 
             Parallel.ForEach(orders, order =>
             {
@@ -214,7 +215,7 @@ public class OrdersController(OpsConfig opsConfig,
 
                 var allProducts = await _context.Products.AsNoTracking().ToArrayAsync();
                 var productsToGet = productOrders.AsValueEnumerable().Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
-                var products = new List<Product>(productsToGet.Length);
+                var products = new ConcurrentBag<Product>();
                 Parallel.ForEach(productsToGet, productId =>
                 {
                     var product = allProducts.AsValueEnumerable().FirstOrDefault(x => x.ProductId == productId);
@@ -226,7 +227,7 @@ public class OrdersController(OpsConfig opsConfig,
 
                 var allServices = await _context.Services.AsNoTracking().ToArrayAsync();
                 var servicesToGet = productOrders.AsValueEnumerable().Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
-                var services = new List<Service>(servicesToGet.Length);
+                var services = new ConcurrentBag<Service>();
                 Parallel.ForEach(servicesToGet, serviceId =>
                 {
                     var service = allServices.FirstOrDefault(x => x.ServiceId == serviceId);
@@ -238,7 +239,7 @@ public class OrdersController(OpsConfig opsConfig,
 
                 var couponsToGet = productOrders.AsValueEnumerable().Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
                 var allCoupons = await _context.Coupons.AsNoTracking().ToArrayAsync();
-                var coupons = new List<Coupon>(couponsToGet.Length);
+                var coupons = new ConcurrentBag<Coupon>();
 
                 Parallel.ForEach(couponsToGet, couponId =>
                 {
@@ -254,9 +255,9 @@ public class OrdersController(OpsConfig opsConfig,
                     Order = order,
                     PhoneNumbers = [],
                     ProductOrders = productOrders,
-                    Products = products,
-                    Services = services,
-                    Coupons = coupons,
+                    Products = [.. products],
+                    Services = [.. services],
+                    Coupons = [.. coupons],
                     PortedPhoneNumbers = portedPhoneNumbers,
                     VerifiedPhoneNumbers = verifiedPhoneNumbers,
                     PurchasedPhoneNumbers = purchasedPhoneNumbers
@@ -310,7 +311,7 @@ public class OrdersController(OpsConfig opsConfig,
                     .ToListAsync();
         }
 
-        var pairs = new List<OrderProducts>(orders.Count);
+        var pairs = new ConcurrentBag<OrderProducts>();
 
         Parallel.ForEach(orders, order =>
         {
@@ -556,7 +557,7 @@ public class OrdersController(OpsConfig opsConfig,
 
         var productsToGet = productOrders.AsValueEnumerable().Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
         var allProducts = await _context.Products.AsNoTracking().ToArrayAsync();
-        var products = new List<Product>(productsToGet.Length);
+        var products = new ConcurrentBag<Product>();
         Parallel.ForEach(productsToGet, productId =>
         {
             var product = allProducts.AsValueEnumerable().FirstOrDefault(x => x.ProductId == productId);
@@ -568,7 +569,7 @@ public class OrdersController(OpsConfig opsConfig,
 
         var servicesToGet = productOrders.AsValueEnumerable().Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
         var allServices = await _context.Services.AsNoTracking().ToArrayAsync();
-        var services = new List<Service>(servicesToGet.Length);
+        var services = new ConcurrentBag<Service>();
         Parallel.ForEach(servicesToGet, serviceId =>
         {
             var service = allServices.AsValueEnumerable().FirstOrDefault(x => x.ServiceId == serviceId);
@@ -580,7 +581,7 @@ public class OrdersController(OpsConfig opsConfig,
 
         var couponsToGet = productOrders.AsValueEnumerable().Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
         var allCoupons = await _context.Coupons.AsNoTracking().ToArrayAsync();
-        var coupons = new List<Coupon>(couponsToGet.Length);
+        var coupons = new ConcurrentBag<Coupon>();
         Parallel.ForEach(couponsToGet, couponId =>
         {
             var coupon = allCoupons.AsValueEnumerable().FirstOrDefault(x => x.CouponId == couponId);
@@ -595,9 +596,9 @@ public class OrdersController(OpsConfig opsConfig,
             Order = order,
             PhoneNumbers = [],
             ProductOrders = productOrders,
-            Products = products,
-            Services = services,
-            Coupons = coupons,
+            Products = [.. products],
+            Services = [.. services],
+            Coupons = [.. coupons],
             PortedPhoneNumbers = portedPhoneNumbers,
             VerifiedPhoneNumbers = verifiedPhoneNumbers,
             PurchasedPhoneNumbers = purchasedPhoneNumbers
@@ -787,7 +788,7 @@ public class OrdersController(OpsConfig opsConfig,
 
         var productsToGet = productOrders.AsValueEnumerable().Where(x => x.ProductId is not null && x.ProductId != Guid.Empty).Select(x => x.ProductId).ToArray();
         var allProducts = await _context.Products.AsNoTracking().ToArrayAsync();
-        var products = new List<Product>(productsToGet.Length);
+        var products = new ConcurrentBag<Product>();
         Parallel.ForEach(productsToGet, productId =>
         {
             var product = allProducts.AsValueEnumerable().FirstOrDefault(x => x.ProductId == productId);
@@ -799,7 +800,7 @@ public class OrdersController(OpsConfig opsConfig,
 
         var servicesToGet = productOrders.AsValueEnumerable().Where(x => x.ServiceId is not null && x.ServiceId != Guid.Empty).Select(x => x.ServiceId).ToArray();
         var allServices = await _context.Services.AsNoTracking().ToArrayAsync();
-        var services = new List<Service>();
+        var services = new ConcurrentBag<Service>();
         Parallel.ForEach(servicesToGet, serviceId =>
         {
             var service = allServices.AsValueEnumerable().FirstOrDefault(x => x.ServiceId == serviceId);
@@ -811,7 +812,7 @@ public class OrdersController(OpsConfig opsConfig,
 
         var couponsToGet = productOrders.AsValueEnumerable().Where(x => x.CouponId is not null && x.CouponId != Guid.Empty).Select(x => x.CouponId).ToArray();
         var allCoupons = await _context.Coupons.AsNoTracking().ToArrayAsync();
-        var coupons = new List<Coupon>();
+        var coupons = new ConcurrentBag<Coupon>();
         Parallel.ForEach(couponsToGet, couponId =>
         {
             var coupon = allCoupons.AsValueEnumerable().FirstOrDefault(x => x.CouponId == couponId);
@@ -826,9 +827,9 @@ public class OrdersController(OpsConfig opsConfig,
             Order = order,
             PhoneNumbers = [],
             ProductOrders = productOrders,
-            Products = products,
-            Services = services,
-            Coupons = coupons,
+            Products = [.. products],
+            Services = [.. services],
+            Coupons = [.. coupons],
             PortedPhoneNumbers = portedPhoneNumbers,
             VerifiedPhoneNumbers = verifiedPhoneNumbers,
             PurchasedPhoneNumbers = purchasedPhoneNumbers
