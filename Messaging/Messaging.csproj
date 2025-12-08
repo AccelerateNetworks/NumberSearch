@@ -31,7 +31,7 @@
 		<PackageReference Include="PhoneNumbersNA" Version="1.0.19" />
 		<PackageReference Include="prometheus-net" Version="8.2.1" />
 		<PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
-		<PackageReference Include="Scalar.AspNetCore" Version="2.11.0" />
+		<PackageReference Include="Scalar.AspNetCore" Version="2.11.1" />
 		<PackageReference Include="Serilog" Version="4.3.0" />
 		<PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
 		<PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
