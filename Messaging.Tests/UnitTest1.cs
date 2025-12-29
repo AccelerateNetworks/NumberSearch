@@ -472,8 +472,9 @@ namespace Messaging.Tests
         [Fact]
         public async Task MMSMessageAsync()
         {
+            // TODO: Go to the API and get the most recent inbound mms.
             var _httpClient = await GetHttpClientWithValidBearerTokenAsync();
-            var registrationRequest = new RegistrationRequest() { CallbackUrl = "https://sms.callpipe.com/message/forward/test", ClientSecret = "thisisatest", DialedNumber = "12066320575" };
+            var registrationRequest = new RegistrationRequest() { CallbackUrl = "https://sms.callpipe.com/message/forward/test", ClientSecret = "thisisatest", DialedNumber = "12069102308" };
             var response = await _httpClient.PostAsJsonAsync("/client/register", registrationRequest);
             var data = await response.Content.ReadFromJsonAsync<RegistrationResponse>();
             Assert.NotNull(data);
@@ -484,11 +485,11 @@ namespace Messaging.Tests
 
             var stringContent = new FormUrlEncodedContent(
                 [
-                    new KeyValuePair<string, string>("msisdn", "12066320575"),
-                    new KeyValuePair<string, string>("to", "12066320575"),
-                    new KeyValuePair<string, string>("message", "{\r\n\"authkey\":\"bbdd4df0-1da0-4c5d-be9e-a94b75513c91\",\r\n\"encoding\":\"native\",\r\n\"files\":\"part-002.txt,\",\r\n\"recip\":\"12068589310,\",\r\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=ce808f729db2413498ef722333badb2b\"\r\n}"),
-                    new KeyValuePair<string, string>("remote", "12066320575"),
-                    new KeyValuePair<string, string>("host", "12066320575"),
+                    new KeyValuePair<string, string>("msisdn", "12062597949"),
+                    new KeyValuePair<string, string>("to", "12069102308"),
+                    new KeyValuePair<string, string>("message", "{\n\"authkey\":\"20c527c2-89de-4a0c-b74c-6d267842b509\",\n\"encoding\":\"native\",\n\"files\":\"part-003.txt,part-001.SMIL,part-002.gif,\",\n\"recip\":\"12062597949,\",\n\"url\":\"https://mmsc01.1pcom.net/MMS_Pickup?msgid=a4dcb5d97f4d458a8102a2de3cdf029a_2835310-139757964093184-1766688213639144995-1092949\"\n}"),
+                    new KeyValuePair<string, string>("remote", "12069102308"),
+                    new KeyValuePair<string, string>("host", "12062597949"),
                 ]);
 
             response = await _httpClient.PostAsync($"{route}?token={token}", stringContent);

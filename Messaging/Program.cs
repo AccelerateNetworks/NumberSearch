@@ -475,6 +475,7 @@ try
             {
                 ServiceURL = appSettings.ConnectionStrings.S3ServiceURL,
             };
+
             using var spacesClient = new AmazonS3Client(appSettings.ConnectionStrings.DOSpacesAccessKey, appSettings.ConnectionStrings.DOSpacesSecretKey, spacesConfig);
             using var fileUtil = new TransferUtility(spacesClient);
 
@@ -502,10 +503,12 @@ try
                             BucketName = appSettings.ConnectionStrings.BucketName,
                             InputStream = streamToFile,
                             StorageClass = S3StorageClass.Standard,
-                            Key = $"{toForward.Id}{file}",
+                            // Incoming and outgoing folders
+                            Key = $"incoming/{toForward.Id}{file}",
                             CannedACL = S3CannedACL.Private,
                         };
 
+                        // Breaks due to signature check error
                         await fileUtil.UploadAsync(fileRequest);
                         mediaURLs.Add($"{spacesConfig.ServiceURL}{fileRequest.BucketName}/{fileRequest.Key}");
 
