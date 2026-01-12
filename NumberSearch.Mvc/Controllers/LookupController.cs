@@ -12,12 +12,8 @@ using PhoneNumbersNA;
 
 using Serilog;
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 using ZLinq;
 
@@ -169,8 +165,9 @@ namespace NumberSearch.Mvc.Controllers
 
                 // Separate wireless numbers out from the rest.
                 var wirelessPortable = results.AsValueEnumerable().Where(x => x.Wireless && x.Portable).ToArray();
-
-                using var writer = Sep.New(',').Writer().ToText();
+                using var mStream = new MemoryStream();
+                using var utf8Writer = new StreamWriter(mStream);
+                using var writer = Sep.New(',').Writer().To(utf8Writer);
 
                 foreach (var item in results)
                 {
@@ -191,7 +188,7 @@ namespace NumberSearch.Mvc.Controllers
                     row["OCN"].Set(item.LrnLookup.OCN);
                 }
 
-                return File(Encoding.UTF8.GetBytes(writer.ToString()), "text/csv", $"AccelerateNetworksPhoneNumbers{DateTime.Now:yyyyMMddTHHmmss}.csv");
+                return File(mStream.GetBuffer(), "text/csv", $"AccelerateNetworksPhoneNumbers{DateTime.Now:yyyyMMddTHHmmss}.csv");
             }
             else
             {
@@ -268,6 +265,36 @@ namespace NumberSearch.Mvc.Controllers
                     {
                         // Warning this costs $$$$
                         var result = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber.AsMemory(), _bulkVSKey.AsMemory());
+
+                        // No money in the BulkVS account
+                        if(string.IsNullOrWhiteSpace(result.lrn))
+                        {
+                            checkNumber = new PhoneNumberLookup()
+                            {
+                                DialedNumber = portable.TN ?? $"1{phoneNumber.DialedNumber}",
+                                Ratecenter = portable.RateCenter ?? string.Empty,
+                                State = portable.State ?? string.Empty,
+                                LosingCarrier = portable.LosingCarrier ?? string.Empty,
+                            };
+
+                            return new PortedPhoneNumber
+                            {
+                                PortedPhoneNumberId = Guid.NewGuid(),
+                                PortedDialedNumber = phoneNumber.DialedNumber ?? string.Empty,
+                                NPA = phoneNumber.NPA,
+                                NXX = phoneNumber.NXX,
+                                XXXX = phoneNumber.XXXX,
+                                City = checkNumber?.City ?? string.Empty,
+                                State = checkNumber?.State ?? string.Empty,
+                                DateIngested = DateTime.Now,
+                                IngestedFrom = "UserInput",
+                                Wireless = false,
+                                LrnLookup = checkNumber ?? new(),
+                                Carrier = new(),
+                                Portable = true
+                            };
+                        }
+
                         checkNumber = new PhoneNumberLookup(result)
                         {
                             LosingCarrier = portable.LosingCarrier ?? string.Empty

@@ -704,71 +704,71 @@ namespace NumberSearch.Tests
         //    output.WriteLine(JsonSerializer.Serialize(results));
         //}
 
+        // TODO:  Disabled until the account is paid up.
+        //[Fact]
+        //public async Task BulkVSCnameLookupAsync()
+        //{
+        //    // Arrange
+        //    var number = "2064083008";
 
-        [Fact]
-        public async Task BulkVSCnameLookupAsync()
-        {
-            // Arrange
-            var number = "2064083008";
+        //    // Act
+        //    var result = await CnamBulkVs.GetAsync(number.AsMemory(), bulkVSKey.AsMemory());
 
-            // Act
-            var result = await CnamBulkVs.GetAsync(number.AsMemory(), bulkVSKey.AsMemory());
+        //    // Assert
+        //    Assert.False(string.IsNullOrWhiteSpace(result.number));
+        //    Assert.False(string.IsNullOrWhiteSpace(result.name));
+        //    output.WriteLine(JsonSerializer.Serialize(result));
+        //}
 
-            // Assert
-            Assert.False(string.IsNullOrWhiteSpace(result.number));
-            Assert.False(string.IsNullOrWhiteSpace(result.name));
-            output.WriteLine(JsonSerializer.Serialize(result));
-        }
+        //[Fact]
+        //public async Task BulkVSLrnLookupAsync()
+        //{
+        //    // Arrange
+        //    var number = "4252008183";
 
-        [Fact]
-        public async Task BulkVSLrnLookupAsync()
-        {
-            // Arrange
-            var number = "4252008183";
+        //    // Act
+        //    var result = await LrnBulkCnam.GetAsync(number.AsMemory(), bulkVSKey.AsMemory());
 
-            // Act
-            var result = await LrnBulkCnam.GetAsync(number.AsMemory(), bulkVSKey.AsMemory());
+        //    // Assert
+        //    Assert.False(string.IsNullOrWhiteSpace(result.spid));
+        //    output.WriteLine(JsonSerializer.Serialize(result));
+        //}
 
-            // Assert
-            Assert.False(string.IsNullOrWhiteSpace(result.spid));
-            output.WriteLine(JsonSerializer.Serialize(result));
-        }
+        //[Fact]
+        //public async Task BulkVSLrnLookupTollfreeAsync()
+        //{
+        //    // Arrange
+        //    var number = "8662122226";
 
-        [Fact]
-        public async Task BulkVSLrnLookupTollfreeAsync()
-        {
-            // Arrange
-            var number = "8662122226";
+        //    // Act
+        //    var result = await LrnBulkCnam.GetAsync(number.AsMemory(), bulkVSKey.AsMemory());
 
-            // Act
-            var result = await LrnBulkCnam.GetAsync(number.AsMemory(), bulkVSKey.AsMemory());
+        //    // Assert
+        //    Assert.False(string.IsNullOrWhiteSpace(result.jurisdiction));
+        //    output.WriteLine(JsonSerializer.Serialize(result));
+        //}
 
-            // Assert
-            Assert.False(string.IsNullOrWhiteSpace(result.jurisdiction));
-            output.WriteLine(JsonSerializer.Serialize(result));
-        }
+        //[Fact]
+        //public async Task NumberLookupPostAsync()
+        //{
+        //    // Arrange
+        //    var number = "2064083008";
 
-        [Fact]
-        public async Task NumberLookupPostAsync()
-        {
-            // Arrange
-            var number = "2064083008";
+        //    // Act
+        //    var result = await LrnBulkCnam.GetAsync(number.AsMemory(), bulkVSKey.AsMemory());
 
-            // Act
-            var result = await LrnBulkCnam.GetAsync(number.AsMemory(), bulkVSKey.AsMemory());
+        //    // Assert
+        //    Assert.False(string.IsNullOrWhiteSpace(result.tn));
+        //    Assert.False(string.IsNullOrWhiteSpace(result.spid));
+        //    output.WriteLine(JsonSerializer.Serialize(result));
 
-            // Assert
-            Assert.False(string.IsNullOrWhiteSpace(result.tn));
-            Assert.False(string.IsNullOrWhiteSpace(result.spid));
-            output.WriteLine(JsonSerializer.Serialize(result));
+        //    result = result with { LIDBName = "IntegrationTest" };
 
-            result = result with { LIDBName = "IntegrationTest" };
+        //    var lookup = new PhoneNumberLookup(result);
+        //    var checkPost = await lookup.PostAsync(postgresql);
 
-            var lookup = new PhoneNumberLookup(result);
-            var checkPost = await lookup.PostAsync(postgresql);
-
-            Assert.True(checkPost);
-        }
+        //    Assert.True(checkPost);
+        //}
 
         [Fact]
         public async Task GetNumberLookupAsync()
