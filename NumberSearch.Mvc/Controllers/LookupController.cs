@@ -271,7 +271,7 @@ namespace NumberSearch.Mvc.Controllers
                         {
                             checkNumber = new PhoneNumberLookup()
                             {
-                                DialedNumber = portable.TN ?? $"1{phoneNumber.DialedNumber}",
+                                DialedNumber = $"1{phoneNumber.DialedNumber}",
                                 Ratecenter = portable.RateCenter ?? string.Empty,
                                 State = portable.State ?? string.Empty,
                                 LosingCarrier = portable.LosingCarrier ?? string.Empty,
