@@ -8,20 +8,14 @@ using Flurl.Http;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.Ops.Models;
 
 using Serilog;
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 using ZLinq;
 
@@ -497,6 +491,18 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                         foreach (var item in numbers)
                         {
                             var spidCheck = await LrnBulkCnam.GetAsync(item.PortedDialedNumber.AsMemory(), _bulkVSAPIKey.AsMemory());
+                            if(string.IsNullOrWhiteSpace(spidCheck.spid))
+                            {
+                                numbers = await context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
+
+                                return View("PortRequestEdit", new PortRequestResult
+                                {
+                                    Order = order,
+                                    PortRequest = portRequest,
+                                    PhoneNumbers = numbers,
+                                    Message = $"SPID lookup failed for {item.PortedDialedNumber}. Add money to the BullVS account named {_bulkVSusername}."
+                                });
+                            } 
                             lookups.Add(spidCheck);
                         }
 

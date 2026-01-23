@@ -105,7 +105,7 @@
                             <h4 class="my-0 font-weight-normal text-center" id="initialsetup">Description</h4>
                         </div>
                         <div class="card-body">
-                            <p>@Model?.Product?.VendorDescription</p>
+                            @Html.Raw(@Markdig.Markdown.ToHtml(Model?.Product?.VendorDescription ?? string.Empty))
                         </div>
                     </div>
                 </div>
