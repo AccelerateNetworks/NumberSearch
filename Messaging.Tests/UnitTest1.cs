@@ -1,3 +1,7 @@
+using MailKit.Net.Imap;
+using MailKit.Search;
+using MailKit.Security;
+
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity.Data;
@@ -79,6 +83,19 @@ namespace Messaging.Tests
         }
 
         [Fact]
+        public async Task TestEmailLoginAsync()
+        {
+            var cls = new CancellationToken();
+            using var client = new ImapClient();
+            await client.ConnectAsync("witcher.mxrouting.net", 0, SecureSocketOptions.StartTls, cls);
+            await client.AuthenticateAsync(_appSettings.ConnectionStrings.EmailUsername, _appSettings.ConnectionStrings.EmailPassword, cls);
+            var inbox = client.Inbox;
+            var folder = await inbox.OpenAsync(MailKit.FolderAccess.ReadWrite, cls);
+            var query = SearchQuery.Recent.And(SearchQuery.NotSeen);
+            var recentAndUnanswered = await inbox.SearchAsync(query, cls);
+        }
+
+        [Fact]
         public async Task RegisterAClientAsync()
         {
             var _httpClient = await GetHttpClientWithValidBearerTokenAsync();
@@ -119,6 +136,8 @@ namespace Messaging.Tests
             Assert.NotNull(clients);
             Assert.NotEmpty(clients);
         }
+
+
 
         [Fact]
         public async Task GetAllMessagesAsync()
