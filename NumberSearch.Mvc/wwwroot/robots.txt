@@ -1,2 +1,15 @@
 ﻿User-agent: *
 Allow: /
+Allow: /services
+Allow: /hardware
+Allow: /about
+Allow: /features
+Allow: /blog
+Allow: /careers
+Allow: /support
+Allow: /privacy
+Disallow: /search
+Disallow: /search?Query=
+Disallow: /
+Disallow: /Lookup/BulkPort
+Crawl-delay: 1000
