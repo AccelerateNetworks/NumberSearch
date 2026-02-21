@@ -6,7 +6,7 @@
 		<ImplicitUsings>true</ImplicitUsings>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Serilog" Version="4.3.0" />
+		<PackageReference Include="Serilog" Version="4.3.1" />
 		<PackageReference Include="System.ServiceModel.Federation" Version="10.0.652802" />
 		<PackageReference Include="System.ServiceModel.Http" Version="10.0.652802" />
 		<PackageReference Include="System.ServiceModel.NetTcp" Version="10.0.652802" />
