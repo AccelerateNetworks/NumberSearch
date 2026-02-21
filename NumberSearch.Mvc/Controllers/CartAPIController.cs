@@ -108,6 +108,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("Add/NewClient/{id}/ExtensionRegistration")]
+        [ValidateAntiForgeryToken]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddNewClientExtensionRegistrationAsync([FromRoute] Guid id, [FromBody] ExtensionRegistration registration)
         {
@@ -177,6 +178,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("Add/NewClient/{id}/NumberDescription")]
+        [ValidateAntiForgeryToken]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddNewClientNumberDescriptionAsync([FromRoute] Guid id, [FromBody] NumberDescription description)
         {
@@ -247,6 +249,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("Add/NewClient/{id}/IntercomRegistration")]
+        [ValidateAntiForgeryToken]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddNewClientIntercomRegistrationAsync([FromRoute] Guid id, [FromBody] IntercomRegistration description)
         {
@@ -317,6 +320,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("Add/NewClient/{id}/SpeedDialKey")]
+        [ValidateAntiForgeryToken]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddNewClientSpeedDialKeyAsync([FromRoute] Guid id, [FromBody] SpeedDialKey description)
         {
@@ -385,6 +389,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("Add/NewClient/{id}/FollowMeRegistration")]
+        [ValidateAntiForgeryToken]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddNewClientFollowMeRegistrationAsync([FromRoute] Guid id, [FromBody] FollowMeRegistration description)
         {
@@ -453,6 +458,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("Add/NewClient/{id}/PhoneMenuOption")]
+        [ValidateAntiForgeryToken]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> AddNewClientPhoneMenuOptionAsync([FromRoute] Guid id, [FromBody] PhoneMenuOption option)
         {

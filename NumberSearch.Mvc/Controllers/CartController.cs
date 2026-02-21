@@ -207,6 +207,7 @@ namespace NumberSearch.Mvc.Controllers
         // Show orders that have already been submitted.
         [HttpGet("Cart/Order/{Id}")]
         [HttpPost("Cart/Order/{Id}")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ExistingOrderAsync(Guid Id, bool? AddPortingInfo)
         {
             if (Id != Guid.Empty)
