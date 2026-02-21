@@ -31,6 +31,7 @@ namespace NumberSearch.Mvc.Controllers
 
         [HttpGet]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> CheckPortabilityAsync(string Query)
         {
@@ -138,6 +139,7 @@ namespace NumberSearch.Mvc.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> RequestPortAsync(string Query)
         {
