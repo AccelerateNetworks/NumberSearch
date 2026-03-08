@@ -204,49 +204,49 @@ namespace NumberSearch.Tests
             var listing = await ListAvailabilityData.GetAsync(date.as_of_date.AsMemory(), _configuration.FCCUsername.AsMemory(), _configuration.FCCAPIToken.AsMemory());
 
             Assert.NotEmpty(listing.data);
-            var toGet = listing.data.Where(x => x.state_name.Equals("Washington", StringComparison.InvariantCultureIgnoreCase)).Where(x => x.technology_code is not "60" && x.technology_code is not "61");
-            string downloadsPath = "C:\\Users\\thoma\\source\\repos\\AccelerateNetworks\\NumberSearch\\NumberSearch.Ingest\\Downloads\\";
-            // Empty the directory
-            var files = Directory.GetFiles(downloadsPath);
-            foreach (var file in files)
-            {
-                File.Delete(file);
-            }
-            var speeds = new List<ProviderGeoSpeeds>();
-            output.WriteLine($"{toGet.Count()} Files");
-            var geoIdToFind = "530330060001014";
-            foreach (var item in toGet)
-            {
-                output.WriteLine(JsonSerializer.Serialize(item));
-                string filePath = await item.DownloadFileAsync("C:\\Users\\thoma\\source\\repos\\AccelerateNetworks\\NumberSearch\\NumberSearch.Ingest\\Downloads\\", _configuration.FCCUsername.AsMemory(), _configuration.FCCAPIToken.AsMemory());
-                output.WriteLine(filePath);
-                await ZipFile.ExtractToDirectoryAsync(filePath, "C:\\Users\\thoma\\source\\repos\\AccelerateNetworks\\NumberSearch\\NumberSearch.Ingest\\Downloads\\");
-                File.Delete(filePath);
-                files = Directory.GetFiles("C:\\Users\\thoma\\source\\repos\\AccelerateNetworks\\NumberSearch\\NumberSearch.Ingest\\Downloads\\");
-                var file = files.FirstOrDefault(x => x.Contains(item.file_name));
-                if (!string.IsNullOrWhiteSpace(file))
-                {
-                    using var reader = Sep.Reader().FromFile(file);
-                    foreach (var readRow in reader)
-                    {
-                        if (MemoryExtensions.Equals(readRow["block_geoid"].Span, geoIdToFind.AsSpan(), StringComparison.Ordinal))
-                        {
-                            var geoid = readRow["block_geoid"].ToString();
-                            var frn = readRow["frn"].ToString();
-                            var provider = readRow["brand_name"].ToString();
-                            var down = readRow["max_advertised_download_speed"].Parse<decimal>();
-                            var up = readRow["max_advertised_upload_speed"].Parse<decimal>();
-                            var technology = readRow["technology"].Parse<int>();
-                            speeds.Add(new ProviderGeoSpeeds(geoid, frn, provider, technology, down, up));
-                        }
-                    }
-                    //output.WriteLine(JsonSerializer.Serialize(speeds.Take(3)));
-                }
-            }
-            output.WriteLine($"{speeds.Count} Speeds");
-            var results = speeds.AsValueEnumerable().Where(x => x.up > 0).Distinct().OrderByDescending(x => x.down).ToArray();
-            output.WriteLine($"{results.Length} GeoId matches");
-            output.WriteLine(JsonSerializer.Serialize(results));
+            //var toGet = listing.data.Where(x => x.state_name.Equals("Washington", StringComparison.InvariantCultureIgnoreCase)).Where(x => x.technology_code is not "60" && x.technology_code is not "61");
+            //string downloadsPath = "C:\\Users\\thoma\\source\\repos\\AccelerateNetworks\\NumberSearch\\NumberSearch.Ingest\\Downloads\\";
+            //// Empty the directory
+            //var files = Directory.GetFiles(downloadsPath);
+            //foreach (var file in files)
+            //{
+            //    File.Delete(file);
+            //}
+            //var speeds = new List<ProviderGeoSpeeds>();
+            //output.WriteLine($"{toGet.Count()} Files");
+            //var geoIdToFind = "530330060001014";
+            //foreach (var item in toGet)
+            //{
+            //    output.WriteLine(JsonSerializer.Serialize(item));
+            //    string filePath = await item.DownloadFileAsync("C:\\Users\\thoma\\source\\repos\\AccelerateNetworks\\NumberSearch\\NumberSearch.Ingest\\Downloads\\", _configuration.FCCUsername.AsMemory(), _configuration.FCCAPIToken.AsMemory());
+            //    output.WriteLine(filePath);
+            //    await ZipFile.ExtractToDirectoryAsync(filePath, "C:\\Users\\thoma\\source\\repos\\AccelerateNetworks\\NumberSearch\\NumberSearch.Ingest\\Downloads\\");
+            //    File.Delete(filePath);
+            //    files = Directory.GetFiles("C:\\Users\\thoma\\source\\repos\\AccelerateNetworks\\NumberSearch\\NumberSearch.Ingest\\Downloads\\");
+            //    var file = files.FirstOrDefault(x => x.Contains(item.file_name));
+            //    if (!string.IsNullOrWhiteSpace(file))
+            //    {
+            //        using var reader = Sep.Reader().FromFile(file);
+            //        foreach (var readRow in reader)
+            //        {
+            //            if (MemoryExtensions.Equals(readRow["block_geoid"].Span, geoIdToFind.AsSpan(), StringComparison.Ordinal))
+            //            {
+            //                var geoid = readRow["block_geoid"].ToString();
+            //                var frn = readRow["frn"].ToString();
+            //                var provider = readRow["brand_name"].ToString();
+            //                var down = readRow["max_advertised_download_speed"].Parse<decimal>();
+            //                var up = readRow["max_advertised_upload_speed"].Parse<decimal>();
+            //                var technology = readRow["technology"].Parse<int>();
+            //                speeds.Add(new ProviderGeoSpeeds(geoid, frn, provider, technology, down, up));
+            //            }
+            //        }
+            //        //output.WriteLine(JsonSerializer.Serialize(speeds.Take(3)));
+            //    }
+            //}
+            //output.WriteLine($"{speeds.Count} Speeds");
+            //var results = speeds.AsValueEnumerable().Where(x => x.up > 0).Distinct().OrderByDescending(x => x.down).ToArray();
+            //output.WriteLine($"{results.Length} GeoId matches");
+            //output.WriteLine(JsonSerializer.Serialize(results));
         }
 
         public readonly record struct ProviderGeoSpeeds(string geoid, string frn, string provider, int technology, decimal down, decimal up);
