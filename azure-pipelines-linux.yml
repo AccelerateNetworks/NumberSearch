@@ -57,6 +57,8 @@ variables:
   ConnectionStrings.TwilioUsername: $(TwilioUsername)
   ConnectionStrings.TwilioPassword: $(TwilioPassword)
   ConnectionStrings.FusionPBXConnectionString: $(FusionPBXConnectionString)
+  ConnectionStrings.FCCAPIToken: $(FCCAPIToken)
+  ConnectionStrings.FCCUsername: $(FCCUsername)
   ApplicationInsights.InstrumentationKey: $(AIInstrumentationKey)
   ApplicationInsights.ConnectionString: $(AIConnectionString)
 
