@@ -227,7 +227,7 @@ namespace NumberSearch.Mvc.Controllers
                     if (checkNumber is null && phoneNumber.Type is NumberType.Canada)
                     {
                         // Warning this costs $
-                        var canada = await DataAccess.CallWithUs.LRNLookup.GetAsync(phoneNumber.DialedNumber.AsMemory(), _callWithUsAPIkey.AsMemory());
+                        var canada = await DataAccess.CallWithUs.ListAsOfDates.GetAsync(phoneNumber.DialedNumber.AsMemory(), _callWithUsAPIkey.AsMemory());
 
                         checkNumber = new PhoneNumberLookup(new LrnBulkCnam
                         {

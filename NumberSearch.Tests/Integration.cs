@@ -1,8 +1,11 @@
 
 using Microsoft.Extensions.Configuration;
 
+using nietras.SeparatedValues;
+
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
+using NumberSearch.DataAccess.FCC;
 using NumberSearch.DataAccess.FusionPBX;
 using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.DataAccess.LCGuide;
@@ -13,14 +16,16 @@ using NumberSearch.Mvc.Models;
 
 using ServiceReference1;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Frozen;
+using System.IO.Compression;
 using System.Text.Json;
-using System.Threading.Tasks;
+
 
 using Xunit;
-using Xunit.Abstractions;
+
+using ZLinq;
+
+using static NumberSearch.Mvc.Controllers.CartAPIController;
 
 namespace NumberSearch.Tests
 {
@@ -183,6 +188,68 @@ namespace NumberSearch.Tests
             output.WriteLine(result.LastOrDefault().invitations.FirstOrDefault().link);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
+
+        [Fact]
+        public async Task TestFCCBDCListingsAsync()
+        {
+            // Act
+            var result = await ListAsOfDates.GetAsync(_configuration.FCCUsername.AsMemory(), _configuration.FCCAPIToken.AsMemory());
+
+            // Assert        
+            Assert.NotEmpty(result.data);
+            output.WriteLine(JsonSerializer.Serialize(result));
+            var date = result.data.OrderByDescending(x => x.as_of_date).Where(x => x.data_type is "availability").FirstOrDefault();
+            output.WriteLine(JsonSerializer.Serialize(date));
+
+            var listing = await ListAvailabilityData.GetAsync(date.as_of_date.AsMemory(), _configuration.FCCUsername.AsMemory(), _configuration.FCCAPIToken.AsMemory());
+
+            Assert.NotEmpty(listing.data);
+            var toGet = listing.data.Where(x => x.state_name.Equals("Washington", StringComparison.InvariantCultureIgnoreCase)).Where(x => x.technology_code is not "60" && x.technology_code is not "61");
+            string downloadsPath = "C:\\Users\\thoma\\source\\repos\\AccelerateNetworks\\NumberSearch\\NumberSearch.Ingest\\Downloads\\";
+            // Empty the directory
+            var files = Directory.GetFiles(downloadsPath);
+            foreach (var file in files)
+            {
+                File.Delete(file);
+            }
+            var speeds = new List<ProviderGeoSpeeds>();
+            output.WriteLine($"{toGet.Count()} Files");
+            var geoIdToFind = "530330060001014";
+            foreach (var item in toGet)
+            {
+                output.WriteLine(JsonSerializer.Serialize(item));
+                string filePath = await item.DownloadFileAsync("C:\\Users\\thoma\\source\\repos\\AccelerateNetworks\\NumberSearch\\NumberSearch.Ingest\\Downloads\\", _configuration.FCCUsername.AsMemory(), _configuration.FCCAPIToken.AsMemory());
+                output.WriteLine(filePath);
+                await ZipFile.ExtractToDirectoryAsync(filePath, "C:\\Users\\thoma\\source\\repos\\AccelerateNetworks\\NumberSearch\\NumberSearch.Ingest\\Downloads\\");
+                File.Delete(filePath);
+                files = Directory.GetFiles("C:\\Users\\thoma\\source\\repos\\AccelerateNetworks\\NumberSearch\\NumberSearch.Ingest\\Downloads\\");
+                var file = files.FirstOrDefault(x => x.Contains(item.file_name));
+                if (!string.IsNullOrWhiteSpace(file))
+                {
+                    using var reader = Sep.Reader().FromFile(file);
+                    foreach (var readRow in reader)
+                    {
+                        if (MemoryExtensions.Equals(readRow["block_geoid"].Span, geoIdToFind.AsSpan(), StringComparison.Ordinal))
+                        {
+                            var geoid = readRow["block_geoid"].ToString();
+                            var frn = readRow["frn"].ToString();
+                            var provider = readRow["brand_name"].ToString();
+                            var down = readRow["max_advertised_download_speed"].Parse<decimal>();
+                            var up = readRow["max_advertised_upload_speed"].Parse<decimal>();
+                            var technology = readRow["technology"].Parse<int>();
+                            speeds.Add(new ProviderGeoSpeeds(geoid, frn, provider, technology, down, up));
+                        }
+                    }
+                    //output.WriteLine(JsonSerializer.Serialize(speeds.Take(3)));
+                }
+            }
+            output.WriteLine($"{speeds.Count} Speeds");
+            var results = speeds.AsValueEnumerable().Where(x => x.up > 0).Distinct().OrderByDescending(x => x.down).ToArray();
+            output.WriteLine($"{results.Length} GeoId matches");
+            output.WriteLine(JsonSerializer.Serialize(results));
+        }
+
+        public readonly record struct ProviderGeoSpeeds(string geoid, string frn, string provider, int technology, decimal down, decimal up);
 
         [Fact]
         public async Task GetBillingTaxRatesAsync()
@@ -1990,10 +2057,40 @@ namespace NumberSearch.Tests
         //[Fact]
         //public async Task ServiceMigrationScriptAsync()
         //{
-        //    var conn = postgresql;
+        //   var conn = postgresql;
 
         //    var services = new List<Service>
         //    {
+        //        new() {
+        //            Name = "Copper",
+        //            Description = "High-speed, reliable internet service run to you over Copper infastructure.",
+        //            Price = 200
+        //        },
+        //        new() {
+        //            Name = "Cable",
+        //            Description = "High-speed, reliable internet service run to you over Copper infastructure.",
+        //            Price = 200
+        //        },
+        //        new() {
+        //            Name = "Fiber to the Premises",
+        //            Description = "High-speed, reliable internet service run to you over Copper infastructure.",
+        //            Price = 200
+        //        },
+        //        new() {
+        //            Name = "Unlicensed Fixed Wireless",
+        //            Description = "High-speed, reliable internet service run to you over Copper infastructure.",
+        //            Price = 200
+        //        },
+        //        new() {
+        //            Name = "Licensed Fixed Wireless",
+        //            Description = "High-speed, reliable internet service run to you over Copper infastructure.",
+        //            Price = 200
+        //        },
+        //        new() {
+        //            Name = "LBR Fixed Wireless",
+        //            Description = "High-speed, reliable internet service run to you over Copper infastructure.",
+        //            Price = 200
+        //        },
         //        new Service
         //        {
         //            Name = "E911 Connectivity Fee",

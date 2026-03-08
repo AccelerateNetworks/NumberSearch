@@ -13,12 +13,11 @@ using Models;
 
 using System.Net.Http.Json;
 
-using Xunit.Abstractions;
-using Xunit.Priority;
+using Xunit.v3.Priority;
 
 namespace Messaging.Tests
 {
-    [TestCaseOrderer(PriorityOrderer.Name, PriorityOrderer.Assembly)]
+    [TestCaseOrderer(typeof(PriorityOrderer))]
     public class Functional : IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly HttpClient _httpClient;
@@ -51,12 +50,12 @@ namespace Messaging.Tests
                 Password = _configuration.GetConnectionString("OpsPassword") ?? string.Empty,
             };
 
-            var response = await _httpClient.PostAsJsonAsync("/login", authRequest);
+            var response = await _httpClient.PostAsJsonAsync("/login", authRequest, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.NotNull(response);
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.StatusCode is System.Net.HttpStatusCode.OK);
-            var authCredentials = await response.Content.ReadFromJsonAsync<AuthResponse>();
+            var authCredentials = await response.Content.ReadFromJsonAsync<AuthResponse>(cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(authCredentials);
             _httpClient.DefaultRequestHeaders.Authorization = new("Bearer", authCredentials.Token);
         }
@@ -100,20 +99,20 @@ namespace Messaging.Tests
         {
             var _httpClient = await GetHttpClientWithValidBearerTokenAsync();
             var registrationRequest = new RegistrationRequest() { CallbackUrl = "https://sms.callpipe.com/swagger/index.html", ClientSecret = "thisisatest", DialedNumber = "12063333341" };
-            var response = await _httpClient.PostAsJsonAsync("/client/register", registrationRequest);
-            var data = await response.Content.ReadFromJsonAsync<RegistrationResponse>();
+            var response = await _httpClient.PostAsJsonAsync("/client/register", registrationRequest, cancellationToken: TestContext.Current.CancellationToken);
+            var data = await response.Content.ReadFromJsonAsync<RegistrationResponse>(cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(data);
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            _output.WriteLine(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
             Assert.True(data.Registered);
             Assert.Equal("12063333341", data.DialedNumber);
             Assert.Equal("https://sms.callpipe.com/swagger/index.html", data.CallbackUrl);
             Assert.False(string.IsNullOrWhiteSpace(data.Message));
 
             // Verify that the newly registered client exists.
-            response = await _httpClient.GetAsync("/client?asDialed=12063333341");
-            var client = await response.Content.ReadFromJsonAsync<ClientRegistration>();
+            response = await _httpClient.GetAsync("/client?asDialed=12063333341", TestContext.Current.CancellationToken);
+            var client = await response.Content.ReadFromJsonAsync<ClientRegistration>(cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(client);
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            _output.WriteLine(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
             Assert.Equal("12063333341", client.AsDialed);
             Assert.Equal("https://sms.callpipe.com/swagger/index.html", data.CallbackUrl);
         }

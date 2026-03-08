@@ -1,14 +1,6 @@
-using NumberSearch.DataAccess;
-using NumberSearch.DataAccess.InvoiceNinja;
 using NumberSearch.Mvc.Controllers;
-using NumberSearch.Mvc.Models;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NumberSearch.Tests
 {

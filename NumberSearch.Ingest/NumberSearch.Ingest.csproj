@@ -25,4 +25,8 @@
 		<ProjectReference Include="..\NumberSearch.Mvc\NumberSearch.Mvc.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Downloads\" />
+	</ItemGroup>
+
 </Project>

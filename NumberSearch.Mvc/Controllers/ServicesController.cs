@@ -25,7 +25,7 @@ namespace NumberSearch.Mvc.Controllers
         {
             await HttpContext.Session.LoadAsync();
             var cart = Cart.GetFromSession(HttpContext.Session);
-            return View("Index", new ServicesResult { Cart = cart, Type = "Internet" });
+            return View("Internet", new CartResult { Cart = cart });
         }
 
 

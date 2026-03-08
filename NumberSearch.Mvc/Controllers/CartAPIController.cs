@@ -1,23 +1,24 @@
 ﻿using FirstCom.Models;
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 
+using nietras.SeparatedValues;
+
 using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
+using NumberSearch.DataAccess.FCC;
 using NumberSearch.Mvc.Models;
 
 using PhoneNumbersNA;
 
 using Serilog;
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
+using System.Collections.Frozen;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+using System.IO.Compression;
+using System.Text.Json;
 
 using ZLinq;
 
@@ -88,7 +89,7 @@ namespace NumberSearch.Mvc.Controllers
                     });
 
                     var lookups = new List<BulkLookupResult>(results.Count);
-                    foreach(var number in results)
+                    foreach (var number in results)
                     {
                         lookups.Add(new BulkLookupResult(number.PortedDialedNumber, number.City, number.State, number.DateIngested, number.Wireless, number.Portable, number.LrnLookup.LastPorted, number.LrnLookup.SPID, number.LrnLookup.LATA, number.LrnLookup.LEC, number.LrnLookup.LECType, number.LrnLookup.LIDBName, number.LrnLookup.LRN, number.LrnLookup.OCN, number.Carrier.Name, number.Carrier.LogoLink, number.Carrier.Color, number.Carrier.Type));
                     }
@@ -105,6 +106,99 @@ namespace NumberSearch.Mvc.Controllers
                 return BadRequest("Token is invalid. Please supply the correct token in your request or contact support@acceleratenetworks.com for help.");
             }
         }
+
+        public readonly record struct ProviderGeoSpeeds(string geoid, string frn, string provider, string technology, string techdesc, decimal down, decimal up, Guid serviceId);
+        public readonly record struct TechDesc(string code, string name, string description);
+
+        [HttpGet("Internet/Providers/Availability")]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        [OutputCache(Duration = 0)]
+        [Produces<ProviderGeoSpeeds[]>]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> FCCStateGeoIdLookup([Required] string state, string geoid)
+        {
+            if (string.IsNullOrWhiteSpace(state))
+            {
+                return BadRequest("No state provided (ex: Washington). Please try a different query. 🥺👉👈");
+            }
+
+            // Add portable numbers to cart in bulk
+            if (!string.IsNullOrWhiteSpace(geoid))
+            {
+                var canidates = new List<ProviderGeoSpeeds>();
+
+                var techDesc = new List<TechDesc>() { 
+                    new("10", "Copper", "Fixed wireline service using copper wire (e.g., Asymmetric or Symmetric DSL, ethernet over copper, T-1, etc.)."),
+                    new("40","Cable","Fixed wireline service using coaxial cable or hybrid fiber-coaxial (e.g., DOCSISx)."), 
+                    new("50","Fiber to the Premises","Fixed wireline service using fiber to the home or business end user, but does not include \"fiber to the curb\"."),
+                    new("70","Unlicensed Fixed Wireless","Fixed terrestrial wireless service using entirely unlicensed spectrum, including services provided over WiFi as a fixed solution."),
+                    new("71","Licensed Fixed Wireless","Fixed wireless service using entirely licensed spectrum (including priority access licenses in the 3.5 GHz band) or a hybrid of licensed, unlicensed, and licensed-by-rule spectrum to make last-mile connections to fixed locations. This includes service provided over a 4G LTE or 5G-NR mobile network but sold as a fixed solution."),
+                    new("72","LBR Fixed Wireless","Fixed wireless services using entirely licensed-by-rule spectrum or a hybrid of licensed-by-rule and unlicensed spectrum to make last-mile connections to fixed locations. Licensed-by-rule spectrum users include operators providing last-mile connections through general authorized access (GAA) in the 3.5 GHz Citizens Broadband Radio Service (CBRS) band."),};
+
+                var result = await ListAsOfDates.GetAsync(mvcConfiguration.FCCUsername.AsMemory(), mvcConfiguration.FCCAPIToken.AsMemory());
+                var date = result.data.AsValueEnumerable().OrderByDescending(x => x.as_of_date).Where(x => x.data_type is "availability").FirstOrDefault();
+                var listing = await ListAvailabilityData.GetAsync(date.as_of_date.AsMemory(), mvcConfiguration.FCCUsername.AsMemory(), mvcConfiguration.FCCAPIToken.AsMemory());
+                var toGet = listing.data.Where(x => x.state_name.Equals(state, StringComparison.InvariantCultureIgnoreCase)).Where(x => x.technology_code is not "60" && x.technology_code is not "61");
+                string downloadsPath = Path.GetTempPath();
+                var services = await Service.GetAllAsync(_postgresql);
+                var toLoop = toGet.ToArray();
+                foreach (var item in toLoop)
+                {
+                    var files = Directory.GetFiles(downloadsPath);
+                    var file = files.FirstOrDefault(x => x.Contains(item.file_name) && x.EndsWith(".csv"));
+
+                    // Download and unzip, if required.
+                    if (string.IsNullOrWhiteSpace(file))
+                    {
+                        string filePath = await item.DownloadFileAsync(downloadsPath, mvcConfiguration.FCCUsername.AsMemory(), mvcConfiguration.FCCAPIToken.AsMemory());
+                        await ZipFile.ExtractToDirectoryAsync(filePath, downloadsPath);
+                        System.IO.File.Delete(filePath);
+                        files = Directory.GetFiles(downloadsPath);
+                        file = files.FirstOrDefault(x => x.Contains(item.file_name) && x.EndsWith(".csv"));
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(file))
+                    {
+                        using var reader = Sep.Reader().FromFile(file);
+                        foreach (var readRow in reader)
+                        {
+                            if (MemoryExtensions.Equals(readRow["block_geoid"].Span, geoid.AsSpan(), StringComparison.Ordinal))
+                            {
+                                var id = readRow["block_geoid"].ToString();
+                                var frn = readRow["frn"].ToString();
+                                var provider = readRow["brand_name"].ToString();
+                                if (provider is "Ziply Fiber" or "Astound Broadband" or "T-Mobile")
+                                {
+                                    provider = $"{provider} ❤️";
+                                }
+                                else if (provider is "AT&T" or "Verizon" or "Quantum Fiber")
+                                {
+                                    provider = $"{provider} 👍";
+                                }
+                                var down = readRow["max_advertised_download_speed"].Parse<decimal>();
+                                var up = readRow["max_advertised_upload_speed"].Parse<decimal>();
+                                var desc = techDesc.FirstOrDefault(x => x.code == item.technology_code);
+                                var service = services.FirstOrDefault(x => x.Name == item.technology_code_desc);
+                                canidates.Add(new ProviderGeoSpeeds(id, frn, provider, item.technology_code_desc, desc.description, down, up, service.ServiceId));
+                            }
+                        }
+                    }
+                }
+                var providers = canidates.AsValueEnumerable().Select(x => x.provider).Distinct();
+                var results = new List<ProviderGeoSpeeds>();
+                foreach (var p in providers)
+                {
+                    results.Add(canidates.AsValueEnumerable().Where(x => x.provider == p).MaxBy(x => x.up));
+                }
+
+                return Ok(results.AsValueEnumerable().Where(x => x.up > 0).OrderByDescending(x => x.down).ToArray());
+            }
+            else
+            {
+                return BadRequest("No geoid provided (ex: 530330060001014). Please try a different query. 🥺👉👈");
+            }
+        }
+
 
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("Add/NewClient/{id}/ExtensionRegistration")]
@@ -550,8 +644,6 @@ namespace NumberSearch.Mvc.Controllers
                     return await cart.BuyPhoneNumberAsync(id);
                 case "PortedPhoneNumber":
                     return await cart.PortPhoneNumberAsync(id);
-                case "VerifiedPhoneNumber":
-                    return await cart.VerifyPhoneNumberAsync(id);
                 case "Product":
                     var checkProduct = Guid.TryParse(id, out var productId);
                     if (checkProduct)
@@ -914,99 +1006,6 @@ namespace NumberSearch.Mvc.Controllers
             else
             {
                 return BadRequest($"Failed to add {dialedPhoneNumber} to your cart.");
-            }
-        }
-
-        public async Task<IActionResult> VerifyPhoneNumberAsync(string dialedPhoneNumber)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (PhoneNumbersNA.PhoneNumber.TryParse(dialedPhoneNumber, out var phoneNumber))
-            {
-                try
-                {
-                    // Determine if the number is a wireless number.
-                    var checkNumber = await LrnBulkCnam.GetAsync(phoneNumber.DialedNumber.AsMemory(), _apiKey.AsMemory());
-
-                    bool wireless = false;
-
-                    switch (checkNumber.lectype)
-                    {
-                        case "WIRELESS":
-                            wireless = true;
-                            break;
-                        case "PCS":
-                            wireless = true;
-                            break;
-                        case "P RESELLER":
-                            wireless = true;
-                            break;
-                        case "Wireless":
-                            wireless = true;
-                            break;
-                        case "W RESELLER":
-                            wireless = true;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    var checkLong = long.TryParse(checkNumber.activation.ToString(), out var timeInSeconds);
-
-                    var verifiedPhoneNumber = new VerifiedPhoneNumber
-                    {
-                        VerifiedPhoneNumberId = Guid.NewGuid(),
-                        VerifiedDialedNumber = phoneNumber.DialedNumber ?? string.Empty,
-                        NPA = phoneNumber.NPA,
-                        NXX = phoneNumber.NXX,
-                        XXXX = phoneNumber.XXXX,
-                        IngestedFrom = "BulkVS",
-                        DateIngested = DateTime.Now,
-                        OrderId = Guid.Empty,
-                        Wireless = wireless,
-                        NumberType = "Standard",
-                        LocalRoutingNumber = checkNumber.lrn,
-                        OperatingCompanyNumber = checkNumber.ocn,
-                        City = checkNumber.city,
-                        LocalAccessTransportArea = checkNumber.lata,
-                        RateCenter = checkNumber.ratecenter,
-                        Province = checkNumber.province,
-                        Jurisdiction = checkNumber.jurisdiction,
-                        Local = checkNumber.local,
-                        LocalExchangeCarrier = checkNumber.lec,
-                        LocalExchangeCarrierType = checkNumber.lectype,
-                        ServiceProfileIdentifier = checkNumber.spid,
-                        Activation = checkNumber.activation?.ToString() ?? string.Empty,
-                        LIDBName = checkNumber.LIDBName,
-                        LastPorted = checkLong ? new DateTime(1970, 1, 1).AddSeconds(timeInSeconds) : DateTime.Now,
-                        DateToExpire = DateTime.Now.AddYears(1)
-                    };
-
-                    var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), VerifiedPhoneNumberId = verifiedPhoneNumber.VerifiedPhoneNumberId, Quantity = 1 };
-
-                    await httpContext.Session.LoadAsync();
-                    var cart = Cart.GetFromSession(httpContext.Session);
-
-                    if (cart.AddVerifiedPhoneNumber(ref verifiedPhoneNumber, ref productOrder) && cart.SetToSession(httpContext.Session))
-                    {
-                        return Ok(dialedPhoneNumber);
-                    }
-                    else
-                    {
-                        return BadRequest($"Failed to verify phone number {dialedPhoneNumber}. :(");
-                    }
-                }
-                catch
-                {
-                    return BadRequest($"Failed to verify phone number {dialedPhoneNumber}. :(");
-                }
-            }
-            else
-            {
-                return BadRequest($"Failed to verify phone number {dialedPhoneNumber}. :(");
             }
         }
 

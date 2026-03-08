@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess.CallWithUs
 {
-    public readonly record struct LRNLookup(
+    public readonly record struct ListAsOfDates(
         string LRN,
         string State,
         string Ratecenter,
@@ -24,7 +24,7 @@ namespace NumberSearch.DataAccess.CallWithUs
         /// <param name="dialedNumber"></param>
         /// <param name="apiKey"></param>
         /// <returns></returns>
-        public static async Task<LRNLookup> GetAsync(ReadOnlyMemory<char> dialedNumber, ReadOnlyMemory<char> apiKey)
+        public static async Task<ListAsOfDates> GetAsync(ReadOnlyMemory<char> dialedNumber, ReadOnlyMemory<char> apiKey)
         {
             string baseUrl = "http://lrn.callwithus.com/api/lrn/index.php";
             string apikeyParameter = $"?key={apiKey}";
@@ -36,7 +36,7 @@ namespace NumberSearch.DataAccess.CallWithUs
             {
                 var raw = await route.GetStringAsync();
                 var chunks = raw.Split(',');
-                return new LRNLookup
+                return new ListAsOfDates
                 {
                     LRN = chunks[0],
                     State = chunks[1],

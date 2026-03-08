@@ -36,5 +36,8 @@
         public string TwilioUsername { get; set; } = string.Empty;
         public string TwilioPassword { get; set; } = string.Empty;
         public string FusionPBXConnectionString { get; set;} = string.Empty;
+        public string FCCAPIToken { get; set; } = string.Empty;
+        public string FCCUsername { get; set; } = string.Empty;
+
     }
 }

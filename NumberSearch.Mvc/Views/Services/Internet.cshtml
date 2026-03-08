@@ -1,0 +1,265 @@
+﻿@model NumberSearch.Mvc.CartResult
+
+@{
+    ViewData["Title"] = "Internet";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script type="text/javascript">
+    function handleSearchQuery(textBox) {
+        const route = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest?text=';
+        const suffix = '&maxSuggestions=5&countryCode=USA,CAN&f=pjson';
+        fetch(`${route}${textBox.value}${suffix}`)
+            .then(
+                function (response) {
+                    if (response.status !== 200) {
+                        console.log('Looks like there was a problem. Status Code: ' +
+                            response.status);
+                        return;
+                    }
+
+                    // Examine the text in the response
+                    response.json().then(function (data) {
+                        let options = '';
+                        let longestResult = 0;
+                        if (data.suggestions != undefined) {
+                            for (let i = 0; i < data.suggestions.length; i++) {
+                                options += `<li class='list-group-item' onclick='setAddress(this.innerHTML)'>${data.suggestions[i].text}</li>`;
+                                if (longestResult < data.suggestions[i].text.length) {
+                                    longestResult = data.suggestions[i].text.length;
+                                }
+                            }
+
+                            let datalist = document.getElementById("addressOptions");
+                            datalist.innerHTML = options;
+                            datalist.hidden = false;
+                        }
+
+                        let textBox = document.getElementById("address");
+                        textBox.focus();
+
+                        //console.log(datalist);
+                    });
+                }
+            )
+            .catch(function (err) {
+                console.log('Fetch Error :-S', err);
+            });
+    }
+
+    function setAddress(address) {
+        let textBox = document.getElementById("address");
+        textBox.value = address;
+        let datalist = document.getElementById("addressOptions");
+        datalist.hidden = true;
+
+        // TODO: Get the list of service providers here.
+        console.log(address);
+        const getCoordinatesService = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?SingleLine=${address}&maxSuggestions=5&countryCode=USA,CAN&f=pjson`;
+        fetch(getCoordinatesService)
+        .then(
+                function (response) {
+                    if (response.status !== 200) {
+                        console.log('Looks like there was a problem. Status Code: ' +
+                            response.status);
+                        return;
+                    }
+
+                    // Examine the text in the response
+                    response.json().then(function (data) {
+                        console.log(data);
+                        const coordinates = `${data.candidates[0].location.x},${data.candidates[0].location.y}`
+                        const getObjectIdService = `https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/FCC_Broadband_Data_Collection_June_2022/FeatureServer/4/query?where=1%3D1&objectIds=&geometry=${coordinates}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&resultType=tile&distance=0.0&units=esriSRUnit_Meter&outDistance=&relationParam=&returnGeodetic=false&outFields=OBJECTID%2CUnderservedBSLs%2CUnservedBSLs&returnGeometry=true&returnCentroid=false&returnEnvelope=false&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=&defaultSR=%7B%22wkid%22%3A102100%2C%22falseM%22%3A-100000%2C%22falseX%22%3A-20037700%2C%22falseY%22%3A-30241100%2C%22falseZ%22%3A-100000%2C%22mTolerance%22%3A0.001%2C%22mUnits%22%3A10000%2C%22xyTolerance%22%3A0.001%2C%22xyUnits%22%3A10000%2C%22zTolerance%22%3A0.001%2C%22zUnits%22%3A10000%7D&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&returnDistinctValues=false&cacheHint=false&collation=&orderByFields=OBJECTID+ASC&groupByFieldsForStatistics=&returnAggIds=false&outStatistics=&having=&resultOffset=0&resultRecordCount=8000&returnZ=false&returnM=false&returnTrueCurves=false&returnExceededLimitFeatures=true&quantizationParameters=%7B%22extent%22%3A%7B%22xmin%22%3A-13620466.944191558%2C%22ymin%22%3A6045863.189245708%2C%22xmax%22%3A-13619855.447965277%2C%22ymax%22%3A6046474.685471989%7D%2C%22mode%22%3A%22view%22%2C%22originPosition%22%3A%22upperLeft%22%2C%22tolerance%22%3A1.1943285669555674%7D&sqlFormat=none&f=pjson&token=`;
+                        console.log(getObjectIdService);
+                        fetch(getObjectIdService)
+                        .then(
+                                function (response) {
+                                    if (response.status !== 200) {
+                                        console.log('Looks like there was a problem. Status Code: ' +
+                                            response.status);
+                                        return;
+                                    }
+
+                                    // Examine the text in the response
+                                    response.json().then(function (data) {
+                                        console.log(data);
+                                        const objectId = `${data.features[0].attributes.OBJECTID}`
+                                        const getGeoIdService = `https://services.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/FCC_Broadband_Data_Collection_June_2022/FeatureServer/4/query?f=pjson&objectIds=${objectId}&outFields=CountyName%2CGEOID%2CServedBSLs%2CServedBSLsCable%2CServedBSLsCopper%2CServedBSLsFiber%2CServedBSLsLTFW%2CStateAbbr%2CTotalBSLs%2CTotalPop%2CUnderservedBSLs%2CUniqueProviders%2CUniqueProvidersCable%2CUniqueProvidersCopper%2CUniqueProvidersFiber%2CUniqueProvidersLBRTFW%2CUniqueProvidersLTFW%2CUnservedBSLs%2COBJECTID&outSR=%7B%22wkid%22%3A102100%2C%22falseM%22%3A-100000%2C%22falseX%22%3A-20037700%2C%22falseY%22%3A-30241100%2C%22falseZ%22%3A-100000%2C%22mTolerance%22%3A0.001%2C%22mUnits%22%3A10000%2C%22xyTolerance%22%3A0.001%2C%22xyUnits%22%3A10000%2C%22zTolerance%22%3A0.001%2C%22zUnits%22%3A10000%7D&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=1%3D1`;
+                                        console.log(getGeoIdService);
+                                        fetch(getGeoIdService)
+                                        .then(
+                                                function (response) {
+                                                    if (response.status !== 200) {
+                                                        console.log('Looks like there was a problem. Status Code: ' +
+                                                            response.status);
+                                                        return;
+                                                    }
+
+                                                    // Examine the text in the response
+                                                    response.json().then(function (data) {
+                                                        console.log(data);
+                                                        const geoid = `${data.features[0].attributes.GEOID}`
+                                                        const getProvidersService = `/Internet/Providers/Availability?state=Washington&geoid=${geoid}`;
+                                                        console.log(getProvidersService);
+                                                        fetch(getProvidersService)
+                                                        .then(
+                                                                function (response) {
+                                                                    if (response.status !== 200) {
+                                                                        console.log('Looks like there was a problem. Status Code: ' +
+                                                                            response.status);
+                                                                        return;
+                                                                    }
+
+                                                                    // Examine the text in the response
+                                                                    response.json().then(function (data) {
+                                                                        console.log(data);
+                                                                        let options = '';
+                                                                        if (data != undefined) {
+                                                                            for (let i = 0; i < data.length; i++) {
+                                                                                    const addtocart = `<button onclick="AddToCart('Service', '${data[i].serviceId}', 1, this)" class="btn btn-outline-primary"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span> Add to Cart </button>`;
+                                                                                options += `<tr><td>${data[i].technology}</td><td>${data[i].down}</td><td>${data[i].up}</td><td>${addtocart}</td></tr>`;
+                                                                            }
+
+                                                                            let resultsTable = document.getElementById("resultstablebody");
+                                                                            resultsTable.innerHTML = options;
+                                                                            resultsTable.hidden = false;      
+                                                                        }
+                                                                    });
+                                                                }
+                                                            )
+                                                        .catch(function (err) {
+                                                                console.log('Fetch Error :-S', err);
+                                                            });
+                                                    });
+                                                }
+                                            )
+                                        .catch(function (err) {
+                                                console.log('Fetch Error :-S', err);
+                                            });
+
+                                    });
+                                }
+                            )
+                        .catch(function (err) {
+                                console.log('Fetch Error :-S', err);
+                            });
+
+                    });
+                }
+            )
+        .catch(function (err) {
+                console.log('Fetch Error :-S', err);
+            });
+    }
+
+</script>
+
+<!-- Pricing Hero-->
+<section class="text-light" style="background-color: #3279B2">
+    <div class="container py-5 py-md-6 py-lg-7 mb-7 text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-md-11">
+                <h1 class="display-3 text-light d-none d-sm-block">The best internet</h1>
+                <h4 class="display-4 text-light d-block d-sm-none">The best internet</h4>
+                <p class="lead text-white">With the FCC's help we'll scour the county and find you the best internet possible for your business.</p>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="bg-light pt-3 pb-3">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <p>🪨 Your internet connection is the bedrock of your business.</p>
+                <p>🆕 Let us accelerate your business with the latest Fiber to the Premises technology or tried and tested Copper and Cable connectivity.</p>
+                <p>🎺 With 5G networks we can also offer you Licensed or Unlicensed Fixed Wireless alternatives to suit your needs.</p>
+                <p>🤝 Whatever technology you choose, rest assured that Accelerate Networks will handle all the details with our Seattle-based support and installation teams.</p>
+            </div>
+            <div class="col-md-6">
+                <h1 class="display-4">Accelerate Your Business</h2>
+                <ul style="list-style: none; padding: 0px;">
+                    <li>🌾 Fiber to the Premises</li>
+                    <li>⛷️ Cable</li>
+                    <li>💨 Copper</li>
+                    <li>📶 Licensed Fixed Wireless</li>
+                    <li>🛜 Unlicensed Fixed Wireless</li>
+                    <li>🔮 LBR Fixed Wireless</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="pt-3">
+    <div class="container pb-3">
+        @if (!string.IsNullOrWhiteSpace(Model?.Message))
+        {
+            <div class="pb-3 pt-3">
+                <div class="container">
+                    <div class="row">
+                        @if (string.IsNullOrWhiteSpace(Model?.AlertType))
+                        {
+                            <div class="alert alert-danger col-12" role="alert">
+                                @Model?.Message
+                            </div>
+                        }
+                        else
+                        {
+                            var alertType = Model?.AlertType ?? "alert-danger";
+                            <div class="alert @alertType col-12" role="alert">
+                                @Model?.Message
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+
+        @if (Model?.Cart?.Order?.OrderId != Guid.Empty && Model?.Cart?.Order?.DateSubmitted > DateTime.MinValue)
+        {
+            <div class="mb-3" id="searchForm">
+                <label for="address">Address</label>
+                <input asp-for="Cart.Order!.UnparsedAddress" type="text" class="form-control" id="address" readonly>
+                <small class="text-muted">
+                    Enter the service address or, the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
+                </small>
+            </div>
+        }
+        else
+        {
+            <div class="mb-3" id="searchForm">
+                <label for="address">Address</label>
+                <input asp-for="Cart.Order!.UnparsedAddress" type="text" class="form-control" id="address" placeholder="Enter your address to search for internet options" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" data-toggle="dropdown" required>
+                <ul class="list-group" role="menu" aria-labelledby="menu1" id="addressOptions">
+                </ul>
+                <small class="text-muted">
+                    Enter the service address or, the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
+                </small>
+            </div>
+        }
+
+        <div class="table-responsive shadow-sm">
+            <table class="table table-striped table-borderless table-hover">
+                <thead>
+                    <tr>
+                        <th>Technology</th>
+                        <th>Down</th>
+                        <th>Up</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="resultstablebody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="mt-auto fixed-bottom bg-white pt-1 pb-1 shadow">
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <a type="button" class="btn btn-success btn-lg btn-block" asp-controller="Services" asp-action="Index">Add Services ▷</a>
+            </div>
+        </div>
+    </div>
+</div>
