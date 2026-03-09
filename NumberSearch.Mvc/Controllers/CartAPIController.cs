@@ -127,9 +127,9 @@ namespace NumberSearch.Mvc.Controllers
             {
                 var canidates = new List<ProviderGeoSpeeds>();
 
-                var techDesc = new List<TechDesc>() { 
+                var techDesc = new List<TechDesc>() {
                     new("10", "Copper", "Fixed wireline service using copper wire (e.g., Asymmetric or Symmetric DSL, ethernet over copper, T-1, etc.)."),
-                    new("40","Cable","Fixed wireline service using coaxial cable or hybrid fiber-coaxial (e.g., DOCSISx)."), 
+                    new("40","Cable","Fixed wireline service using coaxial cable or hybrid fiber-coaxial (e.g., DOCSISx)."),
                     new("50","Fiber to the Premises","Fixed wireline service using fiber to the home or business end user, but does not include \"fiber to the curb\"."),
                     new("70","Unlicensed Fixed Wireless","Fixed terrestrial wireless service using entirely unlicensed spectrum, including services provided over WiFi as a fixed solution."),
                     new("71","Licensed Fixed Wireless","Fixed wireless service using entirely licensed spectrum (including priority access licenses in the 3.5 GHz band) or a hybrid of licensed, unlicensed, and licensed-by-rule spectrum to make last-mile connections to fixed locations. This includes service provided over a 4G LTE or 5G-NR mobile network but sold as a fixed solution."),
@@ -167,14 +167,6 @@ namespace NumberSearch.Mvc.Controllers
                                 var id = readRow["block_geoid"].ToString();
                                 var frn = readRow["frn"].ToString();
                                 var provider = readRow["brand_name"].ToString();
-                                if (provider is "Ziply Fiber" or "Astound Broadband" or "T-Mobile")
-                                {
-                                    provider = $"{provider} ❤️";
-                                }
-                                else if (provider is "AT&T" or "Verizon" or "Quantum Fiber")
-                                {
-                                    provider = $"{provider} 👍";
-                                }
                                 var down = readRow["max_advertised_download_speed"].Parse<decimal>();
                                 var up = readRow["max_advertised_upload_speed"].Parse<decimal>();
                                 var desc = techDesc.FirstOrDefault(x => x.code == item.technology_code);
@@ -186,12 +178,37 @@ namespace NumberSearch.Mvc.Controllers
                 }
                 var providers = canidates.AsValueEnumerable().Select(x => x.provider).Distinct();
                 var results = new List<ProviderGeoSpeeds>();
+                var quantumPresent = providers.Any(x => x is "Quantum Fiber");
                 foreach (var p in providers)
                 {
-                    results.Add(canidates.AsValueEnumerable().Where(x => x.provider == p).MaxBy(x => x.up));
+                    var winner = canidates.AsValueEnumerable().Where(x => x.provider == p).MaxBy(x => x.up);
+                    if (!(winner.provider is "CenturyLink" && quantumPresent))
+                    {
+                        results.Add(winner);
+                    }
                 }
 
-                return Ok(results.AsValueEnumerable().Where(x => x.up > 0).OrderByDescending(x => x.down).ToArray());
+                var techs = results.AsValueEnumerable().Select(x => x.technology).Distinct();
+
+                var singlePerTech = new List<ProviderGeoSpeeds>();
+
+
+                foreach (var p in techs)
+                {
+                    var speedWinner = canidates.AsValueEnumerable().Where(x => x.technology == p).MaxBy(x => x.up);
+
+                    //var zf = canidates.AsValueEnumerable().Where(x => x.technology == p && x.provider is "Ziply Fiber");
+                    //var ab = canidates.AsValueEnumerable().Where(x => x.technology == p && x.provider is "Astound Broadband");
+                    //var tm = canidates.AsValueEnumerable().Where(x => x.technology == p && x.provider is "T-Mobile");
+
+                    //var at = canidates.AsValueEnumerable().Where(x => x.technology == p && x.provider is "AT&T");
+                    //var vr = canidates.AsValueEnumerable().Where(x => x.technology == p && x.provider is "Verizon");
+                    //var qf = canidates.AsValueEnumerable().Where(x => x.technology == p && x.provider is "Quantum Fiber");
+
+                    singlePerTech.Add(speedWinner);
+                }
+
+                return Ok(singlePerTech.AsValueEnumerable().Where(x => x.up > 0).OrderByDescending(x => x.down).ToArray());
             }
             else
             {
