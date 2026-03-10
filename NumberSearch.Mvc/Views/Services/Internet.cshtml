@@ -102,7 +102,13 @@
                                                     response.json().then(function (data) {
                                                         console.log(data);
                                                         const geoid = `${data.features[0].attributes.GEOID}`
-                                                        const getProvidersService = `/Internet/Providers/Availability?state=Washington&geoid=${geoid}`;
+                                                        let state = "Washington";
+                                                        if(data.features[0].attributes.StateAbbr == "OR"){
+                                                            state = "Oregon";
+                                                        } else if (data.features[0].attributes.StateAbbr == "CA") {
+                                                            state = "California";
+                                                        }
+                                                        const getProvidersService = `/Internet/Providers/Availability?state=${state}&geoid=${geoid}`;
                                                         console.log(getProvidersService);
                                                         fetch(getProvidersService)
                                                         .then(
@@ -223,7 +229,7 @@
         @if (Model?.Cart?.Order?.OrderId != Guid.Empty && Model?.Cart?.Order?.DateSubmitted > DateTime.MinValue)
         {
             <div class="mb-3" id="searchForm">
-                <label for="address">Address</label>
+                <label for="address">Address in Washington, Oregon, or California</label>
                 <input asp-for="Cart.Order!.UnparsedAddress" type="text" class="form-control" id="address" readonly>
                 <small class="text-muted">
                     Enter the service address or, the address of the installation location (ex. 1250 1st Ave S, Seattle, WA, 98134, USA)
@@ -233,7 +239,7 @@
         else
         {
             <div class="mb-3" id="searchForm">
-                <label for="address">Address</label>
+                <label for="address">Address in Washington, Oregon, or California</label>
                 <input asp-for="Cart.Order!.UnparsedAddress" type="text" class="form-control" id="address" placeholder="Enter your address to search for internet options" pattern=".+[,].+" oninput="handleSearchQuery(this)" onfocus="handleSearchQuery(this)" list="addressOptions" autocomplete="off" data-toggle="dropdown" required>
                 <ul class="list-group" role="menu" aria-labelledby="menu1" id="addressOptions">
                 </ul>

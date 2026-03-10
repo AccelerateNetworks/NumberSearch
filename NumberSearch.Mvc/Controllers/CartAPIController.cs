@@ -15,10 +15,8 @@ using PhoneNumbersNA;
 using Serilog;
 
 using System.Collections.Concurrent;
-using System.Collections.Frozen;
 using System.ComponentModel.DataAnnotations;
 using System.IO.Compression;
-using System.Text.Json;
 
 using ZLinq;
 
@@ -196,15 +194,6 @@ namespace NumberSearch.Mvc.Controllers
                 foreach (var p in techs)
                 {
                     var speedWinner = canidates.AsValueEnumerable().Where(x => x.technology == p).MaxBy(x => x.up);
-
-                    //var zf = canidates.AsValueEnumerable().Where(x => x.technology == p && x.provider is "Ziply Fiber");
-                    //var ab = canidates.AsValueEnumerable().Where(x => x.technology == p && x.provider is "Astound Broadband");
-                    //var tm = canidates.AsValueEnumerable().Where(x => x.technology == p && x.provider is "T-Mobile");
-
-                    //var at = canidates.AsValueEnumerable().Where(x => x.technology == p && x.provider is "AT&T");
-                    //var vr = canidates.AsValueEnumerable().Where(x => x.technology == p && x.provider is "Verizon");
-                    //var qf = canidates.AsValueEnumerable().Where(x => x.technology == p && x.provider is "Quantum Fiber");
-
                     singlePerTech.Add(speedWinner);
                 }
 
