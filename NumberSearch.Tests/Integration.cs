@@ -714,7 +714,7 @@ namespace NumberSearch.Tests
         {
             var result = await FirstCom.Models.FirstPointCom.EnableSMSByDialedNumberAsync("12069574634".AsMemory(), pComNetCredentials.Username.AsMemory(), pComNetCredentials.Password.AsMemory());
 
-            Assert.True(result.code is not 0);
+            Assert.True(result.code is 0);
             output.WriteLine(JsonSerializer.Serialize(result));
         }
 

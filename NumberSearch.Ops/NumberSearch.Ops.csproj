@@ -12,9 +12,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
-		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="3.0.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.3" />
-		<PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.3" />
+		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="3.1.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.5" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.5" />
 		<PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
 		<PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0" />
 		<PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0" />
@@ -22,12 +22,12 @@
 		<PackageVersion Include="Microsoft.EntityFrameworkCore.Abstractions" Version="10.0.0" />
 		<PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
 		<PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
-		<PackageReference Include="Sep" Version="0.12.2" />
+		<PackageReference Include="Sep" Version="0.12.3" />
 		<PackageReference Include="Serilog" Version="4.3.1" />
 		<PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
 		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-		<PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.4" />
-		<PackageReference Include="ZLinq" Version="1.5.5" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
+		<PackageReference Include="ZLinq" Version="1.5.6" />
 	</ItemGroup>
 
 	<ItemGroup>
