@@ -10,7 +10,6 @@ namespace NumberSearch.Tests
 {
     public class Functional : IClassFixture<WebApplicationFactory<Startup>>
     {
-        //private readonly Guid token;
         //private readonly ITestOutputHelper output;
         //private readonly IConfiguration configuration;
         protected readonly HttpClient _client;
@@ -26,8 +25,6 @@ namespace NumberSearch.Tests
         //        .Build();
 
         //    configuration = config;
-
-        //    token = Guid.Parse(config.GetConnectionString("TeleAPI"));
 
         //    _client = factory.CreateClient();
         //}

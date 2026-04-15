@@ -68,10 +68,7 @@ namespace NumberSearch.Tests
             invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
             _teleDynamicsUsername = config.GetConnectionString("TeleDynamicsUsername");
             _teleDynamicsPassword = config.GetConnectionString("TeleDynamicsPassword");
-            //_call48Username = config.GetConnectionString("Call48Username");
-            //_call48Password = config.GetConnectionString("Call48Password");
             //_callWithUsAPIkey = config.GetConnectionString("CallWithUsAPIKEY");
-            //_peerlessApiKey = config.GetConnectionString("PeerlessAPIKey");
         }
 
         // Takes 6 seconds to run
@@ -563,21 +560,6 @@ namespace NumberSearch.Tests
         //    //output.WriteLine(JsonSerializer.Serialize(result));
         //}
 
-        // We are no longer using data 24/7 for cnam lookups.
-        //[Fact]
-        //public async Task LIDBLookupAsync()
-        //{
-        //    // Arrange
-        //    string phoneNumber = "14257808879";
-
-        //    // Act
-        //    var result = await LIDBLookup.GetAsync(phoneNumber, _data247username, _data247password);
-
-        //    // Assert        
-        //    Assert.NotNull(result);
-        //    output.WriteLine(JsonSerializer.Serialize(result));
-        //}
-
         [Fact]
         public async Task RateCenterLookupAsync()
         {
@@ -992,116 +974,6 @@ namespace NumberSearch.Tests
             }
             output.WriteLine(JsonSerializer.Serialize(result));
         }
-
-        //[Fact]
-        //public async Task Call48LoginTestAsync()
-        //{
-        //    // Act
-        //    var result = await Login.LoginAsync(_call48Username, _call48Password);
-
-        //    Assert.NotNull(result);
-        //    Assert.NotNull(result.data.token);
-        //    Assert.True(result.code == 200);
-        //    output.WriteLine(JsonSerializer.Serialize(result));
-        //}
-
-        //[Fact]
-        //public async Task Call48LocalNumberLookupTestAsync()
-        //{
-        //    // Act
-        //    var result = await Login.LoginAsync(_call48Username, _call48Password);
-
-        //    var results = await Search.GetLocalNumbersAsync("WA", string.Empty, "206", string.Empty, result.data.token);
-
-        //    if (results is null || !results.data.result.Any())
-        //    {
-        //        results = await Search.GetLocalNumbersAsync("WA", string.Empty, "425", string.Empty, result.data.token);
-        //    }
-
-        //    Assert.NotEmpty(results.data.result);
-        //    output.WriteLine(results.data.result.Length.ToString());
-        //    foreach (var number in results.data.result)
-        //    {
-        //        Assert.False(string.IsNullOrWhiteSpace(number.number));
-        //        Assert.True(number.state == "WA");
-        //        Assert.False(string.IsNullOrWhiteSpace(number.ratecenter));
-        //        output.WriteLine(JsonSerializer.Serialize(number));
-        //    }
-
-        //}
-
-        //[Fact]
-        //public async Task Call48GetNumbersTestAsync()
-        //{
-        //    // Act
-        //    var cred = await Login.LoginAsync(_call48Username, _call48Password);
-
-        //    var results = await Search.GetAsync("OR", 541, cred.data.token);
-
-        //    if (results is null || !results.Any())
-        //    {
-        //        results = await Search.GetAsync("WA", 425, cred.data.token);
-        //    }
-
-        //    Assert.NotEmpty(results);
-        //    output.WriteLine(results.Count().ToString());
-        //    foreach (var result in results)
-        //    {
-        //        Assert.True(result.NPA > 99);
-        //        Assert.True(result.NXX > 99);
-        //        // XXXX can be 0001 which as an int is 1.
-        //        Assert.True(result.XXXX > 0);
-        //        Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-        //        // Reenabled these after June 2020 starts.
-        //        //Assert.False(string.IsNullOrWhiteSpace(result.City));
-        //        //Assert.False(string.IsNullOrWhiteSpace(result.State));
-        //        Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
-        //        output.WriteLine(JsonSerializer.Serialize(result));
-        //    }
-        //}
-
-        //[Fact]
-        //public async Task Call48GetRatecentersTestAsync()
-        //{
-        //    // Act
-        //    var cred = await Login.LoginAsync(_call48Username, _call48Password);
-
-        //    var results = await Ratecenter.GetAllRatecentersAsync(PhoneNumbersNA.AreaCode.States.ToArray(), cred.data.token);
-
-        //    Assert.NotEmpty(results);
-        //    output.WriteLine(results.Length.ToString());
-        //    foreach (var result in results)
-        //    {
-        //        Assert.NotEmpty(result.Ratecenters);
-        //        output.WriteLine(JsonSerializer.Serialize(result));
-        //    }
-
-        //}
-
-        // Disabled so as not to purchase a bunch of numbers by accident.
-        //[Fact]
-        //public async Task Call48PurchaseLocalNumberTestAsync()
-        //{
-        //    // Act
-        //    var cred = await Login.LoginAsync(_call48Username, _call48Password);
-
-        //    var results = await Search.GetAsync("WA", 206, cred.data.token);
-
-        //    Assert.NotEmpty(results);
-        //    output.WriteLine(results.Count().ToString());
-        //    var number = results.FirstOrDefault();
-
-        //    var checkExist = await Search.GetLocalNumbersAsync(string.Empty, number.State, number.NPA.ToString(), number.NXX.ToString(), cred.data.token);
-
-        //    var numberToPurchase = checkExist.data.result.Where(x => x.did.Replace("-", string.Empty) == number.DialedNumber).FirstOrDefault();
-        //    output.WriteLine(JsonSerializer.Serialize(numberToPurchase));
-
-        //    var purchaseOrder = await Purchase.PurchasePhoneNumberAsync(checkExist.data.loc, numberToPurchase, cred.data.token);
-        //    output.WriteLine(JsonSerializer.Serialize(purchaseOrder));
-
-        //    Assert.NotNull(purchaseOrder);
-        //    Assert.True(purchaseOrder.code == 200);
-        //}
 
         [Fact]
         public async Task GetCarrierByOCNAsync()
