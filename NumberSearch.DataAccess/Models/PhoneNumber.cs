@@ -15,8 +15,6 @@ namespace NumberSearch.DataAccess.Models
         BulkVS,
         TeliMessage,
         FirstPointCom,
-        Peerless,
-        Call48,
         IntegrationTest
     }
 

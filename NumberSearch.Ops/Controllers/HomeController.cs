@@ -473,7 +473,7 @@ public class HomeController : Controller
     }
 
     /// <summary>
-    /// This is the default route in this app. It's a search page that allows you to query the TeleAPI for phone numbers.
+    /// This is the default route in this app. It's a search page that allows you to query for available phone numbers.
     /// </summary>
     /// <param name="query"> A complete or partial phone number. </param>
     /// <returns> A view of nothing, or the result of the query. </returns>
