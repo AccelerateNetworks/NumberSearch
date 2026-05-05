@@ -64,7 +64,7 @@ public class PurchasedPhoneNumbersController(numberSearchContext context) : Cont
         var fileName = $"PurchasedNumbers{DateTime.Now:yyyyMMdd}.csv";
         var completePath = Path.Combine(filePath, fileName);
 
-        using var writer = Sep.New(',').Writer().ToText();
+        using var writer = Sep.New(',').Writer(o => o with { Escape = true }).ToText();
 
         foreach (var item in orders)
         {

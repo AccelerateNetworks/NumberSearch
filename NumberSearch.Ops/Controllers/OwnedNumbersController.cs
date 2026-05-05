@@ -15,15 +15,9 @@ using NumberSearch.Ops.Models;
 
 using Serilog;
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 using ZLinq;
 
@@ -396,7 +390,7 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
             var fileName = $"OwnedNumbers{DateTime.Now:yyyyMMdd}.csv";
             var completePath = Path.Combine(filePath, fileName);
 
-            using var writer = Sep.New(',').Writer().ToText();
+            using var writer = Sep.New(',').Writer(o => o with { Escape = true }).ToText();
 
             foreach (var item in ownedNumbers)
             {

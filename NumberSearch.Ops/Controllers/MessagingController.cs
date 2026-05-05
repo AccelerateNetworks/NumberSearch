@@ -742,7 +742,7 @@ namespace NumberSearch.Ops.Controllers
                 var fileName = $"MessagingUsers{DateTime.Now:yyyyMMdd}.csv";
                 var completePath = Path.Combine(filePath, fileName);
 
-                using var writer = Sep.New(',').Writer().ToText();
+                using var writer = Sep.New(',').Writer(o => o with { Escape = true }).ToText();
 
                 foreach (var item in exportReady)
                 {
