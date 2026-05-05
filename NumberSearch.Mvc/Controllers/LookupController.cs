@@ -167,7 +167,7 @@ namespace NumberSearch.Mvc.Controllers
                 var wirelessPortable = results.AsValueEnumerable().Where(x => x.Wireless && x.Portable).ToArray();
                 using var mStream = new MemoryStream();
                 using var utf8Writer = new StreamWriter(mStream);
-                using var writer = Sep.New(',').Writer().To(utf8Writer);
+                using var writer = Sep.New(',').Writer(o => o with { Escape = true }).To(utf8Writer);
 
                 foreach (var item in results)
                 {
