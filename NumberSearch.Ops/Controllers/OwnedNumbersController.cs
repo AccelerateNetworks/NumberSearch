@@ -417,6 +417,8 @@ public class OwnedNumbersController(numberSearchContext context, OpsConfig opsCo
                 row["SMSRoute"].Set(item.SMSRoute);
                 row["TwilioCarrierName"].Set(item.TwilioCarrierName);
                 row["TrunkGroup"].Set(item.TrunkGroup);
+                row["LATA"].Set(item.LATA);
+                row["LastPorted"].Set(item.LastPorted.ToString());
             }
 
             return File(Encoding.UTF8.GetBytes(writer.ToString()), "text/csv", $"OwnedNumbers{DateTime.UtcNow}.csv");
