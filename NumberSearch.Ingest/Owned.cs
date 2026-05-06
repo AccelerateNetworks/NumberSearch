@@ -727,12 +727,18 @@ namespace NumberSearch.Ingest
                     {
                         var result = await LrnBulkCnam.GetAsync(number.DialedNumber.AsMemory(), bulkApiKey);
 
-                        var provider = "BulkVS";
+                        string provider = "BulkVS";
                         var newSpid = result.spid ?? string.Empty;
                         var newSpidName = result.lec ?? string.Empty;
 
                         var updatedSPID = newSpid != number.SPID && !string.IsNullOrWhiteSpace(newSpid);
                         var updatedSPIDName = newSpidName != number.SPIDName && !string.IsNullOrWhiteSpace(newSpidName);
+
+                        var newLATA = result.lata ?? string.Empty;
+                        var newPortedDate = result.LastPorted;
+
+                        var updatedLATA = newLATA != number.LATA && !string.IsNullOrWhiteSpace(newLATA);
+                        var updatedPort = newPortedDate != number.LastPorted && newPortedDate > DateTime.MinValue;
 
                         if (updatedSPID && updatedSPIDName)
                         {
@@ -749,6 +755,10 @@ namespace NumberSearch.Ingest
                             // Update the SPID to the current value.
                             number.SPID = newSpid;
                             number.SPIDName = newSpidName;
+
+                            number.LATA = updatedLATA ? newLATA : number.LATA;
+                            number.LastPorted = updatedPort ? newPortedDate : number.LastPorted;
+
                             var checkUpdate = await number.PutAsync(connectionString.ToString());
                             if (checkUpdate)
                             {

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace AccelerateNetworks.Operations
+﻿namespace AccelerateNetworks.Operations
 {
     public partial class OwnedPhoneNumber
     {
@@ -26,5 +24,8 @@ namespace AccelerateNetworks.Operations
         public string? SMSRoute { get; set; } = string.Empty;
         public string? TwilioCarrierName { get; set; } = string.Empty;
         public string? TrunkGroup { get; set; } = string.Empty;
+        public string? LATA { get; set; } = string.Empty;
+        public DateTime? LastPorted { get; set; }
+
     }
 }

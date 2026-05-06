@@ -488,7 +488,6 @@ public partial class numberSearchContext : DbContext
 
             entity.Property(e => e.DateUpdated).HasColumnType("timestamp without time zone");
 
-
             entity.Property(e => e.EmergencyInformationId);
 
             entity.Property(e => e.FPBXDomainId);
@@ -514,6 +513,13 @@ public partial class numberSearchContext : DbContext
             entity.Property(e => e.TrunkGroup)
                 .HasColumnType("character varying")
                 .HasColumnName("TrunkGroup");
+
+            entity.Property(e => e.LATA)
+                .HasColumnType("character varying")
+                .HasColumnName("LATA");
+
+            entity.Property(e => e.LastPorted).HasColumnType("timestamp without time zone");
+
         });
 
         modelBuilder.Entity<PhoneMenuOption>(entity =>
