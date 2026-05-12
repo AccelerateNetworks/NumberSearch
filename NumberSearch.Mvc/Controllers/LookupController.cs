@@ -55,7 +55,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 var parsedNumbers = dialedNumber.ExtractDialedNumbers().ToArray();
 
-                if (parsedNumbers.Length == 0)
+                if (parsedNumbers.Length.Equals(0))
                 {
                     return View("Index", new LookupResults
                     {
@@ -137,7 +137,7 @@ namespace NumberSearch.Mvc.Controllers
             {
                 var parsedNumbers = dialedNumber.ExtractDialedNumbers().ToArray();
 
-                if (parsedNumbers.Length == 0)
+                if (parsedNumbers.Length.Equals(0))
                 {
                     return View("Index", new LookupResults
                     {

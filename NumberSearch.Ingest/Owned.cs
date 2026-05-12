@@ -772,8 +772,18 @@ namespace NumberSearch.Ingest
                         }
                         else
                         {
-                            // Do nothing because either the SPID is the same or it's invalid.
-                            Log.Information("[OwnedNumbers] Found {SpidName}, {Spid} for {DialedNumber} from [{Provider}].", newSpidName, newSpid, number.DialedNumber, provider);
+                            number.LATA = updatedLATA ? newLATA : number.LATA;
+                            number.LastPorted = updatedPort ? newPortedDate : number.LastPorted;
+
+                            var checkUpdate = await number.PutAsync(connectionString.ToString());
+                            if (checkUpdate)
+                            {
+                                Log.Information("[OwnedNumbers] Updated {SpidName}, {Spid} for {DialedNumber} from [{Provider}].", newSpidName, newSpid, number.DialedNumber, provider);
+                            }
+                            else
+                            {
+                                Log.Fatal("[OwnedNumbers] Failed to update {SpidName}, {Spid} for {DialedNumber} from [{Provider}].", newSpidName, newSpid, number.DialedNumber, provider);
+                            }
                         }
                     }
                 }
