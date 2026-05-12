@@ -14,7 +14,6 @@ namespace NumberSearch.Tests
 {
     public class FunctionalIngest
     {
-        private readonly Guid token;
         private readonly ITestOutputHelper output;
         private readonly Credentials pComNetCredentials;
         private readonly string bulkVSKey;
@@ -22,10 +21,7 @@ namespace NumberSearch.Tests
         private readonly string bulkVSUsername;
         private readonly string bulkVSPassword;
         private readonly string postgresql;
-        private readonly string peerlessAPIKey;
         private readonly string invoiceNinjaToken;
-        private readonly string call48Username;
-        private readonly string call48Password;
         private readonly IConfiguration configuration;
         private readonly IngestConfiguration ingestConfiguration;
 
@@ -50,12 +46,8 @@ namespace NumberSearch.Tests
             bulkVSSecret = config.GetConnectionString("BulkVSAPISecret");
             bulkVSUsername = config.GetConnectionString("BulkVSUsername");
             bulkVSPassword = config.GetConnectionString("BulkVSPassword");
-            token = Guid.Parse(config.GetConnectionString("TeleAPI"));
             postgresql = config.GetConnectionString("PostgresqlProd");
-            peerlessAPIKey = config.GetConnectionString("PeerlessAPIKey");
             invoiceNinjaToken = config.GetConnectionString("InvoiceNinjaToken");
-            call48Username = config.GetConnectionString("Call48Username");
-            call48Password = config.GetConnectionString("Call48Password");
 
             var appConfig = new IngestConfiguration
             {
@@ -200,20 +192,6 @@ namespace NumberSearch.Tests
         //     //Assert
         // }
 
-        // This test is slow too.
-        //[Fact]
-        //public async Task OwnedTeleMessage()
-        //{
-        //    // Arrange
-
-        //    // Act
-        //    var results = await Owned.TeleMessageAsync(token).ConfigureAwait(false);
-
-        //    // Assert
-        //    Assert.NotNull(results);
-        //    output.WriteLine(results.Count().ToString());
-        //}
-
         //[Fact]
         //public async Task UpdateBulkVSPortRequestStatusesAsync()
         //{
@@ -221,11 +199,6 @@ namespace NumberSearch.Tests
         //    await PortRequests.UpdateStatusesBulkVSAsync(configuration);
         //}
 
-        //[Fact]
-        //public async Task Call48Get360Test()
-        //{
-        //    // Update the statuses of all the active port requests with BulkVS.
-        //    _ = await Provider.Call48Async(call48Username,call48Password, PhoneNumbersNA.AreaCode.States.ToArray().Where(x => x.State == "Oregon" || x.State == "Washington").ToArray(), postgresql);
-        //}
+ 
     }
 }

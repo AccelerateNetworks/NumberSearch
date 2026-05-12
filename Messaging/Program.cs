@@ -2605,7 +2605,6 @@ namespace Models
             public string PostgresqlProd { get; set; } = string.Empty;
             public string BulkVSUsername { get; set; } = string.Empty;
             public string BulkVSPassword { get; set; } = string.Empty;
-            public string TeleAPI { get; set; } = string.Empty;
             public string PComNetUsername { get; set; } = string.Empty;
             public string PComNetPassword { get; set; } = string.Empty;
             public string PComNetIncomingToken { get; set; } = string.Empty;

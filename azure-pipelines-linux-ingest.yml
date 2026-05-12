@@ -11,13 +11,11 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
-  ConnectionStrings.TeleAPI: $(TeleAPI)
   ConnectionStrings.SmtpUsername: $(SmtpUsername)
   ConnectionStrings.SmtpPassword: $(SmtpPassword)
   ConnectionStrings.PostgresqlProd: $(PostgresqlProd)
   ConnectionStrings.PComNetUsername: $(PComNetUsername)
   ConnectionStrings.PComNetPassword: $(PComNetPassword)
-  ConnectionStrings.PeerlessAPIKey: $(PeerlessAPIKey)
   ConnectionStrings.BulkVSAPISecret: $(BulkVSAPISecret)
   ConnectionStrings.BulkVSAPIKEY: $(BulkVSAPIKEY)
   ConnectionStrings.InvoiceNinjaToken: $(InvoiceNinjaToken)
