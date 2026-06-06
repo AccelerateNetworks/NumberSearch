@@ -4,10 +4,6 @@ using Serilog;
 
 using ServiceReference1;
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 namespace FirstCom.Models
 {
     public class FirstPointCom
