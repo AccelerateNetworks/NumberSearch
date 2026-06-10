@@ -1,5 +1,7 @@
 ﻿using AccelerateNetworks.Operations;
 
+using Amazon.Runtime.EventStreams.Internal;
+
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 
@@ -11,6 +13,8 @@ using Microsoft.EntityFrameworkCore;
 
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.Ops.Models;
+
+using PhoneNumbersNA;
 
 using Serilog;
 
@@ -373,7 +377,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                             fromDb.State = addressParts[2];
                             fromDb.Zip = addressParts[3];
                             fromDb.UnparsedAddress = portRequest.UnparsedAddress;
-                            Log.Information("[Checkout] Address: {Address} City: {City} State: {State} Zip: {Zip}", fromDb.Address, fromDb.City,fromDb.State, fromDb.Zip);
+                            Log.Information("[Checkout] Address: {Address} City: {City} State: {State} Zip: {Zip}", fromDb.Address, fromDb.City, fromDb.State, fromDb.Zip);
                         }
                         else
                         {
@@ -491,7 +495,9 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                         foreach (var item in numbers)
                         {
                             var spidCheck = await LrnBulkCnam.GetAsync(item.PortedDialedNumber.AsMemory(), _bulkVSAPIKey.AsMemory());
-                            if(string.IsNullOrWhiteSpace(spidCheck.spid))
+
+                            // If the number is tollfree it won't have a SPID, so add it anyway.
+                            if (string.IsNullOrWhiteSpace(spidCheck.spid) && !item.PortedDialedNumber.IsTollfree())
                             {
                                 numbers = await context.PortedPhoneNumbers.Where(x => x.OrderId == order.OrderId).ToArrayAsync();
 
@@ -502,7 +508,7 @@ public partial class PortRequestsController(IConfiguration config, numberSearchC
                                     PhoneNumbers = numbers,
                                     Message = $"SPID lookup failed for {item.PortedDialedNumber}. Add money to the BullVS account named {_bulkVSusername}."
                                 });
-                            } 
+                            }
                             lookups.Add(spidCheck);
                         }
 
