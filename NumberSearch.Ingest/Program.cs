@@ -114,8 +114,8 @@ namespace NumberSearch.Ingest
                     if (priorityTimer.Elapsed >= priorityCycle)
                     {
                         priorityTimer.Restart();
-
-                        var bulkVS = await Provider.BulkVSPriorityAsync(priorityCycle, appConfig);
+                        // Disabled per Dan
+                        // var bulkVS = await Provider.BulkVSPriorityAsync(priorityCycle, appConfig);
                         var firstPointCom = await Provider.FirstPointComPriorityAsync(priorityCycle, appConfig);
                         // Verify that all the Executive numbers are still purchasable for the priority area codes.
                         await Provider.VerifyAddToCartAsync(AreaCode.Priority, "Executive".AsMemory(), appConfig.Postgresql, appConfig.BulkVSUsername, appConfig.BulkVSPassword,
@@ -125,12 +125,13 @@ namespace NumberSearch.Ingest
                         await Orders.CheckForInvoicePaymentAsync(appConfig.Postgresql, appConfig.InvoiceNinjaToken, appConfig.SmtpUsername, appConfig.SmtpPassword);
                     }
 
-                    if (bulkVSTimer.Elapsed >= bulkVSCycle)
-                    {
-                        bulkVSTimer.Restart();
+                    // Disabled per Dan
+                    //if (bulkVSTimer.Elapsed >= bulkVSCycle)
+                    //{
+                    //    bulkVSTimer.Restart();
 
-                        var bulkVS = await Provider.BulkVSCompleteAsync(bulkVSCycle, appConfig);
-                    }
+                    //    var bulkVS = await Provider.BulkVSCompleteAsync(bulkVSCycle, appConfig);
+                    //}
 
                     if (fpcTimer.Elapsed >= fpcCycle)
                     {
@@ -156,7 +157,7 @@ namespace NumberSearch.Ingest
                     }
 
                     Log.Information("[Heartbeat] Priorty Timer {Elapsed:000} ms of {Limit:000} ms. ({percentP:P2})", priorityTimer.ElapsedMilliseconds, priorityCycle.TotalMilliseconds, (priorityTimer.ElapsedMilliseconds / priorityCycle.TotalMilliseconds));
-                    Log.Information("[Heartbeat] BulkVS Timer {Elapsed:000} ms of {Limit:000} ms. ({percentP:P2})", bulkVSTimer.ElapsedMilliseconds, bulkVSCycle.TotalMilliseconds, (bulkVSTimer.ElapsedMilliseconds / bulkVSCycle.TotalMilliseconds));
+                    // Log.Information("[Heartbeat] BulkVS Timer {Elapsed:000} ms of {Limit:000} ms. ({percentP:P2})", bulkVSTimer.ElapsedMilliseconds, bulkVSCycle.TotalMilliseconds, (bulkVSTimer.ElapsedMilliseconds / bulkVSCycle.TotalMilliseconds));
                     Log.Information("[Heartbeat] Cycle complete. Daily Timer {Elapsed:000} ms of {Limit:000} ms. ({percentP:P2})", dailyTimer.ElapsedMilliseconds, dailyCycle.TotalMilliseconds, (dailyTimer.ElapsedMilliseconds / dailyCycle.TotalMilliseconds));
 
                     // Limit this to 1 request every 10 seconds to the database.
