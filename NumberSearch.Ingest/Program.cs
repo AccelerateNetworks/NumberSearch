@@ -116,7 +116,7 @@ namespace NumberSearch.Ingest
                         priorityTimer.Restart();
                         // Disabled per Dan
                         // var bulkVS = await Provider.BulkVSPriorityAsync(priorityCycle, appConfig);
-                        var firstPointCom = await Provider.FirstPointComPriorityAsync(priorityCycle, appConfig);
+                        //var firstPointCom = await Provider.FirstPointComPriorityAsync(priorityCycle, appConfig);
                         // Verify that all the Executive numbers are still purchasable for the priority area codes.
                         await Provider.VerifyAddToCartAsync(AreaCode.Priority, "Executive".AsMemory(), appConfig.Postgresql, appConfig.BulkVSUsername, appConfig.BulkVSPassword,
                             appConfig.PComNetUsername, appConfig.PComNetPassword);
@@ -137,7 +137,7 @@ namespace NumberSearch.Ingest
                     {
                         fpcTimer.Restart();
 
-                        var firstPointCom = await Provider.FirstPointComCompleteAsync(fpcCycle, appConfig);
+                        //var firstPointCom = await Provider.FirstPointComCompleteAsync(fpcCycle, appConfig);
 
                         // Offer unassigned phone numbers we own for purchase on the website.
                         _ = await OfferUnassignedNumberForSaleAsync(appConfig.Postgresql);
