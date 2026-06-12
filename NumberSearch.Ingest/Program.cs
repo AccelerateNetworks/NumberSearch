@@ -118,8 +118,8 @@ namespace NumberSearch.Ingest
                         // var bulkVS = await Provider.BulkVSPriorityAsync(priorityCycle, appConfig);
                         //var firstPointCom = await Provider.FirstPointComPriorityAsync(priorityCycle, appConfig);
                         // Verify that all the Executive numbers are still purchasable for the priority area codes.
-                        await Provider.VerifyAddToCartAsync(AreaCode.Priority, "Executive".AsMemory(), appConfig.Postgresql, appConfig.BulkVSUsername, appConfig.BulkVSPassword,
-                            appConfig.PComNetUsername, appConfig.PComNetPassword);
+                        //await Provider.VerifyAddToCartAsync(AreaCode.Priority, "Executive".AsMemory(), appConfig.Postgresql, appConfig.BulkVSUsername, appConfig.BulkVSPassword,
+                        //    appConfig.PComNetUsername, appConfig.PComNetPassword);
                         await Owned.MatchOwnedNumbersToFusionPBXAsync(appConfig.Postgresql, appConfig.FusionPBXConnectionString);
                         await Orders.CheckForQuoteConversionsAsync(appConfig.Postgresql, appConfig.InvoiceNinjaToken, appConfig.SmtpUsername, appConfig.SmtpPassword);
                         await Orders.CheckForInvoicePaymentAsync(appConfig.Postgresql, appConfig.InvoiceNinjaToken, appConfig.SmtpUsername, appConfig.SmtpPassword);
@@ -140,7 +140,7 @@ namespace NumberSearch.Ingest
                         //var firstPointCom = await Provider.FirstPointComCompleteAsync(fpcCycle, appConfig);
 
                         // Offer unassigned phone numbers we own for purchase on the website.
-                        _ = await OfferUnassignedNumberForSaleAsync(appConfig.Postgresql);
+                        //_ = await OfferUnassignedNumberForSaleAsync(appConfig.Postgresql);
 
                     }
 

@@ -56,21 +56,21 @@ namespace NumberSearch.Ingest
             DateTime start = DateTime.Now;
 
             // Ingest all owned numbers from the providers.
-            try
-            {
-                var firstComNumbers = await FirstPointComAsync(configuration.PComNetUsername, configuration.PComNetPassword);
-                if (firstComNumbers != null)
-                {
-                    allNumbers.AddRange(firstComNumbers);
-                }
-                ;
-            }
-            catch (Exception ex)
-            {
-                Log.Fatal("[OwnedNumbers] Failed to retrieve owned numbers for FirstPointCom.");
-                Log.Fatal(ex.Message);
-                Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
-            }
+            //try
+            //{
+            //    var firstComNumbers = await FirstPointComAsync(configuration.PComNetUsername, configuration.PComNetPassword);
+            //    if (firstComNumbers != null)
+            //    {
+            //        allNumbers.AddRange(firstComNumbers);
+            //    }
+            //    ;
+            //}
+            //catch (Exception ex)
+            //{
+            //    Log.Fatal("[OwnedNumbers] Failed to retrieve owned numbers for FirstPointCom.");
+            //    Log.Fatal(ex.Message);
+            //    Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
+            //}
 
             try
             {
@@ -133,7 +133,7 @@ namespace NumberSearch.Ingest
             }
 
             // Offer unassigned phone numbers we own for purchase on the website.
-            _ = await OfferUnassignedNumberForSaleAsync(configuration.Postgresql);
+            //_ = await OfferUnassignedNumberForSaleAsync(configuration.Postgresql);
 
             // Match up owned numbers and their billingClients.
             _ = await MatchOwnedNumbersToBillingClientsAsync(configuration.Postgresql);
