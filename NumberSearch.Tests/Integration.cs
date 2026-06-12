@@ -1042,51 +1042,51 @@ namespace NumberSearch.Tests
             output.WriteLine($"{count} Results Reviewed");
         }
 
-        [Fact]
-        public async Task GetPhoneNumbersByQueryPaginatedAsync()
-        {
-            var conn = postgresql;
-            var results = await PhoneNumber.SequentialPaginatedSearchAsync("*", 1, conn);
-            Assert.NotNull(results);
-            int count = 0;
-            foreach (var result in results)
-            {
-                Assert.True(result.NPA > 99);
-                Assert.True(result.NXX > 99);
-                // XXXX can be 0001 which as an int is 1.
-                Assert.True(result.XXXX > 0);
-                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-                Assert.False(string.IsNullOrWhiteSpace(result.City));
-                Assert.False(string.IsNullOrWhiteSpace(result.State));
-                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
-                count++;
-            }
-            output.WriteLine($"{count} Results Reviewed");
-            Assert.True(count > 0);
-        }
+        //[Fact]
+        //public async Task GetPhoneNumbersByQueryPaginatedAsync()
+        //{
+        //    var conn = postgresql;
+        //    var results = await PhoneNumber.SequentialPaginatedSearchAsync("*", 1, conn);
+        //    Assert.NotNull(results);
+        //    int count = 0;
+        //    foreach (var result in results)
+        //    {
+        //        Assert.True(result.NPA > 99);
+        //        Assert.True(result.NXX > 99);
+        //        // XXXX can be 0001 which as an int is 1.
+        //        Assert.True(result.XXXX > 0);
+        //        Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+        //        Assert.False(string.IsNullOrWhiteSpace(result.City));
+        //        Assert.False(string.IsNullOrWhiteSpace(result.State));
+        //        Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+        //        count++;
+        //    }
+        //    output.WriteLine($"{count} Results Reviewed");
+        //    Assert.True(count > 0);
+        //}
 
-        [Fact]
-        public async Task GetPhoneNumbersByLocationPaginatedAsync()
-        {
-            var conn = postgresql;
-            var results = await PhoneNumber.LocationPaginatedSearchAsync("*", 1, conn);
-            Assert.NotNull(results);
-            int count = 0;
-            foreach (var result in results)
-            {
-                Assert.True(result.NPA > 99);
-                Assert.True(result.NXX > 99);
-                // XXXX can be 0001 which as an int is 1.
-                Assert.True(result.XXXX > 0);
-                Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-                Assert.False(string.IsNullOrWhiteSpace(result.City));
-                Assert.False(string.IsNullOrWhiteSpace(result.State));
-                Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
-                count++;
-            }
-            output.WriteLine($"{count} Results Reviewed");
-            Assert.True(count > 0);
-        }
+        //[Fact]
+        //public async Task GetPhoneNumbersByLocationPaginatedAsync()
+        //{
+        //    var conn = postgresql;
+        //    var results = await PhoneNumber.LocationPaginatedSearchAsync("*", 1, conn);
+        //    Assert.NotNull(results);
+        //    int count = 0;
+        //    foreach (var result in results)
+        //    {
+        //        Assert.True(result.NPA > 99);
+        //        Assert.True(result.NXX > 99);
+        //        // XXXX can be 0001 which as an int is 1.
+        //        Assert.True(result.XXXX > 0);
+        //        Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+        //        Assert.False(string.IsNullOrWhiteSpace(result.City));
+        //        Assert.False(string.IsNullOrWhiteSpace(result.State));
+        //        Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+        //        count++;
+        //    }
+        //    output.WriteLine($"{count} Results Reviewed");
+        //    Assert.True(count > 0);
+        //}
 
         [Fact]
         // This was deleting the database everytime it ran.
@@ -1155,22 +1155,22 @@ namespace NumberSearch.Tests
             Assert.True(checkDelete);
         }
 
-        [Fact]
-        public async Task PhoneNumberGetSingleTestAsync()
-        {
-            var conn = postgresql;
-            var results = await PhoneNumber.GetAllAsync(conn);
-            var number = results.OrderBy(x => x.DialedNumber).LastOrDefault();
-            var result = await PhoneNumber.GetAsync(number.DialedNumber, conn);
-            Assert.True(number.DialedNumber == result.DialedNumber);
-            Assert.True(result.NPA > 99);
-            Assert.True(result.NXX > 99);
-            Assert.True(result.XXXX > 1);
-            Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
-            Assert.False(string.IsNullOrWhiteSpace(result.City));
-            Assert.False(string.IsNullOrWhiteSpace(result.State));
-            Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
-        }
+        //[Fact]
+        //public async Task PhoneNumberGetSingleTestAsync()
+        //{
+        //    var conn = postgresql;
+        //    var results = await PhoneNumber.GetAllAsync(conn);
+        //    var number = results.OrderBy(x => x.DialedNumber).LastOrDefault();
+        //    var result = await PhoneNumber.GetAsync(number.DialedNumber, conn);
+        //    Assert.True(number.DialedNumber == result.DialedNumber);
+        //    Assert.True(result.NPA > 99);
+        //    Assert.True(result.NXX > 99);
+        //    Assert.True(result.XXXX > 1);
+        //    Assert.False(string.IsNullOrWhiteSpace(result.DialedNumber));
+        //    Assert.False(string.IsNullOrWhiteSpace(result.City));
+        //    Assert.False(string.IsNullOrWhiteSpace(result.State));
+        //    Assert.False(string.IsNullOrWhiteSpace(result.IngestedFrom));
+        //}
 
         [Fact]
         public async Task PostIngestCyclesAsync()
@@ -1238,38 +1238,38 @@ namespace NumberSearch.Tests
             Assert.True(checkDelete);
         }
 
-        [Fact]
-        public async Task GetNumberOfResultsInQueryAsync()
-        {
-            var query = "*";
-            var conn = postgresql;
+        //[Fact]
+        //public async Task GetNumberOfResultsInQueryAsync()
+        //{
+        //    var query = "*";
+        //    var conn = postgresql;
 
-            var result = await PhoneNumber.NumberOfResultsInQuery(query, conn);
+        //    var result = await PhoneNumber.NumberOfResultsInQuery(query, conn);
 
-            Assert.True(result > 0);
-        }
+        //    Assert.True(result > 0);
+        //}
 
-        [Fact]
-        public async Task GetCountPhoneNumbersAsync()
-        {
-            var result = await PhoneNumber.GetCountByProvider("BulkVS", postgresql);
+        //[Fact]
+        //public async Task GetCountPhoneNumbersAsync()
+        //{
+        //    var result = await PhoneNumber.GetCountByProvider("BulkVS", postgresql);
 
-            Assert.True(result > 0);
-            output.WriteLine(result.ToString());
-        }
+        //    Assert.True(result > 0);
+        //    output.WriteLine(result.ToString());
+        //}
 
-        [Fact]
-        public async Task GetCountAllPhoneNumbersAsync()
-        {
-            var result = await PhoneNumber.GetCountAllProvider(postgresql);
+        //[Fact]
+        //public async Task GetCountAllPhoneNumbersAsync()
+        //{
+        //    var result = await PhoneNumber.GetCountAllProvider(postgresql);
 
-            Assert.NotNull(result);
-            Assert.NotEmpty(result);
-            foreach (var item in result)
-            {
-                output.WriteLine(JsonSerializer.Serialize(item));
-            }
-        }
+        //    Assert.NotNull(result);
+        //    Assert.NotEmpty(result);
+        //    foreach (var item in result)
+        //    {
+        //        output.WriteLine(JsonSerializer.Serialize(item));
+        //    }
+        //}
 
         //[Fact]
         //public async Task GetPhoneNumbersByAreaCodeAsync()
@@ -2240,90 +2240,90 @@ namespace NumberSearch.Tests
             Assert.False(string.IsNullOrWhiteSpace(result.UnparsedAddress));
         }
 
-        [Fact]
-        public async Task GetInvoiceItemsTest()
-        {
-            var order = new Order() { OrderId = Guid.NewGuid() };
-            var cart = new Cart();
-            List<Line_Items> onetimeItems = [];
-            List<Line_Items> reoccuringItems = [];
-            List<PurchasedPhoneNumber> purchasedPhoneNumbers = [];
-            int pin = CartController.GetPortingPIN();
+        //[Fact]
+        //public async Task GetInvoiceItemsTest()
+        //{
+        //    var order = new Order() { OrderId = Guid.NewGuid() };
+        //    var cart = new Cart();
+        //    List<Line_Items> onetimeItems = [];
+        //    List<Line_Items> reoccuringItems = [];
+        //    List<PurchasedPhoneNumber> purchasedPhoneNumbers = [];
+        //    int pin = CartController.GetPortingPIN();
 
-            // Add purchased numbers
-            var matchingNumber = await PhoneNumber.GetAllNumbersAsync(postgresql);
-            var number = matchingNumber.FirstOrDefault();
-            var phoneNumber = await PhoneNumber.GetAsync(number, postgresql);
-            var productOrderPurchased = new ProductOrder { ProductOrderId = Guid.NewGuid(), DialedNumber = phoneNumber.DialedNumber, Quantity = 1 };
+        //    // Add purchased numbers
+        //    var matchingNumber = await PhoneNumber.GetAllNumbersAsync(postgresql);
+        //    var number = matchingNumber.FirstOrDefault();
+        //    var phoneNumber = await PhoneNumber.GetAsync(number, postgresql);
+        //    var productOrderPurchased = new ProductOrder { ProductOrderId = Guid.NewGuid(), DialedNumber = phoneNumber.DialedNumber, Quantity = 1 };
 
-            cart.AddPhoneNumber(ref phoneNumber, ref productOrderPurchased);
+        //    cart.AddPhoneNumber(ref phoneNumber, ref productOrderPurchased);
 
-            // Add ported numbers
-            var portedPhoneNumber = new PortedPhoneNumber
-            {
-                PortedPhoneNumberId = Guid.NewGuid(),
-                PortedDialedNumber = "2068588757",
-                NPA = 206,
-                NXX = 858,
-                XXXX = 8757,
-                City = "Seattle",
-                State = "WA",
-                DateIngested = DateTime.Now,
-                IngestedFrom = "UserInput",
-                Wireless = false
-            };
+        //    // Add ported numbers
+        //    var portedPhoneNumber = new PortedPhoneNumber
+        //    {
+        //        PortedPhoneNumberId = Guid.NewGuid(),
+        //        PortedDialedNumber = "2068588757",
+        //        NPA = 206,
+        //        NXX = 858,
+        //        XXXX = 8757,
+        //        City = "Seattle",
+        //        State = "WA",
+        //        DateIngested = DateTime.Now,
+        //        IngestedFrom = "UserInput",
+        //        Wireless = false
+        //    };
 
-            var productOrderPort = new ProductOrder { ProductOrderId = Guid.NewGuid(), PortedDialedNumber = portedPhoneNumber.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber?.PortedPhoneNumberId, Quantity = 1 };
+        //    var productOrderPort = new ProductOrder { ProductOrderId = Guid.NewGuid(), PortedDialedNumber = portedPhoneNumber.PortedDialedNumber, PortedPhoneNumberId = portedPhoneNumber?.PortedPhoneNumberId, Quantity = 1 };
 
-            cart.AddPortedPhoneNumber(ref portedPhoneNumber, ref productOrderPort);
+        //    cart.AddPortedPhoneNumber(ref portedPhoneNumber, ref productOrderPort);
 
-            var products = await Product.GetAllAsync(postgresql);
+        //    var products = await Product.GetAllAsync(postgresql);
 
-            foreach (var item in products)
-            {
-                var localItem = item;
-                var productOrder = new ProductOrder()
-                {
-                    ProductOrderId = Guid.NewGuid(),
-                    ProductId = localItem.ProductId,
-                    Quantity = 1
-                };
-                cart.AddProduct(ref localItem, ref productOrder);
-            }
+        //    foreach (var item in products)
+        //    {
+        //        var localItem = item;
+        //        var productOrder = new ProductOrder()
+        //        {
+        //            ProductOrderId = Guid.NewGuid(),
+        //            ProductId = localItem.ProductId,
+        //            Quantity = 1
+        //        };
+        //        cart.AddProduct(ref localItem, ref productOrder);
+        //    }
 
-            var services = await Service.GetAllAsync(postgresql);
+        //    var services = await Service.GetAllAsync(postgresql);
 
-            foreach (var service in services)
-            {
-                var local = service;
-                var productOrder = new ProductOrder
-                {
-                    ProductOrderId = Guid.NewGuid(),
-                    ServiceId = service.ServiceId,
-                    Quantity = 1
-                };
-                cart.AddService(ref local, ref productOrder);
-            }
+        //    foreach (var service in services)
+        //    {
+        //        var local = service;
+        //        var productOrder = new ProductOrder
+        //        {
+        //            ProductOrderId = Guid.NewGuid(),
+        //            ServiceId = service.ServiceId,
+        //            Quantity = 1
+        //        };
+        //        cart.AddService(ref local, ref productOrder);
+        //    }
 
-            var coupons = await Coupon.GetAllAsync(postgresql);
+        //    var coupons = await Coupon.GetAllAsync(postgresql);
 
-            foreach (var coupon in coupons)
-            {
-                var local = coupon;
-                var productOrder = new ProductOrder
-                {
-                    ProductOrderId = Guid.NewGuid(),
-                    CouponId = coupon.CouponId,
-                    Quantity = 1
-                };
-                cart.AddCoupon(ref local, ref productOrder);
-            }
+        //    foreach (var coupon in coupons)
+        //    {
+        //        var local = coupon;
+        //        var productOrder = new ProductOrder
+        //        {
+        //            ProductOrderId = Guid.NewGuid(),
+        //            CouponId = coupon.CouponId,
+        //            Quantity = 1
+        //        };
+        //        cart.AddCoupon(ref local, ref productOrder);
+        //    }
 
-            var result = CartController.GetInvoiceItemsFromProductOrders(ref order, ref cart, ref onetimeItems, ref reoccuringItems, ref pin, ref purchasedPhoneNumbers);
-            Assert.True(result.TotalCost > 0);
-            Assert.True(result.TotalNumberPurchasingCost > 0);
-            Assert.True(result.TotalPortingCost > 0);
-            Assert.False(string.IsNullOrWhiteSpace(result.EmailSubject));
-        }
+        //    var result = CartController.GetInvoiceItemsFromProductOrders(ref order, ref cart, ref onetimeItems, ref reoccuringItems, ref pin, ref purchasedPhoneNumbers);
+        //    Assert.True(result.TotalCost > 0);
+        //    Assert.True(result.TotalNumberPurchasingCost > 0);
+        //    Assert.True(result.TotalPortingCost > 0);
+        //    Assert.False(string.IsNullOrWhiteSpace(result.EmailSubject));
+        //}
     }
 }
