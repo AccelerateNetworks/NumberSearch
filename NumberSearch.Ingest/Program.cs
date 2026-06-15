@@ -138,10 +138,6 @@ namespace NumberSearch.Ingest
                         fpcTimer.Restart();
 
                         //var firstPointCom = await Provider.FirstPointComCompleteAsync(fpcCycle, appConfig);
-
-                        // Offer unassigned phone numbers we own for purchase on the website.
-                        //_ = await OfferUnassignedNumberForSaleAsync(appConfig.Postgresql);
-
                     }
 
                     if (dailyTimer.Elapsed >= dailyCycle || DateTime.Now == DateTime.Today.AddDays(1).AddSeconds(-1))

@@ -95,6 +95,7 @@ namespace NumberSearch.Tests
         //public async Task TestOwnedNumbersIngestAsync()
         //{
         //    await Owned.IngestAsync(ingestConfiguration);
+        //    await Owned.OfferUnassignedNumberForSaleAsync(ingestConfiguration.Postgresql);
 
         //    output.WriteLine("Done");
         //}
@@ -149,36 +150,6 @@ namespace NumberSearch.Tests
         //    output.WriteLine($"Active Orders: {results.Count()}");
         //}
 
-        [Fact]
-        public void CategorizeNumbers()
-        {
-            // Arrange
-            List<PhoneNumber> numbers = [
-                new() { DialedNumber = "6666666666" },
-                new() { DialedNumber = "2666666666" },
-                new() { DialedNumber = "2166666666" },
-                new() { DialedNumber = "3216666666" },
-                new() { DialedNumber = "4321666666" },
-                new() { DialedNumber = "5432166666" },
-                new() { DialedNumber = "7543216666" },
-                new() { DialedNumber = "8754321666" },
-                new() { DialedNumber = "9875432166" },
-            ];
-
-            ReadOnlySpan<PhoneNumber> set = [.. numbers];
-            // Act
-            var results = Services.AssignNumberTypes(ref set);
-
-            // Assert
-            Assert.NotEmpty(results.ToArray());
-            foreach (var result in results.ToArray())
-            {
-                Assert.False(string.IsNullOrWhiteSpace(result.NumberType));
-                output.WriteLine(result.DialedNumber);
-                output.WriteLine(result.NumberType);
-            }
-        }
-
         //This takes 3 minutes to run.
 
         //[Fact]
@@ -199,6 +170,6 @@ namespace NumberSearch.Tests
         //    await PortRequests.UpdateStatusesBulkVSAsync(configuration);
         //}
 
- 
+
     }
 }

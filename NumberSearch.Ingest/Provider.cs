@@ -28,10 +28,8 @@ namespace NumberSearch.Ingest
             PhoneNumber[] numbers = await FirstPointCom.GetValidNumbersByNPAAsync(username, password, areaCodes);
 
             ReadOnlyMemory<PhoneNumber> locations = await Services.AssignRatecenterAndRegionAsync(numbers);
-            ReadOnlySpan<PhoneNumber> locationsSet = locations.Span;
-            ReadOnlySpan<PhoneNumber> typedNumbers = Services.AssignNumberTypes(ref locationsSet);
 
-            IngestStatistics stats = await Services.SubmitPhoneNumbersAsync(typedNumbers.ToArray().AsMemory(), connectionString);
+            IngestStatistics stats = await Services.SubmitPhoneNumbersAsync(locations, connectionString);
 
             DateTime end = DateTime.Now;
             stats.StartDate = start;
@@ -85,9 +83,7 @@ namespace NumberSearch.Ingest
 
             ReadOnlyMemory<PhoneNumber> set = numbers.ToArray().AsMemory();
             ReadOnlyMemory<PhoneNumber> locations = await Services.AssignRatecenterAndRegionAsync(set);
-            ReadOnlySpan<PhoneNumber> locationsSet = locations.Span;
-            ReadOnlySpan<PhoneNumber> typedNumbers = Services.AssignNumberTypes(ref locationsSet);
-            IngestStatistics stats = await Services.SubmitPhoneNumbersAsync(typedNumbers.ToArray().AsMemory(), connectionString);
+            IngestStatistics stats = await Services.SubmitPhoneNumbersAsync(locations, connectionString);
 
             DateTime end = DateTime.Now;
             stats.StartDate = start;
@@ -314,97 +310,6 @@ namespace NumberSearch.Ingest
                 Log.Fatal("[FirstPointCom] Failed to completed the FirstPointCom ingest process {Now}.", DateTime.Now);
             }
             return combined;
-        }
-
-        public static async Task VerifyAddToCartAsync(int[] areaCodes, ReadOnlyMemory<char> numberType, ReadOnlyMemory<char> _postgresql, ReadOnlyMemory<char> _bulkVSusername,
-            ReadOnlyMemory<char> _bulkVSpassword, ReadOnlyMemory<char> _fpcusername, ReadOnlyMemory<char> _fpcpassword)
-        {
-            foreach (var code in areaCodes)
-            {
-                var numbersByAreaCode = await PhoneNumber.GetAllByAreaCodeAsync(code, _postgresql.ToString());
-
-                PhoneNumber[] numbers = [.. numbersByAreaCode.AsValueEnumerable().Where(x => x.NumberType == numberType.ToString())];
-
-                if (numbers is not null && numbers.Length != 0)
-                {
-                    foreach (var phoneNumber in numbers)
-                    {
-                        // Check that the number is still available from the provider.
-                        if (phoneNumber.IngestedFrom is "BulkVS")
-                        {
-                            string npanxx = $"{phoneNumber.NPA}{phoneNumber.NXX}";
-                            try
-                            {
-                                var doesItStillExist = await OrderTn.GetAsync(phoneNumber.NPA, phoneNumber.NXX, 0, _bulkVSusername, _bulkVSpassword);
-                                var checkIfExists = doesItStillExist.AsValueEnumerable().Where(x => x.DialedNumber == phoneNumber.DialedNumber).FirstOrDefault();
-                                if (checkIfExists is not null && checkIfExists?.DialedNumber == phoneNumber.DialedNumber)
-                                {
-                                    Log.Information("[BulkVS] Found {DialedNumber} in {Length} results returned for {npanxx}.", phoneNumber.DialedNumber, doesItStillExist.Length, npanxx);
-                                }
-                                else
-                                {
-                                    Log.Warning("[BulkVS] Failed to find {DialedNumber} in {Length} results returned for {npanxx}.", phoneNumber.DialedNumber, doesItStillExist.Length, npanxx);
-
-                                    // Remove numbers that are unpurchasable.
-                                    _ = await phoneNumber.DeleteAsync(_postgresql.ToString());
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.Error(ex.Message);
-                                Log.Error("[BulkVS] Failed to query BulkVS for {DialedNumber}.", phoneNumber?.DialedNumber);
-                            }
-
-                        }
-                        else if (phoneNumber.IngestedFrom is "FirstPointCom")
-                        {
-                            // Verify that tele has the number.
-                            try
-                            {
-                                var results = await FirstPointCom.GetPhoneNumbersByNpaNxxAsync(phoneNumber.NPA, phoneNumber.NXX, string.Empty.AsMemory(), _fpcusername, _fpcpassword);
-                                var matchingNumber = results?.AsValueEnumerable().Where(x => x?.DialedNumber == phoneNumber?.DialedNumber).FirstOrDefault();
-                                if (matchingNumber is not null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
-                                {
-                                    Log.Information("[FirstPointCom] Found {DialedNumber} in {Length} results returned for {NPA}, {NXX}.", phoneNumber.DialedNumber, results?.Length, phoneNumber.NPA, phoneNumber.NXX);
-                                }
-                                else
-                                {
-                                    Log.Warning("[FirstPointCom] Failed to find {DialedNumber} in {Length} results returned for {NPA}, {NXX}.", phoneNumber.DialedNumber, results?.Length, phoneNumber.NPA, phoneNumber.NXX);
-
-                                    // Remove numbers that are unpurchasable.
-                                    _ = await phoneNumber.DeleteAsync(_postgresql.ToString());
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.Error(ex.Message);
-                                Log.Error("[FirstPointCom] Failed to query FirstPointCom for {DialedNumber}.", phoneNumber?.DialedNumber);
-                            }
-                        }
-                        else if (phoneNumber.IngestedFrom is "OwnedNumber")
-                        {
-                            // Verify that we still have the number.
-                            var matchingNumber = await OwnedPhoneNumber.GetByDialedNumberAsync(phoneNumber.DialedNumber, _postgresql.ToString());
-                            if (matchingNumber is not null && matchingNumber?.DialedNumber == phoneNumber.DialedNumber)
-                            {
-                                Log.Information("[OwnedNumber] Found {DialedNumber}.", phoneNumber.DialedNumber);
-                            }
-                            else
-                            {
-                                Log.Warning("[OwnedNumber] Failed to find {DialedNumber}.", phoneNumber.DialedNumber);
-
-                                // Remove numbers that are unpurchasable.
-                                _ = await phoneNumber.DeleteAsync(_postgresql.ToString());
-                            }
-                        }
-                        else
-                        {
-                            // Remove numbers that are unpurchasable.
-                            _ = await phoneNumber.DeleteAsync(_postgresql.ToString());
-                        }
-                    }
-                }
-            }
         }
     }
 }

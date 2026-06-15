@@ -10,6 +10,7 @@ using PhoneNumbersNA;
 
 using Serilog;
 
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -56,21 +57,34 @@ namespace NumberSearch.Ingest
             DateTime start = DateTime.Now;
 
             // Ingest all owned numbers from the providers.
-            //try
-            //{
-            //    var firstComNumbers = await FirstPointComAsync(configuration.PComNetUsername, configuration.PComNetPassword);
-            //    if (firstComNumbers != null)
-            //    {
-            //        allNumbers.AddRange(firstComNumbers);
-            //    }
-            //    ;
-            //}
-            //catch (Exception ex)
-            //{
-            //    Log.Fatal("[OwnedNumbers] Failed to retrieve owned numbers for FirstPointCom.");
-            //    Log.Fatal(ex.Message);
-            //    Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
-            //}
+            try
+            {
+                // Only look at the NPAs for numbers we already own or have purchased.
+                var owned = await OwnedPhoneNumber.GetAllAsync(configuration.Postgresql.ToString());
+                var purchased = await PurchasedPhoneNumber.GetAllAsync(configuration.Postgresql.ToString());
+                var ported = await PortedPhoneNumber.GetAllAsync(configuration.Postgresql.ToString());
+                int[] limtedNPAs = [];
+                var allOwned = string.Join(", ", owned.Where(x => x.IngestedFrom is "FirstPointCom").Select(x => x.DialedNumber));
+                var allPurchased = string.Join(", ", purchased.Where(x => x.IngestedFrom is "FirstPointCom").Select(x => x.DialedNumber));
+                var allPorted = string.Join(", ", purchased.Where(x => x.IngestedFrom is "FirstPointCom").Select(x => x.DialedNumber));
+                var aO = allOwned.ExtractPhoneNumbers();
+                var aP = allPurchased.ExtractPhoneNumbers();
+                var aPo = allPorted.ExtractPhoneNumbers();
+                PhoneNumber[] all = [.. aO, .. aP, .. aPo];
+                limtedNPAs = [.. all.Select(x => x.NPA).Distinct()];
+
+                var firstComNumbers = await FirstPointComAsync(limtedNPAs, configuration.PComNetUsername, configuration.PComNetPassword);
+                if (firstComNumbers != null)
+                {
+                    allNumbers.AddRange(firstComNumbers);
+                };
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal("[OwnedNumbers] Failed to retrieve owned numbers for FirstPointCom.");
+                Log.Fatal(ex.Message);
+                Log.Fatal(ex?.StackTrace ?? "No stack trace found.");
+            }
 
             try
             {
@@ -78,8 +92,7 @@ namespace NumberSearch.Ingest
                 if (bulkVSNumbers.Length != 0)
                 {
                     allNumbers.AddRange(bulkVSNumbers);
-                }
-                ;
+                };
             }
             catch (Exception ex)
             {
@@ -133,7 +146,7 @@ namespace NumberSearch.Ingest
             }
 
             // Offer unassigned phone numbers we own for purchase on the website.
-            //_ = await OfferUnassignedNumberForSaleAsync(configuration.Postgresql);
+            _ = await OfferUnassignedNumberForSaleAsync(configuration.Postgresql);
 
             // Match up owned numbers and their billingClients.
             _ = await MatchOwnedNumbersToBillingClientsAsync(configuration.Postgresql);
@@ -324,48 +337,74 @@ namespace NumberSearch.Ingest
             Log.Information($"[OwnedNumbers] Updated FusionPBX data for Owned Phone numbers.");
         }
 
-        public static async Task<IEnumerable<OwnedPhoneNumber>> FirstPointComAsync(ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
+        public static async Task<IEnumerable<OwnedPhoneNumber>> FirstPointComAsync(int[] NPAs, ReadOnlyMemory<char> username, ReadOnlyMemory<char> password)
         {
-            List<OwnedPhoneNumber> numbers = [];
-
-            foreach (int npa in AreaCodes.All)
+            ConcurrentBag<OwnedPhoneNumber> numbers = [];
+            await Parallel.ForEachAsync(NPAs, async (npa, cls) =>
             {
-                try
+                var results = await FirstPointCom.GetOwnedPhoneNumbersAsync(npa, username, password);
+
+                Log.Information("[OwnedNumbers] [FirstPointCom] Retrieved {Length} owned numbers.", results.DIDOrder.Length);
+
+                foreach (var item in results.DIDOrder)
                 {
-                    var results = await FirstPointCom.GetOwnedPhoneNumbersAsync(npa, username, password);
+                    var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.DID, out var phoneNumber);
 
-                    Log.Information("[OwnedNumbers] [FirstPointCom] Retrieved {Length} owned numbers.", results.DIDOrder.Length);
-
-                    foreach (var item in results.DIDOrder)
+                    if (checkParse)
                     {
-                        var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.DID, out var phoneNumber);
-
-                        if (checkParse)
+                        numbers.Add(new OwnedPhoneNumber
                         {
-                            numbers.Add(new OwnedPhoneNumber
-                            {
-                                DialedNumber = phoneNumber.DialedNumber ?? string.Empty,
-                                IngestedFrom = "FirstPointCom",
-                                Active = true,
-                                DateIngested = DateTime.Now
-                            });
-                        }
-                        else
-                        {
-                            Log.Fatal("[OwnedNumber] Failed to parse Owned Number {DID} from FirstPointCom.", item.DID);
-                        }
+                            DialedNumber = phoneNumber.DialedNumber ?? string.Empty,
+                            IngestedFrom = "FirstPointCom",
+                            Active = true,
+                            DateIngested = DateTime.Now
+                        });
+                    }
+                    else
+                    {
+                        Log.Fatal("[OwnedNumber] Failed to parse Owned Number {DID} from FirstPointCom.", item.DID);
                     }
                 }
-                catch (Exception ex)
-                {
-                    Log.Error(ex.Message);
-                    Log.Error("[OwnedNumbers] [FirstPointCom] No numbers found for NPA {NPA}", npa);
-                }
-            }
+            });
+
+            //foreach (int npa in AreaCodes.All)
+            //{
+            //    try
+            //    {
+            //        var results = await FirstPointCom.GetOwnedPhoneNumbersAsync(npa, username, password);
+
+            //        Log.Information("[OwnedNumbers] [FirstPointCom] Retrieved {Length} owned numbers.", results.DIDOrder.Length);
+
+            //        foreach (var item in results.DIDOrder)
+            //        {
+            //            var checkParse = PhoneNumbersNA.PhoneNumber.TryParse(item.DID, out var phoneNumber);
+
+            //            if (checkParse)
+            //            {
+            //                numbers.Add(new OwnedPhoneNumber
+            //                {
+            //                    DialedNumber = phoneNumber.DialedNumber ?? string.Empty,
+            //                    IngestedFrom = "FirstPointCom",
+            //                    Active = true,
+            //                    DateIngested = DateTime.Now
+            //                });
+            //            }
+            //            else
+            //            {
+            //                Log.Fatal("[OwnedNumber] Failed to parse Owned Number {DID} from FirstPointCom.", item.DID);
+            //            }
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        Log.Error(ex.Message);
+            //        Log.Error("[OwnedNumbers] [FirstPointCom] No numbers found for NPA {NPA}", npa);
+            //    }
+            //}
 
             Log.Information("[OwnedNumbers] [FirstPointCom] Ingested {Count} owned numbers.", numbers.Count);
 
-            return numbers.Count != 0 ? [.. numbers] : [];
+            return !numbers.IsEmpty ? [.. numbers] : [];
         }
 
         public static async Task<IngestStatistics> SubmitOwnedNumbersAsync(OwnedPhoneNumber[] newlyIngested, ReadOnlyMemory<char> connectionString, ReadOnlyMemory<char> bulkVSUsername, ReadOnlyMemory<char> bulkVSPassword)
@@ -537,7 +576,7 @@ namespace NumberSearch.Ingest
 
             foreach (var item in numbers)
             {
-                if (!string.IsNullOrWhiteSpace(item?.Notes) && item?.Notes.Trim() == "Unassigned")
+                if (!string.IsNullOrWhiteSpace(item?.Notes) && item?.Notes.Trim() is "Unassigned")
                 {
                     var number = await DataAccess.Models.PhoneNumber.GetAsync(item.DialedNumber, connectionString.ToString());
 
@@ -583,8 +622,7 @@ namespace NumberSearch.Ingest
             }
 
             ReadOnlySpan<DataAccess.Models.PhoneNumber> unassignedSet = newUnassigned.AsValueEnumerable().ToArray().AsSpan();
-            ReadOnlySpan<DataAccess.Models.PhoneNumber> typedNumbers = Services.AssignNumberTypes(ref unassignedSet);
-            ReadOnlyMemory<DataAccess.Models.PhoneNumber> locations = await Services.AssignRatecenterAndRegionAsync(typedNumbers.ToArray().AsMemory());
+            ReadOnlyMemory<DataAccess.Models.PhoneNumber> locations = await Services.AssignRatecenterAndRegionAsync(unassignedSet.ToArray().AsMemory());
             _ = await Services.SubmitPhoneNumbersAsync(locations, connectionString);
 
             DateTime end = DateTime.Now;

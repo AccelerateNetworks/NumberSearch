@@ -10,46 +10,6 @@ namespace NumberSearch.Ingest
 {
     public class Services
     {
-        /// <summary>
-        /// Assign a NumberType to a number based on the number of repeating digits in the number.
-        /// </summary>
-        /// <param name="numbers"></param>
-        /// <returns></returns>
-        public static ref readonly ReadOnlySpan<PhoneNumber> AssignNumberTypes(ref ReadOnlySpan<PhoneNumber> numbers)
-        {
-            // NumberTypes
-            string Executive = "Executive";
-            string Premium = "Premium";
-            string Standard = "Standard";
-            string Tollfree = "Tollfree";
-
-            // Assign a Type based on number of repeating digits.
-            Parallel.ForEach(numbers.ToArray(), number =>
-            {
-                // https://stackoverflow.com/questions/39472429/count-all-character-occurrences-in-a-string-c-sharp
-                int count = number.DialedNumber.AsValueEnumerable().GroupBy(static c => c).Select(c => c.Count()).Max();
-
-                number.NumberType = count switch
-                {
-                    1 or 2 or 3 => Standard,
-                    4 or 5 => Premium,
-                    6 or 7 or 8 or 9 or 10 => Executive,
-                    _ => Standard,
-                };
-
-                // Overwrite the number type with Tollfree, as that's the primary type.
-                var checkTollfree = PhoneNumbersNA.AreaCode.TollFreeFlatLookup[number.NPA];
-
-                if (checkTollfree)
-                {
-                    number.NumberType = Tollfree;
-                    number.City = Tollfree;
-                    number.State = string.Empty;
-                }
-            });
-
-            return ref numbers;
-        }
 
         /// <summary>
         /// Submit the ingested Phone numbers to the database in bulk to minimize the number of commands that have to be sent.
@@ -116,7 +76,7 @@ namespace NumberSearch.Ingest
             if (updates is not null && updates.Count != 0)
             {
                 // Execute these API requests in parallel.
-                await Parallel.ForEachAsync([..updates.Values], async (update, token) =>
+                await Parallel.ForEachAsync([.. updates.Values], async (update, token) =>
                 {
                     if (count % 100 == 0 && count != 0)
                     {
@@ -145,7 +105,8 @@ namespace NumberSearch.Ingest
                 {
                     var check = await PhoneNumber.BulkPostAsync(group, connectionString.ToString());
 
-                    if (check) { stats!.IngestedNew += group.Length; };
+                    if (check) { stats!.IngestedNew += group.Length; }
+                    ;
 
                     Log.Information("{IngestedNew} of {Count} submitted to the database.", stats?.IngestedNew, listInserts.Length);
                 }
@@ -183,35 +144,38 @@ namespace NumberSearch.Ingest
                 if (checkTollfree)
                 {
                     // Skip tollfree numbers
-                    continue;
-                }
-
-                var checkMatch = npaNxxLookup.TryGetValue($"{number.NPA}{number.NXX}", out var match);
-
-                if (checkMatch)
-                {
-                    number.City = match.RateCenter.ToString();
-                    number.State = match.Region.ToString();
+                    number.City = "Tollfree";
+                    number.State = "NA";
                 }
                 else
                 {
-                    try
+                    var checkMatch = npaNxxLookup.TryGetValue($"{number.NPA}{number.NXX}", out var match);
+
+                    if (checkMatch)
                     {
-                        match = await RateCenterLookup.GetAsync(number.NPA, number.NXX);
-
-                        if (!string.IsNullOrWhiteSpace(match.RateCenter.ToString()))
-                        {
-                            npaNxxLookup.Add($"{number.NPA}{number.NXX}", match);
-
-                            number.City = match.RateCenter.ToString();
-                            number.State = match.Region.ToString();
-                        }
+                        number.City = match.RateCenter.ToString();
+                        number.State = match.Region.ToString();
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Log.Error("Failed to ingesting the Ratecenter and Region on {DialedNumber}", number.DialedNumber);
-                        Log.Error(ex.Message);
-                        Log.Error(ex.StackTrace ?? "No stack trace found.");
+                        try
+                        {
+                            match = await RateCenterLookup.GetAsync(number.NPA, number.NXX);
+
+                            if (!string.IsNullOrWhiteSpace(match.RateCenter.ToString()))
+                            {
+                                npaNxxLookup.Add($"{number.NPA}{number.NXX}", match);
+
+                                number.City = match.RateCenter.ToString();
+                                number.State = match.Region.ToString();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error("Failed to ingesting the Ratecenter and Region on {DialedNumber}", number.DialedNumber);
+                            Log.Error(ex.Message);
+                            Log.Error(ex.StackTrace ?? "No stack trace found.");
+                        }
                     }
                 }
             }

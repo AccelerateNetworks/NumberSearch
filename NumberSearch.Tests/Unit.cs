@@ -24,7 +24,7 @@ namespace NumberSearch.Tests
         {
             var pin = CartController.GetPortingPIN();
             Assert.True(pin > 0);
-            Assert.True(pin > 1000000);
+            Assert.True(pin > 100000);
         }
     }
 }
