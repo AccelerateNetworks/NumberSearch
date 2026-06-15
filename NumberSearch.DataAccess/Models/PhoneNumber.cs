@@ -376,32 +376,6 @@ namespace NumberSearch.DataAccess.Models
     }
 
     /// <summary>
-    /// Delete only numbers that haven't been reingested recently.
-    /// </summary>
-    /// <param name="connectionString"></param>
-    /// <returns></returns>
-    public static async Task<IngestStatistics> DeleteOld(DateTime ingestStart, string connectionString)
-    {
-        var start = DateTime.Now;
-
-        await using var connection = new NpgsqlConnection(connectionString);
-
-        var result = await connection
-            .ExecuteAsync("DELETE FROM public.\"PhoneNumbers\" " +
-            "WHERE \"DateIngested\" < @DateIngested",
-            new { DateIngested = ingestStart.AddHours(-48) })
-            .ConfigureAwait(false);
-
-        return new IngestStatistics
-        {
-            Removed = result,
-            IngestedFrom = "Cleanup",
-            StartDate = start,
-            EndDate = DateTime.Now
-        };
-    }
-
-    /// <summary>
     /// Delete a specific phone number by its dialed number.
     /// </summary>
     /// <param name="connectionString"></param>
@@ -454,7 +428,7 @@ namespace NumberSearch.DataAccess.Models
     }
 
     /// <summary>
-    /// Delete only numbers that haven't been reingested recently that were ingested from a specific provider.
+    /// Delete only numbers that haven't been reingested recently that were ingested from a specific provider and area code.
     /// </summary>
     /// <param name="connectionString"></param>
     /// <returns></returns>

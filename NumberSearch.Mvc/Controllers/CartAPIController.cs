@@ -914,7 +914,13 @@ namespace NumberSearch.Mvc.Controllers
                 return BadRequest($"{dialedPhoneNumber} is no longer available.");
             }
 
-            await httpContext.Session.LoadAsync().ConfigureAwait(false);
+            var stdSeat = new Guid("16e2c639-445b-4ae6-9925-07300318206b");
+            var concurrentSeat = new Guid("48eb4627-8692-4a3b-8be1-be64bbeea534");
+
+            // Per Dan all numbers have to get into the Cart with a seat or a line.
+            _ = await BuyServiceAsync(concurrentSeat, 1);
+
+            await httpContext.Session.LoadAsync();
             var cart = Cart.GetFromSession(httpContext.Session);
             var checkAdd = cart.AddPhoneNumber(ref phoneNumber, ref productOrder);
             var checkSet = cart.SetToSession(httpContext.Session);

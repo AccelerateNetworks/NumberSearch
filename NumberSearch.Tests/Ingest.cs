@@ -94,7 +94,7 @@ namespace NumberSearch.Tests
         //[Fact]
         //public async Task TestOwnedNumbersIngestAsync()
         //{
-        //    await Owned.IngestAsync(ingestConfiguration);
+        //    //await Owned.IngestAsync(ingestConfiguration);
         //    await Owned.OfferUnassignedNumberForSaleAsync(ingestConfiguration.Postgresql);
 
         //    output.WriteLine("Done");
