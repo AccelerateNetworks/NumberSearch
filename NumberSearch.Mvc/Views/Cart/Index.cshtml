@@ -14,16 +14,16 @@
 
 <script type="text/javascript">
     $(document).ready( function () {
-        $('#myTable').DataTable({
-            paging: false,
-            columns: [null, { orderable: false }, { orderable: false },  null , { orderable: false } ],
-            layout: {
-                topStart: 'info',
-                topEnd: 'search',
-                bottomStart: null,
-                bottomEnd: null
-            }
-        });
+    $('#myTable').DataTable({
+    paging: false,
+    columns: [null, { orderable: false }, { orderable: false },  null , { orderable: false } ],
+    layout: {
+    topStart: 'info',
+    topEnd: 'search',
+    bottomStart: null,
+    bottomEnd: null
+    }
+    });
     } );
 </script>
 
@@ -86,50 +86,11 @@
                                                 <td scope="row">
                                                     <h4>@formattedNumber</h4>
                                                     <p class="m-0 d-md-none">@location</p>
-                                                    @{
-                                                        if (item?.NumberType == "Executive")
-                                                        {
-                                                            <p class="d-sm-none m-0">for $200 total</p>
-                                                        }
-                                                        else if (item?.NumberType == "Premium")
-                                                        {
-                                                            <p class="d-sm-none m-0">for $40 total</p>
-                                                        }
-                                                        else
-                                                        {
-                                                            <p class="d-sm-none m-0">for $20 total</p>
-                                                        }
-                                                    }
+                                                    <p class="d-sm-none m-0">for $0 total</p>
                                                 </td>
                                                 <td class="d-none d-md-table-cell">@location</td>
-                                                @{
-                                                    if (item?.NumberType == "Executive")
-                                                    {
-                                                        <td class="d-none d-md-table-cell">$200</td>
-                                                    }
-                                                    else if (item?.NumberType == "Premium")
-                                                    {
-                                                        <td class="d-none d-md-table-cell">$40</td>
-                                                    }
-                                                    else
-                                                    {
-                                                        <td class="d-none d-md-table-cell">$20</td>
-                                                    }
-                                                }
-                                                @{
-                                                    if (item?.NumberType == "Executive")
-                                                    {
-                                                        <td class="d-none d-sm-table-cell">$200</td>
-                                                    }
-                                                    else if (item?.NumberType == "Premium")
-                                                    {
-                                                        <td class="d-none d-sm-table-cell">$40</td>
-                                                    }
-                                                    else
-                                                    {
-                                                        <td class="d-none d-sm-table-cell">$20</td>
-                                                    }
-                                                }
+                                                <td class="d-none d-md-table-cell">$0</td>
+                                                <td class="d-none d-sm-table-cell">$0</td>
                                                 <td>
                                                     <button onclick="RemoveFromCart('PhoneNumber','@item?.DialedNumber', 1, this)" class="btn btn-outline-danger">
                                                         <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
