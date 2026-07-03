@@ -51,6 +51,10 @@ variables:
   ConnectionStrings.FusionPBXConnectionString: $(FusionPBXConnectionString)
   ConnectionStrings.FCCAPIToken: $(FCCAPIToken)
   ConnectionStrings.FCCUsername: $(FCCUsername)
+  ConnectionStrings.PortControlUsername: $(PortControlUsername)
+  ConnectionStrings.PortControlPassword: $(PortControlPassword)
+  ConnectionStrings.PortControlClientId: $(PortControlClientId)
+  ConnectionStrings.PortControlClientSecret: $(PortControlClientSecret)
   ApplicationInsights.InstrumentationKey: $(AIInstrumentationKey)
   ApplicationInsights.ConnectionString: $(AIConnectionString)
 
