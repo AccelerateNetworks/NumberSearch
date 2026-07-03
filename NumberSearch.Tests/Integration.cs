@@ -593,23 +593,21 @@ namespace NumberSearch.Tests
 
         }
 
-        // Doesn't work need client_id
-        //[Fact]
-        //public async Task PortControlAuth()
-        //{
-        //    // Arrange
-        //    int npa = 844;
-        //    int nxx = 646;
-        //    // Don't commit AYYYYYYYY
-        //    var request = new DataAccess.PortControl.AuthRequest("tom@acceleratenetworks.com", "Supersekure25!", "", "VA9e7fdaAfMs6n96iwxIiMN1L2MSSp");
+        [Fact]
+        public async Task PortControlAuth()
+        {
+            // Arrange
+            int npa = 844;
+            int nxx = 646;
+            // Don't commit AYYYYYYYY
+            var request = new DataAccess.PortControl.AuthRequest(_configuration.PortControlUsername, _configuration.PortControlPassword, _configuration.PortControlClientId, _configuration.PortControlClientSecret);
 
-        //    // Act
-        //    var result = await request.PostAsync();
+            // Act
+            var result = await request.PostAsync();
 
-        //    // Assert        
-        //    output.WriteLine(JsonSerializer.Serialize(result));
-
-        //}
+            // Assert        
+            output.WriteLine(JsonSerializer.Serialize(result));
+        }
 
 
         [Fact]

@@ -30,6 +30,10 @@
         public string FusionPBXConnectionString { get; set;} = string.Empty;
         public string FCCAPIToken { get; set; } = string.Empty;
         public string FCCUsername { get; set; } = string.Empty;
+        public string PortControlUsername { get; set; } = string.Empty;
+        public string PortControlPassword { get; set; } = string.Empty;
+        public string PortControlClientId { get; set; } = string.Empty;
+        public string PortControlClientSecret { get; set; } = string.Empty;
 
     }
 }

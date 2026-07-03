@@ -26,9 +26,7 @@ namespace NumberSearch.DataAccess.PortControl
 
             try
             {
-                var resultData = await route.PostUrlEncodedAsync(this);
-                var x  = resultData.GetStringAsync();
-                return new();
+                return await route.PostUrlEncodedAsync(this).ReceiveJson<AuthResponse>();
             }
             catch (FlurlHttpException ex)
             {
@@ -38,8 +36,5 @@ namespace NumberSearch.DataAccess.PortControl
         }
     };
 
-    public readonly record struct AuthResponse()
-    {
-
-    }
+    public readonly record struct AuthResponse(string access_token, int expires_in, string token_type, string scope);
 }
