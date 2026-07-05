@@ -1,5 +1,5 @@
 using Microsoft.OpenApi;
-
+using Microsoft.AspNetCore.OpenApi;
 using NumberSearch.Mvc.Models;
 using NumberSearch.Mvc.WorkerServices;
 
@@ -13,6 +13,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Threading.RateLimiting;
 
+using Scalar.AspNetCore;
 using ZLinq;
 
 namespace NumberSearch.Mvc
@@ -62,24 +63,30 @@ namespace NumberSearch.Mvc
 
             services.AddRazorPages();
 
-            services.AddSwaggerGen(options =>
+            // https://learn.microsoft.com/en-us/aspnet/core/fundamentals/openapi/customize-openapi?view=aspnetcore-10.0
+            services.AddOpenApi(options =>
             {
-                options.SwaggerDoc("v1", new OpenApiInfo
+                options.AddDocumentTransformer((document, context, cancellationToken) =>
                 {
-                    Version = "v1",
-                    Title = "NumberSearch API",
-                    Description = "An API for looking up numbers from Accelerate Networks.",
-                    TermsOfService = new Uri("https://acceleratenetworks.com/privacy"),
-                    Contact = new OpenApiContact
+                    document.Info = new()
                     {
-                        Name = "Accelerate Networks",
-                        Url = new Uri("https://acceleratenetworks.com/")
-                    }
+                        Title = "NumberSearch API",
+                        Version = "v1",
+                        Description = "To use this API please purchase an access token off of the Services page on our main website. https://acceleratenetworks.com/",
+                        Contact = new()
+                        {
+                            Name = string.Empty,
+                            Email = "support@acceleratenetworks.com",
+                            Url = new Uri("https://acceleratenetworks.com/"),
+                        },
+                        License = new()
+                        {
+                            Name = "Use under LICX",
+                            Url = new Uri("https://github.com/AccelerateNetworks/NumberSearch/blob/master/LICENSE"),
+                        }
+                    };
+                    return Task.CompletedTask;
                 });
-
-                // using System.Reflection;
-                var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
             });
 
             services.AddSingleton<MonitorLoop>();
@@ -183,19 +190,6 @@ namespace NumberSearch.Mvc
                     builder.AddFullscreen().Self();
                 }));
 
-            // Enable middleware to serve generated Swagger as a JSON endpoint.
-            app.UseSwagger();
-
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
-            // specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "NumberSeach API");
-                c.EnableTryItOutByDefault();
-                c.EnableValidator();
-                c.DisplayRequestDuration();
-            });
-
             app.UseRouting();
 
             // https://github.com/prometheus-net/prometheus-net
@@ -224,6 +218,11 @@ namespace NumberSearch.Mvc
 
             app.UseEndpoints(endpoints =>
             {
+                // Map OpenAPI and Scalar API reference on the endpoint builder
+                endpoints.MapOpenApi();
+                endpoints.MapScalarApiReference();
+                endpoints.MapScalarApiReference("api");
+
                 endpoints.MapDefaultControllerRoute();
                 endpoints.MapRazorPages();
                 endpoints.MapMetrics();
