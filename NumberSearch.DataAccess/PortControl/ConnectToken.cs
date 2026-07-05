@@ -8,7 +8,7 @@ namespace NumberSearch.DataAccess.PortControl
     public readonly record struct AuthRequest(string username, string password, string client_id, string client_secret, string grant_type = "password", string scope = "portcontrol.web.api.tst")
     {
         /// <summary>
-        /// Get an auth token for the PortControl API.
+        /// Get an auth token for the PortControl API. https://api.porting.com/swagger/index.html
         /// </summary>
         /// <param name="username"></param>
         /// <param name="password"></param>
@@ -19,8 +19,8 @@ namespace NumberSearch.DataAccess.PortControl
         /// <returns></returns>
         public async Task<AuthResponse> PostAsync()
         {
-            string baseUrl = "https://auth.porting.com/";
-            string endpoint = "connect/token";
+            ReadOnlySpan<char> baseUrl = "https://auth.porting.com/";
+            ReadOnlySpan<char> endpoint = "connect/token";
 
             string route = $"{baseUrl}{endpoint}";
 

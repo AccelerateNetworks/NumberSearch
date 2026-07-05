@@ -596,9 +596,6 @@ namespace NumberSearch.Tests
         [Fact]
         public async Task PortControlAuth()
         {
-            // Arrange
-            int npa = 844;
-            int nxx = 646;
             // Don't commit AYYYYYYYY
             var request = new DataAccess.PortControl.AuthRequest(_configuration.PortControlUsername, _configuration.PortControlPassword, _configuration.PortControlClientId, _configuration.PortControlClientSecret);
 
@@ -608,6 +605,21 @@ namespace NumberSearch.Tests
             // Assert        
             output.WriteLine(JsonSerializer.Serialize(result));
         }
+
+        // Test credentials don't work with the prod baseUrl
+        //[Fact]
+        //public async Task PortControlInfo()
+        //{
+
+        //    // Don't commit AYYYYYYYY
+        //    var tokenRequest = new DataAccess.PortControl.AuthRequest(_configuration.PortControlUsername, _configuration.PortControlPassword, _configuration.PortControlClientId, _configuration.PortControlClientSecret);
+        //    var token = await tokenRequest.PostAsync();
+
+        //    var result = await DataAccess.PortControl.AccountInfo.GetAsync(token.access_token.AsMemory());
+
+        //    // Assert        
+        //    output.WriteLine(JsonSerializer.Serialize(result));
+        //}
 
 
         [Fact]
