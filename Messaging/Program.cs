@@ -14,12 +14,15 @@ using MailKit.Security;
 
 using Messaging;
 
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -30,6 +33,8 @@ using MimeKit;
 using Models;
 
 using Prometheus;
+
+using Scalar.AspNetCore;
 
 using Serilog;
 using Serilog.Events;
@@ -100,52 +105,32 @@ try
 
     builder.Services.AddAuthorization();
     builder.Services.AddCors();
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen(option =>
-    {
-        option.SwaggerDoc("v1", new OpenApiInfo
-        {
-            Version = "v1",
-            Title = "sms.callpipe.com",
-            Description = "This API abstracts the sending and receiving of SMS/MMS messages to and from our upstream vendors.",
-            Contact = new OpenApiContact
-            {
-                Name = string.Empty,
-                Email = "dan@acceleratenetworks.com",
-                Url = new Uri("https://acceleratenetworks.com/"),
-            },
-            License = new OpenApiLicense
-            {
-                Name = "Use under LICX",
-                Url = new Uri("https://github.com/AccelerateNetworks/NumberSearch/blob/master/LICENSE"),
-            }
 
-        });
-        option.UseInlineDefinitionsForEnums();
-        option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    // https://learn.microsoft.com/en-us/aspnet/core/fundamentals/openapi/customize-openapi?view=aspnetcore-10.0
+    builder.Services.AddOpenApi(options =>
+    {
+        options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+        options.AddDocumentTransformer((document, context, cancellationToken) =>
         {
-            In = ParameterLocation.Header,
-            Description = "Please enter a valid token",
-            Name = "Authorization",
-            Type = SecuritySchemeType.Http,
-            BearerFormat = "JWT",
-            Scheme = "Bearer"
+            document.Info = new()
+            {
+                Title = "sms.callpipe.com",
+                Version = "v1",
+                Description = "This API abstracts the sending and receiving of SMS/MMS messages to and from our upstream vendors. To use this API, you will need credentials to login to ops.acceleratenetworks.com. Please contact Dan to have an account made. Then you can provide those credentials to the /login endpoint of this API. In the JSON response body from the /login endpoint you'll need to copy the value of the 'accessToken' field and paste it into the Authentication => Bearer => Bearer Token: Token box positioned just to the right of this text summary, this will provide the bearer token to all of the endpoints in this API docuemnt that require it. You can read the APGLv3 licensed code for this API on Github: https://github.com/AccelerateNetworks/NumberSearch/blob/master/Messaging/Program.cs",
+                Contact = new()
+                {
+                    Name = string.Empty,
+                    Email = "dan@acceleratenetworks.com",
+                    Url = new Uri("https://acceleratenetworks.com/"),
+                },
+                License = new()
+                {
+                    Name = "Use under LICX",
+                    Url = new Uri("https://github.com/AccelerateNetworks/NumberSearch/blob/master/LICENSE"),
+                }
+            };
+            return Task.CompletedTask;
         });
-        option.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
-        {
-            Type = SecuritySchemeType.Http,
-            Scheme = "bearer",
-            BearerFormat = "JWT",
-            Description = "JWT Authorization header using the Bearer scheme."
-        });
-        option.AddSecurityRequirement(document => new OpenApiSecurityRequirement
-        {
-            [new OpenApiSecuritySchemeReference("bearer", document)] = []
-        });
-        // Set the comments path for the Swagger JSON and UI.
-        //var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-        //var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-        //option.IncludeXmlComments(xmlPath);
     });
 
     // EF Core
@@ -161,7 +146,7 @@ try
 
     builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-    builder.Services.AddAuthentication().AddBearerToken(IdentityConstants.BearerScheme);
+    builder.Services.AddAuthentication().AddBearerToken(IdentityConstants.BearerScheme).AddJwtBearer();
 
     builder.Services.AddAuthorizationBuilder().AddPolicy("api", p =>
     {
@@ -221,38 +206,41 @@ try
 
     app.UseAuthorization();
     app.UseHttpsRedirection();
-    app.UseSwagger();
     app.UseDeveloperExceptionPage();
 
-    // Swagger defaults
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Messaging");
-    });
-
-    // Set the app root to the swagger docs
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Messaging");
-        c.RoutePrefix = string.Empty;
-    });
+    //app.MapSwagger("/openapi/{documentName}.json");
+    app.MapOpenApi();
+    app.MapScalarApiReference(options => options.WithDefaultHttpClient(ScalarTarget.JavaScript, ScalarClient.Fetch)
+        .AddPreferredSecuritySchemes("Bearer"));
+    app.MapScalarApiReference("/", options => options.WithDefaultHttpClient(ScalarTarget.JavaScript, ScalarClient.Fetch)
+        .AddPreferredSecuritySchemes("Bearer"));
 
     app.UseSerilogRequestLogging();
-    app.UseSecurityHeaders(policy => policy.AddDefaultApiSecurityHeaders());
+    app.UseSecurityHeaders(policy => policy.AddDefaultSecurityHeaders());
     app.UseHttpMetrics();
     app.MapMetrics();
 
     // These two endpoints /login and /refresh were extracted from app.MapGroup("/auth").MapIdentityApi<IdentityUser>(); to hide the registration endpoint.
-    app.MapPost("/login", Endpoints.LoginAsync);
+    app.MapPost("/login", Endpoints.LoginAsync).AddOpenApiOperationTransformer((operation, context, ct) =>
+    {
+        operation.Summary = "Get a token";
+        operation.Description = "Provide your credentials from ops.acceleratenetworks.com to get an accessToken to query this API.";
+        return Task.CompletedTask;
+    }); 
 
     // These two endpoints /login and /refresh were extracted from app.MapGroup("/auth").MapIdentityApi<IdentityUser>(); to hide the registration endpoint.
-    app.MapPost("/refresh", Endpoints.RefreshTokenAsync);
+    app.MapPost("/refresh", Endpoints.RefreshTokenAsync).AddOpenApiOperationTransformer((operation, context, ct) =>
+    {
+        operation.Summary = "Refresh a token";
+        operation.Description = "Provide the refresh token from the response to /login endpoint to get a new token.";
+        return Task.CompletedTask;
+    });
 
     app.MapGet("/client", Endpoints.ClientByDialedNumberAsync)
         .RequireAuthorization("api")
         .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            operation.Summary = "Lookup a specific client registration using the dialed number.";
+            operation.Summary = "Lookup a specific client registration using the dialed number";
             operation.Description = "Use this to see if a dialed number is registered and find out what callback Url its registered to.";
             return Task.CompletedTask;
         });
@@ -261,7 +249,7 @@ try
         .RequireAuthorization("api")
         .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            operation.Summary = "View all registered clients.";
+            operation.Summary = "View all registered clients";
             operation.Description = "This is intended to be used for debugging client registrations.";
             return Task.CompletedTask;
         });
@@ -270,8 +258,8 @@ try
         .RequireAuthorization("api")
         .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            operation.Summary = "View all registered clients.";
-            operation.Description = "This is intended to be used for debugging client registrations.";
+            operation.Summary = "View usage stats for all registered clients";
+            operation.Description = "This is intended to be used for debugging client registrations and reporting tasks.";
             return Task.CompletedTask;
         });
 
@@ -279,8 +267,8 @@ try
         .RequireAuthorization("api")
         .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            operation.Summary = "Register a client for message forwarding.";
-            operation.Description = "Boy I wish I had more to say about this, lmao.";
+            operation.Summary = "Register a client";
+            operation.Description = "To recieve messages, clients (a phone number and a callback url) will have to be registered using this endpoint.";
             return Task.CompletedTask;
         });
 
@@ -288,8 +276,8 @@ try
         .RequireAuthorization("api")
         .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            operation.Summary = "Register a client for message forwarding.";
-            operation.Description = "Boy I wish I had more to say about this, lmao.";
+            operation.Summary = "Remove a registered client";
+            operation.Description = "Remove a client registration to stop message forwarding.";
             return Task.CompletedTask;
         });
 
@@ -297,7 +285,7 @@ try
         .RequireAuthorization("api")
         .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            operation.Summary = "Send a test message to a registered number to verify that it works correctly.";
+            operation.Summary = "Send a test message to a registered number to verify that it works correctly";
             operation.Description = "Because this API is a middleman between the vendor and the client app we can send outbound SMS/MMS messages on behalf of a number that is registered with this app so that the vendor will reply to us with an inbound message matching the outbound message we sent. This allows us to verify that the registered number is routed and configured correctly for messaging service.";
             return Task.CompletedTask;
         });
@@ -306,7 +294,7 @@ try
         .RequireAuthorization("api")
         .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            operation.Summary = "View all sent and received messages.";
+            operation.Summary = "View all sent and received messages";
             operation.Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems.";
             return Task.CompletedTask;
         });
@@ -315,7 +303,7 @@ try
         .RequireAuthorization("api")
         .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            operation.Summary = "View all sent and received messages that failed.";
+            operation.Summary = "View all sent and received messages that failed";
             operation.Description = "This is intended to help you debug problems with message sending and delivery so you can see if it's this API or the upstream vendor that is causing problems.";
             return Task.CompletedTask;
         });
@@ -324,7 +312,7 @@ try
         .RequireAuthorization("api")
         .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            operation.Summary = "Replay an inbound message.";
+            operation.Summary = "Replay an inbound message";
             operation.Description = "This is intended to help you debug problems with message delivery so you can see if it's this API or the client app that is causing problems.";
             return Task.CompletedTask;
         });
@@ -333,7 +321,7 @@ try
         .RequireAuthorization("api")
         .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            operation.Summary = "Send an SMS or MMS Message.";
+            operation.Summary = "Send an SMS or MMS Message";
             operation.Description = "Submit outbound messages to this endpoint. The 'to' field is a comma separated list of dialed numbers, or a single dialed number without commas. The 'msisdn' the dialed number of the client that is sending the message. The 'message' field is a string. No validation of the message field occurs before it is forwarded to our upstream vendors. If you include any file paths in the MediaURLs array the message will be sent as an MMS. If the Message field is loner than 160 characters, but less than 1600 characters, the message will be sent as an MMS, not an SMS, even if no MediaURLs are provided.";
             return Task.CompletedTask;
         });
@@ -660,7 +648,7 @@ try
     app.MapPost("/api/inbound/1pcom", Endpoints.InboundSMSFirstPointComAsync)
         .AddOpenApiOperationTransformer((operation, context, ct) =>
         {
-            operation.Summary = "For use by First Point Communications only.";
+            operation.Summary = "For use by First Point Communications only";
             operation.Description = "Receives incoming messages from our upstream provider. Forwards valid SMS messages to clients registered through the /client/register endpoint. Forwarded messages are in the form described by the MessageRecord entry in the Schema's section of this page. The is no request body as the data provided by First Point Communications is UrlEncoded like POSTing form data rather than JSON formatted in body of the POST request. The Token is a secret created and maintained by First Point Communications. This endpoint is not for use by anyone other than First Point Communications. It is documented here to help developers understand how incoming messages are forwarded to the client that they have registered with this API. The Messaging.Tests project is a series of functional tests that verify the behavior of this endpoint, because this method of message passing is so chaotic.";
             return Task.CompletedTask;
         });
@@ -700,6 +688,30 @@ finally
     Log.CloseAndFlush();
 }
 
+
+
+internal sealed class BearerSecuritySchemeTransformer(IAuthenticationSchemeProvider authenticationSchemeProvider) : IOpenApiDocumentTransformer
+{
+    public async Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
+    {
+        var authenticationSchemes = await authenticationSchemeProvider.GetAllSchemesAsync();
+        if (authenticationSchemes.Any(authScheme => authScheme.Name == "Bearer"))
+        {
+            var securitySchemes = new Dictionary<string, IOpenApiSecurityScheme>
+            {
+                ["Bearer"] = new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer", // "bearer" refers to the header name here
+                    In = ParameterLocation.Header,
+                    BearerFormat = "Json Web Token"
+                }
+            };
+            document.Components ??= new OpenApiComponents();
+            document.Components.SecuritySchemes = securitySchemes;
+        }
+    }
+}
 public static class Endpoints
 {
     public static async Task<Results<Ok<AccessTokenResponse>, EmptyHttpResult, ProblemHttpResult>>
