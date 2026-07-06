@@ -1,19 +1,21 @@
 using Microsoft.OpenApi;
 using Microsoft.AspNetCore.OpenApi;
+
+using NumberSearch.Mvc.Controllers;
 using NumberSearch.Mvc.Models;
 using NumberSearch.Mvc.WorkerServices;
 
 using Prometheus;
+
+using Scalar.AspNetCore;
 
 using Serilog;
 
 using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
-using System.Reflection;
 using System.Threading.RateLimiting;
 
-using Scalar.AspNetCore;
 using ZLinq;
 
 namespace NumberSearch.Mvc
@@ -218,6 +220,22 @@ namespace NumberSearch.Mvc
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapGet("/Number/Search/Bulk", Endpoints.NumberSearchBulkAsync)
+                .AddOpenApiOperationTransformer((operation, context, ct) =>
+                {
+                    operation.Summary = "Lookup a list of dialed numbers";
+                    operation.Description = "Get detailed information about a list of North American phone numbers.";
+                    return Task.CompletedTask;
+                }).CacheOutput();
+
+                endpoints.MapGet("/Internet/Providers/Availability​", Endpoints.FCCStateGeoIdLookup)
+                .AddOpenApiOperationTransformer((operation, context, ct) =>
+                {
+                    operation.Summary = "Lookup internet provider availability by state and geo ID";
+                    operation.Description = "Get information about internet provider availability in a specific state and geographic area.";
+                    return Task.CompletedTask;
+                }).CacheOutput();
+
                 // Map OpenAPI and Scalar API reference on the endpoint builder
                 endpoints.MapOpenApi();
                 endpoints.MapScalarApiReference();
