@@ -236,6 +236,15 @@ namespace NumberSearch.Mvc
                     return Task.CompletedTask;
                 }).CacheOutput();
 
+                endpoints.MapGet("/v2/PhoneNumbers/{PhoneNumber}​", Endpoints.LookupAPIV2)
+                .AddOpenApiOperationTransformer((operation, context, ct) =>
+                {
+                    operation.Summary = "Lookup a phone number";
+                    operation.Description = "The Lookup API allows you to query information on a phone number so that you can make a trusted interaction with your user. " +
+                    "With this endpoint, you can format and validate phone numbers and add on data packages to get even more in-depth carrier and caller information. ";
+                    return Task.CompletedTask;
+                }).CacheOutput();
+
                 // Map OpenAPI and Scalar API reference on the endpoint builder
                 endpoints.MapOpenApi();
                 endpoints.MapScalarApiReference();

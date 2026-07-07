@@ -10,6 +10,7 @@ using NumberSearch.Mvc.Models;
 using PhoneNumbersNA;
 
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO.Compression;
 
@@ -102,7 +103,7 @@ namespace NumberSearch.Mvc.Controllers
         /// <param name="up"></param>
         /// <param name="serviceId"></param>
         public readonly record struct ProviderGeoSpeeds(string geoid, string frn, string provider, string technology, string techdesc, decimal down, decimal up, Guid serviceId);
-        
+
         /// <summary>
         /// Represents the technical description for a specific technology.
         /// </summary>
@@ -207,6 +208,84 @@ namespace NumberSearch.Mvc.Controllers
             {
                 return TypedResults.BadRequest("No geoid provided (ex: 530330060001014). Please try a different query. 🥺👉👈");
             }
+        }
+
+        /// <summary>
+        /// https://www.twilio.com/docs/lookup/v2-api
+        /// </summary>
+        /// <param name="calling_country_code">International dialing prefix of the phone number defined in the E.164 standard.</param>
+        /// <param name="country_code">The phone number's ISO country code.</param>
+        /// <param name="phone_number">The phone number in E.164 format, which consists of a + followed by the country code and subscriber number.</param>
+        /// <param name="national_format">The phone number in national format.</param>
+        /// <param name="valid">Boolean which indicates if the phone number is in a valid range that can be freely assigned by a carrier to a user.</param>
+        /// <param name="validation_errors">Contains reasons why a phone number is invalid. Possible values: TOO_SHORT, TOO_LONG, INVALID_BUT_POSSIBLE, INVALID_COUNTRY_CODE, INVALID_LENGTH, NOT_A_NUMBER.</param>
+        /// <param name="caller_name">An object that contains caller name information based on CNAM.</param>
+        /// <param name="sim_swap">An object that contains information on the last date the subscriber identity module (SIM) was changed for a mobile phone number.</param>
+        /// <param name="call_forwarding">An object that contains information on the unconditional call forwarding status of mobile phone number.</param>
+        /// <param name="line_status">An object that contains line status information for a mobile phone number.</param>
+        /// <param name="line_type_intelligence">An object that contains line type information including the carrier name, mobile country code, and mobile network code.</param>
+        /// <param name="identity_match">An object that contains identity match information. The result of comparing user-provided information including name, address, date of birth, national ID, against authoritative phone-based data sources.</param>
+        /// <param name="reassigned_number">An object that contains reassigned number information. Reassigned Numbers will return a phone number's reassignment status given a phone number and date.</param>
+        /// <param name="sms_pumping_risk">An object that contains information on if a phone number has been currently or previously blocked by Verify Fraud Guard for receiving malicious SMS pumping traffic as well as other signals associated with risky carriers and low conversion rates.</param>
+        /// <param name="phone_number_quality_score">An object that contains information of a mobile phone number quality score. Quality score will return a risk score about the phone number.</param>
+        /// <param name="pre_fill">An object that contains pre fill information. pre_fill will return PII information associated with the phone number like first name, last name, address line, country code, state and postal code.</param>
+        /// <param name="url">The absolute URL of the resource.</param>
+        public readonly record struct NumberLookupResponse(
+             string calling_country_code,
+             string country_code,
+             string phone_number,
+             string national_format,
+             bool valid,
+             string[] validation_errors,
+             CallerName? caller_name,
+             SimSwap? sim_swap,
+             CallForwarding? call_forwarding,
+             LineStatus? line_status,
+             LineTypeIntelligence? line_type_intelligence,
+             IdentityMatch? identity_match,
+             ReassignedNumber? reassigned_number,
+             SmsPumpingRisk? sms_pumping_risk,
+             object? phone_number_quality_score,
+             object? pre_fill,
+             string url
+        );
+
+        /// <summary>
+        /// https://www.twilio.com/docs/lookup/v2-api/line-type-intelligence
+        /// </summary>
+        /// <param name="mobile_country_code">The three-digit mobile country code of the carrier, used with the mobile_network_code to identify a mobile network operator.</param>
+        /// <param name="mobile_network_code">The two- or three-digit mobile network code of the carrier, used with the mobile country code to identify a mobile network operator. This is only returned for mobile numbers.</param>
+        /// <param name="carrier_name">The name of the carrier.</param>
+        /// <param name="type">	The phone number type.</param>
+        /// <param name="error_code">The error code. If there's no error, this value will be null.</param>
+        public readonly record struct LineTypeIntelligence(string mobile_country_code, string mobile_network_code, string carrier_name, string type, int error_code);
+        /// <summary>
+        /// https://www.twilio.com/docs/lookup/v2-api/caller-name
+        /// </summary>
+        /// <param name="caller_name">The name of the owner of the phone number. If not available, this will be null.</param>
+        /// <param name="caller_type">The caller type. Possible values are BUSINESS and CONSUMER. If not available, this will be null.</param>
+        /// <param name="error_code">The error code, if any, associated with your request.</param>
+        public readonly record struct CallerName(string caller_name, string caller_type, int error_code);
+        public readonly record struct SimSwap(LastSimSwap last_sim_swap, string carrier_name, string mobile_country_code, string mobile_network_code, int error_code);
+        public readonly record struct LastSimSwap(DateTime last_sim_swap_date, string swapped_period, bool swapped_in_period);
+        public readonly record struct CallForwarding(bool call_forwarding_enabled, int error_code);
+        public readonly record struct ReassignedNumber(string is_number_reassigned, int error_code);
+        public readonly record struct LineStatus(string status, int error_code);
+        public readonly record struct IdentityMatch(bool identity_match, int error_code);
+        /// <summary>
+        /// https://www.twilio.com/docs/lookup/v2-api/sms-pumping-risk
+        /// </summary>
+        /// <param name="carrier_risk_category">The risk category of the carrier based on its score. Available values are high, moderate, mild, and low.</param>
+        /// <param name="number_blocked">A Boolean indicating whether the phone number is currently blocked by Verify Fraud Guard for receiving malicious SMS pumping traffic.</param>
+        /// <param name="number_blocked_date">The most recent date the phone number was blocked by Verify Fraud Guard. Returns null if the phone number has never been blocked or processed by Verify Fraud Guard.</param>
+        /// <param name="number_blocked_last_3_months">A Boolean indicating whether the phone number has been blocked by Verify Fraud Guard in the last three months. Returns null if the phone number has never been processed by Verify Fraud Guard.</param>
+        /// <param name="sms_pumping_risk_score">The risk score for the phone number, calculated from patterns in messaging traffic. Ranges from 0 (no risk) to 100 (high risk).</param>
+        /// <param name="error_code">The error code, if any, associated with your request.</param>
+        public readonly record struct SmsPumpingRisk(string carrier_risk_category, bool number_blocked, DateTime? number_blocked_date, bool? number_blocked_last_3_months, int sms_pumping_risk_score, int error_code);
+
+        public static async Task<Results<Ok<NumberLookupResponse>, BadRequest<string>>> LookupAPIV2([Required] string PhoneNumber, [FromServices] MvcConfiguration mvcConfiguration)
+        {
+            return TypedResults.Ok(new NumberLookupResponse());
         }
     }
 }
