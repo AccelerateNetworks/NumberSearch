@@ -324,6 +324,44 @@
                             </div>
                         </div>
                     </div>
+@*                     <div class="card mb-4 shadow rounded-3">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal">Phone Number Lookups</h4>
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title pricing-card-title">$25 <small class="text-muted">/ mo</small></h1>
+                            <ul class="list-unstyled mt-3 mb-4">
+                                <li>Verify Caller Name</li>
+                                <li>Verify SMS and MMS Support</li>
+                                <li>Know your customer</li>
+                            </ul>
+                            <div class="btn-group">
+                                <div class="input-group input-group-lg">
+                                    @{
+                                        var apiaccess = Model?.Cart?.ProductOrders?.Where(x => x.ServiceId == Guid.Parse("86a8576f-15e4-4547-8705-7c98dbe5e58d")).FirstOrDefault();
+                                        if (webtexting is not null && webtexting.Quantity > 0)
+                                        {
+                                            <input id="86a8576f-15e4-4547-8705-7c98dbe5e58d" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2" value="@webtexting?.Quantity">
+                                            <div class="input-group-append">
+                                                <button onclick="RemoveFromCart('Service','86a8576f-15e4-4547-8705-7c98dbe5e58d', $('#86a8576f-15e4-4547-8705-7c98dbe5e58d').val(), this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <input id="86a8576f-15e4-4547-8705-7c98dbe5e58d" type="number" min="0" class="form-control form-control" name="Quantity" placeholder="Quantity" aria-label="Quantity" aria-describedby="button-addon2">
+                                            <div class="input-group-append">
+                                                <button onclick="AddToCart('Service','86a8576f-15e4-4547-8705-7c98dbe5e58d', $('#86a8576f-15e4-4547-8705-7c98dbe5e58d').val(), this)" class="btn btn-outline-primary">
+                                                    <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span>
+                                                    Add to Cart
+                                                </button>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+ *@
                 </div>
                 <div class="card-deck text-center">
                     <div class="card mb-4 shadow rounded-3">

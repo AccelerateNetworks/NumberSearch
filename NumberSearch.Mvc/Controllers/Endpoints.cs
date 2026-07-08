@@ -10,7 +10,6 @@ using NumberSearch.Mvc.Models;
 using PhoneNumbersNA;
 
 using System.Collections.Concurrent;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO.Compression;
 
@@ -258,14 +257,14 @@ namespace NumberSearch.Mvc.Controllers
         /// <param name="carrier_name">The name of the carrier.</param>
         /// <param name="type">	The phone number type.</param>
         /// <param name="error_code">The error code. If there's no error, this value will be null.</param>
-        public readonly record struct LineTypeIntelligence(string mobile_country_code, string mobile_network_code, string carrier_name, string type, int error_code);
+        public readonly record struct LineTypeIntelligence(string mobile_country_code, string mobile_network_code, string carrier_name, string type, int? error_code);
         /// <summary>
         /// https://www.twilio.com/docs/lookup/v2-api/caller-name
         /// </summary>
         /// <param name="caller_name">The name of the owner of the phone number. If not available, this will be null.</param>
         /// <param name="caller_type">The caller type. Possible values are BUSINESS and CONSUMER. If not available, this will be null.</param>
         /// <param name="error_code">The error code, if any, associated with your request.</param>
-        public readonly record struct CallerName(string caller_name, string caller_type, int error_code);
+        public readonly record struct CallerName(string caller_name, string caller_type, int? error_code);
         public readonly record struct SimSwap(LastSimSwap last_sim_swap, string carrier_name, string mobile_country_code, string mobile_network_code, int error_code);
         public readonly record struct LastSimSwap(DateTime last_sim_swap_date, string swapped_period, bool swapped_in_period);
         public readonly record struct CallForwarding(bool call_forwarding_enabled, int error_code);
@@ -283,9 +282,87 @@ namespace NumberSearch.Mvc.Controllers
         /// <param name="error_code">The error code, if any, associated with your request.</param>
         public readonly record struct SmsPumpingRisk(string carrier_risk_category, bool number_blocked, DateTime? number_blocked_date, bool? number_blocked_last_3_months, int sms_pumping_risk_score, int error_code);
 
-        public static async Task<Results<Ok<NumberLookupResponse>, BadRequest<string>>> LookupAPIV2([Required] string PhoneNumber, [FromServices] MvcConfiguration mvcConfiguration)
+        public static async Task<Results<Ok<NumberLookupResponse>, BadRequest<string>>> LookupAPIV2([Required] string PhoneNumber, string? Fields, [FromServices] MvcConfiguration mvcConfiguration)
         {
-            return TypedResults.Ok(new NumberLookupResponse());
+            if (string.IsNullOrWhiteSpace(Fields))
+            {
+                return TypedResults.BadRequest("Fields parameter is required. Ex: Fields=line_type_intelligence or Fields=caller_name");
+            }
+
+            string[] fieldsArray = Fields.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            if (Fields is "line_type_intelligence")
+            {
+                return TypedResults.Ok(new NumberLookupResponse(
+                    calling_country_code: "+1",
+                    country_code: "US",
+                    phone_number: PhoneNumber,
+                    national_format: "(555) 555-5555",
+                    valid: true,
+                    validation_errors: Array.Empty<string>(),
+                    caller_name: null,
+                    sim_swap: null,
+                    call_forwarding: null,
+                    line_status: null,
+                    line_type_intelligence: new LineTypeIntelligence("310", "260", "T-Mobile", "mobile", null),
+                    identity_match: null,
+                    reassigned_number: null,
+                    sms_pumping_risk: null,
+                    phone_number_quality_score: null,
+                    pre_fill: null,
+                    url: $"https://api.example.com/lookup/v2/phone_numbers/{PhoneNumber}?fields=line_type_intelligence"
+                ));
+            }
+            else if (Fields is "caller_name")
+            {
+                return TypedResults.Ok(new NumberLookupResponse(
+                    calling_country_code: "+1",
+                    country_code: "US",
+                    phone_number: PhoneNumber,
+                    national_format: "(555) 555-5555",
+                    valid: true,
+                    validation_errors: Array.Empty<string>(),
+                    caller_name: new CallerName("John Doe", "CONSUMER", null),
+                    sim_swap: null,
+                    call_forwarding: null,
+                    line_status: null,
+                    line_type_intelligence: null,
+                    identity_match: null,
+                    reassigned_number: null,
+                    sms_pumping_risk: null,
+                    phone_number_quality_score: null,
+                    pre_fill: null,
+                    url: $"https://api.example.com/lookup/v2/phone_numbers/{PhoneNumber}?fields=caller_name"
+                ));
+            }
+            else if (Fields is "sim_swap")
+            {
+                return TypedResults.BadRequest("Fields sim_swap is not supported.");
+            }
+            else if (Fields is "call_forwarding")
+            {
+                return TypedResults.BadRequest("Fields call_forwarding is not supported.");
+            }
+            else if (Fields is "line_status")
+            {
+                return TypedResults.BadRequest("Fields line_status is not supported.");
+            }
+            else if (Fields is "identity_match")
+            {
+                return TypedResults.BadRequest("Fields identity_match is not supported.");
+            }
+            else if (Fields is "reassigned_number")
+            {
+                return TypedResults.BadRequest("Fields reassigned_number is not supported.");
+            }
+            else if (Fields is "sms_pumping_risk")
+            {
+                return TypedResults.BadRequest("Fields sms_pumping_risk is not supported.");
+            }
+            else
+            {
+                return TypedResults.BadRequest("Invalid Fields parameter. Please specify a valid field to look up.");
+            }
         }
     }
 }
