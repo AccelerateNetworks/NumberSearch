@@ -621,6 +621,19 @@ namespace NumberSearch.Tests
         //    output.WriteLine(JsonSerializer.Serialize(result));
         //}
 
+        [Fact]
+        public async Task GetFBXUsers()
+        {
+            // Arrange
+
+            // Act
+            var result = await User.GetAllUsersAsync(_configuration.FusionPBXConnectionString.AsMemory());
+
+            // Assert        
+            Assert.True(result.Length > 0);
+            output.WriteLine(result.Length.ToString());
+            output.WriteLine(JsonSerializer.Serialize(result));
+        }
 
         [Fact]
         public async Task GetDestinationDetailsAsync()
