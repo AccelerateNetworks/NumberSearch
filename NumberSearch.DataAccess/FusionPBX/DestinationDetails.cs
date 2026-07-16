@@ -51,14 +51,43 @@ namespace NumberSearch.DataAccess.FusionPBX
     DateTime? update_date,
     Guid? update_user)
     {
+        // FusionPBX generally stores destination numbers as plain 10 digit numbers like 2065551234,
+        // so strip formatting and the NANP country code prefix from numbers like +12065551234 and 12065551234.
+        public static string ToDestinationNumberFormat(ReadOnlyMemory<char> dialedNumber)
+        {
+            string digits = string.Concat(dialedNumber.ToString().Where(char.IsAsciiDigit));
+
+            return digits.Length is 11 && digits[0] is '1' ? digits[1..] : digits;
+        }
+
         public static async Task<DestinationDetails> GetByDialedNumberAsync(ReadOnlyMemory<char> dialedNumber, ReadOnlyMemory<char> connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString.ToString());
-            string number = dialedNumber.ToString();
+            string number = ToDestinationNumberFormat(dialedNumber);
+            // Match on the trailing digits so that values stored with a prefix like 12065551234 or +12065551234 still match.
             DestinationDetails result = await connection
-                .QueryFirstOrDefaultAsync<DestinationDetails>("SELECT * FROM v_destinations WHERE destination_number = @number", new { number });
+                .QueryFirstOrDefaultAsync<DestinationDetails>("SELECT * FROM v_destinations WHERE destination_number = @number OR destination_number LIKE '%' || @number", new { number });
 
             return result;
+        }
+
+        public static async Task<DestinationDetails> GetByDialedNumberAndDomainAsync(ReadOnlyMemory<char> dialedNumber, Guid domainUUID, ReadOnlyMemory<char> connectionString)
+        {
+            await using var connection = new NpgsqlConnection(connectionString.ToString());
+            string number = ToDestinationNumberFormat(dialedNumber);
+            DestinationDetails result = await connection
+                .QueryFirstOrDefaultAsync<DestinationDetails>("SELECT * FROM v_destinations WHERE domain_uuid = @domainUUID AND (destination_number = @number OR destination_number LIKE '%' || @number)", new { domainUUID, number });
+
+            return result;
+        }
+
+        public static async Task<DestinationDetails[]> GetByDomainIdAsync(Guid domainUUID, ReadOnlyMemory<char> connectionString)
+        {
+            await using var connection = new NpgsqlConnection(connectionString.ToString());
+            var result = await connection
+                .QueryAsync<DestinationDetails>("SELECT * FROM v_destinations WHERE domain_uuid = @domainUUID", new { domainUUID });
+
+            return [.. result];
         }
     }
 

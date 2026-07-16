@@ -636,6 +636,70 @@ namespace NumberSearch.Tests
         }
 
         [Fact]
+        public async Task GetFBXUserByApiKey()
+        {
+            // Arrange
+            var users = await User.GetAllUsersAsync(_configuration.FusionPBXConnectionString.AsMemory());
+            var userWithKey = users.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.api_key));
+
+            // Act
+            var result = await User.GetByApiKeyAsync(userWithKey.api_key.AsMemory(), _configuration.FusionPBXConnectionString.AsMemory());
+            var invalid = await User.GetByApiKeyAsync("thisIsNotARealFBXApiKey".AsMemory(), _configuration.FusionPBXConnectionString.AsMemory());
+
+            // Assert        
+            Assert.Equal(userWithKey.user_uuid, result.user_uuid);
+            Assert.Equal(Guid.Empty, invalid.user_uuid);
+            output.WriteLine(JsonSerializer.Serialize(result));
+        }
+
+        [Fact]
+        public void FormatDialedNumberForDestinationMatching()
+        {
+            // FusionPBX generally stores destination numbers as plain 10 digit numbers like 2065551234.
+            Assert.Equal("2065551234", DestinationDetails.ToDestinationNumberFormat("2065551234".AsMemory()));
+            Assert.Equal("2065551234", DestinationDetails.ToDestinationNumberFormat("12065551234".AsMemory()));
+            Assert.Equal("2065551234", DestinationDetails.ToDestinationNumberFormat("+12065551234".AsMemory()));
+            Assert.Equal("2065551234", DestinationDetails.ToDestinationNumberFormat("(206) 555-1234".AsMemory()));
+        }
+
+        [Fact]
+        public async Task GetFBXDestinationByPrefixedNumbers()
+        {
+            // Arrange
+
+            // Act
+            var plain = await DestinationDetails.GetByDialedNumberAsync("4254541206".AsMemory(), _configuration.FusionPBXConnectionString.AsMemory());
+            var onePrefixed = await DestinationDetails.GetByDialedNumberAsync("14254541206".AsMemory(), _configuration.FusionPBXConnectionString.AsMemory());
+            var e164 = await DestinationDetails.GetByDialedNumberAsync("+14254541206".AsMemory(), _configuration.FusionPBXConnectionString.AsMemory());
+
+            // Assert        
+            Assert.NotEqual(Guid.Empty, plain.destination_uuid);
+            Assert.Equal(plain.destination_uuid, onePrefixed.destination_uuid);
+            Assert.Equal(plain.destination_uuid, e164.destination_uuid);
+            output.WriteLine(JsonSerializer.Serialize(plain));
+        }
+
+        [Fact]
+        public async Task GetFBXDestinationsByDomain()
+        {
+            // Arrange
+            var destination = await DestinationDetails.GetByDialedNumberAsync("4254541206".AsMemory(), _configuration.FusionPBXConnectionString.AsMemory());
+
+            // Act
+            var result = await DestinationDetails.GetByDomainIdAsync(destination.domain_uuid ?? Guid.Empty, _configuration.FusionPBXConnectionString.AsMemory());
+            var matched = await DestinationDetails.GetByDialedNumberAndDomainAsync("+14254541206".AsMemory(), destination.domain_uuid ?? Guid.Empty, _configuration.FusionPBXConnectionString.AsMemory());
+            var wrongDomain = await DestinationDetails.GetByDialedNumberAndDomainAsync("+14254541206".AsMemory(), Guid.NewGuid(), _configuration.FusionPBXConnectionString.AsMemory());
+
+            // Assert        
+            Assert.True(result.Length > 0);
+            Assert.Contains(result, x => x.destination_uuid == destination.destination_uuid);
+            Assert.Equal(destination.destination_uuid, matched.destination_uuid);
+            Assert.Equal(Guid.Empty, wrongDomain.destination_uuid);
+            output.WriteLine(result.Length.ToString());
+            output.WriteLine(JsonSerializer.Serialize(matched));
+        }
+
+        [Fact]
         public async Task GetDestinationDetailsAsync()
         {
             // Arrange

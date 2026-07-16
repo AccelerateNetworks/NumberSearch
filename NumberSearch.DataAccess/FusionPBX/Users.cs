@@ -31,5 +31,14 @@ namespace NumberSearch.DataAccess.FusionPBX
 
             return [.. result];
         }
+
+        public static async Task<User> GetByApiKeyAsync(ReadOnlyMemory<char> apiKey, ReadOnlyMemory<char> connectionString)
+        {
+            await using var connection = new NpgsqlConnection(connectionString.ToString());
+            var result = await connection
+                .QueryFirstOrDefaultAsync<User>("SELECT * FROM v_users WHERE api_key = @api_key", new { api_key = apiKey.ToString() });
+
+            return result;
+        }
     }
 }
