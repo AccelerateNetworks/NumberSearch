@@ -71,16 +71,13 @@
                                     <th>
                                         Phone Number
                                     </th>
-                                    <th class="d-none d-md-table-cell">
-                                        Last Ported
-                                    </th>
                                     <th class="d-none d-lg-table-cell">
                                         Caller Name
                                     </th>
                                     <th>
                                         Carrier
                                     </th>
-                                    <th class="d-none d-md-table-cell">OCN, SPID, and LEC</th>
+                                    <th class="d-none d-md-table-cell">LEC</th>
                                     <th class="d-none d-md-table-cell">
                                         Action
                                     </th>
@@ -95,21 +92,11 @@
                                     <tr style="@color">
                                         <td>
                                             <h4>@number?.PortedDialedNumber</h4>
-                                            <p class="m-0">
-                                                Local Routing #
-                                            </p>
-                                            <h6 class="m-0">@number?.LrnLookup?.LRN</h6>
                                             <p class="m-0 d-lg-none">
                                                 Caller Name
                                             </p>
                                             <h6 class="m-0 d-lg-none">
                                                 @number?.LrnLookup?.LIDBName
-                                            </h6>
-                                            <p class="m-0 d-md-none">
-                                                Last Ported
-                                            </p>
-                                            <h6 class="m-0 d-md-none">
-                                                @number?.LrnLookup?.LastPorted.ToShortDateString()
                                             </h6>
                                             <p class="pt-3 m-0">
                                                 @{
@@ -130,25 +117,16 @@
                                                 }
                                             </p>
                                         </td>
-                                        <td class="d-none d-md-table-cell">
-                                            @number?.LrnLookup?.LastPorted.ToShortDateString()
-                                        </td>
                                         <td class="d-none d-lg-table-cell">
                                             @number?.LrnLookup?.LIDBName
                                         </td>
                                         <td>
                                             @if (number?.Carrier is not null)
                                             {
-                                                <img src="@number.Carrier.LogoLink" alt="@number.Carrier.Name" title="LRN @number.LrnLookup.LRN" class="img-fluid p-1" style="max-height:5rem">
+                                                <img src="@number.Carrier.LogoLink" alt="@number.Carrier.Name" class="img-fluid p-1" style="max-height:5rem">
                                             }
                                             else
                                             {
-                                                <p class="m-0 d-none d-md-block">
-                                                    SPID
-                                                </p>
-                                                <p class="m-0 d-none d-md-block">
-                                                    @number?.LrnLookup?.SPID
-                                                </p>
                                                 <p class="m-0 d-none d-md-block">
                                                     LEC
                                                 </p>
@@ -177,25 +155,11 @@
                                                 }
                                             }
                                             <p class="m-0 d-md-none">
-                                                OCN
-                                            </p>
-                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.OCN</h6>
-                                            <p class="m-0 d-md-none">
-                                                SPID
-                                            </p>
-                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.SPID</h6>
-                                            <p class="m-0 d-md-none">
                                                 LEC
                                             </p>
                                             <h6 class="m-0 d-md-none">@number?.LrnLookup?.LEC</h6>
                                         </td>
                                         <td class="d-none d-md-table-cell">
-                                            <p class="m-0">
-                                                @number?.LrnLookup?.OCN
-                                            </p>
-                                            <p class="m-0">
-                                                @number?.LrnLookup?.SPID
-                                            </p>
                                             <p class="m-0">
                                                 @number?.LrnLookup?.LEC
                                             </p>

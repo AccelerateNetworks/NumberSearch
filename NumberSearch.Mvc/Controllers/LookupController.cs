@@ -130,6 +130,88 @@ namespace NumberSearch.Mvc.Controllers
         [ValidateAntiForgeryToken]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         [OutputCache(Duration = 3600, VaryByQueryKeys = ["dialedNumber"])]
+        public async Task<IActionResult> PortingAsync([Bind("dialedNumber")] string dialedNumber)
+        {
+            // Add portable numbers to cart in bulk
+            if (!string.IsNullOrWhiteSpace(dialedNumber))
+            {
+                var parsedNumbers = dialedNumber.ExtractDialedNumbers().ToArray();
+
+                if (parsedNumbers.Length.Equals(0))
+                {
+                    return View("Porting", new LookupResults
+                    {
+                        Message = "No dialed phone numbers found. Please try a different query. 🥺👉👈"
+                    });
+                }
+
+                var cart = Cart.GetFromSession(HttpContext.Session);
+
+                // If they have an invalid Session we don't want to waste any time running queries for them.
+                if (string.IsNullOrWhiteSpace(HttpContext.Session.Id) || !HttpContext.Session.IsAvailable || cart is null)
+                {
+                    return View("Porting");
+                }
+
+                var results = new ConcurrentBag<PortedPhoneNumber>();
+                await Parallel.ForEachAsync(parsedNumbers, async (number, token) =>
+                {
+                    var result = await VerifyPortabilityAsync(number);
+                    results.Add(result);
+                });
+
+                var portableNumbers = results.AsValueEnumerable().Where(x => x.Portable && x.Wireless is false).ToArray();
+                var notPortable = results.AsValueEnumerable().Where(x => x.Portable is false).Select(x => x.PortedDialedNumber).ToArray();
+
+                // Separate wireless numbers out from the rest.
+                var wirelessPortable = results.AsValueEnumerable().Where(x => x.Wireless && x.Portable).ToArray();
+
+                // Add all the numbers to the cart.
+                foreach (var portableNumber in portableNumbers)
+                {
+                    var portedNumber = cart.PortedPhoneNumbers?.AsValueEnumerable().Where(x => x.PortedDialedNumber == portableNumber.PortedDialedNumber).FirstOrDefault();
+
+                    if (portedNumber is null)
+                    {
+                        var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), PortedDialedNumber = portableNumber.PortedDialedNumber, PortedPhoneNumberId = portableNumber.PortedPhoneNumberId, Quantity = 1 };
+                        var local = portableNumber;
+                        var checkAdd = cart.AddPortedPhoneNumber(ref local, ref productOrder);
+                    }
+                }
+
+                foreach (var wirelessNumber in wirelessPortable)
+                {
+                    var portedNumber = cart.PortedPhoneNumbers?.AsValueEnumerable().Where(x => x.PortedDialedNumber == wirelessNumber.PortedDialedNumber).FirstOrDefault();
+
+                    if (portedNumber is null)
+                    {
+                        var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), PortedDialedNumber = wirelessNumber.PortedDialedNumber, PortedPhoneNumberId = wirelessNumber.PortedPhoneNumberId, Quantity = 1 };
+                        var local = wirelessNumber;
+                        var checkAdd = cart.AddPortedPhoneNumber(ref local, ref productOrder);
+                    }
+                }
+
+                var checkSet = cart.SetToSession(HttpContext.Session);
+
+                return View("Porting", new LookupResults
+                {
+                    DialedNumber = dialedNumber,
+                    Portable = portableNumbers,
+                    Wireless = wirelessPortable,
+                    NotPortable = notPortable,
+                    Cart = cart
+                });
+            }
+            else
+            {
+                return View("Porting");
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        [OutputCache(Duration = 3600, VaryByQueryKeys = ["dialedNumber"])]
         public async Task<IActionResult> ToCSVAsync([Bind("dialedNumber")] string dialedNumber)
         {
             // Add portable numbers to cart in bulk
