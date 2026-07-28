@@ -1955,7 +1955,9 @@ Accelerate Networks
             var lookup = new LookupClient();
             var result = await lookup.QueryAsync(emailDomain.Host, QueryType.MX);
             var record = result.Answers.MxRecords().AsValueEnumerable().FirstOrDefault();
-            return new ValidEmail(emailDomain, record is not null);
+            // RFC 7505 "null MX" (a lone record with Exchange ".") explicitly declares that the domain accepts no mail at all.
+            var acceptsMail = record is not null && record.Exchange.Value != ".";
+            return new ValidEmail(emailDomain, acceptsMail);
         }
 
         public static ref Order ParseAddress(ref Order order)

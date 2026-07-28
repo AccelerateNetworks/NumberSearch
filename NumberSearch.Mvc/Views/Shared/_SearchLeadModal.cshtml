@@ -1,0 +1,69 @@
+@model NumberSearch.Mvc.Models.SearchResults;
+
+@*
+    Blocks the Search page until a new client introduces themselves. The backdrop is static and there is no
+    dismiss control, so the only way past it is a phone number that parses as a dialable North American number
+    and an email address whose domain has an MX record. Both checks are the same ones the Cart checkout runs.
+*@
+<div class="modal fade" id="introductionModal" tabindex="-1" role="dialog" aria-labelledby="introductionModalLabel"
+     data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header text-light" style="background-color: #3279B2">
+                <h5 class="modal-title" id="introductionModalLabel">👋 Let's get to know you</h5>
+            </div>
+            <form method="post" asp-controller="Search" asp-action="Introduction">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Query" value="@Model?.Introduction?.Query" />
+                <input type="hidden" name="City" value="@Model?.Introduction?.City" />
+                <input type="hidden" name="View" value="@Model?.Introduction?.View" />
+                <input type="hidden" name="Page" value="@Model?.Introduction?.Page" />
+                <div class="modal-body">
+                    <p>
+                        Before we show you what's available, we'd like to know who we're helping. Once we do, we can
+                        open up more of the numbers we have on hand, line up the services that actually fit your
+                        business, and make sure a real person on our Seattle team can follow up with you.
+                    </p>
+                    @if (!string.IsNullOrWhiteSpace(Model?.IntroductionMessage))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @Model.IntroductionMessage
+                        </div>
+                    }
+                    <div class="form-group">
+                        <label for="ContactPhoneNumber">Your phone number</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">+1</span>
+                            </div>
+                            <input type="tel" class="form-control form-control-lg" id="ContactPhoneNumber"
+                                   name="ContactPhoneNumber" placeholder="(206) 555-1234" autocomplete="tel"
+                                   value="@Model?.Introduction?.ContactPhoneNumber" required>
+                        </div>
+                        <small class="form-text text-muted">So we can call you back if you'd rather talk it through.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="Email">Your email address</label>
+                        <input type="email" class="form-control form-control-lg" id="Email" name="Email"
+                               placeholder="none@@example.com" autocomplete="email"
+                               value="@Model?.Introduction?.Email" required>
+                        <small class="form-text text-muted">So we can send you your options and a quote.</small>
+                    </div>
+                    <p class="text-muted mb-0">
+                        <small>We use this to help you get set up, and nothing else. No spam, and we never sell it.</small>
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success btn-lg btn-block" onclick="displayBusyIndicator(this)">
+                        Show me the numbers
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#introductionModal').modal({ backdrop: 'static', keyboard: false, show: true });
+    });
+</script>

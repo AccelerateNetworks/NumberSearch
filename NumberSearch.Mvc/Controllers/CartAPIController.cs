@@ -455,36 +455,84 @@ namespace NumberSearch.Mvc.Controllers
 
             var cart = new CartServices(mvcConfiguration, HttpContext);
 
+            IActionResult result;
+
             switch (type)
             {
                 case "PhoneNumber":
-                    return await cart.BuyPhoneNumberAsync(id);
+                    result = await cart.BuyPhoneNumberAsync(id);
+                    break;
                 case "PortedPhoneNumber":
-                    return await cart.PortPhoneNumberAsync(id);
+                    result = await cart.PortPhoneNumberAsync(id);
+                    break;
                 case "Product":
                     var checkProduct = Guid.TryParse(id, out var productId);
                     if (checkProduct)
                     {
-                        return await cart.BuyProductAsync(productId, quantity);
+                        result = await cart.BuyProductAsync(productId, quantity);
                     }
                     else
                     {
                         return BadRequest($"Product Id {id} can't be parsed as a GUID.");
                     }
+                    break;
                 case "Service":
                     var checkService = Guid.TryParse(id, out var serviceId);
                     if (checkService)
                     {
-                        return await cart.BuyServiceAsync(serviceId, quantity);
+                        result = await cart.BuyServiceAsync(serviceId, quantity);
                     }
                     else
                     {
                         return BadRequest($"Service Id {id} can't be parsed as a GUID.");
                     }
+                    break;
                 case "Coupon":
-                    return await cart.AddCouponAsync(id, quantity);
+                    result = await cart.AddCouponAsync(id, quantity);
+                    break;
                 default:
                     return NotFound(ModelState);
+            }
+
+            // Record what our prospective clients are shopping for so that it can be joined back to the contact
+            // information they gave us in the Search page introduction modal.
+            if (result is OkObjectResult)
+            {
+                await LogSearchLeadCartItemAsync(type, id, quantity);
+            }
+
+            return result;
+        }
+
+        private async Task LogSearchLeadCartItemAsync(string type, string id, int quantity)
+        {
+            try
+            {
+                await HttpContext.Session.LoadAsync();
+
+                Guid? searchLeadId = Guid.TryParse(HttpContext.Session.GetString(SearchController.SearchLeadSessionKey), out var parsed) && parsed != Guid.Empty
+                    ? parsed
+                    : null;
+
+                DataAccess.Models.SearchLeadCartItem item = new()
+                {
+                    SearchLeadCartItemId = Guid.NewGuid(),
+                    SearchLeadId = searchLeadId,
+                    SessionId = HttpContext.Session.Id,
+                    ProductType = type,
+                    ProductIdentifier = id,
+                    Quantity = quantity > 0 ? quantity : 1,
+                    DateAddedToCart = DateTime.Now
+                };
+
+                if (!await item.PostAsync(_postgresql))
+                {
+                    Log.Warning("[Cart] Failed to log {ProductType} {ProductIdentifier} added to the cart in session {SessionId}.", type, id, item.SessionId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("[Cart] Failed to log {ProductType} {ProductIdentifier} added to the cart. {Message}", type, id, ex.Message);
             }
         }
 

@@ -34,6 +34,7 @@
         public string PortControlPassword { get; set; } = string.Empty;
         public string PortControlClientId { get; set; } = string.Empty;
         public string PortControlClientSecret { get; set; } = string.Empty;
+        public string SearchToken { get; set; } = string.Empty;
 
     }
 }

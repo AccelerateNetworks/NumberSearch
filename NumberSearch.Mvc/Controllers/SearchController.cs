@@ -1,11 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OutputCaching;
 
+using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Models;
 using NumberSearch.Mvc.Models;
 
+using Serilog;
+
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace NumberSearch.Mvc.Controllers
@@ -15,6 +21,9 @@ namespace NumberSearch.Mvc.Controllers
     {
         private readonly string _postgresql = mvcConfiguration.PostgresqlProd;
         private readonly MvcConfiguration _configuration = mvcConfiguration;
+
+        public const string SearchLeadSessionKey = "SearchLeadId";
+        public const string SearchLeadBypassSessionKey = "SearchLeadBypass";
 
         /// <summary>
         /// This is the default route in this app. It's a search page that allows you to query for available phone numbers.
@@ -27,9 +36,38 @@ namespace NumberSearch.Mvc.Controllers
         /// <returns> A view of nothing, or the result of the query. </returns>
         [HttpGet("Search")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        [OutputCache(Duration = 1, VaryByQueryKeys = ["query", "page", "view"])]
-        public async Task<IActionResult> SearchAsync(string query, string city, string failed, string view, int page = 1)
+        public async Task<IActionResult> SearchAsync(string query, string city, string failed, string view, string token, int page = 1)
         {
+            await HttpContext.Session.LoadAsync();
+
+            // Let us link a client or a partner straight to a set of results without asking them to introduce themselves.
+            if (IsBypassToken(token))
+            {
+                HttpContext.Session.SetString(SearchLeadBypassSessionKey, bool.TrueString);
+                Log.Information("[Search] A visitor used the bypass token to skip the introduction.");
+            }
+
+            // We haven't met yet, so block the page until we have a way to follow up with them.
+            if (!HasIntroduced())
+            {
+                return View("Index", new SearchResults
+                {
+                    Query = query ?? string.Empty,
+                    City = city ?? string.Empty,
+                    View = string.IsNullOrWhiteSpace(view) ? "Recommended" : view,
+                    Page = page < 1 ? 1 : page,
+                    ShowIntroduction = true,
+                    Introduction = new SearchLeadForm
+                    {
+                        Query = query ?? string.Empty,
+                        City = city ?? string.Empty,
+                        View = string.IsNullOrWhiteSpace(view) ? "Recommended" : view,
+                        Page = page < 1 ? 1 : page
+                    },
+                    Cart = Cart.GetFromSession(HttpContext.Session)
+                });
+            }
+
             // Fail fast
             if (string.IsNullOrWhiteSpace(query))
             {
@@ -182,6 +220,171 @@ namespace NumberSearch.Mvc.Controllers
                 Query = query,
                 Cart = cart
             });
+        }
+
+        [HttpPost("Search/Introduction")]
+        [ValidateAntiForgeryToken]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> IntroductionAsync(SearchLeadForm? introduction)
+        {
+            await HttpContext.Session.LoadAsync();
+
+            introduction ??= new SearchLeadForm();
+            introduction.View = string.IsNullOrWhiteSpace(introduction.View) ? "Recommended" : introduction.View;
+            introduction.Page = introduction.Page < 1 ? 1 : introduction.Page;
+
+            if (string.IsNullOrWhiteSpace(introduction.Email))
+            {
+                return Introduction(introduction, "💌 Please supply an email address so that we can send you your options.");
+            }
+
+            if (string.IsNullOrWhiteSpace(introduction.ContactPhoneNumber))
+            {
+                return Introduction(introduction, "📞 Please supply a phone number so that we can reach you.");
+            }
+
+            // Validate the email address the same way the checkout page does.
+            string emailDomain;
+
+            try
+            {
+                var emailValidation = await CartController.VerifyEmailByAddressAsync(introduction.Email.AsMemory());
+                emailDomain = emailValidation.EmailDomain.Host;
+
+                if (emailValidation.MxRecordExists)
+                {
+                    Log.Information("[Search] Email address {Email} has a valid domain: {Host}.", introduction.Email, emailDomain);
+                }
+                else
+                {
+                    Log.Error("[Search] Email address {Email} has an invalid domain: {Host}.", introduction.Email, emailDomain);
+                    introduction.Email = string.Empty;
+                    return Introduction(introduction, $"💀 The email server at {emailDomain} didn't have an MX record. Please supply a valid email address.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("[Search] Email address {Email} has an invalid domain. {Message}", introduction.Email, ex.Message);
+                var invalid = introduction.Email;
+                introduction.Email = string.Empty;
+                return Introduction(introduction, $"💀 The email server at {invalid} didn't have an MX record. Please supply a valid email address.");
+            }
+
+            // Validate the contact phone number the same way the checkout page does.
+            var checkParsed = PhoneNumbersNA.PhoneNumber.TryParse(introduction.ContactPhoneNumber, out var contact);
+
+            if (checkParsed is false)
+            {
+                Log.Error("[Search] The contact phone number is not a dialable North American phone number.");
+                introduction.ContactPhoneNumber = string.Empty;
+                return Introduction(introduction, "💀 That phone number is not a dialable North American phone number.");
+            }
+
+            try
+            {
+                var checkPortable = await ValidatePortability.GetAsync(contact.DialedNumber.AsMemory(), _configuration.BulkVSUsername.AsMemory(), _configuration.BulkVSPassword.AsMemory());
+
+                if (string.IsNullOrWhiteSpace(checkPortable.TN) || checkPortable.Portable is false)
+                {
+                    Log.Error("[Search] The contact phone number is not a dialable North American phone number.");
+                    introduction.ContactPhoneNumber = string.Empty;
+                    return Introduction(introduction, "💀 That phone number is not a dialable North American phone number.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("[Search] The contact phone number is not a dialable North American phone number. {Message}", ex.Message);
+                introduction.ContactPhoneNumber = string.Empty;
+                return Introduction(introduction, "💀 That phone number is not a dialable North American phone number.");
+            }
+
+            SearchLead lead = new()
+            {
+                SearchLeadId = Guid.NewGuid(),
+                SessionId = HttpContext.Session.Id,
+                ContactPhoneNumber = contact.DialedNumber,
+                Email = introduction.Email.Trim(),
+                EmailDomain = emailDomain,
+                MxRecordExists = true,
+                ContactPhoneNumberPortable = true,
+                Query = introduction.Query ?? string.Empty,
+                IpAddress = GetRemoteIpAddress(HttpContext)?.ToString() ?? string.Empty,
+                UserAgent = HttpContext.Request.Headers.UserAgent.ToString(),
+                Referrer = HttpContext.Request.Headers.Referer.ToString(),
+                DateSubmitted = DateTime.Now
+            };
+
+            if (await lead.PostAsync(_postgresql))
+            {
+                Log.Information("[Search] Saved lead {SearchLeadId} for {Email} at {ContactPhoneNumber}.", lead.SearchLeadId, lead.Email, lead.ContactPhoneNumber);
+            }
+            else
+            {
+                // Don't hold the visitor hostage over a failed insert, but make sure we hear about it.
+                Log.Error("[Search] Failed to save lead for {Email} at {ContactPhoneNumber}.", lead.Email, lead.ContactPhoneNumber);
+            }
+
+            HttpContext.Session.SetString(SearchLeadSessionKey, lead.SearchLeadId.ToString());
+
+            return RedirectToAction("Search", "Search", new
+            {
+                query = introduction.Query,
+                city = introduction.City,
+                view = introduction.View,
+                page = introduction.Page
+            });
+        }
+
+        private ViewResult Introduction(SearchLeadForm introduction, string message)
+            => View("Index", new SearchResults
+            {
+                Query = introduction.Query ?? string.Empty,
+                City = introduction.City ?? string.Empty,
+                View = introduction.View,
+                Page = introduction.Page,
+                ShowIntroduction = true,
+                IntroductionMessage = message,
+                Introduction = introduction,
+                Cart = Cart.GetFromSession(HttpContext.Session)
+            });
+
+        private bool HasIntroduced()
+        {
+            if (string.Equals(HttpContext.Session.GetString(SearchLeadBypassSessionKey), bool.TrueString, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return Guid.TryParse(HttpContext.Session.GetString(SearchLeadSessionKey), out var searchLeadId) && searchLeadId != Guid.Empty;
+        }
+
+        private bool IsBypassToken(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(_configuration.SearchToken))
+            {
+                return false;
+            }
+
+            return CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(token), Encoding.UTF8.GetBytes(_configuration.SearchToken));
+        }
+
+        private static IPAddress? GetRemoteIpAddress(HttpContext httpContext)
+        {
+            var forwardedFor = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+
+            if (!string.IsNullOrWhiteSpace(forwardedFor))
+            {
+                foreach (var candidate in forwardedFor.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    if (IPAddress.TryParse(candidate.Trim(), out var address)
+                        && address.AddressFamily is AddressFamily.InterNetwork or AddressFamily.InterNetworkV6)
+                    {
+                        return address;
+                    }
+                }
+            }
+
+            return httpContext.Connection.RemoteIpAddress;
         }
     }
 }

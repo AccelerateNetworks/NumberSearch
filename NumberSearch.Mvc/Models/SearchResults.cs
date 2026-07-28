@@ -15,5 +15,8 @@ namespace NumberSearch.Mvc.Models
         public string[] Cities { get; set; } = [];
         public PhoneNumber[] PhoneNumbers { get; set; } = [];
         public Cart Cart { get; set; } = new();
+        public bool ShowIntroduction { get; set; }
+        public string IntroductionMessage { get; set; } = string.Empty;
+        public SearchLeadForm Introduction { get; set; } = new();
     }
 }
