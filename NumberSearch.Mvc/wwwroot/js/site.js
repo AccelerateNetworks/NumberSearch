@@ -20,10 +20,19 @@ $(document).on('submit', 'form', function () {
 
 $('input[type="file"]').change(function (e) {
     let fileName = e.target.files[0].name;
-    $('.custom-file-label').html(fileName);
+    $('.custom-file-label').text(fileName);
 });
 
 let cartCounter = 0;
+
+function escapeHtml(value) {
+    return `${value}`
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
 
 function AddToCart(type, id, quantity, element) {
     // Default to 1 unit if the "Add to Cart" button is pressed.
@@ -40,7 +49,7 @@ function AddToCart(type, id, quantity, element) {
         quantityDisplay.disabled = true;
     }
     id = `${id}`.trim();
-    let removeButton = `<button type="button" onclick="RemoveFromCart('${type}', '${id}', ${quantity}, this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>`;
+    let removeButton = `<button type="button" onclick="RemoveFromCart('${escapeHtml(type)}', '${escapeHtml(id)}', ${quantity}, this)" class="btn btn-outline-danger"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Remove</button>`;
     let cart = $('#headerCart');
     let cartButton = $('#cartButton');
     let contactButton = $('#contactButton');
@@ -91,7 +100,7 @@ function RemoveFromCart(type, id, quantity, element) {
         quantityDisplay.value = null;
         quantityDisplay.disabled = false;
     }
-    let addButton = `<button type="submit" onclick="AddToCart('${type}', '${id}', null, this)" class="btn btn-outline-primary"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Add to Cart</button>`;
+    let addButton = `<button type="submit" onclick="AddToCart('${escapeHtml(type)}', '${escapeHtml(id)}', null, this)" class="btn btn-outline-primary"><span class="d-none spinner-border spinner-border-sm mr-2" role="status"></span>Add to Cart</button>`;
     let spinner = $(element).find('span');
     spinner.removeClass('d-none');
     let route = `/Cart/Remove/${type}/${id}/${quantity}`;
