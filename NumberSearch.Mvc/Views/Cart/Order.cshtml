@@ -14,6 +14,12 @@
     var verified = Model?.Cart?.VerifiedPhoneNumbers?.OrderByDescending(x => x.VerifiedDialedNumber).ToArray();
     var coupons = Model?.Cart?.Coupons?.ToArray();
     var productOrders = Model?.Cart?.ProductOrdersToDictionary();
+
+    var stdSeatId = new Guid("16e2c639-445b-4ae6-9925-07300318206b");
+    var concurrentSeatId = new Guid("48eb4627-8692-4a3b-8be1-be64bbeea534");
+    var hasVoiceProduct = (numbers?.Length > 0) || (purchased?.Length > 0) || (ported?.Length > 0) || (verified?.Length > 0)
+        || (products?.Length > 0)
+        || (services?.Any(x => x.ServiceId == stdSeatId || x.ServiceId == concurrentSeatId) ?? false);
 }
 
 <script type="text/javascript">
@@ -621,9 +627,10 @@
                         </div>
                     </div>
                 }
-                <form asp-controller="Cart" asp-action="Submit" method="post">
+                <form asp-controller="Cart" asp-action="Submit" method="post" id="orderForm">
                     @Html.AntiForgeryToken()
                     <input asp-for="Cart.Order!.OrderId" type="text" value="@Model?.Cart?.Order?.OrderId" hidden />
+                    <input type="hidden" name="Cart.Order.VoiceProductAcknowledged" id="voiceProductAcknowledgedInput" value="false" />
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="firstName">First name</label>
@@ -849,7 +856,14 @@
                     {
 
                         <hr class="mb-4">
-                        <button class="btn btn-primary btn-lg btn-block shadow" type="submit" value="Submit">Submit your Order</button>
+                        @if (hasVoiceProduct)
+                        {
+                            <button class="btn btn-primary btn-lg btn-block shadow" type="button" onclick="$('#voiceAckModal').modal('show');">Submit your Order</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-primary btn-lg btn-block shadow" type="submit" value="Submit">Submit your Order</button>
+                        }
                     }
                     <br />
                 </form>
@@ -857,3 +871,30 @@
         </div>
     </div>
 </div>
+
+@if (hasVoiceProduct)
+{
+    <div class="modal fade" id="voiceAckModal" tabindex="-1" role="dialog" aria-labelledby="voiceAckModalLabel" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header text-light" style="background-color: #3279B2">
+                    <h5 class="modal-title" id="voiceAckModalLabel">📞 911 Service Notice</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="voiceAckCheckbox" onchange="document.getElementById('voiceAckSubmitBtn').disabled = !this.checked;">
+                        <label class="form-check-label" for="voiceAckCheckbox">
+                            I understand 911 over this service requires working power &amp; internet is supplied to Accelerate Networks hardware, and my current service address be provided to Accelerate Networks for correct emergency dispatch.
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" id="voiceAckSubmitBtn" class="btn btn-primary" disabled onclick="document.getElementById('voiceProductAcknowledgedInput').value = 'true'; document.getElementById('orderForm').submit();">
+                        I Acknowledge &amp; Submit Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

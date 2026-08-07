@@ -798,6 +798,26 @@ Accelerate Networks
                     return View("Order", new CartResult { Message = "💀 The server restarted and your Cart was lost. Please try it again now." });
                 }
 
+                var stdSeat = new Guid("16e2c639-445b-4ae6-9925-07300318206b");
+                var concurrentSeat = new Guid("48eb4627-8692-4a3b-8be1-be64bbeea534");
+                var hasVoiceProduct = (cart.PhoneNumbers?.Count > 0) || (cart.PurchasedPhoneNumbers?.Count > 0)
+                    || (cart.PortedPhoneNumbers?.Count > 0) || (cart.VerifiedPhoneNumbers?.Count > 0)
+                    || (cart.Products?.Count > 0)
+                    || (cart.Services?.Any(x => x.ServiceId == stdSeat || x.ServiceId == concurrentSeat) ?? false);
+
+                if (hasVoiceProduct && !order.VoiceProductAcknowledged)
+                {
+                    _ = cart.SetToSession(HttpContext.Session);
+                    Log.Error("[Checkout] The NG911/E911 acknowledgment was not confirmed for an order containing a voice product.");
+                    var message = "💀 Please acknowledge the 911 service notice before submitting your order.";
+                    return View("Order", new CartResult { Message = message, Cart = cart });
+                }
+
+                if (hasVoiceProduct)
+                {
+                    order.VoiceProductAcknowledgedUtc = DateTime.Now;
+                }
+
                 order.DateSubmitted = DateTime.Now;
 
                 if (order.OrderId != Guid.Empty)
