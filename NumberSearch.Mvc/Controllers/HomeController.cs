@@ -28,6 +28,15 @@ namespace NumberSearch.Mvc.Controllers
             return View();
         }
 
+        [HttpGet("Home/Terms")]
+        [HttpGet("Terms")]
+        [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
+        [OutputCache(Duration = int.MaxValue)]
+        public IActionResult Terms()
+        {
+            return View();
+        }
+
         [HttpGet]
         [ResponseCache(VaryByHeader = "User-Agent", Duration = 30, Location = ResponseCacheLocation.Any)]
         public IActionResult Order()
