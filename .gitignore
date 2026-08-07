@@ -51,3 +51,7 @@
 
 # Local secrets — real credentials belong in `dotnet user-secrets`, never in appsettings.json.
 /appsettings.json
+
+# Editor/launch configs and local shell scripts aren't part of the shipped app.
+launch.json
+*.sh
