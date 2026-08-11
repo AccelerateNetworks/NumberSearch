@@ -753,6 +753,14 @@ Accelerate Networks
                     return View("Order", new CartResult { Message = message, Cart = cart });
                 }
 
+                if (string.IsNullOrWhiteSpace(order.ContactPhoneNumber))
+                {
+                    _ = cart.SetToSession(HttpContext.Session);
+                    Log.Error("[Checkout] The Direct phone number is missing.");
+                    var message = $"💀 Please provide a direct contact phone number.";
+                    return View("Order", new CartResult { Message = message, Cart = cart });
+                }
+
                 var checkParsed = PhoneNumbersNA.PhoneNumber.TryParse(order.ContactPhoneNumber, out var contact);
 
                 if (checkParsed is false)

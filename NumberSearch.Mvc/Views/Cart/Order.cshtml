@@ -858,7 +858,7 @@
                         <hr class="mb-4">
                         @if (hasVoiceProduct)
                         {
-                            <button class="btn btn-primary btn-lg btn-block shadow" type="button" onclick="$('#voiceAckModal').modal('show');">Submit your Order</button>
+                            <button class="btn btn-primary btn-lg btn-block shadow" type="button" onclick="if (document.getElementById('orderForm').reportValidity()) { $('#voiceAckModal').modal('show'); }">Submit your Order</button>
                         }
                         else
                         {
@@ -890,7 +890,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="button" id="voiceAckSubmitBtn" class="btn btn-primary" disabled onclick="document.getElementById('voiceProductAcknowledgedInput').value = 'true'; document.getElementById('orderForm').submit();">
+                    <button type="button" id="voiceAckSubmitBtn" class="btn btn-primary" disabled onclick="document.getElementById('voiceProductAcknowledgedInput').value = 'true'; document.getElementById('orderForm').requestSubmit();">
                         I Acknowledge &amp; Submit Order
                     </button>
                 </div>
