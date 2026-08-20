@@ -340,6 +340,9 @@
 		<Content Update="wwwroot\images\scaled\EmailForwarding.webp">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Update="wwwroot\images\scaled\erik.webp">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Update="wwwroot\images\scaled\favicon-194x194.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
