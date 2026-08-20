@@ -109,13 +109,10 @@
                                         <h4>@Model?.PortedPhoneNumber?.LrnLookup?.LRN</h4>
                                     </td>
                                     <td>
-                                        <p>
-                                            @Model?.PortedPhoneNumber?.LrnLookup?.SPID
-                                            -
-                                            @Model?.PortedPhoneNumber?.LrnLookup?.LEC
-                                            -
-                                            @Model?.PortedPhoneNumber?.LrnLookup?.LECType
-                                        </p>
+                                        @if (Model?.PortedPhoneNumber?.Carrier is not null && !string.IsNullOrWhiteSpace(Model.PortedPhoneNumber.Carrier.LogoLink))
+                                        {
+                                            <img src="@Model.PortedPhoneNumber.Carrier.LogoLink" alt="Carrier logo" class="img-fluid p-1" style="max-height:5rem">
+                                        }
                                     </td>
                                 </tr>
                             }

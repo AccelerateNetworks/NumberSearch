@@ -77,7 +77,6 @@
                                     <th>
                                         Carrier
                                     </th>
-                                    <th class="d-none d-md-table-cell">LEC</th>
                                     <th class="d-none d-md-table-cell">
                                         Action
                                     </th>
@@ -123,20 +122,7 @@
                                         <td>
                                             @if (number?.Carrier is not null)
                                             {
-                                                <img src="@number.Carrier.LogoLink" alt="@number.Carrier.Name" class="img-fluid p-1" style="max-height:5rem">
-                                            }
-                                            else
-                                            {
-                                                <p class="m-0 d-none d-md-block">
-                                                    LEC
-                                                </p>
-                                                <p class="m-0 d-none d-md-block">
-                                                    @number?.LrnLookup?.LEC
-                                                </p>
-                                                <p class="m-0 d-none d-md-block">LEC Type</p>
-                                                <p class="m-0 d-none d-md-block">
-                                                    @number?.LrnLookup?.LECType
-                                                </p>
+                                                <img src="@number.Carrier.LogoLink" alt="Carrier logo" class="img-fluid p-1" style="max-height:5rem">
                                             }
                                             <p class="m-0">Type</p>
                                             @if (!string.IsNullOrWhiteSpace(number?.Carrier?.Type))
@@ -154,15 +140,6 @@
                                                     <h6 class="m-0">Non-Wireless</h6>
                                                 }
                                             }
-                                            <p class="m-0 d-md-none">
-                                                LEC
-                                            </p>
-                                            <h6 class="m-0 d-md-none">@number?.LrnLookup?.LEC</h6>
-                                        </td>
-                                        <td class="d-none d-md-table-cell">
-                                            <p class="m-0">
-                                                @number?.LrnLookup?.LEC
-                                            </p>
                                         </td>
                                         <td class="d-none d-md-table-cell">
                                             @{
