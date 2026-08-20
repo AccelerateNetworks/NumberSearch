@@ -24,6 +24,17 @@ namespace NumberSearch.Mvc.Controllers
 
         public const string SearchLeadSessionKey = "SearchLeadId";
         public const string SearchLeadBypassSessionKey = "SearchLeadBypass";
+        public const string VisitorBlockedSessionKey = "VisitorBlocked";
+        public const string VisitorEmailSessionKey = "VisitorEmail";
+        public const string VisitorPhoneSessionKey = "VisitorPhone";
+
+        // Kept out of source control - see ConnectionStrings:BlockedEmails / BlockedPhoneNumbers in user-secrets.
+        private readonly string[] _blockedEmails = mvcConfiguration.BlockedEmails
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        private readonly string[] _blockedPhoneNumbers = [.. mvcConfiguration.BlockedPhoneNumbers
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(NormalizeToTenDigits)
+            .Where(x => !string.IsNullOrWhiteSpace(x))];
 
         /// <summary>
         /// This is the default route in this app. It's a search page that allows you to query for available phone numbers.
@@ -66,6 +77,44 @@ namespace NumberSearch.Mvc.Controllers
                     },
                     Cart = Cart.GetFromSession(HttpContext.Session)
                 });
+            }
+
+            // Bypass-token visitors are trusted staff/partner links; they skip abuse evaluation entirely.
+            var isBypassSession = string.Equals(HttpContext.Session.GetString(SearchLeadBypassSessionKey), bool.TrueString, StringComparison.OrdinalIgnoreCase);
+
+            if (!isBypassSession)
+            {
+                var blockedFlag = HttpContext.Session.GetString(VisitorBlockedSessionKey);
+
+                // A session established before this check existed has no cached decision yet - evaluate once now and cache it.
+                if (blockedFlag is null)
+                {
+                    var searchLeadId = Guid.TryParse(HttpContext.Session.GetString(SearchLeadSessionKey), out var existingLeadId) ? existingLeadId : (Guid?)null;
+                    var existingLead = searchLeadId is not null ? await SearchLead.GetAsync(searchLeadId.Value, _postgresql) : null;
+                    var email = existingLead?.Email ?? string.Empty;
+                    var phone = existingLead?.ContactPhoneNumber ?? string.Empty;
+
+                    var (blocklistBlocked, blocklistReason) = EvaluateBlocklist(email, phone);
+                    var reverseDns = blocklistBlocked ? string.Empty : await GetReverseDnsAsync(GetRemoteIpAddress(HttpContext));
+                    var njBlocked = !blocklistBlocked && HostnameIndicatesNewJersey(reverseDns);
+                    var blocked = blocklistBlocked || njBlocked;
+
+                    HttpContext.Session.SetString(VisitorBlockedSessionKey, blocked.ToString());
+                    HttpContext.Session.SetString(VisitorEmailSessionKey, email);
+                    HttpContext.Session.SetString(VisitorPhoneSessionKey, phone);
+                    blockedFlag = blocked.ToString();
+
+                    if (blocked)
+                    {
+                        Log.Warning("[Search] Denied a previously-established session for {Email} / {ContactPhoneNumber} from {IpAddress} ({ReverseDns}): {Reason}",
+                            email, phone, GetRemoteIpAddress(HttpContext), reverseDns, blocklistBlocked ? blocklistReason : $"New Jersey rDNS: {reverseDns}");
+                    }
+                }
+
+                if (string.Equals(blockedFlag, bool.TrueString, StringComparison.OrdinalIgnoreCase))
+                {
+                    return View("Index", new SearchResults { Blocked = true, Cart = Cart.GetFromSession(HttpContext.Session) });
+                }
             }
 
             // Fail fast
@@ -117,6 +166,27 @@ namespace NumberSearch.Mvc.Controllers
                     cleanedQuery += "*******";
                 }
             }
+
+            // A query for one of the numbers a known bad actor keeps hitting is itself a signal, regardless of session history.
+            if (_blockedPhoneNumbers.Contains(NormalizeToTenDigits(cleanedQuery)))
+            {
+                HttpContext.Session.SetString(VisitorBlockedSessionKey, bool.TrueString);
+                Log.Warning("[Search] Denied service after a blocked-number query: {Query} from {IpAddress}", cleanedQuery, GetRemoteIpAddress(HttpContext));
+                return View("Index", new SearchResults { Blocked = true, Cart = Cart.GetFromSession(HttpContext.Session) });
+            }
+
+            // Log every query for abuse review: number, timestamp, email/phone on file, user agent, and IP.
+            var searchQueryLog = new SearchQuery
+            {
+                SearchLeadId = Guid.TryParse(HttpContext.Session.GetString(SearchLeadSessionKey), out var loggingLeadId) ? loggingLeadId : null,
+                SessionId = HttpContext.Session.Id,
+                Query = cleanedQuery,
+                Email = HttpContext.Session.GetString(VisitorEmailSessionKey) ?? string.Empty,
+                ContactPhoneNumber = HttpContext.Session.GetString(VisitorPhoneSessionKey) ?? string.Empty,
+                IpAddress = GetRemoteIpAddress(HttpContext)?.ToString() ?? string.Empty,
+                UserAgent = HttpContext.Request.Headers.UserAgent.ToString()
+            };
+            _ = await searchQueryLog.PostAsync(_postgresql);
 
             // If there's a city provided we need to use a more specific results count query.
             int count = string.IsNullOrWhiteSpace(city)
@@ -233,6 +303,11 @@ namespace NumberSearch.Mvc.Controllers
             introduction.View = string.IsNullOrWhiteSpace(introduction.View) ? "Recommended" : introduction.View;
             introduction.Page = introduction.Page < 1 ? 1 : introduction.Page;
 
+            if (string.IsNullOrWhiteSpace(introduction.Name))
+            {
+                return Introduction(introduction, "🙋 Please tell us your name.");
+            }
+
             if (string.IsNullOrWhiteSpace(introduction.Email))
             {
                 return Introduction(introduction, "💌 Please supply an email address so that we can send you your options.");
@@ -298,19 +373,30 @@ namespace NumberSearch.Mvc.Controllers
                 return Introduction(introduction, "💀 That phone number is not a dialable North American phone number.");
             }
 
+            var remoteIp = GetRemoteIpAddress(HttpContext);
+            var (blocklistBlocked, blocklistReason) = EvaluateBlocklist(introduction.Email.Trim(), contact.DialedNumber);
+            var reverseDns = blocklistBlocked ? string.Empty : await GetReverseDnsAsync(remoteIp);
+            var njBlocked = !blocklistBlocked && HostnameIndicatesNewJersey(reverseDns);
+            var blocked = blocklistBlocked || njBlocked;
+            var blockReason = blocklistBlocked ? blocklistReason : njBlocked ? $"New Jersey rDNS: {reverseDns}" : string.Empty;
+
             SearchLead lead = new()
             {
                 SearchLeadId = Guid.NewGuid(),
                 SessionId = HttpContext.Session.Id,
+                Name = introduction.Name.Trim(),
                 ContactPhoneNumber = contact.DialedNumber,
                 Email = introduction.Email.Trim(),
                 EmailDomain = emailDomain,
                 MxRecordExists = true,
                 ContactPhoneNumberPortable = true,
                 Query = introduction.Query ?? string.Empty,
-                IpAddress = GetRemoteIpAddress(HttpContext)?.ToString() ?? string.Empty,
+                IpAddress = remoteIp?.ToString() ?? string.Empty,
+                ReverseDns = reverseDns,
                 UserAgent = HttpContext.Request.Headers.UserAgent.ToString(),
                 Referrer = HttpContext.Request.Headers.Referer.ToString(),
+                Blocked = blocked,
+                BlockReason = blockReason,
                 DateSubmitted = DateTime.Now
             };
 
@@ -324,7 +410,16 @@ namespace NumberSearch.Mvc.Controllers
                 Log.Error("[Search] Failed to save lead for {Email} at {ContactPhoneNumber}.", lead.Email, lead.ContactPhoneNumber);
             }
 
+            if (blocked)
+            {
+                Log.Warning("[Search] Denied service to {Email} / {ContactPhoneNumber} from {IpAddress} ({ReverseDns}): {BlockReason}",
+                    lead.Email, lead.ContactPhoneNumber, lead.IpAddress, lead.ReverseDns, lead.BlockReason);
+            }
+
             HttpContext.Session.SetString(SearchLeadSessionKey, lead.SearchLeadId.ToString());
+            HttpContext.Session.SetString(VisitorBlockedSessionKey, blocked.ToString());
+            HttpContext.Session.SetString(VisitorEmailSessionKey, lead.Email);
+            HttpContext.Session.SetString(VisitorPhoneSessionKey, lead.ContactPhoneNumber);
 
             return RedirectToAction("Search", "Search", new
             {
@@ -385,6 +480,69 @@ namespace NumberSearch.Mvc.Controllers
             }
 
             return httpContext.Connection.RemoteIpAddress;
+        }
+
+        private (bool blocked, string reason) EvaluateBlocklist(string email, string phoneDialedNumber)
+        {
+            if (!string.IsNullOrWhiteSpace(email) && _blockedEmails.Contains(email.Trim(), StringComparer.OrdinalIgnoreCase))
+            {
+                return (true, $"Blocked email: {email}");
+            }
+
+            var normalizedPhone = NormalizeToTenDigits(phoneDialedNumber);
+
+            if (!string.IsNullOrWhiteSpace(normalizedPhone) && _blockedPhoneNumbers.Contains(normalizedPhone))
+            {
+                return (true, $"Blocked phone number: {normalizedPhone}");
+            }
+
+            return (false, string.Empty);
+        }
+
+        private static string NormalizeToTenDigits(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return string.Empty;
+            }
+
+            var digits = new string([.. input.Where(char.IsDigit)]);
+
+            return digits.Length > 10 ? digits[^10..] : digits;
+        }
+
+        private static async Task<string> GetReverseDnsAsync(IPAddress? ip)
+        {
+            if (ip is null)
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                var entry = await Dns.GetHostEntryAsync(ip).WaitAsync(TimeSpan.FromSeconds(2));
+                return entry.HostName ?? string.Empty;
+            }
+            catch
+            {
+                // DNS is unreliable by nature - a failed or slow lookup just means we can't evaluate the NJ heuristic for this visitor.
+                return string.Empty;
+            }
+        }
+
+        // ISP rDNS conventions typically encode the state as its own dot/hyphen-delimited token (e.g. "*.nj.comcast.net", "*-nj-*.verizon.net").
+        // A plain substring match on "nj" would false-positive on unrelated hostnames (e.g. "ninja"), so this requires it to stand alone as a token.
+        // This is still a heuristic, not a precise geolocation - rDNS naming isn't standardized across ISPs.
+        private static bool HostnameIndicatesNewJersey(string hostname)
+        {
+            if (string.IsNullOrWhiteSpace(hostname))
+            {
+                return false;
+            }
+
+            var tokens = hostname.Split(['.', '-'], StringSplitOptions.RemoveEmptyEntries);
+
+            return tokens.Any(t => t.Equals("nj", StringComparison.OrdinalIgnoreCase));
         }
     }
 }

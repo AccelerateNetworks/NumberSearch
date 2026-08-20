@@ -18,5 +18,6 @@ namespace NumberSearch.Mvc.Models
         public bool ShowIntroduction { get; set; }
         public string IntroductionMessage { get; set; } = string.Empty;
         public SearchLeadForm Introduction { get; set; } = new();
+        public bool Blocked { get; set; }
     }
 }

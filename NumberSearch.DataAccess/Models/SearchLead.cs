@@ -12,6 +12,7 @@ namespace NumberSearch.DataAccess.Models
     {
         public Guid SearchLeadId { get; set; } = Guid.NewGuid();
         public string SessionId { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
         public string ContactPhoneNumber { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string EmailDomain { get; set; } = string.Empty;
@@ -19,11 +20,14 @@ namespace NumberSearch.DataAccess.Models
         public bool ContactPhoneNumberPortable { get; set; }
         public string Query { get; set; } = string.Empty;
         public string IpAddress { get; set; } = string.Empty;
+        public string ReverseDns { get; set; } = string.Empty;
         public string UserAgent { get; set; } = string.Empty;
         public string Referrer { get; set; } = string.Empty;
+        public bool Blocked { get; set; }
+        public string BlockReason { get; set; } = string.Empty;
         public DateTime DateSubmitted { get; set; } = DateTime.Now;
 
-        private const string SelectColumns = "SELECT \"SearchLeadId\", \"SessionId\", \"ContactPhoneNumber\", \"Email\", \"EmailDomain\", \"MxRecordExists\", \"ContactPhoneNumberPortable\", \"Query\", \"IpAddress\", \"UserAgent\", \"Referrer\", \"DateSubmitted\" FROM public.\"SearchLeads\"";
+        private const string SelectColumns = "SELECT \"SearchLeadId\", \"SessionId\", \"Name\", \"ContactPhoneNumber\", \"Email\", \"EmailDomain\", \"MxRecordExists\", \"ContactPhoneNumberPortable\", \"Query\", \"IpAddress\", \"ReverseDns\", \"UserAgent\", \"Referrer\", \"Blocked\", \"BlockReason\", \"DateSubmitted\" FROM public.\"SearchLeads\"";
 
         public static async Task<IEnumerable<SearchLead>> GetAllAsync(string connectionString)
         {
@@ -66,9 +70,9 @@ namespace NumberSearch.DataAccess.Models
             await using var connection = new NpgsqlConnection(connectionString);
 
             var result = await connection
-                .ExecuteAsync("INSERT INTO public.\"SearchLeads\" ( \"SearchLeadId\", \"SessionId\", \"ContactPhoneNumber\", \"Email\", \"EmailDomain\", \"MxRecordExists\", \"ContactPhoneNumberPortable\", \"Query\", \"IpAddress\", \"UserAgent\", \"Referrer\", \"DateSubmitted\" ) " +
-                "VALUES ( @SearchLeadId, @SessionId, @ContactPhoneNumber, @Email, @EmailDomain, @MxRecordExists, @ContactPhoneNumberPortable, @Query, @IpAddress, @UserAgent, @Referrer, @DateSubmitted )",
-                new { SearchLeadId, SessionId, ContactPhoneNumber, Email, EmailDomain, MxRecordExists, ContactPhoneNumberPortable, Query, IpAddress, UserAgent, Referrer, DateSubmitted })
+                .ExecuteAsync("INSERT INTO public.\"SearchLeads\" ( \"SearchLeadId\", \"SessionId\", \"Name\", \"ContactPhoneNumber\", \"Email\", \"EmailDomain\", \"MxRecordExists\", \"ContactPhoneNumberPortable\", \"Query\", \"IpAddress\", \"ReverseDns\", \"UserAgent\", \"Referrer\", \"Blocked\", \"BlockReason\", \"DateSubmitted\" ) " +
+                "VALUES ( @SearchLeadId, @SessionId, @Name, @ContactPhoneNumber, @Email, @EmailDomain, @MxRecordExists, @ContactPhoneNumberPortable, @Query, @IpAddress, @ReverseDns, @UserAgent, @Referrer, @Blocked, @BlockReason, @DateSubmitted )",
+                new { SearchLeadId, SessionId, Name, ContactPhoneNumber, Email, EmailDomain, MxRecordExists, ContactPhoneNumberPortable, Query, IpAddress, ReverseDns, UserAgent, Referrer, Blocked, BlockReason, DateSubmitted })
                 .ConfigureAwait(false);
 
             return result == 1;

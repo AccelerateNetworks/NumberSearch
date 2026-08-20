@@ -31,6 +31,12 @@
                         </div>
                     }
                     <div class="form-group">
+                        <label for="Name">Your name</label>
+                        <input type="text" class="form-control form-control-lg" id="Name" name="Name"
+                               placeholder="Alexander Bell" autocomplete="name"
+                               value="@Model?.Introduction?.Name" required>
+                    </div>
+                    <div class="form-group">
                         <label for="ContactPhoneNumber">Your phone number</label>
                         <div class="input-group">
                             <div class="input-group-prepend">

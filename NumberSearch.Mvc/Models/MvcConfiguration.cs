@@ -35,6 +35,8 @@
         public string PortControlClientId { get; set; } = string.Empty;
         public string PortControlClientSecret { get; set; } = string.Empty;
         public string SearchToken { get; set; } = string.Empty;
+        public string BlockedEmails { get; set; } = string.Empty;
+        public string BlockedPhoneNumbers { get; set; } = string.Empty;
 
     }
 }

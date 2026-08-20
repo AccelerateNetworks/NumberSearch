@@ -513,7 +513,11 @@
     </div>
 </div>
 
-@if (Model?.ShowIntroduction == true)
+@if (Model?.Blocked == true)
+{
+    <partial name="_SearchBlockedModal" model="Model" />
+}
+else if (Model?.ShowIntroduction == true)
 {
     <partial name="_SearchLeadModal" model="Model" />
 }

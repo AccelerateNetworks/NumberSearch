@@ -1,0 +1,24 @@
+@model NumberSearch.Mvc.Models.SearchResults;
+
+@*
+    Shown instead of _SearchLeadModal when a visitor is denied service. No form, no retry path -
+    this is a dead end by design.
+*@
+<div class="modal fade" id="blockedModal" tabindex="-1" role="dialog" aria-labelledby="blockedModalLabel"
+     data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header text-light" style="background-color: #3279B2">
+                <h5 class="modal-title" id="blockedModalLabel">Service Unavailable</h5>
+            </div>
+            <div class="modal-body">
+                <p>Access to this portion of the Accelerate Networks website has been restricted, and we request that you respect this restriction and do not attempt to evade said restriction. Please contact Legal@AccelerateNetworks.com to discuss why access has been restricted.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#blockedModal').modal({ backdrop: 'static', keyboard: false, show: true });
+    });
+</script>
