@@ -1,4 +1,4 @@
-﻿User-agent: *
+User-agent: *
 Allow: /
 Allow: /services
 Allow: /hardware
@@ -8,8 +8,6 @@ Allow: /blog
 Allow: /careers
 Allow: /support
 Allow: /privacy
-Disallow: /search
-Disallow: /search?Query=
-Disallow: /
-Disallow: /Lookup/BulkPort
+Disallow: /Search
+Disallow: /Lookup
 Crawl-delay: 1000

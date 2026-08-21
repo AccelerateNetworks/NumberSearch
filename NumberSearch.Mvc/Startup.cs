@@ -14,6 +14,7 @@ using Serilog;
 using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.RegularExpressions;
 using System.Threading.RateLimiting;
 
 using ZLinq;
@@ -39,6 +40,17 @@ namespace NumberSearch.Mvc
 
         public IConfiguration Configuration { get; }
         private static readonly string[] middleware = ["Accept-Encoding"];
+
+        // The number-porting lookup tool triggers billed third-party portability checks per query,
+        // so bots and crawlers are blocked outright rather than just asked nicely via robots.txt.
+        private static readonly Regex BotUserAgentPattern = new(
+            "bot|crawl|spider|slurp|scrapy|aiohttp|python-requests|^python|curl/|wget/|" +
+            "jscrawler|petalbot|seznambot|seokicks|ahrefsbot|semrushbot|mj12bot|dotbot|" +
+            "discordbot|linkedinbot|telegrambot|slackbot|whatsapp|terracotta|amazonbot|" +
+            "googlebot|bingbot|baiduspider|yandexbot|duckduckbot|bytespider|gptbot|ccbot|" +
+            "claudebot|anthropic-ai|perplexitybot|oai-searchbot|oai-adsbot|chatgpt-user|" +
+            "facebookexternalhit|applebot",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -163,8 +175,24 @@ namespace NumberSearch.Mvc
 
             app.UseSerilogRequestLogging();
 
+            app.Use(static async (context, next) =>
+            {
+                if (context.Request.Path.StartsWithSegments("/Lookup", StringComparison.OrdinalIgnoreCase))
+                {
+                    var userAgent = context.Request.Headers.UserAgent.ToString();
+
+                    if (string.IsNullOrWhiteSpace(userAgent) || BotUserAgentPattern.IsMatch(userAgent))
+                    {
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        return;
+                    }
+                }
+
+                await next();
+            });
+
             app.UseHttpsRedirection();
-            
+
             // Set cache headers on static files.
             // Disable to prevent caching.
             app.UseStaticFiles(new StaticFileOptions
