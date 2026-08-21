@@ -139,8 +139,9 @@ namespace NumberSearch.Mvc.Controllers
 
                 if (parsedNumbers.Length.Equals(0))
                 {
-                    return View("Porting", new LookupResults
+                    return View("Index", new LookupResults
                     {
+                        DialedNumber = dialedNumber,
                         Message = "No dialed phone numbers found. Please try a different query. 🥺👉👈"
                     });
                 }
@@ -150,7 +151,11 @@ namespace NumberSearch.Mvc.Controllers
                 // If they have an invalid Session we don't want to waste any time running queries for them.
                 if (string.IsNullOrWhiteSpace(HttpContext.Session.Id) || !HttpContext.Session.IsAvailable || cart is null)
                 {
-                    return View("Porting");
+                    return View("Index", new LookupResults
+                    {
+                        DialedNumber = dialedNumber,
+                        Message = "❌ Your session expired. Please try again."
+                    });
                 }
 
                 var results = new ConcurrentBag<PortedPhoneNumber>();
@@ -193,18 +198,29 @@ namespace NumberSearch.Mvc.Controllers
 
                 var checkSet = cart.SetToSession(HttpContext.Session);
 
-                return View("Porting", new LookupResults
+                var addedCount = portableNumbers.Length + wirelessPortable.Length;
+
+                if (addedCount > 0)
                 {
-                    DialedNumber = dialedNumber,
-                    Portable = portableNumbers,
-                    Wireless = wirelessPortable,
-                    NotPortable = notPortable,
-                    Cart = cart
-                });
+                    TempData["CartMessage"] = notPortable.Length > 0
+                        ? $"✅ Added {addedCount} number(s) to your cart. ❌ These numbers cannot be ported to our network: {string.Join(", ", notPortable)}"
+                        : $"✅ Added {addedCount} number(s) to your cart.";
+                    TempData["CartAlertType"] = notPortable.Length > 0 ? "alert-warning" : "alert-success";
+
+                    return RedirectToAction("Index", "Cart");
+                }
+                else
+                {
+                    return View("Index", new LookupResults
+                    {
+                        DialedNumber = dialedNumber,
+                        Message = $"❌ None of the numbers entered can be ported to our network: {string.Join(", ", notPortable)}"
+                    });
+                }
             }
             else
             {
-                return View("Porting");
+                return View("Index");
             }
         }
 

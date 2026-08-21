@@ -42,9 +42,10 @@
     <div class="container">
         @if (!string.IsNullOrWhiteSpace(Model?.Message))
         {
+            var alertType = string.IsNullOrWhiteSpace(Model?.AlertType) ? "alert-danger" : Model.AlertType;
             <div class="row">
                 <div class="col">
-                    <div class="alert alert-danger col" role="alert">
+                    <div class="alert @alertType col" role="alert">
                         @Model?.Message
                     </div>
                 </div>

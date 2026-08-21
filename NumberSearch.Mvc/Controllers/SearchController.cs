@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
+using NumberSearch.DataAccess;
 using NumberSearch.DataAccess.BulkVS;
 using NumberSearch.DataAccess.Models;
 using NumberSearch.Mvc.Models;
@@ -236,23 +237,29 @@ namespace NumberSearch.Mvc.Controllers
 
                 if (port.Portable)
                 {
-                    return View("Porting", new PortingResults
-                    {
-                        PortedPhoneNumber = port,
-                        Cart = cart,
-                        Query = query,
-                        Message = port.Wireless ? "This wireless phone number can be ported to our network!" : "This phone number can be ported to our network!"
-                    });
+                    var productOrder = new ProductOrder { ProductOrderId = Guid.NewGuid(), PortedDialedNumber = port.PortedDialedNumber, PortedPhoneNumberId = port.PortedPhoneNumberId, Quantity = 1 };
+                    var local = port;
+                    _ = cart.AddPortedPhoneNumber(ref local, ref productOrder);
+                    _ = cart.SetToSession(HttpContext.Session);
+
+                    TempData["CartMessage"] = port.Wireless
+                        ? $"✅ {port.PortedDialedNumber} is a wireless number that can be ported to our network, and has been added to your cart!"
+                        : $"✅ {port.PortedDialedNumber} can be ported to our network, and has been added to your cart!";
+                    TempData["CartAlertType"] = "alert-success";
+
+                    return RedirectToAction("Index", "Cart");
                 }
                 else
                 {
-
-                    return View("Porting", new PortingResults
+                    return View("Index", new SearchResults
                     {
-                        PortedPhoneNumber = port,
-                        Cart = cart,
                         Query = query,
-                        Message = port.Wireless ? "❌ This wireless phone number cannot be ported to our network!" : "❌ This phone number cannot be ported to our network!",
+                        CleanQuery = cleanedQuery,
+                        City = city ?? string.Empty,
+                        View = !string.IsNullOrWhiteSpace(view) ? view : "Recommended",
+                        Page = page,
+                        Cart = cart,
+                        Message = port.Wireless ? $"❌ {cleanedQuery} is a wireless number that cannot be ported to our network!" : $"❌ {cleanedQuery} cannot be ported to our network!",
                         AlertType = "alert-danger"
                     });
                 }

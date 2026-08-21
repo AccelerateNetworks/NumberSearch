@@ -124,7 +124,9 @@ namespace NumberSearch.Mvc.Controllers
             {
                 return View("Index", new CartResult
                 {
-                    Cart = cart ?? new()
+                    Cart = cart ?? new(),
+                    Message = TempData["CartMessage"] as string ?? string.Empty,
+                    AlertType = TempData["CartAlertType"] as string ?? string.Empty
                 });
             }
 
