@@ -46,7 +46,9 @@ using System.Net.Mail;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using System.Threading.RateLimiting;
+using System.Xml.Linq;
 
 Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -326,6 +328,63 @@ try
             return Task.CompletedTask;
         });
 
+    // 1pcom's MMS_Pickup "file" labels (part-001.SMIL, part-002.jpg, ...) are generic pickup
+    // handles assigned by the MMSC. The SMIL manifest's own src="..." attributes reference the
+    // sender's original device filenames instead, which don't correspond to anything we actually
+    // store or forward. Rather than rename our stored copies, rewrite the SMIL's src attributes in
+    // place to point at the same {messageId}{label} names we already use when uploading/attaching
+    // each part, so the manifest we forward is internally consistent with what we deliver.
+    // 1pcom's file list order is not reliable (it isn't part-number order), but the numeric suffix
+    // in each label is, and it lines up positionally with the src attributes in the SMIL body's
+    // document order.
+    static async Task<string> RewriteSmilWithStoredFileNamesAsync(string smilPath, string files, Guid messageId)
+    {
+        string originalText = await File.ReadAllTextAsync(smilPath);
+        var partLabels = files.Split(',', StringSplitOptions.RemoveEmptyEntries);
+        string? smilLabel = partLabels.FirstOrDefault(f => f.EndsWith(".smil", StringComparison.OrdinalIgnoreCase));
+
+        if (smilLabel is null)
+        {
+            return originalText;
+        }
+
+        try
+        {
+            var doc = XDocument.Load(smilPath);
+            var srcAttributes = doc.Descendants().Attributes("src").ToList();
+
+            var otherLabels = partLabels
+                .Where(f => f != smilLabel)
+                .OrderBy(f => int.TryParse(Regex.Match(f, @"part-(\d+)").Groups[1].Value, out var n) ? n : int.MaxValue)
+                .ToList();
+
+            if (srcAttributes.Count != otherLabels.Count)
+            {
+                Log.Warning("SMIL manifest {SmilLabel} for message {MessageId} declared {SrcCount} src references but 1pcom sent {PartCount} non-SMIL files; forwarding the manifest unmodified.", smilLabel, messageId, srcAttributes.Count, otherLabels.Count);
+                return originalText;
+            }
+
+            for (int i = 0; i < otherLabels.Count; i++)
+            {
+                if (Path.GetExtension(otherLabels[i]).Equals(Path.GetExtension(srcAttributes[i].Value), StringComparison.OrdinalIgnoreCase))
+                {
+                    srcAttributes[i].Value = $"{messageId}{otherLabels[i]}";
+                }
+                else
+                {
+                    Log.Warning("Extension mismatch matching SMIL src {SmilName} to part label {PartLabel} for message {MessageId}; leaving that reference unmodified.", srcAttributes[i].Value, otherLabels[i], messageId);
+                }
+            }
+
+            return doc.ToString(SaveOptions.DisableFormatting);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to rewrite the SMIL manifest {SmilLabel} for message {MessageId}; forwarding it unmodified.", smilLabel, messageId);
+            return originalText;
+        }
+    }
+
     // Don't move this or it will break multipart form handling.
     app.MapPost("/1pcom/inbound/MMS", async Task<Results<Ok<string>, BadRequest<string>, Ok<ForwardedMessage>, UnauthorizedHttpResult>> (HttpContext context, string token, AppSettings appSettings, MessagingContext db) =>
     {
@@ -482,6 +541,13 @@ try
                         //Stream fileStream = await fileDownloadURL.GetStreamAsync();
                         var path = await fileDownloadURL.DownloadFileAsync(location, $"{toForward.Id}{file}");
                         Log.Information(path);
+
+                        if (file.EndsWith(".smil", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string rewrittenSmil = await RewriteSmilWithStoredFileNamesAsync(path, MMSDescription.files, toForward.Id);
+                            await File.WriteAllTextAsync(path, rewrittenSmil);
+                        }
+
                         // Save the file to disk rather than S3?!?
                         var filePath = Path.Combine(location, $"{toForward.Id}{file}");
                         using Stream streamToFile = new FileStream(path, FileMode.Open, FileAccess.Read);
@@ -582,6 +648,13 @@ try
                                 //Stream fileStream = await fileDownloadURL.GetStreamAsync();
                                 var path = await fileDownloadURL.DownloadFileAsync(location, $"{toForward.Id}{file}");
                                 Log.Information(path);
+
+                                if (file.EndsWith(".smil", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    string rewrittenSmil = await RewriteSmilWithStoredFileNamesAsync(path, MMSDescription.files, toForward.Id);
+                                    await File.WriteAllTextAsync(path, rewrittenSmil);
+                                }
+
                                 // Save the file to disk rather than S3?!?
                                 var filePath = Path.Combine(location, $"{toForward.Id}{file}");
                                 attachmentPaths.Add(filePath);
