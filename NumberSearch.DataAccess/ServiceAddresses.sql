@@ -1,6 +1,9 @@
 -- Address-level service availability, in support of https://acceleratenetworks.com/Internet.
 -- Replaces the FCC census block lookup, which showed providers for every address in a block rather than the addresses we can actually sell.
--- Run this against the PostgresqlProd database before deploying, then load the building lists with Ziply/import_ziply_building_list.py.
+-- Run this against the PostgresqlProd database with psql before deploying, then load the building lists with Ziply/import_ziply_building_list.py. Safe to run again.
+
+-- Stop at the first failed statement, however this file is run, so a failed CREATE never falls through to a later DROP.
+\set ON_ERROR_STOP on
 
 CREATE TABLE IF NOT EXISTS public."ServiceAddresses"
 (

@@ -5,7 +5,8 @@ Usage: import_ziply_building_list.py WFI|EIA "<building list>.xlsx" [psql connec
   ex. import_ziply_building_list.py WFI "/WFI 24635_20260920050445.xlsx" -d numberSearch
 
 The lists are 500MB+ of inline string XML once unzipped, so rows are streamed and cleared as they
-are read rather than loaded with openpyxl. Peak memory stays around 20MB. Only the rows we can sell
+are read rather than loaded with openpyxl. Peak memory is about 45MB for the 117k row WFI list, most of it the
+building keys held to catch duplicates. Only the rows we can sell
 or quote are kept, and the previous rows for the same product are replaced in a single transaction.
 Uses only the standard library and psql.
 """
@@ -178,6 +179,8 @@ def main():
         subprocess.run(['psql', '-v', 'ON_ERROR_STOP=1', *psql_args], input=script, text=True, check=True)
     except subprocess.CalledProcessError:
         sys.exit(f'psql failed loading {source}, see the error above. The import runs in one transaction, so the existing rows are still in place.')
+    except FileNotFoundError:
+        sys.exit(f'psql is not installed or not on the PATH, so {source} was not loaded. The existing rows are still in place.')
     finally:
         os.unlink(out.name)
     print(f'Loaded {kept} {product} addresses from {source}, skipped {skipped} not serviceable.')

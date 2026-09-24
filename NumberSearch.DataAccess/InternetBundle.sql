@@ -1,5 +1,8 @@
 -- Fiber internet contract terms and the phone bundle discount, in support of https://acceleratenetworks.com/Internet.
--- Run this against the PostgresqlProd database before deploying. Safe to run again.
+-- Run this against the PostgresqlProd database with psql before deploying. Safe to run again.
+
+-- Stop at the first failed statement, however this file is run, so a failed CREATE never falls through to a later DROP.
+\set ON_ERROR_STOP on
 
 -- The contract term (2, 3 or 5 years) chosen for fiber internet on an order, 0 when the order has no fiber internet.
 ALTER TABLE public."Orders"
