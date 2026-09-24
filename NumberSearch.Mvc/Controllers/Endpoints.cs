@@ -220,9 +220,10 @@ namespace NumberSearch.Mvc.Controllers
         /// <param name="serviceable">Whether any service is available at the address.</param>
         /// <param name="matchedAddress">The address from the provider's building list that matched the query, to show the customer what we checked.</param>
         /// <param name="exactMatch">Whether the matched address is the one searched for, rather than the same building number or the nearest listed building.</param>
+        /// <param name="matchType">How the address matched: Exact, HouseNumber (same building number on the street, ex. 512 for 512 1/2), Nearby (the closest listed building within 30m), or None.</param>
         /// <param name="buildingKey">The provider's key for the listed building, to pass to Cart/Add when adding a Sellable fiber tier, or empty.</param>
         /// <param name="offers">The services available at the address.</param>
-        public readonly record struct InternetAvailability(bool serviceable, string matchedAddress, bool exactMatch, string buildingKey, InternetOffer[] offers);
+        public readonly record struct InternetAvailability(bool serviceable, string matchedAddress, bool exactMatch, string matchType, string buildingKey, InternetOffer[] offers);
 
         private const string FiberTerms = "2, 3 or 5 year term. $15/mo off when bundled with any phone service.";
 
@@ -249,7 +250,9 @@ namespace NumberSearch.Mvc.Controllers
 
             var wfi = lookup.Addresses.AsValueEnumerable().Where(x => x.Product is "WFI").ToArray();
             // Only an exact address match is sold at the listed price. The same building number or a nearby building might be the building next door.
-            var sellable = exact ? wfi.AsValueEnumerable().Where(x => x.Status is "Sellable").OrderByDescending(x => ServiceAddress.ParseMbps(x.MaxSpeed)).FirstOrDefault() : null;
+            // The fastest row that can sell the slowest tier qualifies every tier any row can, since CanSellAt only differs between rows by speed.
+            // Cart/Add re-qualifies the same building by its key with the same rule, so the two always agree.
+            var sellable = exact ? InternetBundle.QualifyingAddress(InternetBundle.FiberInternet300ServiceId, wfi) : null;
             var tiers = sellable is null ? [] : new[]
             {
                 new InternetOffer("WFI", "Sellable", "Fiber Internet 300 Mbps", "300/300 Mbps", 75, InternetBundle.FiberInternet300ServiceId, FiberTerms),
@@ -262,9 +265,9 @@ namespace NumberSearch.Mvc.Controllers
             }
             else if (wfi.Length > 0)
             {
-                if (sellable is not null)
+                foreach (var unsellable in exact ? wfi.AsValueEnumerable().Where(x => x.Status is "Sellable").ToArray() : [])
                 {
-                    Log.Warning("[Internet] Sellable building {BuildingKey} is listed at {MaxSpeed}, which is below every fiber tier or can't be read.", sellable.BuildingKey, sellable.MaxSpeed);
+                    Log.Warning("[Internet] Sellable building {BuildingKey} at {StreetAddress} {Postal} is listed at {MaxSpeed}, which is below every fiber tier, can't be read, or has no building key.", unsellable.BuildingKey, unsellable.StreetAddress, unsellable.Postal, unsellable.MaxSpeed);
                 }
                 offers.Add(new("WFI", "Confirm", "Fiber Internet", "Up to 1/1 Gbps", 0, Guid.Empty, "Fiber may be available here. Contact us to confirm before ordering."));
             }
@@ -277,7 +280,7 @@ namespace NumberSearch.Mvc.Controllers
             // Name the building the fiber offers came from, so the address shown always matches the offers.
             var shown = tiers.Length > 0 ? sellable : wfi.AsValueEnumerable().FirstOrDefault() ?? lookup.Addresses.AsValueEnumerable().FirstOrDefault();
             var matched = shown is null ? string.Empty : $"{shown.StreetAddress.Trim()}, {shown.City}, {shown.State} {shown.Postal}";
-            return TypedResults.Ok(new InternetAvailability(offers.Count > 0, matched, exact, tiers.Length > 0 ? sellable!.BuildingKey : string.Empty, offers.ToArray()));
+            return TypedResults.Ok(new InternetAvailability(offers.Count > 0, matched, exact, lookup.Match.ToString(), tiers.Length > 0 ? sellable!.BuildingKey : string.Empty, offers.ToArray()));
         }
 
         /// <summary>

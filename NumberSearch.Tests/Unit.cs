@@ -78,6 +78,7 @@ namespace NumberSearch.Tests
         [InlineData("1 Gbps", 1000)]
         [InlineData("", 0)]
         [InlineData("fast", 0)]
+        [InlineData("3000000G", int.MaxValue)]
         public void ServiceAddressParseMbpsTest(string maxSpeed, int expected)
         {
             Assert.Equal(expected, NumberSearch.DataAccess.ServiceAddress.ParseMbps(maxSpeed));
@@ -98,12 +99,13 @@ namespace NumberSearch.Tests
         [Fact]
         public void InternetBundleCanSellAtTest()
         {
-            var gig = new NumberSearch.DataAccess.ServiceAddress { Product = "WFI", Status = "Sellable", MaxSpeed = "1.0G/1.0G" };
-            var slow = new NumberSearch.DataAccess.ServiceAddress { Product = "WFI", Status = "Sellable", MaxSpeed = "300.0M/300.0M" };
-            var slower = new NumberSearch.DataAccess.ServiceAddress { Product = "WFI", Status = "Sellable", MaxSpeed = "100.0M/100.0M" };
-            var unreadable = new NumberSearch.DataAccess.ServiceAddress { Product = "WFI", Status = "Sellable", MaxSpeed = "" };
-            var confirm = new NumberSearch.DataAccess.ServiceAddress { Product = "WFI", Status = "Confirm", MaxSpeed = "1.0G/1.0G" };
-            var eia = new NumberSearch.DataAccess.ServiceAddress { Product = "EIA", Status = "Quote", MaxSpeed = "1.0G/1.0G" };
+            var gig = new NumberSearch.DataAccess.ServiceAddress { Product = "WFI", Status = "Sellable", MaxSpeed = "1.0G/1.0G", BuildingKey = "BK-1" };
+            var slow = new NumberSearch.DataAccess.ServiceAddress { Product = "WFI", Status = "Sellable", MaxSpeed = "300.0M/300.0M", BuildingKey = "BK-2" };
+            var slower = new NumberSearch.DataAccess.ServiceAddress { Product = "WFI", Status = "Sellable", MaxSpeed = "100.0M/100.0M", BuildingKey = "BK-3" };
+            var unreadable = new NumberSearch.DataAccess.ServiceAddress { Product = "WFI", Status = "Sellable", MaxSpeed = "", BuildingKey = "BK-4" };
+            var confirm = new NumberSearch.DataAccess.ServiceAddress { Product = "WFI", Status = "Confirm", MaxSpeed = "1.0G/1.0G", BuildingKey = "BK-5" };
+            var eia = new NumberSearch.DataAccess.ServiceAddress { Product = "EIA", Status = "Quote", MaxSpeed = "1.0G/1.0G", BuildingKey = "BK-6" };
+            var noKey = new NumberSearch.DataAccess.ServiceAddress { Product = "WFI", Status = "Sellable", MaxSpeed = "1.0G/1.0G", BuildingKey = "" };
             var t300 = NumberSearch.DataAccess.InternetBundle.FiberInternet300ServiceId;
             var t1g = NumberSearch.DataAccess.InternetBundle.FiberInternet1GServiceId;
 
@@ -116,6 +118,28 @@ namespace NumberSearch.Tests
             Assert.False(NumberSearch.DataAccess.InternetBundle.CanSellAt(t300, confirm));
             Assert.False(NumberSearch.DataAccess.InternetBundle.CanSellAt(t300, eia));
             Assert.False(NumberSearch.DataAccess.InternetBundle.CanSellAt(NumberSearch.DataAccess.InternetBundle.StandardLinesServiceId, gig));
+            // Without a building key Cart/Add can't re-qualify the building, so it's never offered at a price.
+            Assert.False(NumberSearch.DataAccess.InternetBundle.CanSellAt(t300, noKey));
+        }
+
+        [Fact]
+        public void InternetBundleQualifyingAddressTest()
+        {
+            var t300 = NumberSearch.DataAccess.InternetBundle.FiberInternet300ServiceId;
+            var t1g = NumberSearch.DataAccess.InternetBundle.FiberInternet1GServiceId;
+            var sellable = new NumberSearch.DataAccess.ServiceAddress { Product = "WFI", Status = "Sellable", MaxSpeed = "1.0G/1.0G", BuildingKey = "BK-1" };
+            var confirm = new NumberSearch.DataAccess.ServiceAddress { Product = "WFI", Status = "Confirm", MaxSpeed = "300.0M/300.0M", BuildingKey = "BK-1" };
+            var slow = new NumberSearch.DataAccess.ServiceAddress { Product = "WFI", Status = "Sellable", MaxSpeed = "300.0M/300.0M", BuildingKey = "BK-1" };
+            var noKey = new NumberSearch.DataAccess.ServiceAddress { Product = "WFI", Status = "Sellable", MaxSpeed = "1.0G/1.0G", BuildingKey = "" };
+
+            // Rows sharing a key qualify the same way whichever order they come back in.
+            Assert.Same(sellable, NumberSearch.DataAccess.InternetBundle.QualifyingAddress(t1g, [confirm, sellable]));
+            Assert.Same(sellable, NumberSearch.DataAccess.InternetBundle.QualifyingAddress(t1g, [sellable, confirm]));
+            Assert.Same(sellable, NumberSearch.DataAccess.InternetBundle.QualifyingAddress(t300, [slow, confirm, sellable]));
+            Assert.Same(slow, NumberSearch.DataAccess.InternetBundle.QualifyingAddress(t300, [confirm, slow]));
+            Assert.Null(NumberSearch.DataAccess.InternetBundle.QualifyingAddress(t1g, [confirm, slow]));
+            Assert.Null(NumberSearch.DataAccess.InternetBundle.QualifyingAddress(t300, [noKey]));
+            Assert.Null(NumberSearch.DataAccess.InternetBundle.QualifyingAddress(t300, []));
         }
 
         [Fact]

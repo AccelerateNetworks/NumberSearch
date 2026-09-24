@@ -74,9 +74,12 @@
                             return `<tr><td>${escapeHtml(offer.name)}<br /><small class="text-muted">${escapeHtml(offer.note)}</small></td><td>${escapeHtml(offer.speed)}</td><td>${price}</td><td>${action}</td></tr>`;
                         });
                         // Say which listed building we checked, since a near match might not be the address that was typed.
-                        const checked = availability.exactMatch
-                            ? `Showing services for ${escapeHtml(availability.matchedAddress)}.`
-                            : `We couldn't find this exact address, the closest listed building is ${escapeHtml(availability.matchedAddress)}. Please ${contact} to confirm before ordering.`;
+                        const matched = escapeHtml(availability.matchedAddress);
+                        const checked = availability.matchType == 'Exact'
+                            ? `Showing services for ${matched}.`
+                            : availability.matchType == 'HouseNumber'
+                                ? `We found ${matched} on your street, which may be a different unit or lot. Please ${contact} to confirm before ordering.`
+                                : `We couldn't find this exact address, the closest listed building is ${matched}. Please ${contact} to confirm before ordering.`;
                         rows.unshift(`<tr><td colspan="4"><small class="text-muted">${checked}</small></td></tr>`);
                         document.getElementById("resultstablebody").innerHTML = rows.join('');
                         document.getElementById("spinner").hidden = true;

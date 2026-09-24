@@ -481,8 +481,10 @@ namespace NumberSearch.Mvc.Controllers
                     if (checkService && InternetBundle.IsFiberInternet(serviceId))
                     {
                         // Fiber can only be bought at an address the Internet page qualified, so we know which building we're installing at.
-                        var qualified = !string.IsNullOrWhiteSpace(buildingKey) ? await ServiceAddress.GetByBuildingKeyAsync("WFI", buildingKey.Trim(), mvcConfiguration.PostgresqlProd) : null;
-                        if (qualified is null || !InternetBundle.CanSellAt(serviceId, qualified))
+                        // Ask whether any listed row for the building can sell this tier, the same rule the Internet page used to offer it.
+                        var rows = await ServiceAddress.GetAllByBuildingKeyAsync("WFI", buildingKey?.Trim() ?? string.Empty, mvcConfiguration.PostgresqlProd);
+                        var qualified = InternetBundle.QualifyingAddress(serviceId, rows);
+                        if (qualified is null)
                         {
                             return BadRequest("Check your address on the Internet page before adding fiber internet to your cart.");
                         }

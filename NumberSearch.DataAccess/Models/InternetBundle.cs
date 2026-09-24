@@ -33,10 +33,19 @@ namespace NumberSearch.DataAccess
         public static int RequiredMbps(Guid serviceId) => serviceId == FiberInternet1GServiceId ? 1000 : serviceId == FiberInternet300ServiceId ? 300 : 0;
 
         /// <summary>
-        /// Whether a fiber tier can be sold at a listed address: only WFI Sellable buildings listed at or above the tier's speed.
+        /// Whether a fiber tier can be sold at a listed address: only WFI Sellable buildings listed at or above the tier's speed,
+        /// with a building key so Cart/Add can re-qualify the building.
         /// </summary>
         public static bool CanSellAt(Guid serviceId, ServiceAddress address) =>
-            IsFiberInternet(serviceId) && address.Product is "WFI" && address.Status is "Sellable" && ServiceAddress.ParseMbps(address.MaxSpeed) >= RequiredMbps(serviceId);
+            IsFiberInternet(serviceId) && address.Product is "WFI" && address.Status is "Sellable" && !string.IsNullOrWhiteSpace(address.BuildingKey)
+            && ServiceAddress.ParseMbps(address.MaxSpeed) >= RequiredMbps(serviceId);
+
+        /// <summary>
+        /// The listed row a fiber tier can be sold at, or null. Both the Internet page and Cart/Add ask "can any of these rows sell this tier",
+        /// so they agree however many rows a building has and whatever order they come back in.
+        /// </summary>
+        public static ServiceAddress? QualifyingAddress(Guid serviceId, IEnumerable<ServiceAddress> addresses) =>
+            addresses.Where(x => CanSellAt(serviceId, x)).OrderByDescending(x => ServiceAddress.ParseMbps(x.MaxSpeed)).FirstOrDefault();
 
         public static bool IsPhoneService(Guid serviceId) => serviceId == StandardLinesServiceId || serviceId == ConcurrentSeatsServiceId;
 

@@ -30,7 +30,9 @@ CREATE TABLE IF NOT EXISTS public."ServiceAddresses"
 
 CREATE INDEX IF NOT EXISTS "ServiceAddresses_Address_idx" ON public."ServiceAddresses" ("Postal", "HouseNumber");
 CREATE INDEX IF NOT EXISTS "ServiceAddresses_Street_idx" ON public."ServiceAddresses" ("Postal", "StreetKey");
-CREATE INDEX IF NOT EXISTS "ServiceAddresses_BuildingKey_idx" ON public."ServiceAddresses" ("BuildingKey");
+-- One row per product and building, so Cart/Add re-qualifies the same building the Internet page offered. A list that breaks this fails the import, which leaves the existing rows in place.
+CREATE UNIQUE INDEX IF NOT EXISTS "ServiceAddresses_Product_BuildingKey_key" ON public."ServiceAddresses" ("Product", "BuildingKey") WHERE "BuildingKey" <> '';
+DROP INDEX IF EXISTS public."ServiceAddresses_BuildingKey_idx";
 CREATE INDEX IF NOT EXISTS "ServiceAddresses_Location_idx" ON public."ServiceAddresses" ("Latitude", "Longitude");
 
 ALTER TABLE public."ServiceAddresses" OWNER TO "numberSearch";

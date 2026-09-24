@@ -119,7 +119,10 @@ def main():
         sys.exit(__doc__)
     product, path, psql_args = sys.argv[1], sys.argv[2], sys.argv[3:]
     source = os.path.basename(path)
-    kept = skipped = 0
+    kept = skipped = blank_sellable = 0
+    # Cart/Add re-qualifies a building by its key, so each key must be one row. Checked here so a bad list fails before the database is touched.
+    seen_keys = {}
+    duplicate_keys = []
 
     with tempfile.NamedTemporaryFile('w', newline='', suffix='.csv', delete=False) as out:
         # Quote everything so empty values load as empty strings rather than NULL.
@@ -138,11 +141,26 @@ def main():
                 lat, lon = float(row.get('Latitude') or 0), float(row.get('Longitude') or 0)
             except ValueError:
                 lat = lon = 0.0
+            key = row.get('C2F Building Key', '')
+            if key:
+                if key in seen_keys and len(duplicate_keys) < 5:
+                    duplicate_keys.append(f"{key} ({seen_keys[key]} and {row.get('Street Address', '').strip()})")
+                seen_keys.setdefault(key, row.get('Street Address', '').strip())
+            elif s == 'Sellable':
+                blank_sellable += 1
             writer.writerow([row.get('Provider') or 'Ziply Fiber', product, s, row.get('Primary Number', ''),
                              street_key(row.get('Street Name', '')), row.get('Street Address', ''),
                              row.get('City', ''), row.get('State', ''), row.get('Postal', '')[:5], lat, lon,
                              row.get('BFI Max Serviceable Speed', ''), row.get('C2F Building Key', ''), source])
             kept += 1
+
+    if duplicate_keys:
+        os.unlink(out.name)
+        sys.exit(f'{path} lists the same C2F Building Key on more than one {product} row, ex. {"; ".join(duplicate_keys)}. '
+                 'Leaving the existing rows in place.')
+
+    if blank_sellable:
+        print(f'Warning: {blank_sellable} Sellable {product} rows have no C2F Building Key. The Internet page will ask those customers to contact us.')
 
     if kept == 0:
         os.unlink(out.name)
@@ -158,6 +176,8 @@ def main():
     )
     try:
         subprocess.run(['psql', '-v', 'ON_ERROR_STOP=1', *psql_args], input=script, text=True, check=True)
+    except subprocess.CalledProcessError:
+        sys.exit(f'psql failed loading {source}, see the error above. The import runs in one transaction, so the existing rows are still in place.')
     finally:
         os.unlink(out.name)
     print(f'Loaded {kept} {product} addresses from {source}, skipped {skipped} not serviceable.')

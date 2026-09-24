@@ -76,7 +76,9 @@ namespace NumberSearch.DataAccess
             {
                 return 0;
             }
-            return (int)(char.ToUpperInvariant(match.Groups[2].Value[0]) is 'G' ? value * 1000 : value);
+            var mbps = char.ToUpperInvariant(match.Groups[2].Value[0]) is 'G' ? value * 1000 : value;
+            // Saturate rather than overflow on an absurd value, ex. a misaligned column.
+            return (int)Math.Min(mbps, int.MaxValue);
         }
 
         /// <summary>
@@ -87,16 +89,25 @@ namespace NumberSearch.DataAccess
         public readonly record struct LookupResult(MatchType Match, ServiceAddress[] Addresses);
 
         /// <summary>
-        /// Get a listed building by the provider's building key. Unlike ServiceAddressId, the key stays the same when the building lists are re-imported.
+        /// Get the listed rows for a building by the provider's building key. Unlike ServiceAddressId, the key stays the same when the building lists are re-imported.
+        /// The import enforces one row per product and key, but callers treat this as a set so they never depend on which row comes back.
         /// </summary>
-        public static async Task<ServiceAddress?> GetByBuildingKeyAsync(string product, string buildingKey, string connectionString)
+        public static async Task<ServiceAddress[]> GetAllByBuildingKeyAsync(string product, string buildingKey, string connectionString)
         {
+            if (string.IsNullOrWhiteSpace(buildingKey))
+            {
+                return [];
+            }
+
             await using var connection = new NpgsqlConnection(connectionString);
 
-            return await connection
-                .QueryFirstOrDefaultAsync<ServiceAddress>($"SELECT {Columns} FROM public.\"ServiceAddresses\" WHERE \"Product\" = @product AND \"BuildingKey\" = @buildingKey",
+            // The BuildingKey <> '' predicate lets the planner use the partial unique index for every plan, not just custom ones.
+            var result = await connection
+                .QueryAsync<ServiceAddress>($"SELECT {Columns} FROM public.\"ServiceAddresses\" WHERE \"Product\" = @product AND \"BuildingKey\" = @buildingKey AND \"BuildingKey\" <> ''",
                 new { product, buildingKey })
                 .ConfigureAwait(false);
+
+            return [.. result];
         }
 
         /// <summary>
