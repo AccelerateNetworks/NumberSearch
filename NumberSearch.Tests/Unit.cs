@@ -60,8 +60,69 @@ namespace NumberSearch.Tests
             // Phone service without fiber has nothing to discount.
             Assert.Equal(0, NumberSearch.DataAccess.InternetBundle.Discount([lines, partner]));
 
+            // Coupons don't carry a meaningful quantity, so a Partner line qualifies whatever its quantity.
+            var partnerNoQuantity = new NumberSearch.DataAccess.ProductOrder { CouponId = NumberSearch.DataAccess.InternetBundle.PartnerCouponId, Quantity = 0 };
+            Assert.Equal(15, NumberSearch.DataAccess.InternetBundle.Discount([fiber, partnerNoQuantity]));
+
             Assert.True(NumberSearch.DataAccess.InternetBundle.IsPartnerOnly([fiber, partner]));
             Assert.False(NumberSearch.DataAccess.InternetBundle.IsPartnerOnly([fiber, lines, partner]));
+        }
+
+        [Theory]
+        [InlineData("1.0G/1.0G", 1000)]
+        [InlineData("300.0M/300.0M", 300)]
+        [InlineData("2.0G/2.0G", 2000)]
+        [InlineData("10G", 10000)]
+        [InlineData("1000M", 1000)]
+        [InlineData("50.0M/50.0M", 50)]
+        [InlineData("1 Gbps", 1000)]
+        [InlineData("", 0)]
+        [InlineData("fast", 0)]
+        public void ServiceAddressParseMbpsTest(string maxSpeed, int expected)
+        {
+            Assert.Equal(expected, NumberSearch.DataAccess.ServiceAddress.ParseMbps(maxSpeed));
+        }
+
+        [Theory]
+        [InlineData("512", "512")]
+        [InlineData("0512", "512")]
+        [InlineData("512 1/2", "512")]
+        [InlineData("1250A", "1250")]
+        [InlineData("N123", "")]
+        [InlineData("", "")]
+        public void ServiceAddressHouseKeyTest(string houseNumber, string expected)
+        {
+            Assert.Equal(expected, NumberSearch.DataAccess.ServiceAddress.ToHouseKey(houseNumber));
+        }
+
+        [Fact]
+        public void InternetBundleCanSellAtTest()
+        {
+            var gig = new NumberSearch.DataAccess.ServiceAddress { Product = "WFI", Status = "Sellable", MaxSpeed = "1.0G/1.0G" };
+            var slow = new NumberSearch.DataAccess.ServiceAddress { Product = "WFI", Status = "Sellable", MaxSpeed = "300.0M/300.0M" };
+            var slower = new NumberSearch.DataAccess.ServiceAddress { Product = "WFI", Status = "Sellable", MaxSpeed = "100.0M/100.0M" };
+            var unreadable = new NumberSearch.DataAccess.ServiceAddress { Product = "WFI", Status = "Sellable", MaxSpeed = "" };
+            var confirm = new NumberSearch.DataAccess.ServiceAddress { Product = "WFI", Status = "Confirm", MaxSpeed = "1.0G/1.0G" };
+            var eia = new NumberSearch.DataAccess.ServiceAddress { Product = "EIA", Status = "Quote", MaxSpeed = "1.0G/1.0G" };
+            var t300 = NumberSearch.DataAccess.InternetBundle.FiberInternet300ServiceId;
+            var t1g = NumberSearch.DataAccess.InternetBundle.FiberInternet1GServiceId;
+
+            Assert.True(NumberSearch.DataAccess.InternetBundle.CanSellAt(t300, gig));
+            Assert.True(NumberSearch.DataAccess.InternetBundle.CanSellAt(t1g, gig));
+            Assert.True(NumberSearch.DataAccess.InternetBundle.CanSellAt(t300, slow));
+            Assert.False(NumberSearch.DataAccess.InternetBundle.CanSellAt(t1g, slow));
+            Assert.False(NumberSearch.DataAccess.InternetBundle.CanSellAt(t300, slower));
+            Assert.False(NumberSearch.DataAccess.InternetBundle.CanSellAt(t300, unreadable));
+            Assert.False(NumberSearch.DataAccess.InternetBundle.CanSellAt(t300, confirm));
+            Assert.False(NumberSearch.DataAccess.InternetBundle.CanSellAt(t300, eia));
+            Assert.False(NumberSearch.DataAccess.InternetBundle.CanSellAt(NumberSearch.DataAccess.InternetBundle.StandardLinesServiceId, gig));
+        }
+
+        [Fact]
+        public void InternetBundleFiberNotesTest()
+        {
+            Assert.Equal("3 year term. Service address: 71 Pine Cliff Dr, Naches, Washington 98937. Fiber.", NumberSearch.DataAccess.InternetBundle.FiberNotes(3, "71 Pine Cliff Dr, Naches, Washington 98937", "Fiber."));
+            Assert.Equal("Fiber.", NumberSearch.DataAccess.InternetBundle.FiberNotes(0, "", "Fiber."));
         }
 
         [Fact]

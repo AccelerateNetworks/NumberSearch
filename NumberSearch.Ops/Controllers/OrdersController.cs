@@ -1526,7 +1526,7 @@ public class OrdersController(OpsConfig opsConfig,
                                     reoccurringItems.Add(new Line_Items
                                     {
                                         product_key = service.Name ?? string.Empty,
-                                        notes = NumberSearch.DataAccess.InternetBundle.IsFiberInternet(service.ServiceId) && order.InternetTermYears > 0 ? $"{order.InternetTermYears} year term. {service.Description}" : $"{service.Description}",
+                                        notes = NumberSearch.DataAccess.InternetBundle.IsFiberInternet(service.ServiceId) ? NumberSearch.DataAccess.InternetBundle.FiberNotes(order.InternetTermYears, order.InternetServiceAddress, service.Description ?? string.Empty) : $"{service.Description}",
                                         cost = price,
                                         quantity = Convert.ToInt32(productOrder.Quantity)
                                     });
@@ -1618,11 +1618,9 @@ public class OrdersController(OpsConfig opsConfig,
                         }
 
                         // Fiber internet is discounted once per connection when bundled with phone service or the Partner coupon.
-                        var bundleLines = cart.ProductOrders.Select(x => new NumberSearch.DataAccess.InternetBundle.Line(x.ServiceId ?? Guid.Empty, x.Quantity, x.CouponId)).ToArray();
-                        var bundleDiscount = NumberSearch.DataAccess.InternetBundle.Discount(bundleLines);
-                        if (bundleDiscount > 0)
+                        var bundleLines = (cart?.ProductOrders ?? []).Select(x => new NumberSearch.DataAccess.InternetBundle.Line(x.ServiceId ?? Guid.Empty, x.Quantity, x.CouponId)).ToArray();
+                        if (NumberSearch.DataAccess.InternetBundle.Discount(bundleLines) > 0)
                         {
-                            totalCost -= bundleDiscount;
                             reoccurringItems.Add(new Line_Items
                             {
                                 product_key = NumberSearch.DataAccess.InternetBundle.Name,

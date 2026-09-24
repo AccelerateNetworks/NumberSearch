@@ -42,5 +42,7 @@ namespace AccelerateNetworks.Operations
         /// Chosen by the customer at checkout, read only here so editing an order can't clear it.
         /// </summary>
         public int InternetTermYears { get; set; }
+        public string InternetServiceAddress { get; set; } = string.Empty;
+        public string InternetBuildingKey { get; set; } = string.Empty;
     }
 }

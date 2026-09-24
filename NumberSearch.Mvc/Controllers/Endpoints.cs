@@ -7,6 +7,8 @@ using NumberSearch.Mvc.Models;
 
 using PhoneNumbersNA;
 
+using Serilog;
+
 using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 
@@ -216,9 +218,11 @@ namespace NumberSearch.Mvc.Controllers
         /// The services available at an address.
         /// </summary>
         /// <param name="serviceable">Whether any service is available at the address.</param>
-        /// <param name="matchedAddress">The address from the provider's building list that matched the query.</param>
+        /// <param name="matchedAddress">The address from the provider's building list that matched the query, to show the customer what we checked.</param>
+        /// <param name="exactMatch">Whether the matched address is the one searched for, rather than the same building number or the nearest listed building.</param>
+        /// <param name="serviceAddressId">The listed address to pass to Cart/Add when adding a Sellable fiber tier, or 0.</param>
         /// <param name="offers">The services available at the address.</param>
-        public readonly record struct InternetAvailability(bool serviceable, string matchedAddress, InternetOffer[] offers);
+        public readonly record struct InternetAvailability(bool serviceable, string matchedAddress, bool exactMatch, long serviceAddressId, InternetOffer[] offers);
 
         private const string FiberTerms = "2, 3 or 5 year term. $15/mo off when bundled with any phone service.";
 
@@ -239,30 +243,41 @@ namespace NumberSearch.Mvc.Controllers
                 return TypedResults.BadRequest("Provide a houseNumber, street, and postal code or a latitude and longitude (ex: houseNumber=1250&street=1st&postal=98134). Please try a different query. 🥺👉👈");
             }
 
-            var addresses = (await ServiceAddress.LookupAsync(houseNumber ?? string.Empty, street ?? string.Empty, postal ?? string.Empty, latitude ?? 0, longitude ?? 0, mvcConfiguration.PostgresqlProd)).ToArray();
+            var lookup = await ServiceAddress.LookupAsync(houseNumber ?? string.Empty, street ?? string.Empty, postal ?? string.Empty, latitude ?? 0, longitude ?? 0, mvcConfiguration.PostgresqlProd);
+            var exact = lookup.Match is ServiceAddress.MatchType.Exact;
             var offers = new List<InternetOffer>();
 
-            var wfi = addresses.AsValueEnumerable().Where(x => x.Product is "WFI").ToArray();
-            if (wfi.AsValueEnumerable().Any(x => x.Status is "Sellable"))
+            var wfi = lookup.Addresses.AsValueEnumerable().Where(x => x.Product is "WFI").ToArray();
+            // Only an exact address match is sold at the listed price. The same building number or a nearby building might be the building next door.
+            var sellable = exact ? wfi.AsValueEnumerable().Where(x => x.Status is "Sellable").OrderByDescending(x => ServiceAddress.ParseMbps(x.MaxSpeed)).FirstOrDefault() : null;
+            var tiers = sellable is null ? [] : new[]
             {
-                offers.Add(new("WFI", "Sellable", "Fiber Internet 300 Mbps", "300/300 Mbps", 75, InternetBundle.FiberInternet300ServiceId, FiberTerms));
-                if (wfi.AsValueEnumerable().Any(x => x.Status is "Sellable" && x.MaxSpeed.StartsWith("1.0G")))
-                {
-                    offers.Add(new("WFI", "Sellable", "Fiber Internet 1 Gbps", "1/1 Gbps", 115, InternetBundle.FiberInternet1GServiceId, FiberTerms));
-                }
+                new InternetOffer("WFI", "Sellable", "Fiber Internet 300 Mbps", "300/300 Mbps", 75, InternetBundle.FiberInternet300ServiceId, FiberTerms),
+                new InternetOffer("WFI", "Sellable", "Fiber Internet 1 Gbps", "1/1 Gbps", 115, InternetBundle.FiberInternet1GServiceId, FiberTerms),
+            }.AsValueEnumerable().Where(x => InternetBundle.CanSellAt(x.serviceId, sellable)).ToArray();
+
+            if (tiers.Length > 0)
+            {
+                offers.AddRange(tiers);
             }
             else if (wfi.Length > 0)
             {
+                if (sellable is not null)
+                {
+                    Log.Warning("[Internet] Sellable building {BuildingKey} is listed at {MaxSpeed}, which is below every fiber tier or can't be read.", sellable.BuildingKey, sellable.MaxSpeed);
+                }
                 offers.Add(new("WFI", "Confirm", "Fiber Internet", "Up to 1/1 Gbps", 0, Guid.Empty, "Fiber may be available here. Contact us to confirm before ordering."));
             }
 
-            if (addresses.AsValueEnumerable().Any(x => x.Product is "EIA" && x.Status is "Quote"))
+            if (lookup.Addresses.AsValueEnumerable().Any(x => x.Product is "EIA" && x.Status is "Quote"))
             {
                 offers.Add(new("EIA", "Quote", "Ethernet Internet Access", "Dedicated, custom speeds", 0, Guid.Empty, "Dedicated fiber with an SLA. Contact us for a quote."));
             }
 
-            var matched = addresses.AsValueEnumerable().Select(x => $"{x.StreetAddress.Trim()}, {x.City}, {x.State} {x.Postal}").FirstOrDefault() ?? string.Empty;
-            return TypedResults.Ok(new InternetAvailability(offers.Count > 0, matched, offers.ToArray()));
+            // Name the building the fiber offers came from, so the address shown always matches the offers.
+            var shown = tiers.Length > 0 ? sellable : wfi.AsValueEnumerable().FirstOrDefault() ?? lookup.Addresses.AsValueEnumerable().FirstOrDefault();
+            var matched = shown is null ? string.Empty : $"{shown.StreetAddress.Trim()}, {shown.City}, {shown.State} {shown.Postal}";
+            return TypedResults.Ok(new InternetAvailability(offers.Count > 0, matched, exact, tiers.Length > 0 ? sellable!.ServiceAddressId : 0, offers.ToArray()));
         }
 
         /// <summary>

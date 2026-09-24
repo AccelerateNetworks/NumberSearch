@@ -65,13 +65,19 @@
                             showMessage(`We don't have internet service listed at this address yet. Please ${contact} and we'll check for you.`);
                             return;
                         }
+                        const qualified = `serviceAddressId=${encodeURIComponent(availability.serviceAddressId)}`;
                         const rows = availability.offers.map(offer => {
                             const price = offer.price > 0 ? `$${offer.price}/mo` : 'Quote';
                             const action = offer.status == 'Sellable'
-                                ? `<button onclick="AddToCart('Service', '${offer.serviceId}', 1, this)" class="btn btn-outline-primary"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span> Add to Cart </button>`
+                                ? `<button onclick="AddToCart('Service', '${offer.serviceId}', 1, this, '${qualified}')" class="btn btn-outline-primary"> <span class="d-none spinner-border spinner-border-sm mr-2" role="status">&nbsp;</span> Add to Cart </button>`
                                 : `<a href="/Support" class="btn btn-outline-secondary">${offer.status == 'Quote' ? 'Request a Quote' : 'Contact Us'}</a>`;
                             return `<tr><td>${escapeHtml(offer.name)}<br /><small class="text-muted">${escapeHtml(offer.note)}</small></td><td>${escapeHtml(offer.speed)}</td><td>${price}</td><td>${action}</td></tr>`;
                         });
+                        // Say which listed building we checked, since a near match might not be the address that was typed.
+                        const checked = availability.exactMatch
+                            ? `Showing services for ${escapeHtml(availability.matchedAddress)}.`
+                            : `We couldn't find this exact address, the closest listed building is ${escapeHtml(availability.matchedAddress)}. Please ${contact} to confirm before ordering.`;
+                        rows.unshift(`<tr><td colspan="4"><small class="text-muted">${checked}</small></td></tr>`);
                         document.getElementById("resultstablebody").innerHTML = rows.join('');
                         document.getElementById("spinner").hidden = true;
                     });

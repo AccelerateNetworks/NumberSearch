@@ -35,27 +35,71 @@ def column_index(ref):
     return n - 1
 
 
+def shared_strings(z):
+    """The workbook's shared string table. Ziply's exports use inline strings, but a list re-saved in Excel uses this."""
+    if 'xl/sharedStrings.xml' not in z.namelist():
+        return []
+    strings = []
+    with z.open('xl/sharedStrings.xml') as f:
+        for _, el in iterparse(f, events=('end',)):
+            if el.tag == NS + 'si':
+                strings.append(''.join(t.text or '' for t in el.iter(NS + 't')))
+                el.clear()
+    return strings
+
+
+def cell_text(c, strings):
+    if c.get('t') == 's':
+        v = c.find(NS + 'v')
+        return strings[int(v.text)] if v is not None and v.text else ''
+    text = ''.join(t.text or '' for t in c.iter(NS + 't'))
+    if not text:
+        v = c.find(NS + 'v')
+        text = v.text or '' if v is not None else ''
+    return text
+
+
+class NoHeader(Exception):
+    pass
+
+
 def rows(path):
     """Yield each row after the header as a dict keyed by column name."""
     header = None
-    with zipfile.ZipFile(path) as z, z.open('xl/worksheets/sheet1.xml') as sheet:
-        for _, el in iterparse(sheet, events=('end',)):
-            if el.tag != NS + 'row':
-                continue
-            values = {}
-            for c in el.findall(NS + 'c'):
-                text = ''.join(t.text or '' for t in c.iter(NS + 't'))
-                if not text:
-                    v = c.find(NS + 'v')
-                    text = v.text or '' if v is not None else ''
-                values[column_index(c.get('r'))] = text.strip()
-            el.clear()
-            if header is None:
-                if values.get(0) == 'Building Name':
-                    header = values
-                continue
-            if values:
-                yield {name: values.get(i, '') for i, name in header.items()}
+    with zipfile.ZipFile(path) as z:
+        strings = shared_strings(z)
+        with z.open('xl/worksheets/sheet1.xml') as sheet:
+            for _, el in iterparse(sheet, events=('end',)):
+                if el.tag != NS + 'row':
+                    continue
+                values = {}
+                for position, c in enumerate(el.findall(NS + 'c')):
+                    # The cell reference is optional, in which case cells are in column order.
+                    ref = c.get('r')
+                    values[column_index(ref) if ref else position] = cell_text(c, strings).strip()
+                el.clear()
+                if header is None:
+                    if 'Building Name' in values.values() and 'Street Address' in values.values():
+                        header = values
+                    continue
+                if values:
+                    yield {name: values.get(i, '') for i, name in header.items()}
+    if header is None:
+        raise NoHeader(f'No header row with "Building Name" and "Street Address" found in {path}. Is this a Ziply building list?')
+
+
+def list_rows(path):
+    """rows(), but reading the header before any row is written so a missing header fails before the database is touched."""
+    it = rows(path)
+    first = next(it, None)
+    if first is None:
+        return iter(())
+    return _chain(first, it)
+
+
+def _chain(first, it):
+    yield first
+    yield from it
 
 
 def status(product, row):
@@ -80,7 +124,12 @@ def main():
     with tempfile.NamedTemporaryFile('w', newline='', suffix='.csv', delete=False) as out:
         # Quote everything so empty values load as empty strings rather than NULL.
         writer = csv.writer(out, quoting=csv.QUOTE_ALL)
-        for row in rows(path):
+        try:
+            listed = list_rows(path)
+        except NoHeader as e:
+            os.unlink(out.name)
+            sys.exit(f'{e} Leaving the existing rows in place.')
+        for row in listed:
             s = status(product, row)
             if s is None:
                 skipped += 1
@@ -97,7 +146,7 @@ def main():
 
     if kept == 0:
         os.unlink(out.name)
-        sys.exit(f'No {product} rows found in {path}, leaving the existing rows in place.')
+        sys.exit(f'Found the header in {path} but no {product} rows we can sell or quote, leaving the existing rows in place.')
 
     columns = ', '.join(f'"{c}"' for c in COLUMNS)
     script = (

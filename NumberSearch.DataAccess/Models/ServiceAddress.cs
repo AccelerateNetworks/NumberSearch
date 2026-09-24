@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace NumberSearch.DataAccess
@@ -28,10 +29,11 @@ namespace NumberSearch.DataAccess
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public string MaxSpeed { get; set; } = string.Empty;
+        public string BuildingKey { get; set; } = string.Empty;
         public string SourceFile { get; set; } = string.Empty;
         public DateTime DateIngested { get; set; }
 
-        private const string Columns = "\"ServiceAddressId\", \"Provider\", \"Product\", \"Status\", \"HouseNumber\", \"StreetKey\", \"StreetAddress\", \"City\", \"State\", \"Postal\", \"Latitude\", \"Longitude\", \"MaxSpeed\", \"SourceFile\", \"DateIngested\"";
+        private const string Columns = "\"ServiceAddressId\", \"Provider\", \"Product\", \"Status\", \"HouseNumber\", \"StreetKey\", \"StreetAddress\", \"City\", \"State\", \"Postal\", \"Latitude\", \"Longitude\", \"MaxSpeed\", \"BuildingKey\", \"SourceFile\", \"DateIngested\"";
 
         /// <summary>
         /// How far a geocoded point may be from a listed building and still count as that building, when the street address doesn't match.
@@ -55,30 +57,79 @@ namespace NumberSearch.DataAccess
         }
 
         /// <summary>
-        /// Find the listed addresses matching a street address, or failing that the nearest listed building within MaxDistanceMeters of the point.
+        /// The leading building number of a house number, without leading zeros, ex. "0512" -> "512", "512 1/2" -> "512", "1250A" -> "1250".
+        /// Only used when the exact house number doesn't match, because it can't tell 512 from 512 1/2.
         /// </summary>
-        public static async Task<IEnumerable<ServiceAddress>> LookupAsync(string houseNumber, string streetName, string postal, double latitude, double longitude, string connectionString)
+        public static string ToHouseKey(string houseNumber)
+        {
+            var digits = Regex.Match(houseNumber.Trim(), @"^\d+").Value.TrimStart('0');
+            return digits.Length > 0 ? digits : string.Empty;
+        }
+
+        /// <summary>
+        /// The download speed in Mbps from a building list speed like "1.0G/1.0G" or "300.0M/300.0M", or 0 when it can't be read.
+        /// </summary>
+        public static int ParseMbps(string maxSpeed)
+        {
+            var match = Regex.Match(maxSpeed, @"^\s*(\d+(?:\.\d+)?)\s*([GM])", RegexOptions.IgnoreCase);
+            if (!match.Success || !decimal.TryParse(match.Groups[1].Value, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var value))
+            {
+                return 0;
+            }
+            return (int)(char.ToUpperInvariant(match.Groups[2].Value[0]) is 'G' ? value * 1000 : value);
+        }
+
+        /// <summary>
+        /// How a lookup matched the listed addresses. Only an Exact match is precise enough to sell at the listed price.
+        /// </summary>
+        public enum MatchType { None, Exact, HouseNumber, Nearby }
+
+        public readonly record struct LookupResult(MatchType Match, ServiceAddress[] Addresses);
+
+        public static async Task<ServiceAddress?> GetByIdAsync(long serviceAddressId, string connectionString)
+        {
+            await using var connection = new NpgsqlConnection(connectionString);
+
+            return await connection
+                .QueryFirstOrDefaultAsync<ServiceAddress>($"SELECT {Columns} FROM public.\"ServiceAddresses\" WHERE \"ServiceAddressId\" = @serviceAddressId",
+                new { serviceAddressId })
+                .ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Find the listed addresses matching a street address. Failing an exact house number, try the building number without suffixes or fractions,
+        /// and failing that the nearest listed building within MaxDistanceMeters of the point.
+        /// </summary>
+        public static async Task<LookupResult> LookupAsync(string houseNumber, string streetName, string postal, double latitude, double longitude, string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);
 
             var streetKey = ToStreetKey(streetName);
             if (!string.IsNullOrWhiteSpace(houseNumber) && !string.IsNullOrWhiteSpace(streetKey) && !string.IsNullOrWhiteSpace(postal))
             {
-                var matches = await connection
+                var street = (await connection
                     .QueryAsync<ServiceAddress>($"SELECT {Columns} FROM public.\"ServiceAddresses\" " +
-                    "WHERE \"Postal\" = @postal AND \"HouseNumber\" = @houseNumber AND \"StreetKey\" = @streetKey",
-                    new { postal = postal.Trim(), houseNumber = houseNumber.Trim(), streetKey })
-                    .ConfigureAwait(false);
+                    "WHERE \"Postal\" = @postal AND \"StreetKey\" = @streetKey",
+                    new { postal = postal.Trim(), streetKey })
+                    .ConfigureAwait(false)).ToArray();
 
-                if (matches.Any())
+                var exact = street.Where(x => string.Equals(x.HouseNumber.Trim(), houseNumber.Trim(), StringComparison.OrdinalIgnoreCase)).ToArray();
+                if (exact.Length > 0)
                 {
-                    return matches;
+                    return new(MatchType.Exact, exact);
+                }
+
+                var houseKey = ToHouseKey(houseNumber);
+                var sameBuilding = houseKey.Length > 0 ? street.Where(x => ToHouseKey(x.HouseNumber) == houseKey).ToArray() : [];
+                if (sameBuilding.Length > 0)
+                {
+                    return new(MatchType.HouseNumber, sameBuilding);
                 }
             }
 
             if (latitude is 0 && longitude is 0)
             {
-                return [];
+                return new(MatchType.None, []);
             }
 
             // Search a small box around the point using the index, then keep only the closest building's rows.
@@ -98,10 +149,10 @@ namespace NumberSearch.DataAccess
 
             if (closest.Address is null)
             {
-                return [];
+                return new(MatchType.None, []);
             }
 
-            return nearby.Where(x => x.Latitude == closest.Address.Latitude && x.Longitude == closest.Address.Longitude);
+            return new(MatchType.Nearby, [.. nearby.Where(x => x.Latitude == closest.Address.Latitude && x.Longitude == closest.Address.Longitude)]);
         }
 
         /// <summary>

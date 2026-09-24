@@ -540,6 +540,12 @@
                                     localTotal = coupon.Value;
                                     couponTotal += localTotal * -1;
                                 }
+
+                                // With no 5G in the order the Partner coupon only qualifies fiber for the bundle discount, which has its own line.
+                                if (coupon.Type == "Service" && localTotal == 0)
+                                {
+                                    continue;
+                                }
                                 <li class="list-group-item d-flex justify-content-between lh-condensed bg-light">
                                     <div class="text-success">
                                         <h6 class="my-0">
@@ -693,6 +699,10 @@
                             <small class="text-muted">
                                 Fiber internet is billed monthly on a 2, 3 or 5 year term
                             </small>
+                            @if (!string.IsNullOrWhiteSpace(Model?.Cart?.Order?.InternetServiceAddress))
+                            {
+                                <div><small class="text-muted">Service address: @Model?.Cart?.Order?.InternetServiceAddress</small></div>
+                            }
                         </div>
                     }
 

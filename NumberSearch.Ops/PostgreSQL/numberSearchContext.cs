@@ -442,6 +442,10 @@ public partial class numberSearchContext : DbContext
             // Set by the customer at checkout, never written from here.
             entity.Property(e => e.InternetTermYears).Metadata.SetAfterSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
             entity.Property(e => e.InternetTermYears).Metadata.SetBeforeSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
+            entity.Property(e => e.InternetServiceAddress).Metadata.SetAfterSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
+            entity.Property(e => e.InternetServiceAddress).Metadata.SetBeforeSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
+            entity.Property(e => e.InternetBuildingKey).Metadata.SetAfterSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
+            entity.Property(e => e.InternetBuildingKey).Metadata.SetBeforeSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
         });
 
         modelBuilder.Entity<OwnedPhoneNumber>(entity =>

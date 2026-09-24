@@ -34,7 +34,7 @@ function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
-function AddToCart(type, id, quantity, element) {
+function AddToCart(type, id, quantity, element, query) {
     // Default to 1 unit if the "Add to Cart" button is pressed.
     const quantityDisplay = document.getElementById(id);
     if (quantityDisplay == null || quantityDisplay.value == null || quantityDisplay.value.length == 0) {
@@ -56,6 +56,9 @@ function AddToCart(type, id, quantity, element) {
     let spinner = $(element).find('span');
     spinner.removeClass('d-none');
     let route = `/Cart/Add/${type}/${id}/${quantity}`;
+    if (query) {
+        route += `?${query}`;
+    }
     fetch(route)
         .then(response => {
             if (!response.ok) {

@@ -688,6 +688,9 @@ Accelerate Networks
                 await HttpContext.Session.LoadAsync();
                 Cart cart = Cart.GetFromSession(HttpContext.Session);
 
+                // The qualified fiber address is set by Cart/Add, never by the form, so carry it over from the session.
+                order.InternetServiceAddress = cart.Order?.InternetServiceAddress ?? string.Empty;
+                order.InternetBuildingKey = cart.Order?.InternetBuildingKey ?? string.Empty;
                 cart.Order = order;
 
                 // This is purely so that we can isolate the state of this call when it fails out.
@@ -830,6 +833,14 @@ Accelerate Networks
 
                 if (InternetBundle.FiberConnections(cart.ProductOrders) > 0)
                 {
+                    if (string.IsNullOrWhiteSpace(order.InternetServiceAddress))
+                    {
+                        _ = cart.SetToSession(HttpContext.Session);
+                        Log.Error("[Checkout] Fiber internet is in the cart without a qualified service address.");
+                        var message = "💀 Please check your address on the Internet page before ordering fiber internet.";
+                        return View("Order", new CartResult { Message = message, Cart = cart });
+                    }
+
                     if (!InternetBundle.TermYears.Contains(order.InternetTermYears))
                     {
                         _ = cart.SetToSession(HttpContext.Session);
@@ -841,6 +852,8 @@ Accelerate Networks
                 else
                 {
                     order.InternetTermYears = 0;
+                    order.InternetServiceAddress = string.Empty;
+                    order.InternetBuildingKey = string.Empty;
                 }
 
                 order.DateSubmitted = DateTime.Now;
@@ -1248,7 +1261,7 @@ Accelerate Networks
                         reoccuringItems.Add(new Line_Items
                         {
                             product_key = service.Name,
-                            notes = InternetBundle.IsFiberInternet(service.ServiceId) && order.InternetTermYears > 0 ? $"{order.InternetTermYears} year term. {service.Description}" : $"{service.Description}",
+                            notes = InternetBundle.IsFiberInternet(service.ServiceId) ? InternetBundle.FiberNotes(order.InternetTermYears, order.InternetServiceAddress, service.Description) : $"{service.Description}",
                             cost = service.Price,
                             quantity = productOrder.Quantity
                         });
@@ -1343,13 +1356,17 @@ Accelerate Networks
                                     }
                                 }
                                 totalCost -= partnerDiscount;
-                                reoccuringItems.Add(new Line_Items
+                                // With no 5G in the order the Partner coupon only qualifies fiber for the bundle discount, which has its own line.
+                                if (partnerDiscount > 0)
                                 {
-                                    product_key = coupon.Name,
-                                    notes = coupon.Description,
-                                    cost = partnerDiscount * -1,
-                                    quantity = 1
-                                });
+                                    reoccuringItems.Add(new Line_Items
+                                    {
+                                        product_key = coupon.Name,
+                                        notes = coupon.Description,
+                                        cost = partnerDiscount * -1,
+                                        quantity = 1
+                                    });
+                                }
                             }
                         }
                         else
@@ -1368,16 +1385,15 @@ Accelerate Networks
                 }
             }
 
-            var bundleDiscount = InternetBundle.Discount(cart.ProductOrders);
-            if (bundleDiscount > 0)
+            var bundleOrders = cart?.ProductOrders ?? [];
+            if (InternetBundle.Discount(bundleOrders) > 0)
             {
-                totalCost -= bundleDiscount;
                 reoccuringItems.Add(new Line_Items
                 {
                     product_key = InternetBundle.Name,
-                    notes = InternetBundle.IsPartnerOnly(cart.ProductOrders) ? InternetBundle.PartnerDescription : InternetBundle.Description,
+                    notes = InternetBundle.IsPartnerOnly(bundleOrders) ? InternetBundle.PartnerDescription : InternetBundle.Description,
                     cost = InternetBundle.DiscountPerConnection * -1,
-                    quantity = InternetBundle.FiberConnections(cart.ProductOrders)
+                    quantity = InternetBundle.FiberConnections(bundleOrders)
                 });
             }
 

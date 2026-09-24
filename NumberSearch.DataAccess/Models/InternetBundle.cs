@@ -27,7 +27,28 @@ namespace NumberSearch.DataAccess
 
         public static bool IsFiberInternet(Guid serviceId) => serviceId == FiberInternet300ServiceId || serviceId == FiberInternet1GServiceId;
 
+        /// <summary>
+        /// The speed in Mbps a building must be listed at to sell this fiber tier, or 0 when the service isn't fiber internet.
+        /// </summary>
+        public static int RequiredMbps(Guid serviceId) => serviceId == FiberInternet1GServiceId ? 1000 : serviceId == FiberInternet300ServiceId ? 300 : 0;
+
+        /// <summary>
+        /// Whether a fiber tier can be sold at a listed address: only WFI Sellable buildings listed at or above the tier's speed.
+        /// </summary>
+        public static bool CanSellAt(Guid serviceId, ServiceAddress address) =>
+            IsFiberInternet(serviceId) && address.Product is "WFI" && address.Status is "Sellable" && ServiceAddress.ParseMbps(address.MaxSpeed) >= RequiredMbps(serviceId);
+
         public static bool IsPhoneService(Guid serviceId) => serviceId == StandardLinesServiceId || serviceId == ConcurrentSeatsServiceId;
+
+        /// <summary>
+        /// The invoice notes for a fiber internet line, with the contract term and the address it was qualified at.
+        /// </summary>
+        public static string FiberNotes(int termYears, string serviceAddress, string description)
+        {
+            var term = termYears > 0 ? $"{termYears} year term. " : string.Empty;
+            var address = string.IsNullOrWhiteSpace(serviceAddress) ? string.Empty : $"Service address: {serviceAddress}. ";
+            return $"{term}{address}{description}";
+        }
 
         /// <summary>
         /// The parts of a product order the bundle depends on, so the Ops site's own ProductOrder model can use the same rules.
@@ -64,6 +85,7 @@ namespace NumberSearch.DataAccess
 
         private static bool HasPhoneService(IEnumerable<Line> lines) => lines.Any(x => IsPhoneService(x.ServiceId) && x.Quantity > 0);
 
+        // Coupons don't carry a meaningful quantity, so any Partner coupon line qualifies, unlike phone service which must have at least one line or seat.
         private static bool HasPartnerCoupon(IEnumerable<Line> lines) => lines.Any(x => x.CouponId == PartnerCouponId);
     }
 }

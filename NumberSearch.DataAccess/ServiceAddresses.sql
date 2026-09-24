@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS public."ServiceAddresses"
 );
 
 CREATE INDEX IF NOT EXISTS "ServiceAddresses_Address_idx" ON public."ServiceAddresses" ("Postal", "HouseNumber");
+CREATE INDEX IF NOT EXISTS "ServiceAddresses_Street_idx" ON public."ServiceAddresses" ("Postal", "StreetKey");
 CREATE INDEX IF NOT EXISTS "ServiceAddresses_Location_idx" ON public."ServiceAddresses" ("Latitude", "Longitude");
 
 ALTER TABLE public."ServiceAddresses" OWNER TO "numberSearch";
