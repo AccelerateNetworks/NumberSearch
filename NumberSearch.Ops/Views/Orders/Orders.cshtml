@@ -193,6 +193,17 @@
 
                                 @order?.Order?.Zip
                             </p>
+                            @if (!string.IsNullOrWhiteSpace(order?.Order?.InternetServiceAddress))
+                            {
+                                <strong>Fiber Internet</strong>
+                                <p>
+                                    @order.Order.InternetServiceAddress
+                                    @if (order.Order.InternetTermYears > 0)
+                                    {
+                                        <span class="badge bg-info text-dark">@order.Order.InternetTermYears year term</span>
+                                    }
+                                </p>
+                            }
                         </td>
                         <td>
                             @if (order?.ProductOrders is not null)
