@@ -689,7 +689,7 @@
                         var selectedTerm = Model?.Cart?.Order?.InternetTermYears ?? 0;
                         <div class="mb-3">
                             <label for="internetTermYears">Fiber Internet Term</label>
-                            <select name="Cart.Order.InternetTermYears" class="form-control" id="internetTermYears" required>
+                            <select name="Cart.Order.InternetTermYears" class="form-control" id="internetTermYears" required disabled="@submitted">
                                 <option value="" selected="@(selectedTerm == 0)" disabled>Select a term</option>
                                 @foreach (var years in InternetBundle.TermYears)
                                 {

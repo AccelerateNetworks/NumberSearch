@@ -441,7 +441,7 @@ namespace NumberSearch.Mvc.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("Cart/Add/{type}/{id}/{quantity}")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public async Task<IActionResult> AddToCartAsync([FromRoute] string type, [FromRoute] string id, [FromRoute] int quantity, [FromQuery] long? serviceAddressId)
+        public async Task<IActionResult> AddToCartAsync([FromRoute] string type, [FromRoute] string id, [FromRoute] int quantity, [FromQuery] string? buildingKey)
         {
             if (!ModelState.IsValid && !string.IsNullOrWhiteSpace(type) && !string.IsNullOrWhiteSpace(id))
             {
@@ -481,7 +481,7 @@ namespace NumberSearch.Mvc.Controllers
                     if (checkService && InternetBundle.IsFiberInternet(serviceId))
                     {
                         // Fiber can only be bought at an address the Internet page qualified, so we know which building we're installing at.
-                        var qualified = serviceAddressId is > 0 ? await ServiceAddress.GetByIdAsync(serviceAddressId.Value, mvcConfiguration.PostgresqlProd) : null;
+                        var qualified = !string.IsNullOrWhiteSpace(buildingKey) ? await ServiceAddress.GetByBuildingKeyAsync("WFI", buildingKey.Trim(), mvcConfiguration.PostgresqlProd) : null;
                         if (qualified is null || !InternetBundle.CanSellAt(serviceId, qualified))
                         {
                             return BadRequest("Check your address on the Internet page before adding fiber internet to your cart.");
@@ -936,6 +936,14 @@ namespace NumberSearch.Mvc.Controllers
 
                 await httpContext.Session.LoadAsync();
                 var cart = Cart.GetFromSession(httpContext.Session);
+
+                // An order records a single fiber service address, so fiber at a second building needs its own order.
+                if (qualifiedAt is not null && InternetBundle.FiberConnections(cart.ProductOrders) > 0
+                    && !string.IsNullOrWhiteSpace(cart.Order.InternetBuildingKey) && cart.Order.InternetBuildingKey != qualifiedAt.BuildingKey)
+                {
+                    return new BadRequestObjectResult($"Your cart already has fiber internet at {cart.Order.InternetServiceAddress}. Please place a separate order for fiber at another address.");
+                }
+
                 var checkAdd = cart.AddService(ref service, ref productOrder);
 
                 if (qualifiedAt is not null)

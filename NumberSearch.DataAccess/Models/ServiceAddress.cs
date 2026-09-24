@@ -86,13 +86,16 @@ namespace NumberSearch.DataAccess
 
         public readonly record struct LookupResult(MatchType Match, ServiceAddress[] Addresses);
 
-        public static async Task<ServiceAddress?> GetByIdAsync(long serviceAddressId, string connectionString)
+        /// <summary>
+        /// Get a listed building by the provider's building key. Unlike ServiceAddressId, the key stays the same when the building lists are re-imported.
+        /// </summary>
+        public static async Task<ServiceAddress?> GetByBuildingKeyAsync(string product, string buildingKey, string connectionString)
         {
             await using var connection = new NpgsqlConnection(connectionString);
 
             return await connection
-                .QueryFirstOrDefaultAsync<ServiceAddress>($"SELECT {Columns} FROM public.\"ServiceAddresses\" WHERE \"ServiceAddressId\" = @serviceAddressId",
-                new { serviceAddressId })
+                .QueryFirstOrDefaultAsync<ServiceAddress>($"SELECT {Columns} FROM public.\"ServiceAddresses\" WHERE \"Product\" = @product AND \"BuildingKey\" = @buildingKey",
+                new { product, buildingKey })
                 .ConfigureAwait(false);
         }
 

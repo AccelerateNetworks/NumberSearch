@@ -220,9 +220,9 @@ namespace NumberSearch.Mvc.Controllers
         /// <param name="serviceable">Whether any service is available at the address.</param>
         /// <param name="matchedAddress">The address from the provider's building list that matched the query, to show the customer what we checked.</param>
         /// <param name="exactMatch">Whether the matched address is the one searched for, rather than the same building number or the nearest listed building.</param>
-        /// <param name="serviceAddressId">The listed address to pass to Cart/Add when adding a Sellable fiber tier, or 0.</param>
+        /// <param name="buildingKey">The provider's key for the listed building, to pass to Cart/Add when adding a Sellable fiber tier, or empty.</param>
         /// <param name="offers">The services available at the address.</param>
-        public readonly record struct InternetAvailability(bool serviceable, string matchedAddress, bool exactMatch, long serviceAddressId, InternetOffer[] offers);
+        public readonly record struct InternetAvailability(bool serviceable, string matchedAddress, bool exactMatch, string buildingKey, InternetOffer[] offers);
 
         private const string FiberTerms = "2, 3 or 5 year term. $15/mo off when bundled with any phone service.";
 
@@ -277,7 +277,7 @@ namespace NumberSearch.Mvc.Controllers
             // Name the building the fiber offers came from, so the address shown always matches the offers.
             var shown = tiers.Length > 0 ? sellable : wfi.AsValueEnumerable().FirstOrDefault() ?? lookup.Addresses.AsValueEnumerable().FirstOrDefault();
             var matched = shown is null ? string.Empty : $"{shown.StreetAddress.Trim()}, {shown.City}, {shown.State} {shown.Postal}";
-            return TypedResults.Ok(new InternetAvailability(offers.Count > 0, matched, exact, tiers.Length > 0 ? sellable!.ServiceAddressId : 0, offers.ToArray()));
+            return TypedResults.Ok(new InternetAvailability(offers.Count > 0, matched, exact, tiers.Length > 0 ? sellable!.BuildingKey : string.Empty, offers.ToArray()));
         }
 
         /// <summary>
